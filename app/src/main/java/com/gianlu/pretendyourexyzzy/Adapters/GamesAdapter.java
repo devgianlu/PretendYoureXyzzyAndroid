@@ -28,6 +28,12 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         this.context = context;
         this.handler = handler;
         this.inflater = LayoutInflater.from(context);
+        setHasStableIds(true);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return objs.get(position).gid;
     }
 
     @Nullable
@@ -68,8 +74,8 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
     public void onBindViewHolder(ViewHolder holder, int position) {
         Game game = objs.get(position);
         holder.name.setText(game.name);
-        holder.players.setHtml(R.string.players, game.players.size());
-        holder.spectators.setHtml(R.string.spectators, game.spectators.size());
+        holder.players.setHtml(R.string.players, game.players.size(), game.options.playersLimit);
+        holder.spectators.setHtml(R.string.spectators, game.spectators.size(), game.options.spectatorLimit);
 
         CommonUtils.setCardTopMargin(context, holder);
     }

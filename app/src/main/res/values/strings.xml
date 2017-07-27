@@ -15,8 +15,8 @@
     <string name="games">Games</string>
     <string name="gameChat">Game chat</string>
     <string name="failedLoading_reason">Failed loading: %s</string>
-    <string name="players"><![CDATA[<b>Players:</b>]]> %d</string>
-    <string name="spectators"><![CDATA[<b>Spectators:</b>]]> %d</string>
+    <string name="players"><![CDATA[<b>Players:</b>]]> %1$d/%2$d</string>
+    <string name="spectators"><![CDATA[<b>Spectators:</b>]]> %1$d/%2$d</string>
     <string name="noMessages">There are no messages.</string>
     <string name="message">Message</string>
     <string name="failedSendMessage">Failed sending the message!</string>
