@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Pretend You\'re Xyzzy</string>
+    <string name="register">Register</string>
+    <string name="registerDisclaimer"><b>Pretend You\'re Xyzzy</b> is a Cards Against Humanity clone, which is available at cardsagainsthumanity.com, where you can buy it or download and print it out yourself. It is distributed under a Creative Commons - Attribution - Noncommercial - Share Alike license. <b>This app is in no way endorsed or sponsored by cardsagainsthumanity.com.</b></string>
+    <string name="nickname">Nickname</string>
+    <string name="submit">Submit</string>
+    <string name="invalidNick">The nickname is invalid!</string>
+    <string name="changeServer">Change server</string>
+    <string name="reservedNickname">Nickname is reserved!</string>
+    <string name="invalidNickname">Nickname must contain only upper and lower case letters, numbers, or underscores, must be 3 to 30 characters long, and must not start with a number.</string>
+    <string name="alreadyUsedNickname">Nickname is already in use.</string>
+    <string name="tooManyUsers">There are too many users connected. Either join another server, or wait for a user to disconnect.</string>
+    <string name="failedLoading">Failed loading!</string>
+    <string name="globalChat">Global chat</string>
+    <string name="games">Games</string>
+    <string name="gameChat">Game chat</string>
+    <string name="failedLoading_reason">Failed loading: %s</string>
+    <string name="players"><![CDATA[<b>Players:</b>]]> %d</string>
+    <string name="spectators"><![CDATA[<b>Spectators:</b>]]> %d</string>
+    <string name="noMessages">There are no messages.</string>
+    <string name="message">Message</string>
+    <string name="failedSendMessage">Failed sending the message!</string>
+    <string name="logout">Logout</string>
+</resources>

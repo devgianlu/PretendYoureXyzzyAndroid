@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/main_globalChat"
+        android:icon="@drawable/ic_chat_black_48dp"
+        android:title="@string/globalChat" />
+
+    <item
+        android:id="@+id/main_games"
+        android:icon="@drawable/ic_games_black_48dp"
+        android:title="@string/games" />
+
+    <item
+        android:id="@+id/main_gameChat"
+        android:icon="@drawable/ic_chat_bubble_outline_black_48dp"
+        android:title="@string/gameChat" />
+</menu>
