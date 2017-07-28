@@ -50,6 +50,7 @@ public class PYX {
     private final CookieStore cookieStore;
     private final HttpContext httpContext;
     public PollingThread pollingThread;
+    public FirstLoad firstLoad;
 
     private PYX(Context context) {
         handler = new Handler(context.getMainLooper());
@@ -79,6 +80,8 @@ public class PYX {
     }
 
     private JSONObject ajaxServletRequestSync(OP operation, NameValuePair... params) throws IOException, JSONException, PYXException {
+        if (operation != OP.FIRST_LOAD && firstLoad == null)
+            throw new IllegalStateException("You must call #firstLoad first!!");
         HttpPost post = new HttpPost(server.addr + "AjaxServlet");
         List<NameValuePair> paramsList = new ArrayList<>(Arrays.asList(params));
         paramsList.add(new BasicNameValuePair("o", operation.val));
@@ -111,6 +114,7 @@ public class PYX {
                 try {
                     JSONObject obj = ajaxServletRequestSync(OP.FIRST_LOAD);
                     final FirstLoad result = new FirstLoad(obj);
+                    PYX.this.firstLoad = result;
 
                     handler.post(new Runnable() {
                         @Override

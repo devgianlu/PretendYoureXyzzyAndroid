@@ -6,6 +6,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.gianlu.commonutils.CommonUtils;
@@ -76,6 +78,9 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         holder.name.setText(game.name);
         holder.players.setHtml(R.string.players, game.players.size(), game.options.playersLimit);
         holder.spectators.setHtml(R.string.spectators, game.spectators.size(), game.options.spectatorLimit);
+        holder.goal.setHtml(R.string.goal, game.options.scoreLimit);
+        holder.locked.setImageResource(game.hasPassword ? R.drawable.ic_lock_outline_black_48dp : R.drawable.ic_lock_open_black_48dp);
+        holder.status.setImageResource(game.status == Game.Status.LOBBY ? R.drawable.ic_hourglass_empty_black_48dp : R.drawable.ic_casino_black_48dp);
 
         CommonUtils.setCardTopMargin(context, holder);
     }
@@ -95,13 +100,23 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         final TextView name;
         final SuperTextView players;
         final SuperTextView spectators;
+        final SuperTextView goal;
+        final ImageView locked;
+        final ImageView status;
+        final Button spectate;
+        final Button join;
 
         public ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.game_item, parent, false));
 
             name = (TextView) itemView.findViewById(R.id.gameItem_name);
+            status = (ImageView) itemView.findViewById(R.id.gameItem_status);
             players = (SuperTextView) itemView.findViewById(R.id.gameItem_players);
+            locked = (ImageView) itemView.findViewById(R.id.gameItem_locked);
             spectators = (SuperTextView) itemView.findViewById(R.id.gameItem_spectators);
+            goal = (SuperTextView) itemView.findViewById(R.id.gameItem_goal);
+            spectate = (Button) itemView.findViewById(R.id.gameItem_spectate);
+            join = (Button) itemView.findViewById(R.id.gameItem_join);
         }
     }
 }

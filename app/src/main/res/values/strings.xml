@@ -21,4 +21,8 @@
     <string name="message">Message</string>
     <string name="failedSendMessage">Failed sending the message!</string>
     <string name="logout">Logout</string>
+    <string name="spectate">Spectate</string>
+    <string name="join">Join</string>
+    <string name="privateGame">%s (private)</string>
+    <string name="goal"><![CDATA[<b>Goal:</b>]]> %d</string>
 </resources>
