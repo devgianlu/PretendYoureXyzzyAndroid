@@ -25,4 +25,5 @@
     <string name="join">Join</string>
     <string name="privateGame">%s (private)</string>
     <string name="goal"><![CDATA[<b>Goal:</b>]]> %d</string>
+    <string name="playersLabel">Players</string>
 </resources>

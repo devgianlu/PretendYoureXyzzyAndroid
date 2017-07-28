@@ -233,12 +233,43 @@ public class PYX {
         });
     }
 
+    public void getNamesList(final IResult<List<String>> listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject obj = ajaxServletRequestSync(OP.GET_NAMES_LIST);
+
+                    JSONArray namesArray = obj.getJSONArray("nl");
+                    final List<String> names = new ArrayList<>();
+                    for (int i = 0; i < namesArray.length(); i++)
+                        names.add(namesArray.getString(i));
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(instance, names);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     public enum OP {
         REGISTER("r"),
         FIRST_LOAD("fl"),
         LOGOUT("lo"),
         GET_GAMES_LIST("ggl"),
-        CHAT("c");
+        CHAT("c"),
+        GET_NAMES_LIST("gn");
 
         private final String val;
 

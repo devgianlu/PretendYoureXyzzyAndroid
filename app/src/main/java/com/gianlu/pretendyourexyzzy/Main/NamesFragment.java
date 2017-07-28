@@ -13,25 +13,39 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
-import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
-import com.gianlu.pretendyourexyzzy.Adapters.GamesAdapter;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
+import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.List;
 
-public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, GamesAdapter.IAdapter {
+public class NamesFragment extends Fragment implements PYX.IResult<List<String>> {
     private RecyclerView list;
     private SwipeRefreshLayout swipeRefresh;
     private ProgressBar loading;
     private FrameLayout layout;
-    private GamesList lastResult;
+    private int names = -1;
 
-    public static GamesFragment getInstance() {
-        return new GamesFragment();
+    public static NamesFragment getInstance() {
+        return new NamesFragment();
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        if (!hidden) updateActivityTitle();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateActivityTitle();
+    }
+
+    private void updateActivityTitle() {
+        Activity activity = getActivity();
+        if (names != -1 && activity != null && isVisible())
+            activity.setTitle(getString(R.string.playersLabel) + " (" + names + ") - " + getString(R.string.app_name));
     }
 
     @Nullable
@@ -49,38 +63,13 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                pyx.getGamesList(GamesFragment.this);
+                pyx.getNamesList(NamesFragment.this);
             }
         });
 
-        pyx.getGamesList(this);
-
-        pyx.pollingThread.addListener(new PYX.IResult<List<PollMessage>>() {
-            @Override
-            public void onDone(PYX pyx, List<PollMessage> result) {
-                for (PollMessage message : result)
-                    if (message.event == PollMessage.Event.GAME_LIST_REFRESH)
-                        pyx.getGamesList(GamesFragment.this);
-            }
-
-            @Override
-            public void onException(Exception ex) {
-                Logging.logMe(getContext(), ex);
-            }
-        });
+        pyx.getNamesList(this);
 
         return layout;
-    }
-
-    @Override
-    public void onHiddenChanged(boolean hidden) {
-        if (!hidden) updateActivityTitle();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        updateActivityTitle();
     }
 
     public void scrollToTop() {
@@ -88,21 +77,15 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     }
 
     @Override
-    public void onDone(PYX pyx, GamesList result) {
+    public void onDone(PYX pyx, List<String> result) {
         swipeRefresh.setRefreshing(false);
         loading.setVisibility(View.GONE);
         swipeRefresh.setVisibility(View.VISIBLE);
         MessageLayout.hide(layout);
 
-        list.setAdapter(new GamesAdapter(getContext(), result, this));
-        lastResult = result;
+        list.setAdapter(new PlayersAdapter(getContext(), result));
+        names = result.size();
         updateActivityTitle();
-    }
-
-    private void updateActivityTitle() {
-        Activity activity = getActivity();
-        if (lastResult != null && activity != null && isVisible())
-            activity.setTitle(getString(R.string.games) + " (" + lastResult.size() + "/" + lastResult.maxGames + ") - " + getString(R.string.app_name));
     }
 
     @Override
@@ -112,11 +95,5 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         swipeRefresh.setVisibility(View.GONE);
         if (!isDetached())
         MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
-    }
-
-    @Nullable
-    @Override
-    public RecyclerView getRecyclerView() {
-        return list;
     }
 }

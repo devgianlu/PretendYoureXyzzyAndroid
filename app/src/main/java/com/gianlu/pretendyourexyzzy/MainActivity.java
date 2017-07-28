@@ -15,6 +15,7 @@ import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Main.GameChatFragment;
 import com.gianlu.pretendyourexyzzy.Main.GamesFragment;
 import com.gianlu.pretendyourexyzzy.Main.GlobalChatFragment;
+import com.gianlu.pretendyourexyzzy.Main.NamesFragment;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 
@@ -24,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
     private final static String TAG_GLOBAL_CHAT = "globalChat";
     private final static String TAG_GAMES = "games";
     private final static String TAG_GAME_CHAT = "gameChat";
+    private static final String TAG_PLAYERS = "players";
+    private NamesFragment namesFragment;
     private GlobalChatFragment globalChatFragment;
     private GamesFragment gamesFragment;
     private GameChatFragment gameChatFragment;
@@ -40,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        namesFragment = NamesFragment.getInstance();
         globalChatFragment = GlobalChatFragment.getInstance();
         gamesFragment = GamesFragment.getInstance();
         gameChatFragment = GameChatFragment.getInstance();
@@ -49,6 +53,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
+                    case R.id.main_players:
+                        setTitle(getString(R.string.playersLabel) + " - " + getString(R.string.app_name));
+                        switchTo(TAG_PLAYERS);
+                        break;
                     case R.id.main_globalChat:
                         setTitle(getString(R.string.globalChat) + " - " + getString(R.string.app_name));
                         switchTo(TAG_GLOBAL_CHAT);
@@ -70,6 +78,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onNavigationItemReselected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
+                    case R.id.main_players:
+                        if (namesFragment != null) namesFragment.scrollToTop();
+                        break;
                     case R.id.main_globalChat:
                         if (globalChatFragment != null) globalChatFragment.scrollToTop();
                         break;
@@ -122,17 +133,17 @@ public class MainActivity extends AppCompatActivity {
                 transaction.hide(hideFragment);
 
             switch (tag) {
+                case TAG_PLAYERS:
+                    transaction.add(R.id.main_container, namesFragment, TAG_PLAYERS);
+                    break;
                 case TAG_GLOBAL_CHAT:
-                    if (manager.findFragmentByTag(TAG_GLOBAL_CHAT) == null)
-                        transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
+                    transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
                     break;
                 case TAG_GAMES:
-                    if (manager.findFragmentByTag(TAG_GAMES) == null)
-                        transaction.add(R.id.main_container, gamesFragment, TAG_GAMES);
+                    transaction.add(R.id.main_container, gamesFragment, TAG_GAMES);
                     break;
                 case TAG_GAME_CHAT:
-                    if (manager.findFragmentByTag(TAG_GAME_CHAT) == null)
-                        transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT);
+                    transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT);
                     break;
             }
         }

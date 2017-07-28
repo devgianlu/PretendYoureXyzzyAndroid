@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/main_players"
+        android:icon="@drawable/ic_supervisor_account_black_48dp"
+        android:title="@string/playersLabel" />
+
+    <item
         android:id="@+id/main_globalChat"
         android:icon="@drawable/ic_chat_black_48dp"
         android:title="@string/globalChat" />
