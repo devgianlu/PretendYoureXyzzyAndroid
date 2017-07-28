@@ -40,6 +40,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        globalChatFragment = GlobalChatFragment.getInstance();
+        gamesFragment = GamesFragment.getInstance();
+        gameChatFragment = GameChatFragment.getInstance();
+
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.main_navigation);
         navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
