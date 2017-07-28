@@ -40,6 +40,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        globalChatFragment = GlobalChatFragment.getInstance();
+        gamesFragment = GamesFragment.getInstance();
+        gameChatFragment = GameChatFragment.getInstance();
+
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.main_navigation);
         navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -119,22 +123,16 @@ public class MainActivity extends AppCompatActivity {
 
             switch (tag) {
                 case TAG_GLOBAL_CHAT:
-                    if (globalChatFragment == null) {
-                        globalChatFragment = GlobalChatFragment.getInstance();
+                    if (manager.findFragmentByTag(TAG_GLOBAL_CHAT) == null)
                         transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
-                    }
                     break;
                 case TAG_GAMES:
-                    if (gamesFragment == null) {
-                        gamesFragment = GamesFragment.getInstance();
+                    if (manager.findFragmentByTag(TAG_GAMES) == null)
                         transaction.add(R.id.main_container, gamesFragment, TAG_GAMES);
-                    }
                     break;
                 case TAG_GAME_CHAT:
-                    if (gameChatFragment == null) {
-                        gameChatFragment = GameChatFragment.getInstance();
+                    if (manager.findFragmentByTag(TAG_GAME_CHAT) == null)
                         transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT);
-                    }
                     break;
             }
         }
