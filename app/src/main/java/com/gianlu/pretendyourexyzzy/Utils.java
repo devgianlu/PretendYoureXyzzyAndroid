@@ -23,5 +23,9 @@ public class Utils {
     public static class Messages {
         public static final Toaster.Message FAILED_LOADING = new Toaster.Message(R.string.failedLoading, true);
         public static final Toaster.Message FAILED_SEND_MESSAGE = new Toaster.Message(R.string.failedSendMessage, true);
+        public static final Toaster.Message FAILED_JOINING = new Toaster.Message(R.string.failedJoining, true);
+        public static final Toaster.Message WRONG_PASSWORD = new Toaster.Message(R.string.wrongPassword, false);
+        public static final Toaster.Message GAME_FULL = new Toaster.Message(R.string.gameFull, false);
+        public static final Toaster.Message FAILED_SPECTATING = new Toaster.Message(R.string.failedSpectating, true);
     }
 }

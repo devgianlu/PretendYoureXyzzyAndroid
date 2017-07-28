@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 import android.content.Context;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -233,6 +234,60 @@ public class PYX {
         });
     }
 
+    public void joinGame(final int gid, @Nullable final String password, final ISuccess listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ajaxServletRequestSync(OP.JOIN_GAME,
+                            new BasicNameValuePair("gid", String.valueOf(gid)),
+                            new BasicNameValuePair("pw", password));
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(instance);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public void spectateGame(final int gid, @Nullable final String password, final ISuccess listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ajaxServletRequestSync(OP.SPECTATE_GAME,
+                            new BasicNameValuePair("gid", String.valueOf(gid)),
+                            new BasicNameValuePair("pw", password));
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(instance);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     public void getNamesList(final IResult<List<String>> listener) {
         executor.execute(new Runnable() {
             @Override
@@ -269,7 +324,9 @@ public class PYX {
         LOGOUT("lo"),
         GET_GAMES_LIST("ggl"),
         CHAT("c"),
-        GET_NAMES_LIST("gn");
+        GET_NAMES_LIST("gn"),
+        JOIN_GAME("jg"),
+        SPECTATE_GAME("vg");
 
         private final String val;
 

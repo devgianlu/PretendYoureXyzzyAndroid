@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -74,13 +75,27 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Game game = objs.get(position);
+        final Game game = objs.get(position);
         holder.name.setText(game.name);
         holder.players.setHtml(R.string.players, game.players.size(), game.options.playersLimit);
         holder.spectators.setHtml(R.string.spectators, game.spectators.size(), game.options.spectatorLimit);
         holder.goal.setHtml(R.string.goal, game.options.scoreLimit);
         holder.locked.setImageResource(game.hasPassword ? R.drawable.ic_lock_outline_black_48dp : R.drawable.ic_lock_open_black_48dp);
         holder.status.setImageResource(game.status == Game.Status.LOBBY ? R.drawable.ic_hourglass_empty_black_48dp : R.drawable.ic_casino_black_48dp);
+
+        holder.spectate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (handler != null) handler.spectateGame(game);
+            }
+        });
+
+        holder.join.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (handler != null) handler.joinGame(game);
+            }
+        });
 
         CommonUtils.setCardTopMargin(context, holder);
     }
@@ -94,6 +109,9 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
     public interface IAdapter {
         @Nullable
         RecyclerView getRecyclerView();
+
+        void spectateGame(Game game);
+        void joinGame(Game game);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

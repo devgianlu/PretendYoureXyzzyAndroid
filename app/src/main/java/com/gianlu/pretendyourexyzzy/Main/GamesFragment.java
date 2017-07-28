@@ -1,25 +1,33 @@
 package com.gianlu.pretendyourexyzzy.Main;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
+import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.GamesAdapter;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
+import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.List;
 
@@ -111,12 +119,111 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         loading.setVisibility(View.GONE);
         swipeRefresh.setVisibility(View.GONE);
         if (!isDetached())
-        MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
+            MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
     }
 
     @Nullable
     @Override
     public RecyclerView getRecyclerView() {
         return list;
+    }
+
+    @Override
+    public void spectateGame(final Game game) {
+        if (game.hasPassword) {
+            askForPassword(new IPassword() {
+                @Override
+                public void onPassword(String password) {
+                    spectateGame(game, password);
+                }
+            });
+        } else {
+            spectateGame(game, null);
+        }
+    }
+
+    @Override
+    public void joinGame(final Game game) {
+        if (game.hasPassword) {
+            askForPassword(new IPassword() {
+                @Override
+                public void onPassword(String password) {
+                    joinGame(game, password);
+                }
+            });
+        } else {
+            joinGame(game, null);
+        }
+    }
+
+    private void spectateGame(Game game, @Nullable String password) {
+        PYX.get(getContext()).spectateGame(game.gid, password, new PYX.ISuccess() {
+            @Override
+            public void onDone(PYX pyx) {
+                // TODO: Spectate
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                if (ex instanceof PYXException) {
+                    switch (ex.getMessage()) {
+                        case "wp":
+                            Toaster.show(getActivity(), Utils.Messages.WRONG_PASSWORD, ex);
+                            return;
+                        case "gf":
+                            Toaster.show(getActivity(), Utils.Messages.GAME_FULL, ex);
+                            return;
+                    }
+                }
+
+                Toaster.show(getActivity(), Utils.Messages.FAILED_SPECTATING, ex);
+            }
+        });
+    }
+
+    private void joinGame(Game game, @Nullable String password) {
+        PYX.get(getContext()).joinGame(game.gid, password, new PYX.ISuccess() {
+            @Override
+            public void onDone(PYX pyx) {
+                // TODO: Join
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                if (ex instanceof PYXException) {
+                    switch (ex.getMessage()) {
+                        case "wp":
+                            Toaster.show(getActivity(), Utils.Messages.WRONG_PASSWORD, ex);
+                            return;
+                        case "gf":
+                            Toaster.show(getActivity(), Utils.Messages.GAME_FULL, ex);
+                            return;
+                    }
+                }
+
+                Toaster.show(getActivity(), Utils.Messages.FAILED_JOINING, ex);
+            }
+        });
+    }
+
+    private void askForPassword(final IPassword listener) {
+        final EditText password = new EditText(getContext());
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.gamePassword)
+                .setView(password)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.submit, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        listener.onPassword(password.getText().toString());
+                    }
+                });
+
+        CommonUtils.showDialog(getActivity(), builder);
+    }
+
+    private interface IPassword {
+        void onPassword(String password);
     }
 }

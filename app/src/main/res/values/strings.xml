@@ -26,4 +26,9 @@
     <string name="privateGame">%s (private)</string>
     <string name="goal"><![CDATA[<b>Goal:</b>]]> %d</string>
     <string name="playersLabel">Players</string>
+    <string name="gamePassword">Enter game password</string>
+    <string name="failedJoining">Failed joining the game!</string>
+    <string name="wrongPassword">Wrong password for this game!</string>
+    <string name="gameFull">The game is full! Try later.</string>
+    <string name="failedSpectating">Failed spectating the game!</string>
 </resources>
