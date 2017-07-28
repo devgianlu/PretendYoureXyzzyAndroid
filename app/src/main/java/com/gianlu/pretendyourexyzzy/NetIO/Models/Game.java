@@ -13,7 +13,7 @@ import java.util.Comparator;
 import java.util.Objects;
 
 public class Game implements Filterable<NotFilterable>, Serializable {
-    public final String name;
+    public final String host;
     public final Status status;
     public final int gid;
     public final boolean hasPassword;
@@ -22,7 +22,7 @@ public class Game implements Filterable<NotFilterable>, Serializable {
     public final Options options;
 
     public Game(JSONObject obj) throws JSONException {
-        name = obj.getString("H");
+        host = obj.getString("H");
         gid = obj.getInt("gid");
         status = Status.parse(obj.getString("S"));
         hasPassword = obj.getBoolean("hp");
@@ -70,7 +70,7 @@ public class Game implements Filterable<NotFilterable>, Serializable {
 
         @Override
         public int compare(Game o1, Game o2) {
-            return o1.name.compareToIgnoreCase(o2.name);
+            return o1.host.compareToIgnoreCase(o2.host);
         }
     }
 

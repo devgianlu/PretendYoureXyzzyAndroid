@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
+import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
@@ -90,6 +91,7 @@ public class NamesFragment extends Fragment implements PYX.IResult<List<String>>
 
     @Override
     public void onException(Exception ex) {
+        Logging.logMe(getContext(), ex);
         swipeRefresh.setRefreshing(false);
         loading.setVisibility(View.GONE);
         swipeRefresh.setVisibility(View.GONE);

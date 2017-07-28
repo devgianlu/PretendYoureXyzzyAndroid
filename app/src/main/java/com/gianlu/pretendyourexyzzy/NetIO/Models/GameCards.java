@@ -14,7 +14,8 @@ public class GameCards {
     public final List<List<Card>> whiteCards;
 
     public GameCards(JSONObject obj) throws JSONException {
-        blackCard = new Card(obj.getJSONObject("bc"));
+        if (obj.isNull("bc")) blackCard = null;
+        else blackCard = new Card(obj.getJSONObject("bc"));
         gameId = obj.getInt("gid");
 
         whiteCards = new ArrayList<>();

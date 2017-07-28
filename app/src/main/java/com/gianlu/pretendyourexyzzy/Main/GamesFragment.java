@@ -158,6 +158,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
 
     @Override
     public void onException(Exception ex) {
+        Logging.logMe(getContext(), ex);
         swipeRefresh.setRefreshing(false);
         loading.setVisibility(View.GONE);
         swipeRefresh.setVisibility(View.GONE);

@@ -14,8 +14,10 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
+import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.pretendyourexyzzy.NetIO.GameManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
@@ -29,7 +31,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     private FrameLayout layout;
     private ProgressBar loading;
     private LinearLayout container;
-    private GameInfo gameInfo;
+    private GameManager manager;
 
     public static OngoingGameFragment getInstance(Game game, OngoingGameFragment.IFragment handler) {
         OngoingGameFragment fragment = new OngoingGameFragment();
@@ -75,8 +77,8 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
 
     private void updateActivityTitle() {
         Activity activity = getActivity();
-        if (gameInfo != null && activity != null && isVisible())
-            activity.setTitle(gameInfo.game.name + " - " + getString(R.string.app_name));
+        if (manager != null && activity != null && isVisible())
+            activity.setTitle(manager.gameInfo.game.host + " - " + getString(R.string.app_name));
     }
 
     @Override
@@ -111,12 +113,15 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     }
 
     @Override
-    public void onDone(PYX pyx, GameInfo gameInfo) {
-        this.gameInfo = gameInfo;
+    public void onDone(PYX pyx, final GameInfo gameInfo) {
+        if (manager == null) manager = new GameManager(gameInfo);
+        else manager.updateInfo(gameInfo);
+        pyx.pollingThread.addListener(manager);
+
         pyx.getGameCards(gameInfo.game.gid, new PYX.IResult<GameCards>() {
             @Override
             public void onDone(PYX pyx, GameCards gameCards) {
-                System.out.println(gameCards); // TODO
+                manager.updateCards(gameCards);
             }
 
             @Override
@@ -128,6 +133,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
 
     @Override
     public void onException(Exception ex) {
+        Logging.logMe(getContext(), ex);
         loading.setVisibility(View.GONE);
         container.setVisibility(View.GONE);
         if (isAdded())
