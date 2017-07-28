@@ -7,6 +7,8 @@ import android.support.annotation.Nullable;
 
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
@@ -207,6 +209,34 @@ public class PYX {
         });
     }
 
+    public void sendGameMessage(final int gid, final String message, final ISuccess listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ajaxServletRequestSync(OP.GAME_CHAT,
+                            new BasicNameValuePair("gid", String.valueOf(gid)),
+                            new BasicNameValuePair("m", message),
+                            new BasicNameValuePair("me", "false"));
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(instance);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     public void sendMessage(final String message, final ISuccess listener) {
         executor.execute(new Runnable() {
             @Override
@@ -288,6 +318,83 @@ public class PYX {
         });
     }
 
+    public void leaveGame(final int gid, final ISuccess listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ajaxServletRequestSync(OP.LEAVE_GAME, new BasicNameValuePair("gid", String.valueOf(gid)));
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(instance);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public void getGameInfo(final int gid, final IResult<GameInfo> listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject obj = ajaxServletRequestSync(OP.GET_GAME_INFO, new BasicNameValuePair("gid", String.valueOf(gid)));
+                    final GameInfo info = new GameInfo(obj);
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(instance, info);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public void getGameCards(final int gid, final IResult<GameCards> listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject obj = ajaxServletRequestSync(OP.GET_GAME_CARDS, new BasicNameValuePair("gid", String.valueOf(gid)));
+                    final GameCards cards = new GameCards(obj);
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(instance, cards);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     public void getNamesList(final IResult<List<String>> listener) {
         executor.execute(new Runnable() {
             @Override
@@ -326,7 +433,11 @@ public class PYX {
         CHAT("c"),
         GET_NAMES_LIST("gn"),
         JOIN_GAME("jg"),
-        SPECTATE_GAME("vg");
+        SPECTATE_GAME("vg"),
+        LEAVE_GAME("lg"),
+        GET_GAME_INFO("ggi"),
+        GET_GAME_CARDS("gc"),
+        GAME_CHAT("GC");
 
         private final String val;
 

@@ -47,7 +47,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
 
     @Override
     protected boolean matchQuery(Game item, @Nullable String query) {
-        return query == null || item.name.contains(query);
+        return query == null || item.name.toLowerCase().contains(query.toLowerCase());
     }
 
     @Override

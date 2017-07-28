@@ -1,10 +1,7 @@
 <resources>
     <string name="app_name">Pretend You\'re Xyzzy</string>
-    <string name="register">Register</string>
-    <string name="registerDisclaimer"><b>Pretend You\'re Xyzzy</b> is a Cards Against Humanity clone, which is available at cardsagainsthumanity.com, where you can buy it or download and print it out yourself. It is distributed under a Creative Commons - Attribution - Noncommercial - Share Alike license. <b>This app is in no way endorsed or sponsored by cardsagainsthumanity.com.</b></string>
     <string name="nickname">Nickname</string>
     <string name="submit">Submit</string>
-    <string name="invalidNick">The nickname is invalid!</string>
     <string name="changeServer">Change server</string>
     <string name="reservedNickname">Nickname is reserved!</string>
     <string name="invalidNickname">Nickname must contain only upper and lower case letters, numbers, or underscores, must be 3 to 30 characters long, and must not start with a number.</string>
@@ -23,7 +20,6 @@
     <string name="logout">Logout</string>
     <string name="spectate">Spectate</string>
     <string name="join">Join</string>
-    <string name="privateGame">%s (private)</string>
     <string name="goal"><![CDATA[<b>Goal:</b>]]> %d</string>
     <string name="playersLabel">Players</string>
     <string name="gamePassword">Enter game password</string>
@@ -31,4 +27,9 @@
     <string name="wrongPassword">Wrong password for this game!</string>
     <string name="gameFull">The game is full! Try later.</string>
     <string name="failedSpectating">Failed spectating the game!</string>
+    <string name="ongoingGame">Ongoing game</string>
+    <string name="game">Game</string>
+    <string name="leaveGame">Leave game</string>
+    <string name="failedLeaving">Failed leaving the game!</string>
+    <string name="search">Search</string>
 </resources>

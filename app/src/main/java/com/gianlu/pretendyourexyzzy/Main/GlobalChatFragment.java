@@ -87,7 +87,7 @@ public class GlobalChatFragment extends Fragment implements PYX.IResult<List<Pol
 
     @Override
     public void onDone(PYX pyx, List<PollMessage> result) {
-        adapter.newMessages(result);
+        adapter.newMessages(result, null);
     }
 
     @Override

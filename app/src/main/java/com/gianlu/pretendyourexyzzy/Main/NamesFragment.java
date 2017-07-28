@@ -93,7 +93,7 @@ public class NamesFragment extends Fragment implements PYX.IResult<List<String>>
         swipeRefresh.setRefreshing(false);
         loading.setVisibility(View.GONE);
         swipeRefresh.setVisibility(View.GONE);
-        if (!isDetached())
-        MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
+        if (isAdded())
+            MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
     }
 }

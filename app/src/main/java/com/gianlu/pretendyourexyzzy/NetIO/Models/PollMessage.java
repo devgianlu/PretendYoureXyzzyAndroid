@@ -11,6 +11,7 @@ import java.util.Objects;
 public class PollMessage {
     public final String sender;
     public final String message;
+    public final int gid;
     public final long timestamp;
     public final Event event;
 
@@ -18,6 +19,7 @@ public class PollMessage {
         event = Event.parse(obj.getString("E"));
         sender = obj.optString("f", null);
         message = obj.optString("m", null);
+        gid = obj.optInt("gid", -1);
         timestamp = obj.getLong("ts");
     }
 
@@ -30,6 +32,7 @@ public class PollMessage {
     public enum Event {
         CHAT("c"),
         NOOP("_"),
+        GAME_PLAYER_JOIN("gpj"),
         GAME_LIST_REFRESH("glr");
 
         private final String val;

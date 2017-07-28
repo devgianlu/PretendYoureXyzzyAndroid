@@ -27,5 +27,6 @@ public class Utils {
         public static final Toaster.Message WRONG_PASSWORD = new Toaster.Message(R.string.wrongPassword, false);
         public static final Toaster.Message GAME_FULL = new Toaster.Message(R.string.gameFull, false);
         public static final Toaster.Message FAILED_SPECTATING = new Toaster.Message(R.string.failedSpectating, true);
+        public static final Toaster.Message FAILED_LEAVING = new Toaster.Message(R.string.failedLeaving, true);
     }
 }

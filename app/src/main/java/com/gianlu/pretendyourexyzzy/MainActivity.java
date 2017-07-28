@@ -16,20 +16,25 @@ import com.gianlu.pretendyourexyzzy.Main.GameChatFragment;
 import com.gianlu.pretendyourexyzzy.Main.GamesFragment;
 import com.gianlu.pretendyourexyzzy.Main.GlobalChatFragment;
 import com.gianlu.pretendyourexyzzy.Main.NamesFragment;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGameFragment;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GamesFragment.IFragment, OngoingGameFragment.IFragment {
     private final static String TAG_GLOBAL_CHAT = "globalChat";
     private final static String TAG_GAMES = "games";
     private final static String TAG_GAME_CHAT = "gameChat";
     private static final String TAG_PLAYERS = "players";
+    private static final String TAG_ONGOING_GAME = "ongoingGame";
+    private BottomNavigationView navigation;
     private NamesFragment namesFragment;
     private GlobalChatFragment globalChatFragment;
     private GamesFragment gamesFragment;
     private GameChatFragment gameChatFragment;
+    private OngoingGameFragment ongoingGameFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,10 +50,12 @@ public class MainActivity extends AppCompatActivity {
 
         namesFragment = NamesFragment.getInstance();
         globalChatFragment = GlobalChatFragment.getInstance();
-        gamesFragment = GamesFragment.getInstance();
-        gameChatFragment = GameChatFragment.getInstance();
+        gamesFragment = GamesFragment.getInstance(this);
 
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.main_navigation);
+        navigation = (BottomNavigationView) findViewById(R.id.main_navigation);
+        Menu menu = navigation.getMenu();
+        menu.removeItem(R.id.main_ongoingGame);
+        menu.removeItem(R.id.main_gameChat);
         navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -64,6 +71,10 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.main_games:
                         setTitle(getString(R.string.games) + " - " + getString(R.string.app_name));
                         switchTo(TAG_GAMES);
+                        break;
+                    case R.id.main_ongoingGame:
+                        setTitle(getString(R.string.game) + " - " + getString(R.string.app_name));
+                        switchTo(TAG_ONGOING_GAME);
                         break;
                     case R.id.main_gameChat:
                         setTitle(getString(R.string.gameChat) + " - " + getString(R.string.app_name));
@@ -142,6 +153,9 @@ public class MainActivity extends AppCompatActivity {
                 case TAG_GAMES:
                     transaction.add(R.id.main_container, gamesFragment, TAG_GAMES);
                     break;
+                case TAG_ONGOING_GAME:
+                    transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
+                    break;
                 case TAG_GAME_CHAT:
                     transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT);
                     break;
@@ -149,5 +163,40 @@ public class MainActivity extends AppCompatActivity {
         }
 
         transaction.commit();
+    }
+
+    @Override
+    public void onJoinedGame(Game game) {
+        ongoingGameFragment = OngoingGameFragment.getInstance(game, this);
+        gameChatFragment = GameChatFragment.getInstance(game);
+        navigation.getMenu().clear();
+        navigation.inflateMenu(R.menu.navigation);
+        Menu menu = navigation.getMenu();
+        menu.removeItem(R.id.main_games);
+        navigation.setSelectedItemId(R.id.main_ongoingGame);
+    }
+
+    @Override
+    public void onSpectatingGame(Game game) {
+        // TODO: Spectating
+    }
+
+    @Override
+    public void onLeftGame() {
+        navigation.getMenu().clear();
+        navigation.inflateMenu(R.menu.navigation);
+        Menu menu = navigation.getMenu();
+        menu.removeItem(R.id.main_ongoingGame);
+        menu.removeItem(R.id.main_gameChat);
+        navigation.setSelectedItemId(R.id.main_games);
+
+        FragmentManager manager = getSupportFragmentManager();
+        manager.beginTransaction()
+                .remove(manager.findFragmentByTag(TAG_ONGOING_GAME))
+                .remove(manager.findFragmentByTag(TAG_GAME_CHAT))
+                .commit();
+
+        ongoingGameFragment = null;
+        gameChatFragment = null;
     }
 }

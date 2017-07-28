@@ -17,6 +17,11 @@
         android:title="@string/games" />
 
     <item
+        android:id="@+id/main_ongoingGame"
+        android:icon="@drawable/ic_casino_black_48dp"
+        android:title="@string/ongoingGame" />
+
+    <item
         android:id="@+id/main_gameChat"
         android:icon="@drawable/ic_chat_bubble_outline_black_48dp"
         android:title="@string/gameChat" />

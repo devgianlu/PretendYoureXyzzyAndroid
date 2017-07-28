@@ -2,8 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/main_logout"
-        android:icon="@drawable/ic_exit_to_app_white_48dp"
-        android:title="@string/logout"
-        app:showAsAction="never" />
+        android:id="@+id/ongoingGame_leave"
+        android:icon="@drawable/ic_clear_white_48dp"
+        android:title="@string/leaveGame"
+        app:showAsAction="always" />
 </menu>

@@ -1,6 +1,8 @@
 package com.gianlu.pretendyourexyzzy.Main;
 
 import android.app.Activity;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,12 +11,16 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.SearchView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
@@ -31,15 +37,51 @@ import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.List;
 
-public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, GamesAdapter.IAdapter {
+public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, GamesAdapter.IAdapter, SearchView.OnCloseListener, SearchView.OnQueryTextListener {
     private RecyclerView list;
     private SwipeRefreshLayout swipeRefresh;
     private ProgressBar loading;
     private FrameLayout layout;
     private GamesList lastResult;
+    private IFragment handler;
+    private SearchView searchView;
+    private GamesAdapter adapter;
 
-    public static GamesFragment getInstance() {
-        return new GamesFragment();
+    public static GamesFragment getInstance(IFragment handler) {
+        GamesFragment fragment = new GamesFragment();
+        fragment.setHasOptionsMenu(true);
+        fragment.handler = handler;
+        return fragment;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.games_fragment, menu);
+
+        SearchManager searchManager = (SearchManager) getContext().getSystemService(Context.SEARCH_SERVICE);
+        searchView = (SearchView) menu.findItem(R.id.gamesFragment_search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
+        searchView.setIconifiedByDefault(false);
+        searchView.setOnCloseListener(this);
+        searchView.setOnQueryTextListener(this);
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        onQueryTextSubmit(newText);
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        adapter.filterWithQuery(query);
+        return true;
+    }
+
+    @Override
+    public boolean onClose() {
+        searchView.setQuery(null, true);
+        return false;
     }
 
     @Nullable
@@ -102,7 +144,8 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         swipeRefresh.setVisibility(View.VISIBLE);
         MessageLayout.hide(layout);
 
-        list.setAdapter(new GamesAdapter(getContext(), result, this));
+        adapter = new GamesAdapter(getContext(), result, this);
+        list.setAdapter(adapter);
         lastResult = result;
         updateActivityTitle();
     }
@@ -118,7 +161,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         swipeRefresh.setRefreshing(false);
         loading.setVisibility(View.GONE);
         swipeRefresh.setVisibility(View.GONE);
-        if (!isDetached())
+        if (isAdded())
             MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
     }
 
@@ -156,11 +199,11 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         }
     }
 
-    private void spectateGame(Game game, @Nullable String password) {
+    private void spectateGame(final Game game, @Nullable String password) {
         PYX.get(getContext()).spectateGame(game.gid, password, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
-                // TODO: Spectate
+                if (handler != null) handler.onSpectatingGame(game);
             }
 
             @Override
@@ -181,11 +224,11 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         });
     }
 
-    private void joinGame(Game game, @Nullable String password) {
+    private void joinGame(final Game game, @Nullable String password) {
         PYX.get(getContext()).joinGame(game.gid, password, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
-                // TODO: Join
+                if (handler != null) handler.onJoinedGame(game);
             }
 
             @Override
@@ -208,6 +251,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
 
     private void askForPassword(final IPassword listener) {
         final EditText password = new EditText(getContext());
+        password.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.gamePassword)
@@ -221,6 +265,12 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
                 });
 
         CommonUtils.showDialog(getActivity(), builder);
+    }
+
+    public interface IFragment {
+        void onJoinedGame(Game game);
+
+        void onSpectatingGame(Game game);
     }
 
     private interface IPassword {

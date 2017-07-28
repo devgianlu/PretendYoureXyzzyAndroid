@@ -7,18 +7,18 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
 
-public class Game implements Filterable<NotFilterable> {
+public class Game implements Filterable<NotFilterable>, Serializable {
     public final String name;
     public final Status status;
     public final int gid;
     public final boolean hasPassword;
-    public final List<String> players;
-    public final List<String> spectators;
+    public final ArrayList<String> players;
+    public final ArrayList<String> spectators;
     public final Options options;
 
     public Game(JSONObject obj) throws JSONException {
@@ -90,13 +90,13 @@ public class Game implements Filterable<NotFilterable> {
         }
     }
 
-    public class Options {
+    public class Options implements Serializable {
         public final String timeMultiplier;
         public final int spectatorLimit;
         public final int playersLimit;
         public final int scoreLimit;
         public final int blanksLimit;
-        public final List<Integer> cardSets;
+        public final ArrayList<Integer> cardSets;
 
         public Options(JSONObject obj) throws JSONException {
             timeMultiplier = obj.getString("tm");

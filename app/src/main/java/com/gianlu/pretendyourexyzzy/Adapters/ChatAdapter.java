@@ -1,11 +1,13 @@
 package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import com.gianlu.commonutils.SuperTextView;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.R;
 
@@ -23,10 +25,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         this.inflater = LayoutInflater.from(context);
         if (handler != null) handler.onItemCountChanged(0);
         setHasStableIds(true);
-    }
-
-    public interface IAdapter {
-        void onItemCountChanged(int count);
     }
 
     @Override
@@ -50,10 +48,11 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         return messages.size();
     }
 
-    private int add(List<PollMessage> messages) {
+    private int add(List<PollMessage> messages, @Nullable Game game) {
         int i = 0;
         for (PollMessage message : messages) {
-            if (message.event == PollMessage.Event.CHAT) {
+            if (message.event == PollMessage.Event.CHAT
+                    && ((message.gid == -1 && game == null) || (game != null && message.gid == game.gid))) {
                 this.messages.add(message);
                 i++;
             }
@@ -62,12 +61,16 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         return i;
     }
 
-    public void newMessages(List<PollMessage> messages) {
+    public void newMessages(List<PollMessage> messages, @Nullable Game game) {
         synchronized (this.messages) {
-            notifyItemRangeInserted(this.messages.size() - add(messages), messages.size());
+            notifyItemRangeInserted(this.messages.size() - add(messages, game), messages.size());
         }
 
         if (handler != null) handler.onItemCountChanged(this.messages.size());
+    }
+
+    public interface IAdapter {
+        void onItemCountChanged(int count);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
