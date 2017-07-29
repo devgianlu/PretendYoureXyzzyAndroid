@@ -78,7 +78,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        adapter.filterWithQuery(query);
+        if (adapter != null) adapter.filterWithQuery(query);
         return true;
     }
 
