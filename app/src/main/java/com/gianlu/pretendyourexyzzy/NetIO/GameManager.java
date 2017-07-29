@@ -104,12 +104,13 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             case GAME_LIST_REFRESH:
             case NOOP:
             case CHAT:
+            case GAME_BLACK_RESHUFFLE:
+            case GAME_JUDGE_LEFT:
+            case GAME_SPECTATOR_JOIN:
+            case GAME_WHITE_RESHUFFLE:
+            case GAME_SPECTATOR_LEAVE:
                 // Not interested in these
                 return;
-            case GAME_BLACK_RESHUFFLE:
-                break;
-            case GAME_JUDGE_LEFT:
-                break;
             case GAME_OPTIONS_CHANGED:
                 gameInfo = new GameInfo(message.obj.getJSONObject("gi"));
                 break;
@@ -125,10 +126,6 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             case GAME_PLAYER_SKIPPED:
                 if (listener != null) listener.notifyPlayerSkipped(message.obj.getString("n"));
                 break;
-            case GAME_SPECTATOR_JOIN:
-                break;
-            case GAME_SPECTATOR_LEAVE:
-                break;
             case GAME_JUDGE_SKIPPED:
                 if (listener != null) listener.notifyJudgeSkipped(message.obj.getString("n"));
                 break;
@@ -137,8 +134,6 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 break;
             case GAME_STATE_CHANGE:
                 handleGameStateChange(Game.Status.parse(message.obj.getString("gs")), message);
-                break;
-            case GAME_WHITE_RESHUFFLE:
                 break;
         }
     }
