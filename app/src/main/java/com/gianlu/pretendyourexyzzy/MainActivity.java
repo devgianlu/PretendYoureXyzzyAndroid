@@ -35,13 +35,14 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
     private GamesFragment gamesFragment;
     private GameChatFragment gameChatFragment;
     private OngoingGameFragment ongoingGameFragment;
+    private User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        User user = (User) getIntent().getSerializableExtra("user");
+        user = (User) getIntent().getSerializableExtra("user");
         if (user == null) {
             Toaster.show(this, Utils.Messages.FAILED_LOADING, new NullPointerException("user is null!"));
             finish();
@@ -167,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
 
     @Override
     public void onJoinedGame(Game game) {
-        ongoingGameFragment = OngoingGameFragment.getInstance(game, this);
+        ongoingGameFragment = OngoingGameFragment.getInstance(game, user, this);
         gameChatFragment = GameChatFragment.getInstance(game);
         navigation.getMenu().clear();
         navigation.inflateMenu(R.menu.navigation);
@@ -178,7 +179,13 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
 
     @Override
     public void onSpectatingGame(Game game) {
-        // TODO: Spectating
+        ongoingGameFragment = OngoingGameFragment.getInstance(game, user, this);
+        gameChatFragment = GameChatFragment.getInstance(game);
+        navigation.getMenu().clear();
+        navigation.inflateMenu(R.menu.navigation);
+        Menu menu = navigation.getMenu();
+        menu.removeItem(R.id.main_games);
+        navigation.setSelectedItemId(R.id.main_ongoingGame);
     }
 
     @Override
@@ -191,10 +198,15 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         navigation.setSelectedItemId(R.id.main_games);
 
         FragmentManager manager = getSupportFragmentManager();
-        manager.beginTransaction()
-                .remove(manager.findFragmentByTag(TAG_ONGOING_GAME))
-                .remove(manager.findFragmentByTag(TAG_GAME_CHAT))
-                .commit();
+        FragmentTransaction transaction = manager.beginTransaction();
+
+        Fragment ongoingGame = manager.findFragmentByTag(TAG_ONGOING_GAME);
+        if (ongoingGame != null) transaction.remove(ongoingGame);
+
+        Fragment gameChat = manager.findFragmentByTag(TAG_GAME_CHAT);
+        if (gameChat != null) transaction.remove(gameChat);
+
+        transaction.commit();
 
         ongoingGameFragment = null;
         gameChatFragment = null;

@@ -32,4 +32,9 @@
     <string name="leaveGame">Leave game</string>
     <string name="failedLeaving">Failed leaving the game!</string>
     <string name="search">Search</string>
+    <string name="score"><![CDATA[<b>Score:</b>]]> %d</string>
+    <string name="numPick"><![CDATA[<b>Pick</b>]]> %d</string>
+    <string name="numDraw"><![CDATA[<b>Draw</b>]]> %d</string>
+    <string name="winnerIs">%s wins this round!</string>
+    <string name="gameOptions">Game options</string>
 </resources>

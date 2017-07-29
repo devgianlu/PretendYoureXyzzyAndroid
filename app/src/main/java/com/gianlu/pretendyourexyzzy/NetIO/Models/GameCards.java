@@ -18,8 +18,11 @@ public class GameCards {
         else blackCard = new Card(obj.getJSONObject("bc"));
         gameId = obj.getInt("gid");
 
-        whiteCards = new ArrayList<>();
-        JSONArray whiteCardsArray = obj.getJSONArray("wc");
+        whiteCards = toWhiteCardsList(obj.getJSONArray("wc"));
+    }
+
+    public static List<List<Card>> toWhiteCardsList(JSONArray whiteCardsArray) throws JSONException {
+        List<List<Card>> whiteCards = new ArrayList<>();
         for (int i = 0; i < whiteCardsArray.length(); i++) {
             List<Card> whiteCardsSub = new ArrayList<>();
             JSONArray whiteCardsSubArray = whiteCardsArray.getJSONArray(i);
@@ -28,5 +31,7 @@ public class GameCards {
 
             whiteCards.add(whiteCardsSub);
         }
+
+        return whiteCards;
     }
 }

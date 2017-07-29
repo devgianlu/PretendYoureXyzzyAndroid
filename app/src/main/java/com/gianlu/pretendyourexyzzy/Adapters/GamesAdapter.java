@@ -47,7 +47,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
 
     @Override
     protected boolean matchQuery(Game item, @Nullable String query) {
-        return query == null || item.name.toLowerCase().contains(query.toLowerCase());
+        return query == null || item.host.toLowerCase().contains(query.toLowerCase());
     }
 
     @Override
@@ -76,7 +76,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         final Game game = objs.get(position);
-        holder.name.setText(game.name);
+        holder.name.setText(game.host);
         holder.players.setHtml(R.string.players, game.players.size(), game.options.playersLimit);
         holder.spectators.setHtml(R.string.spectators, game.spectators.size(), game.options.spectatorLimit);
         holder.goal.setHtml(R.string.goal, game.options.scoreLimit);

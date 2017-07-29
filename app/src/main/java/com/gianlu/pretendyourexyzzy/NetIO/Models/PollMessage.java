@@ -13,6 +13,7 @@ public class PollMessage {
     public final String message;
     public final int gid;
     public final long timestamp;
+    public final JSONObject obj;
     public final Event event;
 
     public PollMessage(JSONObject obj) throws JSONException {
@@ -21,6 +22,7 @@ public class PollMessage {
         message = obj.optString("m", null);
         gid = obj.optInt("gid", -1);
         timestamp = obj.getLong("ts");
+        this.obj = obj;
     }
 
     public static List<PollMessage> toPollMessagesList(JSONArray array) throws JSONException {
@@ -32,8 +34,21 @@ public class PollMessage {
     public enum Event {
         CHAT("c"),
         NOOP("_"),
+        GAME_BLACK_RESHUFFLE("gbr"),
+        GAME_JUDGE_LEFT("gjl"),
+        GAME_JUDGE_SKIPPED("gjs"),
+        GAME_LIST_REFRESH("glr"),
+        GAME_OPTIONS_CHANGED("goc"),
+        GAME_PLAYER_INFO_CHANGE("gpic"),
         GAME_PLAYER_JOIN("gpj"),
-        GAME_LIST_REFRESH("glr");
+        GAME_PLAYER_KICKED_IDLE("gpki"),
+        GAME_PLAYER_LEAVE("gpl"),
+        GAME_PLAYER_SKIPPED("gps"),
+        GAME_SPECTATOR_JOIN("gvj"),
+        GAME_SPECTATOR_LEAVE("gvl"),
+        GAME_ROUND_COMPLETE("grc"),
+        GAME_STATE_CHANGE("gsc"),
+        GAME_WHITE_RESHUFFLE("gwr");
 
         private final String val;
 

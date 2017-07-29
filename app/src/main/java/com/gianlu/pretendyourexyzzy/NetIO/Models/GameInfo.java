@@ -45,7 +45,7 @@ public class GameInfo {
         }
     }
 
-    public class Player {
+    public static class Player {
         public final String name;
         public final int score;
         public final PlayerStatus status;

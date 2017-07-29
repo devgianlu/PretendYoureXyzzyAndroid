@@ -15,7 +15,7 @@ import android.widget.ProgressBar;
 
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
-import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
+import com.gianlu.pretendyourexyzzy.Adapters.NamesAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
 
@@ -84,7 +84,7 @@ public class NamesFragment extends Fragment implements PYX.IResult<List<String>>
         swipeRefresh.setVisibility(View.VISIBLE);
         MessageLayout.hide(layout);
 
-        list.setAdapter(new PlayersAdapter(getContext(), result));
+        list.setAdapter(new NamesAdapter(getContext(), result));
         names = result.size();
         updateActivityTitle();
     }

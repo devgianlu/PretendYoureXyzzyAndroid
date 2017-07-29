@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,6 +16,7 @@ import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -37,7 +39,7 @@ import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.List;
 
-public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, GamesAdapter.IAdapter, SearchView.OnCloseListener, SearchView.OnQueryTextListener {
+public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, GamesAdapter.IAdapter, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItemCompat.OnActionExpandListener {
     private RecyclerView list;
     private SwipeRefreshLayout swipeRefresh;
     private ProgressBar loading;
@@ -59,7 +61,9 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         inflater.inflate(R.menu.games_fragment, menu);
 
         SearchManager searchManager = (SearchManager) getContext().getSystemService(Context.SEARCH_SERVICE);
-        searchView = (SearchView) menu.findItem(R.id.gamesFragment_search).getActionView();
+        MenuItem item = menu.findItem(R.id.gamesFragment_search);
+        MenuItemCompat.setOnActionExpandListener(item, this);
+        searchView = (SearchView) item.getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
         searchView.setIconifiedByDefault(false);
         searchView.setOnCloseListener(this);
@@ -266,6 +270,17 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
                 });
 
         CommonUtils.showDialog(getActivity(), builder);
+    }
+
+    @Override
+    public boolean onMenuItemActionExpand(MenuItem item) {
+        return true;
+    }
+
+    @Override
+    public boolean onMenuItemActionCollapse(MenuItem item) {
+        onClose();
+        return true;
     }
 
     public interface IFragment {

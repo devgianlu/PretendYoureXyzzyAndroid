@@ -17,7 +17,7 @@
         android:orientation="vertical"
         android:visibility="gone">
 
-        <!-- Everything goes here!! -->
+        <include layout="@layout/game_layout" />
     </LinearLayout>
 
     <include

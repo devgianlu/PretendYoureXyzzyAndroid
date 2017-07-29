@@ -6,4 +6,10 @@
         android:icon="@drawable/ic_clear_white_48dp"
         android:title="@string/leaveGame"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/ongoingGame_options"
+        android:icon="@drawable/ic_info_outline_white_48dp"
+        android:title="@string/gameOptions"
+        app:showAsAction="ifRoom" />
 </menu>

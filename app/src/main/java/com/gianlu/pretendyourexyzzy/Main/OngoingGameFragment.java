@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
@@ -21,23 +22,26 @@ import com.gianlu.pretendyourexyzzy.NetIO.GameManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 
-public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInfo> {
+public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInfo>, GameManager.IManager {
     private IFragment handler;
     private Game game;
     private FrameLayout layout;
     private ProgressBar loading;
     private LinearLayout container;
     private GameManager manager;
+    private User me;
 
-    public static OngoingGameFragment getInstance(Game game, OngoingGameFragment.IFragment handler) {
+    public static OngoingGameFragment getInstance(Game game, User me, OngoingGameFragment.IFragment handler) {
         OngoingGameFragment fragment = new OngoingGameFragment();
         fragment.handler = handler;
         fragment.setHasOptionsMenu(true);
         Bundle args = new Bundle();
+        args.putSerializable("me", me);
         args.putSerializable("game", game);
         fragment.setArguments(args);
         return fragment;
@@ -50,6 +54,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
         loading = (ProgressBar) layout.findViewById(R.id.ongoingGame_loading);
         container = (LinearLayout) layout.findViewById(R.id.ongoingGame_container);
 
+        me = (User) getArguments().getSerializable("me");
         game = (Game) getArguments().getSerializable("game");
         if (game == null) {
             loading.setVisibility(View.GONE);
@@ -107,21 +112,30 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
             case R.id.ongoingGame_leave:
                 leaveGame();
                 return true;
+            case R.id.ongoingGame_options:
+                showGameOptions();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    private void showGameOptions() { // TODO
+    }
+
     @Override
     public void onDone(PYX pyx, final GameInfo gameInfo) {
-        if (manager == null) manager = new GameManager(gameInfo);
-        else manager.updateInfo(gameInfo);
+        if (manager == null) manager = new GameManager(container, gameInfo, me, this);
         pyx.pollingThread.addListener(manager);
+        updateActivityTitle();
 
         pyx.getGameCards(gameInfo.game.gid, new PYX.IResult<GameCards>() {
             @Override
             public void onDone(PYX pyx, GameCards gameCards) {
-                manager.updateCards(gameCards);
+                manager.setCards(gameCards);
+                loading.setVisibility(View.GONE);
+                container.setVisibility(View.VISIBLE);
+                MessageLayout.hide(layout);
             }
 
             @Override
@@ -138,6 +152,12 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
         container.setVisibility(View.GONE);
         if (isAdded())
             MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
+    }
+
+    @Override
+    public void notifyWinner(String winner) {
+        if (isAdded())
+            Toaster.show(getActivity(), getString(R.string.winnerIs, winner), Toast.LENGTH_SHORT, null, null, null);
     }
 
     public interface IFragment {
