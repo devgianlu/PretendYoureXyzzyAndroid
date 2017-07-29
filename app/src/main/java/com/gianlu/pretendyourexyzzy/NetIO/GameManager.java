@@ -27,8 +27,6 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter.IAdapter {
     private final PyxCard blackCard;
@@ -157,6 +155,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         if (listener != null) listener.notifyWinner(winner);
         whiteCardsAdapter.notifyWinningCard(winnerCard);
 
+        /*
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
@@ -168,6 +167,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 });
             }
         }, intermission);
+        */
     }
 
     private void updateWhiteCards(List<List<Card>> whiteCards) {
@@ -184,6 +184,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             case LOBBY:
                 break;
             case PLAYING:
+                updateWhiteCards(new ArrayList<List<Card>>());
                 newBlackCard(new Card(message.obj.getJSONObject("bc")));
                 break;
             case ROUND_OVER:

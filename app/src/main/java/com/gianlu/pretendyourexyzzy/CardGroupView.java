@@ -35,8 +35,12 @@ public class CardGroupView extends LinearLayout {
     }
 
     public void setWinning() {
-        for (int i = 0; i < getChildCount(); i++)
-            ((PyxCard) getChildAt(i)).setWinning(); // FIXME: Not working
+        for (int i = 0; i < getChildCount(); i++) {
+            PyxCard child = (PyxCard) getChildAt(i);
+            removeViewAt(i);
+            child.setWinning();
+            addView(child, i);
+        }
 
         invalidate();
     }

@@ -13,7 +13,6 @@ import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.List;
 
-// FIXME: Players are mismatched
 public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHolder> {
     private final List<GameInfo.Player> players;
     private final LayoutInflater inflater;
@@ -80,7 +79,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
 
         public ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.player_item, parent, false));
-            setIsRecyclable(false);
+            setIsRecyclable(false); // FIXME: Causes overdraw
 
             name = (TextView) itemView.findViewById(R.id.playerItem_name);
             score = (SuperTextView) itemView.findViewById(R.id.playerItem_score);

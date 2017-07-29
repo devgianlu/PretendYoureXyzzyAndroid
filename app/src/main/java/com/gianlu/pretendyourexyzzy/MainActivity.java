@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
     }
 
     @Override
-    public void onJoinedGame(Game game) {
+    public void onJoinedGame(Game game) { // TODO
         ongoingGameFragment = OngoingGameFragment.getInstance(game, user, this);
         gameChatFragment = GameChatFragment.getInstance(game);
         navigation.getMenu().clear();
