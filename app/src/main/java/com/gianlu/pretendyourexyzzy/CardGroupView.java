@@ -15,6 +15,7 @@ public class CardGroupView extends LinearLayout {
     public CardGroupView(Context context) {
         super(context);
         setOrientation(HORIZONTAL);
+        setWillNotDraw(false);
     }
 
     public List<Card> getCards() {

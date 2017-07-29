@@ -1,9 +1,12 @@
 package com.gianlu.pretendyourexyzzy.Main;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -13,10 +16,13 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
+import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.GameManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -35,6 +41,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     private LinearLayout container;
     private GameManager manager;
     private User me;
+    private PYX pyx;
 
     public static OngoingGameFragment getInstance(Game game, User me, OngoingGameFragment.IFragment handler) {
         OngoingGameFragment fragment = new OngoingGameFragment();
@@ -63,7 +70,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
             return layout;
         }
 
-        PYX pyx = PYX.get(getContext());
+        pyx = PYX.get(getContext());
         pyx.getGameInfo(game.gid, this);
 
         return layout;
@@ -115,12 +122,53 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
             case R.id.ongoingGame_options:
                 showGameOptions();
                 return true;
+            case R.id.ongoingGame_spectators:
+                showSpectators();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void showGameOptions() { // TODO
+    private void showSpectators() {
+        if (game == null) return;
+        SuperTextView spectators = new SuperTextView(getContext(), R.string.spectatorsList, game.spectators.isEmpty() ? "none" : CommonUtils.join(game.spectators, ", "));
+        int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
+        spectators.setPadding(padding, padding, padding, padding);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.spectatorsLabel)
+                .setView(spectators)
+                .setPositiveButton(android.R.string.ok, null);
+
+        CommonUtils.showDialog(getActivity(), builder);
+    }
+
+    @SuppressLint("InflateParams")
+    private void showGameOptions() {
+        if (game == null) return;
+        Game.Options options = game.options;
+        ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.game_options_dialog, null, false);
+        SuperTextView scoreLimit = (SuperTextView) layout.findViewById(R.id.gameOptions_scoreLimit);
+        scoreLimit.setHtml(R.string.scoreLimit, options.scoreLimit);
+        SuperTextView playerLimit = (SuperTextView) layout.findViewById(R.id.gameOptions_playerLimit);
+        playerLimit.setHtml(R.string.playerLimit, options.playersLimit);
+        SuperTextView spectatorLimit = (SuperTextView) layout.findViewById(R.id.gameOptions_spectatorLimit);
+        spectatorLimit.setHtml(R.string.spectatorLimit, options.spectatorsLimit);
+        SuperTextView idleTimeMultiplier = (SuperTextView) layout.findViewById(R.id.gameOptions_idleTimeMultiplier);
+        idleTimeMultiplier.setHtml(R.string.timeMultiplier, options.timeMultiplier);
+        SuperTextView cardSets = (SuperTextView) layout.findViewById(R.id.gameOptions_cardSets);
+        cardSets.setHtml(R.string.cardSets, CommonUtils.join(pyx.firstLoad.createCardSetNamesList(options.cardSets), ", "));
+
+        SuperTextView blankCards = (SuperTextView) layout.findViewById(R.id.gameOptions_blankCards);
+        blankCards.setHtml(R.string.blankCards, options.blanksLimit);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.gameOptions)
+                .setView(layout)
+                .setPositiveButton(android.R.string.ok, null);
+
+        CommonUtils.showDialog(getActivity(), builder);
     }
 
     @Override

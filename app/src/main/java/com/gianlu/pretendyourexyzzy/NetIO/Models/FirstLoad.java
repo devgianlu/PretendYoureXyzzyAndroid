@@ -2,12 +2,15 @@ package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 import android.support.annotation.NonNull;
 
+import com.gianlu.pretendyourexyzzy.Utils;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class FirstLoad implements Serializable {
@@ -27,10 +30,26 @@ public class FirstLoad implements Serializable {
             cardSets.add(new CardSet(cardSetsArray.getJSONObject(i)));
     }
 
+    public List<String> createCardSetNamesList(List<Integer> includeIds) {
+        List<String> names = new ArrayList<>();
+        for (int id : includeIds) {
+            CardSet set = Utils.find(cardSets, id);
+            if (set != null) names.add(set.name);
+        }
+
+        return names;
+    }
+
     public enum NextOp {
         REGISTER("r"),
         GAME("game"),
         NONE("none");
+
+        private final String val;
+
+        NextOp(String val) {
+            this.val = val;
+        }
 
         @NonNull
         public static NextOp parse(String val) {
@@ -39,12 +58,6 @@ public class FirstLoad implements Serializable {
                     return op;
 
             throw new IllegalArgumentException("Cannot find operation with value: " + val);
-        }
-
-        private final String val;
-
-        NextOp(String val) {
-            this.val = val;
         }
     }
 }

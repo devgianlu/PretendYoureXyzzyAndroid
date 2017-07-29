@@ -35,8 +35,11 @@ public class Game implements Filterable<NotFilterable>, Serializable {
 
         JSONArray spectatorsArray = obj.getJSONArray("V");
         spectators = new ArrayList<>();
-        for (int i = 0; i < spectatorsArray.length(); i++)
-            spectators.add(spectatorsArray.getString(i));
+        for (int i = 0; i < spectatorsArray.length(); i++) {
+            String name = spectatorsArray.getString(i);
+            if (!spectators.contains(name))
+                spectators.add(name);
+        }
     }
 
     @Override
@@ -92,7 +95,7 @@ public class Game implements Filterable<NotFilterable>, Serializable {
 
     public class Options implements Serializable {
         public final String timeMultiplier;
-        public final int spectatorLimit;
+        public final int spectatorsLimit;
         public final int playersLimit;
         public final int scoreLimit;
         public final int blanksLimit;
@@ -100,7 +103,7 @@ public class Game implements Filterable<NotFilterable>, Serializable {
 
         public Options(JSONObject obj) throws JSONException {
             timeMultiplier = obj.getString("tm");
-            spectatorLimit = obj.getInt("vL");
+            spectatorsLimit = obj.getInt("vL");
             playersLimit = obj.getInt("pL");
             scoreLimit = obj.getInt("sl");
             blanksLimit = obj.getInt("bl");

@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy;
 import android.support.annotation.Nullable;
 
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 
 import java.util.List;
@@ -27,6 +28,15 @@ public class Utils {
         for (GameInfo.Player player : players)
             if (Objects.equals(player.name, name))
                 return player;
+
+        return null;
+    }
+
+    @Nullable
+    public static CardSet find(List<CardSet> sets, int id) {
+        for (CardSet set : sets)
+            if (Objects.equals(set.id, id))
+                return set;
 
         return null;
     }

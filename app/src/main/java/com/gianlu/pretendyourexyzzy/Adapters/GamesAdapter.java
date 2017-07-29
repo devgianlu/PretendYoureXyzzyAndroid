@@ -78,7 +78,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         final Game game = objs.get(position);
         holder.name.setText(game.host);
         holder.players.setHtml(R.string.players, game.players.size(), game.options.playersLimit);
-        holder.spectators.setHtml(R.string.spectators, game.spectators.size(), game.options.spectatorLimit);
+        holder.spectators.setHtml(R.string.spectators, game.spectators.size(), game.options.spectatorsLimit);
         holder.goal.setHtml(R.string.goal, game.options.scoreLimit);
         holder.locked.setImageResource(game.hasPassword ? R.drawable.ic_lock_outline_black_48dp : R.drawable.ic_lock_open_black_48dp);
         holder.status.setImageResource(game.status == Game.Status.LOBBY ? R.drawable.ic_hourglass_empty_black_48dp : R.drawable.ic_casino_black_48dp);

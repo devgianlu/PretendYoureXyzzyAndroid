@@ -12,4 +12,10 @@
         android:icon="@drawable/ic_info_outline_white_48dp"
         android:title="@string/gameOptions"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/ongoingGame_spectators"
+        android:icon="@drawable/ic_remove_red_eye_white_48dp"
+        android:title="@string/spectatorsLabel"
+        app:showAsAction="ifRoom" />
 </menu>
