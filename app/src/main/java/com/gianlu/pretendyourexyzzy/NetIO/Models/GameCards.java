@@ -7,18 +7,22 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: What's h??
 public class GameCards {
     public final Card blackCard;
     public final int gameId;
     public final List<List<Card>> whiteCards;
+    public final List<Card> hand;
 
     public GameCards(JSONObject obj) throws JSONException {
         if (obj.isNull("bc")) blackCard = null;
         else blackCard = new Card(obj.getJSONObject("bc"));
         gameId = obj.getInt("gid");
-
         whiteCards = toWhiteCardsList(obj.getJSONArray("wc"));
+
+        hand = new ArrayList<>();
+        JSONArray handArray = obj.getJSONArray("h");
+        for (int i = 0; i < handArray.length(); i++)
+            hand.add(new Card(handArray.getJSONObject(i)));
     }
 
     public static List<List<Card>> toWhiteCardsList(JSONArray whiteCardsArray) throws JSONException {

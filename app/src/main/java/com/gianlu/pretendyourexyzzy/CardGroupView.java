@@ -34,7 +34,7 @@ public class CardGroupView extends LinearLayout {
         super.onDraw(canvas);
     }
 
-    public void setWinning() {
+    public void setWinning() { // FIXME
         for (int i = 0; i < getChildCount(); i++) {
             PyxCard child = (PyxCard) getChildAt(i);
             removeViewAt(i);

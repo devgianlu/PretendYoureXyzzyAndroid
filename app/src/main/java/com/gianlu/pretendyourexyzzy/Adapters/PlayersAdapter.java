@@ -79,7 +79,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
 
         public ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.player_item, parent, false));
-            setIsRecyclable(false); // FIXME: Causes overdraw
+            setIsRecyclable(false);
 
             name = (TextView) itemView.findViewById(R.id.playerItem_name);
             score = (SuperTextView) itemView.findViewById(R.id.playerItem_score);
