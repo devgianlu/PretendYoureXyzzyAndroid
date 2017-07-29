@@ -155,9 +155,21 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     }
 
     @Override
-    public void notifyWinner(String winner) {
+    public void notifyWinner(String nickname) {
         if (isAdded())
-            Toaster.show(getActivity(), getString(R.string.winnerIs, winner), Toast.LENGTH_SHORT, null, null, null);
+            Toaster.show(getActivity(), getString(R.string.winnerIs, nickname), Toast.LENGTH_SHORT, null, null, null);
+    }
+
+    @Override
+    public void notifyPlayerSkipped(String nickname) {
+        if (isAdded())
+            Toaster.show(getActivity(), getString(R.string.playerSkipped, nickname), Toast.LENGTH_SHORT, null, null, null);
+    }
+
+    @Override
+    public void notifyJudgeSkipped(String nickname) {
+        if (isAdded())
+            Toaster.show(getActivity(), getString(R.string.judgeSkipped, nickname), Toast.LENGTH_SHORT, null, null, null);
     }
 
     public interface IFragment {

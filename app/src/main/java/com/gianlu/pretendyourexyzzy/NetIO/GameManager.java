@@ -14,6 +14,7 @@ import com.gianlu.commonutils.Logging;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PyxCard;
+import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
@@ -96,8 +97,8 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     }
 
     private void handlePollMessage(PollMessage message) throws JSONException {
-        if (message.event != PollMessage.Event.CHAT)
-            System.out.println("EVENT: " + message.event.name() + " -> " + message.obj);
+        if (message.event != PollMessage.Event.CHAT && BuildConfig.DEBUG)
+            System.out.println("Event: " + message.event.name() + " -> " + message.obj);
 
         switch (message.event) {
             case GAME_LIST_REFRESH:
@@ -110,6 +111,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             case GAME_JUDGE_LEFT:
                 break;
             case GAME_OPTIONS_CHANGED:
+                gameInfo = new GameInfo(message.obj.getJSONObject("gi"));
                 break;
             case GAME_PLAYER_INFO_CHANGE:
                 playerInfoChanged(new GameInfo.Player(message.obj.getJSONObject("pi")));
@@ -121,12 +123,14 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 refreshPlayersList();
                 break;
             case GAME_PLAYER_SKIPPED:
+                if (listener != null) listener.notifyPlayerSkipped(message.obj.getString("n"));
                 break;
             case GAME_SPECTATOR_JOIN:
                 break;
             case GAME_SPECTATOR_LEAVE:
                 break;
             case GAME_JUDGE_SKIPPED:
+                if (listener != null) listener.notifyJudgeSkipped(message.obj.getString("n"));
                 break;
             case GAME_ROUND_COMPLETE:
                 handleWinner(message.obj.getString("rw"), message.obj.getInt("WC"), message.obj.getInt("i"));
@@ -221,6 +225,10 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     }
 
     public interface IManager {
-        void notifyWinner(String winner);
+        void notifyWinner(String nickname);
+
+        void notifyPlayerSkipped(String nickname);
+
+        void notifyJudgeSkipped(String nickname);
     }
 }

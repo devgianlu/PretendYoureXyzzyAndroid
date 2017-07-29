@@ -37,4 +37,6 @@
     <string name="numDraw"><![CDATA[<b>Draw</b>]]> %d</string>
     <string name="winnerIs">%s wins this round!</string>
     <string name="gameOptions">Game options</string>
+    <string name="playerSkipped">Player %s has been skipped.</string>
+    <string name="judgeSkipped">Judge %s has been skipped!</string>
 </resources>
