@@ -45,9 +45,6 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
             Object payload = payloads.get(0);
             if (payload instanceof WinningCardDummy) {
                 ((CardGroupView) holder.itemView).setWinning();
-
-                RecyclerView list = listener != null ? listener.getCardsRecyclerView() : null;
-                if (list != null) list.scrollToPosition(position); // FIXME
             }
         }
     }
@@ -69,6 +66,8 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
             List<Card> subCards = cards.get(i);
             for (Card card : subCards) {
                 if (card.id == winnerCardId) {
+                    RecyclerView list = listener != null ? listener.getCardsRecyclerView() : null;
+                    if (list != null) list.getLayoutManager().smoothScrollToPosition(list, null, i);
                     notifyItemChanged(i, new WinningCardDummy());
                     return;
                 }

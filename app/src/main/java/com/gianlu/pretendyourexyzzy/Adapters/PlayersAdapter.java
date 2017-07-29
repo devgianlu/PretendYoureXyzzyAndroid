@@ -62,7 +62,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         int pos = players.indexOf(player);
         if (pos != -1) {
             players.set(pos, player);
-            notifyItemChanged(pos);
+            notifyItemChanged(pos, player);
         }
     }
 

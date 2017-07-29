@@ -14,7 +14,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
+        <com.gianlu.commonutils.SuperTextView
             android:id="@+id/pyxCard_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

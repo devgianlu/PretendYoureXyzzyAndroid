@@ -1,12 +1,14 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 
-import android.text.Html;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class Card {
+    private static final Pattern CARD_NUM_PATTERN = Pattern.compile("<span class=\"cardnum\">(\\d+ / \\d+)</span>");
     public final int id;
     public final String text;
     public final String watermark;
@@ -16,11 +18,21 @@ public class Card {
 
     public Card(JSONObject obj) throws JSONException {
         id = obj.getInt("cid");
-        text = obj.getString("T");
-        watermark = obj.getString("W");
+
         numPick = obj.optInt("PK", -1);
         numDraw = obj.optInt("D", -1);
         writeIn = obj.optBoolean("wi", false);
+
+        String textTmp = obj.getString("T");
+        String watermarkTmp = obj.getString("W");
+        Matcher matcher = CARD_NUM_PATTERN.matcher(textTmp);
+        if (matcher.find()) {
+            text = textTmp.replace(matcher.group(), "").trim();
+            watermark = watermarkTmp + " (" + matcher.group(1) + "/" + matcher.group(2) + ")";
+        } else {
+            watermark = watermarkTmp;
+            text = textTmp.replace(" - ", "\n");
+        }
     }
 
     private Card(int id, String text, String watermark, int numPick, int numDraw, boolean writeIn) {
@@ -34,10 +46,5 @@ public class Card {
 
     public static Card newBlankCard() {
         return new Card(0, "", "", -1, -1, false);
-    }
-
-    @SuppressWarnings("deprecation")
-    public String getEscapedText() {
-        return Html.fromHtml(text.replace(" - ", "\n")).toString();
     }
 }

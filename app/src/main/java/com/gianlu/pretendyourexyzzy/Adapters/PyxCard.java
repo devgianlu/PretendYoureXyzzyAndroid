@@ -18,7 +18,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.R;
 
 public class PyxCard extends FrameLayout {
-    private TextView text;
+    private SuperTextView text;
     private TextView watermark;
     private SuperTextView numPick;
     private SuperTextView numDraw;
@@ -55,7 +55,7 @@ public class PyxCard extends FrameLayout {
 
         container = (LinearLayout) findViewById(R.id.pyxCard_container);
         container.setBackgroundColor(card.numPick != -1 ? Color.BLACK : Color.WHITE);
-        text = (TextView) findViewById(R.id.pyxCard_text);
+        text = (SuperTextView) findViewById(R.id.pyxCard_text);
         text.setTextColor(card.numPick != -1 ? Color.WHITE : Color.BLACK);
         text.setTypeface(roboto);
         watermark = (TextView) findViewById(R.id.pyxCard_watermark);
@@ -65,7 +65,7 @@ public class PyxCard extends FrameLayout {
         numDraw = (SuperTextView) findViewById(R.id.pyxCard_numDraw);
         numDraw.setTextColor(card.numPick != -1 ? Color.WHITE : Color.BLACK);
 
-        text.setText(card.getEscapedText());
+        text.setHtml(card.text);
         watermark.setText(card.watermark);
         if (card.numPick != -1) {
             numPick.setHtml(R.string.numPick, card.numPick);
