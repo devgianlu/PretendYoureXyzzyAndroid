@@ -15,6 +15,8 @@ public class Card {
     public final int numPick;
     public final int numDraw;
     public final boolean writeIn;
+    private final String originalText;
+    private final String originalWatermark;
     public boolean winning = false;
 
     public Card(JSONObject obj) throws JSONException {
@@ -24,8 +26,8 @@ public class Card {
         numDraw = obj.optInt("D", -1);
         writeIn = obj.optBoolean("wi", false);
 
-        String textTmp = obj.getString("T");
-        String watermarkTmp = obj.getString("W");
+        String textTmp = originalText = obj.getString("T");
+        String watermarkTmp = originalWatermark = obj.getString("W");
         Matcher matcher = CARD_NUM_PATTERN.matcher(textTmp);
         if (matcher.find()) {
             text = textTmp.replace(matcher.group(), "").trim();
@@ -38,8 +40,8 @@ public class Card {
 
     private Card(int id, String text, String watermark, int numPick, int numDraw, boolean writeIn) {
         this.id = id;
-        this.text = text;
-        this.watermark = watermark;
+        this.text = this.originalText = text;
+        this.watermark = this.originalWatermark = watermark;
         this.numPick = numPick;
         this.numDraw = numDraw;
         this.writeIn = writeIn;
@@ -47,6 +49,24 @@ public class Card {
 
     public static Card newBlankCard() {
         return new Card(0, "", "", -1, -1, false);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Card card = (Card) o;
+        return id == card.id;
+    }
+
+    public JSONObject toJSON() throws JSONException {
+        return new JSONObject()
+                .put("cid", id)
+                .put("PK", numPick)
+                .put("D", numDraw)
+                .put("wi", writeIn)
+                .put("T", originalText)
+                .put("W", originalWatermark);
     }
 
     public void setWinning(boolean winning) {

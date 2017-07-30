@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.gianlu.pretendyourexyzzy.R;
 
+import java.util.Collections;
 import java.util.List;
 
 public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> {
@@ -17,6 +18,8 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
     public NamesAdapter(Context context, List<String> players) {
         this.players = players;
         this.inflater = LayoutInflater.from(context);
+
+        Collections.sort(players);
     }
 
     @Override

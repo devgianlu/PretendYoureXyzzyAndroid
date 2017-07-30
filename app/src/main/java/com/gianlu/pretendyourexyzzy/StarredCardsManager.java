@@ -9,7 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,25 +64,24 @@ public class StarredCardsManager {
         }
     }
 
-    public static class StarredCard implements Serializable {
-        public final int blackCard;
-        public final ArrayList<Integer> whiteCards;
+    public static class StarredCard {
+        public final Card blackCard;
+        public final List<Card> whiteCards;
         public final String completeSentence;
 
         public StarredCard(Card blackCard, List<Card> whiteCards) {
-            this.blackCard = blackCard.id;
-            this.whiteCards = new ArrayList<>();
-            for (Card card : whiteCards) this.whiteCards.add(card.id);
+            this.blackCard = blackCard;
+            this.whiteCards = whiteCards;
             this.completeSentence = createSentence(blackCard, whiteCards);
         }
 
         public StarredCard(JSONObject obj) throws JSONException {
-            blackCard = obj.getInt("bc");
+            blackCard = new Card(obj.getJSONObject("bc"));
 
             whiteCards = new ArrayList<>();
             JSONArray whiteCardsArray = obj.getJSONArray("wc");
             for (int i = 0; i < whiteCardsArray.length(); i++)
-                whiteCards.add(whiteCardsArray.getInt(i));
+                whiteCards.add(new Card(whiteCardsArray.getJSONObject(i)));
 
             completeSentence = obj.getString("cs");
         }
@@ -104,10 +102,10 @@ public class StarredCardsManager {
 
         public JSONObject toJSON() throws JSONException {
             JSONArray whiteCardsArray = new JSONArray();
-            for (int whiteCard : whiteCards) whiteCardsArray.put(whiteCard);
+            for (Card whiteCard : whiteCards) whiteCardsArray.put(whiteCard.toJSON());
             return new JSONObject()
                     .put("wc", whiteCardsArray)
-                    .put("bc", blackCard)
+                    .put("bc", blackCard.toJSON())
                     .put("cs", completeSentence);
         }
 
