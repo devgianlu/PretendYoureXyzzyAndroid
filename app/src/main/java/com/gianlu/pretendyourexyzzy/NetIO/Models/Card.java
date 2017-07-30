@@ -1,9 +1,12 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,6 +48,14 @@ public class Card implements BaseCard {
         this.numPick = numPick;
         this.numDraw = numDraw;
         this.writeIn = writeIn;
+    }
+
+    public static List<Card> toCardsList(JSONArray array) throws JSONException {
+        List<Card> cards = new ArrayList<>();
+        for (int i = 0; i < array.length(); i++)
+            cards.add(new Card(array.getJSONObject(i)));
+
+        return cards;
     }
 
     public static Card newBlankCard() {

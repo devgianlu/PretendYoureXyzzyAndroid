@@ -4,6 +4,7 @@ import android.support.annotation.Nullable;
 
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 
 import java.util.List;
 import java.util.Objects;
@@ -18,6 +19,15 @@ public class Utils {
         for (Cookie cookie : store.getCookies())
             if (Objects.equals(cookie.getName(), name))
                 return cookie;
+
+        return null;
+    }
+
+    @Nullable
+    public static GameInfo.Player find(List<GameInfo.Player> players, String name) {
+        for (GameInfo.Player player : players)
+            if (Objects.equals(player.name, name))
+                return player;
 
         return null;
     }

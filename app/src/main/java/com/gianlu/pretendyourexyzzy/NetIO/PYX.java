@@ -425,6 +425,61 @@ public class PYX {
         });
     }
 
+    public void playCard(final int gid, final int cid, @Nullable final String customText, final ISuccess listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ajaxServletRequestSync(OP.PLAY_CARD,
+                            new BasicNameValuePair("gid", String.valueOf(gid)),
+                            new BasicNameValuePair("cid", String.valueOf(cid)),
+                            new BasicNameValuePair("m", customText));
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(instance);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public void judgeCard(final int gid, final int cid, final ISuccess listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ajaxServletRequestSync(OP.JUDGE_SELECT,
+                            new BasicNameValuePair("gid", String.valueOf(gid)),
+                            new BasicNameValuePair("cid", String.valueOf(cid)));
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(instance);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     public enum OP {
         REGISTER("r"),
         FIRST_LOAD("fl"),
@@ -437,7 +492,9 @@ public class PYX {
         LEAVE_GAME("lg"),
         GET_GAME_INFO("ggi"),
         GET_GAME_CARDS("gc"),
-        GAME_CHAT("GC");
+        GAME_CHAT("GC"),
+        PLAY_CARD("pc"),
+        JUDGE_SELECT("js");
 
         private final String val;
 

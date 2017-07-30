@@ -21,7 +21,7 @@ public class PollMessage {
         sender = obj.optString("f", null);
         message = obj.optString("m", null);
         gid = obj.optInt("gid", -1);
-        timestamp = obj.getLong("ts");
+        timestamp = obj.optLong("ts", -1);
         this.obj = obj;
     }
 
@@ -48,7 +48,9 @@ public class PollMessage {
         GAME_SPECTATOR_LEAVE("gvl"),
         GAME_ROUND_COMPLETE("grc"),
         GAME_STATE_CHANGE("gsc"),
-        GAME_WHITE_RESHUFFLE("gwr");
+        GAME_WHITE_RESHUFFLE("gwr"),
+        HAND_DEAL("hd"),
+        HURRY_UP("hu");
 
         private final String val;
 

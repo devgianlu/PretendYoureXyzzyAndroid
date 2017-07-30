@@ -59,6 +59,24 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         notifyDataSetChanged();
     }
 
+    public void notifyItemInserted(List<List<Card>> cards) {
+        this.cards.addAll(cards);
+        notifyItemRangeInserted(this.cards.size() - cards.size(), cards.size());
+    }
+
+    public void notifyItemRemoved(BaseCard removeCard) {
+        for (int i = 0; i < cards.size(); i++) {
+            List<? extends BaseCard> subCards = cards.get(i);
+            for (BaseCard card : subCards) {
+                if (card.getId() == removeCard.getId()) {
+                    cards.remove(i);
+                    notifyItemRemoved(i);
+                    return;
+                }
+            }
+        }
+    }
+
     public void notifyWinningCard(int winnerCardId) {
         for (int i = 0; i < cards.size(); i++) {
             List<? extends BaseCard> subCards = cards.get(i);
@@ -89,17 +107,8 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
 
     @Override
     public void onDeleteCard(StarredCardsManager.StarredCard deleteCard) {
-        for (int i = 0; i < cards.size(); i++) {
-            List<? extends BaseCard> subCards = cards.get(i);
-            for (BaseCard card : subCards) {
-                if (card.getId() == deleteCard.getId()) {
-                    cards.remove(i);
-                    notifyItemRemoved(i);
-                    if (listener != null) listener.onDeleteCard(deleteCard);
-                    return;
-                }
-            }
-        }
+        notifyItemRemoved(deleteCard);
+        if (listener != null) listener.onDeleteCard(deleteCard);
     }
 
     public interface IAdapter {

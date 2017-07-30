@@ -24,34 +24,41 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter.IAdapter {
     private final PyxCard blackCard;
-    private final RecyclerView playersList;
     private final TextView instructions;
     private final RecyclerView whiteCards;
     private final Context context;
     private final PlayersAdapter playersAdapter;
-    private final CardsAdapter whiteCardsAdapter;
+    private final CardsAdapter playersCardsAdapter;
+    private final CardsAdapter handAdapter;
     private final Handler handler;
+    private final User me;
     private final IManager listener;
     private final PYX pyx;
     public GameInfo gameInfo;
+    private GameInfo.PlayerStatus lastStatus;
+    private boolean firstHandDeal = true;
 
     public GameManager(ViewGroup gameLayout, @NonNull GameInfo gameInfo, User me, IManager listener) {
         this.context = gameLayout.getContext();
         this.gameInfo = gameInfo;
+        this.me = me;
         this.listener = listener;
         this.handler = new Handler(context.getMainLooper());
         this.pyx = PYX.get(context);
 
         blackCard = (PyxCard) gameLayout.findViewById(R.id.gameLayout_blackCard);
-        playersList = (RecyclerView) gameLayout.findViewById(R.id.gameLayout_players);
+        RecyclerView playersList = (RecyclerView) gameLayout.findViewById(R.id.gameLayout_players);
         playersList.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
         playersList.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
 
@@ -61,12 +68,16 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         instructions = (TextView) gameLayout.findViewById(R.id.gameLayout_instructions);
         whiteCards = (RecyclerView) gameLayout.findViewById(R.id.gameLayout_whiteCards);
         whiteCards.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-        whiteCardsAdapter = new CardsAdapter(context, this);
-        whiteCards.setAdapter(whiteCardsAdapter);
+        playersCardsAdapter = new CardsAdapter(context, this);
+        handAdapter = new CardsAdapter(context, this);
+        whiteCards.setAdapter(playersCardsAdapter);
 
         if (gameInfo.game.spectators.contains(me.nickname)) {
             updateInstructions("You're a spectator.");
         }
+
+        GameInfo.Player alsoMe = Utils.find(gameInfo.players, me.nickname);
+        if (alsoMe != null) handleMyStatus(alsoMe.status);
     }
 
     private void updateInstructions(String instructions) {
@@ -75,17 +86,64 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
 
     public void setCards(@NonNull GameCards cards) {
         blackCard.setCard(cards.blackCard);
-        whiteCardsAdapter.setAssociatedBlackCard(cards.blackCard);
-        updateWhiteCards(cards.whiteCards);
+        playersCardsAdapter.setAssociatedBlackCard(cards.blackCard);
+        updatePlayersCards(cards.whiteCards);
     }
 
     private void newBlackCard(Card card) {
         blackCard.setCard(card);
-        whiteCardsAdapter.setAssociatedBlackCard(card);
+        playersCardsAdapter.setAssociatedBlackCard(card);
+    }
+
+    private void handleMyStatus(GameInfo.PlayerStatus status) {
+        lastStatus = status;
+        switch (status) {
+            case HOST:
+                updateInstructions("You're the game host. Start the game when you're ready.");
+                break;
+            case IDLE:
+                updateInstructions("Waiting for other players...");
+                whiteCards.swapAdapter(playersCardsAdapter, true);
+                break;
+            case JUDGE:
+                updateInstructions("You're the Card Czar!");
+                whiteCards.swapAdapter(playersCardsAdapter, true);
+                break;
+            case JUDGING:
+                updateInstructions("Select the card(s) that will win this round.");
+                whiteCards.swapAdapter(playersCardsAdapter, true);
+                break;
+            case PLAYING:
+                updateInstructions("Select the card(s) to play. Your hand:");
+                whiteCards.swapAdapter(handAdapter, true);
+                break;
+            case WINNER:
+                updateInstructions("You won!");
+                break;
+            case SPECTATOR:
+                updateInstructions("You're a spectator.");
+                break;
+        }
     }
 
     private void playerInfoChanged(GameInfo.Player player) {
         playersAdapter.notifyItemChanged(player);
+        if (Objects.equals(player.name, me.nickname)) {
+            handleMyStatus(player.status);
+        } else {
+            switch (player.status) {
+                case IDLE:
+                case HOST:
+                case PLAYING:
+                case JUDGE:
+                case WINNER:
+                case SPECTATOR:
+                    break;
+                case JUDGING:
+                    updateInstructions(player.name + " is judging...");
+                    break;
+            }
+        }
     }
 
     private void updateBlankCardsNumber() {
@@ -94,8 +152,10 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             if (player.status == GameInfo.PlayerStatus.IDLE)
                 numBlanks++;
 
-        if (whiteCardsAdapter.getItemCount() < numBlanks)
-            whiteCardsAdapter.addBlankCard();
+        int missing = numBlanks - playersCardsAdapter.getItemCount();
+        if (missing > 0)
+            for (int i = 0; i <= missing; i++)
+                playersCardsAdapter.addBlankCard();
     }
 
     private void handlePollMessage(PollMessage message) throws JSONException {
@@ -129,7 +189,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 if (listener != null) listener.notifyPlayerSkipped(message.obj.getString("n"));
                 break;
             case GAME_JUDGE_SKIPPED:
-                if (listener != null) listener.notifyJudgeSkipped(message.obj.getString("n"));
+                if (listener != null) listener.notifyJudgeSkipped(message.obj.optString("n", null));
                 break;
             case GAME_ROUND_COMPLETE:
                 handleWinner(message.obj.getString("rw"), message.obj.getInt("WC"), message.obj.getInt("i"));
@@ -137,7 +197,39 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             case GAME_STATE_CHANGE:
                 handleGameStateChange(Game.Status.parse(message.obj.getString("gs")), message);
                 break;
+            case HAND_DEAL:
+                handleMyStatus(GameInfo.PlayerStatus.PLAYING);
+                handleHandDeal(Card.toCardsList(message.obj.getJSONArray("h")));
+                break;
+            case HURRY_UP:
+                // TODO: Show toast to the user
+                break;
         }
+    }
+
+    private void handleHandDeal(List<Card> cards) {
+        if (firstHandDeal) {
+            List<List<Card>> cardLists = new ArrayList<>();
+            for (Card card : cards) cardLists.add(Collections.singletonList(card));
+            updateHand(cardLists);
+            firstHandDeal = false;
+        } else {
+            addToHand(cards);
+        }
+    }
+
+    private void updateHand(List<List<Card>> cardLists) {
+        handAdapter.notifyDataSetChanged(cardLists);
+    }
+
+    private void removeFromHand(Card card) {
+        handAdapter.notifyItemRemoved(card);
+    }
+
+    private void addToHand(List<Card> cards) {
+        List<List<Card>> cardLists = new ArrayList<>();
+        for (Card card : cards) cardLists.add(Collections.singletonList(card));
+        handAdapter.notifyItemInserted(cardLists);
     }
 
     private void refreshPlayersList() {
@@ -157,7 +249,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
 
     private void handleWinner(String winner, int winnerCard, int intermission) {
         if (listener != null) listener.notifyWinner(winner);
-        whiteCardsAdapter.notifyWinningCard(winnerCard);
+        playersCardsAdapter.notifyWinningCard(winnerCard);
 
         /*
         new Timer().schedule(new TimerTask() {
@@ -174,8 +266,8 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         */
     }
 
-    private void updateWhiteCards(List<List<Card>> whiteCards) {
-        whiteCardsAdapter.notifyDataSetChanged(whiteCards);
+    private void updatePlayersCards(List<List<Card>> whiteCards) {
+        playersCardsAdapter.notifyDataSetChanged(whiteCards);
     }
 
     private void handleGameStateChange(Game.Status newStatus, PollMessage message) throws JSONException {
@@ -183,12 +275,12 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             case DEALING:
                 break;
             case JUDGING:
-                updateWhiteCards(GameCards.toWhiteCardsList(message.obj.getJSONArray("wc")));
+                updatePlayersCards(GameCards.toWhiteCardsList(message.obj.getJSONArray("wc")));
                 break;
             case LOBBY:
                 break;
             case PLAYING:
-                updateWhiteCards(new ArrayList<List<Card>>());
+                updatePlayersCards(new ArrayList<List<Card>>());
                 newBlackCard(new Card(message.obj.getJSONObject("bc")));
                 break;
             case ROUND_OVER:
@@ -209,7 +301,6 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                     }
                 }
             });
-
         }
     }
 
@@ -225,8 +316,36 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     }
 
     @Override
-    public void onCardSelected(BaseCard card) { // TODO
+    public void onCardSelected(BaseCard baseCard) {
+        final Card card = (Card) baseCard;
 
+        if (lastStatus == GameInfo.PlayerStatus.PLAYING) {
+            pyx.playCard(gameInfo.game.gid, card.id, null, new PYX.ISuccess() {
+                @Override
+                public void onDone(PYX pyx) {
+                    removeFromHand(card);
+                    handleMyStatus(GameInfo.PlayerStatus.IDLE);
+                    updateBlankCardsNumber();
+                }
+
+                @Override
+                public void onException(Exception ex) {
+                    GameManager.this.onException(ex);
+                }
+            });
+        } else if (lastStatus == GameInfo.PlayerStatus.JUDGING) {
+            pyx.judgeCard(gameInfo.game.gid, card.id, new PYX.ISuccess() {
+                @Override
+                public void onDone(PYX pyx) {
+                    handleMyStatus(GameInfo.PlayerStatus.PLAYING);
+                }
+
+                @Override
+                public void onException(Exception ex) {
+                    GameManager.this.onException(ex);
+                }
+            });
+        }
     }
 
     @Override
@@ -239,6 +358,6 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
 
         void notifyPlayerSkipped(String nickname);
 
-        void notifyJudgeSkipped(String nickname);
+        void notifyJudgeSkipped(@Nullable String nickname);
     }
 }

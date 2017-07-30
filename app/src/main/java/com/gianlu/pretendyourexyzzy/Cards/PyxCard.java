@@ -19,7 +19,7 @@ import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.R;
 
-public class PyxCard extends FrameLayout { // FIXME: Star doesn't its persist state
+public class PyxCard extends FrameLayout { // FIXME: Star doesn't persist its state
     private BaseCard card;
     private boolean hasBlackCard;
     private Boolean isStarred;
