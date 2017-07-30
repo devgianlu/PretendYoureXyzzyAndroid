@@ -112,14 +112,8 @@ public class StarredCardsManager {
 
         private String createSentence() {
             String blackText = blackCard.text;
-            for (BaseCard whiteCard : whiteCards) {
-                try {
-                    blackText = blackText.replaceFirst("____", "<u>" + whiteCard.getText() + "</u>");
-                } catch (ArrayIndexOutOfBoundsException ex) { // FIXME: Debug
-                    System.out.println("BC: " + blackCard.text);
-                    throw ex;
-                }
-            }
+            for (BaseCard whiteCard : whiteCards)
+                blackText = blackText.replaceFirst("____", "<u>" + whiteCard.getText() + "</u>");
 
             return blackText;
         }

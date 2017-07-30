@@ -89,14 +89,13 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
 
     @Override
     public void onDeleteCard(StarredCardsManager.StarredCard deleteCard) {
-        if (listener != null) listener.onDeleteCard(deleteCard);
-
         for (int i = 0; i < cards.size(); i++) {
             List<? extends BaseCard> subCards = cards.get(i);
             for (BaseCard card : subCards) {
                 if (card.getId() == deleteCard.getId()) {
                     cards.remove(i);
                     notifyItemRemoved(i);
+                    if (listener != null) listener.onDeleteCard(deleteCard);
                     return;
                 }
             }

@@ -21,6 +21,7 @@ public class CardGroupView extends LinearLayout implements PyxCard.ICard {
     private List<? extends BaseCard> cards;
     private Card associatedBlackCard;
     private ICard listener;
+    private boolean starred;
 
     public CardGroupView(Context context, ICard listener) {
         super(context);
@@ -46,13 +47,14 @@ public class CardGroupView extends LinearLayout implements PyxCard.ICard {
 
     public void setCards(List<? extends BaseCard> cards) {
         this.cards = cards;
+        this.starred = associatedBlackCard != null && StarredCardsManager.hasCard(getContext(), new StarredCardsManager.StarredCard(associatedBlackCard, cards));
 
         removeAllViews();
         for (final BaseCard card : cards) {
             PyxCard pyxCard = new PyxCard(getContext(),
                     card,
                     associatedBlackCard != null,
-                    associatedBlackCard != null && StarredCardsManager.hasCard(getContext(), new StarredCardsManager.StarredCard(associatedBlackCard, cards)),
+                    starred,
                     this);
 
             pyxCard.setOnClickListener(new OnClickListener() {
@@ -74,6 +76,7 @@ public class CardGroupView extends LinearLayout implements PyxCard.ICard {
     }
 
     public void setStarred(boolean starred) {
+        this.starred = starred;
         for (int i = 0; i < getChildCount(); i++)
             ((PyxCard) getChildAt(i)).setStarred(starred);
     }
