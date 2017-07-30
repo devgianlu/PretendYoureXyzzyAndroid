@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Objects;
 
 // TODO: Issues when the user becomes the judge
-// TODO: When playing card for last, the instruction messes up
 public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter.IAdapter {
     private final PyxCard blackCard;
     private final TextView instructions;
@@ -91,7 +90,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         updatePlayersCards(cards.whiteCards);
     }
 
-    private void newBlackCard(Card card) {
+    private void newBlackCard(@Nullable Card card) {
         blackCard.setCard(card);
         playersCardsAdapter.setAssociatedBlackCard(card);
     }
@@ -103,7 +102,8 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 updateInstructions("You're the game host. Start the game when you're ready.");
                 break;
             case IDLE:
-                updateInstructions("Waiting for the other players to play...");
+                if (gameInfo.game.status != Game.Status.JUDGING)
+                    updateInstructions("Waiting for other players...");
                 whiteCards.swapAdapter(playersCardsAdapter, true);
                 break;
             case JUDGE:
@@ -129,6 +129,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
 
     private void playerInfoChanged(GameInfo.Player player) {
         playersAdapter.notifyItemChanged(player);
+        gameInfo.notifyPlayerChanged(player);
         if (Objects.equals(player.name, me.nickname)) {
             handleMyStatus(player.status);
         } else {
@@ -149,7 +150,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
 
     private void updateBlankCardsNumber() {
         int numBlanks = 0;
-        for (GameInfo.Player player : playersAdapter.getPlayers())
+        for (GameInfo.Player player : gameInfo.players)
             if (player.status == GameInfo.PlayerStatus.IDLE)
                 numBlanks++;
 
@@ -164,7 +165,6 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             System.out.println("Event: " + message.event.name() + " -> " + message.obj);
 
         switch (message.event) {
-            case GAME_LIST_REFRESH:
             case NOOP:
             case CHAT:
             case GAME_BLACK_RESHUFFLE:
@@ -175,12 +175,13 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 // Not interested in these
                 return;
             case GAME_OPTIONS_CHANGED:
-                gameInfo = new GameInfo(message.obj.getJSONObject("gi"));
+                gameInfo = new GameInfo(new Game(message.obj.getJSONObject("gi")), gameInfo.players);
                 break;
             case GAME_PLAYER_INFO_CHANGE:
                 playerInfoChanged(new GameInfo.Player(message.obj.getJSONObject("pi")));
                 updateBlankCardsNumber();
                 break;
+            case GAME_LIST_REFRESH:
             case GAME_PLAYER_KICKED_IDLE:
             case GAME_PLAYER_JOIN:
             case GAME_PLAYER_LEAVE:
@@ -250,20 +251,6 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     private void handleWinner(String winner, int winnerCard, int intermission) {
         if (listener != null) listener.notifyWinner(winner);
         playersCardsAdapter.notifyWinningCard(winnerCard);
-
-        /*
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateWhiteCards(new ArrayList<List<Card>>());
-                    }
-                });
-            }
-        }, intermission);
-        */
     }
 
     private void updatePlayersCards(List<List<Card>> whiteCards) {
@@ -271,6 +258,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     }
 
     private void handleGameStateChange(Game.Status newStatus, PollMessage message) throws JSONException {
+        gameInfo.game.setStatus(newStatus);
         switch (newStatus) {
             case ROUND_OVER:
             case DEALING:
@@ -279,7 +267,11 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             case JUDGING:
                 updatePlayersCards(GameCards.toWhiteCardsList(message.obj.getJSONArray("wc")));
                 break;
-            case LOBBY: // TODO: Game isn't started or is ended
+            case LOBBY:
+                newBlackCard(null);
+                updatePlayersCards(new ArrayList<List<Card>>());
+                handleHandDeal(new ArrayList<Card>());
+                handleMyStatus(GameInfo.PlayerStatus.IDLE);
                 break;
             case PLAYING:
                 updatePlayersCards(new ArrayList<List<Card>>());
@@ -320,7 +312,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             @Override
             public void onDone(PYX pyx) {
                 removeFromHand(card);
-                handleMyStatus(GameInfo.PlayerStatus.IDLE);
+                // handleMyStatus(GameInfo.PlayerStatus.IDLE);
                 updateBlankCardsNumber();
             }
 

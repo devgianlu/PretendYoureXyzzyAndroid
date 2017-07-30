@@ -21,6 +21,16 @@ public class GameInfo {
             players.add(new Player(playersArray.getJSONObject(i)));
     }
 
+    public GameInfo(Game game, List<Player> players) {
+        this.game = game;
+        this.players = players;
+    }
+
+    public void notifyPlayerChanged(Player player) {
+        int pos = players.indexOf(player);
+        if (pos != -1) players.set(pos, player);
+    }
+
     public enum PlayerStatus {
         HOST("sh" /* Wait for players then click Start Game. */),
         IDLE("si" /* Waiting for players..." */),

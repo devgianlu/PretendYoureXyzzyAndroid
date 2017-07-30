@@ -28,10 +28,6 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         return players.get(position).name.hashCode();
     }
 
-    public List<GameInfo.Player> getPlayers() {
-        return players;
-    }
-
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return new ViewHolder(parent);

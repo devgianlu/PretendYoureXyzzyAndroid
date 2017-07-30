@@ -14,12 +14,12 @@ import java.util.Objects;
 
 public class Game implements Filterable<NotFilterable>, Serializable {
     public final String host;
-    public final Status status;
     public final int gid;
     public final boolean hasPassword;
     public final ArrayList<String> players;
     public final ArrayList<String> spectators;
     public final Options options;
+    public Status status;
 
     public Game(JSONObject obj) throws JSONException {
         host = obj.getString("H");
@@ -40,6 +40,10 @@ public class Game implements Filterable<NotFilterable>, Serializable {
             if (!spectators.contains(name))
                 spectators.add(name);
         }
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     @Override
