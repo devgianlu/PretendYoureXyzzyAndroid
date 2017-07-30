@@ -202,7 +202,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 handleHandDeal(Card.toCardsList(message.obj.getJSONArray("h")));
                 break;
             case HURRY_UP:
-                // TODO: Show toast to the user
+                if (listener != null) listener.hurryUp();
                 break;
         }
     }
@@ -359,5 +359,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         void notifyPlayerSkipped(String nickname);
 
         void notifyJudgeSkipped(@Nullable String nickname);
+
+        void hurryUp();
     }
 }

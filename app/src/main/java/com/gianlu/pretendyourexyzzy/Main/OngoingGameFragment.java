@@ -220,6 +220,11 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
             Toaster.show(getActivity(), getString(R.string.judgeSkipped, nickname), Toast.LENGTH_SHORT, null, null, null);
     }
 
+    @Override
+    public void hurryUp() {
+        Toaster.show(getActivity(), Utils.Messages.HURRY_UP);
+    }
+
     public interface IFragment {
         void onLeftGame();
     }
