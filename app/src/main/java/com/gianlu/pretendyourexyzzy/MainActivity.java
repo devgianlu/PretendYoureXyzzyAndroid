@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
 
     private void setKeepScreenOn(boolean on) {
         if (on) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        else getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     private void switchTo(String tag) {
