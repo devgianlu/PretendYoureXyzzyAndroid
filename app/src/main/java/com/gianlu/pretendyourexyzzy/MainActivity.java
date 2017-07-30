@@ -24,7 +24,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 
 import java.util.Objects;
 
-// TODO: Show starred cards list
 public class MainActivity extends AppCompatActivity implements GamesFragment.IFragment, OngoingGameFragment.IFragment {
     private final static String TAG_GLOBAL_CHAT = "globalChat";
     private final static String TAG_GAMES = "games";
