@@ -4,7 +4,6 @@ import android.support.annotation.Nullable;
 
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 
 import java.util.List;
 import java.util.Objects;
@@ -19,15 +18,6 @@ public class Utils {
         for (Cookie cookie : store.getCookies())
             if (Objects.equals(cookie.getName(), name))
                 return cookie;
-
-        return null;
-    }
-
-    @Nullable
-    public static GameInfo.Player find(List<GameInfo.Player> players, String name) {
-        for (GameInfo.Player player : players)
-            if (Objects.equals(player.name, name))
-                return player;
 
         return null;
     }
@@ -49,5 +39,6 @@ public class Utils {
         public static final Toaster.Message GAME_FULL = new Toaster.Message(R.string.gameFull, false);
         public static final Toaster.Message FAILED_SPECTATING = new Toaster.Message(R.string.failedSpectating, true);
         public static final Toaster.Message FAILED_LEAVING = new Toaster.Message(R.string.failedLeaving, true);
+        public static final Toaster.Message NO_STARRED_CARDS = new Toaster.Message(R.string.noStarredCards, false);
     }
 }

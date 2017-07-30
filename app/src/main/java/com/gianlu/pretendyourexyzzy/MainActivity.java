@@ -137,6 +137,9 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
                 Prefs.putBoolean(this, Prefs.Keys.KEEP_SCREEN_ON, item.isChecked());
                 setKeepScreenOn(item.isChecked());
                 return true;
+            case R.id.main_starredCards:
+                StarredCardsActivity.startActivity(this);
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -186,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
     }
 
     @Override
-    public void onJoinedGame(Game game) { // TODO
+    public void onJoinedGame(Game game) {
         ongoingGameFragment = OngoingGameFragment.getInstance(game, user, this);
         gameChatFragment = GameChatFragment.getInstance(game);
         navigation.getMenu().clear();

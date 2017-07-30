@@ -13,8 +13,10 @@ import android.widget.TextView;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
-import com.gianlu.pretendyourexyzzy.Adapters.PyxCard;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
+import com.gianlu.pretendyourexyzzy.Cards.PyxCard;
+import com.gianlu.pretendyourexyzzy.Cards.StarredCardsManager;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
@@ -220,6 +222,16 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     @Override
     public RecyclerView getCardsRecyclerView() {
         return whiteCards;
+    }
+
+    @Override
+    public void onCardSelected(BaseCard card) { // TODO
+
+    }
+
+    @Override
+    public void onDeleteCard(StarredCardsManager.StarredCard card) {
+        // Never called
     }
 
     public interface IManager {

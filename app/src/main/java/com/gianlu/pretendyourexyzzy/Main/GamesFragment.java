@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
@@ -92,6 +93,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         layout = (FrameLayout) inflater.inflate(R.layout.recycler_view_layout, container, false);
+        layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
         loading = (ProgressBar) layout.findViewById(R.id.recyclerViewLayout_loading);
         swipeRefresh = (SwipeRefreshLayout) layout.findViewById(R.id.recyclerViewLayout_swipeRefresh);
         swipeRefresh.setColorSchemeResources(R.color.colorAccent);

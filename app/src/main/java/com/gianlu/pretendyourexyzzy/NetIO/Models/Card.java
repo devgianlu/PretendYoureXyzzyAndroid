@@ -7,7 +7,7 @@ import org.json.JSONObject;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Card {
+public class Card implements BaseCard {
     private static final Pattern CARD_NUM_PATTERN = Pattern.compile("<span class=\"cardnum\">(\\d+) / (\\d+)</span>");
     public final int id;
     public final String text;
@@ -26,7 +26,7 @@ public class Card {
         numDraw = obj.optInt("D", -1);
         writeIn = obj.optBoolean("wi", false);
 
-        String textTmp = originalText = obj.getString("T");
+        String textTmp = originalText = obj.getString("T").replace(" - ", "\n");
         String watermarkTmp = originalWatermark = obj.getString("W");
         Matcher matcher = CARD_NUM_PATTERN.matcher(textTmp);
         if (matcher.find()) {
@@ -34,7 +34,7 @@ public class Card {
             watermark = watermarkTmp + " (" + matcher.group(1) + "/" + matcher.group(2) + ")";
         } else {
             watermark = watermarkTmp;
-            text = textTmp.replace(" - ", "\n");
+            text = textTmp;
         }
     }
 
@@ -59,6 +59,7 @@ public class Card {
         return id == card.id;
     }
 
+    @Override
     public JSONObject toJSON() throws JSONException {
         return new JSONObject()
                 .put("cid", id)
@@ -67,6 +68,41 @@ public class Card {
                 .put("wi", writeIn)
                 .put("T", originalText)
                 .put("W", originalWatermark);
+    }
+
+    @Override
+    public String getText() {
+        return text;
+    }
+
+    @Override
+    public String getWatermark() {
+        return watermark;
+    }
+
+    @Override
+    public int getNumPick() {
+        return numPick;
+    }
+
+    @Override
+    public int getNumDraw() {
+        return numDraw;
+    }
+
+    @Override
+    public boolean isWriteIn() {
+        return writeIn;
+    }
+
+    @Override
+    public int getId() {
+        return id;
+    }
+
+    @Override
+    public boolean isWinning() {
+        return winning;
     }
 
     public void setWinning(boolean winning) {

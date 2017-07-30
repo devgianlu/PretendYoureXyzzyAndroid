@@ -48,4 +48,7 @@
     <string name="spectatorsLabel">Spectators</string>
     <string name="spectatorsList"><![CDATA[<b>Spectators:</b>]]> %s</string>
     <string name="keepScreenOn">Keep screen on</string>
+    <string name="starredCards">Starred cards</string>
+    <string name="selectAStarredCard">Select a card from the list above.</string>
+    <string name="noStarredCards">You have no starred cards!</string>
 </resources>

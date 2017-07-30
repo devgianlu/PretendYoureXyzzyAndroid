@@ -5,16 +5,18 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
-import com.gianlu.pretendyourexyzzy.CardGroupView;
+import com.gianlu.pretendyourexyzzy.Cards.CardGroupView;
+import com.gianlu.pretendyourexyzzy.Cards.StarredCardsManager;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> {
+public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> implements CardGroupView.ICard {
     private final Context context;
-    private final List<List<Card>> cards;
+    private final List<List<? extends BaseCard>> cards;
     private final IAdapter listener;
     private Card associatedBlackCard;
 
@@ -22,6 +24,12 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         this.context = context;
         this.listener = listener;
         this.cards = new ArrayList<>();
+    }
+
+    public CardsAdapter(Context context, List<? extends BaseCard> cards, IAdapter listener) {
+        this(context, listener);
+        for (BaseCard card : cards)
+            this.cards.add(Collections.singletonList(card));
     }
 
     @Override
@@ -34,7 +42,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         ((CardGroupView) holder.itemView).setAssociatedBlackCard(associatedBlackCard);
         ((CardGroupView) holder.itemView).setCards(cards.get(position));
     }
@@ -53,10 +61,10 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
 
     public void notifyWinningCard(int winnerCardId) {
         for (int i = 0; i < cards.size(); i++) {
-            List<Card> subCards = cards.get(i);
-            for (Card card : subCards) {
-                if (card.id == winnerCardId) {
-                    for (Card winningCard : subCards)
+            List<? extends BaseCard> subCards = cards.get(i);
+            for (BaseCard card : subCards) {
+                if (card.getId() == winnerCardId) {
+                    for (BaseCard winningCard : subCards)
                         winningCard.setWinning(true);
 
                     notifyItemChanged(i);
@@ -74,14 +82,39 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         notifyItemInserted(this.cards.size() - 1);
     }
 
+    @Override
+    public void onCardSelected(BaseCard card) {
+        if (listener != null) listener.onCardSelected(card);
+    }
+
+    @Override
+    public void onDeleteCard(StarredCardsManager.StarredCard deleteCard) {
+        if (listener != null) listener.onDeleteCard(deleteCard);
+
+        for (int i = 0; i < cards.size(); i++) {
+            List<? extends BaseCard> subCards = cards.get(i);
+            for (BaseCard card : subCards) {
+                if (card.getId() == deleteCard.getId()) {
+                    cards.remove(i);
+                    notifyItemRemoved(i);
+                    return;
+                }
+            }
+        }
+    }
+
     public interface IAdapter {
         @Nullable
         RecyclerView getCardsRecyclerView();
+
+        void onCardSelected(BaseCard card);
+
+        void onDeleteCard(StarredCardsManager.StarredCard card);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         ViewHolder() {
-            super(new CardGroupView(context));
+            super(new CardGroupView(context, CardsAdapter.this));
         }
     }
 }

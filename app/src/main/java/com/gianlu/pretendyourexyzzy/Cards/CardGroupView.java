@@ -1,13 +1,14 @@
-package com.gianlu.pretendyourexyzzy;
+package com.gianlu.pretendyourexyzzy.Cards;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.util.TypedValue;
+import android.view.View;
 import android.widget.LinearLayout;
 
-import com.gianlu.pretendyourexyzzy.Adapters.PyxCard;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 
 import java.util.List;
@@ -17,11 +18,13 @@ public class CardGroupView extends LinearLayout implements PyxCard.ICard {
     private final int mCornerRadius;
     private final int mLineWidth;
     private final Paint mLinePaint;
-    private List<Card> cards;
+    private List<? extends BaseCard> cards;
     private Card associatedBlackCard;
+    private ICard listener;
 
-    public CardGroupView(Context context) {
+    public CardGroupView(Context context, ICard listener) {
         super(context);
+        this.listener = listener;
         setOrientation(HORIZONTAL);
         setWillNotDraw(false);
 
@@ -36,12 +39,30 @@ public class CardGroupView extends LinearLayout implements PyxCard.ICard {
         mLinePaint.setPathEffect(new DashPathEffect(new float[]{20, 10}, 0));
     }
 
-    public void setCards(List<Card> cards) {
+    public CardGroupView(Context context, List<BaseCard> whiteCards, ICard listener) {
+        this(context, listener);
+        setCards(whiteCards);
+    }
+
+    public void setCards(List<? extends BaseCard> cards) {
         this.cards = cards;
 
         removeAllViews();
-        for (Card card : cards)
-            addView(new PyxCard(getContext(), card, associatedBlackCard != null, StarredCardsManager.hasCard(getContext(), new StarredCardsManager.StarredCard(associatedBlackCard, cards)), this));
+        for (final BaseCard card : cards) {
+            PyxCard pyxCard = new PyxCard(getContext(),
+                    card,
+                    associatedBlackCard != null,
+                    associatedBlackCard != null && StarredCardsManager.hasCard(getContext(), new StarredCardsManager.StarredCard(associatedBlackCard, cards)),
+                    this);
+
+            pyxCard.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (listener != null) listener.onCardSelected(card);
+                }
+            });
+            addView(pyxCard);
+        }
     }
 
     @Override
@@ -71,5 +92,16 @@ public class CardGroupView extends LinearLayout implements PyxCard.ICard {
             StarredCardsManager.addCard(getContext(), card);
             setStarred(true);
         }
+    }
+
+    @Override
+    public void deleteCard(StarredCardsManager.StarredCard card) {
+        if (listener != null) listener.onDeleteCard(card);
+    }
+
+    public interface ICard {
+        void onCardSelected(BaseCard card);
+
+        void onDeleteCard(StarredCardsManager.StarredCard card);
     }
 }

@@ -10,7 +10,7 @@
         android:layout_weight="1"
         android:orientation="horizontal">
 
-        <com.gianlu.pretendyourexyzzy.Adapters.PyxCard
+        <com.gianlu.pretendyourexyzzy.Cards.PyxCard
             android:id="@+id/gameLayout_blackCard"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

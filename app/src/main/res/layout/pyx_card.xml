@@ -4,7 +4,8 @@
     android:layout_width="156dp"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    android:elevation="8dp">
+    android:elevation="8dp"
+    android:foreground="?attr/selectableItemBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
