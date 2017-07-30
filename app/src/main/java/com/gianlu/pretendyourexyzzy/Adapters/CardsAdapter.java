@@ -16,6 +16,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     private final Context context;
     private final List<List<Card>> cards;
     private final IAdapter listener;
+    private Card associatedBlackCard;
 
     public CardsAdapter(Context context, IAdapter listener) {
         this.context = context;
@@ -23,17 +24,18 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         this.cards = new ArrayList<>();
     }
 
-    public List<List<Card>> getCards() {
-        return cards;
-    }
-
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return new ViewHolder();
     }
 
+    public void setAssociatedBlackCard(Card associatedBlackCard) {
+        this.associatedBlackCard = associatedBlackCard;
+    }
+
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
+        ((CardGroupView) holder.itemView).setAssociatedBlackCard(associatedBlackCard);
         ((CardGroupView) holder.itemView).setCards(cards.get(position));
     }
 
@@ -89,7 +91,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public ViewHolder() {
+        ViewHolder() {
             super(new CardGroupView(context));
         }
     }

@@ -73,11 +73,13 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
 
     public void setCards(@NonNull GameCards cards) {
         blackCard.setCard(cards.blackCard);
+        whiteCardsAdapter.setAssociatedBlackCard(cards.blackCard);
         updateWhiteCards(cards.whiteCards);
     }
 
     private void newBlackCard(Card card) {
         blackCard.setCard(card);
+        whiteCardsAdapter.setAssociatedBlackCard(card);
     }
 
     private void playerInfoChanged(GameInfo.Player player) {

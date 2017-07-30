@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Main.GameChatFragment;
@@ -23,6 +24,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 
 import java.util.Objects;
 
+// TODO: Show starred cards list
 public class MainActivity extends AppCompatActivity implements GamesFragment.IFragment, OngoingGameFragment.IFragment {
     private final static String TAG_GLOBAL_CHAT = "globalChat";
     private final static String TAG_GAMES = "games";
@@ -107,11 +109,18 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         });
 
         navigation.setSelectedItemId(R.id.main_games);
+        setKeepScreenOn(Prefs.getBoolean(this, Prefs.Keys.KEEP_SCREEN_ON, true));
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.findItem(R.id.main_keepScreenOn).setChecked(Prefs.getBoolean(this, Prefs.Keys.KEEP_SCREEN_ON, true));
         return true;
     }
 
@@ -123,9 +132,19 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
                 startActivity(new Intent(this, LoadingActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                 finish();
                 return true;
+            case R.id.main_keepScreenOn:
+                item.setChecked(!item.isChecked());
+                Prefs.putBoolean(this, Prefs.Keys.KEEP_SCREEN_ON, item.isChecked());
+                setKeepScreenOn(item.isChecked());
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void setKeepScreenOn(boolean on) {
+        if (on) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        else getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     private void switchTo(String tag) {

@@ -6,4 +6,11 @@
         android:icon="@drawable/ic_exit_to_app_white_48dp"
         android:title="@string/logout"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/main_keepScreenOn"
+        android:checkable="true"
+        android:checked="true"
+        android:title="@string/keepScreenOn"
+        app:showAsAction="never" />
 </menu>

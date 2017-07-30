@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.util.Base64;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,6 +20,16 @@ public class Prefs {
     public static String getString(Context context, Keys key, String fallback) {
         init(context);
         return prefs.getString(key.key, fallback);
+    }
+
+    public static String getBase64String(Context context, Keys key, String fallback) {
+        init(context);
+        return new String(Base64.decode(prefs.getString(key.key, Base64.encodeToString(fallback.getBytes(), Base64.NO_WRAP)).getBytes(), Base64.NO_WRAP));
+    }
+
+    public static void putBase64String(Context context, Keys key, String value) {
+        init(context);
+        prefs.edit().putString(key.key, Base64.encodeToString(value.getBytes(), Base64.NO_WRAP)).apply();
     }
 
     public static void putString(Context context, Keys key, String value) {
@@ -74,9 +85,16 @@ public class Prefs {
         prefs.edit().remove(key.key).apply();
     }
 
+    public static void putBoolean(Context context, Keys key, boolean value) {
+        init(context);
+        prefs.edit().putBoolean(key.key, value).apply();
+    }
+
     public enum Keys {
         LAST_NICKNAME("lastNickname"),
-        LAST_SERVER("lastServer");
+        LAST_SERVER("lastServer"),
+        STARRED_CARDS("starredCards"),
+        KEEP_SCREEN_ON("keepScreenOn");
         public final String key;
 
         Keys(String key) {

@@ -47,4 +47,5 @@
     <string name="cardSets"><![CDATA[<b>Card sets:</b>]]> %s</string>
     <string name="spectatorsLabel">Spectators</string>
     <string name="spectatorsList"><![CDATA[<b>Spectators:</b>]]> %s</string>
+    <string name="keepScreenOn">Keep screen on</string>
 </resources>

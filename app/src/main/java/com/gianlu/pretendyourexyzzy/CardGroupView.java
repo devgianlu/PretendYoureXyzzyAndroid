@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.util.TypedValue;
@@ -12,12 +13,13 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 
 import java.util.List;
 
-public class CardGroupView extends LinearLayout {
+public class CardGroupView extends LinearLayout implements PyxCard.ICard {
     private final int mPadding;
     private final int mCornerRadius;
     private final int mLineWidth;
     private final Paint mLinePaint;
     private List<Card> cards;
+    private Card associatedBlackCard;
 
     public CardGroupView(Context context) {
         super(context);
@@ -35,16 +37,12 @@ public class CardGroupView extends LinearLayout {
         mLinePaint.setPathEffect(new DashPathEffect(new float[]{20, 10}, 0));
     }
 
-    public List<Card> getCards() {
-        return cards;
-    }
-
     public void setCards(List<Card> cards) {
         this.cards = cards;
 
         removeAllViews();
         for (Card card : cards)
-            addView(new PyxCard(getContext(), card));
+            addView(new PyxCard(getContext(), card, associatedBlackCard != null, StarredCardsManager.hasCard(getContext(), new StarredCardsManager.StarredCard(associatedBlackCard, cards)), this));
     }
 
     @Override
@@ -56,13 +54,30 @@ public class CardGroupView extends LinearLayout {
     }
 
     public void setWinning() { // FIXME
-        for (int i = 0; i < getChildCount(); i++) {
-            PyxCard child = (PyxCard) getChildAt(i);
-            removeViewAt(i);
-            child.setWinning();
-            addView(child, i);
-        }
+        for (int i = 0; i < getChildCount(); i++)
+            ((PyxCard) getChildAt(i)).setWinning();
 
-        invalidate();
+        setBackgroundColor(Color.RED);
+    }
+
+    public void setStarred(boolean starred) {
+        for (int i = 0; i < getChildCount(); i++)
+            ((PyxCard) getChildAt(i)).setStarred(starred);
+    }
+
+    public void setAssociatedBlackCard(Card associatedBlackCard) {
+        this.associatedBlackCard = associatedBlackCard;
+    }
+
+    @Override
+    public void handleStar() {
+        StarredCardsManager.StarredCard card = new StarredCardsManager.StarredCard(associatedBlackCard, cards);
+        if (StarredCardsManager.hasCard(getContext(), card)) {
+            StarredCardsManager.removeCard(getContext(), card);
+            setStarred(false);
+        } else {
+            StarredCardsManager.addCard(getContext(), card);
+            setStarred(true);
+        }
     }
 }
