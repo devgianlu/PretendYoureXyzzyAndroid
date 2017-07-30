@@ -15,6 +15,7 @@ public class Card {
     public final int numPick;
     public final int numDraw;
     public final boolean writeIn;
+    public boolean winning = false;
 
     public Card(JSONObject obj) throws JSONException {
         id = obj.getInt("cid");
@@ -46,5 +47,9 @@ public class Card {
 
     public static Card newBlankCard() {
         return new Card(0, "", "", -1, -1, false);
+    }
+
+    public void setWinning(boolean winning) {
+        this.winning = winning;
     }
 }

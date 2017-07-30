@@ -40,18 +40,6 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position, List<Object> payloads) {
-        if (payloads.isEmpty()) {
-            onBindViewHolder(holder, position);
-        } else {
-            Object payload = payloads.get(0);
-            if (payload instanceof WinningCardDummy) {
-                ((CardGroupView) holder.itemView).setWinning();
-            }
-        }
-    }
-
-    @Override
     public int getItemCount() {
         return cards.size();
     }
@@ -68,9 +56,13 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
             List<Card> subCards = cards.get(i);
             for (Card card : subCards) {
                 if (card.id == winnerCardId) {
+                    for (Card winningCard : subCards)
+                        winningCard.setWinning(true);
+
+                    notifyItemChanged(i);
+
                     RecyclerView list = listener != null ? listener.getCardsRecyclerView() : null;
                     if (list != null) list.getLayoutManager().smoothScrollToPosition(list, null, i);
-                    notifyItemChanged(i, new WinningCardDummy());
                     return;
                 }
             }
@@ -85,9 +77,6 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public interface IAdapter {
         @Nullable
         RecyclerView getCardsRecyclerView();
-    }
-
-    private class WinningCardDummy {
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

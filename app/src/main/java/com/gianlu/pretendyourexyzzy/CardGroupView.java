@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.util.TypedValue;
@@ -51,13 +50,6 @@ public class CardGroupView extends LinearLayout implements PyxCard.ICard {
 
         if (cards != null && cards.size() > 1)
             canvas.drawRoundRect(mPadding, mPadding + mLineWidth / 2, canvas.getWidth() - mPadding, canvas.getHeight() - mPadding, mCornerRadius, mCornerRadius, mLinePaint);
-    }
-
-    public void setWinning() { // FIXME
-        for (int i = 0; i < getChildCount(); i++)
-            ((PyxCard) getChildAt(i)).setWinning();
-
-        setBackgroundColor(Color.RED);
     }
 
     public void setStarred(boolean starred) {

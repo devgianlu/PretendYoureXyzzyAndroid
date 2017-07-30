@@ -21,12 +21,11 @@ import com.gianlu.pretendyourexyzzy.R;
 
 public class PyxCard extends FrameLayout {
     private Card card;
-    private CardView cardView;
     private boolean hasBlackCard;
-    private int colorAccent;
     private boolean isStarred;
     private ICard handler;
     private ImageButton star;
+    private boolean winning = false;
 
     public PyxCard(@NonNull Context context) {
         super(context);
@@ -43,6 +42,7 @@ public class PyxCard extends FrameLayout {
     public PyxCard(Context context, Card card, boolean hasBlackCard, boolean isStarred, ICard handler) {
         super(context);
         this.card = card;
+        this.winning = card.winning;
         this.hasBlackCard = hasBlackCard;
         this.isStarred = isStarred;
         this.handler = handler;
@@ -55,10 +55,11 @@ public class PyxCard extends FrameLayout {
         LayoutInflater.from(getContext()).inflate(R.layout.pyx_card, this, true);
 
         Typeface roboto = Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Medium.ttf");
-        colorAccent = ContextCompat.getColor(getContext(), R.color.colorAccent);
+        int colorAccent = ContextCompat.getColor(getContext(), R.color.colorAccent);
 
-        cardView = (CardView) findViewById(R.id.pyxCard_card);
-        cardView.setCardBackgroundColor(card.numPick != -1 ? Color.BLACK : Color.WHITE);
+        CardView cardView = (CardView) findViewById(R.id.pyxCard_card);
+        if (winning) cardView.setCardBackgroundColor(colorAccent);
+        else cardView.setCardBackgroundColor(card.numPick != -1 ? Color.BLACK : Color.WHITE);
         SuperTextView text = (SuperTextView) findViewById(R.id.pyxCard_text);
         text.setTextColor(card.numPick != -1 ? Color.WHITE : Color.BLACK);
         text.setTypeface(roboto);
@@ -103,7 +104,8 @@ public class PyxCard extends FrameLayout {
     }
 
     public void setWinning() {
-        cardView.setCardBackgroundColor(colorAccent);
+        winning = true;
+        init();
     }
 
     public void setCard(@Nullable Card card) {
