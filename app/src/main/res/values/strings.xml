@@ -52,4 +52,5 @@
     <string name="selectAStarredCard">Select a card from the list above.</string>
     <string name="noStarredCards">You have no starred cards!</string>
     <string name="hurryUp">Hurry up!!</string>
+    <string name="setBlankCardText">Set blank card text</string>
 </resources>

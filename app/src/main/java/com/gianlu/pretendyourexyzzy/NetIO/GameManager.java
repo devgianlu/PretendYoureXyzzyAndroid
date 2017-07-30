@@ -1,15 +1,19 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
@@ -33,6 +37,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+// TODO: Issues when the user becomes the judge
+// TODO: When playing card for last, the instruction messes up
 public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter.IAdapter {
     private final PyxCard blackCard;
     private final TextView instructions;
@@ -47,7 +53,6 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     private final PYX pyx;
     public GameInfo gameInfo;
     private GameInfo.PlayerStatus lastStatus;
-    private boolean firstHandDeal = true;
 
     public GameManager(ViewGroup gameLayout, @NonNull GameInfo gameInfo, User me, IManager listener) {
         this.context = gameLayout.getContext();
@@ -71,10 +76,6 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         playersCardsAdapter = new CardsAdapter(context, this);
         handAdapter = new CardsAdapter(context, this);
         whiteCards.setAdapter(playersCardsAdapter);
-
-        if (gameInfo.game.spectators.contains(me.nickname)) {
-            updateInstructions("You're a spectator.");
-        }
 
         GameInfo.Player alsoMe = Utils.find(gameInfo.players, me.nickname);
         if (alsoMe != null) handleMyStatus(alsoMe.status);
@@ -102,7 +103,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 updateInstructions("You're the game host. Start the game when you're ready.");
                 break;
             case IDLE:
-                updateInstructions("Waiting for other players...");
+                updateInstructions("Waiting for the other players to play...");
                 whiteCards.swapAdapter(playersCardsAdapter, true);
                 break;
             case JUDGE:
@@ -208,11 +209,10 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     }
 
     private void handleHandDeal(List<Card> cards) {
-        if (firstHandDeal) {
+        if (cards.size() == 10) {
             List<List<Card>> cardLists = new ArrayList<>();
             for (Card card : cards) cardLists.add(Collections.singletonList(card));
             updateHand(cardLists);
-            firstHandDeal = false;
         } else {
             addToHand(cards);
         }
@@ -272,18 +272,18 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
 
     private void handleGameStateChange(Game.Status newStatus, PollMessage message) throws JSONException {
         switch (newStatus) {
+            case ROUND_OVER:
             case DEALING:
+                // Never called
                 break;
             case JUDGING:
                 updatePlayersCards(GameCards.toWhiteCardsList(message.obj.getJSONArray("wc")));
                 break;
-            case LOBBY:
+            case LOBBY: // TODO: Game isn't started or is ended
                 break;
             case PLAYING:
                 updatePlayersCards(new ArrayList<List<Card>>());
                 newBlackCard(new Card(message.obj.getJSONObject("bc")));
-                break;
-            case ROUND_OVER:
                 break;
         }
     }
@@ -315,25 +315,45 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         return whiteCards;
     }
 
+    private void playCard(final Card card, int gid, int cid, @Nullable String customText) {
+        pyx.playCard(gid, cid, customText, new PYX.ISuccess() {
+            @Override
+            public void onDone(PYX pyx) {
+                removeFromHand(card);
+                handleMyStatus(GameInfo.PlayerStatus.IDLE);
+                updateBlankCardsNumber();
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                GameManager.this.onException(ex);
+            }
+        });
+    }
+
     @Override
     public void onCardSelected(BaseCard baseCard) {
         final Card card = (Card) baseCard;
-
         if (lastStatus == GameInfo.PlayerStatus.PLAYING) {
-            pyx.playCard(gameInfo.game.gid, card.id, null, new PYX.ISuccess() {
-                @Override
-                public void onDone(PYX pyx) {
-                    removeFromHand(card);
-                    handleMyStatus(GameInfo.PlayerStatus.IDLE);
-                    updateBlankCardsNumber();
-                }
+            if (card.isWriteIn()) {
+                final EditText customText = new EditText(context);
 
-                @Override
-                public void onException(Exception ex) {
-                    GameManager.this.onException(ex);
-                }
-            });
-        } else if (lastStatus == GameInfo.PlayerStatus.JUDGING) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle(R.string.setBlankCardText)
+                        .setView(customText)
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setPositiveButton(R.string.submit, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                playCard(card, gameInfo.game.gid, card.id, customText.getText().toString());
+                            }
+                        });
+
+                CommonUtils.showDialog(context, builder);
+            } else {
+                playCard(card, gameInfo.game.gid, card.id, null);
+            }
+        } else if (lastStatus == GameInfo.PlayerStatus.JUDGING || lastStatus == GameInfo.PlayerStatus.JUDGE) {
             pyx.judgeCard(gameInfo.game.gid, card.id, new PYX.ISuccess() {
                 @Override
                 public void onDone(PYX pyx) {
