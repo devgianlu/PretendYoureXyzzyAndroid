@@ -100,6 +100,10 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         CommonUtils.setCardTopMargin(context, holder);
     }
 
+    public List<Game> getGames() {
+        return objs;
+    }
+
     public enum SortBy {
         NAME,
         NUM_PLAYERS,

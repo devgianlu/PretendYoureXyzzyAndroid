@@ -49,6 +49,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     private IFragment handler;
     private SearchView searchView;
     private GamesAdapter adapter;
+    private int launchGameGid = -1;
 
     public static GamesFragment getInstance(IFragment handler) {
         GamesFragment fragment = new GamesFragment();
@@ -154,6 +155,8 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         list.setAdapter(adapter);
         lastResult = result;
         updateActivityTitle();
+
+        if (launchGameGid != -1) launchGameInternal(launchGameGid);
     }
 
     private void updateActivityTitle() {
@@ -283,6 +286,17 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     public boolean onMenuItemActionCollapse(MenuItem item) {
         onClose();
         return true;
+    }
+
+    public void launchGame(int gid) {
+        if (adapter != null) launchGameInternal(gid);
+        else launchGameGid = gid;
+    }
+
+    private void launchGameInternal(int gid) {
+        Game game = Utils.findGame(adapter.getGames(), gid);
+        launchGameGid = -1;
+        if (game != null) joinGame(game);
     }
 
     public interface IFragment {

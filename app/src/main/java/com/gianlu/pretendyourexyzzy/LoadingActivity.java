@@ -120,7 +120,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                         public void onDone(PYX pyx, User result) {
                             pyx.startPolling();
                             Prefs.putString(LoadingActivity.this, Prefs.Keys.LAST_NICKNAME, result.nickname);
-                            goTo(MainActivity.class, result);
+                            goTo(MainActivity.class, result, null);
                         }
 
                         @Override
@@ -149,10 +149,10 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                 }
             });
         } else if (result.nextOperation == FirstLoad.NextOp.GAME) {
-            throw new UnsupportedOperationException("Not implemented yet!"); // TODO
+            goTo(MainActivity.class, new User(result.nickname), result.gameId);
         } else {
             pyx.startPolling();
-            goTo(MainActivity.class, new User(result.nickname));
+            goTo(MainActivity.class, new User(result.nickname), null);
         }
     }
 
@@ -166,9 +166,10 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
         });
     }
 
-    private void goTo(Class goTo, @Nullable User user) {
+    private void goTo(Class goTo, @Nullable User user, @Nullable Integer gid) {
         Intent intent = new Intent(LoadingActivity.this, goTo).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         if (user != null) intent.putExtra("user", user);
+        if (gid != null) intent.putExtra("gid", gid);
         if (finished) startActivity(intent);
         else this.goTo = intent;
     }

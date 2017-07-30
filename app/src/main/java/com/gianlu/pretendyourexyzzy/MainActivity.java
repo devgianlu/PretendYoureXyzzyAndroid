@@ -109,6 +109,12 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
 
         navigation.setSelectedItemId(R.id.main_games);
         setKeepScreenOn(Prefs.getBoolean(this, Prefs.Keys.KEEP_SCREEN_ON, true));
+
+        int gid = getIntent().getIntExtra("gid", -1);
+        if (gid != -1) {
+            gamesFragment.launchGame(gid);
+            getIntent().removeExtra("gid");
+        }
     }
 
     @Override

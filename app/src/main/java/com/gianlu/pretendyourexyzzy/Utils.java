@@ -4,6 +4,7 @@ import android.support.annotation.Nullable;
 
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 
 import java.util.List;
@@ -28,6 +29,15 @@ public class Utils {
         for (GameInfo.Player player : players)
             if (Objects.equals(player.name, name))
                 return player;
+
+        return null;
+    }
+
+    @Nullable
+    public static Game findGame(List<Game> sets, int id) {
+        for (Game game : sets)
+            if (Objects.equals(game.gid, id))
+                return game;
 
         return null;
     }

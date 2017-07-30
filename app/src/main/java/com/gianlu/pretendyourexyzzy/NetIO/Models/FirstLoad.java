@@ -18,11 +18,13 @@ public class FirstLoad implements Serializable {
     public final boolean inProgress;
     public final ArrayList<CardSet> cardSets;
     public final String nickname;
+    public final int gameId;
 
     public FirstLoad(JSONObject obj) throws JSONException {
         nextOperation = NextOp.parse(obj.getString("next"));
         inProgress = obj.getBoolean("ip");
         nickname = obj.optString("nickname", null);
+        gameId = obj.optInt("gid", -1);
 
         cardSets = new ArrayList<>();
         JSONArray cardSetsArray = obj.getJSONArray("css");
