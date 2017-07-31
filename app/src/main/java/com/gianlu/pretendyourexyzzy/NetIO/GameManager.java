@@ -37,7 +37,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-// TODO: Issues when the user becomes the judge
+// FIXME: Selecting card for last messes up instructions
 public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter.IAdapter {
     private final PyxCard blackCard;
     private final TextView instructions;
@@ -102,8 +102,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 updateInstructions("You're the game host. Start the game when you're ready.");
                 break;
             case IDLE:
-                if (gameInfo.game.status != Game.Status.JUDGING)
-                    updateInstructions("Waiting for other players...");
+                updateInstructions("Waiting for other players...");
                 whiteCards.swapAdapter(playersCardsAdapter, true);
                 break;
             case JUDGE:
@@ -165,6 +164,8 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             System.out.println("Event: " + message.event.name() + " -> " + message.obj);
 
         switch (message.event) {
+            case BANNED:
+            case KICKED:
             case NOOP:
             case CHAT:
             case GAME_BLACK_RESHUFFLE:
@@ -172,6 +173,8 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             case GAME_SPECTATOR_JOIN:
             case GAME_WHITE_RESHUFFLE:
             case GAME_SPECTATOR_LEAVE:
+            case NEW_PLAYER:
+            case PLAYER_LEAVE:
                 // Not interested in these
                 return;
             case GAME_OPTIONS_CHANGED:
@@ -206,6 +209,13 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             case HURRY_UP:
                 if (listener != null) listener.hurryUp();
                 break;
+            case CARDCAST_ADD_CARDSET: // TODO
+                break;
+            case CARDCAST_REMOVE_CARDSET: // TODO
+                break;
+            case KICKED_FROM_GAME_IDLE:
+                if (listener != null) listener.kicked();
+                break;
         }
     }
 
@@ -239,6 +249,8 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             public void onDone(PYX pyx, GameInfo result) {
                 GameManager.this.gameInfo = result;
                 playersAdapter.notifyDataSetChanged(result.players);
+                for (GameInfo.Player player : result.players)
+                    playerInfoChanged(player);
             }
 
             @Override
@@ -276,6 +288,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             case PLAYING:
                 updatePlayersCards(new ArrayList<List<Card>>());
                 newBlackCard(new Card(message.obj.getJSONObject("bc")));
+                refreshPlayersList();
                 break;
         }
     }
@@ -312,7 +325,6 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             @Override
             public void onDone(PYX pyx) {
                 removeFromHand(card);
-                // handleMyStatus(GameInfo.PlayerStatus.IDLE);
                 updateBlankCardsNumber();
             }
 
@@ -371,6 +383,8 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         void notifyPlayerSkipped(String nickname);
 
         void notifyJudgeSkipped(@Nullable String nickname);
+
+        void kicked();
 
         void hurryUp();
     }

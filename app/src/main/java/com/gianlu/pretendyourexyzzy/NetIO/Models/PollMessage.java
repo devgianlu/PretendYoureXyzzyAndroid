@@ -32,8 +32,10 @@ public class PollMessage {
     }
 
     public enum Event {
+        BANNED("B&"),
+        CARDCAST_ADD_CARDSET("cac"),
+        CARDCAST_REMOVE_CARDSET("crc"),
         CHAT("c"),
-        NOOP("_"),
         GAME_BLACK_RESHUFFLE("gbr"),
         GAME_JUDGE_LEFT("gjl"),
         GAME_JUDGE_SKIPPED("gjs"),
@@ -50,7 +52,12 @@ public class PollMessage {
         GAME_STATE_CHANGE("gsc"),
         GAME_WHITE_RESHUFFLE("gwr"),
         HAND_DEAL("hd"),
-        HURRY_UP("hu");
+        HURRY_UP("hu"),
+        KICKED("k"),
+        KICKED_FROM_GAME_IDLE("kfgi"),
+        NEW_PLAYER("np"),
+        NOOP("_"),
+        PLAYER_LEAVE("pl");
 
         private final String val;
 

@@ -335,7 +335,8 @@ public class PYX {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            listener.onException(ex);
+                            if (Objects.equals(ex.getMessage(), "nitg")) listener.onDone(instance);
+                            else listener.onException(ex);
                         }
                     });
                 }
