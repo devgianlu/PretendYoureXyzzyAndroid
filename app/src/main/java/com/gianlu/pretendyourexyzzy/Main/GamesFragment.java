@@ -115,7 +115,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
                         pyx.getGameInfo(result, new PYX.IResult<GameInfo>() {
                             @Override
                             public void onDone(PYX pyx, GameInfo result) {
-                                if (handler != null) handler.onJoinedGame(result.game);
+                                if (handler != null) handler.onParticipatingGame(result.game);
                             }
 
                             @Override
@@ -243,7 +243,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         PYX.get(getContext()).spectateGame(game.gid, password, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
-                if (handler != null) handler.onSpectatingGame(game);
+                if (handler != null) handler.onParticipatingGame(game);
             }
 
             @Override
@@ -268,7 +268,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         PYX.get(getContext()).joinGame(game.gid, password, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
-                if (handler != null) handler.onJoinedGame(game);
+                if (handler != null) handler.onParticipatingGame(game);
             }
 
             @Override
@@ -330,9 +330,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     }
 
     public interface IFragment {
-        void onJoinedGame(Game game);
-
-        void onSpectatingGame(Game game);
+        void onParticipatingGame(Game game);
     }
 
     private interface IPassword {

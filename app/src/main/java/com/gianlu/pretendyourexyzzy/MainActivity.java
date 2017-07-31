@@ -50,9 +50,13 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
             return;
         }
 
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         namesFragment = NamesFragment.getInstance();
+        transaction.add(R.id.main_container, namesFragment, TAG_PLAYERS);
         globalChatFragment = GlobalChatFragment.getInstance();
+        transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
         gamesFragment = GamesFragment.getInstance(this);
+        transaction.add(R.id.main_container, gamesFragment, TAG_GAMES).commitNow();
 
         navigation = (BottomNavigationView) findViewById(R.id.main_navigation);
         Menu menu = navigation.getMenu();
@@ -194,20 +198,12 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
     }
 
     @Override
-    public void onJoinedGame(Game game) {
+    public void onParticipatingGame(Game game) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         ongoingGameFragment = OngoingGameFragment.getInstance(game, user, this);
+        transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
         gameChatFragment = GameChatFragment.getInstance(game);
-        navigation.getMenu().clear();
-        navigation.inflateMenu(R.menu.navigation);
-        Menu menu = navigation.getMenu();
-        menu.removeItem(R.id.main_games);
-        navigation.setSelectedItemId(R.id.main_ongoingGame);
-    }
-
-    @Override
-    public void onSpectatingGame(Game game) {
-        ongoingGameFragment = OngoingGameFragment.getInstance(game, user, this);
-        gameChatFragment = GameChatFragment.getInstance(game);
+        transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT).commitNow();
         navigation.getMenu().clear();
         navigation.inflateMenu(R.menu.navigation);
         Menu menu = navigation.getMenu();
