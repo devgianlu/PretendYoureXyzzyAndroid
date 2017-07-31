@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -21,10 +22,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 
+import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
@@ -44,7 +45,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     private RecyclerView list;
     private SwipeRefreshLayout swipeRefresh;
     private ProgressBar loading;
-    private FrameLayout layout;
+    private CoordinatorLayout layout;
     private GamesList lastResult;
     private IFragment handler;
     private SearchView searchView;
@@ -93,13 +94,20 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        layout = (FrameLayout) inflater.inflate(R.layout.recycler_view_layout, container, false);
+        layout = (CoordinatorLayout) inflater.inflate(R.layout.games_fragment, container, false);
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
         loading = (ProgressBar) layout.findViewById(R.id.recyclerViewLayout_loading);
         swipeRefresh = (SwipeRefreshLayout) layout.findViewById(R.id.recyclerViewLayout_swipeRefresh);
         swipeRefresh.setColorSchemeResources(R.color.colorAccent);
         list = (RecyclerView) layout.findViewById(R.id.recyclerViewLayout_list);
         list.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        FloatingActionButton createGame = (FloatingActionButton) layout.findViewById(R.id.gamesFragment_createGame);
+        createGame.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: Create game
+            }
+        });
 
         final PYX pyx = PYX.get(getContext());
 
