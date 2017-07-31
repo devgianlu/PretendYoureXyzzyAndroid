@@ -114,7 +114,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 whiteCards.swapAdapter(playersCardsAdapter, true);
                 break;
             case PLAYING:
-                updateInstructions("Select the card(s) to play. Your hand:");
+                updateInstructions("Select " + blackCard.getCard().getNumPick() + " card(s) to play. Your hand:");
                 whiteCards.swapAdapter(handAdapter, true);
                 break;
             case WINNER:

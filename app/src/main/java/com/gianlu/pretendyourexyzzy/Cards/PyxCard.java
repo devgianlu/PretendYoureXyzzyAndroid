@@ -114,6 +114,10 @@ public class PyxCard extends FrameLayout { // FIXME: Star doesn't persist its st
         star.setImageResource(isStarred ? R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
     }
 
+    public BaseCard getCard() {
+        return card;
+    }
+
     public void setCard(@Nullable BaseCard card) {
         this.card = card;
         init();
