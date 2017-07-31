@@ -409,8 +409,10 @@ public class PYX {
 
                     JSONArray namesArray = obj.getJSONArray("nl");
                     final List<String> names = new ArrayList<>();
-                    for (int i = 0; i < namesArray.length(); i++)
-                        names.add(namesArray.getString(i));
+                    for (int i = 0; i < namesArray.length(); i++) {
+                        String name = namesArray.getString(i);
+                        if (!names.contains(name)) names.add(name);
+                    }
 
                     handler.post(new Runnable() {
                         @Override
