@@ -11,7 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Card implements BaseCard {
-    private static final Pattern CARD_NUM_PATTERN = Pattern.compile("<span class=\"cardnum\">(\\d?) / (\\d?)</span>");
+    private static final Pattern CARD_NUM_PATTERN = Pattern.compile("<span class=\"cardnum\">(\\d)\\s?\\\\s?(\\d)</span>");
     public final int id;
     public final String text;
     public final String watermark;

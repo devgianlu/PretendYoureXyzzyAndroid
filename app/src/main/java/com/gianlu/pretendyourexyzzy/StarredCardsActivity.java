@@ -37,17 +37,17 @@ public class StarredCardsActivity extends AppCompatActivity implements CardsAdap
         setContentView(R.layout.activity_starred_cards);
         setTitle(R.string.starredCards);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.starredCards_toolbar);
+        Toolbar toolbar = findViewById(R.id.starredCards_toolbar);
         setSupportActionBar(toolbar);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
 
-        list = (RecyclerView) findViewById(R.id.starredCards_list);
+        list = findViewById(R.id.starredCards_list);
         list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         list.setAdapter(new CardsAdapter(this, StarredCardsManager.loadCards(this), this));
 
-        cards = (LinearLayout) findViewById(R.id.starredCards_cards);
+        cards = findViewById(R.id.starredCards_cards);
 
         MessageLayout.show((ViewGroup) findViewById(R.id.starredCards_container), R.string.selectAStarredCard, R.drawable.ic_info_outline_black_48dp);
     }

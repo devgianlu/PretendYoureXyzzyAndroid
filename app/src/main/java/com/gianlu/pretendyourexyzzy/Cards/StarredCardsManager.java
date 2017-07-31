@@ -13,6 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
@@ -72,7 +73,9 @@ public class StarredCardsManager {
     public static List<? extends BaseCard> loadCards(Context context) {
         try {
             JSONArray starredCardsArray = new JSONArray(Prefs.getBase64String(context, Prefs.Keys.STARRED_CARDS, "[]"));
-            return toStarredCardsList(starredCardsArray);
+            List<StarredCard> cards = toStarredCardsList(starredCardsArray);
+            Collections.reverse(cards);
+            return cards;
         } catch (JSONException ex) {
             Logging.logMe(context, ex);
             return new ArrayList<>();
@@ -110,10 +113,37 @@ public class StarredCardsManager {
                 whiteCards.add(new Card(whiteCardsArray.getJSONObject(i)));
         }
 
+        private boolean shouldLowercaseFirstLetter(String whiteText) {
+            return !Character.isLowerCase(whiteText.charAt(0))
+                    && !Character.isUpperCase(whiteText.charAt(1))
+                    && !isSecondWordFirstLetterUppercase(whiteText);
+        }
+
+        private boolean isSecondWordFirstLetterUppercase(String whiteText) {
+            int nextWord = -1;
+            for (int i = 0; i < whiteText.length(); i++) {
+                if (whiteText.charAt(i) == ' ') nextWord = i + 1;
+                if (i == nextWord) return Character.isUpperCase(whiteText.charAt(i));
+            }
+
+            return false;
+        }
+
         private String createSentence() {
             String blackText = blackCard.text;
-            for (BaseCard whiteCard : whiteCards)
-                blackText = blackText.replaceFirst("____", "<u>" + whiteCard.getText() + "</u>");
+            if (!blackText.contains("____"))
+                return blackText + "\n<u>" + whiteCards.get(0).getText() + "</u>";
+
+            for (BaseCard whiteCard : whiteCards) {
+                String whiteText = whiteCard.getText();
+                if (whiteText.endsWith("."))
+                    whiteText = whiteText.substring(0, whiteText.length() - 1);
+
+                if (shouldLowercaseFirstLetter(whiteText))
+                    whiteText = Character.toLowerCase(whiteText.charAt(0)) + whiteText.substring(1);
+
+                blackText = blackText.replaceFirst("____", "<u>" + whiteText + "</u>");
+            }
 
             return blackText;
         }

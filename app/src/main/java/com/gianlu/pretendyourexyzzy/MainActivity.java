@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         gamesFragment = GamesFragment.getInstance(this);
         transaction.add(R.id.main_container, gamesFragment, TAG_GAMES).commitNow();
 
-        navigation = (BottomNavigationView) findViewById(R.id.main_navigation);
+        navigation = findViewById(R.id.main_navigation);
         Menu menu = navigation.getMenu();
         menu.removeItem(R.id.main_ongoingGame);
         menu.removeItem(R.id.main_gameChat);
