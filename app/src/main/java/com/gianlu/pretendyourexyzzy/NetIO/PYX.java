@@ -335,7 +335,8 @@ public class PYX {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            if (Objects.equals(ex.getMessage(), "nitg")) listener.onDone(instance);
+                            if (ex instanceof PYXException && Objects.equals(((PYXException) ex).errorCode, "nitg"))
+                                listener.onDone(instance);
                             else listener.onException(ex);
                         }
                     });
@@ -481,6 +482,57 @@ public class PYX {
         });
     }
 
+    public void createGame(final IResult<Integer> listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject obj = ajaxServletRequestSync(OP.CREATE_GAME);
+                    final int gid = obj.getInt("gid");
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(instance, gid);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public void startGame(final int gid, final ISuccess listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ajaxServletRequestSync(OP.START_GAME, new BasicNameValuePair("gid", String.valueOf(gid)));
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(instance);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     public enum OP {
         REGISTER("r"),
         FIRST_LOAD("fl"),
@@ -495,7 +547,9 @@ public class PYX {
         GET_GAME_CARDS("gc"),
         GAME_CHAT("GC"),
         PLAY_CARD("pc"),
-        JUDGE_SELECT("js");
+        JUDGE_SELECT("js"),
+        CREATE_GAME("cg"),
+        START_GAME("sg");
 
         private final String val;
 

@@ -53,4 +53,12 @@
     <string name="noStarredCards">You have no starred cards!</string>
     <string name="hurryUp">Hurry up!!</string>
     <string name="setBlankCardText">Set blank card text</string>
+    <string name="failedCreatingGame">Failed creating a new game!</string>
+    <string name="failedStartGame">Failed starting the game!</string>
+    <string name="blackCards">Black cards</string>
+    <string name="whiteCards">White cards</string>
+    <string name="status">Status</string>
+    <string name="required">Required</string>
+    <string name="provided">Provided</string>
+    <string name="cannotStartGame">Cannot start the game</string>
 </resources>

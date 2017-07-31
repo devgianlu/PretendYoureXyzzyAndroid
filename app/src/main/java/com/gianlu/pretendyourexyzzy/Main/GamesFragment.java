@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -25,13 +26,13 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 
-import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.GamesAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
@@ -102,14 +103,35 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         list = (RecyclerView) layout.findViewById(R.id.recyclerViewLayout_list);
         list.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         FloatingActionButton createGame = (FloatingActionButton) layout.findViewById(R.id.gamesFragment_createGame);
+
+        final PYX pyx = PYX.get(getContext());
+
         createGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Create game
+                pyx.createGame(new PYX.IResult<Integer>() {
+                    @Override
+                    public void onDone(PYX pyx, Integer result) {
+                        pyx.getGameInfo(result, new PYX.IResult<GameInfo>() {
+                            @Override
+                            public void onDone(PYX pyx, GameInfo result) {
+                                if (handler != null) handler.onJoinedGame(result.game);
+                            }
+
+                            @Override
+                            public void onException(Exception ex) {
+                                Toaster.show(getActivity(), Utils.Messages.FAILED_JOINING, ex);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onException(Exception ex) {
+                        Toaster.show(getActivity(), Utils.Messages.FAILED_CREATING_GAME, ex);
+                    }
+                });
             }
         });
-
-        final PYX pyx = PYX.get(getContext());
 
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -227,7 +249,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
             @Override
             public void onException(Exception ex) {
                 if (ex instanceof PYXException) {
-                    switch (ex.getMessage()) {
+                    switch (((PYXException) ex).errorCode) {
                         case "wp":
                             Toaster.show(getActivity(), Utils.Messages.WRONG_PASSWORD, ex);
                             return;
@@ -252,7 +274,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
             @Override
             public void onException(Exception ex) {
                 if (ex instanceof PYXException) {
-                    switch (ex.getMessage()) {
+                    switch (((PYXException) ex).errorCode) {
                         case "wp":
                             Toaster.show(getActivity(), Utils.Messages.WRONG_PASSWORD, ex);
                             return;

@@ -1,16 +1,22 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.gianlu.commonutils.CommonUtils;
@@ -50,6 +56,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     private final User me;
     private final IManager listener;
     private final PYX pyx;
+    private final FloatingActionButton startGame;
     public GameInfo gameInfo;
     private GameInfo.PlayerStatus lastStatus;
 
@@ -61,6 +68,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         this.handler = new Handler(context.getMainLooper());
         this.pyx = PYX.get(context);
 
+        startGame = (FloatingActionButton) gameLayout.findViewById(R.id.gameLayout_startGame);
         blackCard = (PyxCard) gameLayout.findViewById(R.id.gameLayout_blackCard);
         RecyclerView playersList = (RecyclerView) gameLayout.findViewById(R.id.gameLayout_players);
         playersList.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
@@ -78,6 +86,78 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
 
         GameInfo.Player alsoMe = Utils.find(gameInfo.players, me.nickname);
         if (alsoMe != null) handleMyStatus(alsoMe.status);
+        isLobby(gameInfo.game.status == Game.Status.LOBBY);
+    }
+
+    private void isLobby(boolean lobby) {
+        if (lobby && Objects.equals(gameInfo.game.host, me.nickname)) {
+            handleMyStatus(GameInfo.PlayerStatus.HOST);
+            startGame.setVisibility(View.VISIBLE);
+            startGame.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startGame();
+                }
+            });
+        } else {
+            startGame.setVisibility(View.GONE);
+        }
+    }
+
+    private void startGame() {
+        pyx.startGame(gameInfo.game.gid, new PYX.ISuccess() {
+            @Override
+            public void onDone(PYX pyx) {
+                System.out.println("DONE!"); // TODO
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                if (ex instanceof PYXException) {
+                    cannotStartGame((PYXException) ex);
+                }
+
+                if (listener != null) listener.cannotStartGame(ex);
+            }
+        });
+    }
+
+    @SuppressLint("InflateParams")
+    private void cannotStartGame(PYXException ex) {
+        int wcr;
+        int bcr;
+        int wcp;
+        int bcp;
+        try {
+            wcr = ex.obj.getInt("wcr");
+            bcr = ex.obj.getInt("bcr");
+            wcp = ex.obj.getInt("wcp");
+            bcp = ex.obj.getInt("bcp");
+        } catch (JSONException exx) {
+            Logging.logMe(context, exx);
+            return;
+        }
+
+        LinearLayout layout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.cannot_start_game_dialog, null, false);
+        TextView wcrText = (TextView) layout.findViewById(R.id.cannotStartGame_wcr);
+        wcrText.setText(String.valueOf(wcr));
+        TextView bcrText = (TextView) layout.findViewById(R.id.cannotStartGame_bcr);
+        bcrText.setText(String.valueOf(bcr));
+        TextView wcpText = (TextView) layout.findViewById(R.id.cannotStartGame_wcp);
+        wcpText.setText(String.valueOf(wcp));
+        TextView bcpText = (TextView) layout.findViewById(R.id.cannotStartGame_bcp);
+        bcpText.setText(String.valueOf(bcp));
+        ImageView bcCheck = (ImageView) layout.findViewById(R.id.cannotStartGame_checkBc);
+        bcCheck.setImageResource(bcp >= bcr ? R.drawable.ic_done_black_48dp : R.drawable.ic_clear_black_48dp);
+        ImageView wcCheck = (ImageView) layout.findViewById(R.id.cannotStartGame_checkWc);
+        wcCheck.setImageResource(wcp >= wcr ? R.drawable.ic_done_black_48dp : R.drawable.ic_clear_black_48dp);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(R.string.cannotStartGame)
+                .setView(layout)
+                .setPositiveButton(android.R.string.ok, null);
+
+        if (listener != null) listener.showDialog(builder);
     }
 
     private void updateInstructions(String instructions) {
@@ -278,17 +358,20 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 break;
             case JUDGING:
                 updatePlayersCards(GameCards.toWhiteCardsList(message.obj.getJSONArray("wc")));
+                isLobby(false);
                 break;
             case LOBBY:
                 newBlackCard(null);
                 updatePlayersCards(new ArrayList<List<Card>>());
                 handleHandDeal(new ArrayList<Card>());
                 handleMyStatus(GameInfo.PlayerStatus.IDLE);
+                isLobby(true);
                 break;
             case PLAYING:
                 updatePlayersCards(new ArrayList<List<Card>>());
                 newBlackCard(new Card(message.obj.getJSONObject("bc")));
                 refreshPlayersList();
+                isLobby(false);
                 break;
         }
     }
@@ -383,6 +466,10 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         void notifyPlayerSkipped(String nickname);
 
         void notifyJudgeSkipped(@Nullable String nickname);
+
+        void cannotStartGame(Exception ex);
+
+        void showDialog(AlertDialog.Builder builder);
 
         void kicked();
 

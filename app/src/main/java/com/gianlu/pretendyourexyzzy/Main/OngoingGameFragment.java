@@ -158,7 +158,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
         SuperTextView idleTimeMultiplier = (SuperTextView) layout.findViewById(R.id.gameOptions_idleTimeMultiplier);
         idleTimeMultiplier.setHtml(R.string.timeMultiplier, options.timeMultiplier);
         SuperTextView cardSets = (SuperTextView) layout.findViewById(R.id.gameOptions_cardSets);
-        cardSets.setHtml(R.string.cardSets, CommonUtils.join(pyx.firstLoad.createCardSetNamesList(options.cardSets), ", "));
+        cardSets.setHtml(R.string.cardSets, options.cardSets.isEmpty() ? "none" : CommonUtils.join(pyx.firstLoad.createCardSetNamesList(options.cardSets), ", "));
 
         SuperTextView blankCards = (SuperTextView) layout.findViewById(R.id.gameOptions_blankCards);
         blankCards.setHtml(R.string.blankCards, options.blanksLimit);
@@ -218,6 +218,16 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     public void notifyJudgeSkipped(@Nullable String nickname) {
         if (isAdded())
             Toaster.show(getActivity(), getString(R.string.judgeSkipped, nickname == null ? "" : nickname), Toast.LENGTH_SHORT, null, null, null);
+    }
+
+    @Override
+    public void cannotStartGame(Exception ex) {
+        if (isAdded()) Toaster.show(getActivity(), Utils.Messages.FAILED_START_GAME, ex);
+    }
+
+    @Override
+    public void showDialog(AlertDialog.Builder builder) {
+        if (isAdded()) CommonUtils.showDialog(getActivity(), builder);
     }
 
     @Override

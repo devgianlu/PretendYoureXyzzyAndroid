@@ -127,7 +127,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                         public void onException(Exception ex) {
                             Logging.logMe(LoadingActivity.this, ex);
                             if (ex instanceof PYXException) {
-                                switch (ex.getMessage()) {
+                                switch (((PYXException) ex).errorCode) {
                                     case "rn":
                                         registerNickname.setError(getString(R.string.reservedNickname));
                                         return;
