@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.HttpStatus;
@@ -568,16 +570,35 @@ public class PYX {
     }
 
     public enum Servers {
-        PYX1("http://pyx-1.pretendyoure.xyz/zy/", "The Biggest, Blackest Dick"),
-        PYX2("http://pyx-2.pretendyoure.xyz/zy/", "A Falcon with a Box on its Head"),
-        PYX3("http://pyx-3.pretendyoure.xyz/zy/", "Dickfingers");
+        PYX1("https://pyx-1.pretendyoure.xyz/zy/", "The Biggest, Blackest Dick"),
+        PYX2("https://pyx-2.pretendyoure.xyz/zy/", "A Falcon with a Box on its Head"),
+        PYX3("https://pyx-3.pretendyoure.xyz/zy/", "Dickfingers");
 
+        private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
         public final String addr;
         public final String name;
+
 
         Servers(String addr, String name) {
             this.addr = addr;
             this.name = name;
+        }
+
+        @Nullable
+        public static Servers fromUrl(String url) {
+            Matcher matcher = URL_PATTERN.matcher(url);
+            if (matcher.find()) {
+                switch (matcher.group(1)) {
+                    case "1":
+                        return PYX1;
+                    case "2":
+                        return PYX2;
+                    case "3":
+                        return PYX3;
+                }
+            }
+
+            return null;
         }
 
         public static String[] formalValues() {

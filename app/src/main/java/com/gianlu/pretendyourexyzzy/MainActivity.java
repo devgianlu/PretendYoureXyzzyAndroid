@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
 
         int gid = getIntent().getIntExtra("gid", -1);
         if (gid != -1) {
-            gamesFragment.launchGame(gid);
+            gamesFragment.launchGame(gid, getIntent().getStringExtra("password"));
             getIntent().removeExtra("gid");
         }
     }

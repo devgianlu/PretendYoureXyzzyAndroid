@@ -19,7 +19,7 @@
             android:layout_width="128dp"
             android:layout_height="128dp"
             android:layout_gravity="center_horizontal"
-            android:src="@mipmap/ic_launcher" />
+            android:src="@drawable/icon" />
 
         <ProgressBar
             android:id="@+id/loading_loading"
@@ -28,8 +28,8 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="8dp"
             android:indeterminateOnly="true"
-            android:progressTint="@color/colorPrimary"
-            android:indeterminateTint="@color/colorPrimary" />
+            android:indeterminateTint="@color/colorPrimary"
+            android:progressTint="@color/colorPrimary" />
 
         <LinearLayout
             android:id="@+id/loading_register"
@@ -73,7 +73,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:textColor="@color/colorPrimary"
         android:layout_margin="8dp"
-        android:text="@string/changeServer" />
+        android:text="@string/changeServer"
+        android:textColor="@color/colorPrimary" />
 </FrameLayout>

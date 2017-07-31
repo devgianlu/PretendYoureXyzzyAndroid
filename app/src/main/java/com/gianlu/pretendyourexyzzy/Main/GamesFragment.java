@@ -52,6 +52,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     private SearchView searchView;
     private GamesAdapter adapter;
     private int launchGameGid = -1;
+    private String launchGamePassword = null;
 
     public static GamesFragment getInstance(IFragment handler) {
         GamesFragment fragment = new GamesFragment();
@@ -181,12 +182,12 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         swipeRefresh.setVisibility(View.VISIBLE);
         MessageLayout.hide(layout);
 
-        adapter = new GamesAdapter(getContext(), result, this);
+        adapter = new GamesAdapter(getContext(), result, this); // FIXME: Why the fuck context is null?!
         list.setAdapter(adapter);
         lastResult = result;
         updateActivityTitle();
 
-        if (launchGameGid != -1) launchGameInternal(launchGameGid);
+        if (launchGameGid != -1) launchGameInternal(launchGameGid, launchGamePassword);
     }
 
     private void updateActivityTitle() {
@@ -318,15 +319,22 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         return true;
     }
 
-    public void launchGame(int gid) {
-        if (adapter != null) launchGameInternal(gid);
-        else launchGameGid = gid;
+    public void launchGame(int gid, @Nullable String password) {
+        if (adapter != null) {
+            launchGameInternal(gid, password);
+        } else {
+            launchGameGid = gid;
+            launchGamePassword = password;
+        }
     }
 
-    private void launchGameInternal(int gid) {
+    private void launchGameInternal(int gid, @Nullable String password) {
         Game game = Utils.findGame(adapter.getGames(), gid);
         launchGameGid = -1;
-        if (game != null) joinGame(game);
+        if (game != null) {
+            if (password != null) joinGame(game, password);
+            else joinGame(game);
+        }
     }
 
     public interface IFragment {

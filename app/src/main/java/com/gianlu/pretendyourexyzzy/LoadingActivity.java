@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -22,6 +23,13 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
 
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Objects;
+
+import cz.msebera.android.httpclient.NameValuePair;
+import cz.msebera.android.httpclient.client.utils.URLEncodedUtils;
+
 public class LoadingActivity extends AppCompatActivity implements PYX.IResult<FirstLoad> {
     private Intent goTo;
     private boolean finished = false;
@@ -29,6 +37,8 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
     private LinearLayout register;
     private TextInputLayout registerNickname;
     private Button registerSubmit;
+    private int launchGameId = -1;
+    private String launchGamePassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,8 +83,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
-                                PYX.invalidate();
-                                Prefs.putString(LoadingActivity.this, Prefs.Keys.LAST_SERVER, PYX.Servers.values()[which].name());
+                                setServer(PYX.Servers.values()[which]);
                                 recreate();
                             }
                         })
@@ -83,6 +92,30 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                 CommonUtils.showDialog(LoadingActivity.this, builder);
             }
         });
+
+        if (Objects.equals(getIntent().getAction(), Intent.ACTION_VIEW) || Objects.equals(getIntent().getAction(), Intent.ACTION_SEND)) {
+            Uri url = getIntent().getData();
+            if (url != null) {
+                PYX.Servers server = PYX.Servers.fromUrl(url.toString());
+                if (server != null) setServer(server);
+
+                String fragment = url.getFragment();
+                if (fragment != null) {
+                    List<NameValuePair> params = URLEncodedUtils.parse(fragment, Charset.forName("UTF-8"));
+                    for (NameValuePair pair : params) {
+                        if (Objects.equals(pair.getName(), "game")) {
+                            try {
+                                launchGameId = Integer.parseInt(pair.getValue());
+                            } catch (NumberFormatException ex) {
+                                Logging.logMe(this, ex);
+                            }
+                        } else if (Objects.equals(pair.getName(), "password")) {
+                            launchGamePassword = pair.getValue();
+                        }
+                    }
+                }
+            }
+        }
 
         new Thread(new Runnable() {
             @Override
@@ -99,6 +132,11 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                 }
             }
         }).start();
+    }
+
+    private void setServer(PYX.Servers server) {
+        PYX.invalidate();
+        Prefs.putString(LoadingActivity.this, Prefs.Keys.LAST_SERVER, server.name());
     }
 
     @Override
@@ -120,7 +158,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                         public void onDone(PYX pyx, User result) {
                             pyx.startPolling();
                             Prefs.putString(LoadingActivity.this, Prefs.Keys.LAST_NICKNAME, result.nickname);
-                            goTo(MainActivity.class, result, null);
+                            goTo(MainActivity.class, result);
                         }
 
                         @Override
@@ -149,10 +187,11 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                 }
             });
         } else if (result.nextOperation == FirstLoad.NextOp.GAME) {
-            goTo(MainActivity.class, new User(result.nickname), result.gameId);
+            launchGameId = result.gameId;
+            goTo(MainActivity.class, new User(result.nickname));
         } else {
             pyx.startPolling();
-            goTo(MainActivity.class, new User(result.nickname), null);
+            goTo(MainActivity.class, new User(result.nickname));
         }
     }
 
@@ -166,10 +205,11 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
         });
     }
 
-    private void goTo(Class goTo, @Nullable User user, @Nullable Integer gid) {
+    private void goTo(Class goTo, @Nullable User user) {
         Intent intent = new Intent(LoadingActivity.this, goTo).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         if (user != null) intent.putExtra("user", user);
-        if (gid != null) intent.putExtra("gid", gid);
+        if (launchGameId != -1) intent.putExtra("gid", launchGameId);
+        if (launchGamePassword != null) intent.putExtra("password", launchGamePassword);
         if (finished) startActivity(intent);
         else this.goTo = intent;
     }

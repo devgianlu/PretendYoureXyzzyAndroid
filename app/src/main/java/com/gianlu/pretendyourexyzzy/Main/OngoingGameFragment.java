@@ -33,6 +33,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 
+// TODO: Share game
 public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInfo>, GameManager.IManager {
     private IFragment handler;
     private Game game;
