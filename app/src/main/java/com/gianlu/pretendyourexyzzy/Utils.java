@@ -63,5 +63,6 @@ public class Utils {
         public static final Toaster.Message HURRY_UP = new Toaster.Message(R.string.hurryUp, false);
         public static final Toaster.Message FAILED_CREATING_GAME = new Toaster.Message(R.string.failedCreatingGame, true);
         public static final Toaster.Message FAILED_START_GAME = new Toaster.Message(R.string.failedStartGame, true);
+        public static final Toaster.Message GAME_STARTED = new Toaster.Message(R.string.gameStarted, false);
     }
 }

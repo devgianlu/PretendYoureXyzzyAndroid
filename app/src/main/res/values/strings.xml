@@ -61,4 +61,5 @@
     <string name="required">Required</string>
     <string name="provided">Provided</string>
     <string name="cannotStartGame">Cannot start the game</string>
+    <string name="gameStarted">Game started!</string>
 </resources>

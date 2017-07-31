@@ -236,8 +236,8 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     }
 
     @Override
-    public void hurryUp() {
-        Toaster.show(getActivity(), Utils.Messages.HURRY_UP);
+    public void showToast(Toaster.Message message) {
+        if (isAdded()) Toaster.show(getActivity(), message);
     }
 
     public interface IFragment {

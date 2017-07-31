@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
@@ -44,6 +45,7 @@ import java.util.List;
 import java.util.Objects;
 
 // FIXME: Selecting card for last messes up instructions
+// TODO: Send toast to inform user about game state, ecc...
 public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter.IAdapter {
     private final PyxCard blackCard;
     private final TextView instructions;
@@ -108,7 +110,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         pyx.startGame(gameInfo.game.gid, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
-                System.out.println("DONE!"); // TODO
+                if (listener != null) listener.showToast(Utils.Messages.GAME_STARTED);
             }
 
             @Override
@@ -287,7 +289,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 handleHandDeal(Card.toCardsList(message.obj.getJSONArray("h")));
                 break;
             case HURRY_UP:
-                if (listener != null) listener.hurryUp();
+                if (listener != null) listener.showToast(Utils.Messages.HURRY_UP);
                 break;
             case CARDCAST_ADD_CARDSET: // TODO
                 break;
@@ -469,10 +471,10 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
 
         void cannotStartGame(Exception ex);
 
-        void showDialog(AlertDialog.Builder builder);
-
         void kicked();
 
-        void hurryUp();
+        void showToast(Toaster.Message message);
+
+        void showDialog(AlertDialog.Builder builder);
     }
 }
