@@ -253,6 +253,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             case GAME_BLACK_RESHUFFLE:
             case GAME_JUDGE_LEFT:
             case GAME_SPECTATOR_JOIN:
+            case GAME_LIST_REFRESH:
             case GAME_WHITE_RESHUFFLE:
             case GAME_SPECTATOR_LEAVE:
             case NEW_PLAYER:
@@ -266,7 +267,6 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 playerInfoChanged(new GameInfo.Player(message.obj.getJSONObject("pi")));
                 updateBlankCardsNumber();
                 break;
-            case GAME_LIST_REFRESH:
             case GAME_PLAYER_KICKED_IDLE:
             case GAME_PLAYER_JOIN:
             case GAME_PLAYER_LEAVE:

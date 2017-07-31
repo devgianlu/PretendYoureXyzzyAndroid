@@ -45,6 +45,7 @@ import cz.msebera.android.httpclient.client.utils.URIBuilder;
 import cz.msebera.android.httpclient.client.utils.URLEncodedUtils;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
+// TODO: Change game options
 public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInfo>, GameManager.IManager {
     private IFragment handler;
     private Game game;
