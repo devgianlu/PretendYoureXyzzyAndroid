@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.Main;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -33,7 +34,17 @@ import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 
-// TODO: Share game
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+
+import cz.msebera.android.httpclient.NameValuePair;
+import cz.msebera.android.httpclient.client.utils.URIBuilder;
+import cz.msebera.android.httpclient.client.utils.URLEncodedUtils;
+import cz.msebera.android.httpclient.message.BasicNameValuePair;
+
 public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInfo>, GameManager.IManager {
     private IFragment handler;
     private Game game;
@@ -126,9 +137,35 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
             case R.id.ongoingGame_spectators:
                 showSpectators();
                 return true;
+            case R.id.ongoingGame_share:
+                shareGame();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void shareGame() {
+        if (game == null) return;
+        URI uri = pyx.server.uri;
+        URIBuilder builder = new URIBuilder();
+        builder.setScheme(uri.getScheme())
+                .setHost(uri.getHost())
+                .setPath("/zy/game.jsp");
+
+        List<NameValuePair> params = new ArrayList<>();
+        params.add(new BasicNameValuePair("game", String.valueOf(game.gid)));
+        if (game.hasPassword) params.add(new BasicNameValuePair("password", game.options.password));
+        builder.setFragment(URLEncodedUtils.format(params, Charset.forName("UTF-8")));
+
+        try {
+            Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("text/plain");
+            i.putExtra(Intent.EXTRA_TEXT, builder.build().toASCIIString());
+            startActivity(Intent.createChooser(i, "Share game..."));
+        } catch (URISyntaxException ex) {
+            Toaster.show(getActivity(), Utils.Messages.FAILED_SHARING, ex);
+        }
     }
 
     private void showSpectators() {

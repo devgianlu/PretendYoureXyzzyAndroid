@@ -104,6 +104,7 @@ public class Game implements Filterable<NotFilterable>, Serializable {
         public final int scoreLimit;
         public final int blanksLimit;
         public final ArrayList<Integer> cardSets;
+        public final String password;
 
         public Options(JSONObject obj) throws JSONException {
             timeMultiplier = obj.getString("tm");
@@ -111,6 +112,7 @@ public class Game implements Filterable<NotFilterable>, Serializable {
             playersLimit = obj.getInt("pL");
             scoreLimit = obj.getInt("sl");
             blanksLimit = obj.getInt("bl");
+            password = obj.optString("pw", null);
 
             JSONArray cardsSetsArray = obj.getJSONArray("css");
             cardSets = new ArrayList<>();

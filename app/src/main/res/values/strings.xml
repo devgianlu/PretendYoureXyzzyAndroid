@@ -62,4 +62,6 @@
     <string name="provided">Provided</string>
     <string name="cannotStartGame">Cannot start the game</string>
     <string name="gameStarted">Game started!</string>
+    <string name="share">Share</string>
+    <string name="failedSharing">Failed creating the share URL!</string>
 </resources>

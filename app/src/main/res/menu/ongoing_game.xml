@@ -16,6 +16,13 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/ongoingGame_share"
+        android:icon="@drawable/ic_share_white_48dp"
+        android:orderInCategory="1"
+        android:title="@string/share"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/ongoingGame_spectators"
         android:icon="@drawable/ic_remove_red_eye_white_48dp"
         android:orderInCategory="2"

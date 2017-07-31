@@ -20,6 +20,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,9 +49,9 @@ import cz.msebera.android.httpclient.util.EntityUtils;
 
 public class PYX {
     private static PYX instance;
+    public final Servers server;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler handler;
-    private final Servers server;
     private final HttpClient client;
     private final CookieStore cookieStore;
     private final HttpContext httpContext;
@@ -87,7 +88,7 @@ public class PYX {
     private JSONObject ajaxServletRequestSync(OP operation, NameValuePair... params) throws IOException, JSONException, PYXException {
         if (operation != OP.FIRST_LOAD && firstLoad == null)
             throw new IllegalStateException("You must call #firstLoad first!!");
-        HttpPost post = new HttpPost(server.addr + "AjaxServlet");
+        HttpPost post = new HttpPost(server.uri.toString() + "AjaxServlet");
         List<NameValuePair> paramsList = new ArrayList<>(Arrays.asList(params));
         paramsList.add(new BasicNameValuePair("o", operation.val));
         post.setEntity(new UrlEncodedFormEntity(paramsList));
@@ -570,17 +571,17 @@ public class PYX {
     }
 
     public enum Servers {
-        PYX1("https://pyx-1.pretendyoure.xyz/zy/", "The Biggest, Blackest Dick"),
-        PYX2("https://pyx-2.pretendyoure.xyz/zy/", "A Falcon with a Box on its Head"),
-        PYX3("https://pyx-3.pretendyoure.xyz/zy/", "Dickfingers");
+        PYX1(URI.create("https://pyx-1.pretendyoure.xyz/zy/"), "The Biggest, Blackest Dick"),
+        PYX2(URI.create("https://pyx-2.pretendyoure.xyz/zy/"), "A Falcon with a Box on its Head"),
+        PYX3(URI.create("https://pyx-3.pretendyoure.xyz/zy/"), "Dickfingers");
 
         private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
-        public final String addr;
+        public final URI uri;
         public final String name;
 
 
-        Servers(String addr, String name) {
-            this.addr = addr;
+        Servers(URI uri, String name) {
+            this.uri = uri;
             this.name = name;
         }
 
@@ -629,7 +630,7 @@ public class PYX {
         public void run() {
             while (!shouldStop) {
                 try {
-                    HttpPost post = new HttpPost(server.addr + "LongPollServlet");
+                    HttpPost post = new HttpPost(server.uri.toString() + "LongPollServlet");
                     addJESSIONIDCookie(post);
 
                     HttpResponse resp = client.execute(post, httpContext);

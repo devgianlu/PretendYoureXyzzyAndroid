@@ -240,11 +240,25 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         }
     }
 
+    private void participateGame(int gid) {
+        PYX.get(getContext()).getGameInfo(gid, new PYX.IResult<GameInfo>() {
+            @Override
+            public void onDone(PYX pyx, GameInfo result) {
+                if (handler != null) handler.onParticipatingGame(result.game);
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                Toaster.show(getActivity(), Utils.Messages.FAILED_LOADING, ex);
+            }
+        });
+    }
+
     private void spectateGame(final Game game, @Nullable String password) {
         PYX.get(getContext()).spectateGame(game.gid, password, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
-                if (handler != null) handler.onParticipatingGame(game);
+                participateGame(game.gid);
             }
 
             @Override
@@ -269,7 +283,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         PYX.get(getContext()).joinGame(game.gid, password, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
-                if (handler != null) handler.onParticipatingGame(game);
+                participateGame(game.gid);
             }
 
             @Override
