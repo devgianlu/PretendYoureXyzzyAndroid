@@ -45,12 +45,12 @@ public class GameChatFragment extends Fragment implements PYX.IResult<List<PollM
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         layout = (LinearLayout) inflater.inflate(R.layout.chat_fragment, container, false);
-        ProgressBar loading = (ProgressBar) layout.findViewById(R.id.recyclerViewLayout_loading);
-        SwipeRefreshLayout swipeRefresh = (SwipeRefreshLayout) layout.findViewById(R.id.recyclerViewLayout_swipeRefresh);
+        ProgressBar loading = layout.findViewById(R.id.recyclerViewLayout_loading);
+        SwipeRefreshLayout swipeRefresh = layout.findViewById(R.id.recyclerViewLayout_swipeRefresh);
         swipeRefresh.setEnabled(false);
         loading.setVisibility(View.GONE);
         swipeRefresh.setVisibility(View.VISIBLE);
-        list = (RecyclerView) layout.findViewById(R.id.recyclerViewLayout_list);
+        list = layout.findViewById(R.id.recyclerViewLayout_list);
         LinearLayoutManager llm = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         llm.setStackFromEnd(true);
         list.setLayoutManager(llm);
@@ -69,8 +69,8 @@ public class GameChatFragment extends Fragment implements PYX.IResult<List<PollM
 
         final PYX pyx = PYX.get(getContext());
 
-        final EditText message = (EditText) layout.findViewById(R.id.chatFragment_message);
-        ImageButton send = (ImageButton) layout.findViewById(R.id.chatFragment_send);
+        final EditText message = layout.findViewById(R.id.chatFragment_message);
+        ImageButton send = layout.findViewById(R.id.chatFragment_send);
         send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

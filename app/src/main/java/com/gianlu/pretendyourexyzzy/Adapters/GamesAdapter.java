@@ -131,14 +131,14 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         public ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.game_item, parent, false));
 
-            name = (TextView) itemView.findViewById(R.id.gameItem_name);
-            status = (ImageView) itemView.findViewById(R.id.gameItem_status);
-            players = (SuperTextView) itemView.findViewById(R.id.gameItem_players);
-            locked = (ImageView) itemView.findViewById(R.id.gameItem_locked);
-            spectators = (SuperTextView) itemView.findViewById(R.id.gameItem_spectators);
-            goal = (SuperTextView) itemView.findViewById(R.id.gameItem_goal);
-            spectate = (Button) itemView.findViewById(R.id.gameItem_spectate);
-            join = (Button) itemView.findViewById(R.id.gameItem_join);
+            name = itemView.findViewById(R.id.gameItem_name);
+            status = itemView.findViewById(R.id.gameItem_status);
+            players = itemView.findViewById(R.id.gameItem_players);
+            locked = itemView.findViewById(R.id.gameItem_locked);
+            spectators = itemView.findViewById(R.id.gameItem_spectators);
+            goal = itemView.findViewById(R.id.gameItem_goal);
+            spectate = itemView.findViewById(R.id.gameItem_spectate);
+            join = itemView.findViewById(R.id.gameItem_join);
         }
     }
 }

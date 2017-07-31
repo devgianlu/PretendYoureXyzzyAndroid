@@ -70,8 +70,8 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
         layout = (FrameLayout) inflater.inflate(R.layout.ongoing_game_fragment, parent, false);
-        loading = (ProgressBar) layout.findViewById(R.id.ongoingGame_loading);
-        container = (LinearLayout) layout.findViewById(R.id.ongoingGame_container);
+        loading = layout.findViewById(R.id.ongoingGame_loading);
+        container = layout.findViewById(R.id.ongoingGame_container);
 
         me = (User) getArguments().getSerializable("me");
         game = (Game) getArguments().getSerializable("game");
@@ -187,18 +187,18 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
         if (game == null) return;
         Game.Options options = game.options;
         ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.game_options_dialog, null, false);
-        SuperTextView scoreLimit = (SuperTextView) layout.findViewById(R.id.gameOptions_scoreLimit);
+        SuperTextView scoreLimit = layout.findViewById(R.id.gameOptions_scoreLimit);
         scoreLimit.setHtml(R.string.scoreLimit, options.scoreLimit);
-        SuperTextView playerLimit = (SuperTextView) layout.findViewById(R.id.gameOptions_playerLimit);
+        SuperTextView playerLimit = layout.findViewById(R.id.gameOptions_playerLimit);
         playerLimit.setHtml(R.string.playerLimit, options.playersLimit);
-        SuperTextView spectatorLimit = (SuperTextView) layout.findViewById(R.id.gameOptions_spectatorLimit);
+        SuperTextView spectatorLimit = layout.findViewById(R.id.gameOptions_spectatorLimit);
         spectatorLimit.setHtml(R.string.spectatorLimit, options.spectatorsLimit);
-        SuperTextView idleTimeMultiplier = (SuperTextView) layout.findViewById(R.id.gameOptions_idleTimeMultiplier);
+        SuperTextView idleTimeMultiplier = layout.findViewById(R.id.gameOptions_idleTimeMultiplier);
         idleTimeMultiplier.setHtml(R.string.timeMultiplier, options.timeMultiplier);
-        SuperTextView cardSets = (SuperTextView) layout.findViewById(R.id.gameOptions_cardSets);
+        SuperTextView cardSets = layout.findViewById(R.id.gameOptions_cardSets);
         cardSets.setHtml(R.string.cardSets, options.cardSets.isEmpty() ? "none" : CommonUtils.join(pyx.firstLoad.createCardSetNamesList(options.cardSets), ", "));
 
-        SuperTextView blankCards = (SuperTextView) layout.findViewById(R.id.gameOptions_blankCards);
+        SuperTextView blankCards = layout.findViewById(R.id.gameOptions_blankCards);
         blankCards.setHtml(R.string.blankCards, options.blanksLimit);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());

@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.Cards;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.DashPathEffect;
@@ -13,6 +14,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 
 import java.util.List;
 
+@SuppressLint("ViewConstructor")
 public class CardGroupView extends LinearLayout implements PyxCard.ICard {
     private final int mPadding;
     private final int mCornerRadius;

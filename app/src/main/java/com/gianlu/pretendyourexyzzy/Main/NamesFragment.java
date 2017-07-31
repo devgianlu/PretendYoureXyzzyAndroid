@@ -53,10 +53,10 @@ public class NamesFragment extends Fragment implements PYX.IResult<List<String>>
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         layout = (FrameLayout) inflater.inflate(R.layout.recycler_view_layout, container, false);
-        loading = (ProgressBar) layout.findViewById(R.id.recyclerViewLayout_loading);
-        swipeRefresh = (SwipeRefreshLayout) layout.findViewById(R.id.recyclerViewLayout_swipeRefresh);
+        loading = layout.findViewById(R.id.recyclerViewLayout_loading);
+        swipeRefresh = layout.findViewById(R.id.recyclerViewLayout_swipeRefresh);
         swipeRefresh.setColorSchemeResources(R.color.colorAccent);
-        list = (RecyclerView) layout.findViewById(R.id.recyclerViewLayout_list);
+        list = layout.findViewById(R.id.recyclerViewLayout_list);
         list.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
         final PYX pyx = PYX.get(getContext());

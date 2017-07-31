@@ -70,17 +70,17 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         this.handler = new Handler(context.getMainLooper());
         this.pyx = PYX.get(context);
 
-        startGame = (FloatingActionButton) gameLayout.findViewById(R.id.gameLayout_startGame);
-        blackCard = (PyxCard) gameLayout.findViewById(R.id.gameLayout_blackCard);
-        RecyclerView playersList = (RecyclerView) gameLayout.findViewById(R.id.gameLayout_players);
+        startGame = gameLayout.findViewById(R.id.gameLayout_startGame);
+        blackCard = gameLayout.findViewById(R.id.gameLayout_blackCard);
+        RecyclerView playersList = gameLayout.findViewById(R.id.gameLayout_players);
         playersList.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
         playersList.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
 
         playersAdapter = new PlayersAdapter(context, gameInfo.players);
         playersList.setAdapter(playersAdapter);
 
-        instructions = (TextView) gameLayout.findViewById(R.id.gameLayout_instructions);
-        whiteCards = (RecyclerView) gameLayout.findViewById(R.id.gameLayout_whiteCards);
+        instructions = gameLayout.findViewById(R.id.gameLayout_instructions);
+        whiteCards = gameLayout.findViewById(R.id.gameLayout_whiteCards);
         whiteCards.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
         playersCardsAdapter = new CardsAdapter(context, this);
         handAdapter = new CardsAdapter(context, this);
@@ -141,17 +141,17 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         }
 
         LinearLayout layout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.cannot_start_game_dialog, null, false);
-        TextView wcrText = (TextView) layout.findViewById(R.id.cannotStartGame_wcr);
+        TextView wcrText = layout.findViewById(R.id.cannotStartGame_wcr);
         wcrText.setText(String.valueOf(wcr));
-        TextView bcrText = (TextView) layout.findViewById(R.id.cannotStartGame_bcr);
+        TextView bcrText = layout.findViewById(R.id.cannotStartGame_bcr);
         bcrText.setText(String.valueOf(bcr));
-        TextView wcpText = (TextView) layout.findViewById(R.id.cannotStartGame_wcp);
+        TextView wcpText = layout.findViewById(R.id.cannotStartGame_wcp);
         wcpText.setText(String.valueOf(wcp));
-        TextView bcpText = (TextView) layout.findViewById(R.id.cannotStartGame_bcp);
+        TextView bcpText = layout.findViewById(R.id.cannotStartGame_bcp);
         bcpText.setText(String.valueOf(bcp));
-        ImageView bcCheck = (ImageView) layout.findViewById(R.id.cannotStartGame_checkBc);
+        ImageView bcCheck = layout.findViewById(R.id.cannotStartGame_checkBc);
         bcCheck.setImageResource(bcp >= bcr ? R.drawable.ic_done_black_48dp : R.drawable.ic_clear_black_48dp);
-        ImageView wcCheck = (ImageView) layout.findViewById(R.id.cannotStartGame_checkWc);
+        ImageView wcCheck = layout.findViewById(R.id.cannotStartGame_checkWc);
         wcCheck.setImageResource(wcp >= wcr ? R.drawable.ic_done_black_48dp : R.drawable.ic_clear_black_48dp);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);

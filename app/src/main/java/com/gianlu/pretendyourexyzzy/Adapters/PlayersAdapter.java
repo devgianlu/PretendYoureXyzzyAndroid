@@ -77,9 +77,9 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
             super(inflater.inflate(R.layout.player_item, parent, false));
             setIsRecyclable(false);
 
-            name = (TextView) itemView.findViewById(R.id.playerItem_name);
-            score = (SuperTextView) itemView.findViewById(R.id.playerItem_score);
-            status = (ImageView) itemView.findViewById(R.id.playerItem_status);
+            name = itemView.findViewById(R.id.playerItem_name);
+            score = itemView.findViewById(R.id.playerItem_score);
+            status = itemView.findViewById(R.id.playerItem_status);
         }
 
         public void update(GameInfo.Player player) {

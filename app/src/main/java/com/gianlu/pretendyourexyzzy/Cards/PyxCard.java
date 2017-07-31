@@ -57,20 +57,20 @@ public class PyxCard extends FrameLayout { // FIXME: Star doesn't persist its st
         Typeface roboto = Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Medium.ttf");
         int colorAccent = ContextCompat.getColor(getContext(), R.color.colorAccent);
 
-        CardView cardView = (CardView) findViewById(R.id.pyxCard_card);
+        CardView cardView = findViewById(R.id.pyxCard_card);
         if (winning) cardView.setCardBackgroundColor(colorAccent);
         else cardView.setCardBackgroundColor(card.getNumPick() != -1 ? Color.BLACK : Color.WHITE);
-        SuperTextView text = (SuperTextView) findViewById(R.id.pyxCard_text);
+        SuperTextView text = findViewById(R.id.pyxCard_text);
         text.setTextColor(card.getNumPick() != -1 ? Color.WHITE : Color.BLACK);
         text.setTypeface(roboto);
-        TextView watermark = (TextView) findViewById(R.id.pyxCard_watermark);
+        TextView watermark = findViewById(R.id.pyxCard_watermark);
         watermark.setTextColor(card.getNumPick() != -1 ? Color.WHITE : Color.BLACK);
-        SuperTextView numPick = (SuperTextView) findViewById(R.id.pyxCard_numPick);
+        SuperTextView numPick = findViewById(R.id.pyxCard_numPick);
         numPick.setTextColor(card.getNumPick() != -1 ? Color.WHITE : Color.BLACK);
-        SuperTextView numDraw = (SuperTextView) findViewById(R.id.pyxCard_numDraw);
+        SuperTextView numDraw = findViewById(R.id.pyxCard_numDraw);
         numDraw.setTextColor(card.getNumPick() != -1 ? Color.WHITE : Color.BLACK);
 
-        star = (ImageButton) findViewById(R.id.pyxCard_star);
+        star = findViewById(R.id.pyxCard_star);
 
         if (card instanceof StarredCardsManager.StarredCard) {
             star.setVisibility(VISIBLE);

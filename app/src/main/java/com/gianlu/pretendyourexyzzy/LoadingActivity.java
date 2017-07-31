@@ -68,11 +68,11 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
 
         Logging.clearLogs(this);
 
-        loading = (ProgressBar) findViewById(R.id.loading_loading);
-        register = (LinearLayout) findViewById(R.id.loading_register);
-        registerNickname = (TextInputLayout) findViewById(R.id.loading_registerNickname);
-        registerSubmit = (Button) findViewById(R.id.loading_registerSubmit);
-        Button changeServer = (Button) findViewById(R.id.loading_changeServer);
+        loading = findViewById(R.id.loading_loading);
+        register = findViewById(R.id.loading_register);
+        registerNickname = findViewById(R.id.loading_registerNickname);
+        registerSubmit = findViewById(R.id.loading_registerSubmit);
+        Button changeServer = findViewById(R.id.loading_changeServer);
         changeServer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

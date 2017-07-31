@@ -10,7 +10,6 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -42,7 +41,7 @@ import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.List;
 
-public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, GamesAdapter.IAdapter, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItemCompat.OnActionExpandListener {
+public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, GamesAdapter.IAdapter, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
     private RecyclerView list;
     private SwipeRefreshLayout swipeRefresh;
     private ProgressBar loading;
@@ -67,7 +66,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
 
         SearchManager searchManager = (SearchManager) getContext().getSystemService(Context.SEARCH_SERVICE);
         MenuItem item = menu.findItem(R.id.gamesFragment_search);
-        MenuItemCompat.setOnActionExpandListener(item, this);
+        item.setOnActionExpandListener(this);
         searchView = (SearchView) item.getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
         searchView.setIconifiedByDefault(false);
@@ -98,12 +97,12 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         layout = (CoordinatorLayout) inflater.inflate(R.layout.games_fragment, container, false);
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
-        loading = (ProgressBar) layout.findViewById(R.id.recyclerViewLayout_loading);
-        swipeRefresh = (SwipeRefreshLayout) layout.findViewById(R.id.recyclerViewLayout_swipeRefresh);
+        loading = layout.findViewById(R.id.recyclerViewLayout_loading);
+        swipeRefresh = layout.findViewById(R.id.recyclerViewLayout_swipeRefresh);
         swipeRefresh.setColorSchemeResources(R.color.colorAccent);
-        list = (RecyclerView) layout.findViewById(R.id.recyclerViewLayout_list);
+        list = layout.findViewById(R.id.recyclerViewLayout_list);
         list.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-        FloatingActionButton createGame = (FloatingActionButton) layout.findViewById(R.id.gamesFragment_createGame);
+        FloatingActionButton createGame = layout.findViewById(R.id.gamesFragment_createGame);
 
         final PYX pyx = PYX.get(getContext());
 
@@ -182,7 +181,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         swipeRefresh.setVisibility(View.VISIBLE);
         MessageLayout.hide(layout);
 
-        adapter = new GamesAdapter(getContext(), result, this); // FIXME: Why the fuck context is null?!
+        adapter = new GamesAdapter(getContext(), result, this);
         list.setAdapter(adapter);
         lastResult = result;
         updateActivityTitle();
