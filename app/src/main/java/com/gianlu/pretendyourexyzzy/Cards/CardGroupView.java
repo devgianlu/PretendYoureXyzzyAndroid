@@ -89,7 +89,7 @@ public class CardGroupView extends LinearLayout implements PyxCard.ICard {
     }
 
     private StarredCardsManager.StarredCard getStarredCard() {
-        if (starredCard == null)
+        if (starredCard == null || starredCard.blackCard == null || starredCard.whiteCards.isEmpty())
             starredCard = new StarredCardsManager.StarredCard(associatedBlackCard, cards);
         return starredCard;
     }

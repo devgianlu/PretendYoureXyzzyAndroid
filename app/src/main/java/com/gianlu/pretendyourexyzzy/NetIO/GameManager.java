@@ -44,9 +44,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-// FIXME: Selecting card for last messes up instructions
 // FIXME: Blank cards sometimes appears at the end of the cards list
 public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter.IAdapter {
+    private final static String POLL_TAG = "gameManager";
     private final PyxCard blackCard;
     private final TextView instructions;
     private final RecyclerView whiteCards;
@@ -60,7 +60,8 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     private final PYX pyx;
     private final FloatingActionButton startGame;
     public GameInfo gameInfo;
-    private GameInfo.PlayerStatus lastStatus;
+    private GameInfo.PlayerStatus lastMineStatus;
+    private boolean lastPlaying;
 
     public GameManager(ViewGroup gameLayout, @NonNull GameInfo gameInfo, User me, IManager listener) {
         this.context = gameLayout.getContext();
@@ -69,7 +70,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         this.listener = listener;
         this.handler = new Handler(context.getMainLooper());
         this.pyx = PYX.get(context);
-        pyx.pollingThread.addListener(this);
+        pyx.pollingThread.addListener(POLL_TAG, this);
 
         startGame = gameLayout.findViewById(R.id.gameLayout_startGame);
         blackCard = gameLayout.findViewById(R.id.gameLayout_blackCard);
@@ -183,13 +184,17 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     }
 
     private void handleMyStatus(GameInfo.PlayerStatus status) {
-        lastStatus = status;
+        lastMineStatus = status;
         switch (status) {
             case HOST:
                 updateInstructions("You're the game host. Start the game when you're ready.");
                 break;
             case IDLE:
-                updateInstructions("Waiting for other players...");
+                if (!lastPlaying) {
+                    updateInstructions("Waiting for other players...");
+                    lastPlaying = false;
+                }
+
                 if (whiteCards.getAdapter() != playersCardsAdapter)
                     whiteCards.swapAdapter(playersCardsAdapter, true);
                 break;
@@ -295,7 +300,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 if (listener != null) listener.notifyJudgeSkipped(message.obj.optString("n", null));
                 break;
             case GAME_ROUND_COMPLETE:
-                handleWinner(message.obj.getString("rw"), message.obj.getInt("WC"), message.obj.getInt("i"));
+                handleWinner(message.obj.getString("rw"), message.obj.getInt("WC") /* intermission: message.obj.getInt("i") */);
                 break;
             case GAME_STATE_CHANGE:
                 handleGameStateChange(Game.Status.parse(message.obj.getString("gs")), message);
@@ -354,7 +359,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         });
     }
 
-    private void handleWinner(String winner, int winnerCard, int intermission) {
+    private void handleWinner(String winner, int winnerCard) {
         if (listener != null) listener.notifyWinner(winner);
         playersCardsAdapter.notifyWinningCard(winnerCard);
     }
@@ -417,12 +422,25 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         return whiteCards;
     }
 
+    private void setAmLastPlaying() {
+        for (GameInfo.Player player : gameInfo.players) {
+            if (!Objects.equals(player.name, me.nickname) && player.status == GameInfo.PlayerStatus.PLAYING) {
+                lastPlaying = false;
+                return;
+            }
+        }
+
+        lastPlaying = true;
+    }
+
     private void playCard(final Card card, int gid, int cid, @Nullable String customText) {
         pyx.playCard(gid, cid, customText, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
                 removeFromHand(card);
                 updateBlankCardsNumber();
+                setAmLastPlaying();
+                System.out.println("LAST PLAYING: " + lastPlaying);
             }
 
             @Override
@@ -435,7 +453,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     @Override
     public void onCardSelected(BaseCard baseCard) {
         final Card card = (Card) baseCard;
-        if (lastStatus == GameInfo.PlayerStatus.PLAYING) {
+        if (lastMineStatus == GameInfo.PlayerStatus.PLAYING) {
             if (card.isWriteIn()) {
                 final EditText customText = new EditText(context);
 
@@ -454,7 +472,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             } else {
                 playCard(card, gameInfo.game.gid, card.id, null);
             }
-        } else if (lastStatus == GameInfo.PlayerStatus.JUDGING || lastStatus == GameInfo.PlayerStatus.JUDGE) {
+        } else if (lastMineStatus == GameInfo.PlayerStatus.JUDGING || lastMineStatus == GameInfo.PlayerStatus.JUDGE) {
             pyx.judgeCard(gameInfo.game.gid, card.id, new PYX.ISuccess() {
                 @Override
                 public void onDone(PYX pyx) {

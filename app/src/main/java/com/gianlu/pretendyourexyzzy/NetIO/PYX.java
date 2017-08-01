@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -737,8 +738,8 @@ public class PYX {
     }
 
     public class PollingThread extends Thread {
+        private final WeakHashMap<String, IResult<List<PollMessage>>> listeners = new WeakHashMap<>();
         private boolean shouldStop = false;
-        private List<IResult<List<PollMessage>>> listeners = new ArrayList<>();
 
         @Override
         public void run() {
@@ -773,7 +774,7 @@ public class PYX {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    for (IResult<List<PollMessage>> listener : listeners)
+                    for (IResult<List<PollMessage>> listener : listeners.values())
                         listener.onDone(instance, obj);
                 }
             });
@@ -783,18 +784,18 @@ public class PYX {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    for (IResult<List<PollMessage>> listener : listeners)
+                    for (IResult<List<PollMessage>> listener : listeners.values())
                         listener.onException(ex);
                 }
             });
         }
 
-        public void addListener(IResult<List<PollMessage>> listener) {
-            this.listeners.add(listener);
+        public void addListener(String tag, IResult<List<PollMessage>> listener) {
+            this.listeners.put(tag, listener);
         }
 
-        public void removeListener(IResult<List<PollMessage>> listener) {
-            this.listeners.remove(listener);
+        public void removeListener(String tag) {
+            this.listeners.remove(tag);
         }
 
         public void safeStop() {

@@ -27,6 +27,7 @@ import com.gianlu.pretendyourexyzzy.Utils;
 import java.util.List;
 
 public class GlobalChatFragment extends Fragment implements PYX.IResult<List<PollMessage>>, ChatAdapter.IAdapter {
+    private static final String POLL_TAG = "globalChat";
     private RecyclerView list;
     private LinearLayout layout;
     private ChatAdapter adapter;
@@ -76,7 +77,7 @@ public class GlobalChatFragment extends Fragment implements PYX.IResult<List<Pol
             }
         });
 
-        pyx.pollingThread.addListener(this);
+        pyx.pollingThread.addListener(POLL_TAG, this);
 
         return layout;
     }

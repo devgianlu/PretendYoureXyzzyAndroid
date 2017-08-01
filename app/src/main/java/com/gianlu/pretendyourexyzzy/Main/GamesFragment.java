@@ -42,6 +42,7 @@ import com.gianlu.pretendyourexyzzy.Utils;
 import java.util.List;
 
 public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, GamesAdapter.IAdapter, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
+    private static final String POLL_TAG = "games";
     private RecyclerView list;
     private SwipeRefreshLayout swipeRefresh;
     private ProgressBar loading;
@@ -142,7 +143,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
 
         pyx.getGamesList(this);
 
-        pyx.pollingThread.addListener(new PYX.IResult<List<PollMessage>>() {
+        pyx.pollingThread.addListener(POLL_TAG, new PYX.IResult<List<PollMessage>>() {
             @Override
             public void onDone(PYX pyx, List<PollMessage> result) {
                 for (PollMessage message : result)
