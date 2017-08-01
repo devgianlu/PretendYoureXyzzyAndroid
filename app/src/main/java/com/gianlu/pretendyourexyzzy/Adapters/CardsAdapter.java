@@ -111,6 +111,11 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         if (listener != null) listener.onDeleteCard(deleteCard);
     }
 
+    @Override
+    public void onViewAttachedToWindow(ViewHolder holder) {
+        ((CardGroupView) holder.itemView).refreshStarState();
+    }
+
     public interface IAdapter {
         @Nullable
         RecyclerView getCardsRecyclerView();

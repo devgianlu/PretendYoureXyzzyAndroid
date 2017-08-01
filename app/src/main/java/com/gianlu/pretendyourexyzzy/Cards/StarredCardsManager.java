@@ -145,6 +145,9 @@ public class StarredCardsManager {
                 blackText = blackText.replaceFirst("____", "<u>" + whiteText + "</u>");
             }
 
+            if (Character.isLowerCase(blackText.charAt(0)))
+                blackText = Character.toUpperCase(blackText.charAt(0)) + blackText.substring(1);
+
             return blackText;
         }
 

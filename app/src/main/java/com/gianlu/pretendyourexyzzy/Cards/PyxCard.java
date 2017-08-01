@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.Cards;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Parcelable;
 import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,7 +20,7 @@ import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.R;
 
-public class PyxCard extends FrameLayout { // FIXME: Star doesn't persist its state
+public class PyxCard extends FrameLayout {
     private BaseCard card;
     private boolean hasBlackCard;
     private Boolean isStarred;
@@ -47,6 +48,18 @@ public class PyxCard extends FrameLayout { // FIXME: Star doesn't persist its st
         this.isStarred = isStarred;
         this.handler = handler;
         init();
+    }
+
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        System.out.println("SAVE INSTANCE!!");
+        return super.onSaveInstanceState();
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        System.out.println("RESTORE INSTANCE!!");
+        super.onRestoreInstanceState(state);
     }
 
     private void init() {
@@ -110,6 +123,8 @@ public class PyxCard extends FrameLayout { // FIXME: Star doesn't persist its st
     }
 
     public void setStarred(boolean starred) {
+        if (card instanceof StarredCardsManager.StarredCard || !hasBlackCard || card.getText().isEmpty() || isStarred == null)
+            return;
         isStarred = starred;
         star.setImageResource(isStarred ? R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
     }

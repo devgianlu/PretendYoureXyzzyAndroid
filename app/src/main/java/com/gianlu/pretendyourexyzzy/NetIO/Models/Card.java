@@ -37,7 +37,7 @@ public class Card implements BaseCard {
             watermark = watermarkTmp + " (" + matcher.group(1) + "/" + matcher.group(2) + ")";
         } else {
             watermark = watermarkTmp;
-            text = textTmp;
+            text = textTmp.trim();
         }
     }
 

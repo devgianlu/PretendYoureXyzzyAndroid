@@ -24,6 +24,7 @@ public class CardGroupView extends LinearLayout implements PyxCard.ICard {
     private Card associatedBlackCard;
     private ICard listener;
     private boolean starred;
+    private StarredCardsManager.StarredCard starredCard;
 
     public CardGroupView(Context context, ICard listener) {
         super(context);
@@ -49,7 +50,7 @@ public class CardGroupView extends LinearLayout implements PyxCard.ICard {
 
     public void setCards(List<? extends BaseCard> cards) {
         this.cards = cards;
-        this.starred = associatedBlackCard != null && StarredCardsManager.hasCard(getContext(), new StarredCardsManager.StarredCard(associatedBlackCard, cards));
+        this.starred = associatedBlackCard != null && StarredCardsManager.hasCard(getContext(), getStarredCard());
 
         removeAllViews();
         for (final BaseCard card : cards) {
@@ -87,9 +88,15 @@ public class CardGroupView extends LinearLayout implements PyxCard.ICard {
         this.associatedBlackCard = associatedBlackCard;
     }
 
+    private StarredCardsManager.StarredCard getStarredCard() {
+        if (starredCard == null)
+            starredCard = new StarredCardsManager.StarredCard(associatedBlackCard, cards);
+        return starredCard;
+    }
+
     @Override
     public void handleStar() {
-        StarredCardsManager.StarredCard card = new StarredCardsManager.StarredCard(associatedBlackCard, cards);
+        StarredCardsManager.StarredCard card = getStarredCard();
         if (StarredCardsManager.hasCard(getContext(), card)) {
             StarredCardsManager.removeCard(getContext(), card);
             setStarred(false);
@@ -102,6 +109,10 @@ public class CardGroupView extends LinearLayout implements PyxCard.ICard {
     @Override
     public void deleteCard(StarredCardsManager.StarredCard card) {
         if (listener != null) listener.onDeleteCard(card);
+    }
+
+    public void refreshStarState() {
+        setStarred(StarredCardsManager.hasCard(getContext(), getStarredCard()));
     }
 
     public interface ICard {
