@@ -3,7 +3,6 @@ package com.gianlu.pretendyourexyzzy.Cards;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.os.Parcelable;
 import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -48,18 +47,6 @@ public class PyxCard extends FrameLayout {
         this.isStarred = isStarred;
         this.handler = handler;
         init();
-    }
-
-    @Override
-    protected Parcelable onSaveInstanceState() {
-        System.out.println("SAVE INSTANCE!!");
-        return super.onSaveInstanceState();
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Parcelable state) {
-        System.out.println("RESTORE INSTANCE!!");
-        super.onRestoreInstanceState(state);
     }
 
     private void init() {
