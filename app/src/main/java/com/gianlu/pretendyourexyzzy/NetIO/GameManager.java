@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Objects;
 
 // FIXME: Selecting card for last messes up instructions
-// TODO: Send toast to inform user about game state, ecc...
+// FIXME: Blank cards sometimes appears at the end of the cards list
 public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter.IAdapter {
     private final PyxCard blackCard;
     private final TextView instructions;
