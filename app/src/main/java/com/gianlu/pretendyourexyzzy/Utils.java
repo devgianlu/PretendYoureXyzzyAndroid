@@ -65,5 +65,7 @@ public class Utils {
         public static final Toaster.Message FAILED_START_GAME = new Toaster.Message(R.string.failedStartGame, true);
         public static final Toaster.Message GAME_STARTED = new Toaster.Message(R.string.gameStarted, false);
         public static final Toaster.Message FAILED_SHARING = new Toaster.Message(R.string.failedSharing, true);
+        public static final Toaster.Message OPTIONS_CHANGED = new Toaster.Message(R.string.optionsChanged, false);
+        public static final Toaster.Message FAILED_CHANGING_OPTIONS = new Toaster.Message(R.string.failedChangingOptions, true);
     }
 }

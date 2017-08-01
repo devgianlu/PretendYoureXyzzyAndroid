@@ -400,6 +400,33 @@ public class PYX {
         });
     }
 
+    public void changeGameOptions(final int gid, final Game.Options options, final ISuccess listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ajaxServletRequestSync(OP.CHANGE_GAME_OPTIONS,
+                            new BasicNameValuePair("gid", String.valueOf(gid)),
+                            new BasicNameValuePair("go", options.toJSON().toString()));
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(instance);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     public void getNamesList(final IResult<List<String>> listener) {
         executor.execute(new Runnable() {
             @Override
@@ -554,7 +581,8 @@ public class PYX {
         PLAY_CARD("pc"),
         JUDGE_SELECT("js"),
         CREATE_GAME("cg"),
-        START_GAME("sg");
+        START_GAME("sg"),
+        CHANGE_GAME_OPTIONS("cgo");
 
         private final String val;
 

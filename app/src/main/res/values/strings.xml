@@ -64,4 +64,20 @@
     <string name="gameStarted">Game started!</string>
     <string name="share">Share</string>
     <string name="failedSharing">Failed creating the share URL!</string>
+    <string name="apply">Apply</string>
+    <string name="failedChangingOptions">Failed changing game options!</string>
+    <string name="optionsChanged">Game options changed.</string>
+    <string name="editGameOptions">Edit game options</string>
+    <string name="password"><![CDATA[<b>Password:</b>]]> %s</string>
+    <string name="scoreLimitLabel">Score limit</string>
+    <string name="passwordLabel">Password</string>
+    <string name="hidePassword">Hide password</string>
+    <string name="blankCardsLabel">Blank cards</string>
+    <string name="idleTimeMultiplierLabel">Idle time multiplier</string>
+    <string name="spectatorsLimitLabel">Spectators limit</string>
+    <string name="playersLimitLabel">Players limit</string>
+    <string name="invalidTimeMultiplier">Invalid idle time multiplier!</string>
+    <string name="invalidNumber">Invalid number!</string>
+    <string name="outOfRange">The value is out of range! Min: %1$d. Max: %2$d</string>
+    <string name="cardSetsLabel">Card sets</string>
 </resources>

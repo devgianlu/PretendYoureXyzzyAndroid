@@ -38,5 +38,10 @@
             android:id="@+id/gameOptions_blankCards"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+
+        <com.gianlu.commonutils.SuperTextView
+            android:id="@+id/gameOptions_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
     </LinearLayout>
 </ScrollView>

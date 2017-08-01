@@ -2,9 +2,11 @@ package com.gianlu.pretendyourexyzzy.Main;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.TypedValue;
@@ -14,10 +16,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.gianlu.commonutils.CommonUtils;
@@ -26,6 +31,7 @@ import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.GameManager;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
@@ -39,21 +45,21 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import cz.msebera.android.httpclient.NameValuePair;
 import cz.msebera.android.httpclient.client.utils.URIBuilder;
 import cz.msebera.android.httpclient.client.utils.URLEncodedUtils;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
-// TODO: Change game options
 public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInfo>, GameManager.IManager {
     private IFragment handler;
-    private Game game;
     private FrameLayout layout;
     private ProgressBar loading;
     private LinearLayout container;
     private GameManager manager;
     private User me;
+    private int gameId;
     private PYX pyx;
 
     public static OngoingGameFragment getInstance(Game game, User me, OngoingGameFragment.IFragment handler) {
@@ -75,7 +81,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
         container = layout.findViewById(R.id.ongoingGame_container);
 
         me = (User) getArguments().getSerializable("me");
-        game = (Game) getArguments().getSerializable("game");
+        Game game = (Game) getArguments().getSerializable("game");
         if (game == null) {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.GONE);
@@ -83,6 +89,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
             return layout;
         }
 
+        gameId = game.gid;
         pyx = PYX.get(getContext());
         pyx.getGameInfo(game.gid, this);
 
@@ -112,8 +119,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     }
 
     private void leaveGame() {
-        if (game == null) return;
-        PYX.get(getContext()).leaveGame(game.gid, new PYX.ISuccess() {
+        PYX.get(getContext()).leaveGame(gameId, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
                 if (handler != null) handler.onLeftGame();
@@ -126,6 +132,10 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
         });
     }
 
+    private boolean amHost() {
+        return getGame() != null && Objects.equals(getGame().host, me.nickname);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -133,7 +143,9 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
                 leaveGame();
                 return true;
             case R.id.ongoingGame_options:
-                showGameOptions();
+                if (amHost() && manager.gameInfo.game.status == Game.Status.LOBBY)
+                    editGameOptions();
+                else showGameOptions();
                 return true;
             case R.id.ongoingGame_spectators:
                 showSpectators();
@@ -147,7 +159,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     }
 
     private void shareGame() {
-        if (game == null) return;
+        if (getGame() == null) return;
         URI uri = pyx.server.uri;
         URIBuilder builder = new URIBuilder();
         builder.setScheme(uri.getScheme())
@@ -155,8 +167,9 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
                 .setPath("/zy/game.jsp");
 
         List<NameValuePair> params = new ArrayList<>();
-        params.add(new BasicNameValuePair("game", String.valueOf(game.gid)));
-        if (game.hasPassword) params.add(new BasicNameValuePair("password", game.options.password));
+        params.add(new BasicNameValuePair("game", String.valueOf(gameId)));
+        if (getGame().hasPassword)
+            params.add(new BasicNameValuePair("password", getGame().options.password));
         builder.setFragment(URLEncodedUtils.format(params, Charset.forName("UTF-8")));
 
         try {
@@ -170,8 +183,8 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     }
 
     private void showSpectators() {
-        if (game == null) return;
-        SuperTextView spectators = new SuperTextView(getContext(), R.string.spectatorsList, game.spectators.isEmpty() ? "none" : CommonUtils.join(game.spectators, ", "));
+        if (getGame() == null) return;
+        SuperTextView spectators = new SuperTextView(getContext(), R.string.spectatorsList, getGame().spectators.isEmpty() ? "none" : CommonUtils.join(getGame().spectators, ", "));
         int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
         spectators.setPadding(padding, padding, padding, padding);
 
@@ -184,9 +197,90 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     }
 
     @SuppressLint("InflateParams")
+    private void editGameOptions() {
+        if (getGame() == null) return;
+        Game.Options options = getGame().options;
+        final ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.edit_game_options_dialog, null, false);
+        final TextInputLayout scoreLimit = layout.findViewById(R.id.editGameOptions_scoreLimit);
+        CommonUtils.setText(scoreLimit, String.valueOf(options.scoreLimit));
+        final TextInputLayout playerLimit = layout.findViewById(R.id.editGameOptions_playerLimit);
+        CommonUtils.setText(playerLimit, String.valueOf(options.playersLimit));
+        final TextInputLayout spectatorLimit = layout.findViewById(R.id.editGameOptions_spectatorLimit);
+        CommonUtils.setText(spectatorLimit, String.valueOf(options.spectatorsLimit));
+        final Spinner idleTimeMultiplier = layout.findViewById(R.id.editGameOptions_idleTimeMultiplier);
+        idleTimeMultiplier.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, Game.Options.VALID_TIME_MULTIPLIERS));
+        idleTimeMultiplier.setSelection(CommonUtils.indexOf(Game.Options.VALID_TIME_MULTIPLIERS, options.timeMultiplier));
+        final TextInputLayout blankCards = layout.findViewById(R.id.editGameOptions_blankCards);
+        CommonUtils.setText(blankCards, String.valueOf(options.blanksLimit));
+        final TextInputLayout password = layout.findViewById(R.id.editGameOptions_password);
+        CommonUtils.setText(password, options.password);
+        final LinearLayout cardSets = layout.findViewById(R.id.editGameOptions_cardSets);
+        cardSets.removeAllViews();
+        for (CardSet set : pyx.firstLoad.cardSets) {
+            CheckBox item = new CheckBox(getContext());
+            item.setTag(set);
+            item.setText(set.name);
+            item.setChecked(getGame().options.cardSets.contains(set.id));
+            cardSets.addView(item);
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.editGameOptions)
+                .setView(layout)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.apply, null);
+
+        final AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View button) {
+                        scoreLimit.setErrorEnabled(false);
+                        playerLimit.setErrorEnabled(false);
+                        spectatorLimit.setErrorEnabled(false);
+                        blankCards.setErrorEnabled(false);
+                        password.setErrorEnabled(false);
+
+                        Game.Options newOptions;
+                        try {
+                            newOptions = Game.Options.validateAndCreate(idleTimeMultiplier.getSelectedItem().toString(), CommonUtils.getText(spectatorLimit), CommonUtils.getText(playerLimit), CommonUtils.getText(scoreLimit), CommonUtils.getText(blankCards), cardSets, CommonUtils.getText(password));
+                        } catch (Game.Options.InvalidFieldException ex) {
+                            View view = layout.findViewById(ex.fieldId);
+                            if (view != null && view instanceof TextInputLayout) {
+                                if (ex.throwMessage == R.string.outOfRange)
+                                    ((TextInputLayout) view).setError(getString(R.string.outOfRange, ex.min, ex.max));
+                                else
+                                    ((TextInputLayout) view).setError(getString(ex.throwMessage));
+                            }
+                            return;
+                        }
+
+                        dialog.dismiss();
+                        pyx.changeGameOptions(gameId, newOptions, new PYX.ISuccess() {
+                            @Override
+                            public void onDone(PYX pyx) {
+                                Toaster.show(getActivity(), Utils.Messages.OPTIONS_CHANGED);
+                            }
+
+                            @Override
+                            public void onException(Exception ex) {
+                                Toaster.show(getActivity(), Utils.Messages.FAILED_CHANGING_OPTIONS, ex);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+        CommonUtils.showDialog(getActivity(), dialog);
+    }
+
+    @SuppressLint("InflateParams")
     private void showGameOptions() {
-        if (game == null) return;
-        Game.Options options = game.options;
+        if (getGame() == null) return;
+        Game.Options options = getGame().options;
         ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.game_options_dialog, null, false);
         SuperTextView scoreLimit = layout.findViewById(R.id.gameOptions_scoreLimit);
         scoreLimit.setHtml(R.string.scoreLimit, options.scoreLimit);
@@ -198,9 +292,11 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
         idleTimeMultiplier.setHtml(R.string.timeMultiplier, options.timeMultiplier);
         SuperTextView cardSets = layout.findViewById(R.id.gameOptions_cardSets);
         cardSets.setHtml(R.string.cardSets, options.cardSets.isEmpty() ? "none" : CommonUtils.join(pyx.firstLoad.createCardSetNamesList(options.cardSets), ", "));
-
         SuperTextView blankCards = layout.findViewById(R.id.gameOptions_blankCards);
         blankCards.setHtml(R.string.blankCards, options.blanksLimit);
+        SuperTextView password = layout.findViewById(R.id.gameOptions_password);
+        if (options.password == null) password.setVisibility(View.GONE);
+        else password.setHtml(R.string.password, options.password);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.gameOptions)
@@ -230,6 +326,11 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
                 OngoingGameFragment.this.onException(ex);
             }
         });
+    }
+
+    @Nullable
+    private Game getGame() {
+        return manager == null ? null : manager.gameInfo.game;
     }
 
     @Override
