@@ -257,6 +257,8 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             case GAME_BLACK_RESHUFFLE:
             case GAME_JUDGE_LEFT:
             case GAME_SPECTATOR_JOIN:
+            case CARDCAST_REMOVE_CARDSET:
+            case CARDCAST_ADD_CARDSET:
             case GAME_LIST_REFRESH:
             case GAME_WHITE_RESHUFFLE:
             case GAME_SPECTATOR_LEAVE:
@@ -294,10 +296,6 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 break;
             case HURRY_UP:
                 if (listener != null) listener.showToast(Utils.Messages.HURRY_UP);
-                break;
-            case CARDCAST_ADD_CARDSET: // TODO
-                break;
-            case CARDCAST_REMOVE_CARDSET: // TODO
                 break;
             case KICKED_FROM_GAME_IDLE:
                 if (listener != null) listener.kicked();
