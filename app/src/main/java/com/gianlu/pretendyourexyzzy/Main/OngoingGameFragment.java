@@ -180,9 +180,15 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     private void showCardCastDialog(List<CardSet> sets) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.cardcast)
-                .setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, sets), null)
-                .setPositiveButton(R.string.add, null)
                 .setNeutralButton(android.R.string.ok, null);
+
+        if (amHost()) builder.setPositiveButton(R.string.add, null);
+
+        if (sets.isEmpty())
+            builder.setMessage(R.string.noCardSets);
+        else
+            builder.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, sets), null);
+
 
         final AlertDialog dialog = builder.create();
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
