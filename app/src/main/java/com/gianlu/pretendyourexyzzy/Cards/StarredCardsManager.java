@@ -95,6 +95,7 @@ public class StarredCardsManager {
         public final Card blackCard;
         public final List<BaseCard> whiteCards;
         public final int id;
+        private String cachedSentence;
 
         public StarredCard(Card blackCard, List<? extends BaseCard> whiteCards) {
             this.blackCard = blackCard;
@@ -130,25 +131,31 @@ public class StarredCardsManager {
         }
 
         private String createSentence() {
-            String blackText = blackCard.text;
-            if (!blackText.contains("____"))
-                return blackText + "\n<u>" + whiteCards.get(0).getText() + "</u>";
+            if (cachedSentence == null) {
+                String blackText = blackCard.text;
+                if (!blackText.contains("____"))
+                    return blackText + "\n<u>" + whiteCards.get(0).getText() + "</u>";
 
-            for (BaseCard whiteCard : whiteCards) {
-                String whiteText = whiteCard.getText();
-                if (whiteText.endsWith("."))
-                    whiteText = whiteText.substring(0, whiteText.length() - 1);
+                boolean firstCapital = blackText.startsWith("____");
+                for (BaseCard whiteCard : whiteCards) {
+                    String whiteText = whiteCard.getText();
+                    if (whiteText.endsWith("."))
+                        whiteText = whiteText.substring(0, whiteText.length() - 1);
 
-                if (shouldLowercaseFirstLetter(whiteText))
-                    whiteText = Character.toLowerCase(whiteText.charAt(0)) + whiteText.substring(1);
+                    if (shouldLowercaseFirstLetter(whiteText) && !firstCapital)
+                        whiteText = Character.toLowerCase(whiteText.charAt(0)) + whiteText.substring(1);
 
-                blackText = blackText.replaceFirst("____", "<u>" + whiteText + "</u>");
+                    if (firstCapital && Character.isLowerCase(whiteText.charAt(0)))
+                        whiteText = Character.toUpperCase(whiteText.charAt(0)) + whiteText.substring(1);
+
+                    blackText = blackText.replaceFirst("____", "<u>" + whiteText + "</u>");
+                    firstCapital = false;
+                }
+
+                cachedSentence = blackText;
             }
 
-            if (Character.isLowerCase(blackText.charAt(0)))
-                blackText = Character.toUpperCase(blackText.charAt(0)) + blackText.substring(1);
-
-            return blackText;
+            return cachedSentence;
         }
 
         @Override
