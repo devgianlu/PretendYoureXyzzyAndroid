@@ -261,7 +261,6 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             case NOOP:
             case CHAT:
             case GAME_BLACK_RESHUFFLE:
-            case GAME_JUDGE_LEFT:
             case GAME_SPECTATOR_JOIN:
             case CARDCAST_REMOVE_CARDSET:
             case CARDCAST_ADD_CARDSET:
@@ -271,6 +270,11 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             case NEW_PLAYER:
             case PLAYER_LEAVE:
                 // Not interested in these
+                return;
+            case GAME_JUDGE_LEFT:
+                updatePlayersCards(new ArrayList<List<Card>>());
+                if (listener != null)
+                    listener.showToast(new Toaster.Message(R.string.judgeLeft, false));
                 return;
             case GAME_OPTIONS_CHANGED:
                 gameInfo = new GameInfo(new Game(message.obj.getJSONObject("gi")), gameInfo.players);

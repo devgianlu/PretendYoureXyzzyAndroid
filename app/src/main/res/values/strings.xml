@@ -87,4 +87,5 @@
     <string name="failedAddingCardCast">Failed adding the CardCast card set!</string>
     <string name="notEnoughPlayers">Not enough players!</string>
     <string name="noCardSets">No card sets.</string>
+    <string name="judgeLeft">Judge left!</string>
 </resources>
