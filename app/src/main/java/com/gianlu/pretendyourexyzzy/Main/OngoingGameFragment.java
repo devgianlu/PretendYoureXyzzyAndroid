@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.text.InputFilter;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -136,6 +138,20 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
         return getGame() != null && Objects.equals(getGame().host, me.nickname);
     }
 
+    private void loadCardCastSetsAndShowDialog() {
+        pyx.listCardCastCardSets(gameId, new PYX.IResult<List<CardSet>>() {
+            @Override
+            public void onDone(PYX pyx, List<CardSet> result) {
+                showCardCastDialog(result);
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                Toaster.show(getActivity(), Utils.Messages.FAILED_LOADING, ex);
+            }
+        });
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -153,9 +169,74 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
             case R.id.ongoingGame_share:
                 shareGame();
                 return true;
+            case R.id.ongoingGame_cardcast:
+                loadCardCastSetsAndShowDialog();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showCardCastDialog(List<CardSet> sets) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.cardcast)
+                .setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, sets), null)
+                .setPositiveButton(R.string.add, null)
+                .setNeutralButton(android.R.string.ok, null);
+
+        final AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        askForCardCastCode(new ICardCast() {
+                            @Override
+                            public void onCardCastCode(String code) {
+                                pyx.addCardCastCardSet(gameId, code, new PYX.ISuccess() {
+                                    @Override
+                                    public void onDone(PYX pyx) {
+                                        Toaster.show(getActivity(), Utils.Messages.CARDCAST_ADDED);
+                                        dialog.dismiss();
+
+                                        loadCardCastSetsAndShowDialog();
+                                    }
+
+                                    @Override
+                                    public void onException(Exception ex) {
+                                        Toaster.show(getActivity(), Utils.Messages.FAILED_ADDING_CARDCAST, ex);
+                                        dialog.dismiss();
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+        CommonUtils.showDialog(getActivity(), dialog);
+    }
+
+    private void askForCardCastCode(final ICardCast listener) {
+        final EditText code = new EditText(getContext());
+        code.setAllCaps(true);
+        code.setHint("XXXXX");
+        code.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5)});
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.addCardCast)
+                .setView(code)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        listener.onCardCastCode(code.getText().toString());
+                    }
+                });
+
+        CommonUtils.showDialog(getActivity(), builder);
     }
 
     private void shareGame() {
@@ -295,7 +376,8 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
         SuperTextView blankCards = layout.findViewById(R.id.gameOptions_blankCards);
         blankCards.setHtml(R.string.blankCards, options.blanksLimit);
         SuperTextView password = layout.findViewById(R.id.gameOptions_password);
-        if (options.password == null) password.setVisibility(View.GONE);
+        if (options.password == null || options.password.isEmpty())
+            password.setVisibility(View.GONE);
         else password.setHtml(R.string.password, options.password);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -382,5 +464,9 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
 
     public interface IFragment {
         void onLeftGame();
+    }
+
+    private interface ICardCast {
+        void onCardCastCode(String code);
     }
 }

@@ -126,40 +126,44 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
 
     @SuppressLint("InflateParams")
     private void cannotStartGame(PYXException ex) {
-        int wcr;
-        int bcr;
-        int wcp;
-        int bcp;
-        try {
-            wcr = ex.obj.getInt("wcr");
-            bcr = ex.obj.getInt("bcr");
-            wcp = ex.obj.getInt("wcp");
-            bcp = ex.obj.getInt("bcp");
-        } catch (JSONException exx) {
-            Logging.logMe(context, exx);
-            return;
+        if (Objects.equals(ex.errorCode, "nep")) {
+            if (listener != null) listener.showToast(Utils.Messages.NOT_ENOUGH_PLAYERS);
+        } else if (Objects.equals(ex.errorCode, "nec")) {
+            int wcr;
+            int bcr;
+            int wcp;
+            int bcp;
+            try {
+                wcr = ex.obj.getInt("wcr");
+                bcr = ex.obj.getInt("bcr");
+                wcp = ex.obj.getInt("wcp");
+                bcp = ex.obj.getInt("bcp");
+            } catch (JSONException exx) {
+                Logging.logMe(context, exx);
+                return;
+            }
+
+            LinearLayout layout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.cannot_start_game_dialog, null, false);
+            TextView wcrText = layout.findViewById(R.id.cannotStartGame_wcr);
+            wcrText.setText(String.valueOf(wcr));
+            TextView bcrText = layout.findViewById(R.id.cannotStartGame_bcr);
+            bcrText.setText(String.valueOf(bcr));
+            TextView wcpText = layout.findViewById(R.id.cannotStartGame_wcp);
+            wcpText.setText(String.valueOf(wcp));
+            TextView bcpText = layout.findViewById(R.id.cannotStartGame_bcp);
+            bcpText.setText(String.valueOf(bcp));
+            ImageView bcCheck = layout.findViewById(R.id.cannotStartGame_checkBc);
+            bcCheck.setImageResource(bcp >= bcr ? R.drawable.ic_done_black_48dp : R.drawable.ic_clear_black_48dp);
+            ImageView wcCheck = layout.findViewById(R.id.cannotStartGame_checkWc);
+            wcCheck.setImageResource(wcp >= wcr ? R.drawable.ic_done_black_48dp : R.drawable.ic_clear_black_48dp);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(R.string.cannotStartGame)
+                    .setView(layout)
+                    .setPositiveButton(android.R.string.ok, null);
+
+            if (listener != null) listener.showDialog(builder);
         }
-
-        LinearLayout layout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.cannot_start_game_dialog, null, false);
-        TextView wcrText = layout.findViewById(R.id.cannotStartGame_wcr);
-        wcrText.setText(String.valueOf(wcr));
-        TextView bcrText = layout.findViewById(R.id.cannotStartGame_bcr);
-        bcrText.setText(String.valueOf(bcr));
-        TextView wcpText = layout.findViewById(R.id.cannotStartGame_wcp);
-        wcpText.setText(String.valueOf(wcp));
-        TextView bcpText = layout.findViewById(R.id.cannotStartGame_bcp);
-        bcpText.setText(String.valueOf(bcp));
-        ImageView bcCheck = layout.findViewById(R.id.cannotStartGame_checkBc);
-        bcCheck.setImageResource(bcp >= bcr ? R.drawable.ic_done_black_48dp : R.drawable.ic_clear_black_48dp);
-        ImageView wcCheck = layout.findViewById(R.id.cannotStartGame_checkWc);
-        wcCheck.setImageResource(wcp >= wcr ? R.drawable.ic_done_black_48dp : R.drawable.ic_clear_black_48dp);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(R.string.cannotStartGame)
-                .setView(layout)
-                .setPositiveButton(android.R.string.ok, null);
-
-        if (listener != null) listener.showDialog(builder);
     }
 
     private void updateInstructions(String instructions) {

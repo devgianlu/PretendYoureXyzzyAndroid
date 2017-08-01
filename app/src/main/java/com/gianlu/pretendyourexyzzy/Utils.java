@@ -67,5 +67,8 @@ public class Utils {
         public static final Toaster.Message FAILED_SHARING = new Toaster.Message(R.string.failedSharing, true);
         public static final Toaster.Message OPTIONS_CHANGED = new Toaster.Message(R.string.optionsChanged, false);
         public static final Toaster.Message FAILED_CHANGING_OPTIONS = new Toaster.Message(R.string.failedChangingOptions, true);
+        public static final Toaster.Message CARDCAST_ADDED = new Toaster.Message(R.string.cardCastAdded, false);
+        public static final Toaster.Message FAILED_ADDING_CARDCAST = new Toaster.Message(R.string.failedAddingCardCast, true);
+        public static final Toaster.Message NOT_ENOUGH_PLAYERS = new Toaster.Message(R.string.notEnoughPlayers, false);
     }
 }

@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
@@ -565,6 +566,86 @@ public class PYX {
         });
     }
 
+    public void listCardCastCardSets(final int gid, final IResult<List<CardSet>> listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject obj = ajaxServletRequestSync(OP.LIST_CARDCAST_CARD_SETS, new BasicNameValuePair("gid", String.valueOf(gid)));
+                    final List<CardSet> sets = CardSet.toCardSetsList(obj.getJSONArray("css"));
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(instance, sets);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public void addCardCastCardSet(final int gid, final String code, final ISuccess listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ajaxServletRequestSync(OP.ADD_CARDCAST_CARD_SET,
+                            new BasicNameValuePair("gid", String.valueOf(gid)),
+                            new BasicNameValuePair("cci", code));
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(instance);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public void removeCardCastCardSet(final int gid, final String code, final ISuccess listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ajaxServletRequestSync(OP.REMOVE_CARDCAST_CARD_SET,
+                            new BasicNameValuePair("gid", String.valueOf(gid)),
+                            new BasicNameValuePair("cci", code));
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(instance);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     public enum OP {
         REGISTER("r"),
         FIRST_LOAD("fl"),
@@ -582,7 +663,10 @@ public class PYX {
         JUDGE_SELECT("js"),
         CREATE_GAME("cg"),
         START_GAME("sg"),
-        CHANGE_GAME_OPTIONS("cgo");
+        CHANGE_GAME_OPTIONS("cgo"),
+        LIST_CARDCAST_CARD_SETS("clc"),
+        ADD_CARDCAST_CARD_SET("cac"),
+        REMOVE_CARDCAST_CARD_SET("crc");
 
         private final String val;
 
