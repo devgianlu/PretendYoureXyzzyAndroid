@@ -189,19 +189,24 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 break;
             case IDLE:
                 updateInstructions("Waiting for other players...");
-                whiteCards.swapAdapter(playersCardsAdapter, true);
+                if (whiteCards.getAdapter() != playersCardsAdapter)
+                    whiteCards.swapAdapter(playersCardsAdapter, true);
                 break;
             case JUDGE:
                 updateInstructions("You're the Card Czar!");
-                whiteCards.swapAdapter(playersCardsAdapter, true);
+                if (whiteCards.getAdapter() != playersCardsAdapter)
+                    whiteCards.swapAdapter(playersCardsAdapter, true);
                 break;
             case JUDGING:
                 updateInstructions("Select the card(s) that will win this round.");
-                whiteCards.swapAdapter(playersCardsAdapter, true);
+                if (whiteCards.getAdapter() != playersCardsAdapter)
+                    whiteCards.swapAdapter(playersCardsAdapter, true);
                 break;
             case PLAYING:
+                if (blackCard.getCard() == null) break;
                 updateInstructions("Select " + blackCard.getCard().getNumPick() + " card(s) to play. Your hand:");
-                whiteCards.swapAdapter(handAdapter, true);
+                if (whiteCards.getAdapter() != handAdapter)
+                    whiteCards.swapAdapter(handAdapter, true);
                 break;
             case WINNER:
                 updateInstructions("You won!");
