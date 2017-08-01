@@ -69,6 +69,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         this.listener = listener;
         this.handler = new Handler(context.getMainLooper());
         this.pyx = PYX.get(context);
+        pyx.pollingThread.addListener(this);
 
         startGame = gameLayout.findViewById(R.id.gameLayout_startGame);
         blackCard = gameLayout.findViewById(R.id.gameLayout_blackCard);

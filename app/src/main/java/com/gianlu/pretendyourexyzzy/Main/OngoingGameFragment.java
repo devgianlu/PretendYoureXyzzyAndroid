@@ -397,7 +397,6 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     @Override
     public void onDone(PYX pyx, final GameInfo gameInfo) {
         if (manager == null) manager = new GameManager(container, gameInfo, me, this);
-        pyx.pollingThread.addListener(manager);
         updateActivityTitle();
 
         pyx.getGameCards(gameInfo.game.gid, new PYX.IResult<GameCards>() {
