@@ -51,6 +51,7 @@ public class CardGroupView extends LinearLayout implements PyxCard.ICard {
     public void setCards(List<? extends BaseCard> cards) {
         this.cards = cards;
         this.starred = associatedBlackCard != null && StarredCardsManager.hasCard(getContext(), getStarredCard());
+        this.starredCard = null;
 
         removeAllViews();
         for (final BaseCard card : cards) {
@@ -86,6 +87,7 @@ public class CardGroupView extends LinearLayout implements PyxCard.ICard {
 
     public void setAssociatedBlackCard(Card associatedBlackCard) {
         this.associatedBlackCard = associatedBlackCard;
+        this.starredCard = null;
     }
 
     private StarredCardsManager.StarredCard getStarredCard() {

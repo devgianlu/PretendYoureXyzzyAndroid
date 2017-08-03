@@ -115,9 +115,7 @@ public class StarredCardsManager {
         }
 
         private boolean shouldLowercaseFirstLetter(String whiteText) {
-            return !Character.isLowerCase(whiteText.charAt(0))
-                    && !Character.isUpperCase(whiteText.charAt(1))
-                    && !isSecondWordFirstLetterUppercase(whiteText);
+            return whiteText.length() != 0 && !Character.isLowerCase(whiteText.charAt(0)) && !Character.isUpperCase(whiteText.charAt(1)) && !isSecondWordFirstLetterUppercase(whiteText);
         }
 
         private boolean isSecondWordFirstLetterUppercase(String whiteText) {
