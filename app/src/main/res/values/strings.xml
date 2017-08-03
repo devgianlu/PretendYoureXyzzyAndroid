@@ -88,4 +88,5 @@
     <string name="notEnoughPlayers">Not enough players!</string>
     <string name="noCardSets">No card sets.</string>
     <string name="judgeLeft">Judge left!</string>
+    <string name="cannotStartGame_solution">Please meet the requirements adding card sets to the game.</string>
 </resources>
