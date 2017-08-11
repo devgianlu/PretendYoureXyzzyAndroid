@@ -1,7 +1,9 @@
 package com.gianlu.pretendyourexyzzy;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.gianlu.cardcastapi.Models.Card;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -22,6 +24,16 @@ public class Utils {
                 return cookie;
 
         return null;
+    }
+
+    @NonNull
+    public static String composeCardcastDeckSentence(Card blackCard, Card whiteCard) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(blackCard.getText().get(0));
+        builder.append("<u>").append(whiteCard.getText().get(0)).append("</u>");
+        if (blackCard.getText().size() > 1) builder.append(blackCard.getText().get(1));
+
+        return builder.toString();
     }
 
     @Nullable

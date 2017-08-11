@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.pretendyourexyzzy.Main.CardcastFragment;
 import com.gianlu.pretendyourexyzzy.Main.GameChatFragment;
 import com.gianlu.pretendyourexyzzy.Main.GamesFragment;
 import com.gianlu.pretendyourexyzzy.Main.GlobalChatFragment;
@@ -30,10 +31,12 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
     private final static String TAG_GAME_CHAT = "gameChat";
     private static final String TAG_PLAYERS = "players";
     private static final String TAG_ONGOING_GAME = "ongoingGame";
+    private static final String TAG_CARDCAST = "cardcast";
     private BottomNavigationView navigation;
     private NamesFragment namesFragment;
     private GlobalChatFragment globalChatFragment;
     private GamesFragment gamesFragment;
+    private CardcastFragment cardcastFragment;
     private GameChatFragment gameChatFragment;
     private OngoingGameFragment ongoingGameFragment;
     private User user;
@@ -56,12 +59,11 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         globalChatFragment = GlobalChatFragment.getInstance();
         transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
         gamesFragment = GamesFragment.getInstance(this);
-        transaction.add(R.id.main_container, gamesFragment, TAG_GAMES).commitNow();
+        transaction.add(R.id.main_container, gamesFragment, TAG_GAMES);
+        cardcastFragment = CardcastFragment.getInstance();
+        transaction.add(R.id.main_container, cardcastFragment, TAG_CARDCAST).commitNow();
 
         navigation = findViewById(R.id.main_navigation);
-        Menu menu = navigation.getMenu();
-        menu.removeItem(R.id.main_ongoingGame);
-        menu.removeItem(R.id.main_gameChat);
         navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -77,6 +79,10 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
                     case R.id.main_games:
                         setTitle(getString(R.string.games) + " - " + getString(R.string.app_name));
                         switchTo(TAG_GAMES);
+                        break;
+                    case R.id.main_cardcast:
+                        setTitle(getString(R.string.cardcast) + " - " + getString(R.string.app_name));
+                        switchTo(TAG_CARDCAST);
                         break;
                     case R.id.main_ongoingGame:
                         setTitle(getString(R.string.game) + " - " + getString(R.string.app_name));
@@ -185,6 +191,9 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
                 case TAG_GAMES:
                     transaction.add(R.id.main_container, gamesFragment, TAG_GAMES);
                     break;
+                case TAG_CARDCAST:
+                    transaction.add(R.id.main_container, cardcastFragment, TAG_CARDCAST);
+                    break;
                 case TAG_ONGOING_GAME:
                     transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
                     break;
@@ -205,19 +214,14 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         gameChatFragment = GameChatFragment.getInstance(game);
         transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT).commitNow();
         navigation.getMenu().clear();
-        navigation.inflateMenu(R.menu.navigation);
-        Menu menu = navigation.getMenu();
-        menu.removeItem(R.id.main_games);
+        navigation.inflateMenu(R.menu.navigation_ongoing_game);
         navigation.setSelectedItemId(R.id.main_ongoingGame);
     }
 
     @Override
     public void onLeftGame() {
         navigation.getMenu().clear();
-        navigation.inflateMenu(R.menu.navigation);
-        Menu menu = navigation.getMenu();
-        menu.removeItem(R.id.main_ongoingGame);
-        menu.removeItem(R.id.main_gameChat);
+        navigation.inflateMenu(R.menu.navigation_lobby);
         navigation.setSelectedItemId(R.id.main_games);
 
         FragmentManager manager = getSupportFragmentManager();

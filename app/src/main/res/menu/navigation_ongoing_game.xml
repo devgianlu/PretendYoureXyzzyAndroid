@@ -12,9 +12,9 @@
         android:title="@string/globalChat" />
 
     <item
-        android:id="@+id/main_games"
-        android:icon="@drawable/ic_games_black_48dp"
-        android:title="@string/games" />
+        android:id="@+id/main_cardcast"
+        android:icon="@drawable/ic_cast_black_48dp"
+        android:title="@string/cardcast" />
 
     <item
         android:id="@+id/main_ongoingGame"
