@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/cardcastFragment_search"
+        android:icon="@drawable/ic_search_white_48dp"
+        android:orderInCategory="0"
+        android:title="@string/search"
+        app:actionViewClass="android.widget.SearchView"
+        app:showAsAction="collapseActionView|ifRoom" />
+
+    <item
+        android:id="@+id/cardcastFragment_categories"
+        android:icon="@drawable/ic_filter_list_white_48dp"
+        android:orderInCategory="1"
+        android:title="@string/categories"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/cardcastFragment_sort"
+        android:icon="@drawable/ic_sort_white_48dp"
+        android:orderInCategory="2"
+        android:title="@string/sort"
+        app:showAsAction="ifRoom">
+        <menu><!-- Submenu placeholder --></menu>
+    </item>
+
+    <item
+        android:id="@+id/cardcastFragment_showNsfw"
+        android:checkable="true"
+        android:checked="true"
+        android:orderInCategory="3"
+        android:title="@string/showNsfw"
+        app:showAsAction="never" />
+</menu>

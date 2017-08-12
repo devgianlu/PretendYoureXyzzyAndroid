@@ -58,11 +58,11 @@ public class CardcastHelper {
     }
 
     public static class Search {
-        private final String query;
-        private final List<Cardcast.Category> categories;
-        private final Cardcast.Direction direction;
-        private final Cardcast.Sort sort;
-        private final boolean nsfw;
+        public final String query;
+        public final List<Cardcast.Category> categories;
+        public final Cardcast.Direction direction;
+        public final Cardcast.Sort sort;
+        public final boolean nsfw;
 
         public Search(@Nullable String query, @Nullable List<Cardcast.Category> categories, @NonNull Cardcast.Direction direction, @NonNull Cardcast.Sort sort, boolean nsfw) {
             this.query = query;

@@ -5,20 +5,22 @@
     <item
         android:id="@+id/main_starredCards"
         android:icon="@drawable/ic_star_white_48dp"
-        android:orderInCategory="3"
+        android:orderInCategory="4"
         android:title="@string/starredCards"
         app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/main_logout"
-        android:icon="@drawable/ic_exit_to_app_white_48dp"
-        android:title="@string/logout"
-        app:showAsAction="never" />
 
     <item
         android:id="@+id/main_keepScreenOn"
         android:checkable="true"
         android:checked="true"
+        android:orderInCategory="98"
         android:title="@string/keepScreenOn"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/main_logout"
+        android:icon="@drawable/ic_exit_to_app_white_48dp"
+        android:orderInCategory="99"
+        android:title="@string/logout"
         app:showAsAction="never" />
 </menu>

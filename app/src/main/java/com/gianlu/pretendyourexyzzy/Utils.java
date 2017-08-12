@@ -1,8 +1,10 @@
 package com.gianlu.pretendyourexyzzy;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.gianlu.cardcastapi.Cardcast;
 import com.gianlu.cardcastapi.Models.Card;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
@@ -24,6 +26,34 @@ public class Utils {
                 return cookie;
 
         return null;
+    }
+
+    public static String getCategoryFormal(Context context, Cardcast.Category category) {
+        switch (category) {
+            case BOOKS:
+                return context.getString(R.string.books);
+            case COMMUNITY:
+                return context.getString(R.string.community);
+            case GAMING:
+                return context.getString(R.string.gaming);
+            case MOVIES:
+                return context.getString(R.string.movies);
+            case MUSIC:
+                return context.getString(R.string.music);
+            case SPORTS:
+                return context.getString(R.string.sports);
+            case TECHNOLOGY:
+                return context.getString(R.string.technology);
+            case TELEVISION:
+                return context.getString(R.string.television);
+            case TRANSLATION:
+                return context.getString(R.string.translation);
+            default:
+            case OTHER:
+                return context.getString(R.string.other);
+            case RANDOM:
+                return context.getString(R.string.random);
+        }
     }
 
     @NonNull
