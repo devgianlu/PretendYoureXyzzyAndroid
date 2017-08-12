@@ -21,7 +21,8 @@ import com.gianlu.pretendyourexyzzy.Utils;
 import java.util.Date;
 import java.util.Random;
 
-// TODO: Add rating and number of calls and responses
+import me.zhanghai.android.materialratingbar.MaterialRatingBar;
+
 public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<CardcastDecksAdapter.ViewHolder, Deck> {
     private final LayoutInflater inflater;
     private final CardcastHelper cardcast;
@@ -63,6 +64,10 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
             holder.example.setVisibility(View.GONE);
         }
 
+        holder.rating.setRating(deck.getRating()); // FIXME: Shouldn't be clickable
+        holder.blackCards.setText(String.valueOf(deck.getCalls()));
+        holder.whiteCards.setText(String.valueOf(deck.getResponses()));
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -102,14 +107,20 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
         final TextView name;
         final TextView author;
         final View nsfw;
+        final MaterialRatingBar rating;
+        final TextView blackCards;
+        final TextView whiteCards;
 
-        public ViewHolder(ViewGroup parent) {
+        ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.cardcast_deck_item, parent, false));
 
             example = itemView.findViewById(R.id.cardcastDeckItem_example);
             name = itemView.findViewById(R.id.cardcastDeckItem_name);
             author = itemView.findViewById(R.id.cardcastDeckItem_author);
             nsfw = itemView.findViewById(R.id.cardcastDeckItem_nsfw);
+            rating = itemView.findViewById(R.id.cardcastDeckItem_rating);
+            blackCards = itemView.findViewById(R.id.cardcastDeckItem_blackCards);
+            whiteCards = itemView.findViewById(R.id.cardcastDeckItem_whiteCards);
         }
     }
 }

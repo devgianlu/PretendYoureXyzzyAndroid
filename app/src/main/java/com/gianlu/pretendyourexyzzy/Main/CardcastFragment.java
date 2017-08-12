@@ -46,7 +46,15 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
         list.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
         cardcast = new CardcastHelper(getContext(), Cardcast.get());
-        cardcast.getDecks(new CardcastHelper.Search(null, null, Cardcast.Direction.DESCENDANT, Cardcast.Sort.RATING, true), LIMIT, 0, this);
+        final CardcastHelper.Search search = new CardcastHelper.Search(null, null, Cardcast.Direction.DESCENDANT, Cardcast.Sort.RATING, true);
+        cardcast.getDecks(search, LIMIT, 0, this);
+
+        swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                cardcast.getDecks(search, LIMIT, 0, CardcastFragment.this);
+            }
+        });
 
         return layout;
     }
