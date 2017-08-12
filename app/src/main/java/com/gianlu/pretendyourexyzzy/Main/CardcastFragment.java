@@ -126,7 +126,6 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
         switch (item.getItemId()) {
             case R.id.cardcastFragment_showNsfw:
                 item.setChecked(!item.isChecked());
-
                 search = new CardcastHelper.Search(search.query, search.categories, search.direction, search.sort, item.isChecked());
                 refreshAdapter();
                 return true;
@@ -135,23 +134,24 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
                 return true;
             // Sorting
             case R.id.cardcastFragment_sort_rating:
-                handleSort(Cardcast.Sort.RATING);
+                handleSort(item, Cardcast.Sort.RATING);
                 return true;
             case R.id.cardcastFragment_sort_name:
-                handleSort(Cardcast.Sort.NAME);
+                handleSort(item, Cardcast.Sort.NAME);
                 return true;
             case R.id.cardcastFragment_sort_newest:
-                handleSort(Cardcast.Sort.NEWEST);
+                handleSort(item, Cardcast.Sort.NEWEST);
                 return true;
             case R.id.cardcastFragment_sort_size:
-                handleSort(Cardcast.Sort.SIZE);
+                handleSort(item, Cardcast.Sort.SIZE);
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void handleSort(Cardcast.Sort sort) {
+    private void handleSort(MenuItem item, Cardcast.Sort sort) {
+        item.setChecked(true);
         search = new CardcastHelper.Search(search.query, search.categories, search.direction, sort, search.nsfw);
         refreshAdapter();
     }
