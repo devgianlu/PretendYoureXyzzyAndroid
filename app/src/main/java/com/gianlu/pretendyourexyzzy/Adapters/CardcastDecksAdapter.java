@@ -64,7 +64,8 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
             holder.example.setVisibility(View.GONE);
         }
 
-        holder.rating.setRating(deck.getRating()); // FIXME: Shouldn't be clickable
+        holder.rating.setRating(deck.getRating());
+        holder.rating.setEnabled(false);
         holder.blackCards.setText(String.valueOf(deck.getCalls()));
         holder.whiteCards.setText(String.valueOf(deck.getResponses()));
 
