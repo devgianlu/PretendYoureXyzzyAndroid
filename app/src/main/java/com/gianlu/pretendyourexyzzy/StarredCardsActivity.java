@@ -37,8 +37,7 @@ public class StarredCardsActivity extends AppCompatActivity implements CardsAdap
         setContentView(R.layout.activity_starred_cards);
         setTitle(R.string.starredCards);
 
-        Toolbar toolbar = findViewById(R.id.starredCards_toolbar);
-        setSupportActionBar(toolbar);
+        setSupportActionBar((Toolbar) findViewById(R.id.starredCards_toolbar));
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);

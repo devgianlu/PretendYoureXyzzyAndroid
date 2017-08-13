@@ -59,9 +59,9 @@ public class Utils {
     @NonNull
     public static String composeCardcastDeckSentence(Card blackCard, Card whiteCard) {
         StringBuilder builder = new StringBuilder();
-        builder.append(blackCard.getText().get(0));
-        builder.append("<u>").append(whiteCard.getText().get(0)).append("</u>");
-        if (blackCard.getText().size() > 1) builder.append(blackCard.getText().get(1));
+        builder.append(blackCard.text.get(0));
+        builder.append("<u>").append(whiteCard.text.get(0)).append("</u>");
+        if (blackCard.text.size() > 1) builder.append(blackCard.text.get(1));
 
         return builder.toString();
     }

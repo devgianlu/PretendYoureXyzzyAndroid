@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.gianlu.cardcastapi.Cardcast;
+import com.gianlu.cardcastapi.Models.Card;
 import com.gianlu.cardcastapi.Models.Decks;
 
 import org.json.JSONException;
@@ -25,6 +26,30 @@ public class CardcastHelper {
     public CardcastHelper(Context context, Cardcast cardcast) {
         this.cardcast = cardcast;
         this.handler = new Handler(context.getMainLooper());
+    }
+
+    public void getResponses(final String code, final IResult<List<Card>> listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final List<Card> cards = cardcast.getResponses(code);
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(cards);
+                        }
+                    });
+                } catch (IOException | URISyntaxException | ParseException | JSONException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
     }
 
     public void getDecks(final Search search, final int limit, final int offset, final IDecks listener) {
@@ -51,8 +76,38 @@ public class CardcastHelper {
         });
     }
 
+    public void getCalls(final String code, final IResult<List<Card>> listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final List<Card> cards = cardcast.getCalls(code);
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(cards);
+                        }
+                    });
+                } catch (IOException | URISyntaxException | ParseException | JSONException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     public interface IDecks {
         void onDone(Search search, Decks decks);
+
+        void onException(Exception ex);
+    }
+
+    public interface IResult<E> {
+        void onDone(E result);
 
         void onException(Exception ex);
     }

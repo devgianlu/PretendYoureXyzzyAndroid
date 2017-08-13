@@ -29,6 +29,7 @@ import com.gianlu.commonutils.InfiniteRecyclerView;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.CardcastDecksAdapter;
+import com.gianlu.pretendyourexyzzy.CardcastDeckActivity;
 import com.gianlu.pretendyourexyzzy.CardcastHelper;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
@@ -201,8 +202,8 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
     }
 
     @Override
-    public void onDeckSelected(Deck deck) { // TODO
-
+    public void onDeckSelected(Deck deck) {
+        CardcastDeckActivity.startActivity(getContext(), deck);
     }
 
     @Override

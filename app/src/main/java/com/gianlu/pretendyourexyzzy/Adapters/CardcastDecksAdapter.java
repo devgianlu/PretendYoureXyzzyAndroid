@@ -50,24 +50,24 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
     protected void userBindViewHolder(ViewHolder holder, int position) {
         final Deck deck = items.get(position).getItem();
 
-        holder.name.setText(deck.getName());
-        holder.author.setText(context.getString(R.string.byLowercase, deck.getAuthor().getUsername()));
-        holder.nsfw.setVisibility(deck.isHasNsfwCards() ? View.VISIBLE : View.GONE);
+        holder.name.setText(deck.name);
+        holder.author.setText(context.getString(R.string.byLowercase, deck.author.username));
+        holder.nsfw.setVisibility(deck.hasNsfwCards ? View.VISIBLE : View.GONE);
 
-        if (deck.getSampleCalls() != null && !deck.getSampleCalls().isEmpty()
-                && deck.getSampleResponses() != null && !deck.getSampleResponses().isEmpty()) {
-            Card exampleBlackCard = deck.getSampleCalls().get(random.nextInt(deck.getSampleCalls().size()));
-            Card exampleWhiteCard = deck.getSampleResponses().get(random.nextInt(deck.getSampleResponses().size()));
+        if (deck.sampleCalls != null && !deck.sampleCalls.isEmpty()
+                && deck.sampleResponses != null && !deck.sampleResponses.isEmpty()) {
+            Card exampleBlackCard = deck.sampleCalls.get(random.nextInt(deck.sampleCalls.size()));
+            Card exampleWhiteCard = deck.sampleResponses.get(random.nextInt(deck.sampleResponses.size()));
             holder.example.setHtml(Utils.composeCardcastDeckSentence(exampleBlackCard, exampleWhiteCard));
             holder.example.setVisibility(View.VISIBLE);
         } else {
             holder.example.setVisibility(View.GONE);
         }
 
-        holder.rating.setRating(deck.getRating());
+        holder.rating.setRating(deck.rating);
         holder.rating.setEnabled(false);
-        holder.blackCards.setText(String.valueOf(deck.getCalls()));
-        holder.whiteCards.setText(String.valueOf(deck.getResponses()));
+        holder.blackCards.setText(String.valueOf(deck.calls));
+        holder.whiteCards.setText(String.valueOf(deck.responses));
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override

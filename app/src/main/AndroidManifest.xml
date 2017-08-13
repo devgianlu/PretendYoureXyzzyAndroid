@@ -25,7 +25,6 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.SEND" />
@@ -37,7 +36,6 @@
                 <data
                     android:host="*.pretendyoure.xyz"
                     android:scheme="http" />
-
                 <data
                     android:host="*.pretendyoure.xyz"
                     android:scheme="https" />
@@ -52,6 +50,12 @@
         <!-- Starred cards activity -->
         <activity
             android:name=".StarredCardsActivity"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <!-- Cardcast deck activity -->
+        <activity
+            android:name=".CardcastDeckActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
     </application>
