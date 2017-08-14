@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 
 import com.gianlu.cardcastapi.Cardcast;
 import com.gianlu.cardcastapi.Models.Card;
+import com.gianlu.cardcastapi.Models.DeckInfo;
 import com.gianlu.cardcastapi.Models.Decks;
 
 import org.json.JSONException;
@@ -86,6 +87,30 @@ public class CardcastHelper {
                         @Override
                         public void run() {
                             listener.onDone(cards);
+                        }
+                    });
+                } catch (IOException | URISyntaxException | ParseException | JSONException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public void getDeckInfo(final String code, final IResult<DeckInfo> listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final DeckInfo info = cardcast.getDeckInfo(code);
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(info);
                         }
                     });
                 } catch (IOException | URISyntaxException | ParseException | JSONException ex) {
