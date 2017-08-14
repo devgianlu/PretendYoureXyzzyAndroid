@@ -21,8 +21,7 @@ import com.gianlu.pretendyourexyzzy.R;
 
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 
-public class InfoFragment extends Fragment implements CardcastHelper.IResult<DeckInfo> { // TODO
-
+public class InfoFragment extends Fragment implements CardcastHelper.IResult<DeckInfo> {
     private FrameLayout layout;
     private LinearLayout container;
     private ProgressBar loading;
