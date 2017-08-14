@@ -113,4 +113,5 @@
     <string name="info">Info</string>
     <string name="byUppercase">By %s</string>
     <string name="noCards">There are no cards.</string>
+    <string name="invalidCardcastCode">Invalid Cardcast code!</string>
 </resources>

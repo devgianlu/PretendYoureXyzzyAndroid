@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.gianlu.commonutils.BaseBottomSheet;
+import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.CardSetsAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.R;
@@ -16,14 +17,13 @@ import java.util.List;
 
 import static android.view.View.GONE;
 
-public class CardcastBottomSheet extends BaseBottomSheet<List<CardSet>> implements CardSetsAdapter.IAdapter {
-    private final boolean canEdit;
+public class CardcastBottomSheet extends BaseBottomSheet<List<CardSet>> {
     private final ISheet listener;
     private RecyclerView list;
+    private Button add;
 
-    public CardcastBottomSheet(View parent, boolean canEdit, ISheet listener) {
+    public CardcastBottomSheet(View parent, ISheet listener) {
         super(parent, R.layout.cardcast_bottom_sheet, false);
-        this.canEdit = canEdit;
         this.listener = listener;
     }
 
@@ -33,33 +33,37 @@ public class CardcastBottomSheet extends BaseBottomSheet<List<CardSet>> implemen
         list = content.findViewById(R.id.cardcastBottomSheet_list);
         list.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
         list.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
-        Button add = content.findViewById(R.id.cardcastBottomSheet_add);
-        add.setVisibility(canEdit ? View.VISIBLE : GONE);
-        add.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (listener != null) listener.onAddCardcastDeck();
-            }
-        });
+        add = content.findViewById(R.id.cardcastBottomSheet_add);
     }
 
     @Override
     protected void setupView(@NonNull List<CardSet> item) {
-        list.setAdapter(new CardSetsAdapter(context, item, canEdit, this));
+        add.setVisibility(listener.canEdit() ? View.VISIBLE : GONE);
+        add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                listener.onAddCardcastDeck();
+            }
+        });
+
+        if (item.isEmpty()) {
+            list.setVisibility(GONE);
+            MessageLayout.show(content, R.string.noCardSets, R.drawable.ic_info_outline_black_48dp);
+        } else {
+            list.setVisibility(View.VISIBLE);
+            MessageLayout.hide(content);
+            list.setAdapter(new CardSetsAdapter(context, item));
+        }
     }
 
     @Override
     protected void updateView(@NonNull List<CardSet> item) {
-    }
-
-    @Override
-    public void onDeleteCardSet(CardSet item) {
-        if (listener != null) listener.onDeleteCardSet(item);
+        setupView(item);
     }
 
     public interface ISheet {
         void onAddCardcastDeck();
 
-        void onDeleteCardSet(CardSet set);
+        boolean canEdit();
     }
 }

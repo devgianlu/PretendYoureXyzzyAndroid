@@ -10,6 +10,8 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -19,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
@@ -121,7 +124,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
         layout = (CoordinatorLayout) inflater.inflate(R.layout.ongoing_game_fragment, parent, false);
         loading = layout.findViewById(R.id.ongoingGame_loading);
         container = layout.findViewById(R.id.ongoingGame_container);
-        cardcastBottomSheet = new CardcastBottomSheet(layout, amHost() && getGame() != null && getGame().status == Game.Status.LOBBY, this);
+        cardcastBottomSheet = new CardcastBottomSheet(layout, this);
 
         me = (User) getArguments().getSerializable("me");
         Game game = (Game) getArguments().getSerializable("game");
@@ -397,13 +400,61 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     }
 
     @Override
-    public void onAddCardcastDeck() { // TODO
+    public void onAddCardcastDeck() {
+        final EditText code = new EditText(getContext());
+        code.setHint("XXXXX");
+        code.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        code.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5)});
 
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.addCardCast)
+                .setView(code)
+                .setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        addCardcastCardSet(code.getText().toString());
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null);
+
+        CommonUtils.showDialog(getActivity(), builder);
     }
 
     @Override
-    public void onDeleteCardSet(CardSet set) { // TODO
+    public boolean canEdit() {
+        return amHost() && getGame() != null && getGame().status == Game.Status.LOBBY;
+    }
 
+    public void addCardcastCardSet(String code) {
+        if (code == null || code.length() != 5) {
+            Toaster.show(getActivity(), Utils.Messages.INVALID_CARDCAST_CODE, code);
+            return;
+        }
+
+        pyx.addCardCastCardSet(gameId, code, new PYX.ISuccess() {
+            @Override
+            public void onDone(PYX pyx) {
+                Toaster.show(getActivity(), Utils.Messages.CARDCAST_ADDED);
+                if (cardcastBottomSheet != null && cardcastBottomSheet.shouldUpdate()) {
+                    pyx.listCardCastCardSets(gameId, new PYX.IResult<List<CardSet>>() {
+                        @Override
+                        public void onDone(PYX pyx, List<CardSet> result) {
+                            cardcastBottomSheet.update(result);
+                        }
+
+                        @Override
+                        public void onException(Exception ex) {
+                            Toaster.show(getActivity(), Utils.Messages.FAILED_LOADING, ex);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                Toaster.show(getActivity(), Utils.Messages.FAILED_ADDING_CARDCAST, ex);
+            }
+        });
     }
 
     public interface IFragment {

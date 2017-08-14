@@ -4,10 +4,20 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/cardcastBottomSheet_list"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="200dp" />
+        android:layout_height="240dp">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/cardcastBottomSheet_list"
+            android:layout_width="match_parent"
+            android:layout_height="240dp" />
+
+        <include
+            layout="@layout/message_layout"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

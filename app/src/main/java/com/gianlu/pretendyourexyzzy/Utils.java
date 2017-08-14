@@ -112,5 +112,6 @@ public class Utils {
         public static final Toaster.Message CARDCAST_ADDED = new Toaster.Message(R.string.cardCastAdded, false);
         public static final Toaster.Message FAILED_ADDING_CARDCAST = new Toaster.Message(R.string.failedAddingCardCast, true);
         public static final Toaster.Message NOT_ENOUGH_PLAYERS = new Toaster.Message(R.string.notEnoughPlayers, false);
+        public static final Toaster.Message INVALID_CARDCAST_CODE = new Toaster.Message(R.string.invalidCardcastCode, false);
     }
 }
