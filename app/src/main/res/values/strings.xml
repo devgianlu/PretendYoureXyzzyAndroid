@@ -114,4 +114,5 @@
     <string name="byUppercase">By %s</string>
     <string name="noCards">There are no cards.</string>
     <string name="invalidCardcastCode">Invalid Cardcast code!</string>
+    <string name="addToOngoingGame">Add to the ongoing game</string>
 </resources>

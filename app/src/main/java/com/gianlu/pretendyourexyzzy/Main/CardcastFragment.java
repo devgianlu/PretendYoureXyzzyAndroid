@@ -203,7 +203,7 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
 
     @Override
     public void onDeckSelected(Deck deck) {
-        CardcastDeckActivity.startActivity(getContext(), deck);
+        CardcastDeckActivity.startActivity(getContext(), deck, (CardcastDeckActivity.IOngoingGame) getActivity());
     }
 
     @Override

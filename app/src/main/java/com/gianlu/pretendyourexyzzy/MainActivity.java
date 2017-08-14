@@ -25,7 +25,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity implements GamesFragment.IFragment, OngoingGameFragment.IFragment {
+public class MainActivity extends AppCompatActivity implements GamesFragment.IFragment, OngoingGameFragment.IFragment, CardcastDeckActivity.IOngoingGame {
     private final static String TAG_GLOBAL_CHAT = "globalChat";
     private final static String TAG_GAMES = "games";
     private final static String TAG_GAME_CHAT = "gameChat";
@@ -160,6 +160,17 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public boolean hasOngoingGame() {
+        return ongoingGameFragment != null && ongoingGameFragment.canEdit();
+    }
+
+    @Override
+    public void addCardcastDeck(String code) {
+        if (!hasOngoingGame()) return;
+        ongoingGameFragment.addCardcastCardSet(code);
+    }
+
     private void setKeepScreenOn(boolean on) {
         if (on) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -238,4 +249,6 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         ongoingGameFragment = null;
         gameChatFragment = null;
     }
+
+
 }
