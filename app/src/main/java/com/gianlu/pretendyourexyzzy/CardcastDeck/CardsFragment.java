@@ -74,7 +74,13 @@ public class CardsFragment extends Fragment implements CardcastHelper.IResult<Li
 
     @Override
     public void onDone(List<Card> result) {
-        swipeRefresh.setRefreshing(false);
+        if (result.isEmpty()) {
+            loading.setVisibility(View.GONE);
+            swipeRefresh.setVisibility(View.GONE);
+            MessageLayout.show(layout, R.string.noCards, R.drawable.ic_info_outline_black_48dp);
+            return;
+        }
+
         loading.setVisibility(View.GONE);
         swipeRefresh.setVisibility(View.VISIBLE);
         MessageLayout.hide(layout);
@@ -87,7 +93,6 @@ public class CardsFragment extends Fragment implements CardcastHelper.IResult<Li
     @Override
     public void onException(Exception ex) {
         Logging.logMe(getContext(), ex);
-        swipeRefresh.setRefreshing(false);
         loading.setVisibility(View.GONE);
         swipeRefresh.setVisibility(View.GONE);
         if (isAdded())

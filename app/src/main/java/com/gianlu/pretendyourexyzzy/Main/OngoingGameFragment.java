@@ -6,10 +6,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
-import android.text.InputFilter;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -19,8 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
@@ -32,6 +30,7 @@ import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastBottomSheet;
 import com.gianlu.pretendyourexyzzy.NetIO.GameManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -54,15 +53,16 @@ import cz.msebera.android.httpclient.client.utils.URIBuilder;
 import cz.msebera.android.httpclient.client.utils.URLEncodedUtils;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
-public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInfo>, GameManager.IManager {
+public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInfo>, GameManager.IManager, CardcastBottomSheet.ISheet {
     private IFragment handler;
-    private FrameLayout layout;
+    private CoordinatorLayout layout;
     private ProgressBar loading;
     private LinearLayout container;
     private GameManager manager;
     private User me;
     private int gameId;
     private PYX pyx;
+    private CardcastBottomSheet cardcastBottomSheet;
 
     public static OngoingGameFragment getInstance(Game game, User me, OngoingGameFragment.IFragment handler) {
         OngoingGameFragment fragment = new OngoingGameFragment();
@@ -73,29 +73,6 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
         args.putSerializable("game", game);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
-        layout = (FrameLayout) inflater.inflate(R.layout.ongoing_game_fragment, parent, false);
-        loading = layout.findViewById(R.id.ongoingGame_loading);
-        container = layout.findViewById(R.id.ongoingGame_container);
-
-        me = (User) getArguments().getSerializable("me");
-        Game game = (Game) getArguments().getSerializable("game");
-        if (game == null) {
-            loading.setVisibility(View.GONE);
-            container.setVisibility(View.GONE);
-            MessageLayout.show(layout, R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
-            return layout;
-        }
-
-        gameId = game.gid;
-        pyx = PYX.get(getContext());
-        pyx.getGameInfo(game.gid, this);
-
-        return layout;
     }
 
     @Override
@@ -138,18 +115,28 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
         return getGame() != null && Objects.equals(getGame().host, me.nickname);
     }
 
-    private void loadCardCastSetsAndShowDialog() {
-        pyx.listCardCastCardSets(gameId, new PYX.IResult<List<CardSet>>() {
-            @Override
-            public void onDone(PYX pyx, List<CardSet> result) {
-                showCardCastDialog(result);
-            }
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
+        layout = (CoordinatorLayout) inflater.inflate(R.layout.ongoing_game_fragment, parent, false);
+        loading = layout.findViewById(R.id.ongoingGame_loading);
+        container = layout.findViewById(R.id.ongoingGame_container);
+        cardcastBottomSheet = new CardcastBottomSheet(layout, amHost() && getGame() != null && getGame().status == Game.Status.LOBBY, this);
 
-            @Override
-            public void onException(Exception ex) {
-                Toaster.show(getActivity(), Utils.Messages.FAILED_LOADING, ex);
-            }
-        });
+        me = (User) getArguments().getSerializable("me");
+        Game game = (Game) getArguments().getSerializable("game");
+        if (game == null) {
+            loading.setVisibility(View.GONE);
+            container.setVisibility(View.GONE);
+            MessageLayout.show(layout, R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
+            return layout;
+        }
+
+        gameId = game.gid;
+        pyx = PYX.get(getContext());
+        pyx.getGameInfo(game.gid, this);
+
+        return layout;
     }
 
     @Override
@@ -170,79 +157,21 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
                 shareGame();
                 return true;
             case R.id.ongoingGame_cardcast:
-                loadCardCastSetsAndShowDialog();
+                pyx.listCardCastCardSets(gameId, new PYX.IResult<List<CardSet>>() {
+                    @Override
+                    public void onDone(PYX pyx, List<CardSet> result) {
+                        if (cardcastBottomSheet != null) cardcastBottomSheet.expand(result);
+                    }
+
+                    @Override
+                    public void onException(Exception ex) {
+                        Toaster.show(getActivity(), Utils.Messages.FAILED_LOADING, ex);
+                    }
+                });
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private void showCardCastDialog(List<CardSet> sets) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle(R.string.cardcast)
-                .setNeutralButton(android.R.string.ok, null);
-
-        if (amHost()) builder.setPositiveButton(R.string.add, null);
-
-        if (sets.isEmpty())
-            builder.setMessage(R.string.noCardSets);
-        else
-            builder.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, sets), null);
-
-
-        final AlertDialog dialog = builder.create();
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialogInterface) {
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        askForCardCastCode(new ICardCast() {
-                            @Override
-                            public void onCardCastCode(String code) {
-                                pyx.addCardCastCardSet(gameId, code, new PYX.ISuccess() {
-                                    @Override
-                                    public void onDone(PYX pyx) {
-                                        Toaster.show(getActivity(), Utils.Messages.CARDCAST_ADDED);
-                                        dialog.dismiss();
-
-                                        loadCardCastSetsAndShowDialog();
-                                    }
-
-                                    @Override
-                                    public void onException(Exception ex) {
-                                        Toaster.show(getActivity(), Utils.Messages.FAILED_ADDING_CARDCAST, ex);
-                                        dialog.dismiss();
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-        });
-
-        CommonUtils.showDialog(getActivity(), dialog);
-    }
-
-    private void askForCardCastCode(final ICardCast listener) {
-        final EditText code = new EditText(getContext());
-        code.setAllCaps(true);
-        code.setHint("XXXXX");
-        code.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5)});
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle(R.string.addCardCast)
-                .setView(code)
-                .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        listener.onCardCastCode(code.getText().toString());
-                    }
-                });
-
-        CommonUtils.showDialog(getActivity(), builder);
     }
 
     private void shareGame() {
@@ -467,11 +396,17 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
         if (isAdded()) Toaster.show(getActivity(), message);
     }
 
-    public interface IFragment {
-        void onLeftGame();
+    @Override
+    public void onAddCardcastDeck() { // TODO
+
     }
 
-    private interface ICardCast {
-        void onCardCastCode(String code);
+    @Override
+    public void onDeleteCardSet(CardSet set) { // TODO
+
+    }
+
+    public interface IFragment {
+        void onLeftGame();
     }
 }

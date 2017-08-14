@@ -34,9 +34,4 @@ public class CardSet implements Serializable {
 
         return cards;
     }
-
-    @Override
-    public String toString() {
-        return name;
-    }
 }

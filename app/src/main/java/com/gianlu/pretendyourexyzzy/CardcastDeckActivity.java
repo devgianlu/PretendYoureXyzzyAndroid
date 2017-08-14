@@ -18,9 +18,13 @@ import com.gianlu.pretendyourexyzzy.CardcastDeck.InfoFragment;
 public class CardcastDeckActivity extends AppCompatActivity {
 
     public static void startActivity(Context context, Deck deck) {
+        startActivity(context, deck.code, deck.name);
+    }
+
+    public static void startActivity(Context context, String code, String name) {
         context.startActivity(new Intent(context, CardcastDeckActivity.class)
-                .putExtra("code", deck.code)
-                .putExtra("title", deck.name));
+                .putExtra("code", code)
+                .putExtra("title", name));
     }
 
     @Override

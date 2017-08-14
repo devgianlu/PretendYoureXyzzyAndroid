@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/cardSetItem_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:layout_weight="1"
+        android:textColor="@android:color/primary_text_light"
+        android:textSize="16sp" />
+
+    <ImageButton
+        android:id="@+id/cardSetItem_delete"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:alpha="0.54"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_delete_black_48dp" />
+
+</LinearLayout>
