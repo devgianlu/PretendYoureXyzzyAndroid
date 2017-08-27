@@ -278,6 +278,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 return;
             case GAME_JUDGE_LEFT:
                 updatePlayersCards(new ArrayList<List<Card>>());
+                newBlackCard(null);
                 if (listener != null)
                     listener.showToast(new Toaster.Message(R.string.judgeLeft, false));
                 return;

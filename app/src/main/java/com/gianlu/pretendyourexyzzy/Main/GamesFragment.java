@@ -182,6 +182,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         swipeRefresh.setVisibility(View.VISIBLE);
         MessageLayout.hide(layout);
 
+        if (!isAdded()) return;
         adapter = new GamesAdapter(getContext(), result, this);
         list.setAdapter(adapter);
         lastResult = result;

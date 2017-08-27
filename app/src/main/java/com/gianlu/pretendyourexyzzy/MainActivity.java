@@ -249,6 +249,4 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         ongoingGameFragment = null;
         gameChatFragment = null;
     }
-
-
 }
