@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.ConnectivityChecker;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
@@ -120,7 +121,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
         new Thread(new Runnable() {
             @Override
             public void run() {
-                if (CommonUtils.hasInternetAccess(false)) {
+                if (ConnectivityChecker.checkSync(LoadingActivity.this)) {
                     PYX.get(LoadingActivity.this).firstLoad(LoadingActivity.this);
                 } else {
                     Toaster.show(LoadingActivity.this, Toaster.Message.OFFLINE, new Runnable() {

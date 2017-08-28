@@ -23,5 +23,7 @@ dependencies {
     compile files('libs/cardcast-java-api-android.jar')
     compile 'com.android.support:cardview-v7:26.0.1'
     compile 'cz.msebera.android:httpclient:4.4.1.2'
-    compile 'me.zhanghai.android.materialratingbar:library:1.0.2'
+    compile('me.zhanghai.android.materialratingbar:library:1.0.2') {
+        exclude group: 'com.android.support', module: 'appcompat-v7'
+    }
 }
