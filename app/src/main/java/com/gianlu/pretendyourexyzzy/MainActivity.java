@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
+import com.gianlu.commonutils.Prefs;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Main.CardcastFragment;
 import com.gianlu.pretendyourexyzzy.Main.GameChatFragment;
@@ -22,6 +23,7 @@ import com.gianlu.pretendyourexyzzy.Main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
+import com.google.android.gms.analytics.HitBuilders;
 
 import java.util.Objects;
 
@@ -118,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         });
 
         navigation.setSelectedItemId(R.id.main_games);
-        setKeepScreenOn(Prefs.getBoolean(this, Prefs.Keys.KEEP_SCREEN_ON, true));
+        setKeepScreenOn(Prefs.getBoolean(this, PKeys.KEEP_SCREEN_ON, true));
 
         int gid = getIntent().getIntExtra("gid", -1);
         if (gid != -1) {
@@ -135,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.main_keepScreenOn).setChecked(Prefs.getBoolean(this, Prefs.Keys.KEEP_SCREEN_ON, true));
+        menu.findItem(R.id.main_keepScreenOn).setChecked(Prefs.getBoolean(this, PKeys.KEEP_SCREEN_ON, true));
         return true;
     }
 
@@ -149,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
                 return true;
             case R.id.main_keepScreenOn:
                 item.setChecked(!item.isChecked());
-                Prefs.putBoolean(this, Prefs.Keys.KEEP_SCREEN_ON, item.isChecked());
+                Prefs.putBoolean(this, PKeys.KEEP_SCREEN_ON, item.isChecked());
                 setKeepScreenOn(item.isChecked());
                 return true;
             case R.id.main_starredCards:
@@ -248,5 +250,10 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
 
         ongoingGameFragment = null;
         gameChatFragment = null;
+
+        ThisApplication.sendAnalytics(this, new HitBuilders.EventBuilder()
+                .setCategory(ThisApplication.CATEGORY_USER_INPUT)
+                .setAction(ThisApplication.ACTION_LEFT_GAME)
+                .build());
     }
 }

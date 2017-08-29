@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.gianlu.commonutils.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -13,7 +14,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
-import com.gianlu.pretendyourexyzzy.Prefs;
+import com.gianlu.pretendyourexyzzy.PKeys;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONArray;
@@ -62,7 +63,7 @@ public class PYX {
 
     private PYX(Context context) {
         handler = new Handler(context.getMainLooper());
-        server = Servers.valueOf(Prefs.getString(context, Prefs.Keys.LAST_SERVER, Servers.PYX1.name()));
+        server = Servers.valueOf(Prefs.getString(context, PKeys.LAST_SERVER, Servers.PYX1.name()));
         cookieStore = new BasicCookieStore();
         httpContext = new BasicHttpContext();
         client = HttpClients.custom().setDefaultCookieStore(cookieStore).build();

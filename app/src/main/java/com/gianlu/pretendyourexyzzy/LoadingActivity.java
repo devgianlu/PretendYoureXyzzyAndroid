@@ -18,6 +18,7 @@ import android.widget.ProgressBar;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.ConnectivityChecker;
 import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.Prefs;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
@@ -77,7 +78,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
         changeServer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int selectedServer = CommonUtils.indexOf(PYX.Servers.values(), PYX.Servers.valueOf(Prefs.getString(LoadingActivity.this, Prefs.Keys.LAST_SERVER, PYX.Servers.PYX1.name())));
+                int selectedServer = CommonUtils.indexOf(PYX.Servers.values(), PYX.Servers.valueOf(Prefs.getString(LoadingActivity.this, PKeys.LAST_SERVER, PYX.Servers.PYX1.name())));
                 AlertDialog.Builder builder = new AlertDialog.Builder(LoadingActivity.this);
                 builder.setTitle(R.string.changeServer)
                         .setSingleChoiceItems(PYX.Servers.formalValues(), selectedServer, new DialogInterface.OnClickListener() {
@@ -137,7 +138,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
 
     private void setServer(PYX.Servers server) {
         PYX.invalidate();
-        Prefs.putString(LoadingActivity.this, Prefs.Keys.LAST_SERVER, server.name());
+        Prefs.putString(LoadingActivity.this, PKeys.LAST_SERVER, server.name());
     }
 
     @Override
@@ -146,7 +147,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
             loading.setVisibility(View.GONE);
             register.setVisibility(View.VISIBLE);
 
-            String lastNickname = Prefs.getString(LoadingActivity.this, Prefs.Keys.LAST_NICKNAME, null);
+            String lastNickname = Prefs.getString(LoadingActivity.this, PKeys.LAST_NICKNAME, null);
             if (lastNickname != null) //noinspection ConstantConditions
                 registerNickname.getEditText().setText(lastNickname);
 
@@ -158,7 +159,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                         @Override
                         public void onDone(PYX pyx, User result) {
                             pyx.startPolling();
-                            Prefs.putString(LoadingActivity.this, Prefs.Keys.LAST_NICKNAME, result.nickname);
+                            Prefs.putString(LoadingActivity.this, PKeys.LAST_NICKNAME, result.nickname);
                             goTo(MainActivity.class, result);
                         }
 

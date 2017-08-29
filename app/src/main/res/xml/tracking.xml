@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    <string name="ga_trackingId">UA-78508159-11</string>
+    <string name="ga_sampleFrequency">100.0</string>
+    <integer name="ga_sessionTimeout">1800</integer>
+    <bool name="ga_autoActivityTracking">true</bool>
+    <bool name="ga_anonymizeIp">false</bool>
+    <bool name="ga_reportUncaughtExceptions">true</bool>
+
+    <screenName name="com.gianlu.pretendyourexyzzy.LoadingActivity">Screen~Loading</screenName>
+    <screenName name="com.gianlu.pretendyourexyzzy.MainActivity">Screen~Main</screenName>
+    <screenName name="com.gianlu.pretendyourexyzzy.StarredCardsActivity">Screen~StarredCards
+    </screenName>
+    <screenName name="com.gianlu.pretendyourexyzzy.CardcastDeckActivity">Screen~CardcastDeck
+    </screenName>
+    <screenName name="com.gianlu.commonutils.UncaughtExceptionActivity">Screen~UncaughtException
+    </screenName>
+    <screenName name="com.gianlu.commonutils.LogsActivity">Screen~Logs</screenName>
+</resources>

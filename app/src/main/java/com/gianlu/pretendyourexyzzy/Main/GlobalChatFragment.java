@@ -22,7 +22,9 @@ import com.gianlu.pretendyourexyzzy.Adapters.ChatAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
+import com.google.android.gms.analytics.HitBuilders;
 
 import java.util.List;
 
@@ -67,6 +69,11 @@ public class GlobalChatFragment extends Fragment implements PYX.IResult<List<Pol
                     @Override
                     public void onDone(PYX pyx) {
                         message.setText(null);
+
+                        ThisApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
+                                .setCategory(ThisApplication.CATEGORY_USER_INPUT)
+                                .setAction(ThisApplication.ACTION_SENT_GLOBAL_MSG)
+                                .build());
                     }
 
                     @Override

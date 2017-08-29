@@ -42,7 +42,9 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
+import com.google.android.gms.analytics.HitBuilders;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -448,6 +450,11 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
                         }
                     });
                 }
+
+                ThisApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
+                        .setCategory(ThisApplication.CATEGORY_USER_INPUT)
+                        .setAction(ThisApplication.ACTION_ADDED_CARDCAST)
+                        .build());
             }
 
             @Override

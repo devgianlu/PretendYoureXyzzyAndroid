@@ -35,7 +35,9 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
+import com.google.android.gms.analytics.HitBuilders;
 
 import org.json.JSONException;
 
@@ -434,14 +436,21 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         lastPlaying = true;
     }
 
-    private void playCard(final Card card, int gid, int cid, @Nullable String customText) {
+    private void playCard(final Card card, int gid, int cid, @Nullable final String customText) {
         pyx.playCard(gid, cid, customText, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
                 removeFromHand(card);
                 updateBlankCardsNumber();
                 setAmLastPlaying();
-                System.out.println("LAST PLAYING: " + lastPlaying);
+
+                HitBuilders.EventBuilder event = new HitBuilders.EventBuilder()
+                        .setCategory(ThisApplication.CATEGORY_USER_INPUT);
+
+                if (customText != null) event.setAction(ThisApplication.ACTION_PLAY_CUSTOM_CARD);
+                else event.setAction(ThisApplication.ACTION_PLAY_CARD);
+
+                ThisApplication.sendAnalytics(context, event.build());
             }
 
             @Override
@@ -478,6 +487,11 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 @Override
                 public void onDone(PYX pyx) {
                     handleMyStatus(GameInfo.PlayerStatus.PLAYING);
+
+                    ThisApplication.sendAnalytics(context, new HitBuilders.EventBuilder()
+                            .setCategory(ThisApplication.CATEGORY_USER_INPUT)
+                            .setAction(ThisApplication.ACTION_JUDGE_CARD)
+                            .build());
                 }
 
                 @Override
