@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <Preference
+        android:key="httpclientAndroid"
+        android:summary="@string/apacheLicense"
+        android:title="httpclient-android" />
+
+    <Preference
+        android:key="materialRatingBar"
+        android:summary="@string/apacheLicense"
+        android:title="MaterialRatingBar" />
+
+    <Preference
+        android:key="apacheLicense"
+        android:title="Apache License 2.0" />
+</PreferenceScreen>

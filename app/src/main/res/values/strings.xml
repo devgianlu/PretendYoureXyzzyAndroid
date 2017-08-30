@@ -3,12 +3,14 @@
     <string name="nickname">Nickname</string>
     <string name="submit">Submit</string>
     <string name="changeServer">Change server</string>
+    <string name="third_part">Third part projects</string>
     <string name="reservedNickname">Nickname is reserved!</string>
     <string name="invalidNickname">Nickname must contain only upper and lower case letters, numbers, or underscores, must be 3 to 30 characters long, and must not start with a number.</string>
     <string name="alreadyUsedNickname">Nickname is already in use.</string>
     <string name="tooManyUsers">There are too many users connected. Either join another server, or wait for a user to disconnect.</string>
     <string name="failedLoading">Failed loading!</string>
     <string name="globalChat">Global chat</string>
+    <string name="apacheLicense">Licensed under Apache License 2.0</string>
     <string name="games">Games</string>
     <string name="gameChat">Game chat</string>
     <string name="failedLoading_reason">Failed loading: %s</string>
@@ -115,4 +117,8 @@
     <string name="noCards">There are no cards.</string>
     <string name="invalidCardcastCode">Invalid Cardcast code!</string>
     <string name="addToOngoingGame">Add to the ongoing game</string>
+    <string name="preferences">Preferences</string>
+    <string name="logs">Logs</string>
+    <string name="httpclientAndroid_details">https://github.com/smarek/httpclient-android</string>
+    <string name="materialRatingBar_details">Copyright 2016 Zhang Hai</string>
 </resources>

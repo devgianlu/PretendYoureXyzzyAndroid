@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="AppCompatResource">
 
     <item
         android:id="@+id/main_starredCards"
@@ -22,5 +24,11 @@
         android:icon="@drawable/ic_exit_to_app_white_48dp"
         android:orderInCategory="99"
         android:title="@string/logout"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/main_preferences"
+        android:orderInCategory="99999999"
+        android:title="@string/preferences"
         app:showAsAction="never" />
 </menu>

@@ -64,6 +64,16 @@
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 
+        <!-- Preferences activity -->
+        <activity
+            android:name=".PreferencesActivity"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- Logs activity -->
+        <activity
+            android:name="com.gianlu.commonutils.LogsActivity"
+            android:parentActivityName=".PreferencesActivity" />
+
         <!-- Google Analytics -->
         <receiver
             android:name="com.google.android.gms.analytics.AnalyticsReceiver"

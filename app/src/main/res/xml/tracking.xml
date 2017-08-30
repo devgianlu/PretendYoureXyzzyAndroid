@@ -16,4 +16,6 @@
     <screenName name="com.gianlu.commonutils.UncaughtExceptionActivity">Screen~UncaughtException
     </screenName>
     <screenName name="com.gianlu.commonutils.LogsActivity">Screen~Logs</screenName>
+    <screenName name="com.gianlu.pretendyourexyzzy.PreferencesActivity">Screen~Preferences
+    </screenName>
 </resources>
