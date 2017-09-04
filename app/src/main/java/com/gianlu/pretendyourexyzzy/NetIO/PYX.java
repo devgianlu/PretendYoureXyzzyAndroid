@@ -90,7 +90,7 @@ public class PYX {
 
     private JSONObject ajaxServletRequestSync(OP operation, NameValuePair... params) throws IOException, JSONException, PYXException {
         if (operation != OP.FIRST_LOAD && firstLoad == null)
-            throw new IllegalStateException("You must call #firstLoad first!!");
+            throw new IOException(new IllegalStateException("You must call #firstLoad first!!"));
         HttpPost post = new HttpPost(server.uri.toString() + "AjaxServlet");
         List<NameValuePair> paramsList = new ArrayList<>(Arrays.asList(params));
         paramsList.add(new BasicNameValuePair("o", operation.val));
