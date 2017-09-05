@@ -568,7 +568,7 @@ public class PYX {
         });
     }
 
-    public void listCardCastCardSets(final int gid, final IResult<List<CardSet>> listener) {
+    public void listCardcastCardSets(final int gid, final IResult<List<CardSet>> listener) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -594,14 +594,18 @@ public class PYX {
         });
     }
 
-    public void addCardCastCardSet(final int gid, final String code, final ISuccess listener) {
+    public void addCardcastCardSetSync(int gid, String code) throws JSONException, PYXException, IOException {
+        ajaxServletRequestSync(OP.ADD_CARDCAST_CARD_SET,
+                new BasicNameValuePair("gid", String.valueOf(gid)),
+                new BasicNameValuePair("cci", code));
+    }
+
+    public void addCardcastCardSet(final int gid, final String code, final ISuccess listener) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
-                    ajaxServletRequestSync(OP.ADD_CARDCAST_CARD_SET,
-                            new BasicNameValuePair("gid", String.valueOf(gid)),
-                            new BasicNameValuePair("cci", code));
+                    addCardcastCardSetSync(gid, code);
 
                     handler.post(new Runnable() {
                         @Override
@@ -621,7 +625,7 @@ public class PYX {
         });
     }
 
-    public void removeCardCastCardSet(final int gid, final String code, final ISuccess listener) {
+    public void removeCardcastCardSet(final int gid, final String code, final ISuccess listener) {
         executor.execute(new Runnable() {
             @Override
             public void run() {

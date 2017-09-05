@@ -157,6 +157,9 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
             case R.id.main_starredCards:
                 StarredCardsActivity.startActivity(this);
                 return true;
+            case R.id.main_starredDecks:
+                StarredDecksActivity.startActivity(this, this);
+                return true;
             case R.id.main_preferences:
                 startActivity(new Intent(this, PreferencesActivity.class));
                 return true;

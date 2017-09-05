@@ -19,6 +19,7 @@ android {
 }
 
 dependencies {
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     compile project(':CommonUtils')
     compile files('libs/cardcast-java-api-android.jar')
     compile 'com.android.support:cardview-v7:26.0.2'

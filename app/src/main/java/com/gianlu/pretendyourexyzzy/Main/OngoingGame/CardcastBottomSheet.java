@@ -15,12 +15,11 @@ import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.List;
 
-import static android.view.View.GONE;
-
 public class CardcastBottomSheet extends BaseBottomSheet<List<CardSet>> {
     private final ISheet listener;
     private RecyclerView list;
     private Button add;
+    private Button addStarred;
 
     public CardcastBottomSheet(View parent, ISheet listener) {
         super(parent, R.layout.cardcast_bottom_sheet, false);
@@ -34,20 +33,28 @@ public class CardcastBottomSheet extends BaseBottomSheet<List<CardSet>> {
         list.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
         list.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
         add = content.findViewById(R.id.cardcastBottomSheet_add);
+        addStarred = content.findViewById(R.id.cardcastBottomSheet_addStarred);
     }
 
     @Override
     protected void setupView(@NonNull List<CardSet> item) {
-        add.setVisibility(listener.canEdit() ? View.VISIBLE : GONE);
+        add.setVisibility(listener.canEdit() ? View.VISIBLE : View.GONE);
+        addStarred.setVisibility(listener.canEdit() ? View.VISIBLE : View.GONE);
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                listener.onAddCardcastDeck();
+                listener.addCardcastDeck();
+            }
+        });
+        addStarred.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                listener.addStarredDecks();
             }
         });
 
         if (item.isEmpty()) {
-            list.setVisibility(GONE);
+            list.setVisibility(View.GONE);
             MessageLayout.show(content, R.string.noCardSets, R.drawable.ic_info_outline_black_48dp);
         } else {
             list.setVisibility(View.VISIBLE);
@@ -62,7 +69,9 @@ public class CardcastBottomSheet extends BaseBottomSheet<List<CardSet>> {
     }
 
     public interface ISheet {
-        void onAddCardcastDeck();
+        void addCardcastDeck();
+
+        void addStarredDecks();
 
         boolean canEdit();
     }

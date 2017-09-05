@@ -6,7 +6,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Analytics -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
@@ -58,10 +57,14 @@
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 
+        <!-- Starred decks activity -->
+        <activity
+            android:name=".StarredDecksActivity"
+            android:parentActivityName=".MainActivity" />
+
         <!-- Cardcast deck activity -->
         <activity
             android:name=".CardcastDeckActivity"
-            android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- Preferences activity -->

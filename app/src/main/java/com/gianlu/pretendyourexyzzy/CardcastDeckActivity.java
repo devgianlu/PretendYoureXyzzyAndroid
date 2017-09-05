@@ -16,10 +16,12 @@ import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.PagerAdapter;
 import com.gianlu.pretendyourexyzzy.CardcastDeck.CardsFragment;
 import com.gianlu.pretendyourexyzzy.CardcastDeck.InfoFragment;
+import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
 
 public class CardcastDeckActivity extends AppCompatActivity {
     private static IOngoingGame handler;
     private String code;
+    private String name;
 
     public static void startActivity(Context context, Deck deck, IOngoingGame handler) {
         startActivity(context, deck.code, deck.name, handler);
@@ -41,14 +43,26 @@ public class CardcastDeckActivity extends AppCompatActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.findItem(R.id.cardcastDeckInfo_add).setVisible(handler != null && handler.hasOngoingGame());
+        menu.findItem(R.id.cardcastDeckInfo_toggleStar).setIcon(StarredDecksManager.hasDeck(this, code) ? R.drawable.ic_star_white_48dp : R.drawable.ic_star_border_white_48dp);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
             case R.id.cardcastDeckInfo_add:
                 if (handler != null && code != null) handler.addCardcastDeck(code);
+                return true;
+            case R.id.cardcastDeckInfo_toggleStar:
+                if (StarredDecksManager.hasDeck(this, code))
+                    StarredDecksManager.removeDeck(this, code);
+                else
+                    StarredDecksManager.addDeck(this, new StarredDecksManager.StarredDeck(code, name));
+
+                invalidateOptionsMenu();
                 return true;
         }
 
@@ -66,8 +80,9 @@ public class CardcastDeckActivity extends AppCompatActivity {
         if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
 
         code = getIntent().getStringExtra("code");
-        if (code == null) {
-            Toaster.show(this, Utils.Messages.FAILED_LOADING, new NullPointerException("code is null!"));
+        name = getIntent().getStringExtra("title");
+        if (code == null || name == null) {
+            Toaster.show(this, Utils.Messages.FAILED_LOADING, new NullPointerException("code or name is null!"));
             onBackPressed();
             return;
         }

@@ -33,6 +33,7 @@ import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastBottomSheet;
 import com.gianlu.pretendyourexyzzy.NetIO.GameManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
@@ -41,11 +42,15 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
+import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.android.gms.analytics.HitBuilders;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -162,7 +167,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
                 shareGame();
                 return true;
             case R.id.ongoingGame_cardcast:
-                pyx.listCardCastCardSets(gameId, new PYX.IResult<List<CardSet>>() {
+                pyx.listCardcastCardSets(gameId, new PYX.IResult<List<CardSet>>() {
                     @Override
                     public void onDone(PYX pyx, List<CardSet> result) {
                         if (cardcastBottomSheet != null) cardcastBottomSheet.expand(result);
@@ -402,14 +407,14 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     }
 
     @Override
-    public void onAddCardcastDeck() {
+    public void addCardcastDeck() {
         final EditText code = new EditText(getContext());
         code.setHint("XXXXX");
         code.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         code.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5)});
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle(R.string.addCardCast)
+        builder.setTitle(R.string.addCardcast)
                 .setView(code)
                 .setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
                     @Override
@@ -423,6 +428,48 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     }
 
     @Override
+    public void addStarredDecks() {
+        new Thread() {
+            @Override
+            public void run() {
+                boolean hasErrors = false;
+                List<StarredDecksManager.StarredDeck> starredDecks = StarredDecksManager.loadDecks(getContext());
+                for (StarredDecksManager.StarredDeck deck : starredDecks) {
+                    try {
+                        pyx.addCardcastCardSetSync(gameId, deck.code);
+                    } catch (JSONException | PYXException | IOException ex) {
+                        hasErrors = true;
+                        Logging.logMe(getContext(), ex);
+                    }
+                }
+
+                if (hasErrors)
+                    Toaster.show(getActivity(), Utils.Messages.PARTIAL_ADD_STARRED_DECKS_FAILED);
+                Toaster.show(getActivity(), Utils.Messages.ADDED_STARRED_DECKS);
+
+                if (cardcastBottomSheet != null && cardcastBottomSheet.shouldUpdate()) {
+                    pyx.listCardcastCardSets(gameId, new PYX.IResult<List<CardSet>>() {
+                        @Override
+                        public void onDone(PYX pyx, List<CardSet> result) {
+                            cardcastBottomSheet.update(result);
+                        }
+
+                        @Override
+                        public void onException(Exception ex) {
+                            Toaster.show(getActivity(), Utils.Messages.FAILED_LOADING, ex);
+                        }
+                    });
+                }
+
+                ThisApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
+                        .setCategory(ThisApplication.CATEGORY_USER_INPUT)
+                        .setAction(ThisApplication.ACTION_ADDED_CARDCAST)
+                        .build());
+            }
+        }.start();
+    }
+
+    @Override
     public boolean canEdit() {
         return amHost() && getGame() != null && getGame().status == Game.Status.LOBBY;
     }
@@ -433,12 +480,12 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
             return;
         }
 
-        pyx.addCardCastCardSet(gameId, code, new PYX.ISuccess() {
+        pyx.addCardcastCardSet(gameId, code, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
                 Toaster.show(getActivity(), Utils.Messages.CARDCAST_ADDED);
                 if (cardcastBottomSheet != null && cardcastBottomSheet.shouldUpdate()) {
-                    pyx.listCardCastCardSets(gameId, new PYX.IResult<List<CardSet>>() {
+                    pyx.listCardcastCardSets(gameId, new PYX.IResult<List<CardSet>>() {
                         @Override
                         public void onDone(PYX pyx, List<CardSet> result) {
                             cardcastBottomSheet.update(result);

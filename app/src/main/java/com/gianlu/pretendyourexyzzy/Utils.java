@@ -109,9 +109,12 @@ public class Utils {
         public static final Toaster.Message FAILED_SHARING = new Toaster.Message(R.string.failedSharing, true);
         public static final Toaster.Message OPTIONS_CHANGED = new Toaster.Message(R.string.optionsChanged, false);
         public static final Toaster.Message FAILED_CHANGING_OPTIONS = new Toaster.Message(R.string.failedChangingOptions, true);
-        public static final Toaster.Message CARDCAST_ADDED = new Toaster.Message(R.string.cardCastAdded, false);
-        public static final Toaster.Message FAILED_ADDING_CARDCAST = new Toaster.Message(R.string.failedAddingCardCast, true);
+        public static final Toaster.Message CARDCAST_ADDED = new Toaster.Message(R.string.cardcastAdded, false);
+        public static final Toaster.Message FAILED_ADDING_CARDCAST = new Toaster.Message(R.string.failedAddingCardcast, true);
         public static final Toaster.Message NOT_ENOUGH_PLAYERS = new Toaster.Message(R.string.notEnoughPlayers, false);
         public static final Toaster.Message INVALID_CARDCAST_CODE = new Toaster.Message(R.string.invalidCardcastCode, false);
+        public static final Toaster.Message NO_STARRED_DECKS = new Toaster.Message(R.string.noStarredDecks, false);
+        public static final Toaster.Message ADDED_STARRED_DECKS = new Toaster.Message(R.string.starredDecksAdded, false);
+        public static final Toaster.Message PARTIAL_ADD_STARRED_DECKS_FAILED = new Toaster.Message(R.string.addStarredDecksFailedPartial, true);
     }
 }

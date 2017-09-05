@@ -15,8 +15,14 @@
         android:id="@+id/main_keepScreenOn"
         android:checkable="true"
         android:checked="true"
-        android:orderInCategory="98"
+        android:orderInCategory="97"
         android:title="@string/keepScreenOn"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/main_starredDecks"
+        android:orderInCategory="98"
+        android:title="@string/starredDecks"
         app:showAsAction="never" />
 
     <item
