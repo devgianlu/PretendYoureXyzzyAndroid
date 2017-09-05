@@ -179,6 +179,12 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         ongoingGameFragment.addCardcastCardSet(code);
     }
 
+    @Override
+    public void addStarredDecks() {
+        if (!hasOngoingGame()) return;
+        ongoingGameFragment.addStarredDecks();
+    }
+
     private void setKeepScreenOn(boolean on) {
         if (on) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);

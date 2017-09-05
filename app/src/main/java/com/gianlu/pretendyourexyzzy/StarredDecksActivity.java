@@ -29,19 +29,25 @@ public class StarredDecksActivity extends AppCompatActivity implements StarredDe
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.starred_decks, menu);
         return true;
     }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.findItem(R.id.starredDecks_add).setVisible(handler != null && handler.hasOngoingGame());
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            return true;
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            case R.id.starredDecks_add:
+                handler.addStarredDecks();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);

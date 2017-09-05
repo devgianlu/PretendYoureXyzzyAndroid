@@ -118,5 +118,7 @@ public class CardcastDeckActivity extends AppCompatActivity {
         boolean hasOngoingGame();
 
         void addCardcastDeck(String code);
+
+        void addStarredDecks();
     }
 }
