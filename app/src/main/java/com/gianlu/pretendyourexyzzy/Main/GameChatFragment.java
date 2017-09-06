@@ -99,7 +99,7 @@ public class GameChatFragment extends Fragment implements PYX.IResult<List<PollM
             }
         });
 
-        pyx.pollingThread.addListener(POLL_TAG, this);
+        if (pyx.pollingThread != null) pyx.pollingThread.addListener(POLL_TAG, this);
 
         return layout;
     }
