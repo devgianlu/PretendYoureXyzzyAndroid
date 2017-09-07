@@ -84,9 +84,11 @@ public class NamesFragment extends Fragment implements PYX.IResult<List<String>>
         swipeRefresh.setVisibility(View.VISIBLE);
         MessageLayout.hide(layout);
 
-        list.setAdapter(new NamesAdapter(getContext(), result));
-        names = result.size();
-        updateActivityTitle();
+        if (isAdded()) {
+            list.setAdapter(new NamesAdapter(getContext(), result));
+            names = result.size();
+            updateActivityTitle();
+        }
     }
 
     @Override

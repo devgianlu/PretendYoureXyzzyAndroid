@@ -150,7 +150,7 @@ public class PYX {
                 try {
                     JSONObject obj = ajaxServletRequestSync(OP.REGISTER, new BasicNameValuePair("n", nickname));
                     final String confirmNick = obj.getString("n");
-                    if (!Objects.equals(confirmNick, nickname)) throw new RuntimeException("WTF?!");
+                    // if (!Objects.equals(confirmNick, nickname)) throw new RuntimeException("WTF?!");
                     final User user = new User(confirmNick);
 
                     handler.post(new Runnable() {
