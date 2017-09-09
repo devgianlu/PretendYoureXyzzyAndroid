@@ -15,6 +15,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -65,9 +66,10 @@ public class StarredDecksManager {
         try {
             JSONArray starredDecksArray = new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_DECKS, "[]"));
             List<StarredDeck> starredDecks = CommonUtils.toTList(starredDecksArray, StarredDeck.class);
-            for (int i = starredDecks.size() - 1; i >= 0; i++)
-                if (Objects.equals(starredDecks.get(i).code, code))
-                    starredDecks.remove(i);
+            Iterator<StarredDeck> iterator = starredDecks.iterator();
+            while (iterator.hasNext())
+                if (Objects.equals(iterator.next().code, code))
+                    iterator.remove();
 
             saveDecks(context, starredDecks);
         } catch (JSONException ex) {

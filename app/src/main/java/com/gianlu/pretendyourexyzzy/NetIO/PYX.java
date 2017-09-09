@@ -128,7 +128,7 @@ public class PYX {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            listener.onDone(instance, result);
+                            listener.onDone(PYX.this, result);
                         }
                     });
                 } catch (IOException | JSONException | PYXException ex) {
@@ -150,13 +150,14 @@ public class PYX {
                 try {
                     JSONObject obj = ajaxServletRequestSync(OP.REGISTER, new BasicNameValuePair("n", nickname));
                     final String confirmNick = obj.getString("n");
-                    // if (!Objects.equals(confirmNick, nickname)) throw new RuntimeException("WTF?!");
+                    if (!Objects.equals(confirmNick, nickname.trim()))
+                        throw new RuntimeException("WTF?!");
                     final User user = new User(confirmNick);
 
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            listener.onDone(instance, user);
+                            listener.onDone(PYX.this, user);
                         }
                     });
                 } catch (IOException | JSONException | PYXException ex) {
@@ -200,7 +201,7 @@ public class PYX {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            listener.onDone(instance, games);
+                            listener.onDone(PYX.this, games);
                         }
                     });
                 } catch (IOException | JSONException | PYXException ex) {
@@ -362,7 +363,7 @@ public class PYX {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            listener.onDone(instance, info);
+                            listener.onDone(PYX.this, info);
                         }
                     });
                 } catch (IOException | JSONException | PYXException ex) {
@@ -388,7 +389,7 @@ public class PYX {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            listener.onDone(instance, cards);
+                            listener.onDone(PYX.this, cards);
                         }
                     });
                 } catch (IOException | JSONException | PYXException ex) {
@@ -415,7 +416,7 @@ public class PYX {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            listener.onDone(instance);
+                            listener.onDone(PYX.this);
                         }
                     });
                 } catch (IOException | JSONException | PYXException ex) {
@@ -447,7 +448,7 @@ public class PYX {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            listener.onDone(instance, names);
+                            listener.onDone(PYX.this, names);
                         }
                     });
                 } catch (IOException | JSONException | PYXException ex) {
@@ -528,7 +529,7 @@ public class PYX {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            listener.onDone(instance, gid);
+                            listener.onDone(PYX.this, gid);
                         }
                     });
                 } catch (IOException | JSONException | PYXException ex) {
@@ -579,7 +580,7 @@ public class PYX {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            listener.onDone(instance, sets);
+                            listener.onDone(PYX.this, sets);
                         }
                     });
                 } catch (IOException | JSONException | PYXException ex) {
@@ -780,7 +781,7 @@ public class PYX {
                 @Override
                 public void run() {
                     for (IResult<List<PollMessage>> listener : listeners.values())
-                        listener.onDone(instance, obj);
+                        listener.onDone(PYX.this, obj);
                 }
             });
         }
