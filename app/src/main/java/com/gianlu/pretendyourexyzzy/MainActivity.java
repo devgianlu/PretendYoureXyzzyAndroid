@@ -228,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
             }
         }
 
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
     }
 
     @Override
@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         Fragment gameChat = manager.findFragmentByTag(TAG_GAME_CHAT);
         if (gameChat != null) transaction.remove(gameChat);
 
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
 
         ongoingGameFragment = null;
         gameChatFragment = null;

@@ -111,7 +111,15 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
         PYX.get(getContext()).leaveGame(gameId, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
-                if (handler != null) handler.onLeftGame();
+                Activity activity = getActivity();
+                if (activity != null) {
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (handler != null) handler.onLeftGame();
+                        }
+                    });
+                }
             }
 
             @Override
@@ -398,7 +406,15 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
 
     @Override
     public void kicked() {
-        if (handler != null) handler.onLeftGame();
+        Activity activity = getActivity();
+        if (activity != null) {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (handler != null) handler.onLeftGame();
+                }
+            });
+        }
     }
 
     @Override

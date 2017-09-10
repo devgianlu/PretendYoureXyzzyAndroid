@@ -60,10 +60,13 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
         MenuItem item = menu.findItem(R.id.cardcastFragment_search);
         item.setOnActionExpandListener(this);
         searchView = (SearchView) item.getActionView();
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
-        searchView.setIconifiedByDefault(false);
-        searchView.setOnCloseListener(this);
-        searchView.setOnQueryTextListener(this);
+
+        if (searchManager != null) {
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
+            searchView.setIconifiedByDefault(false);
+            searchView.setOnCloseListener(this);
+            searchView.setOnQueryTextListener(this);
+        }
 
         SubMenu sortingMenu = menu.findItem(R.id.cardcastFragment_sort).getSubMenu();
         inflater.inflate(R.menu.cardcast_decks_sort, sortingMenu);
@@ -188,7 +191,8 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
         swipeRefresh.setVisibility(View.VISIBLE);
         MessageLayout.hide(layout);
 
-        list.setAdapter(new CardcastDecksAdapter(getContext(), cardcast, search, decks, LIMIT, this));
+        if (isAdded())
+            list.setAdapter(new CardcastDecksAdapter(getContext(), cardcast, search, decks, LIMIT, this));
     }
 
     @Override
