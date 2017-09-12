@@ -177,8 +177,10 @@ public class PYX {
             @Override
             public void run() {
                 try {
-                    pollingThread.safeStop();
-                    pollingThread = null;
+                    if (pollingThread != null) {
+                        pollingThread.safeStop();
+                        pollingThread = null;
+                    }
                     ajaxServletRequestSync(OP.LOGOUT);
                 } catch (IOException | JSONException | PYXException ignored) {
                 }
