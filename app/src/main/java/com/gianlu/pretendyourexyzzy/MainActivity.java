@@ -237,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         ongoingGameFragment = OngoingGameFragment.getInstance(game, user, this);
         transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
         gameChatFragment = GameChatFragment.getInstance(game);
-        transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT).commitNow();
+        transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT).commitNowAllowingStateLoss();
         navigation.getMenu().clear();
         navigation.inflateMenu(R.menu.navigation_ongoing_game);
         navigation.setSelectedItemId(R.id.main_ongoingGame);

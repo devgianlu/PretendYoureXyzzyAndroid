@@ -60,6 +60,7 @@ public class PYX {
     private final HttpContext httpContext;
     public PollingThread pollingThread;
     public FirstLoad firstLoad;
+    private boolean hasRetriedRegister = false;
 
     private PYX(Context context) {
         handler = new Handler(context.getMainLooper());
@@ -160,7 +161,18 @@ public class PYX {
                             listener.onDone(PYX.this, user);
                         }
                     });
-                } catch (IOException | JSONException | PYXException ex) {
+                } catch (final PYXException ex) {
+                    if (!hasRetriedRegister && Objects.equals(ex.errorCode, "se")) {
+                        registerUser(nickname, listener);
+                    } else {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onException(ex);
+                            }
+                        });
+                    }
+                } catch (IOException | JSONException ex) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
