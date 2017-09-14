@@ -33,6 +33,11 @@ public class StarredDecksAdapter extends RecyclerView.Adapter<StarredDecksAdapte
     }
 
     @Override
+    public long getItemId(int position) {
+        return decks.get(position).code.hashCode();
+    }
+
+    @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         final StarredDecksManager.StarredDeck deck = decks.get(position);
 

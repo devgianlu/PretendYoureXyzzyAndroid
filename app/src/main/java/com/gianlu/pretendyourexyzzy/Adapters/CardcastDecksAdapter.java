@@ -40,6 +40,11 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
         this.listener = listener;
     }
 
+    @Override
+    public long getItemId(int position) {
+        return items.get(position).getItem().name.hashCode();
+    }
+
     @Nullable
     @Override
     protected Date getDateFromItem(Deck item) {

@@ -27,6 +27,11 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
     }
 
     @Override
+    public long getItemId(int position) {
+        return sets.get(position).id;
+    }
+
+    @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         final CardSet item = sets.get(position);
         holder.name.setText(Html.fromHtml(item.name));
