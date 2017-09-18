@@ -1,7 +1,7 @@
 package com.gianlu.pretendyourexyzzy;
 
-import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -24,9 +24,9 @@ public class CardcastHelper {
     private final Handler handler;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    public CardcastHelper(Context context, Cardcast cardcast) {
+    public CardcastHelper(Cardcast cardcast) {
         this.cardcast = cardcast;
-        this.handler = new Handler(context.getMainLooper());
+        this.handler = new Handler(Looper.getMainLooper());
     }
 
     public void getResponses(final String code, final IResult<List<Card>> listener) {

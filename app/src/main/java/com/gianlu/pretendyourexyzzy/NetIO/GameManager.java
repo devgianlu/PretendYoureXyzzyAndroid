@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -70,7 +71,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         this.gameInfo = gameInfo;
         this.me = me;
         this.listener = listener;
-        this.handler = new Handler(context.getMainLooper());
+        this.handler = new Handler(Looper.getMainLooper());
         this.pyx = PYX.get(context);
         pyx.getPollingThread().addListener(POLL_TAG, this);
 

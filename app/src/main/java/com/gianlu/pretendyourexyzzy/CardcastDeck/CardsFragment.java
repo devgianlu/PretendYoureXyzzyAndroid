@@ -65,7 +65,7 @@ public class CardsFragment extends Fragment implements CardcastHelper.IResult<Li
             return layout;
         }
 
-        CardcastHelper cardcast = new CardcastHelper(getContext(), Cardcast.get());
+        CardcastHelper cardcast = new CardcastHelper(Cardcast.get());
         if (whiteCards) cardcast.getResponses(code, this);
         else cardcast.getCalls(code, this);
 

@@ -76,7 +76,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     public class ViewHolder extends RecyclerView.ViewHolder {
         final SuperTextView text;
 
-        public ViewHolder(ViewGroup parent) {
+        ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.chat_item, parent, false));
             text = (SuperTextView) itemView;
         }

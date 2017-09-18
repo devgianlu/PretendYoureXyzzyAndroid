@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -63,7 +64,7 @@ public class PYX {
     private boolean hasRetriedRegister = false;
 
     private PYX(Context context) {
-        handler = new Handler(context.getMainLooper());
+        handler = new Handler(Looper.getMainLooper());
         server = Servers.valueOf(Prefs.getString(context, PKeys.LAST_SERVER, Servers.PYX1.name()));
         cookieStore = new BasicCookieStore();
         httpContext = new BasicHttpContext();

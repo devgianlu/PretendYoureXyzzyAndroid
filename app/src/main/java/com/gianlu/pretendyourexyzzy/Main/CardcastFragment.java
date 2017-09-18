@@ -171,7 +171,7 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
         list = layout.findViewById(R.id.recyclerViewLayout_list);
         list.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
-        cardcast = new CardcastHelper(getContext(), Cardcast.get());
+        cardcast = new CardcastHelper(Cardcast.get());
         cardcast.getDecks(search, LIMIT, 0, this);
 
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
