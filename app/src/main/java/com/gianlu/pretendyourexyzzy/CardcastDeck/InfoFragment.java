@@ -66,7 +66,7 @@ public class InfoFragment extends Fragment implements CardcastHelper.IResult<Dec
         TextView description = container.findViewById(R.id.cardcastDeckInfo_description);
         description.setText(result.description);
         TextView author = container.findViewById(R.id.cardcastDeckInfo_author);
-        author.setText(getString(R.string.byUppercase, result.author.username));
+        if (isAdded()) author.setText(getString(R.string.byUppercase, result.author.username));
         MaterialRatingBar rating = container.findViewById(R.id.cardcastDeckInfo_rating);
         rating.setRating(result.rating);
         rating.setEnabled(false);

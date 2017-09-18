@@ -84,7 +84,7 @@ public class GlobalChatFragment extends Fragment implements PYX.IResult<List<Pol
             }
         });
 
-        if (pyx.pollingThread != null) pyx.pollingThread.addListener(POLL_TAG, this);
+        pyx.getPollingThread().addListener(POLL_TAG, this);
 
         return layout;
     }

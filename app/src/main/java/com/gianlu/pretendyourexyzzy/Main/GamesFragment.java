@@ -145,21 +145,19 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
 
         pyx.getGamesList(this);
 
-        if (pyx.pollingThread != null) {
-            pyx.pollingThread.addListener(POLL_TAG, new PYX.IResult<List<PollMessage>>() {
-                @Override
-                public void onDone(PYX pyx, List<PollMessage> result) {
-                    for (PollMessage message : result)
-                        if (message.event == PollMessage.Event.GAME_LIST_REFRESH)
-                            pyx.getGamesList(GamesFragment.this);
-                }
+        pyx.getPollingThread().addListener(POLL_TAG, new PYX.IResult<List<PollMessage>>() {
+            @Override
+            public void onDone(PYX pyx, List<PollMessage> result) {
+                for (PollMessage message : result)
+                    if (message.event == PollMessage.Event.GAME_LIST_REFRESH)
+                        pyx.getGamesList(GamesFragment.this);
+            }
 
-                @Override
-                public void onException(Exception ex) {
-                    Logging.logMe(getContext(), ex);
-                }
-            });
-        }
+            @Override
+            public void onException(Exception ex) {
+                Logging.logMe(getContext(), ex);
+            }
+        });
 
         return layout;
     }

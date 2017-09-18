@@ -58,8 +58,8 @@ public class PYX {
     private final HttpClient client;
     private final CookieStore cookieStore;
     private final HttpContext httpContext;
-    public PollingThread pollingThread;
     public FirstLoad firstLoad;
+    private PollingThread pollingThread;
     private boolean hasRetriedRegister = false;
 
     private PYX(Context context) {
@@ -81,6 +81,12 @@ public class PYX {
 
     private static void raiseException(JSONObject obj) throws PYXException {
         if (obj.optBoolean("e", false)) throw new PYXException(obj);
+    }
+
+    @NonNull
+    public PollingThread getPollingThread() {
+        if (pollingThread == null) startPolling();
+        return pollingThread;
     }
 
     private void addJESSIONIDCookie(HttpRequestBase request) {
