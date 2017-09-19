@@ -17,6 +17,7 @@ import android.widget.ProgressBar;
 
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
+import com.gianlu.commonutils.SuppressingLinearLayoutManager;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.ChatAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -54,7 +55,7 @@ public class GameChatFragment extends Fragment implements PYX.IResult<List<PollM
         loading.setVisibility(View.GONE);
         swipeRefresh.setVisibility(View.VISIBLE);
         list = layout.findViewById(R.id.recyclerViewLayout_list);
-        LinearLayoutManager llm = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
+        LinearLayoutManager llm = new SuppressingLinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         llm.setStackFromEnd(true);
         list.setLayoutManager(llm);
         list.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
