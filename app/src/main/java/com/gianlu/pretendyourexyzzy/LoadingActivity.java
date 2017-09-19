@@ -46,8 +46,6 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler(this));
-
         setContentView(R.layout.activity_loading);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) actionBar.hide();

@@ -56,6 +56,8 @@ public class ThisApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
+        Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler(getBaseContext()));
+
         CommonUtils.setDebug(BuildConfig.DEBUG);
         FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(!BuildConfig.DEBUG);
         tracker = getTracker(this);

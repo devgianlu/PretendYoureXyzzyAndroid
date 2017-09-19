@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.content.Context;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -64,7 +63,7 @@ public class PYX {
     private boolean hasRetriedRegister = false;
 
     private PYX(Context context) {
-        handler = new Handler(Looper.getMainLooper());
+        handler = new Handler(context.getMainLooper());
         server = Servers.valueOf(Prefs.getString(context, PKeys.LAST_SERVER, Servers.PYX1.name()));
         cookieStore = new BasicCookieStore();
         httpContext = new BasicHttpContext();
@@ -90,9 +89,10 @@ public class PYX {
         return pollingThread;
     }
 
-    private void addJESSIONIDCookie(HttpRequestBase request) {
+    private void addJESSIONIDCookie(HttpRequestBase request) throws IOException {
         Cookie jSessionId = Utils.findCookie(cookieStore, "JSESSIONID");
-        if (jSessionId == null) throw new NullPointerException("JSESSIONID can't be null!!");
+        if (jSessionId == null)
+            throw new IOException(new NullPointerException("JSESSIONID can't be null!!"));
         request.setHeader("Set-Cookie", "JSESSIONID=" + jSessionId.getValue());
     }
 
