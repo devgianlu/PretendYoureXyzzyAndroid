@@ -767,6 +767,7 @@ public class PYX {
     public class PollingThread extends Thread {
         private final WeakHashMap<String, IResult<List<PollMessage>>> listeners = new WeakHashMap<>();
         private boolean shouldStop = false;
+        private int exCount = 0;
 
         @Override
         public void run() {
@@ -798,6 +799,7 @@ public class PYX {
         }
 
         private void dispatchDone(final List<PollMessage> obj) {
+            exCount = 0;
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -808,6 +810,7 @@ public class PYX {
         }
 
         private void dispatchEx(final Exception ex) {
+            exCount++;
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -815,6 +818,8 @@ public class PYX {
                         listener.onException(ex);
                 }
             });
+
+            if (exCount > 5) safeStop();
         }
 
         public void addListener(String tag, IResult<List<PollMessage>> listener) {
