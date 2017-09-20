@@ -70,11 +70,14 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         SearchManager searchManager = (SearchManager) getContext().getSystemService(Context.SEARCH_SERVICE);
         MenuItem item = menu.findItem(R.id.gamesFragment_search);
         item.setOnActionExpandListener(this);
-        searchView = (SearchView) item.getActionView();
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
-        searchView.setIconifiedByDefault(false);
-        searchView.setOnCloseListener(this);
-        searchView.setOnQueryTextListener(this);
+
+        if (searchManager != null) {
+            searchView = (SearchView) item.getActionView();
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
+            searchView.setIconifiedByDefault(false);
+            searchView.setOnCloseListener(this);
+            searchView.setOnQueryTextListener(this);
+        }
     }
 
     @Override

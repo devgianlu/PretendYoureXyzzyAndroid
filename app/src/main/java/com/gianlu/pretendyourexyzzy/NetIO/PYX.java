@@ -169,7 +169,8 @@ public class PYX {
                         }
                     });
                 } catch (final PYXException ex) {
-                    if (!hasRetriedRegister && Objects.equals(ex.errorCode, "se")) {
+                    if (!hasRetriedRegister && (Objects.equals(ex.errorCode, "se") || Objects.equals(ex.errorCode, "nr"))) {
+                        hasRetriedRegister = true;
                         registerUser(nickname, listener);
                     } else {
                         handler.post(new Runnable() {

@@ -30,7 +30,6 @@ public class ThisApplication extends Application {
     public static final String ACTION_JUDGE_CARD = "Judged card";
     public static final String ACTION_PLAY_CUSTOM_CARD = "Played custom card";
     public static final String ACTION_PLAY_CARD = "Played card";
-    public static final String ACTION_DONATE_OPEN = "Donation dialog opened";
     public static final String ACTION_STARRED_DECK_ADD = "Starred deck added";
     private static Tracker tracker;
 

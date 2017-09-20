@@ -15,7 +15,6 @@ import com.gianlu.commonutils.AppCompatPreferenceFragment;
 import com.gianlu.commonutils.BaseAboutFragment;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.LogsActivity;
-import com.google.android.gms.analytics.HitBuilders;
 
 import java.util.List;
 
@@ -119,13 +118,6 @@ public class PreferencesActivity extends AppCompatPreferenceActivity {
             return "com.gianlu.pretendyourexyzzy";
         }
 
-        @Override
-        protected void sendAnalytics() {
-            ThisApplication.sendAnalytics(getActivity(), new HitBuilders.EventBuilder()
-                    .setCategory(ThisApplication.CATEGORY_USER_INPUT)
-                    .setAction(ThisApplication.ACTION_DONATE_OPEN)
-                    .build());
-        }
 
         @Override
         protected Class getParent() {
