@@ -60,7 +60,7 @@ public class ThisApplication extends Application {
 
         CommonUtils.setDebug(BuildConfig.DEBUG);
         FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(!BuildConfig.DEBUG);
-        tracker = getTracker(this);
+        if (!BuildConfig.DEBUG) tracker = getTracker(this);
 
         ConnectivityChecker.setUserAgent(getString(R.string.app_name));
         ConnectivityChecker.setProvider(new ConnectivityChecker.URLProvider() {
