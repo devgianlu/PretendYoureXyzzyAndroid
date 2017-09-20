@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -50,6 +51,7 @@ import java.util.Objects;
 // FIXME: Blank cards sometimes appears at the end of the cards list
 public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter.IAdapter {
     private final static String POLL_TAG = "gameManager";
+    private static final String INSTRUCTIONS_TEXT = "instructionsText";
     private final PyxCard blackCard;
     private final TextView instructions;
     private final RecyclerView whiteCards;
@@ -94,6 +96,44 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         GameInfo.Player alsoMe = Utils.find(gameInfo.players, me.nickname);
         if (alsoMe != null) handleMyStatus(alsoMe.status);
         isLobby(gameInfo.game.status == Game.Status.LOBBY);
+
+        switch (gameInfo.game.status) {
+            case ROUND_OVER:
+            case DEALING:
+                // Never called
+                break;
+            case JUDGING:
+                for (GameInfo.Player player : gameInfo.players) {
+                    if (player.status == GameInfo.PlayerStatus.JUDGING) {
+                        updateInstructions(player.name + " is judging...");
+                        break;
+                    }
+                }
+
+                isLobby(false);
+                break;
+            case LOBBY:
+                newBlackCard(null);
+                updatePlayersCards(new ArrayList<List<Card>>());
+                handleHandDeal(new ArrayList<Card>());
+                handleMyStatus(GameInfo.PlayerStatus.IDLE);
+                isLobby(true);
+                break;
+            case PLAYING:
+                updateInstructions("Waiting for players to make their choice...");
+                updatePlayersCards(new ArrayList<List<Card>>());
+                isLobby(false);
+                break;
+        }
+    }
+
+    public void saveState(@NonNull Bundle bundle) {
+        if (instructions != null)
+            bundle.putString(INSTRUCTIONS_TEXT, instructions.getText().toString());
+    }
+
+    public void restoreState(@NonNull Bundle bundle) {
+        if (instructions != null) instructions.setText(bundle.getString(INSTRUCTIONS_TEXT));
     }
 
     private void isLobby(boolean lobby) {
@@ -391,6 +431,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 isLobby(true);
                 break;
             case PLAYING:
+                updateInstructions("Waiting for players to make their choice...");
                 updatePlayersCards(new ArrayList<List<Card>>());
                 newBlackCard(new Card(message.obj.getJSONObject("bc")));
                 refreshPlayersList();

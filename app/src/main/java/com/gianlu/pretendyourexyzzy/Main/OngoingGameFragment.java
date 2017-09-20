@@ -63,8 +63,7 @@ import cz.msebera.android.httpclient.client.utils.URIBuilder;
 import cz.msebera.android.httpclient.client.utils.URLEncodedUtils;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
-// FIXME: Landscape layout doesn't work
-public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInfo>, GameManager.IManager, CardcastBottomSheet.ISheet {
+public class OngoingGameFragment extends Fragment implements GameManager.IManager, CardcastBottomSheet.ISheet, PYX.IResult<GameInfo> {
     private IFragment handler;
     private CoordinatorLayout layout;
     private ProgressBar loading;
@@ -74,16 +73,23 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
     private int gameId;
     private PYX pyx;
     private CardcastBottomSheet cardcastBottomSheet;
+    private Bundle lastSavedState;
 
-    public static OngoingGameFragment getInstance(Game game, User me, OngoingGameFragment.IFragment handler) {
+    public static OngoingGameFragment getInstance(Game game, User me, OngoingGameFragment.IFragment handler, @Nullable SavedState savedState) {
         OngoingGameFragment fragment = new OngoingGameFragment();
         fragment.handler = handler;
         fragment.setHasOptionsMenu(true);
+        fragment.setInitialSavedState(savedState);
         Bundle args = new Bundle();
         args.putSerializable("me", me);
         args.putSerializable("game", game);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (manager != null) manager.saveState(outState);
     }
 
     @Override
@@ -151,11 +157,49 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
             return layout;
         }
 
+        lastSavedState = savedInstanceState;
+
         gameId = game.gid;
         pyx = PYX.get(getContext());
         pyx.getGameInfo(game.gid, this);
 
         return layout;
+    }
+
+    @Override
+    public void onDone(PYX pyx, final GameInfo gameInfo) {
+        if (manager == null)
+            manager = new GameManager(container, gameInfo, me, OngoingGameFragment.this);
+        updateActivityTitle();
+
+        if (lastSavedState != null) {
+            manager.restoreState(lastSavedState);
+            lastSavedState = null;
+        }
+
+        pyx.getGameCards(gameInfo.game.gid, new PYX.IResult<GameCards>() {
+            @Override
+            public void onDone(PYX pyx, GameCards gameCards) {
+                manager.setCards(gameCards);
+                loading.setVisibility(View.GONE);
+                container.setVisibility(View.VISIBLE);
+                MessageLayout.hide(layout);
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                OngoingGameFragment.this.onException(ex);
+            }
+        });
+    }
+
+    @Override
+    public void onException(Exception ex) {
+        Logging.logMe(getContext(), ex);
+        loading.setVisibility(View.GONE);
+        container.setVisibility(View.GONE);
+        if (isAdded())
+            MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
     }
 
     @Override
@@ -342,39 +386,9 @@ public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInf
         CommonUtils.showDialog(getActivity(), builder);
     }
 
-    @Override
-    public void onDone(PYX pyx, final GameInfo gameInfo) {
-        if (manager == null) manager = new GameManager(container, gameInfo, me, this);
-        updateActivityTitle();
-
-        pyx.getGameCards(gameInfo.game.gid, new PYX.IResult<GameCards>() {
-            @Override
-            public void onDone(PYX pyx, GameCards gameCards) {
-                manager.setCards(gameCards);
-                loading.setVisibility(View.GONE);
-                container.setVisibility(View.VISIBLE);
-                MessageLayout.hide(layout);
-            }
-
-            @Override
-            public void onException(Exception ex) {
-                OngoingGameFragment.this.onException(ex);
-            }
-        });
-    }
-
     @Nullable
     private Game getGame() {
         return manager == null ? null : manager.gameInfo.game;
-    }
-
-    @Override
-    public void onException(Exception ex) {
-        Logging.logMe(getContext(), ex);
-        loading.setVisibility(View.GONE);
-        container.setVisibility(View.GONE);
-        if (isAdded())
-            MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
     }
 
     @Override

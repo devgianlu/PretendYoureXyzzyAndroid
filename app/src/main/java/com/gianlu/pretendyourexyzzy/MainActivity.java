@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -42,6 +43,26 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
     private GameChatFragment gameChatFragment;
     private OngoingGameFragment ongoingGameFragment;
     private User user;
+    private Game currentGame = null;
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (ongoingGameFragment != null && currentGame != null) {
+            Fragment.SavedState state = getSupportFragmentManager().saveFragmentInstanceState(ongoingGameFragment);
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.remove(ongoingGameFragment);
+            ongoingGameFragment = OngoingGameFragment.getInstance(currentGame, user, this, state);
+            transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
+
+            navigation.getMenu().clear();
+            navigation.inflateMenu(R.menu.navigation_ongoing_game);
+
+            transaction.commitNowAllowingStateLoss();
+            navigation.setSelectedItemId(R.id.main_ongoingGame);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -234,17 +255,21 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
     @Override
     public void onParticipatingGame(Game game) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        ongoingGameFragment = OngoingGameFragment.getInstance(game, user, this);
+        ongoingGameFragment = OngoingGameFragment.getInstance(game, user, this, null);
         transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
         gameChatFragment = GameChatFragment.getInstance(game);
         transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT).commitNowAllowingStateLoss();
         navigation.getMenu().clear();
         navigation.inflateMenu(R.menu.navigation_ongoing_game);
         navigation.setSelectedItemId(R.id.main_ongoingGame);
+
+        currentGame = game;
     }
 
     @Override
     public void onLeftGame() {
+        currentGame = null;
+
         navigation.getMenu().clear();
         navigation.inflateMenu(R.menu.navigation_lobby);
         navigation.setSelectedItemId(R.id.main_games);
