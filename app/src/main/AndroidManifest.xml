@@ -46,11 +46,12 @@
             </intent-filter>
         </activity>
 
-        <!-- Main activity (with all the fragments) -->
+        <!-- Main activity (with all the fragments) TODO: Remove portrait limitation -->
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:launchMode="singleTask" />
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait" />
 
         <!-- Starred cards activity -->
         <activity
