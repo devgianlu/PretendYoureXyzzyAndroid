@@ -63,6 +63,7 @@ import cz.msebera.android.httpclient.client.utils.URIBuilder;
 import cz.msebera.android.httpclient.client.utils.URLEncodedUtils;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
+// FIXME: Landscape layout doesn't work
 public class OngoingGameFragment extends Fragment implements PYX.IResult<GameInfo>, GameManager.IManager, CardcastBottomSheet.ISheet {
     private IFragment handler;
     private CoordinatorLayout layout;

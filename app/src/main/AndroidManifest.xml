@@ -49,32 +49,38 @@
         <!-- Main activity (with all the fragments) -->
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
             android:launchMode="singleTask" />
 
         <!-- Starred cards activity -->
         <activity
             android:name=".StarredCardsActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- Starred decks activity -->
         <activity
             android:name=".StarredDecksActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
             android:parentActivityName=".MainActivity" />
 
         <!-- Cardcast deck activity -->
         <activity
             android:name=".CardcastDeckActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- Preferences activity -->
         <activity
             android:name=".PreferencesActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
             android:parentActivityName=".MainActivity" />
 
         <!-- Logs activity -->
         <activity
             android:name="com.gianlu.commonutils.LogsActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
             android:parentActivityName=".PreferencesActivity" />
 
         <!-- Google Analytics -->
