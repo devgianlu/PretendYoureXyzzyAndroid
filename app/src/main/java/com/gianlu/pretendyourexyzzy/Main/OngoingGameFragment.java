@@ -10,6 +10,9 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.TypedValue;
@@ -33,6 +36,7 @@ import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastBottomSheet;
 import com.gianlu.pretendyourexyzzy.NetIO.GameManager;
@@ -216,6 +220,9 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
             case R.id.ongoingGame_spectators:
                 showSpectators();
                 return true;
+            case R.id.ongoingGame_players:
+                showPlayers();
+                return true;
             case R.id.ongoingGame_share:
                 shareGame();
                 return true;
@@ -235,6 +242,21 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showPlayers() {
+        if (manager == null) return;
+        RecyclerView recyclerView = new RecyclerView(getContext());
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
+        recyclerView.setAdapter(new PlayersAdapter(getContext(), manager.gameInfo.players));
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.playersLabel)
+                .setView(recyclerView)
+                .setPositiveButton(android.R.string.ok, null);
+
+        CommonUtils.showDialog(getActivity(), builder);
     }
 
     private void shareGame() {
