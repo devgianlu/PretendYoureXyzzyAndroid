@@ -21,7 +21,6 @@
         <!-- Loading activity -->
         <activity
             android:name=".LoadingActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme">
             <intent-filter>
@@ -55,33 +54,33 @@
         <!-- Starred cards activity -->
         <activity
             android:name=".StarredCardsActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
             android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- Starred decks activity -->
         <activity
             android:name=".StarredDecksActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait" />
 
         <!-- Cardcast deck activity -->
         <activity
             android:name=".CardcastDeckActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- Preferences activity -->
         <activity
             android:name=".PreferencesActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait" />
 
         <!-- Logs activity -->
         <activity
             android:name="com.gianlu.commonutils.LogsActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:parentActivityName=".PreferencesActivity" />
+            android:parentActivityName=".PreferencesActivity"
+            android:screenOrientation="portrait" />
 
         <!-- Google Analytics -->
         <receiver
