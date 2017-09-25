@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.Main;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -227,6 +228,7 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
                 shareGame();
                 return true;
             case R.id.ongoingGame_cardcast:
+                cardcastBottomSheet.expandLoading();
                 pyx.listCardcastCardSets(gameId, new PYX.IResult<List<CardSet>>() {
                     @Override
                     public void onDone(PYX pyx, List<CardSet> result) {
@@ -359,14 +361,19 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
                         }
 
                         dialog.dismiss();
+
+                        final ProgressDialog pd = CommonUtils.fastIndeterminateProgressDialog(getContext(), R.string.loading);
+                        CommonUtils.showDialog(getContext(), pd);
                         pyx.changeGameOptions(gameId, newOptions, new PYX.ISuccess() {
                             @Override
                             public void onDone(PYX pyx) {
+                                pd.dismiss();
                                 Toaster.show(getActivity(), Utils.Messages.OPTIONS_CHANGED);
                             }
 
                             @Override
                             public void onException(Exception ex) {
+                                pd.dismiss();
                                 Toaster.show(getActivity(), Utils.Messages.FAILED_CHANGING_OPTIONS, ex);
                             }
                         });

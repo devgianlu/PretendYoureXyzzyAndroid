@@ -48,7 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-// FIXME: Blank cards sometimes appears at the end of the cards list
+// FIXME: Blank cards sometimes appears at the end of the played cards list
 public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter.IAdapter {
     private final static String POLL_TAG = "gameManager";
     private static final String INSTRUCTIONS_TEXT = "instructionsText";

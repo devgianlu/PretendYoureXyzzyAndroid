@@ -152,6 +152,10 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
             registerSubmit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    loading.setVisibility(View.VISIBLE);
+
+                    register.setVisibility(View.GONE);
+
                     @SuppressWarnings("ConstantConditions") String nick = registerNickname.getEditText().getText().toString();
                     pyx.registerUser(nick, new PYX.IResult<User>() {
                         @Override
@@ -165,6 +169,9 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                         public void onException(Exception ex) {
                             Logging.logMe(LoadingActivity.this, ex);
                             if (ex instanceof PYXException) {
+                                loading.setVisibility(View.GONE);
+                                register.setVisibility(View.VISIBLE);
+
                                 switch (((PYXException) ex).errorCode) {
                                     case "rn":
                                         registerNickname.setError(getString(R.string.reservedNickname));

@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.Main;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -115,17 +116,21 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         createGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                final ProgressDialog pd = CommonUtils.fastIndeterminateProgressDialog(getContext(), R.string.loading);
+                CommonUtils.showDialog(getContext(), pd);
                 pyx.createGame(new PYX.IResult<Integer>() {
                     @Override
                     public void onDone(PYX pyx, Integer result) {
                         pyx.getGameInfo(result, new PYX.IResult<GameInfo>() {
                             @Override
                             public void onDone(PYX pyx, GameInfo result) {
+                                pd.dismiss();
                                 if (handler != null) handler.onParticipatingGame(result.game);
                             }
 
                             @Override
                             public void onException(Exception ex) {
+                                pd.dismiss();
                                 Toaster.show(getActivity(), Utils.Messages.FAILED_JOINING, ex);
                             }
                         });
@@ -133,6 +138,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
 
                     @Override
                     public void onException(Exception ex) {
+                        pd.dismiss();
                         Toaster.show(getActivity(), Utils.Messages.FAILED_CREATING_GAME, ex);
                     }
                 });
@@ -261,10 +267,13 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     }
 
     private void spectateGame(final Game game, @Nullable String password) {
+        final ProgressDialog pd = CommonUtils.fastIndeterminateProgressDialog(getContext(), R.string.loading);
+        CommonUtils.showDialog(getContext(), pd);
         PYX.get(getContext()).spectateGame(game.gid, password, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
                 participateGame(game.gid);
+                pd.dismiss();
 
                 ThisApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
                         .setCategory(ThisApplication.CATEGORY_USER_INPUT)
@@ -274,6 +283,8 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
 
             @Override
             public void onException(Exception ex) {
+                pd.dismiss();
+
                 if (ex instanceof PYXException) {
                     switch (((PYXException) ex).errorCode) {
                         case "wp":
@@ -291,10 +302,13 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     }
 
     private void joinGame(final Game game, @Nullable String password) {
+        final ProgressDialog pd = CommonUtils.fastIndeterminateProgressDialog(getContext(), R.string.loading);
+        CommonUtils.showDialog(getContext(), pd);
         PYX.get(getContext()).joinGame(game.gid, password, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
                 participateGame(game.gid);
+                pd.dismiss();
 
                 ThisApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
                         .setCategory(ThisApplication.CATEGORY_USER_INPUT)
@@ -304,6 +318,8 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
 
             @Override
             public void onException(Exception ex) {
+                pd.dismiss();
+
                 if (ex instanceof PYXException) {
                     switch (((PYXException) ex).errorCode) {
                         case "wp":
