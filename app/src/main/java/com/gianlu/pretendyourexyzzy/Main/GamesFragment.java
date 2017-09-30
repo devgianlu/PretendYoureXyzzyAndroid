@@ -23,12 +23,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.SearchView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.MessageLayout;
+import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.GamesAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -46,11 +45,8 @@ import java.util.List;
 
 public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, GamesAdapter.IAdapter, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
     private static final String POLL_TAG = "games";
-    private RecyclerView list;
-    private SwipeRefreshLayout swipeRefresh;
-    private ProgressBar loading;
-    private CoordinatorLayout layout;
     private GamesList lastResult;
+    private RecyclerViewLayout recyclerViewLayout;
     private IFragment handler;
     private SearchView searchView;
     private GamesAdapter adapter;
@@ -102,13 +98,11 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        layout = (CoordinatorLayout) inflater.inflate(R.layout.games_fragment, container, false);
+        CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.games_fragment, container, false);
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
-        loading = layout.findViewById(R.id.recyclerViewLayout_loading);
-        swipeRefresh = layout.findViewById(R.id.recyclerViewLayout_swipeRefresh);
-        swipeRefresh.setColorSchemeResources(R.color.colorAccent);
-        list = layout.findViewById(R.id.recyclerViewLayout_list);
-        list.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        recyclerViewLayout = layout.findViewById(R.id.gamesFragment_recyclerViewLayout);
+        recyclerViewLayout.enableSwipeRefresh(R.color.colorAccent);
+        recyclerViewLayout.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         FloatingActionButton createGame = layout.findViewById(R.id.gamesFragment_createGame);
 
         final PYX pyx = PYX.get(getContext());
@@ -145,7 +139,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
             }
         });
 
-        swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        recyclerViewLayout.setRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 pyx.getGamesList(GamesFragment.this);
@@ -183,19 +177,14 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     }
 
     public void scrollToTop() {
-        if (list != null) list.scrollToPosition(0);
+        recyclerViewLayout.getList().scrollToPosition(0);
     }
 
     @Override
     public void onDone(PYX pyx, GamesList result) {
-        swipeRefresh.setRefreshing(false);
-        loading.setVisibility(View.GONE);
-        swipeRefresh.setVisibility(View.VISIBLE);
-        MessageLayout.hide(layout);
-
         if (!isAdded()) return;
         adapter = new GamesAdapter(getContext(), result, this);
-        list.setAdapter(adapter);
+        recyclerViewLayout.loadListData(adapter);
         lastResult = result;
         updateActivityTitle();
 
@@ -211,17 +200,14 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     @Override
     public void onException(Exception ex) {
         Logging.logMe(getContext(), ex);
-        swipeRefresh.setRefreshing(false);
-        loading.setVisibility(View.GONE);
-        swipeRefresh.setVisibility(View.GONE);
         if (isAdded())
-            MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
+            recyclerViewLayout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);
     }
 
     @Nullable
     @Override
     public RecyclerView getRecyclerView() {
-        return list;
+        return recyclerViewLayout.getList();
     }
 
     @Override

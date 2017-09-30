@@ -17,17 +17,14 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ProgressBar;
 import android.widget.SearchView;
 
 import com.gianlu.cardcastapi.Cardcast;
 import com.gianlu.cardcastapi.Models.Deck;
 import com.gianlu.cardcastapi.Models.Decks;
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.InfiniteRecyclerView;
 import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.MessageLayout;
+import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.CardcastDecksAdapter;
 import com.gianlu.pretendyourexyzzy.CardcastDeckActivity;
 import com.gianlu.pretendyourexyzzy.CardcastHelper;
@@ -39,10 +36,7 @@ import java.util.List;
 
 public class CardcastFragment extends Fragment implements CardcastHelper.IDecks, CardcastDecksAdapter.IAdapter, MenuItem.OnActionExpandListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
     private final static int LIMIT = 12;
-    private FrameLayout layout;
-    private InfiniteRecyclerView list;
-    private SwipeRefreshLayout swipeRefresh;
-    private ProgressBar loading;
+    private RecyclerViewLayout layout;
     private CardcastHelper cardcast;
     private SearchView searchView;
     private CardcastHelper.Search search = new CardcastHelper.Search(null, null, Cardcast.Direction.DESCENDANT, Cardcast.Sort.RATING, true);
@@ -118,10 +112,7 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
     }
 
     private void refreshAdapter() {
-        loading.setVisibility(View.VISIBLE);
-        swipeRefresh.setVisibility(View.GONE);
-        MessageLayout.hide(layout);
-
+        layout.startLoading();
         cardcast.getDecks(search, LIMIT, 0, this);
     }
 
@@ -163,18 +154,15 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        layout = (FrameLayout) inflater.inflate(R.layout.recycler_view_layout, container, false);
+        layout = new RecyclerViewLayout(inflater);
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
-        loading = layout.findViewById(R.id.recyclerViewLayout_loading);
-        swipeRefresh = layout.findViewById(R.id.recyclerViewLayout_swipeRefresh);
-        swipeRefresh.setColorSchemeResources(R.color.colorAccent);
-        list = layout.findViewById(R.id.recyclerViewLayout_list);
-        list.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        layout.enableSwipeRefresh(R.color.colorAccent);
+        layout.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
         cardcast = new CardcastHelper(Cardcast.get());
         cardcast.getDecks(search, LIMIT, 0, this);
 
-        swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        layout.setRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 cardcast.getDecks(search, LIMIT, 0, CardcastFragment.this);
@@ -186,23 +174,15 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
 
     @Override
     public void onDone(CardcastHelper.Search search, Decks decks) {
-        swipeRefresh.setRefreshing(false);
-        loading.setVisibility(View.GONE);
-        swipeRefresh.setVisibility(View.VISIBLE);
-        MessageLayout.hide(layout);
-
-        if (isAdded())
-            list.setAdapter(new CardcastDecksAdapter(getContext(), cardcast, search, decks, LIMIT, this));
+        if (!isAdded()) return;
+        layout.loadListData(new CardcastDecksAdapter(getContext(), cardcast, search, decks, LIMIT, this));
     }
 
     @Override
     public void onException(Exception ex) {
         Logging.logMe(getContext(), ex);
-        swipeRefresh.setRefreshing(false);
-        loading.setVisibility(View.GONE);
-        swipeRefresh.setVisibility(View.GONE);
         if (isAdded())
-            MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
+            layout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);
     }
 
     @Override

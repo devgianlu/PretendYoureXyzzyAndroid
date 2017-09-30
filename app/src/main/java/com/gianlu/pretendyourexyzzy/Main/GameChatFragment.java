@@ -3,20 +3,17 @@ package com.gianlu.pretendyourexyzzy.Main;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 
 import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.MessageLayout;
+import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.SuppressingLinearLayoutManager;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.ChatAdapter;
@@ -32,10 +29,9 @@ import java.util.List;
 
 public class GameChatFragment extends Fragment implements PYX.IResult<List<PollMessage>>, ChatAdapter.IAdapter {
     private static final String POLL_TAG = "gameChat";
-    private RecyclerView list;
-    private LinearLayout layout;
-    private Game game;
+    private RecyclerViewLayout recyclerViewLayout;
     private ChatAdapter adapter;
+    private Game game;
 
     public static GameChatFragment getInstance(Game game) {
         GameChatFragment fragment = new GameChatFragment();
@@ -48,28 +44,22 @@ public class GameChatFragment extends Fragment implements PYX.IResult<List<PollM
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        layout = (LinearLayout) inflater.inflate(R.layout.chat_fragment, container, false);
-        ProgressBar loading = layout.findViewById(R.id.recyclerViewLayout_loading);
-        SwipeRefreshLayout swipeRefresh = layout.findViewById(R.id.recyclerViewLayout_swipeRefresh);
-        swipeRefresh.setEnabled(false);
-        loading.setVisibility(View.GONE);
-        swipeRefresh.setVisibility(View.VISIBLE);
-        list = layout.findViewById(R.id.recyclerViewLayout_list);
+        LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.chat_fragment, container, false);
+        recyclerViewLayout = layout.findViewById(R.id.chatFragment_recyclerViewLayout);
+        recyclerViewLayout.disableSwipeRefresh();
         LinearLayoutManager llm = new SuppressingLinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         llm.setStackFromEnd(true);
-        list.setLayoutManager(llm);
-        list.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
+        recyclerViewLayout.setLayoutManager(llm);
+        recyclerViewLayout.getList().addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 
         game = (Game) getArguments().getSerializable("game");
         if (game == null) {
-            loading.setVisibility(View.GONE);
-            swipeRefresh.setVisibility(View.GONE);
-            MessageLayout.show(layout, R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
+            recyclerViewLayout.showMessage(R.string.failedLoading, true);
             return layout;
         }
 
         adapter = new ChatAdapter(getContext(), this);
-        list.setAdapter(adapter);
+        recyclerViewLayout.loadListData(adapter);
 
         final PYX pyx = PYX.get(getContext());
 
@@ -106,12 +96,12 @@ public class GameChatFragment extends Fragment implements PYX.IResult<List<PollM
     }
 
     public void scrollToTop() {
-        if (list != null) list.scrollToPosition(0);
+        recyclerViewLayout.getList().scrollToPosition(0);
     }
 
     @Override
     public void onDone(PYX pyx, List<PollMessage> result) {
-        if (game == null) return;
+        if (game == null || !isAdded()) return;
         adapter.newMessages(result, game);
     }
 
@@ -122,10 +112,8 @@ public class GameChatFragment extends Fragment implements PYX.IResult<List<PollM
 
     @Override
     public void onItemCountChanged(int count) {
-        if (count == 0)
-            MessageLayout.show(layout, R.string.noMessages, R.drawable.ic_info_outline_black_48dp);
-        else
-            MessageLayout.hide(layout);
+        if (count == 0) recyclerViewLayout.showMessage(R.string.noMessages, false);
+        else recyclerViewLayout.showList();
     }
 }
 
