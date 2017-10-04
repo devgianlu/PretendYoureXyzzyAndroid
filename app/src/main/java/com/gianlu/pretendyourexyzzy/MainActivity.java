@@ -151,6 +151,14 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
     }
 
     @Override
+    public void onBackPressed() {
+        if (ongoingGameFragment != null)
+            ongoingGameFragment.onBackPressed();
+        else
+            super.onBackPressed();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;

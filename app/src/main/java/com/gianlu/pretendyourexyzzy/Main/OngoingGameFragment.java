@@ -123,15 +123,7 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
         PYX.get(getContext()).leaveGame(gameId, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
-                Activity activity = getActivity();
-                if (activity != null) {
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (handler != null) handler.onLeftGame();
-                        }
-                    });
-                }
+                if (handler != null) handler.onLeftGame();
             }
 
             @Override
@@ -569,6 +561,21 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
                 Toaster.show(getActivity(), Utils.Messages.FAILED_ADDING_CARDCAST, ex);
             }
         });
+    }
+
+    public void onBackPressed() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.leaveGame)
+                .setMessage(R.string.leaveGame_confirm)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        leaveGame();
+                    }
+                })
+                .setNegativeButton(android.R.string.no, null);
+
+        CommonUtils.showDialog(getActivity(), builder);
     }
 
     public interface IFragment {
