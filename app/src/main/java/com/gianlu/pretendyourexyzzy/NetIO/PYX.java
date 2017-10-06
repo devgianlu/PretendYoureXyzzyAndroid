@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
@@ -46,8 +47,6 @@ import cz.msebera.android.httpclient.cookie.Cookie;
 import cz.msebera.android.httpclient.impl.client.BasicCookieStore;
 import cz.msebera.android.httpclient.impl.client.HttpClients;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
-import cz.msebera.android.httpclient.protocol.BasicHttpContext;
-import cz.msebera.android.httpclient.protocol.HttpContext;
 import cz.msebera.android.httpclient.util.EntityUtils;
 
 public class PYX {
@@ -57,7 +56,6 @@ public class PYX {
     private final Handler handler;
     private final HttpClient client;
     private final CookieStore cookieStore;
-    private final HttpContext httpContext;
     public FirstLoad firstLoad;
     private PollingThread pollingThread;
     private boolean hasRetriedRegister = false;
@@ -66,7 +64,6 @@ public class PYX {
         handler = new Handler(context.getMainLooper());
         server = Servers.valueOf(Prefs.getString(context, PKeys.LAST_SERVER, Servers.PYX1.name()));
         cookieStore = new BasicCookieStore();
-        httpContext = new BasicHttpContext();
         client = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
     }
 
@@ -107,7 +104,7 @@ public class PYX {
         if (operation != OP.FIRST_LOAD)
             addJESSIONIDCookie(post);
 
-        HttpResponse resp = client.execute(post, httpContext);
+        HttpResponse resp = client.execute(post);
 
         StatusLine sl = resp.getStatusLine();
         if (sl.getStatusCode() != HttpStatus.SC_OK)
@@ -459,13 +456,7 @@ public class PYX {
             public void run() {
                 try {
                     JSONObject obj = ajaxServletRequestSync(OP.GET_NAMES_LIST);
-
-                    JSONArray namesArray = obj.getJSONArray("nl");
-                    final List<String> names = new ArrayList<>();
-                    for (int i = 0; i < namesArray.length(); i++) {
-                        String name = namesArray.getString(i);
-                        if (!names.contains(name)) names.add(name);
-                    }
+                    final List<String> names = CommonUtils.toStringsList(obj.getJSONArray("nl"), true);
 
                     handler.post(new Runnable() {
                         @Override
@@ -597,7 +588,7 @@ public class PYX {
             public void run() {
                 try {
                     JSONObject obj = ajaxServletRequestSync(OP.LIST_CARDCAST_CARD_SETS, new BasicNameValuePair("gid", String.valueOf(gid)));
-                    final List<CardSet> sets = CardSet.toCardSetsList(obj.getJSONArray("css"));
+                    final List<CardSet> sets = CommonUtils.toTList(obj.getJSONArray("css"), CardSet.class);
 
                     handler.post(new Runnable() {
                         @Override
@@ -777,7 +768,7 @@ public class PYX {
                     HttpPost post = new HttpPost(server.uri.toString() + "LongPollServlet");
                     addJESSIONIDCookie(post);
 
-                    HttpResponse resp = client.execute(post, httpContext);
+                    HttpResponse resp = client.execute(post);
 
                     StatusLine sl = resp.getStatusLine();
                     if (sl.getStatusCode() != HttpStatus.SC_OK)
@@ -791,7 +782,7 @@ public class PYX {
                         raiseException(obj);
                     } else if (json.startsWith("[")) {
                         JSONArray array = new JSONArray(json);
-                        dispatchDone(PollMessage.toPollMessagesList(array));
+                        dispatchDone(CommonUtils.toTList(array, PollMessage.class));
                     }
                 } catch (final IOException | JSONException | PYXException ex) {
                     dispatchEx(ex);

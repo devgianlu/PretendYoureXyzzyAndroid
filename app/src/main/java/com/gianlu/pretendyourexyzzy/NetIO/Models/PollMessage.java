@@ -1,11 +1,8 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class PollMessage {
@@ -23,12 +20,6 @@ public class PollMessage {
         gid = obj.optInt("gid", -1);
         timestamp = obj.optLong("ts", -1);
         this.obj = obj;
-    }
-
-    public static List<PollMessage> toPollMessagesList(JSONArray array) throws JSONException {
-        List<PollMessage> list = new ArrayList<>();
-        for (int i = 0; i < array.length(); i++) list.add(new PollMessage(array.getJSONObject(i)));
-        return list;
     }
 
     public enum Event {

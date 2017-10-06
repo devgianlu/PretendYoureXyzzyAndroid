@@ -2,9 +2,9 @@ package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 import android.support.annotation.NonNull;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.pretendyourexyzzy.Utils;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,11 +25,7 @@ public class FirstLoad implements Serializable {
         inProgress = obj.getBoolean("ip");
         nickname = obj.optString("nickname", null);
         gameId = obj.optInt("gid", -1);
-
-        cardSets = new ArrayList<>();
-        JSONArray cardSetsArray = obj.getJSONArray("css");
-        for (int i = 0; i < cardSetsArray.length(); i++)
-            cardSets.add(new CardSet(cardSetsArray.getJSONObject(i)));
+        cardSets = CommonUtils.toTList(obj.getJSONArray("css"), CardSet.class);
     }
 
     public List<String> createCardSetNamesList(List<Integer> includeIds) {

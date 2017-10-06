@@ -1,10 +1,10 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import org.json.JSONArray;
+import com.gianlu.commonutils.CommonUtils;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -14,11 +14,7 @@ public class GameInfo {
 
     public GameInfo(JSONObject obj) throws JSONException {
         game = new Game(obj.getJSONObject("gi"));
-
-        JSONArray playersArray = obj.getJSONArray("pi");
-        players = new ArrayList<>();
-        for (int i = 0; i < playersArray.length(); i++)
-            players.add(new Player(playersArray.getJSONObject(i)));
+        players = CommonUtils.toTList(obj.getJSONArray("pi"), Player.class);
     }
 
     public GameInfo(Game game, List<Player> players) {

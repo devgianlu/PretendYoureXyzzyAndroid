@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
+import com.gianlu.commonutils.CommonUtils;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,11 +20,7 @@ public class GameCards {
         else blackCard = new Card(obj.getJSONObject("bc"));
         gameId = obj.getInt("gid");
         whiteCards = toWhiteCardsList(obj.getJSONArray("wc"));
-
-        hand = new ArrayList<>();
-        JSONArray handArray = obj.getJSONArray("h");
-        for (int i = 0; i < handArray.length(); i++)
-            hand.add(new Card(handArray.getJSONObject(i)));
+        hand = CommonUtils.toTList(obj.getJSONArray("h"), Card.class);
     }
 
     public static List<List<Card>> toWhiteCardsList(JSONArray whiteCardsArray) throws JSONException {

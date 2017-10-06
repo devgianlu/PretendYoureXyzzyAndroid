@@ -351,7 +351,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 break;
             case HAND_DEAL:
                 handleMyStatus(GameInfo.PlayerStatus.PLAYING);
-                handleHandDeal(Card.toCardsList(message.obj.getJSONArray("h")));
+                handleHandDeal(CommonUtils.toTList(message.obj.getJSONArray("h"), Card.class));
                 break;
             case HURRY_UP:
                 if (listener != null) listener.showToast(Utils.Messages.HURRY_UP);
