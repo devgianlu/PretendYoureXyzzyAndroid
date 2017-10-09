@@ -112,7 +112,18 @@ public class PYX {
 
         JSONObject obj = new JSONObject(EntityUtils.toString(resp.getEntity()));
         post.releaseConnection();
-        raiseException(obj);
+        try {
+            raiseException(obj);
+        } catch (PYXException ex) {
+            if (!hasRetriedRegister && firstLoad != null && (Objects.equals(ex.errorCode, "se") || Objects.equals(ex.errorCode, "nr"))) {
+                hasRetriedRegister = true;
+                registerUserSync(firstLoad.nickname);
+                return ajaxServletRequestSync(operation, params);
+            } else {
+                throw ex;
+            }
+        }
+
         return obj;
     }
 
@@ -148,16 +159,19 @@ public class PYX {
         });
     }
 
+    private User registerUserSync(final String nickname) throws JSONException, PYXException, IOException {
+        JSONObject obj = ajaxServletRequestSync(OP.REGISTER, new BasicNameValuePair("n", nickname));
+        final String confirmNick = obj.getString("n");
+        if (!Objects.equals(confirmNick, nickname.trim())) throw new RuntimeException("WTF?!");
+        return new User(confirmNick);
+    }
+
     public void registerUser(final String nickname, final IResult<User> listener) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
-                    JSONObject obj = ajaxServletRequestSync(OP.REGISTER, new BasicNameValuePair("n", nickname));
-                    final String confirmNick = obj.getString("n");
-                    if (!Objects.equals(confirmNick, nickname.trim()))
-                        throw new RuntimeException("WTF?!");
-                    final User user = new User(confirmNick);
+                    final User user = registerUserSync(nickname);
 
                     handler.post(new Runnable() {
                         @Override
@@ -165,19 +179,7 @@ public class PYX {
                             listener.onDone(PYX.this, user);
                         }
                     });
-                } catch (final PYXException ex) {
-                    if (!hasRetriedRegister && (Objects.equals(ex.errorCode, "se") || Objects.equals(ex.errorCode, "nr"))) {
-                        hasRetriedRegister = true;
-                        registerUser(nickname, listener);
-                    } else {
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.onException(ex);
-                            }
-                        });
-                    }
-                } catch (IOException | JSONException ex) {
+                } catch (PYXException | IOException | JSONException ex) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
