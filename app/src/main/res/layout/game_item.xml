@@ -82,7 +82,7 @@
 
             <Button
                 android:id="@+id/gameItem_spectate"
-                style="?attr/buttonBarButtonStyle"
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
@@ -90,7 +90,7 @@
 
             <Button
                 android:id="@+id/gameItem_join"
-                style="?attr/buttonBarButtonStyle"
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/join" />

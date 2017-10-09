@@ -127,6 +127,6 @@
     <string name="addStarredDecks">Add starred decks</string>
     <string name="addStarredDecksFailedPartial">Failed adding some decks!</string>
     <string name="starredDecksAdded">Added all the starred decks.</string>
-    <string name="loading">Loading...</string>
+    <string name="loading">Loading…</string>
     <string name="leaveGame_confirm">Do you really want to leave the game?</string>
 </resources>
