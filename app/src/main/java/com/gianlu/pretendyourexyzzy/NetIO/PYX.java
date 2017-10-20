@@ -119,9 +119,9 @@ public class PYX {
         } catch (PYXException ex) {
             if (!hasRetriedRegister && firstLoad != null && (Objects.equals(ex.errorCode, "se") || Objects.equals(ex.errorCode, "nr"))) {
                 hasRetriedRegister = true;
-                PYX.this.firstLoad = new FirstLoad(ajaxServletRequestSync(OP.FIRST_LOAD));
-                registerUserSync(firstLoad.nickname);
-                return ajaxServletRequestSync(operation, params);
+                firstLoad = new FirstLoad(ajaxServletRequestSync(OP.FIRST_LOAD)); // First load
+                registerUserSync(firstLoad.nickname); // Register user
+                return ajaxServletRequestSync(operation, params); // Retry operation
             } else {
                 throw ex;
             }
@@ -164,7 +164,7 @@ public class PYX {
                 try {
                     JSONObject obj = ajaxServletRequestSync(OP.FIRST_LOAD);
                     final FirstLoad result = new FirstLoad(obj);
-                    PYX.this.firstLoad = result;
+                    firstLoad = result;
 
                     handler.post(new Runnable() {
                         @Override
