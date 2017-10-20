@@ -139,60 +139,63 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
         Prefs.putString(LoadingActivity.this, PKeys.LAST_SERVER, server.name());
     }
 
+    private void showRegisterUI(final PYX pyx) {
+        loading.setVisibility(View.GONE);
+        register.setVisibility(View.VISIBLE);
+
+        String lastNickname = Prefs.getString(LoadingActivity.this, PKeys.LAST_NICKNAME, null);
+        if (lastNickname != null)
+            registerNickname.getEditText().setText(lastNickname);
+
+        registerSubmit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loading.setVisibility(View.VISIBLE);
+                register.setVisibility(View.GONE);
+
+                @SuppressWarnings("ConstantConditions") String nick = registerNickname.getEditText().getText().toString();
+                pyx.registerUser(nick, new PYX.IResult<User>() {
+                    @Override
+                    public void onDone(PYX pyx, User result) {
+                        pyx.startPolling();
+                        Prefs.putString(LoadingActivity.this, PKeys.LAST_NICKNAME, result.nickname);
+                        goTo(MainActivity.class, result);
+                    }
+
+                    @Override
+                    public void onException(Exception ex) {
+                        Logging.logMe(LoadingActivity.this, ex);
+                        if (ex instanceof PYXException) {
+                            loading.setVisibility(View.GONE);
+                            register.setVisibility(View.VISIBLE);
+
+                            switch (((PYXException) ex).errorCode) {
+                                case "rn":
+                                    registerNickname.setError(getString(R.string.reservedNickname));
+                                    return;
+                                case "in":
+                                    registerNickname.setError(getString(R.string.invalidNickname));
+                                    return;
+                                case "niu":
+                                    registerNickname.setError(getString(R.string.alreadyUsedNickname));
+                                    return;
+                                case "tmu":
+                                    registerNickname.setError(getString(R.string.tooManyUsers));
+                                    return;
+                            }
+                        }
+
+                        Toaster.show(LoadingActivity.this, Utils.Messages.FAILED_LOADING, ex);
+                    }
+                });
+            }
+        });
+    }
+
     @Override
     public void onDone(final PYX pyx, FirstLoad result) {
         if (result.nextOperation == FirstLoad.NextOp.REGISTER) {
-            loading.setVisibility(View.GONE);
-            register.setVisibility(View.VISIBLE);
-
-            String lastNickname = Prefs.getString(LoadingActivity.this, PKeys.LAST_NICKNAME, null);
-            if (lastNickname != null) //noinspection ConstantConditions
-                registerNickname.getEditText().setText(lastNickname);
-
-            registerSubmit.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    loading.setVisibility(View.VISIBLE);
-
-                    register.setVisibility(View.GONE);
-
-                    @SuppressWarnings("ConstantConditions") String nick = registerNickname.getEditText().getText().toString();
-                    pyx.registerUser(nick, new PYX.IResult<User>() {
-                        @Override
-                        public void onDone(PYX pyx, User result) {
-                            pyx.startPolling();
-                            Prefs.putString(LoadingActivity.this, PKeys.LAST_NICKNAME, result.nickname);
-                            goTo(MainActivity.class, result);
-                        }
-
-                        @Override
-                        public void onException(Exception ex) {
-                            Logging.logMe(LoadingActivity.this, ex);
-                            if (ex instanceof PYXException) {
-                                loading.setVisibility(View.GONE);
-                                register.setVisibility(View.VISIBLE);
-
-                                switch (((PYXException) ex).errorCode) {
-                                    case "rn":
-                                        registerNickname.setError(getString(R.string.reservedNickname));
-                                        return;
-                                    case "in":
-                                        registerNickname.setError(getString(R.string.invalidNickname));
-                                        return;
-                                    case "niu":
-                                        registerNickname.setError(getString(R.string.alreadyUsedNickname));
-                                        return;
-                                    case "tmu":
-                                        registerNickname.setError(getString(R.string.tooManyUsers));
-                                        return;
-                                }
-                            }
-
-                            Toaster.show(LoadingActivity.this, Utils.Messages.FAILED_LOADING, ex);
-                        }
-                    });
-                }
-            });
+            showRegisterUI(pyx);
         } else if (result.nextOperation == FirstLoad.NextOp.GAME) {
             launchGameId = result.gameId;
             goTo(MainActivity.class, new User(result.nickname));

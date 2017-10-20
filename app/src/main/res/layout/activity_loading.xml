@@ -1,80 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.4" />
+
+    <ImageView
+        android:layout_width="128dp"
+        android:layout_height="128dp"
+        android:layout_gravity="center_horizontal"
+        android:src="@drawable/icon" />
+
+    <ProgressBar
+        android:id="@+id/loading_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:indeterminateOnly="true"
+        android:indeterminateTint="@color/colorPrimary"
+        android:progressTint="@color/colorPrimary" />
 
     <LinearLayout
+        android:id="@+id/loading_register"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/white"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:visibility="gone">
 
-        <View
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/loading_registerNickname"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.4" />
+            android:layout_height="wrap_content">
 
-        <ImageView
-            android:layout_width="128dp"
-            android:layout_height="128dp"
-            android:layout_gravity="center_horizontal"
-            android:src="@drawable/icon" />
-
-        <ProgressBar
-            android:id="@+id/loading_loading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
-            android:indeterminateOnly="true"
-            android:indeterminateTint="@color/colorPrimary"
-            android:progressTint="@color/colorPrimary" />
+            <android.support.design.widget.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/nickname"
+                android:lines="1" />
+        </android.support.design.widget.TextInputLayout>
 
         <LinearLayout
-            android:id="@+id/loading_register"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginTop="8dp"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:paddingEnd="16dp"
-            android:paddingStart="16dp"
-            android:visibility="gone">
-
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/loading_registerNickname"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <android.support.design.widget.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/nickname"
-                    android:lines="1" />
-            </android.support.design.widget.TextInputLayout>
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/loading_registerSubmit"
+                style="@style/Widget.AppCompat.Button.Borderless"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
                 android:text="@string/submit" />
-        </LinearLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.6" />
+            <Button
+                android:id="@+id/loading_changeServer"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/changeServer" />
+
+        </LinearLayout>
     </LinearLayout>
 
-    <Button
-        android:id="@+id/loading_changeServer"
-        style="?android:attr/buttonBarButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="8dp"
-        android:text="@string/changeServer"
-        android:textColor="@color/colorPrimary" />
-</FrameLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.6" />
+</LinearLayout>
