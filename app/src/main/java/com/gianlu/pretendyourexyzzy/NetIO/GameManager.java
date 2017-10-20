@@ -522,7 +522,17 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
 
                 CommonUtils.showDialog(context, builder);
             } else {
-                playCard(card, gameInfo.game.gid, card.id, null);
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle(R.string.areYouSurePlayCard)
+                        .setNegativeButton(android.R.string.no, null)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                playCard(card, gameInfo.game.gid, card.id, null);
+                            }
+                        });
+
+                CommonUtils.showDialog(context, builder);
             }
         } else if (lastMineStatus == GameInfo.PlayerStatus.JUDGING || lastMineStatus == GameInfo.PlayerStatus.JUDGE) {
             pyx.judgeCard(gameInfo.game.gid, card.id, new PYX.ISuccess() {
