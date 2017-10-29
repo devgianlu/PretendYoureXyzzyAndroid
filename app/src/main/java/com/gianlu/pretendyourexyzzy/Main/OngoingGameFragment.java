@@ -293,7 +293,7 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
 
     @SuppressLint("InflateParams")
     private void editGameOptions() {
-        if (getGame() == null) return;
+        if (!isAdded() || getGame() == null) return;
         Game.Options options = getGame().options;
         final ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.edit_game_options_dialog, null, false);
         final TextInputLayout scoreLimit = layout.findViewById(R.id.editGameOptions_scoreLimit);
