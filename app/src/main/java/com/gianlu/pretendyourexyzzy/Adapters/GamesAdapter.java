@@ -51,6 +51,10 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
     }
 
     @Override
+    protected void onBindViewHolder(ViewHolder holder, int position, @NonNull Game payload) {
+    }
+
+    @Override
     protected void shouldUpdateItemCount(int count) {
     }
 

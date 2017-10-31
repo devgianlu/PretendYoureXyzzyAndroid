@@ -18,12 +18,16 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.PKeys;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
+import com.google.android.gms.analytics.HitBuilders;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +56,7 @@ import cz.msebera.android.httpclient.util.EntityUtils;
 public class PYX {
     private static PYX instance;
     public final Servers server;
+    private final Context context;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler handler;
     private final HttpClient client;
@@ -62,10 +67,11 @@ public class PYX {
     private String jSessionId = null;
 
     private PYX(Context context) {
-        handler = new Handler(context.getMainLooper());
-        server = Servers.valueOf(Prefs.getString(context, PKeys.LAST_SERVER, Servers.PYX1.name()));
-        client = HttpClients.createDefault();
-        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        this.handler = new Handler(context.getMainLooper());
+        this.server = Servers.valueOf(Prefs.getString(context, PKeys.LAST_SERVER, Servers.PYX1.name()));
+        this.context = context;
+        this.client = HttpClients.createDefault();
+        this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
     public static void invalidate() {
@@ -91,7 +97,7 @@ public class PYX {
         return pollingThread;
     }
 
-    private JSONObject ajaxServletRequestSync(OP operation, NameValuePair... params) throws IOException, JSONException, PYXException {
+    private JSONObject exceptionsReportingWrapper(OP operation, NameValuePair... params) throws IOException, JSONException, PYXException {
         HttpPost post = new HttpPost(server.uri.toString() + "AjaxServlet");
         List<NameValuePair> paramsList = new ArrayList<>(Arrays.asList(params));
         paramsList.add(new BasicNameValuePair("o", operation.val));
@@ -128,6 +134,22 @@ public class PYX {
         }
 
         return obj;
+    }
+
+    private JSONObject ajaxServletRequestSync(OP operation, NameValuePair... params) throws IOException, JSONException, PYXException {
+        try {
+            return exceptionsReportingWrapper(operation, params);
+        } catch (IOException | JSONException | PYXException ex) {
+            StringWriter writer = new StringWriter();
+            ex.printStackTrace(new PrintWriter(writer));
+
+            ThisApplication.sendAnalytics(context, new HitBuilders.ExceptionBuilder()
+                    .setDescription(writer.toString())
+                    .setFatal(false)
+                    .build());
+
+            throw ex;
+        }
     }
 
     public void startPolling() {
