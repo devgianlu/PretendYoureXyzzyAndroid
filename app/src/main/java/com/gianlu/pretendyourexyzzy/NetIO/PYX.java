@@ -54,9 +54,8 @@ import cz.msebera.android.httpclient.message.BasicNameValuePair;
 import cz.msebera.android.httpclient.util.EntityUtils;
 
 public class PYX {
-    private static PYX instance;
+    private static PYX instance; // TODO: FUCK
     public final Servers server;
-    private final Context context;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler handler;
     private final HttpClient client;
@@ -69,7 +68,6 @@ public class PYX {
     private PYX(Context context) {
         this.handler = new Handler(context.getMainLooper());
         this.server = Servers.valueOf(Prefs.getString(context, PKeys.LAST_SERVER, Servers.PYX1.name()));
-        this.context = context;
         this.client = HttpClients.createDefault();
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
@@ -125,6 +123,7 @@ public class PYX {
         } catch (PYXException ex) {
             if (!hasRetriedRegister && firstLoad != null && (Objects.equals(ex.errorCode, "se") || Objects.equals(ex.errorCode, "nr"))) {
                 hasRetriedRegister = true;
+                removeLastJSessionId();
                 firstLoad = new FirstLoad(ajaxServletRequestSync(OP.FIRST_LOAD)); // First load
                 registerUserSync(firstLoad.nickname); // Register user
                 return ajaxServletRequestSync(operation, params); // Retry operation
@@ -143,7 +142,7 @@ public class PYX {
             StringWriter writer = new StringWriter();
             ex.printStackTrace(new PrintWriter(writer));
 
-            ThisApplication.sendAnalytics(context, new HitBuilders.ExceptionBuilder()
+            ThisApplication.sendAnalytics(new HitBuilders.ExceptionBuilder()
                     .setDescription(writer.toString())
                     .setFatal(false)
                     .build());

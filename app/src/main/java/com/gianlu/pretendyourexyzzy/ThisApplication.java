@@ -1,7 +1,6 @@
 package com.gianlu.pretendyourexyzzy;
 
 import android.app.Application;
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -32,6 +31,7 @@ public class ThisApplication extends Application {
     public static final String ACTION_PLAY_CARD = "Played card";
     public static final String ACTION_STARRED_DECK_ADD = "Starred deck added";
     private static Tracker tracker;
+    private static boolean trackingDisable = false;
 
     @NonNull
     private static Tracker getTracker(Application application) {
@@ -46,9 +46,8 @@ public class ThisApplication extends Application {
         return tracker;
     }
 
-    public static void sendAnalytics(Context context, @Nullable Map<String, String> map) {
-        if (tracker != null && context != null && !Prefs.getBoolean(context, Prefs.Keys.TRACKING_DISABLE, false) && !BuildConfig.DEBUG)
-            tracker.send(map);
+    public static void sendAnalytics(@Nullable Map<String, String> map) {
+        if (tracker != null && !trackingDisable && !BuildConfig.DEBUG) tracker.send(map);
     }
 
     @Override
@@ -73,5 +72,7 @@ public class ThisApplication extends Application {
                 return connection.getResponseCode() == 200;
             }
         });
+
+        trackingDisable = Prefs.getBoolean(this, Prefs.Keys.TRACKING_DISABLE, false);
     }
 }
