@@ -37,15 +37,28 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
     public void onBindViewHolder(ViewHolder holder, int position) {
         GameInfo.Player player = players.get(position);
         holder.name.setText(player.name);
-        holder.update(player);
-    }
+        holder.score.setHtml(R.string.score, player.score);
 
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position, List<Object> payloads) {
-        if (payloads.isEmpty()) {
-            onBindViewHolder(holder, position);
-        } else {
-            holder.update((GameInfo.Player) payloads.get(0));
+        switch (player.status) {
+            case HOST:
+                holder.status.setImageResource(R.drawable.ic_person_black_48dp);
+                break;
+            case IDLE:
+                holder.status.setImageResource(R.drawable.ic_access_time_black_48dp);
+                break;
+            case JUDGING:
+            case JUDGE:
+                holder.status.setImageResource(R.drawable.ic_gavel_black_48dp);
+                break;
+            case PLAYING:
+                holder.status.setImageResource(R.drawable.ic_hourglass_empty_black_48dp);
+                break;
+            case WINNER:
+                holder.status.setImageResource(R.drawable.ic_star_black_48dp);
+                break;
+            case SPECTATOR:
+                holder.status.setImageResource(R.drawable.ic_remove_red_eye_black_48dp);
+                break;
         }
     }
 
@@ -58,7 +71,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         int pos = players.indexOf(player);
         if (pos != -1) {
             players.set(pos, player);
-            notifyItemChanged(pos, player);
+            notifyItemChanged(pos);
         }
     }
 
@@ -75,37 +88,11 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
 
         ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.player_item, parent, false));
-            setIsRecyclable(false);
+            setIsRecyclable(true);
 
             name = itemView.findViewById(R.id.playerItem_name);
             score = itemView.findViewById(R.id.playerItem_score);
             status = itemView.findViewById(R.id.playerItem_status);
-        }
-
-        void update(GameInfo.Player player) {
-            score.setHtml(R.string.score, player.score);
-
-            switch (player.status) {
-                case HOST:
-                    status.setImageResource(R.drawable.ic_person_black_48dp);
-                    break;
-                case IDLE:
-                    status.setImageResource(R.drawable.ic_access_time_black_48dp);
-                    break;
-                case JUDGING:
-                case JUDGE:
-                    status.setImageResource(R.drawable.ic_gavel_black_48dp);
-                    break;
-                case PLAYING:
-                    status.setImageResource(R.drawable.ic_hourglass_empty_black_48dp);
-                    break;
-                case WINNER:
-                    status.setImageResource(R.drawable.ic_star_black_48dp);
-                    break;
-                case SPECTATOR:
-                    status.setImageResource(R.drawable.ic_remove_red_eye_black_48dp);
-                    break;
-            }
         }
     }
 }

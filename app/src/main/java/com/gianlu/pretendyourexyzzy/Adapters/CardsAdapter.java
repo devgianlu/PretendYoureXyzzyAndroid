@@ -28,8 +28,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
 
     public CardsAdapter(Context context, List<? extends BaseCard> cards, IAdapter listener) {
         this(context, listener);
-        for (BaseCard card : cards)
-            this.cards.add(Collections.singletonList(card));
+        for (BaseCard card : cards) this.cards.add(Collections.singletonList(card));
     }
 
     @Override

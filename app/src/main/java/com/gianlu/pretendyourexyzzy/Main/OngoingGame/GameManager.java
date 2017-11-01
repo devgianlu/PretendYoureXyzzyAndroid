@@ -50,7 +50,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-// FIXME: Blank cards sometimes appears at the end of the played cards list
 public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter.IAdapter {
     private final static String POLL_TAG = "gameManager";
     private static final String INSTRUCTIONS_TEXT = "instructionsText";
@@ -290,6 +289,8 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     }
 
     private void updateBlankCardsNumber() {
+        if (lastMineStatus == GameInfo.PlayerStatus.PLAYING) return;
+
         int numBlanks = 0;
         for (GameInfo.Player player : gameInfo.players)
             if (player.status == GameInfo.PlayerStatus.IDLE)
