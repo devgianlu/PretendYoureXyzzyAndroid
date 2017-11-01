@@ -41,7 +41,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.android.gms.analytics.HitBuilders;
 
-import java.util.List;
+import org.json.JSONException;
 
 public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, GamesAdapter.IAdapter, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
     private static final String POLL_TAG = "games";
@@ -148,17 +148,15 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
 
         pyx.getGamesList(this);
 
-        pyx.getPollingThread().addListener(POLL_TAG, new PYX.IResult<List<PollMessage>>() {
+        pyx.getPollingThread().addListener(POLL_TAG, new PYX.IEventListener() {
             @Override
-            public void onDone(PYX pyx, List<PollMessage> result) {
-                for (PollMessage message : result)
-                    if (message.event == PollMessage.Event.GAME_LIST_REFRESH)
-                        pyx.getGamesList(GamesFragment.this);
+            public void onPollMessage(PollMessage message) throws JSONException {
+                if (message.event == PollMessage.Event.GAME_LIST_REFRESH)
+                    pyx.getGamesList(GamesFragment.this);
             }
 
             @Override
-            public void onException(Exception ex) {
-                Logging.logMe(getContext(), ex);
+            public void onStoppedPolling() {
             }
         });
 

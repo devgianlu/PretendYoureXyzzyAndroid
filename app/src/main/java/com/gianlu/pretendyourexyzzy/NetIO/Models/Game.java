@@ -61,10 +61,10 @@ public class Game implements Filterable<NotFilterable>, Serializable {
 
     public enum Status {
         DEALING("d"),
+        ROUND_OVER("ro"),
         JUDGING("j"),
         LOBBY("l"),
-        PLAYING("p"),
-        ROUND_OVER("ro");
+        PLAYING("p");
 
         public final String val;
 

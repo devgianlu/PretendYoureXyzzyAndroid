@@ -62,6 +62,12 @@ public class GameInfo {
             status = PlayerStatus.parse(obj.getString("st"));
         }
 
+        public Player(String name, int score, PlayerStatus status) {
+            this.name = name;
+            this.score = score;
+            this.status = status;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;

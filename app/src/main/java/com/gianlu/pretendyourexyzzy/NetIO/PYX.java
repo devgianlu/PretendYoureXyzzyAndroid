@@ -423,6 +423,35 @@ public class PYX {
         });
     }
 
+    public void getGameInfoAndCards(final int gid, final IGameInfoAndCards listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject infoObj = ajaxServletRequestSync(OP.GET_GAME_INFO, new BasicNameValuePair("gid", String.valueOf(gid)));
+                    final GameInfo info = new GameInfo(infoObj);
+
+                    JSONObject cardsObj = ajaxServletRequestSync(OP.GET_GAME_CARDS, new BasicNameValuePair("gid", String.valueOf(gid)));
+                    final GameCards cards = new GameCards(cardsObj);
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onGameInfoAndCards(info, cards);
+                        }
+                    });
+                } catch (IOException | JSONException | PYXException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     public void getGameInfo(final int gid, final IResult<GameInfo> listener) {
         executor.execute(new Runnable() {
             @Override
@@ -745,15 +774,6 @@ public class PYX {
         OP(String val) {
             this.val = val;
         }
-
-        @NonNull
-        public static OP parse(String val) {
-            for (OP op : values())
-                if (Objects.equals(op.val, val))
-                    return op;
-
-            throw new IllegalArgumentException("Cannot find operation with value: " + val);
-        }
     }
 
     public enum Servers {
@@ -796,6 +816,12 @@ public class PYX {
         }
     }
 
+    public interface IGameInfoAndCards {
+        void onGameInfoAndCards(GameInfo info, GameCards cards);
+
+        void onException(Exception ex);
+    }
+
     public interface ISuccess {
         void onDone(PYX pyx);
 
@@ -808,8 +834,14 @@ public class PYX {
         void onException(Exception ex);
     }
 
+    public interface IEventListener {
+        void onPollMessage(PollMessage message) throws JSONException;
+
+        void onStoppedPolling();
+    }
+
     public class PollingThread extends Thread {
-        private final WeakHashMap<String, IResult<List<PollMessage>>> listeners = new WeakHashMap<>();
+        private final WeakHashMap<String, IEventListener> listeners = new WeakHashMap<>();
         private boolean shouldStop = false;
         private int exCount = 0;
 
@@ -847,34 +879,40 @@ public class PYX {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    for (IResult<List<PollMessage>> listener : listeners.values())
-                        listener.onDone(PYX.this, obj);
+                    for (IEventListener listener : listeners.values()) {
+                        for (PollMessage message : obj) {
+                            try {
+                                listener.onPollMessage(message);
+                            } catch (JSONException ex) {
+                                dispatchEx(ex);
+                            }
+                        }
+                    }
                 }
             });
         }
 
         private void dispatchEx(final Exception ex) {
             exCount++;
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    for (IResult<List<PollMessage>> listener : listeners.values())
-                        listener.onException(ex);
-                }
-            });
+            if (exCount > 5) {
+                safeStop();
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (IEventListener listener : listeners.values())
+                            listener.onStoppedPolling();
+                    }
+                });
+            }
 
-            if (exCount > 5) safeStop();
+            // TODO: Should log
         }
 
-        public void addListener(String tag, IResult<List<PollMessage>> listener) {
+        public void addListener(String tag, IEventListener listener) {
             this.listeners.put(tag, listener);
         }
 
-        public void removeListener(String tag) {
-            this.listeners.remove(tag);
-        }
-
-        public void safeStop() {
+        void safeStop() {
             shouldStop = true;
         }
     }

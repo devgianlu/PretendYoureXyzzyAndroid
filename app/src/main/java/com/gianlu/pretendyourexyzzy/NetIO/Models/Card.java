@@ -48,7 +48,7 @@ public class Card implements BaseCard {
     }
 
     public static Card newBlankCard() {
-        return new Card(0, "", "", -1, -1, false);
+        return new Card(0, "???????", "", -1, -1, false);
     }
 
     @Override

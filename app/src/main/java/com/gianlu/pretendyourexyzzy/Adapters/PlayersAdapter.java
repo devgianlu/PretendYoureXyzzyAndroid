@@ -11,7 +11,9 @@ import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.R;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHolder> {
     private final List<GameInfo.Player> players;
@@ -19,7 +21,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
 
     public PlayersAdapter(Context context, List<GameInfo.Player> players) {
         this.inflater = LayoutInflater.from(context);
-        this.players = players;
+        this.players = new ArrayList<>(players);
         setHasStableIds(true);
     }
 
@@ -79,6 +81,21 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         this.players.clear();
         this.players.addAll(players);
         notifyDataSetChanged();
+    }
+
+    public void notifyItemRemoved(String nickname) {
+        for (int i = 0; i < players.size(); i++) {
+            if (Objects.equals(players.get(i).name, nickname)) {
+                players.remove(i);
+                notifyItemRemoved(i);
+                break;
+            }
+        }
+    }
+
+    public void notifyItemInserted(GameInfo.Player player) {
+        this.players.add(player);
+        notifyItemInserted(players.size() - 1);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

@@ -42,6 +42,7 @@ import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastBottomSheet;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.GameManager;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGame.NewGameManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
@@ -68,17 +69,16 @@ import cz.msebera.android.httpclient.client.utils.URIBuilder;
 import cz.msebera.android.httpclient.client.utils.URLEncodedUtils;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
-public class OngoingGameFragment extends Fragment implements GameManager.IManager, CardcastBottomSheet.ISheet, PYX.IResult<GameInfo> {
+public class OngoingGameFragment extends Fragment implements GameManager.IManager, CardcastBottomSheet.ISheet, PYX.IGameInfoAndCards {
     private IFragment handler;
     private CoordinatorLayout layout;
     private ProgressBar loading;
     private LinearLayout container;
-    private GameManager manager;
+    private NewGameManager manager;
     private User me;
     private int gameId;
     private PYX pyx;
     private CardcastBottomSheet cardcastBottomSheet;
-    private Bundle lastSavedState;
 
     public static OngoingGameFragment getInstance(Game game, User me, OngoingGameFragment.IFragment handler, @Nullable SavedState savedState) {
         OngoingGameFragment fragment = new OngoingGameFragment();
@@ -90,11 +90,6 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
         args.putSerializable("game", game);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        if (manager != null) manager.saveState(outState);
     }
 
     @Override
@@ -154,42 +149,23 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
             return layout;
         }
 
-        lastSavedState = savedInstanceState;
-
         gameId = game.gid;
         pyx = PYX.get(getContext());
-        pyx.getGameInfo(game.gid, this);
+        pyx.getGameInfoAndCards(game.gid, this);
 
         return layout;
     }
 
     @Override
-    public void onDone(PYX pyx, final GameInfo gameInfo) {
-        if (manager == null)
-            manager = new GameManager(container, gameInfo, me, OngoingGameFragment.this);
+    public void onGameInfoAndCards(GameInfo info, GameCards cards) {
+        if (manager == null && isAdded())
+            manager = new NewGameManager(getActivity(), container, me, info, cards);
 
         updateActivityTitle();
 
-        if (lastSavedState != null) {
-            manager.restoreState(lastSavedState);
-            lastSavedState = null;
-        }
-
-        pyx.getGameCards(gameInfo.game.gid, new PYX.IResult<GameCards>() {
-            @Override
-            public void onDone(PYX pyx, GameCards gameCards) {
-                manager.setCards(gameCards);
-                manager.reevaluateMyStatus();
-                loading.setVisibility(View.GONE);
-                container.setVisibility(View.VISIBLE);
-                MessageLayout.hide(layout);
-            }
-
-            @Override
-            public void onException(Exception ex) {
-                OngoingGameFragment.this.onException(ex);
-            }
-        });
+        loading.setVisibility(View.GONE);
+        container.setVisibility(View.VISIBLE);
+        MessageLayout.hide(layout);
     }
 
     @Override

@@ -13,7 +13,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import com.gianlu.commonutils.AnalyticsApplication;
-import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.SuppressingLinearLayoutManager;
 import com.gianlu.commonutils.Toaster;
@@ -24,9 +23,9 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.android.gms.analytics.HitBuilders;
 
-import java.util.List;
+import org.json.JSONException;
 
-public class GlobalChatFragment extends Fragment implements PYX.IResult<List<PollMessage>>, ChatAdapter.IAdapter {
+public class GlobalChatFragment extends Fragment implements ChatAdapter.IAdapter, PYX.IEventListener {
     private static final String POLL_TAG = "globalChat";
     private RecyclerViewLayout recyclerViewLayout;
     private ChatAdapter adapter;
@@ -86,19 +85,18 @@ public class GlobalChatFragment extends Fragment implements PYX.IResult<List<Pol
     }
 
     @Override
-    public void onDone(PYX pyx, List<PollMessage> result) {
-        if (!isAdded()) return;
-        adapter.newMessages(result, null);
-    }
-
-    @Override
-    public void onException(Exception ex) {
-        Logging.logMe(getContext(), ex);
-    }
-
-    @Override
     public void onItemCountChanged(int count) {
         if (count == 0) recyclerViewLayout.showMessage(R.string.noMessages, false);
         else recyclerViewLayout.showList();
+    }
+
+    @Override
+    public void onPollMessage(PollMessage message) throws JSONException {
+        if (!isAdded()) return;
+        adapter.newMessage(message, null);
+    }
+
+    @Override
+    public void onStoppedPolling() {
     }
 }

@@ -50,7 +50,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter.IAdapter {
+public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter.IAdapter, PYX.IEventListener {
     private final static String POLL_TAG = "gameManager";
     private static final String INSTRUCTIONS_TEXT = "instructionsText";
     private final PyxCard blackCard;
@@ -94,10 +94,6 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         handAdapter = new CardsAdapter(context, this);
 
         switch (gameInfo.game.status) {
-            case ROUND_OVER:
-            case DEALING:
-                // Never called
-                break;
             case JUDGING:
                 for (GameInfo.Player player : gameInfo.players) {
                     if (player.status == GameInfo.PlayerStatus.JUDGING) {
@@ -417,10 +413,6 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     private void handleGameStateChange(Game.Status newStatus, PollMessage message) throws JSONException {
         gameInfo.game.setStatus(newStatus);
         switch (newStatus) {
-            case ROUND_OVER:
-            case DEALING:
-                // Never called
-                break;
             case JUDGING:
                 updatePlayersCards(GameCards.toWhiteCardsList(message.obj.getJSONArray("wc")));
                 isLobby(false);
@@ -562,6 +554,16 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
 
     public void reevaluateMyStatus() {
         if (lastMineStatus != null) handleMyStatus(lastMineStatus);
+    }
+
+    @Override
+    public void onPollMessage(PollMessage message) throws JSONException {
+
+    }
+
+    @Override
+    public void onStoppedPolling() {
+
     }
 
     public interface IManager {

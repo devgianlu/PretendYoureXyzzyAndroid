@@ -48,25 +48,18 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         return messages.size();
     }
 
-    private int add(List<PollMessage> messages, @Nullable Game game) {
-        int i = 0;
-        for (PollMessage message : messages) {
-            if (message.event == PollMessage.Event.CHAT
-                    && ((message.gid == -1 && game == null) || (game != null && message.gid == game.gid))) {
-                this.messages.add(message);
-                i++;
-            }
-        }
-
-        return i;
+    private void add(PollMessage message, @Nullable Game game) {
+        if (message.event == PollMessage.Event.CHAT && ((message.gid == -1 && game == null) || (game != null && message.gid == game.gid)))
+            messages.add(message);
     }
 
-    public void newMessages(List<PollMessage> messages, @Nullable Game game) {
-        synchronized (this.messages) {
-            notifyItemRangeInserted(this.messages.size() - add(messages, game), messages.size());
+    public void newMessage(PollMessage message, Game game) {
+        synchronized (messages) {
+            add(message, game);
+            notifyItemInserted(messages.size() - 1);
         }
 
-        if (handler != null) handler.onItemCountChanged(this.messages.size());
+        if (handler != null) handler.onItemCountChanged(messages.size());
     }
 
     public interface IAdapter {
