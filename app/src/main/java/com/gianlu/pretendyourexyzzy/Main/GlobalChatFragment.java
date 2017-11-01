@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
+import com.gianlu.commonutils.AnalyticsApplication;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.SuppressingLinearLayoutManager;
@@ -20,7 +21,6 @@ import com.gianlu.pretendyourexyzzy.Adapters.ChatAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.android.gms.analytics.HitBuilders;
 
@@ -63,10 +63,9 @@ public class GlobalChatFragment extends Fragment implements PYX.IResult<List<Pol
                     public void onDone(PYX pyx) {
                         message.setText(null);
 
-                        ThisApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
-                                .setCategory(ThisApplication.CATEGORY_USER_INPUT)
-                                .setAction(ThisApplication.ACTION_SENT_GLOBAL_MSG)
-                                .build());
+                        AnalyticsApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
+                                .setCategory(Utils.CATEGORY_USER_INPUT)
+                                .setAction(Utils.ACTION_SENT_GLOBAL_MSG));
                     }
 
                     @Override

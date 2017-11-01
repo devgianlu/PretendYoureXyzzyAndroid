@@ -21,6 +21,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.gianlu.commonutils.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Toaster;
@@ -37,7 +38,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.android.gms.analytics.HitBuilders;
 
@@ -487,12 +487,12 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 setAmLastPlaying();
 
                 HitBuilders.EventBuilder event = new HitBuilders.EventBuilder()
-                        .setCategory(ThisApplication.CATEGORY_USER_INPUT);
+                        .setCategory(Utils.CATEGORY_USER_INPUT);
 
-                if (customText != null) event.setAction(ThisApplication.ACTION_PLAY_CUSTOM_CARD);
-                else event.setAction(ThisApplication.ACTION_PLAY_CARD);
+                if (customText != null) event.setAction(Utils.ACTION_PLAY_CUSTOM_CARD);
+                else event.setAction(Utils.ACTION_PLAY_CARD);
 
-                ThisApplication.sendAnalytics(context, event.build());
+                AnalyticsApplication.sendAnalytics(context, event);
             }
 
             @Override
@@ -540,10 +540,9 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 public void onDone(PYX pyx) {
                     handleMyStatus(GameInfo.PlayerStatus.PLAYING);
 
-                    ThisApplication.sendAnalytics(context, new HitBuilders.EventBuilder()
-                            .setCategory(ThisApplication.CATEGORY_USER_INPUT)
-                            .setAction(ThisApplication.ACTION_JUDGE_CARD)
-                            .build());
+                    AnalyticsApplication.sendAnalytics(context, new HitBuilders.EventBuilder()
+                            .setCategory(Utils.CATEGORY_USER_INPUT)
+                            .setAction(Utils.ACTION_JUDGE_CARD));
                 }
 
                 @Override

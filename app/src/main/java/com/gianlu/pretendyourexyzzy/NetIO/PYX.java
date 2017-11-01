@@ -18,8 +18,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.PKeys;
-import com.gianlu.pretendyourexyzzy.ThisApplication;
-import com.google.android.gms.analytics.HitBuilders;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -54,7 +52,7 @@ import cz.msebera.android.httpclient.message.BasicNameValuePair;
 import cz.msebera.android.httpclient.util.EntityUtils;
 
 public class PYX {
-    private static PYX instance; // TODO: FUCK
+    private static PYX instance;
     public final Servers server;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler handler;
@@ -142,10 +140,11 @@ public class PYX {
             StringWriter writer = new StringWriter();
             ex.printStackTrace(new PrintWriter(writer));
 
-            ThisApplication.sendAnalytics(new HitBuilders.ExceptionBuilder()
+            /* TODO
+            AnalyticsApplication.sendAnalytics(new HitBuilders.ExceptionBuilder()
                     .setDescription(writer.toString())
-                    .setFatal(false)
-                    .build());
+                    .setFatal(false));
+                    */
 
             throw ex;
         }

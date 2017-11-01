@@ -14,19 +14,19 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import java.util.List;
 import java.util.Objects;
 
-import cz.msebera.android.httpclient.client.CookieStore;
-import cz.msebera.android.httpclient.cookie.Cookie;
-
 public class Utils {
-
-    @Nullable
-    public static Cookie findCookie(CookieStore store, String name) {
-        for (Cookie cookie : store.getCookies())
-            if (Objects.equals(cookie.getName(), name))
-                return cookie;
-
-        return null;
-    }
+    public static final String CATEGORY_USER_INPUT = "User input";
+    public static final String ACTION_STARRED_CARD_ADD = "Starred card added";
+    public static final String ACTION_JOIN_GAME = "Joined game";
+    public static final String ACTION_SPECTATE_GAME = "Spectating game";
+    public static final String ACTION_LEFT_GAME = "Left game";
+    public static final String ACTION_SENT_GLOBAL_MSG = "Sent message on global chat";
+    public static final String ACTION_SENT_GAME_MSG = "Sent message on game chat";
+    public static final String ACTION_ADDED_CARDCAST = "Added Cardcast deck";
+    public static final String ACTION_JUDGE_CARD = "Judged card";
+    public static final String ACTION_PLAY_CUSTOM_CARD = "Played custom card";
+    public static final String ACTION_PLAY_CARD = "Played card";
+    public static final String ACTION_STARRED_DECK_ADD = "Starred deck added";
 
     public static String getCategoryFormal(Context context, Cardcast.Category category) {
         switch (category) {

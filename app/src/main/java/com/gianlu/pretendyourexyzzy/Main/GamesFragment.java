@@ -25,6 +25,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.SearchView;
 
+import com.gianlu.commonutils.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
@@ -37,7 +38,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.android.gms.analytics.HitBuilders;
 
@@ -261,10 +261,9 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
                 participateGame(game.gid);
                 pd.dismiss();
 
-                ThisApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
-                        .setCategory(ThisApplication.CATEGORY_USER_INPUT)
-                        .setAction(ThisApplication.ACTION_SPECTATE_GAME)
-                        .build());
+                AnalyticsApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
+                        .setCategory(Utils.CATEGORY_USER_INPUT)
+                        .setAction(Utils.ACTION_SPECTATE_GAME));
             }
 
             @Override
@@ -296,10 +295,9 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
                 participateGame(game.gid);
                 pd.dismiss();
 
-                ThisApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
-                        .setCategory(ThisApplication.CATEGORY_USER_INPUT)
-                        .setAction(ThisApplication.ACTION_JOIN_GAME)
-                        .build());
+                AnalyticsApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
+                        .setCategory(Utils.CATEGORY_USER_INPUT)
+                        .setAction(Utils.ACTION_JOIN_GAME));
             }
 
             @Override

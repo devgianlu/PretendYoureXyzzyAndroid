@@ -32,6 +32,7 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.gianlu.commonutils.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
@@ -49,7 +50,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.android.gms.analytics.HitBuilders;
 
@@ -513,10 +513,9 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
                     });
                 }
 
-                ThisApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
-                        .setCategory(ThisApplication.CATEGORY_USER_INPUT)
-                        .setAction(ThisApplication.ACTION_ADDED_CARDCAST)
-                        .build());
+                AnalyticsApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
+                        .setCategory(Utils.CATEGORY_USER_INPUT)
+                        .setAction(Utils.ACTION_ADDED_CARDCAST));
             }
         }.start();
     }
@@ -550,10 +549,9 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
                     });
                 }
 
-                ThisApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
-                        .setCategory(ThisApplication.CATEGORY_USER_INPUT)
-                        .setAction(ThisApplication.ACTION_ADDED_CARDCAST)
-                        .build());
+                AnalyticsApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
+                        .setCategory(Utils.CATEGORY_USER_INPUT)
+                        .setAction(Utils.ACTION_ADDED_CARDCAST));
             }
 
             @Override

@@ -2,11 +2,12 @@ package com.gianlu.pretendyourexyzzy.Cards;
 
 import android.content.Context;
 
+import com.gianlu.commonutils.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Prefs;
 import com.gianlu.pretendyourexyzzy.PKeys;
-import com.gianlu.pretendyourexyzzy.ThisApplication;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.android.gms.analytics.HitBuilders;
 
 import org.json.JSONArray;
@@ -46,10 +47,9 @@ public class StarredDecksManager {
             Logging.logMe(context, ex);
         }
 
-        ThisApplication.sendAnalytics(context, new HitBuilders.EventBuilder()
-                .setCategory(ThisApplication.CATEGORY_USER_INPUT)
-                .setAction(ThisApplication.ACTION_STARRED_DECK_ADD)
-                .build());
+        AnalyticsApplication.sendAnalytics(context, new HitBuilders.EventBuilder()
+                .setCategory(Utils.CATEGORY_USER_INPUT)
+                .setAction(Utils.ACTION_STARRED_DECK_ADD));
     }
 
     private static void saveDecks(Context context, List<StarredDeck> decks) {

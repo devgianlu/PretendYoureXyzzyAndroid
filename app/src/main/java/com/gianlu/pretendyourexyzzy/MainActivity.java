@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
+import com.gianlu.commonutils.AnalyticsApplication;
 import com.gianlu.commonutils.Prefs;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Main.CardcastFragment;
@@ -296,9 +297,8 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         ongoingGameFragment = null;
         gameChatFragment = null;
 
-        ThisApplication.sendAnalytics(this, new HitBuilders.EventBuilder()
-                .setCategory(ThisApplication.CATEGORY_USER_INPUT)
-                .setAction(ThisApplication.ACTION_LEFT_GAME)
-                .build());
+        AnalyticsApplication.sendAnalytics(this, new HitBuilders.EventBuilder()
+                .setCategory(Utils.CATEGORY_USER_INPUT)
+                .setAction(Utils.ACTION_LEFT_GAME));
     }
 }
