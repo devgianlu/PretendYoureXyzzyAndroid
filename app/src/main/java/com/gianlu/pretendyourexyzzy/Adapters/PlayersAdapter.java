@@ -73,7 +73,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         final SuperTextView score;
         final ImageView status;
 
-        public ViewHolder(ViewGroup parent) {
+        ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.player_item, parent, false));
             setIsRecyclable(false);
 
@@ -82,7 +82,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
             status = itemView.findViewById(R.id.playerItem_status);
         }
 
-        public void update(GameInfo.Player player) {
+        void update(GameInfo.Player player) {
             score.setHtml(R.string.score, player.score);
 
             switch (player.status) {

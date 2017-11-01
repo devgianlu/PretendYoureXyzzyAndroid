@@ -132,7 +132,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         final Button spectate;
         final Button join;
 
-        public ViewHolder(ViewGroup parent) {
+        ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.game_item, parent, false));
 
             name = itemView.findViewById(R.id.gameItem_name);

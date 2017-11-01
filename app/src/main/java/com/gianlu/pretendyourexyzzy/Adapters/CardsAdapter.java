@@ -128,6 +128,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public class ViewHolder extends RecyclerView.ViewHolder {
         ViewHolder() {
             super(new CardGroupView(context, CardsAdapter.this));
+            setIsRecyclable(false);
         }
     }
 }
