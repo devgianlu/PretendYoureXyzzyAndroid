@@ -289,7 +289,8 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     }
 
     private void updateBlankCardsNumber() {
-        if (lastMineStatus == GameInfo.PlayerStatus.PLAYING) return;
+        if (lastMineStatus == GameInfo.PlayerStatus.PLAYING || gameInfo.game.status == Game.Status.JUDGING)
+            return;
 
         int numBlanks = 0;
         for (GameInfo.Player player : gameInfo.players)
@@ -324,6 +325,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                 return;
             case GAME_JUDGE_LEFT:
                 updatePlayersCards(new ArrayList<List<Card>>());
+                updateInstructions("Waiting for new round to start...");
                 newBlackCard(null);
                 if (listener != null)
                     listener.showToast(new Toaster.Message(R.string.judgeLeft, false));

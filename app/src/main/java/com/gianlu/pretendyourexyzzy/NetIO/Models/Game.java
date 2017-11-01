@@ -46,8 +46,7 @@ public class Game implements Filterable<NotFilterable>, Serializable {
         spectators = new ArrayList<>();
         for (int i = 0; i < spectatorsArray.length(); i++) {
             String name = spectatorsArray.getString(i);
-            if (!spectators.contains(name))
-                spectators.add(name);
+            if (!spectators.contains(name)) spectators.add(name);
         }
     }
 
