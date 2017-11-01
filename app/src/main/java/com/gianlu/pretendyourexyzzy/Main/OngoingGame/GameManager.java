@@ -92,11 +92,6 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         whiteCards.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
         playersCardsAdapter = new CardsAdapter(context, this);
         handAdapter = new CardsAdapter(context, this);
-        whiteCards.setAdapter(playersCardsAdapter);
-
-        GameInfo.Player alsoMe = Utils.find(gameInfo.players, me.nickname);
-        if (alsoMe != null) handleMyStatus(alsoMe.status);
-        isLobby(gameInfo.game.status == Game.Status.LOBBY);
 
         switch (gameInfo.game.status) {
             case ROUND_OVER:
@@ -110,22 +105,24 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
                         break;
                     }
                 }
-
-                isLobby(false);
                 break;
             case LOBBY:
                 newBlackCard(null);
                 updatePlayersCards(new ArrayList<List<Card>>());
                 handleHandDeal(new ArrayList<Card>());
                 handleMyStatus(GameInfo.PlayerStatus.IDLE);
-                isLobby(true);
                 break;
             case PLAYING:
                 updateInstructions("Waiting for players to make their choice...");
                 updatePlayersCards(new ArrayList<List<Card>>());
-                isLobby(false);
                 break;
         }
+
+        isLobby(gameInfo.game.status == Game.Status.LOBBY);
+
+        GameInfo.Player alsoMe = Utils.find(gameInfo.players, me.nickname);
+        if (alsoMe != null) handleMyStatus(alsoMe.status);
+        else whiteCards.setAdapter(playersCardsAdapter);
     }
 
     public void saveState(@NonNull Bundle bundle) {
@@ -220,6 +217,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
         blackCard.setCard(cards.blackCard);
         playersCardsAdapter.setAssociatedBlackCard(cards.blackCard);
         updatePlayersCards(cards.whiteCards);
+        handleHandDeal(cards.hand);
     }
 
     private void newBlackCard(@Nullable Card card) {
@@ -397,8 +395,7 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
             public void onDone(PYX pyx, GameInfo result) {
                 GameManager.this.gameInfo = result;
                 playersAdapter.notifyDataSetChanged(result.players);
-                for (GameInfo.Player player : result.players)
-                    playerInfoChanged(player);
+                for (GameInfo.Player player : result.players) playerInfoChanged(player);
             }
 
             @Override
@@ -561,6 +558,10 @@ public class GameManager implements PYX.IResult<List<PollMessage>>, CardsAdapter
     @Override
     public void onDeleteCard(StarredCardsManager.StarredCard card) {
         // Never called
+    }
+
+    public void reevaluateMyStatus() {
+        if (lastMineStatus != null) handleMyStatus(lastMineStatus);
     }
 
     public interface IManager {

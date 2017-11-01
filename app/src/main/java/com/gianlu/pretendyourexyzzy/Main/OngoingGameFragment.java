@@ -120,7 +120,7 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
     }
 
     private void leaveGame() {
-        PYX.get(getContext()).leaveGame(gameId, new PYX.ISuccess() {
+        pyx.leaveGame(gameId, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
                 if (handler != null) handler.onLeftGame();
@@ -167,6 +167,7 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
     public void onDone(PYX pyx, final GameInfo gameInfo) {
         if (manager == null)
             manager = new GameManager(container, gameInfo, me, OngoingGameFragment.this);
+
         updateActivityTitle();
 
         if (lastSavedState != null) {
@@ -178,6 +179,7 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
             @Override
             public void onDone(PYX pyx, GameCards gameCards) {
                 manager.setCards(gameCards);
+                manager.reevaluateMyStatus();
                 loading.setVisibility(View.GONE);
                 container.setVisibility(View.VISIBLE);
                 MessageLayout.hide(layout);
