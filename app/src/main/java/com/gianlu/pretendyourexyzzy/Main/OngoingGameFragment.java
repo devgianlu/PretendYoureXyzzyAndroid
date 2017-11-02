@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TextInputLayout;
@@ -30,7 +31,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.gianlu.commonutils.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
@@ -41,7 +41,6 @@ import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastBottomSheet;
-import com.gianlu.pretendyourexyzzy.Main.OngoingGame.GameManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.NewGameManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -69,7 +68,7 @@ import cz.msebera.android.httpclient.client.utils.URIBuilder;
 import cz.msebera.android.httpclient.client.utils.URLEncodedUtils;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
-public class OngoingGameFragment extends Fragment implements GameManager.IManager, CardcastBottomSheet.ISheet, PYX.IGameInfoAndCards {
+public class OngoingGameFragment extends Fragment implements CardcastBottomSheet.ISheet, PYX.IGameInfoAndCards {
     private IFragment handler;
     private CoordinatorLayout layout;
     private ProgressBar loading;
@@ -134,7 +133,7 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
         layout = (CoordinatorLayout) inflater.inflate(R.layout.ongoing_game_fragment, parent, false);
         loading = layout.findViewById(R.id.ongoingGame_loading);
         container = layout.findViewById(R.id.ongoingGame_container);
@@ -388,52 +387,6 @@ public class OngoingGameFragment extends Fragment implements GameManager.IManage
     @Nullable
     private Game getGame() {
         return manager == null ? null : manager.gameInfo.game;
-    }
-
-    @Override
-    public void notifyWinner(String nickname) {
-        if (isAdded())
-            Toaster.show(getActivity(), getString(R.string.winnerIs, nickname), Toast.LENGTH_SHORT, null, null, null);
-    }
-
-    @Override
-    public void notifyPlayerSkipped(@Nullable String nickname) {
-        if (isAdded())
-            Toaster.show(getActivity(), getString(R.string.playerSkipped, nickname == null ? "" : nickname), Toast.LENGTH_SHORT, null, null, null);
-    }
-
-    @Override
-    public void notifyJudgeSkipped(@Nullable String nickname) {
-        if (isAdded())
-            Toaster.show(getActivity(), getString(R.string.judgeSkipped, nickname == null ? "" : nickname), Toast.LENGTH_SHORT, null, null, null);
-    }
-
-    @Override
-    public void cannotStartGame(Exception ex) {
-        if (isAdded()) Toaster.show(getActivity(), Utils.Messages.FAILED_START_GAME, ex);
-    }
-
-    @Override
-    public void showDialog(AlertDialog.Builder builder) {
-        if (isAdded()) CommonUtils.showDialog(getActivity(), builder);
-    }
-
-    @Override
-    public void kicked() {
-        Activity activity = getActivity();
-        if (activity != null) {
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (handler != null) handler.onLeftGame();
-                }
-            });
-        }
-    }
-
-    @Override
-    public void showToast(Toaster.Message message) {
-        if (isAdded()) Toaster.show(getActivity(), message);
     }
 
     @Override
