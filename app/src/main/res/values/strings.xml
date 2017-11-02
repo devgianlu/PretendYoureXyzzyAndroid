@@ -132,4 +132,5 @@
     <string name="areYouSurePlayCard">Are you sure you want to play this card?</string>
     <string name="failedPlayingCard">Failed playing the card!</string>
     <string name="failedJudging">Failed judging!</string>
+    <string name="showLocked">Show locked games</string>
 </resources>

@@ -12,7 +12,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.Sorting.NotFilterable;
 import com.gianlu.commonutils.Sorting.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -21,7 +20,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import java.util.Comparator;
 import java.util.List;
 
-public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHolder, Game, GamesAdapter.SortBy, NotFilterable> {
+public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHolder, Game, GamesAdapter.SortBy, Boolean> {
     private final Context context;
     private final IAdapter handler;
     private final LayoutInflater inflater;
@@ -119,6 +118,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         RecyclerView getRecyclerView();
 
         void spectateGame(Game game);
+
         void joinGame(Game game);
     }
 

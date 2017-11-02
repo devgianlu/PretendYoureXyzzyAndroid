@@ -9,7 +9,6 @@ import android.widget.LinearLayout;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Sorting.Filterable;
-import com.gianlu.commonutils.Sorting.NotFilterable;
 import com.gianlu.pretendyourexyzzy.R;
 
 import org.json.JSONArray;
@@ -21,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
-public class Game implements Filterable<NotFilterable>, Serializable {
+public class Game implements Filterable<Boolean>, Serializable {
     public final String host;
     public final int gid;
     public final boolean hasPassword;
@@ -55,8 +54,8 @@ public class Game implements Filterable<NotFilterable>, Serializable {
     }
 
     @Override
-    public NotFilterable getFilterable() {
-        return new NotFilterable();
+    public Boolean getFilterable() {
+        return hasPassword;
     }
 
     public enum Status {
@@ -121,7 +120,7 @@ public class Game implements Filterable<NotFilterable>, Serializable {
         public final ArrayList<Integer> cardSets;
         public final String password;
 
-        public Options(JSONObject obj) throws JSONException {
+        Options(JSONObject obj) throws JSONException {
             timeMultiplier = obj.getString("tm");
             spectatorsLimit = obj.getInt("vL");
             playersLimit = obj.getInt("pL");
@@ -135,7 +134,7 @@ public class Game implements Filterable<NotFilterable>, Serializable {
                 cardSets.add(cardsSetsArray.getInt(i));
         }
 
-        public Options(String timeMultiplier, int spectatorsLimit, int playersLimit, int scoreLimit, int blanksLimit, ArrayList<Integer> cardSets, @Nullable String password) {
+        Options(String timeMultiplier, int spectatorsLimit, int playersLimit, int scoreLimit, int blanksLimit, ArrayList<Integer> cardSets, @Nullable String password) {
             this.timeMultiplier = timeMultiplier;
             this.spectatorsLimit = spectatorsLimit;
             this.playersLimit = playersLimit;
@@ -201,14 +200,14 @@ public class Game implements Filterable<NotFilterable>, Serializable {
             public final int min;
             public final int max;
 
-            public InvalidFieldException(@IdRes int fieldId, @StringRes int throwMessage) {
+            InvalidFieldException(@IdRes int fieldId, @StringRes int throwMessage) {
                 this.fieldId = fieldId;
                 this.throwMessage = throwMessage;
                 this.min = -1;
                 this.max = -1;
             }
 
-            public InvalidFieldException(@IdRes int fieldId, int min, int max) {
+            InvalidFieldException(@IdRes int fieldId, int min, int max) {
                 this.fieldId = fieldId;
                 this.throwMessage = R.string.outOfRange;
                 this.min = min;

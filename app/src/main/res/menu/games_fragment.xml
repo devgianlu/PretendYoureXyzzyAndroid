@@ -11,4 +11,12 @@
         android:title="@string/search"
         app:actionViewClass="android.widget.SearchView"
         app:showAsAction="collapseActionView|ifRoom" />
+
+    <item
+        android:id="@+id/gamesFragment_showLocked"
+        android:checkable="true"
+        android:checked="true"
+        android:orderInCategory="5"
+        android:title="@string/showLocked"
+        app:showAsAction="never" />
 </menu>

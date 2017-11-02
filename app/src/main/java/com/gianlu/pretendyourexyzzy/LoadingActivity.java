@@ -142,6 +142,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
     private void showRegisterUI(final PYX pyx) {
         loading.setVisibility(View.GONE);
         register.setVisibility(View.VISIBLE);
+        registerNickname.setErrorEnabled(false);
 
         String lastNickname = Prefs.getString(LoadingActivity.this, PKeys.LAST_NICKNAME, null);
         if (lastNickname != null)

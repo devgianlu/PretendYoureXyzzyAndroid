@@ -43,6 +43,8 @@ import com.google.android.gms.analytics.HitBuilders;
 
 import org.json.JSONException;
 
+import java.util.Collections;
+
 public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, GamesAdapter.IAdapter, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
     private static final String POLL_TAG = "games";
     private GamesList lastResult;
@@ -75,6 +77,19 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
             searchView.setOnCloseListener(this);
             searchView.setOnQueryTextListener(this);
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.gamesFragment_showLocked:
+                item.setChecked(!item.isChecked());
+                if (adapter != null)
+                    adapter.setFilters(Collections.singletonList(!item.isChecked()));
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
