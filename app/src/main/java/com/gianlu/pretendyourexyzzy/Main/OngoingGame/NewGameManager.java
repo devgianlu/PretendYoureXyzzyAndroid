@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -91,7 +92,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
         if (alsoMe != null) handleMyStatusChange(alsoMe.status);
         else handleMyStatusChange(GameInfo.PlayerStatus.SPECTATOR);
 
-        isLobby(gameInfo.game.status == Game.Status.LOBBY && Objects.equals(gameInfo.game.host, me.nickname));
+        checkIfLobby();
 
         if (myLastStatus == GameInfo.PlayerStatus.IDLE) {
             switch (gameInfo.game.status) {
@@ -112,15 +113,34 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
         }
     }
 
+    private void checkIfLobby() {
+        if (gameInfo.game.status == Game.Status.LOBBY && Objects.equals(gameInfo.game.host, me.nickname)) {
+            startGame.setVisibility(View.VISIBLE);
+            startGame.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (gameInfo.game.status == Game.Status.LOBBY) startGame();
+                }
+            });
+        } else {
+            startGame.setVisibility(View.GONE);
+        }
+    }
+
     private void startGame() {
+        final ProgressDialog pd = CommonUtils.fastIndeterminateProgressDialog(context, R.string.loading);
+        CommonUtils.showDialog(context, pd);
+
         pyx.startGame(gameInfo.game.gid, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
+                pd.dismiss();
                 Toaster.show(context, Utils.Messages.GAME_STARTED);
             }
 
             @Override
             public void onException(Exception ex) {
+                pd.dismiss();
                 if (ex instanceof PYXException && !cannotStartGameDialog((PYXException) ex))
                     Toaster.show(context, Utils.Messages.FAILED_START_GAME, ex);
             }
@@ -168,22 +188,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
         }
     }
 
-    private void isLobby(boolean lobby) {
-        if (lobby) {
-            startGame.setVisibility(View.VISIBLE);
-            startGame.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (gameInfo.game.status == Game.Status.LOBBY) startGame();
-                }
-            });
-        } else {
-            startGame.setVisibility(View.GONE);
-        }
-    }
-
     private void updateInstructions(String text) {
-        System.out.println("CHANGING TEXT TO: " + text); // FIXME
         instructions.setText(text);
     }
 
@@ -235,6 +240,8 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                 refreshPlayersList();
                 break;
         }
+
+        checkIfLobby();
     }
 
     private void refreshPlayersList() {
