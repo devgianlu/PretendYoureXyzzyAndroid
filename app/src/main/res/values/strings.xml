@@ -130,4 +130,6 @@
     <string name="loading">Loading…</string>
     <string name="leaveGame_confirm">Do you really want to leave the game?</string>
     <string name="areYouSurePlayCard">Are you sure you want to play this card?</string>
+    <string name="failedPlayingCard">Failed playing the card!</string>
+    <string name="failedJudging">Failed judging!</string>
 </resources>

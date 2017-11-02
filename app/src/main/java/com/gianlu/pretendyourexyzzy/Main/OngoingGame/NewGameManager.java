@@ -2,24 +2,32 @@ package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.gianlu.commonutils.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCard;
 import com.gianlu.pretendyourexyzzy.Cards.StarredCardsManager;
+import com.gianlu.pretendyourexyzzy.LoadingActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -28,6 +36,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
+import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.android.gms.analytics.HitBuilders;
@@ -82,6 +91,8 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
         if (alsoMe != null) handleMyStatusChange(alsoMe.status);
         else handleMyStatusChange(GameInfo.PlayerStatus.SPECTATOR);
 
+        isLobby(gameInfo.game.status == Game.Status.LOBBY && Objects.equals(gameInfo.game.host, me.nickname));
+
         if (myLastStatus == GameInfo.PlayerStatus.IDLE) {
             switch (gameInfo.game.status) {
                 case DEALING:
@@ -101,8 +112,78 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
         }
     }
 
+    private void startGame() {
+        pyx.startGame(gameInfo.game.gid, new PYX.ISuccess() {
+            @Override
+            public void onDone(PYX pyx) {
+                Toaster.show(context, Utils.Messages.GAME_STARTED);
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                if (ex instanceof PYXException && !cannotStartGameDialog((PYXException) ex))
+                    Toaster.show(context, Utils.Messages.FAILED_START_GAME, ex);
+            }
+        });
+    }
+
+    @SuppressWarnings("InflateParams")
+    private boolean cannotStartGameDialog(PYXException ex) {
+        if (Objects.equals(ex.errorCode, "nep")) {
+            Toaster.show(context, Utils.Messages.NOT_ENOUGH_PLAYERS);
+            return true;
+        } else if (Objects.equals(ex.errorCode, "nec")) {
+            int wcr;
+            int bcr;
+            int wcp;
+            int bcp;
+            try {
+                wcr = ex.obj.getInt("wcr");
+                bcr = ex.obj.getInt("bcr");
+                wcp = ex.obj.getInt("wcp");
+                bcp = ex.obj.getInt("bcp");
+            } catch (JSONException exx) {
+                Logging.logMe(context, exx);
+                return true;
+            }
+
+            LinearLayout layout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.cannot_start_game_dialog, null, false);
+            ((TextView) layout.findViewById(R.id.cannotStartGame_wcr)).setText(String.valueOf(wcr));
+            ((TextView) layout.findViewById(R.id.cannotStartGame_bcr)).setText(String.valueOf(bcr));
+            ((TextView) layout.findViewById(R.id.cannotStartGame_wcp)).setText(String.valueOf(wcp));
+            ((TextView) layout.findViewById(R.id.cannotStartGame_bcp)).setText(String.valueOf(bcp));
+            ((ImageView) layout.findViewById(R.id.cannotStartGame_checkBc)).setImageResource(bcp >= bcr ? R.drawable.ic_done_black_48dp : R.drawable.ic_clear_black_48dp);
+            ((ImageView) layout.findViewById(R.id.cannotStartGame_checkWc)).setImageResource(wcp >= wcr ? R.drawable.ic_done_black_48dp : R.drawable.ic_clear_black_48dp);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(R.string.cannotStartGame)
+                    .setView(layout)
+                    .setPositiveButton(android.R.string.ok, null);
+
+            CommonUtils.showDialog(context, builder);
+
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private void isLobby(boolean lobby) {
+        if (lobby) {
+            startGame.setVisibility(View.VISIBLE);
+            startGame.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (gameInfo.game.status == Game.Status.LOBBY) startGame();
+                }
+            });
+        } else {
+            startGame.setVisibility(View.GONE);
+        }
+    }
+
     private void updateInstructions(String text) {
-        System.out.println("CHANGING TEXT TO: " + text);
+        System.out.println("CHANGING TEXT TO: " + text); // FIXME
         instructions.setText(text);
     }
 
@@ -193,6 +274,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
 
     private void handleWinner(String winner, int winningCard) {
         tableCardsAdapter.notifyWinningCard(winningCard);
+        Toaster.show(context, Instructions.THIS_GUY_WON_TOAST(winner), Toast.LENGTH_SHORT, null, null, null);
     }
 
     private void handleMyStatusChange(GameInfo.PlayerStatus newStatus) {
@@ -334,8 +416,9 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
     }
 
     @Override
-    public void onStoppedPolling() { // TODO
-
+    public void onStoppedPolling() {
+        Toaster.show(context, Utils.Messages.FAILED_LOADING);
+        context.startActivity(new Intent(context, LoadingActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
     }
 
     private void setAmLastPlaying() {
@@ -372,7 +455,8 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
             }
 
             @Override
-            public void onException(Exception ex) { // TODO
+            public void onException(Exception ex) {
+                Toaster.show(context, Utils.Messages.FAILED_PLAYING, ex);
             }
         });
     }
@@ -418,8 +502,8 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                 }
 
                 @Override
-                public void onException(Exception ex) { // TODO
-
+                public void onException(Exception ex) {
+                    Toaster.show(context, Utils.Messages.FAILED_JUDGING, ex);
                 }
             });
         }
@@ -451,6 +535,10 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
 
         static String WINNER_AND_NEW_ROUND(String winner) {
             return winner + " won this round. A new round will begin shortly.";
+        }
+
+        static String THIS_GUY_WON_TOAST(String winner) {
+            return winner + " won this round!";
         }
     }
 }
