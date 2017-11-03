@@ -169,7 +169,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
 
     @Override
     public void onException(Exception ex) {
-        Logging.logMe(getContext(), ex);
+        Logging.logMe(ex);
         loading.setVisibility(View.GONE);
         container.setVisibility(View.GONE);
         if (isAdded())
@@ -422,7 +422,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
                         pyx.addCardcastCardSetSync(gameId, deck.code);
                     } catch (JSONException | PYXException | IOException ex) {
                         hasErrors = true;
-                        Logging.logMe(getContext(), ex);
+                        Logging.logMe(ex);
                     }
                 }
 

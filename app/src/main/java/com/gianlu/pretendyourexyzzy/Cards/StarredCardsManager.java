@@ -30,7 +30,7 @@ public class StarredCardsManager {
             List<StarredCard> starredCards = toStarredCardsList(starredCardsArray);
             return starredCards.contains(card);
         } catch (JSONException ex) {
-            Logging.logMe(context, ex);
+            Logging.logMe(ex);
             return false;
         }
     }
@@ -49,7 +49,7 @@ public class StarredCardsManager {
             if (!starredCards.contains(card)) starredCards.add(card);
             saveCards(context, starredCards);
         } catch (JSONException ex) {
-            Logging.logMe(context, ex);
+            Logging.logMe(ex);
         }
 
         AnalyticsApplication.sendAnalytics(context, new HitBuilders.EventBuilder()
@@ -63,7 +63,7 @@ public class StarredCardsManager {
             for (StarredCard card : cards) starredCardsArray.put(card.toJSON());
             Prefs.putBase64String(context, PKeys.STARRED_CARDS, starredCardsArray.toString());
         } catch (JSONException ex) {
-            Logging.logMe(context, ex);
+            Logging.logMe(ex);
         }
     }
 
@@ -74,7 +74,7 @@ public class StarredCardsManager {
             starredCards.remove(card);
             saveCards(context, starredCards);
         } catch (JSONException ex) {
-            Logging.logMe(context, ex);
+            Logging.logMe(ex);
         }
     }
 
@@ -85,7 +85,7 @@ public class StarredCardsManager {
             Collections.reverse(cards);
             return cards;
         } catch (JSONException ex) {
-            Logging.logMe(context, ex);
+            Logging.logMe(ex);
             return new ArrayList<>();
         }
     }
@@ -94,7 +94,7 @@ public class StarredCardsManager {
         try {
             return new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_CARDS, "[]")).length() > 0;
         } catch (JSONException ex) {
-            Logging.logMe(context, ex);
+            Logging.logMe(ex);
             return false;
         }
     }
@@ -105,14 +105,14 @@ public class StarredCardsManager {
         public final int id;
         private String cachedSentence;
 
-        public StarredCard(Card blackCard, List<? extends BaseCard> whiteCards) {
+        StarredCard(Card blackCard, List<? extends BaseCard> whiteCards) {
             this.blackCard = blackCard;
             this.whiteCards = new ArrayList<>();
             this.whiteCards.addAll(whiteCards);
             this.id = new Random().nextInt();
         }
 
-        public StarredCard(JSONObject obj) throws JSONException {
+        StarredCard(JSONObject obj) throws JSONException {
             blackCard = new Card(obj.getJSONObject("bc"));
             id = obj.getInt("id");
 

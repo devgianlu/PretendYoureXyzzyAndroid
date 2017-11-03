@@ -32,7 +32,7 @@ public class StarredDecksManager {
 
             return false;
         } catch (JSONException ex) {
-            Logging.logMe(context, ex);
+            Logging.logMe(ex);
             return false;
         }
     }
@@ -44,7 +44,7 @@ public class StarredDecksManager {
             if (!starredDecks.contains(deck)) starredDecks.add(deck);
             saveDecks(context, starredDecks);
         } catch (JSONException ex) {
-            Logging.logMe(context, ex);
+            Logging.logMe(ex);
         }
 
         AnalyticsApplication.sendAnalytics(context, new HitBuilders.EventBuilder()
@@ -58,7 +58,7 @@ public class StarredDecksManager {
             for (StarredDeck deck : decks) starredDecksArray.put(deck.toJSON());
             Prefs.putBase64String(context, PKeys.STARRED_DECKS, starredDecksArray.toString());
         } catch (JSONException ex) {
-            Logging.logMe(context, ex);
+            Logging.logMe(ex);
         }
     }
 
@@ -73,7 +73,7 @@ public class StarredDecksManager {
 
             saveDecks(context, starredDecks);
         } catch (JSONException ex) {
-            Logging.logMe(context, ex);
+            Logging.logMe(ex);
         }
     }
 
@@ -84,7 +84,7 @@ public class StarredDecksManager {
             Collections.reverse(decks);
             return decks;
         } catch (JSONException ex) {
-            Logging.logMe(context, ex);
+            Logging.logMe(ex);
             return new ArrayList<>();
         }
     }
@@ -93,7 +93,7 @@ public class StarredDecksManager {
         try {
             return new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_DECKS, "[]")).length() > 0;
         } catch (JSONException ex) {
-            Logging.logMe(context, ex);
+            Logging.logMe(ex);
             return false;
         }
     }

@@ -107,7 +107,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                             try {
                                 launchGameId = Integer.parseInt(pair.getValue());
                             } catch (NumberFormatException ex) {
-                                Logging.logMe(this, ex);
+                                Logging.logMe(ex);
                             }
                         } else if (Objects.equals(pair.getName(), "password")) {
                             launchGamePassword = pair.getValue();
@@ -165,7 +165,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
 
                     @Override
                     public void onException(Exception ex) {
-                        Logging.logMe(LoadingActivity.this, ex);
+                        Logging.logMe(ex);
                         if (ex instanceof PYXException) {
                             switch (((PYXException) ex).errorCode) {
                                 case "rn":

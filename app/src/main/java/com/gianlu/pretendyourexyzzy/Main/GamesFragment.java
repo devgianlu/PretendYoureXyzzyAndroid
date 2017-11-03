@@ -212,7 +212,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
 
     @Override
     public void onException(Exception ex) {
-        Logging.logMe(getContext(), ex);
+        Logging.logMe(ex);
         if (isAdded())
             recyclerViewLayout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);
     }

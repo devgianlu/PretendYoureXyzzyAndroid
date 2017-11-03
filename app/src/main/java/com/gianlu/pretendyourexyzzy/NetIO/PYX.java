@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
@@ -34,6 +35,7 @@ import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -140,7 +142,7 @@ public class PYX {
             StringWriter writer = new StringWriter();
             ex.printStackTrace(new PrintWriter(writer));
 
-            /* TODO
+            /* TODO. Analytics
             AnalyticsApplication.sendAnalytics(new HitBuilders.ExceptionBuilder()
                     .setDescription(writer.toString())
                     .setFatal(false));
@@ -842,8 +844,8 @@ public class PYX {
 
     public class PollingThread extends Thread {
         private final WeakHashMap<String, IEventListener> listeners = new WeakHashMap<>();
+        private final AtomicInteger exCount = new AtomicInteger(0);
         private boolean shouldStop = false;
-        private int exCount = 0;
 
         @Override
         public void run() {
@@ -875,7 +877,7 @@ public class PYX {
         }
 
         private void dispatchDone(final List<PollMessage> obj) {
-            exCount = 0;
+            exCount.set(0);
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -893,8 +895,8 @@ public class PYX {
         }
 
         private void dispatchEx(final Exception ex) {
-            exCount++;
-            if (exCount > 5) {
+            exCount.getAndIncrement();
+            if (exCount.get() > 5) {
                 safeStop();
                 handler.post(new Runnable() {
                     @Override
@@ -905,7 +907,7 @@ public class PYX {
                 });
             }
 
-            // TODO: Should log
+            Logging.logMe(ex);
         }
 
         public void addListener(String tag, IEventListener listener) {

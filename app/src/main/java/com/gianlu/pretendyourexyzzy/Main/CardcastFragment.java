@@ -180,7 +180,7 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
 
     @Override
     public void onException(Exception ex) {
-        Logging.logMe(getContext(), ex);
+        Logging.logMe(ex);
         if (isAdded())
             layout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);
     }
