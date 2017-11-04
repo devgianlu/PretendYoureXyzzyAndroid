@@ -17,7 +17,7 @@ public class Card implements BaseCard {
     public final boolean writeIn;
     private final String originalText;
     private final String originalWatermark;
-    public boolean winning = false;
+    public boolean winner = false;
 
     public Card(JSONObject obj) throws JSONException {
         id = obj.getInt("cid");
@@ -48,7 +48,7 @@ public class Card implements BaseCard {
     }
 
     public static Card newBlankCard() {
-        return new Card(0, "???????", "", -1, -1, false);
+        return new Card(Integer.MIN_VALUE, "", "", -1, -1, false);
     }
 
     @Override
@@ -60,6 +60,10 @@ public class Card implements BaseCard {
     }
 
     @Override
+    public boolean isUnknown() {
+        return id == Integer.MIN_VALUE || (id == -1 && watermark.isEmpty() && originalText.isEmpty());
+    }
+
     public JSONObject toJSON() throws JSONException {
         return new JSONObject()
                 .put("cid", id)
@@ -90,7 +94,6 @@ public class Card implements BaseCard {
         return numDraw;
     }
 
-    @Override
     public boolean isWriteIn() {
         return writeIn;
     }
@@ -100,12 +103,11 @@ public class Card implements BaseCard {
         return id;
     }
 
-    @Override
-    public boolean isWinning() {
-        return winning;
+    public boolean isWinner() {
+        return winner;
     }
 
-    public void setWinning(boolean winning) {
-        this.winning = winning;
+    public void setWinner() {
+        this.winner = true;
     }
 }

@@ -27,7 +27,6 @@ import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCard;
-import com.gianlu.pretendyourexyzzy.Cards.StarredCardsManager;
 import com.gianlu.pretendyourexyzzy.LoadingActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
@@ -206,7 +205,6 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
 
     private void setBlackCard(@Nullable Card card) {
         blackCard.setCard(card);
-        tableCardsAdapter.setAssociatedBlackCard(card);
     }
 
     @Nullable
@@ -471,7 +469,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
     @Override
     public void onCardSelected(final BaseCard card) {
         if (myLastStatus == GameInfo.PlayerStatus.PLAYING) {
-            if (card.isWriteIn()) {
+            if (((Card) card).isWriteIn()) {
                 final EditText customText = new EditText(context);
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -516,14 +514,9 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
         }
     }
 
-    @Override
-    public void onDeleteCard(StarredCardsManager.StarredCard card) {
-        // Never called
-    }
-
     private static final class Instructions {
         static final String WAITING_FOR_OTHER_PLAYERS = "Waiting for other players...";
-        static final String JUDGE = "You're the Card Czar! Wait for other players...";
+        static final String JUDGE = "You're the Card Czar! Waiting for other players...";
         static final String SELECT_WINNING_CARD = "Select the winning card(s).";
         static final String WINNER = "You won this round! A new round will begin shortly.";
         static final String SPECTATOR = "You're a spectator.";

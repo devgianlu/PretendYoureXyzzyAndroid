@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.CardcastDeck;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -18,8 +19,7 @@ import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.CardcastHelper;
-import com.gianlu.pretendyourexyzzy.Cards.FakeCardcastCard;
-import com.gianlu.pretendyourexyzzy.Cards.StarredCardsManager;
+import com.gianlu.pretendyourexyzzy.Cards.CardcastCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.R;
 
@@ -41,7 +41,7 @@ public class CardsFragment extends Fragment implements CardcastHelper.IResult<Li
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         layout = new RecyclerViewLayout(inflater);
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
         layout.disableSwipeRefresh();
@@ -70,8 +70,8 @@ public class CardsFragment extends Fragment implements CardcastHelper.IResult<Li
             return;
         }
 
-        List<FakeCardcastCard> cards = new ArrayList<>();
-        for (Card card : result) cards.add(new FakeCardcastCard(card));
+        List<CardcastCard> cards = new ArrayList<>();
+        for (Card card : result) cards.add(new CardcastCard(card));
         layout.loadListData(new CardsAdapter(getContext(), cards, this));
     }
 
@@ -90,9 +90,5 @@ public class CardsFragment extends Fragment implements CardcastHelper.IResult<Li
 
     @Override
     public void onCardSelected(BaseCard card) {
-    }
-
-    @Override
-    public void onDeleteCard(StarredCardsManager.StarredCard card) {
     }
 }

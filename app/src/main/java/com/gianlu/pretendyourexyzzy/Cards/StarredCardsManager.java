@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 
 public class StarredCardsManager {
 
@@ -101,16 +100,9 @@ public class StarredCardsManager {
 
     public static class StarredCard implements BaseCard {
         public final Card blackCard;
-        public final List<BaseCard> whiteCards;
+        public final List<Card> whiteCards;
         public final int id;
         private String cachedSentence;
-
-        StarredCard(Card blackCard, List<? extends BaseCard> whiteCards) {
-            this.blackCard = blackCard;
-            this.whiteCards = new ArrayList<>();
-            this.whiteCards.addAll(whiteCards);
-            this.id = new Random().nextInt();
-        }
 
         StarredCard(JSONObject obj) throws JSONException {
             blackCard = new Card(obj.getJSONObject("bc"));
@@ -185,28 +177,13 @@ public class StarredCardsManager {
         }
 
         @Override
-        public boolean isWriteIn() {
-            return false;
-        }
-
-        @Override
         public int getId() {
             return id;
         }
 
-        @Override
-        public boolean isWinning() {
-            return false;
-        }
-
-        @Override
-        public void setWinning(boolean winning) {
-        }
-
-        @Override
-        public JSONObject toJSON() throws JSONException {
+        JSONObject toJSON() throws JSONException {
             JSONArray whiteCardsArray = new JSONArray();
-            for (BaseCard whiteCard : whiteCards) whiteCardsArray.put(whiteCard.toJSON());
+            for (Card whiteCard : whiteCards) whiteCardsArray.put(whiteCard.toJSON());
             return new JSONObject()
                     .put("id", id)
                     .put("wc", whiteCardsArray)
@@ -219,6 +196,11 @@ public class StarredCardsManager {
             if (o == null || getClass() != o.getClass()) return false;
             StarredCard that = (StarredCard) o;
             return id == that.id && Objects.equals(blackCard, that.blackCard) && CommonUtils.equals(whiteCards, that.whiteCards);
+        }
+
+        @Override
+        public boolean isUnknown() {
+            return false;
         }
     }
 }

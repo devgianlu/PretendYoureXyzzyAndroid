@@ -15,8 +15,8 @@ import android.widget.LinearLayout;
 import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
-import com.gianlu.pretendyourexyzzy.Cards.CardGroupView;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCard;
+import com.gianlu.pretendyourexyzzy.Cards.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.Cards.StarredCardsManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 
@@ -63,13 +63,7 @@ public class StarredCardsActivity extends AppCompatActivity implements CardsAdap
         StarredCardsManager.StarredCard starredCard = ((StarredCardsManager.StarredCard) card);
 
         cards.removeAllViews();
-        cards.addView(new PyxCard(this, starredCard.blackCard, false, null, null));
-        cards.addView(new CardGroupView(this, starredCard.whiteCards, null));
-    }
-
-    @Override
-    public void onDeleteCard(StarredCardsManager.StarredCard card) {
-        StarredCardsManager.removeCard(this, card);
-        if (list.getAdapter().getItemCount() == 0) onBackPressed();
+        cards.addView(new PyxCard(this, starredCard.blackCard));
+        cards.addView(new PyxCardsGroupView(this, starredCard.whiteCards, null));
     }
 }

@@ -3,14 +3,10 @@ package com.gianlu.pretendyourexyzzy.Cards;
 import com.gianlu.cardcastapi.Models.Card;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-public class FakeCardcastCard implements BaseCard {
+public class CardcastCard implements BaseCard {
     private final Card card;
-    private boolean winning;
 
-    public FakeCardcastCard(Card card) {
+    public CardcastCard(Card card) {
         this.card = card;
     }
 
@@ -45,27 +41,20 @@ public class FakeCardcastCard implements BaseCard {
     }
 
     @Override
-    public boolean isWriteIn() {
-        return false;
-    }
-
-    @Override
     public int getId() {
         return card.id.hashCode();
     }
 
     @Override
-    public boolean isWinning() {
-        return winning;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CardcastCard that = (CardcastCard) o;
+        return card.equals(that.card);
     }
 
     @Override
-    public void setWinning(boolean winning) {
-        this.winning = winning;
-    }
-
-    @Override
-    public JSONObject toJSON() throws JSONException {
-        return null; // This isn't needed
+    public boolean isUnknown() {
+        return false;
     }
 }
