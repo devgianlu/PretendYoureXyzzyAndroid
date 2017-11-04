@@ -48,7 +48,7 @@ public class Card implements BaseCard {
     }
 
     public static Card newBlankCard() {
-        return new Card(Integer.MIN_VALUE, "", "", -1, -1, false);
+        return new Card(-1, "", "", -1, -1, false);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class Card implements BaseCard {
 
     @Override
     public boolean isUnknown() {
-        return id == Integer.MIN_VALUE || (id == -1 && watermark.isEmpty() && originalText.isEmpty());
+        return id == -1 && watermark.isEmpty() && originalText.isEmpty();
     }
 
     public JSONObject toJSON() throws JSONException {
@@ -107,7 +107,7 @@ public class Card implements BaseCard {
         return winner;
     }
 
-    public void setWinner() {
-        this.winner = true;
+    public void setWinner(boolean winner) {
+        this.winner = winner;
     }
 }

@@ -10,11 +10,12 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 
 import java.util.List;
 
 @SuppressLint("ViewConstructor")
-public class PyxCardsGroupView extends LinearLayout {
+public class PyxCardsGroupView extends LinearLayout { // FIXME: Better spacings...
     private final int mPadding;
     private final int mCornerRadius;
     private final int mLineWidth;
@@ -46,7 +47,10 @@ public class PyxCardsGroupView extends LinearLayout {
 
     public void setCards(List<? extends BaseCard> cards) {
         this.cards = cards;
+        populate();
+    }
 
+    private void populate() {
         removeAllViews();
         for (final BaseCard card : cards) {
             PyxCard pyxCard = new PyxCard(getContext(), card);
@@ -66,6 +70,15 @@ public class PyxCardsGroupView extends LinearLayout {
 
         if (cards != null && cards.size() > 1)
             canvas.drawRoundRect(mPadding, mPadding + mLineWidth / 2, canvas.getWidth() - mPadding, canvas.getHeight() - mPadding, mCornerRadius, mCornerRadius, mLinePaint);
+    }
+
+    public void setWinner(boolean winner) { // FIXME
+        for (BaseCard card : cards)
+            if (card instanceof Card)
+                ((Card) card).setWinner(winner);
+
+        populate();
+        invalidate();
     }
 
     public interface ICard {

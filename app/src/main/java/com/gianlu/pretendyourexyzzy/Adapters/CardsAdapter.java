@@ -40,6 +40,16 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     @Override
+    public void onBindViewHolder(ViewHolder holder, int position, List<Object> payloads) {
+        if (payloads.isEmpty()) {
+            onBindViewHolder(holder, position);
+        } else {
+            if (payloads.get(0) instanceof Boolean)
+                ((PyxCardsGroupView) holder.itemView).setWinner((Boolean) payloads.get(0));
+        }
+    }
+
+    @Override
     public int getItemCount() {
         return cards.size();
     }
@@ -57,7 +67,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     public void notifyItemRemoved(BaseCard removeCard) {
-        for (int i = 0; i < cards.size(); i++) {
+        for (int i = cards.size() - 1; i >= 0; i--) {
             List<? extends BaseCard> subCards = cards.get(i);
             for (BaseCard card : subCards) {
                 if (card.getId() == removeCard.getId()) {
@@ -74,14 +84,11 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
             List<? extends BaseCard> subCards = cards.get(i);
             for (BaseCard card : subCards) {
                 if (card.getId() == winnerCardId) {
-                    for (BaseCard winningCard : subCards)
-                        if (winningCard instanceof Card)
-                            ((Card) winningCard).setWinner();
-
-                    notifyItemChanged(i);
+                    notifyItemChanged(i, true);
 
                     RecyclerView list = listener != null ? listener.getCardsRecyclerView() : null;
-                    if (list != null) list.getLayoutManager().smoothScrollToPosition(list, null, i);
+                    if (list != null)
+                        list.getLayoutManager().smoothScrollToPosition(list, null, i); // TODO: Avoid scrolling is already visible
                     return;
                 }
             }
