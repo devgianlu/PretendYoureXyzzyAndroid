@@ -10,9 +10,6 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
-
-import java.util.List;
 
 @SuppressLint("ViewConstructor")
 public class PyxCardsGroupView extends LinearLayout { // FIXME: Better spacings...
@@ -20,7 +17,7 @@ public class PyxCardsGroupView extends LinearLayout { // FIXME: Better spacings.
     private final int mCornerRadius;
     private final int mLineWidth;
     private final Paint mLinePaint;
-    private List<? extends BaseCard> cards;
+    private CardsGroup<? extends BaseCard> cards;
     private ICard listener;
 
     public PyxCardsGroupView(Context context, ICard listener) {
@@ -40,17 +37,14 @@ public class PyxCardsGroupView extends LinearLayout { // FIXME: Better spacings.
         mLinePaint.setPathEffect(new DashPathEffect(new float[]{20, 10}, 0));
     }
 
-    public PyxCardsGroupView(Context context, List<? extends BaseCard> whiteCards, ICard listener) {
+    public PyxCardsGroupView(Context context, CardsGroup<? extends BaseCard> whiteCards, ICard listener) {
         this(context, listener);
         setCards(whiteCards);
     }
 
-    public void setCards(List<? extends BaseCard> cards) {
+    public void setCards(CardsGroup<? extends BaseCard> cards) {
         this.cards = cards;
-        populate();
-    }
 
-    private void populate() {
         removeAllViews();
         for (final BaseCard card : cards) {
             PyxCard pyxCard = new PyxCard(getContext(), card);
@@ -70,15 +64,6 @@ public class PyxCardsGroupView extends LinearLayout { // FIXME: Better spacings.
 
         if (cards != null && cards.size() > 1)
             canvas.drawRoundRect(mPadding, mPadding + mLineWidth / 2, canvas.getWidth() - mPadding, canvas.getHeight() - mPadding, mCornerRadius, mCornerRadius, mLinePaint);
-    }
-
-    public void setWinner(boolean winner) {
-        for (BaseCard card : cards)
-            if (card instanceof Card)
-                ((Card) card).setWinner(winner);
-
-        populate();
-        invalidate();
     }
 
     public interface ICard {

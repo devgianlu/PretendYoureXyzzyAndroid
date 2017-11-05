@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -12,7 +13,7 @@ import java.util.List;
 public class GameCards {
     public final Card blackCard;
     public final int gameId;
-    public final List<List<Card>> whiteCards;
+    public final List<CardsGroup<Card>> whiteCards;
     public final List<Card> hand;
 
     public GameCards(JSONObject obj) throws JSONException {
@@ -23,15 +24,15 @@ public class GameCards {
         hand = CommonUtils.toTList(obj.getJSONArray("h"), Card.class);
     }
 
-    public static List<List<Card>> toWhiteCardsList(JSONArray whiteCardsArray) throws JSONException {
-        List<List<Card>> whiteCards = new ArrayList<>();
+    public static List<CardsGroup<Card>> toWhiteCardsList(JSONArray whiteCardsArray) throws JSONException {
+        List<CardsGroup<Card>> whiteCards = new ArrayList<>();
         for (int i = 0; i < whiteCardsArray.length(); i++) {
-            List<Card> whiteCardsSub = new ArrayList<>();
+            CardsGroup<Card> group = new CardsGroup<>();
             JSONArray whiteCardsSubArray = whiteCardsArray.getJSONArray(i);
             for (int j = 0; j < whiteCardsSubArray.length(); j++)
-                whiteCardsSub.add(new Card(whiteCardsSubArray.getJSONObject(j)));
+                group.add(new Card(whiteCardsSubArray.getJSONObject(j)));
 
-            whiteCards.add(whiteCardsSub);
+            whiteCards.add(group);
         }
 
         return whiteCards;

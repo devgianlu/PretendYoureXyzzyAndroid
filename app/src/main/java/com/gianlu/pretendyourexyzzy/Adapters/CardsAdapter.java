@@ -6,30 +6,29 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> implements PyxCardsGroupView.ICard {
     private final Context context;
-    private final List<List<? extends BaseCard>> cards;
+    private final List<CardsGroup<? extends BaseCard>> cards;
     private final IAdapter listener;
 
     public CardsAdapter(Context context, IAdapter listener) {
         this.context = context;
         this.listener = listener;
         this.cards = new ArrayList<>();
-
-        listener.getCardsRecyclerView().setItemAnimator(null); // FIXME
+        // listener.getCardsRecyclerView().setItemAnimator(null);
     }
 
     public CardsAdapter(Context context, List<? extends BaseCard> cards, IAdapter listener) {
         this(context, listener);
-        for (BaseCard card : cards) this.cards.add(Collections.singletonList(card));
+        for (BaseCard card : cards) this.cards.add(CardsGroup.singleton(card));
     }
 
     @Override
@@ -43,29 +42,18 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position, List<Object> payloads) {
-        if (payloads.isEmpty()) {
-            onBindViewHolder(holder, position);
-        } else {
-            System.out.println("RECEIVE PAYLOAD: " + payloads); // FIXME
-            if (payloads.get(0) instanceof Boolean)
-                ((PyxCardsGroupView) holder.itemView).setWinner((Boolean) payloads.get(0));
-        }
-    }
-
-    @Override
     public int getItemCount() {
         return cards.size();
     }
 
-    public void notifyDataSetChanged(List<List<Card>> whiteCards) {
+    public void notifyDataSetChanged(List<CardsGroup<Card>> whiteCards) {
         this.cards.clear();
         this.cards.addAll(whiteCards);
 
         notifyDataSetChanged();
     }
 
-    public void notifyItemInserted(List<List<Card>> cards) {
+    public void notifyItemInserted(List<CardsGroup<Card>> cards) {
         this.cards.addAll(cards);
         notifyItemRangeInserted(this.cards.size() - cards.size(), cards.size());
     }
@@ -85,28 +73,26 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
 
     public void notifyWinningCard(int winnerCardId) {
         for (int i = 0; i < cards.size(); i++) {
-            List<? extends BaseCard> subCards = cards.get(i);
-            for (BaseCard card : subCards) {
-                if (card.getId() == winnerCardId) {
-                    RecyclerView list = listener != null ? listener.getCardsRecyclerView() : null;
-                    if (list != null && list.getLayoutManager() instanceof LinearLayoutManager) { // Scroll only if item is not visible
-                        LinearLayoutManager llm = (LinearLayoutManager) list.getLayoutManager();
-                        int start = llm.findFirstCompletelyVisibleItemPosition();
-                        int end = llm.findLastCompletelyVisibleItemPosition();
-                        if (start == -1 || end == -1 || i >= end || i <= start)
-                            list.getLayoutManager().smoothScrollToPosition(list, null, i);
-                    }
-
-                    notifyItemChanged(i, true);
-                    System.out.println("NOTIFIED " + i + " AS WINNER CARD POSITION"); // FIXME
-                    return;
+            CardsGroup<? extends BaseCard> group = cards.get(i);
+            if (group.hasCard(winnerCardId)) {
+                RecyclerView list = listener != null ? listener.getCardsRecyclerView() : null;
+                if (list != null && list.getLayoutManager() instanceof LinearLayoutManager) { // Scroll only if item is not visible
+                    LinearLayoutManager llm = (LinearLayoutManager) list.getLayoutManager();
+                    int start = llm.findFirstCompletelyVisibleItemPosition();
+                    int end = llm.findLastCompletelyVisibleItemPosition();
+                    if (start == -1 || end == -1 || i >= end || i <= start)
+                        list.getLayoutManager().smoothScrollToPosition(list, null, i);
                 }
+
+                group.setWinner(true);
+                notifyItemChanged(i);
+                break;
             }
         }
     }
 
     public void addBlankCard() {
-        cards.add(Collections.singletonList(Card.newBlankCard()));
+        cards.add(CardsGroup.singleton(Card.newBlankCard()));
         notifyItemInserted(cards.size() - 1);
     }
 

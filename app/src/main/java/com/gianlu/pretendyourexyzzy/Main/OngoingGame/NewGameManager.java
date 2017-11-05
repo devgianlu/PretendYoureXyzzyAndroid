@@ -26,6 +26,7 @@ import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
+import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCard;
 import com.gianlu.pretendyourexyzzy.LoadingActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
@@ -44,7 +45,6 @@ import com.google.android.gms.analytics.HitBuilders;
 import org.json.JSONException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -193,13 +193,13 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
         instructions.setText(text);
     }
 
-    private void tableCardsChanged(List<List<Card>> cards) {
+    private void tableCardsChanged(List<CardsGroup<Card>> cards) {
         tableCardsAdapter.notifyDataSetChanged(cards);
     }
 
     private void handCardsChanged(List<Card> cards) {
-        List<List<Card>> newCards = new ArrayList<>();
-        for (Card card : cards) newCards.add(Collections.singletonList(card));
+        List<CardsGroup<Card>> newCards = new ArrayList<>();
+        for (Card card : cards) newCards.add(CardsGroup.singleton(card));
 
         if (cards.size() == 10) handAdapter.notifyDataSetChanged(newCards);
         else handAdapter.notifyItemInserted(newCards);
@@ -231,12 +231,12 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                 break;
             case LOBBY:
                 setBlackCard(null);
-                tableCardsChanged(new ArrayList<List<Card>>());
+                tableCardsChanged(new ArrayList<CardsGroup<Card>>());
                 handCardsChanged(new ArrayList<Card>());
                 break;
             case PLAYING:
                 setBlackCard(new Card(message.obj.getJSONObject("bc")));
-                tableCardsChanged(new ArrayList<List<Card>>());
+                tableCardsChanged(new ArrayList<CardsGroup<Card>>());
                 refreshPlayersList();
                 break;
         }
@@ -365,7 +365,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                 return;
             case GAME_JUDGE_LEFT:
                 setBlackCard(null);
-                tableCardsChanged(new ArrayList<List<Card>>());
+                tableCardsChanged(new ArrayList<CardsGroup<Card>>());
                 if (myLastStatus != GameInfo.PlayerStatus.SPECTATOR)
                     updateInstructions(Instructions.JUDGE_LEFT);
                 Toaster.show(context, Utils.Messages.JUDGE_LEFT);
