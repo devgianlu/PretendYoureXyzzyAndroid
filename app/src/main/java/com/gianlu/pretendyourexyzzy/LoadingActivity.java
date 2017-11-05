@@ -166,6 +166,10 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                     @Override
                     public void onException(Exception ex) {
                         Logging.logMe(ex);
+
+                        loading.setVisibility(View.GONE);
+                        register.setVisibility(View.VISIBLE);
+
                         if (ex instanceof PYXException) {
                             switch (((PYXException) ex).errorCode) {
                                 case "rn":
@@ -182,9 +186,6 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                                     return;
                             }
                         }
-
-                        loading.setVisibility(View.GONE);
-                        register.setVisibility(View.VISIBLE);
 
                         Toaster.show(LoadingActivity.this, Utils.Messages.FAILED_LOADING, ex);
                     }
