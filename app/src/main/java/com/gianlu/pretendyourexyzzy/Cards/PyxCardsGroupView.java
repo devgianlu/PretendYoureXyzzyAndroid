@@ -72,7 +72,7 @@ public class PyxCardsGroupView extends LinearLayout { // FIXME: Better spacings.
             canvas.drawRoundRect(mPadding, mPadding + mLineWidth / 2, canvas.getWidth() - mPadding, canvas.getHeight() - mPadding, mCornerRadius, mCornerRadius, mLinePaint);
     }
 
-    public void setWinner(boolean winner) { // FIXME
+    public void setWinner(boolean winner) {
         for (BaseCard card : cards)
             if (card instanceof Card)
                 ((Card) card).setWinner(winner);

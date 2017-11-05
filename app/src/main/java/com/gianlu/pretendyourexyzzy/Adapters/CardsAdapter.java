@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
@@ -22,6 +23,8 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         this.context = context;
         this.listener = listener;
         this.cards = new ArrayList<>();
+
+        listener.getCardsRecyclerView().setItemAnimator(null); // FIXME
     }
 
     public CardsAdapter(Context context, List<? extends BaseCard> cards, IAdapter listener) {
@@ -44,6 +47,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         if (payloads.isEmpty()) {
             onBindViewHolder(holder, position);
         } else {
+            System.out.println("RECEIVE PAYLOAD: " + payloads); // FIXME
             if (payloads.get(0) instanceof Boolean)
                 ((PyxCardsGroupView) holder.itemView).setWinner((Boolean) payloads.get(0));
         }
@@ -84,11 +88,17 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
             List<? extends BaseCard> subCards = cards.get(i);
             for (BaseCard card : subCards) {
                 if (card.getId() == winnerCardId) {
-                    notifyItemChanged(i, true);
-
                     RecyclerView list = listener != null ? listener.getCardsRecyclerView() : null;
-                    if (list != null)
-                        list.getLayoutManager().smoothScrollToPosition(list, null, i); // TODO: Avoid scrolling is already visible
+                    if (list != null && list.getLayoutManager() instanceof LinearLayoutManager) { // Scroll only if item is not visible
+                        LinearLayoutManager llm = (LinearLayoutManager) list.getLayoutManager();
+                        int start = llm.findFirstCompletelyVisibleItemPosition();
+                        int end = llm.findLastCompletelyVisibleItemPosition();
+                        if (start == -1 || end == -1 || i >= end || i <= start)
+                            list.getLayoutManager().smoothScrollToPosition(list, null, i);
+                    }
+
+                    notifyItemChanged(i, true);
+                    System.out.println("NOTIFIED " + i + " AS WINNER CARD POSITION"); // FIXME
                     return;
                 }
             }
@@ -96,8 +106,8 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     public void addBlankCard() {
-        this.cards.add(Collections.singletonList(Card.newBlankCard()));
-        notifyItemInserted(this.cards.size() - 1);
+        cards.add(Collections.singletonList(Card.newBlankCard()));
+        notifyItemInserted(cards.size() - 1);
     }
 
     @Override
@@ -115,7 +125,6 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public class ViewHolder extends RecyclerView.ViewHolder {
         ViewHolder() {
             super(new PyxCardsGroupView(context, CardsAdapter.this));
-            setIsRecyclable(false);
         }
     }
 }

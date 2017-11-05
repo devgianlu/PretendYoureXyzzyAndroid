@@ -59,14 +59,16 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
     private final CardsAdapter tableCardsAdapter;
     private final RecyclerView whiteCardsList;
     private final User me;
+    private final IManager handler;
     public GameInfo gameInfo;
     private GameInfo.PlayerStatus myLastStatus;
     private boolean playedForLast = false;
 
-    public NewGameManager(Context context, ViewGroup layout, User me, GameInfo gameInfo, GameCards cards) {
+    public NewGameManager(Context context, ViewGroup layout, User me, GameInfo gameInfo, GameCards cards, IManager handler) {
         this.context = context;
         this.me = me;
         this.gameInfo = gameInfo;
+        this.handler = handler;
         this.pyx = PYX.get(context);
         this.pyx.getPollingThread().addListener("gameManager", this);
 
@@ -362,12 +364,11 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                 // Not interested in these
                 return;
             case GAME_JUDGE_LEFT:
-                /*
-                updatePlayersCards(new ArrayList<List<Card>>());
-                updateInstructions("Waiting for new round to start...");
-                newBlackCard(null);
-                if (listener != null) listener.showToast(new Toaster.Message(R.string.judgeLeft, false));
-                */
+                setBlackCard(null);
+                tableCardsChanged(new ArrayList<List<Card>>());
+                if (myLastStatus != GameInfo.PlayerStatus.SPECTATOR)
+                    updateInstructions(Instructions.JUDGE_LEFT);
+                Toaster.show(context, Utils.Messages.JUDGE_LEFT);
                 return;
             case GAME_OPTIONS_CHANGED:
                 gameInfo = new GameInfo(new Game(message.obj.getJSONObject("gi")), gameInfo.players);
@@ -383,11 +384,15 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                 handlePlayerLeave(message.obj.getString("n"));
                 break;
             case GAME_PLAYER_SKIPPED:
-                setPlayerSkipped(message.obj.getString("n"));
-                // if (listener != null) listener.notifyPlayerSkipped(message.obj.getString("n"));
+                String skipped = message.obj.optString("n", null);
+                setPlayerSkipped(skipped);
+                if (skipped != null)
+                    Toaster.show(context, skipped + " has been skipped.", Toast.LENGTH_SHORT, null, null, null);
                 break;
             case GAME_JUDGE_SKIPPED:
-                // if (listener != null) listener.notifyJudgeSkipped(message.obj.optString("n", null));
+                String judge = message.obj.optString("n", null);
+                if (judge != null)
+                    Toaster.show(context, "Judge " + judge + " has been skipped.", Toast.LENGTH_SHORT, null, null, null);
                 break;
             case GAME_ROUND_COMPLETE:
                 String winner = message.obj.getString("rw");
@@ -405,10 +410,10 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                 handleMyStatusChange(GameInfo.PlayerStatus.PLAYING);
                 break;
             case HURRY_UP:
-                // if (listener != null) listener.showToast(Utils.Messages.HURRY_UP);
+                Toaster.show(context, Utils.Messages.HURRY_UP);
                 break;
             case KICKED_FROM_GAME_IDLE:
-                // if (listener != null) listener.kicked();
+                if (handler != null) handler.shouldLeaveGame();
                 break;
         }
     }
@@ -515,6 +520,10 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
         }
     }
 
+    public interface IManager {
+        void shouldLeaveGame();
+    }
+
     private static final class Instructions {
         static final String WAITING_FOR_OTHER_PLAYERS = "Waiting for other players...";
         static final String JUDGE = "You're the Card Czar! Waiting for other players...";
@@ -524,6 +533,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
         static final String GAME_HOST = "You're the game host! Start the game when you're ready.";
         static final String WAITING_FOR_ROUND_TO_END = "Waiting for the current round to end...";
         static final String WAITING_FOR_START = "Waiting for the game to start...";
+        static final String JUDGE_LEFT = "Judge left. A new round will begin shortly.";
 
         static String PICK_CARDS(int numPick) {
             if (numPick == 1) return "Select one card to play. Your hand: ";

@@ -68,7 +68,7 @@ import cz.msebera.android.httpclient.client.utils.URIBuilder;
 import cz.msebera.android.httpclient.client.utils.URLEncodedUtils;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
-public class OngoingGameFragment extends Fragment implements CardcastBottomSheet.ISheet, PYX.IGameInfoAndCards {
+public class OngoingGameFragment extends Fragment implements CardcastBottomSheet.ISheet, PYX.IGameInfoAndCards, NewGameManager.IManager {
     private IFragment handler;
     private CoordinatorLayout layout;
     private ProgressBar loading;
@@ -158,7 +158,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
     @Override
     public void onGameInfoAndCards(GameInfo info, GameCards cards) {
         if (manager == null && isAdded())
-            manager = new NewGameManager(getActivity(), container, me, info, cards);
+            manager = new NewGameManager(getActivity(), container, me, info, cards, this);
 
         updateActivityTitle();
 
@@ -505,6 +505,11 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
                 .setNegativeButton(android.R.string.no, null);
 
         CommonUtils.showDialog(getActivity(), builder);
+    }
+
+    @Override
+    public void shouldLeaveGame() {
+        leaveGame();
     }
 
     public interface IFragment {

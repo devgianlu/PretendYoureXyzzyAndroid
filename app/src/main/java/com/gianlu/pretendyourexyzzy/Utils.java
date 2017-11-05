@@ -118,5 +118,6 @@ public class Utils {
         public static final Toaster.Message PARTIAL_ADD_STARRED_DECKS_FAILED = new Toaster.Message(R.string.addStarredDecksFailedPartial, true);
         public static final Toaster.Message FAILED_PLAYING = new Toaster.Message(R.string.failedPlayingCard, true);
         public static final Toaster.Message FAILED_JUDGING = new Toaster.Message(R.string.failedJudging, true);
+        public static final Toaster.Message JUDGE_LEFT = new Toaster.Message(R.string.judgeLeft, false);
     }
 }
