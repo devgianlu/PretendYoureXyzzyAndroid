@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.TypedValue;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
@@ -63,7 +64,15 @@ public class StarredCardsActivity extends AppCompatActivity implements CardsAdap
         StarredCardsManager.StarredCard starredCard = ((StarredCardsManager.StarredCard) card);
 
         cards.removeAllViews();
-        cards.addView(new PyxCard(this, starredCard.blackCard));
-        cards.addView(new PyxCardsGroupView(this, starredCard.whiteCards, null));
+
+        int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
+        PyxCard blackCard = new PyxCard(this, starredCard.blackCard);
+        cards.addView(blackCard);
+        ((LinearLayout.LayoutParams) blackCard.getLayoutParams()).setMargins(margin, margin, margin, margin);
+
+        PyxCardsGroupView group = new PyxCardsGroupView(this, starredCard.whiteCards, null);
+        cards.addView(group);
+        group.setIsFirstOfParent(true);
+        group.setIsLastOfParent(true);
     }
 }

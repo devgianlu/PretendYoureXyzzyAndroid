@@ -114,20 +114,6 @@ public class StarredCardsManager {
                 whiteCards.add(new Card(whiteCardsArray.getJSONObject(i)));
         }
 
-        private boolean shouldLowercaseFirstLetter(String whiteText) {
-            return whiteText.length() != 0 && !Character.isLowerCase(whiteText.charAt(0)) && !Character.isUpperCase(whiteText.charAt(1)) && !isSecondWordFirstLetterUppercase(whiteText);
-        }
-
-        private boolean isSecondWordFirstLetterUppercase(String whiteText) {
-            int nextWord = -1;
-            for (int i = 0; i < whiteText.length(); i++) {
-                if (whiteText.charAt(i) == ' ') nextWord = i + 1;
-                if (i == nextWord) return Character.isUpperCase(whiteText.charAt(i));
-            }
-
-            return false;
-        }
-
         private String createSentence() {
             if (cachedSentence == null) {
                 String blackText = blackCard.text;
@@ -140,10 +126,7 @@ public class StarredCardsManager {
                     if (whiteText.endsWith("."))
                         whiteText = whiteText.substring(0, whiteText.length() - 1);
 
-                    if (shouldLowercaseFirstLetter(whiteText) && !firstCapital)
-                        whiteText = Character.toLowerCase(whiteText.charAt(0)) + whiteText.substring(1);
-
-                    if (firstCapital && Character.isLowerCase(whiteText.charAt(0)))
+                    if (firstCapital)
                         whiteText = Character.toUpperCase(whiteText.charAt(0)) + whiteText.substring(1);
 
                     blackText = blackText.replaceFirst("____", "<u>" + whiteText + "</u>");
