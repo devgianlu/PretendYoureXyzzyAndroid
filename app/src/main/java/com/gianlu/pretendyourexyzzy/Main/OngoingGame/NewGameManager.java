@@ -392,7 +392,8 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
             case GAME_ROUND_COMPLETE:
                 String winner = message.obj.getString("rw");
                 handleWinner(winner, message.obj.getInt("WC") /* intermission: message.obj.getInt("i") */);
-                updateInstructions(Instructions.WINNER_AND_NEW_ROUND(winner));
+                if (myLastStatus != GameInfo.PlayerStatus.SPECTATOR)
+                    updateInstructions(Instructions.WINNER_AND_NEW_ROUND(winner));
                 if (Objects.equals(winner, me.nickname))
                     handleMyStatusChange(GameInfo.PlayerStatus.WINNER);
                 break;
