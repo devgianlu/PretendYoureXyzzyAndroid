@@ -133,4 +133,5 @@
     <string name="failedPlayingCard">Failed playing the card!</string>
     <string name="failedJudging">Failed judging!</string>
     <string name="showLocked">Show locked games</string>
+    <string name="addedCardToStarred">This card has been starred.</string>
 </resources>

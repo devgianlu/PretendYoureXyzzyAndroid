@@ -28,19 +28,24 @@ public class StarredCardsManager {
         return cards;
     }
 
-    public static void addCard(Context context, StarredCard card) {
+    public static boolean addCard(Context context, StarredCard card) {
         try {
             JSONArray starredCardsArray = new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_CARDS, "[]"));
             List<StarredCard> starredCards = toStarredCardsList(starredCardsArray);
-            if (!starredCards.contains(card)) starredCards.add(card);
+
+            boolean a = starredCards.contains(card);
+            if (!a) starredCards.add(card);
             saveCards(context, starredCards);
+
+            AnalyticsApplication.sendAnalytics(context, new HitBuilders.EventBuilder()
+                    .setCategory(Utils.CATEGORY_USER_INPUT)
+                    .setAction(Utils.ACTION_STARRED_CARD_ADD));
+
+            return !a;
         } catch (JSONException ex) {
             Logging.logMe(ex);
+            return false;
         }
-
-        AnalyticsApplication.sendAnalytics(context, new HitBuilders.EventBuilder()
-                .setCategory(Utils.CATEGORY_USER_INPUT)
-                .setAction(Utils.ACTION_STARRED_CARD_ADD));
     }
 
     private static void saveCards(Context context, List<StarredCard> cards) {

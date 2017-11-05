@@ -461,8 +461,8 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
             case DELETE:
                 break;
             case TOGGLE_STAR:
-                if (blackCard.getCard() != null)
-                    StarredCardsManager.addCard(context, new StarredCardsManager.StarredCard((Card) blackCard.getCard(), (CardsGroup<Card>) group));
+                if (blackCard.getCard() != null && StarredCardsManager.addCard(context, new StarredCardsManager.StarredCard((Card) blackCard.getCard(), (CardsGroup<Card>) group)))
+                    Toaster.show(context, Utils.Messages.STARRED_CARD);
                 break;
         }
     }
