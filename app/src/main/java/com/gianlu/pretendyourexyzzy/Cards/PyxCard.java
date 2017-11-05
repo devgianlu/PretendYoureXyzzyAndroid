@@ -12,6 +12,8 @@ import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -21,24 +23,30 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.R;
 
 public class PyxCard extends CardView {
+    private final ICard listener;
+    private PyxCardsGroupView.Action mainAction;
     private BaseCard card;
     private int width;
 
     public PyxCard(@NonNull Context context) {
-        super(context);
+        this(context, null, 0);
     }
 
     public PyxCard(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
+        this(context, attrs, 0);
     }
 
     public PyxCard(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        this.listener = null;
+        this.mainAction = null;
     }
 
-    public PyxCard(Context context, BaseCard card) {
+    public PyxCard(Context context, BaseCard card, @Nullable PyxCardsGroupView.Action mainAction, @Nullable ICard listener) {
         super(context);
         this.card = card;
+        this.mainAction = mainAction;
+        this.listener = listener;
         init();
     }
 
@@ -98,6 +106,37 @@ public class PyxCard extends CardView {
                 numDraw.setVisibility(GONE);
                 numPick.setVisibility(GONE);
             }
+
+            ImageButton action = content.findViewById(R.id.pyxCard_action);
+            if (mainAction == null) {
+                action.setVisibility(GONE);
+            } else {
+                switch (mainAction) {
+                    case SELECT:
+                        action.setVisibility(GONE);
+                        break;
+                    case DELETE:
+                        action.setVisibility(VISIBLE);
+                        action.setImageResource(R.drawable.ic_delete_black_48dp);
+                        action.setOnClickListener(new OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                if (listener != null) listener.onDelete();
+                            }
+                        });
+                        break;
+                    case TOGGLE_STAR:
+                        action.setVisibility(VISIBLE);
+                        action.setImageResource(R.drawable.ic_star_border_black_48dp);
+                        action.setOnClickListener(new OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                if (listener != null) listener.onToggleStar();
+                            }
+                        });
+                        break;
+                }
+            }
         }
     }
 
@@ -113,5 +152,11 @@ public class PyxCard extends CardView {
     public void setCard(@Nullable BaseCard card) {
         this.card = card;
         init();
+    }
+
+    interface ICard {
+        void onDelete();
+
+        void onToggleStar();
     }
 }

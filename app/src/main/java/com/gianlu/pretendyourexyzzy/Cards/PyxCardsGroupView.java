@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.support.annotation.Nullable;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -41,9 +42,9 @@ public class PyxCardsGroupView extends LinearLayout {
         mLinePaint.setPathEffect(new DashPathEffect(new float[]{20, 10}, 0));
     }
 
-    public PyxCardsGroupView(Context context, CardsGroup<? extends BaseCard> whiteCards, ICard listener) {
+    public PyxCardsGroupView(Context context, CardsGroup<? extends BaseCard> whiteCards, @Nullable Action action, ICard listener) {
         this(context, listener);
-        setCards(whiteCards);
+        setCards(whiteCards, action);
     }
 
     public void setIsFirstOfParent(boolean firstOfParent) {
@@ -58,7 +59,7 @@ public class PyxCardsGroupView extends LinearLayout {
             ((LayoutParams) getChildAt(0).getLayoutParams()).rightMargin = lastOfParent ? mCardsMargin : mCardsMargin / 2;
     }
 
-    public void setCards(CardsGroup<? extends BaseCard> cards) {
+    public void setCards(CardsGroup<? extends BaseCard> cards, @Nullable Action action) {
         this.cards = cards;
 
         removeAllViews();
@@ -67,11 +68,24 @@ public class PyxCardsGroupView extends LinearLayout {
         while (iterator.hasNext()) {
             final BaseCard card = iterator.next();
 
-            PyxCard pyxCard = new PyxCard(getContext(), card);
+            PyxCard pyxCard = new PyxCard(getContext(), card, action, new PyxCard.ICard() {
+                @Override
+                public void onDelete() {
+                    if (listener != null)
+                        listener.onCardAction(Action.DELETE, PyxCardsGroupView.this.cards, card);
+                }
+
+                @Override
+                public void onToggleStar() {
+                    if (listener != null)
+                        listener.onCardAction(Action.TOGGLE_STAR, PyxCardsGroupView.this.cards, card);
+                }
+            });
             pyxCard.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (listener != null) listener.onCardSelected(card);
+                    if (listener != null)
+                        listener.onCardAction(Action.SELECT, PyxCardsGroupView.this.cards, card);
                 }
             });
 
@@ -92,7 +106,13 @@ public class PyxCardsGroupView extends LinearLayout {
             canvas.drawRoundRect(mPadding, mPadding + mLineWidth / 2, canvas.getWidth() - mPadding, canvas.getHeight() - mPadding, mCornerRadius, mCornerRadius, mLinePaint);
     }
 
+    public enum Action {
+        SELECT,
+        DELETE,
+        TOGGLE_STAR
+    }
+
     public interface ICard {
-        void onCardSelected(BaseCard card);
+        void onCardAction(Action action, CardsGroup<? extends BaseCard> group, BaseCard card);
     }
 }

@@ -28,6 +28,7 @@ import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCard;
+import com.gianlu.pretendyourexyzzy.Cards.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.LoadingActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
@@ -85,8 +86,8 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
 
         whiteCardsList = layout.findViewById(R.id.gameLayout_whiteCards);
         whiteCardsList.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-        handAdapter = new CardsAdapter(context, cards.hand, this);
-        tableCardsAdapter = new CardsAdapter(context, this);
+        handAdapter = new CardsAdapter(context, cards.hand, PyxCardsGroupView.Action.TOGGLE_STAR, this);
+        tableCardsAdapter = new CardsAdapter(context, PyxCardsGroupView.Action.TOGGLE_STAR, this);
         tableCardsAdapter.notifyItemInserted(cards.whiteCards);
 
         GameInfo.Player alsoMe = Utils.find(gameInfo.players, me.nickname);
@@ -449,6 +450,67 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
         return whiteCardsList;
     }
 
+    @Override
+    public void onCardAction(PyxCardsGroupView.Action action, CardsGroup<? extends BaseCard> group, BaseCard card) {
+        switch (action) {
+            case SELECT:
+                handleCardSelected((Card) card);
+                break;
+            case DELETE:
+                break;
+            case TOGGLE_STAR:
+                // TODO
+                break;
+        }
+    }
+
+    private void handleCardSelected(final Card card) {
+        if (myLastStatus == GameInfo.PlayerStatus.PLAYING) {
+            if (card.isWriteIn()) {
+                final EditText customText = new EditText(context);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle(R.string.setBlankCardText)
+                        .setView(customText)
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setPositiveButton(R.string.submit, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                playCard(card, customText.getText().toString());
+                            }
+                        });
+
+                CommonUtils.showDialog(context, builder);
+            } else {
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle(R.string.areYouSurePlayCard)
+                        .setNegativeButton(android.R.string.no, null)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                playCard(card, null);
+                            }
+                        });
+
+                CommonUtils.showDialog(context, builder);
+            }
+        } else if (myLastStatus == GameInfo.PlayerStatus.JUDGING || myLastStatus == GameInfo.PlayerStatus.JUDGE) {
+            pyx.judgeCard(gameInfo.game.gid, card.id, new PYX.ISuccess() {
+                @Override
+                public void onDone(PYX pyx) {
+                    AnalyticsApplication.sendAnalytics(context, new HitBuilders.EventBuilder()
+                            .setCategory(Utils.CATEGORY_USER_INPUT)
+                            .setAction(Utils.ACTION_JUDGE_CARD));
+                }
+
+                @Override
+                public void onException(Exception ex) {
+                    Toaster.show(context, Utils.Messages.FAILED_JUDGING, ex);
+                }
+            });
+        }
+    }
+
     private void playCard(final Card card, @Nullable final String customText) {
         pyx.playCard(gameInfo.game.gid, card.id, customText, new PYX.ISuccess() {
             @Override
@@ -470,54 +532,6 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                 Toaster.show(context, Utils.Messages.FAILED_PLAYING, ex);
             }
         });
-    }
-
-    @Override
-    public void onCardSelected(final BaseCard card) {
-        if (myLastStatus == GameInfo.PlayerStatus.PLAYING) {
-            if (((Card) card).isWriteIn()) {
-                final EditText customText = new EditText(context);
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle(R.string.setBlankCardText)
-                        .setView(customText)
-                        .setNegativeButton(android.R.string.cancel, null)
-                        .setPositiveButton(R.string.submit, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                playCard((Card) card, customText.getText().toString());
-                            }
-                        });
-
-                CommonUtils.showDialog(context, builder);
-            } else {
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle(R.string.areYouSurePlayCard)
-                        .setNegativeButton(android.R.string.no, null)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                playCard((Card) card, null);
-                            }
-                        });
-
-                CommonUtils.showDialog(context, builder);
-            }
-        } else if (myLastStatus == GameInfo.PlayerStatus.JUDGING || myLastStatus == GameInfo.PlayerStatus.JUDGE) {
-            pyx.judgeCard(gameInfo.game.gid, ((Card) card).id, new PYX.ISuccess() {
-                @Override
-                public void onDone(PYX pyx) {
-                    AnalyticsApplication.sendAnalytics(context, new HitBuilders.EventBuilder()
-                            .setCategory(Utils.CATEGORY_USER_INPUT)
-                            .setAction(Utils.ACTION_JUDGE_CARD));
-                }
-
-                @Override
-                public void onException(Exception ex) {
-                    Toaster.show(context, Utils.Messages.FAILED_JUDGING, ex);
-                }
-            });
-        }
     }
 
     public interface IManager {

@@ -18,15 +18,17 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     private final Context context;
     private final List<CardsGroup<? extends BaseCard>> cards;
     private final IAdapter listener;
+    private final PyxCardsGroupView.Action action;
 
-    public CardsAdapter(Context context, IAdapter listener) {
+    public CardsAdapter(Context context, @Nullable PyxCardsGroupView.Action action, IAdapter listener) {
         this.context = context;
+        this.action = action;
         this.listener = listener;
         this.cards = new ArrayList<>();
     }
 
-    public CardsAdapter(Context context, List<? extends BaseCard> cards, IAdapter listener) {
-        this(context, listener);
+    public CardsAdapter(Context context, List<? extends BaseCard> cards, @Nullable PyxCardsGroupView.Action action, IAdapter listener) {
+        this(context, action, listener);
         for (BaseCard card : cards) this.cards.add(CardsGroup.singleton(card));
     }
 
@@ -37,7 +39,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        ((PyxCardsGroupView) holder.itemView).setCards(cards.get(position));
+        ((PyxCardsGroupView) holder.itemView).setCards(cards.get(position), action);
         ((PyxCardsGroupView) holder.itemView).setIsFirstOfParent(position == 0);
         ((PyxCardsGroupView) holder.itemView).setIsLastOfParent(position == getItemCount() - 1);
     }
@@ -56,7 +58,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public void notifyItemInserted(List<CardsGroup<Card>> cards) {
         this.cards.addAll(cards);
         notifyItemRangeInserted(this.cards.size() - cards.size(), cards.size());
-        notifyItemChanged(this.cards.size() - cards.size() - 1);
+        notifyItemChanged(this.cards.size() - cards.size() - 1); // Needed to re-compute the margins
     }
 
     public void notifyItemRemoved(BaseCard removeCard) {
@@ -99,15 +101,25 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     @Override
-    public void onCardSelected(BaseCard card) {
-        if (listener != null) listener.onCardSelected(card);
+    public void onCardAction(PyxCardsGroupView.Action action, CardsGroup<? extends BaseCard> group, BaseCard card) {
+        switch (action) {
+            case DELETE:
+                int pos = cards.indexOf(group);
+                if (pos != -1) {
+                    cards.remove(pos);
+                    notifyItemRemoved(pos);
+                }
+                break;
+        }
+
+        if (listener != null) listener.onCardAction(action, group, card);
     }
 
     public interface IAdapter {
         @Nullable
         RecyclerView getCardsRecyclerView();
 
-        void onCardSelected(BaseCard card);
+        void onCardAction(PyxCardsGroupView.Action action, CardsGroup<? extends BaseCard> group, BaseCard card);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

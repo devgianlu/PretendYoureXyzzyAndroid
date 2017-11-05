@@ -3,7 +3,6 @@ package com.gianlu.pretendyourexyzzy.Cards;
 import android.content.Context;
 
 import com.gianlu.commonutils.AnalyticsApplication;
-import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
@@ -19,7 +18,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public class StarredCardsManager {
 
@@ -178,7 +176,7 @@ public class StarredCardsManager {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             StarredCard that = (StarredCard) o;
-            return id == that.id && Objects.equals(blackCard, that.blackCard) && CommonUtils.equals(whiteCards, that.whiteCards);
+            return id == that.id;
         }
 
         @Override

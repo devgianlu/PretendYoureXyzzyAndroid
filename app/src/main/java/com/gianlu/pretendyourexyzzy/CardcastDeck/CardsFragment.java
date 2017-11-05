@@ -20,6 +20,8 @@ import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.CardcastHelper;
 import com.gianlu.pretendyourexyzzy.Cards.CardcastCard;
+import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
+import com.gianlu.pretendyourexyzzy.Cards.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.R;
 
@@ -72,7 +74,7 @@ public class CardsFragment extends Fragment implements CardcastHelper.IResult<Li
 
         List<CardcastCard> cards = new ArrayList<>();
         for (Card card : result) cards.add(new CardcastCard(card));
-        layout.loadListData(new CardsAdapter(getContext(), cards, this));
+        layout.loadListData(new CardsAdapter(getContext(), cards, null, this));
     }
 
     @Override
@@ -89,6 +91,6 @@ public class CardsFragment extends Fragment implements CardcastHelper.IResult<Li
     }
 
     @Override
-    public void onCardSelected(BaseCard card) {
+    public void onCardAction(PyxCardsGroupView.Action action, CardsGroup<? extends BaseCard> group, BaseCard card) {
     }
 }

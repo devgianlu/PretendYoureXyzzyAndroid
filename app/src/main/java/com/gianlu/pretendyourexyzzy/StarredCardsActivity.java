@@ -16,10 +16,13 @@ import android.widget.LinearLayout;
 import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
+import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCard;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.Cards.StarredCardsManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
+
+import java.util.Objects;
 
 public class StarredCardsActivity extends AppCompatActivity implements CardsAdapter.IAdapter {
     private RecyclerView list;
@@ -45,7 +48,7 @@ public class StarredCardsActivity extends AppCompatActivity implements CardsAdap
 
         list = findViewById(R.id.starredCards_list);
         list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        list.setAdapter(new CardsAdapter(this, StarredCardsManager.loadCards(this), this));
+        list.setAdapter(new CardsAdapter(this, StarredCardsManager.loadCards(this), PyxCardsGroupView.Action.DELETE, this));
 
         cards = findViewById(R.id.starredCards_cards);
 
@@ -58,21 +61,45 @@ public class StarredCardsActivity extends AppCompatActivity implements CardsAdap
         return list;
     }
 
-    @Override
-    public void onCardSelected(BaseCard card) {
+    private void showCards(StarredCardsManager.StarredCard card) {
         MessageLayout.hide((ViewGroup) findViewById(R.id.starredCards_container));
-        StarredCardsManager.StarredCard starredCard = ((StarredCardsManager.StarredCard) card);
 
         cards.removeAllViews();
+        cards.setTag(card);
 
         int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
-        PyxCard blackCard = new PyxCard(this, starredCard.blackCard);
+        PyxCard blackCard = new PyxCard(this, card.blackCard, null, null);
         cards.addView(blackCard);
         ((LinearLayout.LayoutParams) blackCard.getLayoutParams()).setMargins(margin, margin, margin, margin);
 
-        PyxCardsGroupView group = new PyxCardsGroupView(this, starredCard.whiteCards, null);
-        cards.addView(group);
-        group.setIsFirstOfParent(true);
-        group.setIsLastOfParent(true);
+        PyxCardsGroupView groupView = new PyxCardsGroupView(this, card.whiteCards, null, null);
+        cards.addView(groupView);
+        groupView.setIsFirstOfParent(true);
+        groupView.setIsLastOfParent(true);
+    }
+
+    private void deleteCard(StarredCardsManager.StarredCard card) {
+        StarredCardsManager.removeCard(this, card);
+        if (list.getAdapter().getItemCount() == 0) onBackPressed();
+    }
+
+    @Override
+    public void onCardAction(PyxCardsGroupView.Action action, CardsGroup<? extends BaseCard> group, BaseCard card) {
+        if (card instanceof StarredCardsManager.StarredCard) {
+            switch (action) {
+                case SELECT:
+                    showCards((StarredCardsManager.StarredCard) card);
+                    break;
+                case DELETE:
+                    deleteCard((StarredCardsManager.StarredCard) card);
+                    if (Objects.equals(cards.getTag(), card)) {
+                        MessageLayout.show((ViewGroup) findViewById(R.id.starredCards_container), R.string.selectAStarredCard, R.drawable.ic_info_outline_black_48dp);
+                        cards.removeAllViews();
+                    }
+                    break;
+                case TOGGLE_STAR:
+                    break;
+            }
+        }
     }
 }
