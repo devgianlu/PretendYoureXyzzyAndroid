@@ -18,20 +18,9 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class StarredCardsManager {
-
-    public static boolean hasCard(Context context, StarredCard card) {
-        try {
-            JSONArray starredCardsArray = new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_CARDS, "[]"));
-            List<StarredCard> starredCards = toStarredCardsList(starredCardsArray);
-            return starredCards.contains(card);
-        } catch (JSONException ex) {
-            Logging.logMe(ex);
-            return false;
-        }
-    }
-
     private static List<StarredCard> toStarredCardsList(JSONArray array) throws JSONException {
         List<StarredCard> cards = new ArrayList<>();
         for (int i = 0; i < array.length(); i++)
@@ -75,7 +64,7 @@ public class StarredCardsManager {
         }
     }
 
-    public static List<? extends BaseCard> loadCards(Context context) {
+    public static List<StarredCard> loadCards(Context context) {
         try {
             JSONArray starredCardsArray = new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_CARDS, "[]"));
             List<StarredCard> cards = toStarredCardsList(starredCardsArray);
@@ -97,10 +86,17 @@ public class StarredCardsManager {
     }
 
     public static class StarredCard implements BaseCard {
+        private static final Random random = new Random();
         public final Card blackCard;
         public final CardsGroup<Card> whiteCards;
         public final int id;
         private String cachedSentence;
+
+        public StarredCard(Card blackCard, CardsGroup<Card> whiteCards) {
+            this.blackCard = blackCard;
+            this.whiteCards = whiteCards;
+            this.id = random.nextInt();
+        }
 
         StarredCard(JSONObject obj) throws JSONException {
             blackCard = new Card(obj.getJSONObject("bc"));
@@ -165,8 +161,7 @@ public class StarredCardsManager {
         JSONObject toJSON() throws JSONException {
             JSONArray whiteCardsArray = new JSONArray();
             for (Card whiteCard : whiteCards) whiteCardsArray.put(whiteCard.toJSON());
-            return new JSONObject()
-                    .put("id", id)
+            return new JSONObject().put("id", id)
                     .put("wc", whiteCardsArray)
                     .put("bc", blackCard.toJSON());
         }
@@ -176,7 +171,7 @@ public class StarredCardsManager {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             StarredCard that = (StarredCard) o;
-            return id == that.id;
+            return id == that.id || (blackCard.equals(that.blackCard) && whiteCards.equals(that.whiteCards));
         }
 
         @Override

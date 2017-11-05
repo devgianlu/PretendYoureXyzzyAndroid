@@ -107,7 +107,7 @@ public class PyxCard extends CardView {
                 numPick.setVisibility(GONE);
             }
 
-            ImageButton action = content.findViewById(R.id.pyxCard_action);
+            final ImageButton action = content.findViewById(R.id.pyxCard_action);
             if (mainAction == null) {
                 action.setVisibility(GONE);
             } else {
@@ -127,7 +127,7 @@ public class PyxCard extends CardView {
                         break;
                     case TOGGLE_STAR:
                         action.setVisibility(VISIBLE);
-                        action.setImageResource(R.drawable.ic_star_border_black_48dp);
+                        action.setImageResource(R.drawable.ic_star_black_48dp);
                         action.setOnClickListener(new OnClickListener() {
                             @Override
                             public void onClick(View view) {

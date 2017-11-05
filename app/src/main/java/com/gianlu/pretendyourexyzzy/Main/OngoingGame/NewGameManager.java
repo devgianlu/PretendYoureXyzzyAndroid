@@ -29,6 +29,7 @@ import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCard;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCardsGroupView;
+import com.gianlu.pretendyourexyzzy.Cards.StarredCardsManager;
 import com.gianlu.pretendyourexyzzy.LoadingActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
@@ -451,6 +452,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onCardAction(PyxCardsGroupView.Action action, CardsGroup<? extends BaseCard> group, BaseCard card) {
         switch (action) {
             case SELECT:
@@ -459,7 +461,8 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
             case DELETE:
                 break;
             case TOGGLE_STAR:
-                // TODO
+                if (blackCard.getCard() != null)
+                    StarredCardsManager.addCard(context, new StarredCardsManager.StarredCard((Card) blackCard.getCard(), (CardsGroup<Card>) group));
                 break;
         }
     }

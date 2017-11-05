@@ -25,8 +25,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,7 +93,7 @@ public class PYX {
         return pollingThread;
     }
 
-    private JSONObject exceptionsReportingWrapper(OP operation, NameValuePair... params) throws IOException, JSONException, PYXException {
+    private JSONObject ajaxServletRequestSync(OP operation, NameValuePair... params) throws IOException, JSONException, PYXException {
         HttpPost post = new HttpPost(server.uri.toString() + "AjaxServlet");
         List<NameValuePair> paramsList = new ArrayList<>(Arrays.asList(params));
         paramsList.add(new BasicNameValuePair("o", operation.val));
@@ -133,23 +131,6 @@ public class PYX {
         }
 
         return obj;
-    }
-
-    private JSONObject ajaxServletRequestSync(OP operation, NameValuePair... params) throws IOException, JSONException, PYXException {
-        try {
-            return exceptionsReportingWrapper(operation, params);
-        } catch (IOException | JSONException | PYXException ex) {
-            StringWriter writer = new StringWriter();
-            ex.printStackTrace(new PrintWriter(writer));
-
-            /* TODO. Analytics
-            AnalyticsApplication.sendAnalytics(new HitBuilders.ExceptionBuilder()
-                    .setDescription(writer.toString())
-                    .setFatal(false));
-                    */
-
-            throw ex;
-        }
     }
 
     public void startPolling() {
