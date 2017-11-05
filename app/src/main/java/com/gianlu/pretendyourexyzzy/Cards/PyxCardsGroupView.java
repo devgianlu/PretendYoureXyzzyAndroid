@@ -11,10 +11,13 @@ import android.widget.LinearLayout;
 
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 
+import java.util.Iterator;
+
 @SuppressLint("ViewConstructor")
-public class PyxCardsGroupView extends LinearLayout { // FIXME: Better spacings...
+public class PyxCardsGroupView extends LinearLayout {
     private final int mPadding;
     private final int mCornerRadius;
+    private final int mCardsMargin;
     private final int mLineWidth;
     private final Paint mLinePaint;
     private CardsGroup<? extends BaseCard> cards;
@@ -26,9 +29,10 @@ public class PyxCardsGroupView extends LinearLayout { // FIXME: Better spacings.
         setOrientation(HORIZONTAL);
         setWillNotDraw(false);
 
-        mPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3, context.getResources().getDisplayMetrics());
-        mCornerRadius = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, context.getResources().getDisplayMetrics());
-        mLineWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1.6f, context.getResources().getDisplayMetrics());
+        mPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3, getResources().getDisplayMetrics());
+        mCornerRadius = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, getResources().getDisplayMetrics());
+        mLineWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1.6f, getResources().getDisplayMetrics());
+        mCardsMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
 
         mLinePaint = new Paint();
         mLinePaint.setARGB(100, 0, 0, 0);
@@ -42,11 +46,21 @@ public class PyxCardsGroupView extends LinearLayout { // FIXME: Better spacings.
         setCards(whiteCards);
     }
 
+    public void setIsFirstOfParent(boolean firstOfParent) {
+        if (getChildCount() == 0) return;
+        if (cards.size() == 1)
+            ((LayoutParams) getChildAt(0).getLayoutParams()).leftMargin = firstOfParent ? mCardsMargin : 0;
+    }
+
     public void setCards(CardsGroup<? extends BaseCard> cards) {
         this.cards = cards;
 
         removeAllViews();
-        for (final BaseCard card : cards) {
+
+        Iterator<? extends BaseCard> iterator = cards.iterator();
+        while (iterator.hasNext()) {
+            final BaseCard card = iterator.next();
+
             PyxCard pyxCard = new PyxCard(getContext(), card);
             pyxCard.setOnClickListener(new OnClickListener() {
                 @Override
@@ -54,7 +68,13 @@ public class PyxCardsGroupView extends LinearLayout { // FIXME: Better spacings.
                     if (listener != null) listener.onCardSelected(card);
                 }
             });
+
             addView(pyxCard);
+
+            if (cards.size() == 1)
+                ((LayoutParams) pyxCard.getLayoutParams()).setMargins(0, mCardsMargin, mCardsMargin, mCardsMargin);
+            else
+                ((LayoutParams) pyxCard.getLayoutParams()).setMargins(mCardsMargin, mCardsMargin, iterator.hasNext() ? 0 : mCardsMargin, mCardsMargin);
         }
     }
 

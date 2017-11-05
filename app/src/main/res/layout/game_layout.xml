@@ -18,8 +18,8 @@
             <com.gianlu.pretendyourexyzzy.Cards.PyxCard
                 android:id="@+id/gameLayout_blackCard"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp" />
+                android:layout_height="match_parent"
+                android:layout_margin="8dp" />
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/gameLayout_players"
@@ -33,7 +33,6 @@
             android:id="@+id/gameLayout_instructions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
             android:textSize="16sp"

@@ -100,7 +100,7 @@ public class StarredCardsManager {
 
     public static class StarredCard implements BaseCard {
         public final Card blackCard;
-        public final List<Card> whiteCards;
+        public final CardsGroup<Card> whiteCards;
         public final int id;
         private String cachedSentence;
 
@@ -108,7 +108,7 @@ public class StarredCardsManager {
             blackCard = new Card(obj.getJSONObject("bc"));
             id = obj.getInt("id");
 
-            whiteCards = new ArrayList<>();
+            whiteCards = new CardsGroup<>();
             JSONArray whiteCardsArray = obj.getJSONArray("wc");
             for (int i = 0; i < whiteCardsArray.length(); i++)
                 whiteCards.add(new Card(whiteCardsArray.getJSONObject(i)));

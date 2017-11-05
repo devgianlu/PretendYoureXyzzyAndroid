@@ -23,7 +23,6 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         this.context = context;
         this.listener = listener;
         this.cards = new ArrayList<>();
-        // listener.getCardsRecyclerView().setItemAnimator(null);
     }
 
     public CardsAdapter(Context context, List<? extends BaseCard> cards, IAdapter listener) {
@@ -39,6 +38,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         ((PyxCardsGroupView) holder.itemView).setCards(cards.get(position));
+        ((PyxCardsGroupView) holder.itemView).setIsFirstOfParent(position == 0);
     }
 
     @Override

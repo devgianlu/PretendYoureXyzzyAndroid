@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.Cards;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.annotation.AttrRes;
@@ -9,8 +10,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -19,8 +20,9 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.R;
 
-public class PyxCard extends FrameLayout {
+public class PyxCard extends CardView {
     private BaseCard card;
+    private int width;
 
     public PyxCard(@NonNull Context context) {
         super(context);
@@ -42,13 +44,25 @@ public class PyxCard extends FrameLayout {
 
     private void init() {
         removeAllViews();
-        if (card == null) return;
+        if (card == null) {
+            setVisibility(GONE);
+            return;
+        }
+
         LayoutInflater.from(getContext()).inflate(R.layout.pyx_card, this, true);
+
+        width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 156, getResources().getDisplayMetrics());
+
+        setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics()));
+
+        TypedArray a = getContext().getTheme().obtainStyledAttributes(R.style.AppTheme, new int[]{android.R.attr.selectableItemBackground});
+        int attributeResourceId = a.getResourceId(0, 0);
+        a.recycle();
+        setForeground(ContextCompat.getDrawable(getContext(), attributeResourceId));
 
         Typeface roboto = Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Medium.ttf");
         int colorAccent = ContextCompat.getColor(getContext(), R.color.colorAccent);
 
-        CardView cardView = findViewById(R.id.pyxCard_card);
         LinearLayout content = findViewById(R.id.pyxCard_content);
         LinearLayout unknown = findViewById(R.id.pyxCard_unknown);
 
@@ -60,10 +74,8 @@ public class PyxCard extends FrameLayout {
             content.setVisibility(VISIBLE);
 
             if (card instanceof Card) {
-                if (((Card) card).isWinner())
-                    cardView.setCardBackgroundColor(colorAccent);
-                else
-                    cardView.setCardBackgroundColor(card.getNumPick() != -1 ? Color.BLACK : Color.WHITE);
+                if (((Card) card).isWinner()) setCardBackgroundColor(colorAccent);
+                else setCardBackgroundColor(card.getNumPick() != -1 ? Color.BLACK : Color.WHITE);
             }
 
             SuperTextView text = content.findViewById(R.id.pyxCard_text);
@@ -87,6 +99,11 @@ public class PyxCard extends FrameLayout {
                 numPick.setVisibility(GONE);
             }
         }
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), heightMeasureSpec);
     }
 
     public BaseCard getCard() {
