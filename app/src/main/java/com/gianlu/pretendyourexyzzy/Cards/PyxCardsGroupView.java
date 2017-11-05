@@ -49,7 +49,13 @@ public class PyxCardsGroupView extends LinearLayout {
     public void setIsFirstOfParent(boolean firstOfParent) {
         if (getChildCount() == 0) return;
         if (cards.size() == 1)
-            ((LayoutParams) getChildAt(0).getLayoutParams()).leftMargin = firstOfParent ? mCardsMargin : 0;
+            ((LayoutParams) getChildAt(0).getLayoutParams()).leftMargin = firstOfParent ? mCardsMargin : mCardsMargin / 2;
+    }
+
+    public void setIsLastOfParent(boolean lastOfParent) {
+        if (getChildCount() == 0) return;
+        if (cards.size() == 1)
+            ((LayoutParams) getChildAt(0).getLayoutParams()).rightMargin = lastOfParent ? mCardsMargin : mCardsMargin / 2;
     }
 
     public void setCards(CardsGroup<? extends BaseCard> cards) {
@@ -72,7 +78,7 @@ public class PyxCardsGroupView extends LinearLayout {
             addView(pyxCard);
 
             if (cards.size() == 1)
-                ((LayoutParams) pyxCard.getLayoutParams()).setMargins(0, mCardsMargin, mCardsMargin, mCardsMargin);
+                ((LayoutParams) pyxCard.getLayoutParams()).setMargins(mCardsMargin / 2, mCardsMargin, mCardsMargin / 2, mCardsMargin);
             else
                 ((LayoutParams) pyxCard.getLayoutParams()).setMargins(mCardsMargin, mCardsMargin, iterator.hasNext() ? 0 : mCardsMargin, mCardsMargin);
         }

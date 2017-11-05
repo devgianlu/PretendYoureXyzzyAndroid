@@ -39,6 +39,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public void onBindViewHolder(final ViewHolder holder, int position) {
         ((PyxCardsGroupView) holder.itemView).setCards(cards.get(position));
         ((PyxCardsGroupView) holder.itemView).setIsFirstOfParent(position == 0);
+        ((PyxCardsGroupView) holder.itemView).setIsLastOfParent(position == getItemCount() - 1);
     }
 
     @Override
@@ -49,13 +50,13 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public void notifyDataSetChanged(List<CardsGroup<Card>> whiteCards) {
         this.cards.clear();
         this.cards.addAll(whiteCards);
-
         notifyDataSetChanged();
     }
 
     public void notifyItemInserted(List<CardsGroup<Card>> cards) {
         this.cards.addAll(cards);
         notifyItemRangeInserted(this.cards.size() - cards.size(), cards.size());
+        notifyItemChanged(this.cards.size() - cards.size() - 1);
     }
 
     public void notifyItemRemoved(BaseCard removeCard) {
@@ -94,6 +95,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public void addBlankCard() {
         cards.add(CardsGroup.singleton(Card.newBlankCard()));
         notifyItemInserted(cards.size() - 1);
+        notifyItemChanged(cards.size() - 2); // Needed to re-compute the margins
     }
 
     @Override
