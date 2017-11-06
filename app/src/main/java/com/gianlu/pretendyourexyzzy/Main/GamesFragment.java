@@ -54,6 +54,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     private GamesAdapter adapter;
     private int launchGameGid = -1;
     private String launchGamePassword = null;
+    private boolean launchGameShouldRequest;
 
     public static GamesFragment getInstance(IFragment handler) {
         GamesFragment fragment = new GamesFragment();
@@ -201,7 +202,8 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         lastResult = result;
         updateActivityTitle();
 
-        if (launchGameGid != -1) launchGameInternal(launchGameGid, launchGamePassword);
+        if (launchGameGid != -1)
+            launchGameInternal(launchGameGid, launchGamePassword, launchGameShouldRequest);
     }
 
     private void updateActivityTitle() {
@@ -362,21 +364,26 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         return true;
     }
 
-    public void launchGame(int gid, @Nullable String password) {
+    public void launchGame(int gid, @Nullable String password, boolean shouldRequest) {
         if (adapter != null) {
-            launchGameInternal(gid, password);
+            launchGameInternal(gid, password, shouldRequest);
         } else {
+            launchGameShouldRequest = shouldRequest;
             launchGameGid = gid;
             launchGamePassword = password;
         }
     }
 
-    private void launchGameInternal(int gid, @Nullable String password) {
+    private void launchGameInternal(int gid, @Nullable String password, boolean shouldRequest) {
         Game game = Utils.findGame(adapter.getGames(), gid);
         launchGameGid = -1;
         if (game != null) {
-            if (password != null) joinGame(game, password);
-            else joinGame(game);
+            if (shouldRequest) {
+                if (password != null) joinGame(game, password);
+                else joinGame(game);
+            } else {
+                participateGame(gid);
+            }
         }
     }
 

@@ -41,6 +41,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
     private Button registerSubmit;
     private int launchGameId = -1;
     private String launchGamePassword;
+    private boolean launchGameShouldRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,6 +114,8 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                             launchGamePassword = pair.getValue();
                         }
                     }
+
+                    launchGameShouldRequest = true;
                 }
             }
         }
@@ -198,7 +201,11 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
     public void onDone(final PYX pyx, FirstLoad result) {
         if (result.inProgress) {
             pyx.startPolling();
-            if (result.nextOperation == FirstLoad.NextOp.GAME) launchGameId = result.gameId;
+            if (result.nextOperation == FirstLoad.NextOp.GAME) {
+                launchGameId = result.gameId;
+                launchGameShouldRequest = false;
+            }
+
             goTo(MainActivity.class, new User(result.nickname));
         } else {
             showRegisterUI(pyx);
@@ -207,6 +214,15 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
 
     @Override
     public void onException(Exception ex) {
+        if (ex instanceof PYXException) {
+            if (Objects.equals(((PYXException) ex).errorCode, "se")) {
+                loading.setVisibility(View.GONE);
+                register.setVisibility(View.VISIBLE);
+
+                return;
+            }
+        }
+
         Toaster.show(LoadingActivity.this, Utils.Messages.FAILED_LOADING, ex, new Runnable() {
             @Override
             public void run() {
@@ -218,6 +234,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
     private void goTo(Class goTo, @Nullable User user) {
         Intent intent = new Intent(LoadingActivity.this, goTo).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         if (user != null) intent.putExtra("user", user);
+        intent.putExtra("shouldRequest", launchGameShouldRequest);
         if (launchGameId != -1) intent.putExtra("gid", launchGameId);
         if (launchGamePassword != null) intent.putExtra("password", launchGamePassword);
         if (finished) startActivity(intent);
