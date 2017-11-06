@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.Main;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
@@ -36,7 +37,7 @@ public class GlobalChatFragment extends Fragment implements ChatAdapter.IAdapter
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.chat_fragment, container, false);
         recyclerViewLayout = layout.findViewById(R.id.chatFragment_recyclerViewLayout);
         recyclerViewLayout.disableSwipeRefresh();

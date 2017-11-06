@@ -21,8 +21,8 @@ public class PyxCardsGroupView extends LinearLayout {
     private final int mCardsMargin;
     private final int mLineWidth;
     private final Paint mLinePaint;
+    private final ICard listener;
     private CardsGroup<? extends BaseCard> cards;
-    private ICard listener;
 
     public PyxCardsGroupView(Context context, ICard listener) {
         super(context);

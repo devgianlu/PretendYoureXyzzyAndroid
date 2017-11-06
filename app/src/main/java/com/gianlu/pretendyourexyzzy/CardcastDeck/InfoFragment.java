@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.CardcastDeck;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -37,7 +38,7 @@ public class InfoFragment extends Fragment implements CardcastHelper.IResult<Dec
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
         layout = (FrameLayout) inflater.inflate(R.layout.cardcast_deck_info_fragment, parent, false);
         container = layout.findViewById(R.id.cardcastDeckInfo_container);
         loading = layout.findViewById(R.id.cardcastDeckInfo_loading);

@@ -24,7 +24,7 @@ import com.gianlu.pretendyourexyzzy.R;
 
 public class PyxCard extends CardView {
     private final ICard listener;
-    private PyxCardsGroupView.Action mainAction;
+    private final PyxCardsGroupView.Action mainAction;
     private BaseCard card;
     private int width;
 
