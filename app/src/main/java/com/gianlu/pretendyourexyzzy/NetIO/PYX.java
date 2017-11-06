@@ -37,8 +37,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import cz.msebera.android.httpclient.Header;
-import cz.msebera.android.httpclient.HeaderElement;
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.HttpStatus;
 import cz.msebera.android.httpclient.NameValuePair;
@@ -46,10 +44,13 @@ import cz.msebera.android.httpclient.StatusLine;
 import cz.msebera.android.httpclient.client.HttpClient;
 import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity;
 import cz.msebera.android.httpclient.client.methods.HttpPost;
-import cz.msebera.android.httpclient.client.methods.HttpRequestBase;
+import cz.msebera.android.httpclient.cookie.Cookie;
+import cz.msebera.android.httpclient.impl.client.BasicCookieStore;
 import cz.msebera.android.httpclient.impl.client.HttpClients;
+import cz.msebera.android.httpclient.impl.cookie.BasicClientCookie;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 import cz.msebera.android.httpclient.util.EntityUtils;
+
 
 public class PYX {
     private static PYX instance;
@@ -58,16 +59,24 @@ public class PYX {
     private final Handler handler;
     private final HttpClient client;
     private final SharedPreferences preferences;
+    private final BasicCookieStore cookieStore;
     public FirstLoad firstLoad;
     private PollingThread pollingThread;
     private boolean hasRetriedRegister = false;
-    private String jSessionId = null;
 
     private PYX(Context context) {
         this.handler = new Handler(context.getMainLooper());
+        this.cookieStore = new BasicCookieStore();
         this.server = Servers.valueOf(Prefs.getString(context, PKeys.LAST_SERVER, Servers.PYX1.name()));
-        this.client = HttpClients.createDefault();
+        this.client = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
+
+        String lastJSessionId = getLastJSessionId();
+        if (lastJSessionId != null) {
+            BasicClientCookie cookie = new BasicClientCookie("JSESSIONID", lastJSessionId);
+            cookie.setDomain(server.uri.getHost());
+            cookieStore.addCookie(cookie);
+        }
     }
 
     public static void invalidate() {
@@ -83,10 +92,6 @@ public class PYX {
         if (obj.optBoolean("e", false)) throw new PYXException(obj);
     }
 
-    private static void addJSessionIdToRequest(HttpRequestBase request, String jSessionId) throws IOException {
-        request.setHeader("Set-Cookie", "JSESSIONID=" + jSessionId);
-    }
-
     @NonNull
     public PollingThread getPollingThread() {
         if (pollingThread == null) startPolling();
@@ -99,16 +104,8 @@ public class PYX {
         paramsList.add(new BasicNameValuePair("o", operation.val));
         post.setEntity(new UrlEncodedFormEntity(paramsList));
 
-        if (operation == OP.FIRST_LOAD) {
-            String lastJSessionId = getLastJSessionId();
-            if (lastJSessionId != null)
-                addJSessionIdToRequest(post, lastJSessionId); // Try resuming the last session
-        } else {
-            if (jSessionId != null) addJSessionIdToRequest(post, jSessionId);
-        }
-
         HttpResponse resp = client.execute(post);
-        updateJSessionId(resp);
+        updateJSessionId();
 
         StatusLine sl = resp.getStatusLine();
         if (sl.getStatusCode() != HttpStatus.SC_OK)
@@ -116,6 +113,7 @@ public class PYX {
 
         JSONObject obj = new JSONObject(EntityUtils.toString(resp.getEntity()));
         post.releaseConnection();
+
         try {
             raiseException(obj);
         } catch (PYXException ex) {
@@ -138,15 +136,11 @@ public class PYX {
         pollingThread.start();
     }
 
-    private void updateJSessionId(HttpResponse resp) {
-        Header cookiesHeader = resp.getFirstHeader("Set-Cookie");
-        if (cookiesHeader != null) {
-            for (HeaderElement element : cookiesHeader.getElements()) {
-                if (Objects.equals(element.getName(), "JSESSIONID")) {
-                    jSessionId = element.getValue();
-                    preferences.edit().putString(PKeys.LAST_JSESSIONID.getKey(), jSessionId).apply();
-                    break;
-                }
+    private void updateJSessionId() {
+        for (Cookie cookie : cookieStore.getCookies()) {
+            if (Objects.equals(cookie.getName(), "JSESSIONID")) {
+                preferences.edit().putString(PKeys.LAST_JSESSIONID.getKey(), cookie.getValue()).apply();
+                break;
             }
         }
     }
@@ -232,7 +226,6 @@ public class PYX {
                     ajaxServletRequestSync(OP.LOGOUT);
 
                     removeLastJSessionId();
-                    jSessionId = null;
                     firstLoad = null;
                 } catch (IOException | JSONException | PYXException ignored) {
                 }
@@ -833,8 +826,6 @@ public class PYX {
             while (!shouldStop) {
                 try {
                     HttpPost post = new HttpPost(server.uri.toString() + "LongPollServlet");
-                    addJSessionIdToRequest(post, jSessionId);
-
                     HttpResponse resp = client.execute(post);
 
                     StatusLine sl = resp.getStatusLine();

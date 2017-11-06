@@ -196,14 +196,12 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
 
     @Override
     public void onDone(final PYX pyx, FirstLoad result) {
-        if (result.nextOperation == FirstLoad.NextOp.REGISTER) {
-            showRegisterUI(pyx);
-        } else if (result.nextOperation == FirstLoad.NextOp.GAME) {
-            launchGameId = result.gameId;
+        if (result.inProgress) {
+            pyx.startPolling();
+            if (result.nextOperation == FirstLoad.NextOp.GAME) launchGameId = result.gameId;
             goTo(MainActivity.class, new User(result.nickname));
         } else {
-            pyx.startPolling();
-            goTo(MainActivity.class, new User(result.nickname));
+            showRegisterUI(pyx);
         }
     }
 
