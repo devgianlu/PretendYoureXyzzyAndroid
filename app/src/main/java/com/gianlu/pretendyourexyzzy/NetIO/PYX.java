@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Prefs;
+import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -47,7 +48,7 @@ import cz.msebera.android.httpclient.client.methods.HttpPost;
 import cz.msebera.android.httpclient.cookie.Cookie;
 import cz.msebera.android.httpclient.impl.client.BasicCookieStore;
 import cz.msebera.android.httpclient.impl.client.HttpClients;
-import cz.msebera.android.httpclient.impl.cookie.BasicClientCookie;
+import cz.msebera.android.httpclient.impl.cookie.BasicClientCookie2;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 import cz.msebera.android.httpclient.util.EntityUtils;
 
@@ -73,9 +74,12 @@ public class PYX {
 
         String lastJSessionId = getLastJSessionId();
         if (lastJSessionId != null) {
-            BasicClientCookie cookie = new BasicClientCookie("JSESSIONID", lastJSessionId);
+            BasicClientCookie2 cookie = new BasicClientCookie2("JSESSIONID", lastJSessionId);
             cookie.setDomain(server.uri.getHost());
+            cookie.setPath(server.uri.getPath());
             cookieStore.addCookie(cookie);
+
+            if (BuildConfig.DEBUG) System.out.println("Trying to resume session: " + cookie);
         }
     }
 
@@ -760,7 +764,6 @@ public class PYX {
         private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
         public final URI uri;
         public final String name;
-
 
         Servers(URI uri, String name) {
             this.uri = uri;
