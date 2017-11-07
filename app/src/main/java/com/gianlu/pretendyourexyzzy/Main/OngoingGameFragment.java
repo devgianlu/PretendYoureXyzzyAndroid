@@ -315,6 +315,8 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
                         blankCards.setErrorEnabled(false);
                         password.setErrorEnabled(false);
 
+                        if (getContext() == null) return;
+
                         Game.Options newOptions;
                         try {
                             newOptions = Game.Options.validateAndCreate(idleTimeMultiplier.getSelectedItem().toString(), CommonUtils.getText(spectatorLimit), CommonUtils.getText(playerLimit), CommonUtils.getText(scoreLimit), CommonUtils.getText(blankCards), cardSets, CommonUtils.getText(password));
