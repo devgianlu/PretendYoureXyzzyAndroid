@@ -40,7 +40,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
-import com.google.android.gms.analytics.HitBuilders;
 
 import org.json.JSONException;
 
@@ -277,9 +276,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
                 participateGame(game.gid);
                 pd.dismiss();
 
-                AnalyticsApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
-                        .setCategory(Utils.CATEGORY_USER_INPUT)
-                        .setAction(Utils.ACTION_SPECTATE_GAME));
+                AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_SPECTATE_GAME);
             }
 
             @Override
@@ -311,9 +308,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
                 participateGame(game.gid);
                 pd.dismiss();
 
-                AnalyticsApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
-                        .setCategory(Utils.CATEGORY_USER_INPUT)
-                        .setAction(Utils.ACTION_JOIN_GAME));
+                AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_JOIN_GAME);
             }
 
             @Override

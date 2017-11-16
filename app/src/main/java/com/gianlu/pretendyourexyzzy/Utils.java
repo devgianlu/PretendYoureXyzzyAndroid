@@ -15,18 +15,17 @@ import java.util.List;
 import java.util.Objects;
 
 public class Utils {
-    public static final String CATEGORY_USER_INPUT = "User input";
-    public static final String ACTION_STARRED_CARD_ADD = "Starred card added";
-    public static final String ACTION_JOIN_GAME = "Joined game";
-    public static final String ACTION_SPECTATE_GAME = "Spectating game";
-    public static final String ACTION_LEFT_GAME = "Left game";
-    public static final String ACTION_SENT_GLOBAL_MSG = "Sent message on global chat";
-    public static final String ACTION_SENT_GAME_MSG = "Sent message on game chat";
-    public static final String ACTION_ADDED_CARDCAST = "Added Cardcast deck";
-    public static final String ACTION_JUDGE_CARD = "Judged card";
-    public static final String ACTION_PLAY_CUSTOM_CARD = "Played custom card";
-    public static final String ACTION_PLAY_CARD = "Played card";
-    public static final String ACTION_STARRED_DECK_ADD = "Starred deck added";
+    public static final String ACTION_STARRED_CARD_ADD = "added_starred_card";
+    public static final String ACTION_JOIN_GAME = "joined_game";
+    public static final String ACTION_SPECTATE_GAME = "spectate_game";
+    public static final String ACTION_LEFT_GAME = "left_game";
+    public static final String ACTION_SENT_GLOBAL_MSG = "sent_message_global";
+    public static final String ACTION_SENT_GAME_MSG = "sent_message_game";
+    public static final String ACTION_ADDED_CARDCAST = "added_cardcast_deck";
+    public static final String ACTION_JUDGE_CARD = "judged_card";
+    public static final String ACTION_PLAY_CUSTOM_CARD = "played_custom_card";
+    public static final String ACTION_PLAY_CARD = "played_card";
+    public static final String ACTION_STARRED_DECK_ADD = "added_starred_deck";
 
     public static String getCategoryFormal(Context context, Cardcast.Category category) {
         switch (category) {

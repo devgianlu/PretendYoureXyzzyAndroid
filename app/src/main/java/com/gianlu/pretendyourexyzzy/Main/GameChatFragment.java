@@ -23,7 +23,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
-import com.google.android.gms.analytics.HitBuilders;
 
 import org.json.JSONException;
 
@@ -76,9 +75,7 @@ public class GameChatFragment extends Fragment implements ChatAdapter.IAdapter, 
                     public void onDone(PYX pyx) {
                         message.setText(null);
 
-                        AnalyticsApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
-                                .setCategory(Utils.CATEGORY_USER_INPUT)
-                                .setAction(Utils.ACTION_SENT_GAME_MSG));
+                        AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_SENT_GAME_MSG);
                     }
 
                     @Override

@@ -25,7 +25,6 @@ import com.gianlu.pretendyourexyzzy.Main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
-import com.google.android.gms.analytics.HitBuilders;
 
 import java.util.Objects;
 
@@ -297,8 +296,6 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         ongoingGameFragment = null;
         gameChatFragment = null;
 
-        AnalyticsApplication.sendAnalytics(this, new HitBuilders.EventBuilder()
-                .setCategory(Utils.CATEGORY_USER_INPUT)
-                .setAction(Utils.ACTION_LEFT_GAME));
+        AnalyticsApplication.sendAnalytics(this, Utils.ACTION_LEFT_GAME);
     }
 }

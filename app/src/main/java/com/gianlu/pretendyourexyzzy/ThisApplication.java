@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy;
 
 import com.gianlu.commonutils.AnalyticsApplication;
 import com.gianlu.commonutils.ConnectivityChecker;
-import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -17,15 +16,8 @@ public class ThisApplication extends AnalyticsApplication {
     }
 
     @Override
-    protected int getTrackerConfiguration() {
-        return R.xml.tracking;
-    }
-
-    @Override
     public void onCreate() {
         super.onCreate();
-
-        FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(!isDebug());
 
         ConnectivityChecker.setUserAgent(getString(R.string.app_name));
         ConnectivityChecker.setProvider(new ConnectivityChecker.URLProvider() {

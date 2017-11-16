@@ -42,7 +42,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
-import com.google.android.gms.analytics.HitBuilders;
 
 import org.json.JSONException;
 
@@ -501,9 +500,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
             pyx.judgeCard(gameInfo.game.gid, card.id, new PYX.ISuccess() {
                 @Override
                 public void onDone(PYX pyx) {
-                    AnalyticsApplication.sendAnalytics(context, new HitBuilders.EventBuilder()
-                            .setCategory(Utils.CATEGORY_USER_INPUT)
-                            .setAction(Utils.ACTION_JUDGE_CARD));
+                    AnalyticsApplication.sendAnalytics(context, Utils.ACTION_JUDGE_CARD);
                 }
 
                 @Override
@@ -521,13 +518,9 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                 removeCardFromHand(card);
                 setAmLastPlaying();
 
-                HitBuilders.EventBuilder event = new HitBuilders.EventBuilder()
-                        .setCategory(Utils.CATEGORY_USER_INPUT);
-
-                if (customText != null) event.setAction(Utils.ACTION_PLAY_CUSTOM_CARD);
-                else event.setAction(Utils.ACTION_PLAY_CARD);
-
-                AnalyticsApplication.sendAnalytics(context, event);
+                if (customText != null)
+                    AnalyticsApplication.sendAnalytics(context, Utils.ACTION_PLAY_CUSTOM_CARD);
+                else AnalyticsApplication.sendAnalytics(context, Utils.ACTION_PLAY_CARD);
             }
 
             @Override

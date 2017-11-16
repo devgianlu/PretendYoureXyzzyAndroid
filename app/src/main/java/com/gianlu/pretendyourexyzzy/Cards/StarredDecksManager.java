@@ -8,7 +8,6 @@ import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Prefs;
 import com.gianlu.pretendyourexyzzy.PKeys;
 import com.gianlu.pretendyourexyzzy.Utils;
-import com.google.android.gms.analytics.HitBuilders;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -47,9 +46,7 @@ public class StarredDecksManager {
             Logging.logMe(ex);
         }
 
-        AnalyticsApplication.sendAnalytics(context, new HitBuilders.EventBuilder()
-                .setCategory(Utils.CATEGORY_USER_INPUT)
-                .setAction(Utils.ACTION_STARRED_DECK_ADD));
+        AnalyticsApplication.sendAnalytics(context, Utils.ACTION_STARRED_DECK_ADD);
     }
 
     private static void saveDecks(Context context, List<StarredDeck> decks) {

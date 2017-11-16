@@ -51,7 +51,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
-import com.google.android.gms.analytics.HitBuilders;
 
 import org.json.JSONException;
 
@@ -446,9 +445,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
                     });
                 }
 
-                AnalyticsApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
-                        .setCategory(Utils.CATEGORY_USER_INPUT)
-                        .setAction(Utils.ACTION_ADDED_CARDCAST));
+                AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_ADDED_CARDCAST);
             }
         }.start();
     }
@@ -482,9 +479,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
                     });
                 }
 
-                AnalyticsApplication.sendAnalytics(getContext(), new HitBuilders.EventBuilder()
-                        .setCategory(Utils.CATEGORY_USER_INPUT)
-                        .setAction(Utils.ACTION_ADDED_CARDCAST));
+                AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_ADDED_CARDCAST);
             }
 
             @Override

@@ -9,7 +9,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.PKeys;
 import com.gianlu.pretendyourexyzzy.Utils;
-import com.google.android.gms.analytics.HitBuilders;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,9 +36,7 @@ public class StarredCardsManager {
             if (!a) starredCards.add(card);
             saveCards(context, starredCards);
 
-            AnalyticsApplication.sendAnalytics(context, new HitBuilders.EventBuilder()
-                    .setCategory(Utils.CATEGORY_USER_INPUT)
-                    .setAction(Utils.ACTION_STARRED_CARD_ADD));
+            AnalyticsApplication.sendAnalytics(context, Utils.ACTION_STARRED_CARD_ADD);
 
             return !a;
         } catch (JSONException ex) {
