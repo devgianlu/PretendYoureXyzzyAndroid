@@ -57,6 +57,8 @@ public class PyxCard extends CardView {
             return;
         }
 
+        setVisibility(VISIBLE);
+
         LayoutInflater.from(getContext()).inflate(R.layout.pyx_card, this, true);
 
         width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 156, getResources().getDisplayMetrics());
