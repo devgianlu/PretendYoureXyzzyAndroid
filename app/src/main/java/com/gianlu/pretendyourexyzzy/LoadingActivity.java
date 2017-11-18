@@ -43,6 +43,26 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
     private String launchGamePassword;
     private boolean launchGameShouldRequest;
 
+    private void changeServerDialog(boolean dismissible) {
+        int selectedServer = CommonUtils.indexOf(PYX.Servers.values(), PYX.Servers.valueOf(Prefs.getString(LoadingActivity.this, PKeys.LAST_SERVER, PYX.Servers.PYX1.name())));
+        AlertDialog.Builder builder = new AlertDialog.Builder(LoadingActivity.this);
+        builder.setTitle(R.string.changeServer)
+                .setCancelable(dismissible)
+                .setSingleChoiceItems(PYX.Servers.formalValues(), selectedServer, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        setServer(PYX.Servers.values()[which]);
+                        recreate();
+                    }
+                });
+
+        if (dismissible)
+            builder.setNegativeButton(android.R.string.cancel, null);
+
+        CommonUtils.showDialog(LoadingActivity.this, builder);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,20 +97,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
         changeServer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int selectedServer = CommonUtils.indexOf(PYX.Servers.values(), PYX.Servers.valueOf(Prefs.getString(LoadingActivity.this, PKeys.LAST_SERVER, PYX.Servers.PYX1.name())));
-                AlertDialog.Builder builder = new AlertDialog.Builder(LoadingActivity.this);
-                builder.setTitle(R.string.changeServer)
-                        .setSingleChoiceItems(PYX.Servers.formalValues(), selectedServer, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                setServer(PYX.Servers.values()[which]);
-                                recreate();
-                            }
-                        })
-                        .setNegativeButton(android.R.string.cancel, null);
-
-                CommonUtils.showDialog(LoadingActivity.this, builder);
+                changeServerDialog(true);
             }
         });
 
@@ -226,7 +233,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
         Toaster.show(LoadingActivity.this, Utils.Messages.FAILED_LOADING, ex, new Runnable() {
             @Override
             public void run() {
-                finish();
+                changeServerDialog(false);
             }
         });
     }
