@@ -50,24 +50,34 @@ public class GlobalChatFragment extends Fragment implements ChatAdapter.IAdapter
         final PYX pyx = PYX.get(getContext());
 
         final EditText message = layout.findViewById(R.id.chatFragment_message);
-        ImageButton send = layout.findViewById(R.id.chatFragment_send);
+        final ImageButton send = layout.findViewById(R.id.chatFragment_send);
         send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String msg = message.getText().toString();
                 if (msg.isEmpty()) return;
 
+                message.setEnabled(false);
+                send.setEnabled(false);
                 pyx.sendMessage(msg, new PYX.ISuccess() {
                     @Override
                     public void onDone(PYX pyx) {
                         message.setText(null);
+                        message.setEnabled(true);
+                        send.setEnabled(true);
 
                         AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_SENT_GLOBAL_MSG);
                     }
 
                     @Override
                     public void onException(Exception ex) {
-                        Toaster.show(getActivity(), Utils.Messages.FAILED_SEND_MESSAGE, ex);
+                        Toaster.show(getActivity(), Utils.Messages.FAILED_SEND_MESSAGE, ex, new Runnable() {
+                            @Override
+                            public void run() {
+                                message.setEnabled(true);
+                                send.setEnabled(true);
+                            }
+                        });
                     }
                 });
             }
