@@ -125,7 +125,11 @@ public class StarredCardsManager {
                     if (firstCapital)
                         whiteText = Character.toUpperCase(whiteText.charAt(0)) + whiteText.substring(1);
 
-                    blackText = blackText.replaceFirst("____", "<u>" + whiteText + "</u>");
+                    try {
+                        blackText = blackText.replaceFirst("____", "<u>" + whiteText + "</u>");
+                    } catch (ArrayIndexOutOfBoundsException ignored) {
+                    }
+
                     firstCapital = false;
                 }
 

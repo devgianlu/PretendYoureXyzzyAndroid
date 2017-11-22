@@ -134,13 +134,17 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
                         pyx.getGameInfo(result, new PYX.IResult<GameInfo>() {
                             @Override
                             public void onDone(PYX pyx, GameInfo result) {
-                                pd.dismiss();
+                                if (getActivity() != null && !getActivity().isFinishing())
+                                    pd.dismiss();
+
                                 if (handler != null) handler.onParticipatingGame(result.game);
                             }
 
                             @Override
                             public void onException(Exception ex) {
-                                pd.dismiss();
+                                if (getActivity() != null && !getActivity().isFinishing())
+                                    pd.dismiss();
+
                                 Toaster.show(getActivity(), Utils.Messages.FAILED_JOINING, ex);
                             }
                         });
@@ -148,7 +152,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
 
                     @Override
                     public void onException(Exception ex) {
-                        pd.dismiss();
+                        if (getActivity() != null && !getActivity().isFinishing()) pd.dismiss();
                         Toaster.show(getActivity(), Utils.Messages.FAILED_CREATING_GAME, ex);
                     }
                 });
@@ -230,7 +234,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         if (game.hasPassword) {
             askForPassword(new IPassword() {
                 @Override
-                public void onPassword(String password) {
+                public void onPassword(@Nullable String password) {
                     spectateGame(game, password);
                 }
             });
@@ -244,7 +248,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         if (game.hasPassword) {
             askForPassword(new IPassword() {
                 @Override
-                public void onPassword(String password) {
+                public void onPassword(@Nullable String password) {
                     joinGame(game, password);
                 }
             });
@@ -306,7 +310,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
             @Override
             public void onDone(PYX pyx) {
                 participateGame(game.gid);
-                pd.dismiss();
+                if (getActivity() != null && !getActivity().isFinishing()) pd.dismiss();
 
                 AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_JOIN_GAME);
             }
@@ -332,6 +336,11 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     }
 
     private void askForPassword(final IPassword listener) {
+        if (getContext() == null) {
+            listener.onPassword(null);
+            return;
+        }
+
         final EditText password = new EditText(getContext());
         password.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
 
@@ -388,6 +397,6 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     }
 
     private interface IPassword {
-        void onPassword(String password);
+        void onPassword(@Nullable String password);
     }
 }

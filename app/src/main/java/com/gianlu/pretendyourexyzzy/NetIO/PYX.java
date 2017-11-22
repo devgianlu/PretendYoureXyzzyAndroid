@@ -121,7 +121,7 @@ public class PYX {
         try {
             raiseException(obj);
         } catch (PYXException ex) {
-            if (!hasRetriedRegister && firstLoad != null && (Objects.equals(ex.errorCode, "se") || Objects.equals(ex.errorCode, "nr"))) {
+            if (!hasRetriedRegister && (Objects.equals(ex.errorCode, "se") || Objects.equals(ex.errorCode, "nr"))) {
                 hasRetriedRegister = true;
                 removeLastJSessionId();
                 firstLoad = new FirstLoad(ajaxServletRequestSync(OP.FIRST_LOAD)); // First load

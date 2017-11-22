@@ -357,7 +357,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
 
     @SuppressLint("InflateParams")
     private void showGameOptions() {
-        if (getGame() == null) return;
+        if (getContext() == null || getGame() == null || pyx.firstLoad == null) return;
         Game.Options options = getGame().options;
         ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.game_options_dialog, null, false);
         SuperTextView scoreLimit = layout.findViewById(R.id.gameOptions_scoreLimit);
