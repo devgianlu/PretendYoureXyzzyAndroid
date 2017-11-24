@@ -125,7 +125,7 @@ public class PYX {
         } catch (PYXException ex) {
             if (Objects.equals(ex.errorCode, "se") || Objects.equals(ex.errorCode, "nr")) {
                 String nickname;
-                if (firstLoad.nickname != null) nickname = firstLoad.nickname;
+                if (firstLoad != null && firstLoad.nickname != null) nickname = firstLoad.nickname;
                 else nickname = Utils.getParamValue(paramsList, "n");
 
                 Crashlytics.setBool("retried_register", hasRetriedRegister);
