@@ -6,6 +6,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
@@ -29,6 +30,7 @@ import android.widget.SearchView;
 import com.gianlu.commonutils.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.Prefs;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.GamesAdapter;
@@ -38,6 +40,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
+import com.gianlu.pretendyourexyzzy.PKeys;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 
@@ -55,6 +58,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     private int launchGameGid = -1;
     private String launchGamePassword = null;
     private boolean launchGameShouldRequest;
+    private Parcelable recyclerViewSavedInstance;
 
     public static GamesFragment getInstance(IFragment handler) {
         GamesFragment fragment = new GamesFragment();
@@ -67,11 +71,12 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.games_fragment, menu);
 
+        if (getContext() == null) return;
         SearchManager searchManager = (SearchManager) getContext().getSystemService(Context.SEARCH_SERVICE);
         MenuItem item = menu.findItem(R.id.gamesFragment_search);
         item.setOnActionExpandListener(this);
 
-        if (searchManager != null) {
+        if (searchManager != null && getActivity() != null) {
             searchView = (SearchView) item.getActionView();
             searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
             searchView.setIconifiedByDefault(false);
@@ -84,9 +89,10 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.gamesFragment_showLocked:
-                item.setChecked(!item.isChecked());
-                if (adapter != null)
-                    adapter.setFilters(Collections.singletonList(!item.isChecked()));
+                boolean checked = !item.isChecked();
+                item.setChecked(checked);
+                Prefs.putBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, checked);
+                if (adapter != null) adapter.setFilters(Collections.singletonList(!checked));
                 return true;
         }
 
@@ -115,6 +121,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.games_fragment, container, false);
+        if (getContext() == null) return layout;
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
         recyclerViewLayout = layout.findViewById(R.id.gamesFragment_recyclerViewLayout);
         recyclerViewLayout.enableSwipeRefresh(R.color.colorAccent);
@@ -171,8 +178,10 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         pyx.getPollingThread().addListener(POLL_TAG, new PYX.IEventListener() {
             @Override
             public void onPollMessage(PollMessage message) throws JSONException {
-                if (message.event == PollMessage.Event.GAME_LIST_REFRESH)
+                if (message.event == PollMessage.Event.GAME_LIST_REFRESH) {
+                    recyclerViewSavedInstance = recyclerViewLayout.getList().getLayoutManager().onSaveInstanceState();
                     pyx.getGamesList(GamesFragment.this);
+                }
             }
 
             @Override
@@ -201,8 +210,11 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     @Override
     public void onDone(PYX pyx, GamesList result) {
         if (!isAdded()) return;
-        adapter = new GamesAdapter(getContext(), result, this);
+        adapter = new GamesAdapter(getContext(), result, !Prefs.getBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, false), this);
         recyclerViewLayout.loadListData(adapter);
+        recyclerViewLayout.getList().getLayoutManager().onRestoreInstanceState(recyclerViewSavedInstance);
+        recyclerViewSavedInstance = null;
+
         lastResult = result;
         updateActivityTitle();
 

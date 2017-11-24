@@ -5,6 +5,7 @@ import com.gianlu.commonutils.Prefs;
 
 public enum PKeys implements Prefs.PrefKey {
     LAST_NICKNAME("lastNickname"),
+    FILTER_LOCKED_LOBBIES("filterLockedLobbies"),
     LAST_SERVER("lastServer"),
     STARRED_CARDS("starredCards"),
     KEEP_SCREEN_ON("keepScreenOn"),
