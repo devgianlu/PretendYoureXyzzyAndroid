@@ -23,7 +23,7 @@ public class FirstLoad implements Serializable {
     public FirstLoad(JSONObject obj) throws JSONException {
         nextOperation = NextOp.parse(obj.getString("next"));
         inProgress = obj.getBoolean("ip");
-        nickname = obj.optString("nickname", null);
+        nickname = obj.optString("n", null);
         gameId = obj.optInt("gid", -1);
         cardSets = CommonUtils.toTList(obj.getJSONArray("css"), CardSet.class);
     }
