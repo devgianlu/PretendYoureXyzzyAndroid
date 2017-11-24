@@ -44,6 +44,7 @@ public class GameChatFragment extends Fragment implements ChatAdapter.IAdapter, 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.chat_fragment, container, false);
+        if (getContext() == null) return layout;
         recyclerViewLayout = layout.findViewById(R.id.chatFragment_recyclerViewLayout);
         recyclerViewLayout.disableSwipeRefresh();
         LinearLayoutManager llm = new SuppressingLinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);

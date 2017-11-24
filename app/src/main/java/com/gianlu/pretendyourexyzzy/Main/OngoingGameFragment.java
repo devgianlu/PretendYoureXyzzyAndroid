@@ -215,7 +215,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
     }
 
     private void showPlayers() {
-        if (manager == null) return;
+        if (manager == null || getContext() == null) return;
         RecyclerView recyclerView = new RecyclerView(getContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
@@ -254,7 +254,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
     }
 
     private void showSpectators() {
-        if (getGame() == null) return;
+        if (getGame() == null || getContext() == null) return;
         SuperTextView spectators = new SuperTextView(getContext(), R.string.spectatorsList, getGame().spectators.isEmpty() ? "none" : CommonUtils.join(getGame().spectators, ", "));
         int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
         spectators.setPadding(padding, padding, padding, padding);
@@ -269,7 +269,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
 
     @SuppressLint("InflateParams")
     private void editGameOptions() {
-        if (!isAdded() || getGame() == null) return;
+        if (!isAdded() || getGame() == null || getContext() == null) return;
         Game.Options options = getGame().options;
         final ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.edit_game_options_dialog, null, false);
         final TextInputLayout scoreLimit = layout.findViewById(R.id.editGameOptions_scoreLimit);
@@ -392,6 +392,8 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
 
     @Override
     public void addCardcastDeck() {
+        if (getContext() == null) return;
+
         final EditText code = new EditText(getContext());
         code.setHint("XXXXX");
         code.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
@@ -490,6 +492,8 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
     }
 
     public void onBackPressed() {
+        if (getContext() == null) return;
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.leaveGame)
                 .setMessage(R.string.leaveGame_confirm)

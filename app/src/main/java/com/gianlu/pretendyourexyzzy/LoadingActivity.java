@@ -149,6 +149,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
         Prefs.putString(LoadingActivity.this, PKeys.LAST_SERVER, server.name());
     }
 
+    @SuppressWarnings("ConstantConditions")
     private void showRegisterUI(final PYX pyx) {
         loading.setVisibility(View.GONE);
         register.setVisibility(View.VISIBLE);

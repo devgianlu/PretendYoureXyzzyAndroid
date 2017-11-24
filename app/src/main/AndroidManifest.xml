@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="com.gianlu.pretendyourexyzzy">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -81,21 +80,6 @@
             android:name="com.gianlu.commonutils.LogsActivity"
             android:parentActivityName=".PreferencesActivity"
             android:screenOrientation="portrait" />
-
-        <!-- Google Analytics -->
-        <receiver
-            android:name="com.google.android.gms.analytics.AnalyticsReceiver"
-            android:enabled="true"
-            tools:ignore="ExportedReceiver">
-            <intent-filter>
-                <action android:name="com.google.android.gms.analytics.ANALYTICS_DISPATCH" />
-            </intent-filter>
-        </receiver>
-
-        <service
-            android:name="com.google.android.gms.analytics.AnalyticsService"
-            android:enabled="true"
-            android:exported="false" />
     </application>
 
 </manifest>
