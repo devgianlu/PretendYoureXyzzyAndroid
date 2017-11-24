@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.crashlytics.android.Crashlytics;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Prefs;
@@ -20,6 +21,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.PKeys;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -121,15 +123,27 @@ public class PYX {
         try {
             raiseException(obj);
         } catch (PYXException ex) {
-            if (!hasRetriedRegister && (Objects.equals(ex.errorCode, "se") || Objects.equals(ex.errorCode, "nr"))) {
-                hasRetriedRegister = true;
-                removeLastJSessionId();
-                firstLoad = new FirstLoad(ajaxServletRequestSync(OP.FIRST_LOAD)); // First load
-                registerUserSync(firstLoad.nickname); // Register user
-                return ajaxServletRequestSync(operation, params); // Retry operation
-            } else {
-                throw ex;
+            if (Objects.equals(ex.errorCode, "se") || Objects.equals(ex.errorCode, "nr")) {
+                String nickname;
+                if (firstLoad.nickname != null) nickname = firstLoad.nickname;
+                else nickname = Utils.getParamValue(paramsList, "n");
+
+                Crashlytics.setBool("retried_register", hasRetriedRegister);
+                Crashlytics.setString("operation", operation.name());
+                Crashlytics.setString("params", paramsList.toString());
+                Crashlytics.setUserName(nickname);
+                Crashlytics.logException(ex);
+
+                if (!hasRetriedRegister) {
+                    hasRetriedRegister = true;
+                    firstLoad = new FirstLoad(ajaxServletRequestSync(OP.FIRST_LOAD)); // First load
+                    if (firstLoad.nextOperation == FirstLoad.NextOp.REGISTER && nickname != null)
+                        registerUserSync(nickname); // Register user
+                    return ajaxServletRequestSync(operation, params); // Retry operation
+                }
             }
+
+            throw ex;
         }
 
         return obj;
@@ -185,7 +199,7 @@ public class PYX {
         });
     }
 
-    private User registerUserSync(final String nickname) throws JSONException, PYXException, IOException {
+    private User registerUserSync(@NonNull final String nickname) throws JSONException, PYXException, IOException {
         JSONObject obj = ajaxServletRequestSync(OP.REGISTER, new BasicNameValuePair("n", nickname));
         final String confirmNick = obj.getString("n");
         if (!Objects.equals(confirmNick, nickname.trim())) throw new RuntimeException("WTF?!");
