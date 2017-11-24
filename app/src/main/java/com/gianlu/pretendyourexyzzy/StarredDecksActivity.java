@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -63,7 +64,7 @@ public class StarredDecksActivity extends AppCompatActivity implements StarredDe
         if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
 
         layout.disableSwipeRefresh();
-        layout.stopLoading();
+        layout.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary_background));
         layout.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         layout.loadListData(new StarredDecksAdapter(this, StarredDecksManager.loadDecks(this), this));
     }

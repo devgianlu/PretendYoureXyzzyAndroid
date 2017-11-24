@@ -86,8 +86,8 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
 
         whiteCardsList = layout.findViewById(R.id.gameLayout_whiteCards);
         whiteCardsList.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-        handAdapter = new CardsAdapter(context, cards.hand, PyxCardsGroupView.Action.TOGGLE_STAR, this);
-        tableCardsAdapter = new CardsAdapter(context, PyxCardsGroupView.Action.TOGGLE_STAR, this);
+        handAdapter = new CardsAdapter(context, true, cards.hand, PyxCardsGroupView.Action.TOGGLE_STAR, this);
+        tableCardsAdapter = new CardsAdapter(context, true, PyxCardsGroupView.Action.TOGGLE_STAR, this);
         tableCardsAdapter.notifyItemInserted(cards.whiteCards);
 
         GameInfo.Player alsoMe = Utils.find(gameInfo.players, me.nickname);
@@ -169,7 +169,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                 return true;
             }
 
-            LinearLayout layout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.cannot_start_game_dialog, null, false);
+            LinearLayout layout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.dialog_cannot_start_game, null, false);
             ((TextView) layout.findViewById(R.id.cannotStartGame_wcr)).setText(String.valueOf(wcr));
             ((TextView) layout.findViewById(R.id.cannotStartGame_bcr)).setText(String.valueOf(bcr));
             ((TextView) layout.findViewById(R.id.cannotStartGame_wcp)).setText(String.valueOf(wcp));

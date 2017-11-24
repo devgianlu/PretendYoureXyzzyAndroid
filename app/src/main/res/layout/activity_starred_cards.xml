@@ -29,9 +29,10 @@
         android:id="@+id/starredCards_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:background="@color/colorPrimary_background"
+        android:paddingBottom="8dp"
+        android:paddingTop="16dp">
 
         <HorizontalScrollView
             android:layout_width="match_parent"
@@ -42,7 +43,9 @@
                 android:id="@+id/starredCards_cards"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:orientation="horizontal" />
+                android:orientation="horizontal"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp" />
 
         </HorizontalScrollView>
 

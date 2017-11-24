@@ -38,7 +38,7 @@ public class InfoFragment extends Fragment implements Cardcast.IResult<CardcastD
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
-        layout = (FrameLayout) inflater.inflate(R.layout.cardcast_deck_info_fragment, parent, false);
+        layout = (FrameLayout) inflater.inflate(R.layout.fragment_cardcast_deck_info, parent, false);
         container = layout.findViewById(R.id.cardcastDeckInfo_container);
         loading = layout.findViewById(R.id.cardcastDeckInfo_loading);
 

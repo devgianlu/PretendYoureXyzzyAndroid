@@ -133,7 +133,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
-        layout = (CoordinatorLayout) inflater.inflate(R.layout.ongoing_game_fragment, parent, false);
+        layout = (CoordinatorLayout) inflater.inflate(R.layout.fragment_ongoing_game, parent, false);
         loading = layout.findViewById(R.id.ongoingGame_loading);
         container = layout.findViewById(R.id.ongoingGame_container);
         cardcastBottomSheet = new CardcastBottomSheet(layout, this);
@@ -271,7 +271,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
     private void editGameOptions() {
         if (!isAdded() || getGame() == null || getContext() == null) return;
         Game.Options options = getGame().options;
-        final ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.edit_game_options_dialog, null, false);
+        final ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.dialog_edit_game_options, null, false);
         final TextInputLayout scoreLimit = layout.findViewById(R.id.editGameOptions_scoreLimit);
         CommonUtils.setText(scoreLimit, String.valueOf(options.scoreLimit));
         final TextInputLayout playerLimit = layout.findViewById(R.id.editGameOptions_playerLimit);
@@ -359,7 +359,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
     private void showGameOptions() {
         if (getContext() == null || getGame() == null || pyx.firstLoad == null) return;
         Game.Options options = getGame().options;
-        ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.game_options_dialog, null, false);
+        ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.dialog_game_options, null, false);
         SuperTextView scoreLimit = layout.findViewById(R.id.gameOptions_scoreLimit);
         scoreLimit.setHtml(R.string.scoreLimit, options.scoreLimit);
         SuperTextView playerLimit = layout.findViewById(R.id.gameOptions_playerLimit);

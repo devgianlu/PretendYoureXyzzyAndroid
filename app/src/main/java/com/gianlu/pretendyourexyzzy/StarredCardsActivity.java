@@ -48,7 +48,7 @@ public class StarredCardsActivity extends AppCompatActivity implements CardsAdap
 
         list = findViewById(R.id.starredCards_list);
         list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        list.setAdapter(new CardsAdapter(this, StarredCardsManager.loadCards(this), PyxCardsGroupView.Action.DELETE, this));
+        list.setAdapter(new CardsAdapter(this, true, StarredCardsManager.loadCards(this), PyxCardsGroupView.Action.DELETE, this));
 
         cards = findViewById(R.id.starredCards_cards);
 

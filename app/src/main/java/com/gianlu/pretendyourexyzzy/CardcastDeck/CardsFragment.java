@@ -9,6 +9,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,6 +48,17 @@ public class CardsFragment extends Fragment implements Cardcast.IResult<List<Car
         layout.disableSwipeRefresh();
         layout.setLayoutManager(new StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL));
 
+        layout.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                int screenWidth = layout.getList().getMeasuredWidth();
+                int cardWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 164, getResources().getDisplayMetrics()); // Added margins
+                int padding = (screenWidth - cardWidth * 2) / 3;
+                layout.getList().setPaddingRelative(padding, 0, 0, 0);
+                layout.removeOnLayoutChangeListener(this);
+            }
+        });
+
         boolean whiteCards = getArguments().getBoolean("whiteCards", true);
         String code = getArguments().getString("code", null);
         if (code == null) {
@@ -70,7 +82,7 @@ public class CardsFragment extends Fragment implements Cardcast.IResult<List<Car
             return;
         }
 
-        layout.loadListData(new CardsAdapter(getContext(), result, null, this));
+        layout.loadListData(new CardsAdapter(getContext(), false, result, null, this));
     }
 
     @Override

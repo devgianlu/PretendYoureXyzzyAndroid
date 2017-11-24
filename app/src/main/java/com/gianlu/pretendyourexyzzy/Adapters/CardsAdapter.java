@@ -18,17 +18,19 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     private final Context context;
     private final List<CardsGroup<? extends BaseCard>> cards;
     private final IAdapter listener;
+    private final boolean manageMargins;
     private final PyxCardsGroupView.Action action;
 
-    public CardsAdapter(Context context, @Nullable PyxCardsGroupView.Action action, IAdapter listener) {
+    public CardsAdapter(Context context, boolean manageMargins, @Nullable PyxCardsGroupView.Action action, IAdapter listener) {
         this.context = context;
+        this.manageMargins = manageMargins;
         this.action = action;
         this.listener = listener;
         this.cards = new ArrayList<>();
     }
 
-    public CardsAdapter(Context context, List<? extends BaseCard> cards, @Nullable PyxCardsGroupView.Action action, IAdapter listener) {
-        this(context, action, listener);
+    public CardsAdapter(Context context, boolean manageMargins, List<? extends BaseCard> cards, @Nullable PyxCardsGroupView.Action action, IAdapter listener) {
+        this(context, manageMargins, action, listener);
         for (BaseCard card : cards) this.cards.add(CardsGroup.singleton(card));
     }
 
@@ -40,8 +42,10 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         ((PyxCardsGroupView) holder.itemView).setCards(cards.get(position), action);
-        ((PyxCardsGroupView) holder.itemView).setIsFirstOfParent(position == 0);
-        ((PyxCardsGroupView) holder.itemView).setIsLastOfParent(position == getItemCount() - 1);
+        if (manageMargins) {
+            ((PyxCardsGroupView) holder.itemView).setIsFirstOfParent(position == 0);
+            ((PyxCardsGroupView) holder.itemView).setIsLastOfParent(position == getItemCount() - 1);
+        }
     }
 
     @Override

@@ -120,7 +120,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.games_fragment, container, false);
+        CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.fragment_games, container, false);
         if (getContext() == null) return layout;
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
         recyclerViewLayout = layout.findViewById(R.id.gamesFragment_recyclerViewLayout);
