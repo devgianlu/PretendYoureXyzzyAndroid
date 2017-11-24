@@ -83,24 +83,24 @@ public class PyxCard extends CardView {
             unknown.setVisibility(GONE);
             content.setVisibility(VISIBLE);
 
-            if (card instanceof Card) {
-                if (((Card) card).isWinner()) setCardBackgroundColor(colorAccent);
-                else setCardBackgroundColor(card.getNumPick() != -1 ? Color.BLACK : Color.WHITE);
-            }
+            if (card instanceof Card && ((Card) card).isWinner())
+                setCardBackgroundColor(colorAccent);
+            else
+                setCardBackgroundColor(card.isBlack() ? Color.BLACK : Color.WHITE);
 
             SuperTextView text = content.findViewById(R.id.pyxCard_text);
-            text.setTextColor(card.getNumPick() != -1 ? Color.WHITE : Color.BLACK);
+            text.setTextColor(card.isBlack() ? Color.WHITE : Color.BLACK);
             text.setTypeface(roboto);
             TextView watermark = content.findViewById(R.id.pyxCard_watermark);
-            watermark.setTextColor(card.getNumPick() != -1 ? Color.WHITE : Color.BLACK);
+            watermark.setTextColor(card.isBlack() ? Color.WHITE : Color.BLACK);
             SuperTextView numPick = content.findViewById(R.id.pyxCard_numPick);
-            numPick.setTextColor(card.getNumPick() != -1 ? Color.WHITE : Color.BLACK);
+            numPick.setTextColor(card.isBlack() ? Color.WHITE : Color.BLACK);
             SuperTextView numDraw = content.findViewById(R.id.pyxCard_numDraw);
-            numDraw.setTextColor(card.getNumPick() != -1 ? Color.WHITE : Color.BLACK);
+            numDraw.setTextColor(card.isBlack() ? Color.WHITE : Color.BLACK);
 
             text.setHtml(card.getText());
             watermark.setText(card.getWatermark());
-            if (card.getNumPick() != -1) {
+            if (card.isBlack()) {
                 numPick.setHtml(R.string.numPick, card.getNumPick());
                 if (card.getNumDraw() > 0) numDraw.setHtml(R.string.numDraw, card.getNumDraw());
                 else numDraw.setVisibility(GONE);

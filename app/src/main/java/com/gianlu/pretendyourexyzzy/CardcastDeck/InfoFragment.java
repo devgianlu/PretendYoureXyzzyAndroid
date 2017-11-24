@@ -13,16 +13,15 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.gianlu.cardcastapi.Cardcast;
-import com.gianlu.cardcastapi.Models.DeckInfo;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
-import com.gianlu.pretendyourexyzzy.CardcastHelper;
+import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeckInfo;
 import com.gianlu.pretendyourexyzzy.R;
 
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 
-public class InfoFragment extends Fragment implements CardcastHelper.IResult<DeckInfo> {
+public class InfoFragment extends Fragment implements Cardcast.IResult<CardcastDeckInfo> {
     private FrameLayout layout;
     private LinearLayout container;
     private ProgressBar loading;
@@ -51,13 +50,13 @@ public class InfoFragment extends Fragment implements CardcastHelper.IResult<Dec
             return layout;
         }
 
-        new CardcastHelper(Cardcast.get()).getDeckInfo(code, this);
+        Cardcast.get().getDeckInfo(code, this);
 
         return layout;
     }
 
     @Override
-    public void onDone(DeckInfo result) {
+    public void onDone(CardcastDeckInfo result) {
         loading.setVisibility(View.GONE);
         container.setVisibility(View.VISIBLE);
         MessageLayout.hide(layout);

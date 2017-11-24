@@ -30,7 +30,7 @@ public class GameInfo {
     public enum PlayerStatus {
         HOST("sh" /* Wait for players then click Start Game. */),
         IDLE("si" /* Waiting for players..." */),
-        JUDGE("sj" /* You are the Card Czar. */),
+        JUDGE("sj" /* You are the CardcastCard Czar. */),
         JUDGING("sjj" /* Select a winning card. */),
         PLAYING("sp" /* "Select a card to play. */),
         WINNER("sw" /* You have won! */),

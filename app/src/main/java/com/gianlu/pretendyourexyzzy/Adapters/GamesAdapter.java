@@ -100,7 +100,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
             }
         });
 
-        CommonUtils.setCardTopMargin(context, holder);
+        CommonUtils.setRecyclerViewTopMargin(context, holder);
     }
 
     public List<Game> getGames() {

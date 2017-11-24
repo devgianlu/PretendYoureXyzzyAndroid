@@ -19,7 +19,6 @@ import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Main.CardcastFragment;
 import com.gianlu.pretendyourexyzzy.Main.GameChatFragment;
 import com.gianlu.pretendyourexyzzy.Main.GamesFragment;
-import com.gianlu.pretendyourexyzzy.Main.GlobalChatFragment;
 import com.gianlu.pretendyourexyzzy.Main.NamesFragment;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -29,7 +28,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements GamesFragment.IFragment, OngoingGameFragment.IFragment, CardcastDeckActivity.IOngoingGame {
-    private final static String TAG_GLOBAL_CHAT = "globalChat";
+    // private final static String TAG_GLOBAL_CHAT = "globalChat";
     private final static String TAG_GAMES = "games";
     private final static String TAG_GAME_CHAT = "gameChat";
     private static final String TAG_PLAYERS = "players";
@@ -37,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
     private static final String TAG_CARDCAST = "cardcast";
     private BottomNavigationView navigation;
     private NamesFragment namesFragment;
-    private GlobalChatFragment globalChatFragment;
+    // private GlobalChatFragment globalChatFragment;
     private GamesFragment gamesFragment;
     private CardcastFragment cardcastFragment;
     private GameChatFragment gameChatFragment;
@@ -79,8 +78,8 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         namesFragment = NamesFragment.getInstance();
         transaction.add(R.id.main_container, namesFragment, TAG_PLAYERS);
-        globalChatFragment = GlobalChatFragment.getInstance();
-        transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
+        // globalChatFragment = GlobalChatFragment.getInstance();
+        // transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
         gamesFragment = GamesFragment.getInstance(this);
         transaction.add(R.id.main_container, gamesFragment, TAG_GAMES);
         cardcastFragment = CardcastFragment.getInstance();
@@ -95,10 +94,12 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
                         setTitle(getString(R.string.playersLabel) + " - " + getString(R.string.app_name));
                         switchTo(TAG_PLAYERS);
                         break;
+                    /*
                     case R.id.main_globalChat:
                         setTitle(getString(R.string.globalChat) + " - " + getString(R.string.app_name));
                         switchTo(TAG_GLOBAL_CHAT);
                         break;
+                        */
                     case R.id.main_games:
                         setTitle(getString(R.string.games) + " - " + getString(R.string.app_name));
                         switchTo(TAG_GAMES);
@@ -127,9 +128,11 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
                     case R.id.main_players:
                         if (namesFragment != null) namesFragment.scrollToTop();
                         break;
+                    /*
                     case R.id.main_globalChat:
                         if (globalChatFragment != null) globalChatFragment.scrollToTop();
                         break;
+                        */
                     case R.id.main_games:
                         if (gamesFragment != null) gamesFragment.scrollToTop();
                         break;
@@ -239,9 +242,11 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
                 case TAG_PLAYERS:
                     transaction.add(R.id.main_container, namesFragment, TAG_PLAYERS);
                     break;
+                /*
                 case TAG_GLOBAL_CHAT:
                     transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
                     break;
+                    */
                 case TAG_GAMES:
                     transaction.add(R.id.main_container, gamesFragment, TAG_GAMES);
                     break;

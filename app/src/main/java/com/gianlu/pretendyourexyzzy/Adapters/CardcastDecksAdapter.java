@@ -8,13 +8,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.gianlu.cardcastapi.Models.Card;
-import com.gianlu.cardcastapi.Models.Deck;
-import com.gianlu.cardcastapi.Models.Decks;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.InfiniteRecyclerView;
 import com.gianlu.commonutils.SuperTextView;
-import com.gianlu.pretendyourexyzzy.CardcastHelper;
+import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDecks;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 
@@ -23,15 +23,15 @@ import java.util.Random;
 
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 
-public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<CardcastDecksAdapter.ViewHolder, Deck> {
+public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<CardcastDecksAdapter.ViewHolder, CardcastDeck> {
     private final LayoutInflater inflater;
-    private final CardcastHelper cardcast;
-    private final CardcastHelper.Search search;
+    private final Cardcast cardcast;
+    private final Cardcast.Search search;
     private final int limit;
     private final IAdapter listener;
     private final Random random = new Random();
 
-    public CardcastDecksAdapter(Context context, CardcastHelper cardcast, CardcastHelper.Search search, Decks items, int limit, IAdapter listener) {
+    public CardcastDecksAdapter(Context context, Cardcast cardcast, Cardcast.Search search, CardcastDecks items, int limit, IAdapter listener) {
         super(context, items, -1, -1, false);
         this.inflater = LayoutInflater.from(context);
         this.cardcast = cardcast;
@@ -47,13 +47,13 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
 
     @Nullable
     @Override
-    protected Date getDateFromItem(Deck item) {
+    protected Date getDateFromItem(CardcastDeck item) {
         return null;
     }
 
     @Override
     protected void userBindViewHolder(ViewHolder holder, int position) {
-        final Deck deck = items.get(position).getItem();
+        final CardcastDeck deck = items.get(position).getItem();
 
         holder.name.setText(deck.name);
         holder.author.setText(context.getString(R.string.byLowercase, deck.author.username));
@@ -61,8 +61,8 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
 
         if (deck.sampleCalls != null && !deck.sampleCalls.isEmpty()
                 && deck.sampleResponses != null && !deck.sampleResponses.isEmpty()) {
-            Card exampleBlackCard = deck.sampleCalls.get(random.nextInt(deck.sampleCalls.size()));
-            Card exampleWhiteCard = deck.sampleResponses.get(random.nextInt(deck.sampleResponses.size()));
+            CardcastCard exampleBlackCard = deck.sampleCalls.get(random.nextInt(deck.sampleCalls.size()));
+            CardcastCard exampleWhiteCard = deck.sampleResponses.get(random.nextInt(deck.sampleResponses.size()));
             holder.example.setHtml(Utils.composeCardcastDeckSentence(exampleBlackCard, exampleWhiteCard));
             holder.example.setVisibility(View.VISIBLE);
         } else {
@@ -81,7 +81,7 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
             }
         });
 
-        CommonUtils.setCardTopMargin(context, holder);
+        CommonUtils.setRecyclerViewTopMargin(context, holder);
     }
 
     @Override
@@ -90,10 +90,10 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
     }
 
     @Override
-    protected void moreContent(int page, final IContentProvider<Deck> provider) {
-        cardcast.getDecks(search, limit, limit * page, new CardcastHelper.IDecks() {
+    protected void moreContent(int page, final IContentProvider<CardcastDeck> provider) {
+        cardcast.getDecks(search, limit, limit * page, new Cardcast.IDecks() {
             @Override
-            public void onDone(CardcastHelper.Search search, Decks decks) {
+            public void onDone(Cardcast.Search search, CardcastDecks decks) {
                 provider.onMoreContent(decks);
             }
 
@@ -105,7 +105,7 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
     }
 
     public interface IAdapter {
-        void onDeckSelected(Deck deck);
+        void onDeckSelected(CardcastDeck deck);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

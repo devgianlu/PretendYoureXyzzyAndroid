@@ -14,4 +14,6 @@ public interface BaseCard {
     boolean equals(Object o);
 
     boolean isUnknown();
+
+    boolean isBlack();
 }

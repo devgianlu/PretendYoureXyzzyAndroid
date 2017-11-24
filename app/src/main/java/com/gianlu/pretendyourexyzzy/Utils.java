@@ -4,10 +4,10 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.gianlu.cardcastapi.Cardcast;
-import com.gianlu.cardcastapi.Models.Card;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 
@@ -56,7 +56,7 @@ public class Utils {
     }
 
     @NonNull
-    public static String composeCardcastDeckSentence(Card blackCard, Card whiteCard) {
+    public static String composeCardcastDeckSentence(CardcastCard blackCard, CardcastCard whiteCard) {
         StringBuilder builder = new StringBuilder();
         builder.append(blackCard.text.get(0));
         builder.append("<u>").append(whiteCard.text.get(0)).append("</u>");

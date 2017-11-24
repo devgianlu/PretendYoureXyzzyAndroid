@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import cz.msebera.android.httpclient.StatusLine;
 
-class StatusCodeException extends IOException {
+public class StatusCodeException extends IOException {
     public StatusCodeException(StatusLine sl) {
         this(sl.getStatusCode(), sl.getReasonPhrase());
     }

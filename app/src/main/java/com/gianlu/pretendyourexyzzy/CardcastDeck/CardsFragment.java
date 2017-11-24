@@ -13,22 +13,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.gianlu.cardcastapi.Cardcast;
-import com.gianlu.cardcastapi.Models.Card;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
-import com.gianlu.pretendyourexyzzy.CardcastHelper;
-import com.gianlu.pretendyourexyzzy.Cards.CardcastCard;
 import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCardsGroupView;
+import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.R;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class CardsFragment extends Fragment implements CardcastHelper.IResult<List<Card>>, CardsAdapter.IAdapter {
+public class CardsFragment extends Fragment implements Cardcast.IResult<List<CardcastCard>>, CardsAdapter.IAdapter {
     private RecyclerViewLayout layout;
 
     public static CardsFragment getInstance(Context context, boolean whiteCards, String code) {
@@ -45,18 +42,19 @@ public class CardsFragment extends Fragment implements CardcastHelper.IResult<Li
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         layout = new RecyclerViewLayout(inflater);
+        if (getContext() == null) return layout;
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
         layout.disableSwipeRefresh();
         layout.setLayoutManager(new StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL));
 
-        final boolean whiteCards = getArguments().getBoolean("whiteCards", true);
-        final String code = getArguments().getString("code", null);
+        boolean whiteCards = getArguments().getBoolean("whiteCards", true);
+        String code = getArguments().getString("code", null);
         if (code == null) {
             layout.showMessage(R.string.failedLoading, true);
             return layout;
         }
 
-        CardcastHelper cardcast = new CardcastHelper(Cardcast.get());
+        Cardcast cardcast = Cardcast.get();
         if (whiteCards) cardcast.getResponses(code, this);
         else cardcast.getCalls(code, this);
 
@@ -64,7 +62,7 @@ public class CardsFragment extends Fragment implements CardcastHelper.IResult<Li
     }
 
     @Override
-    public void onDone(List<Card> result) {
+    public void onDone(List<CardcastCard> result) {
         if (!isAdded()) return;
 
         if (result.isEmpty()) {
@@ -72,9 +70,7 @@ public class CardsFragment extends Fragment implements CardcastHelper.IResult<Li
             return;
         }
 
-        List<CardcastCard> cards = new ArrayList<>();
-        for (Card card : result) cards.add(new CardcastCard(card));
-        layout.loadListData(new CardsAdapter(getContext(), cards, null, this));
+        layout.loadListData(new CardsAdapter(getContext(), result, null, this));
     }
 
     @Override

@@ -25,6 +25,7 @@ import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONException;
 
+// Global chat is disabled
 public class GlobalChatFragment extends Fragment implements ChatAdapter.IAdapter, PYX.IEventListener {
     private static final String POLL_TAG = "globalChat";
     private RecyclerViewLayout recyclerViewLayout;

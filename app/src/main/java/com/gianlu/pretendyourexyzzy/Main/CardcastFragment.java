@@ -20,27 +20,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SearchView;
 
-import com.gianlu.cardcastapi.Cardcast;
-import com.gianlu.cardcastapi.Models.Deck;
-import com.gianlu.cardcastapi.Models.Decks;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.CardcastDecksAdapter;
 import com.gianlu.pretendyourexyzzy.CardcastDeckActivity;
-import com.gianlu.pretendyourexyzzy.CardcastHelper;
+import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDecks;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CardcastFragment extends Fragment implements CardcastHelper.IDecks, CardcastDecksAdapter.IAdapter, MenuItem.OnActionExpandListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
+public class CardcastFragment extends Fragment implements Cardcast.IDecks, CardcastDecksAdapter.IAdapter, MenuItem.OnActionExpandListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
     private final static int LIMIT = 12;
     private RecyclerViewLayout layout;
-    private CardcastHelper cardcast;
+    private Cardcast cardcast;
     private SearchView searchView;
-    private CardcastHelper.Search search = new CardcastHelper.Search(null, null, Cardcast.Direction.DESCENDANT, Cardcast.Sort.RATING, true);
+    private Cardcast.Search search = new Cardcast.Search(null, null, Cardcast.Direction.DESCENDANT, Cardcast.Sort.RATING, true);
 
     public static CardcastFragment getInstance() {
         CardcastFragment fragment = new CardcastFragment();
@@ -50,13 +49,15 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        if (getContext() == null) return;
+
         inflater.inflate(R.menu.cardcast_fragment, menu);
         SearchManager searchManager = (android.app.SearchManager) getContext().getSystemService(Context.SEARCH_SERVICE);
         MenuItem item = menu.findItem(R.id.cardcastFragment_search);
         item.setOnActionExpandListener(this);
         searchView = (SearchView) item.getActionView();
 
-        if (searchManager != null) {
+        if (searchManager != null && getActivity() != null) {
             searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
             searchView.setIconifiedByDefault(false);
             searchView.setOnCloseListener(this);
@@ -69,6 +70,8 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
     }
 
     private void showCategoriesDialog() {
+        if (getContext() == null) return;
+
         final Cardcast.Category[] filters = Cardcast.Category.values();
         CharSequence[] stringFilters = new CharSequence[filters.length];
 
@@ -92,7 +95,7 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
                 .setNeutralButton(R.string.clearAll, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        search = new CardcastHelper.Search(search.query, null, search.direction, search.sort, search.nsfw);
+                        search = new Cardcast.Search(search.query, null, search.direction, search.sort, search.nsfw);
                         refreshAdapter();
                     }
                 })
@@ -103,7 +106,7 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
                         for (int i = 0; i < checkedFilters.length; i++)
                             if (checkedFilters[i]) toApplyFilters.add(filters[i]);
 
-                        search = new CardcastHelper.Search(search.query, toApplyFilters.isEmpty() ? null : toApplyFilters, search.direction, search.sort, search.nsfw);
+                        search = new Cardcast.Search(search.query, toApplyFilters.isEmpty() ? null : toApplyFilters, search.direction, search.sort, search.nsfw);
                         refreshAdapter();
                     }
                 })
@@ -122,7 +125,7 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
         switch (item.getItemId()) {
             case R.id.cardcastFragment_showNsfw:
                 item.setChecked(!item.isChecked());
-                search = new CardcastHelper.Search(search.query, search.categories, search.direction, search.sort, item.isChecked());
+                search = new Cardcast.Search(search.query, search.categories, search.direction, search.sort, item.isChecked());
                 refreshAdapter();
                 return true;
             case R.id.cardcastFragment_categories:
@@ -148,7 +151,7 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
 
     private void handleSort(MenuItem item, Cardcast.Sort sort) {
         item.setChecked(true);
-        search = new CardcastHelper.Search(search.query, search.categories, search.direction, sort, search.nsfw);
+        search = new Cardcast.Search(search.query, search.categories, search.direction, sort, search.nsfw);
         refreshAdapter();
     }
 
@@ -156,11 +159,12 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         layout = new RecyclerViewLayout(inflater);
+        if (getContext() == null) return null;
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
         layout.enableSwipeRefresh(R.color.colorAccent);
         layout.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
-        cardcast = new CardcastHelper(Cardcast.get());
+        cardcast = Cardcast.get();
         cardcast.getDecks(search, LIMIT, 0, this);
 
         layout.setRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -174,7 +178,7 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
     }
 
     @Override
-    public void onDone(CardcastHelper.Search search, Decks decks) {
+    public void onDone(Cardcast.Search search, CardcastDecks decks) {
         if (!isAdded()) return;
         layout.loadListData(new CardcastDecksAdapter(getContext(), cardcast, search, decks, LIMIT, this));
     }
@@ -187,7 +191,7 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
     }
 
     @Override
-    public void onDeckSelected(Deck deck) {
+    public void onDeckSelected(CardcastDeck deck) {
         CardcastDeckActivity.startActivity(getContext(), deck, (CardcastDeckActivity.IOngoingGame) getActivity());
     }
 
@@ -209,9 +213,7 @@ public class CardcastFragment extends Fragment implements CardcastHelper.IDecks,
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        search = new CardcastHelper.Search(query == null || query.isEmpty() ? null : query,
-                search.categories, search.direction, search.sort, search.nsfw);
-
+        search = new Cardcast.Search(query == null || query.isEmpty() ? null : query, search.categories, search.direction, search.sort, search.nsfw);
         refreshAdapter();
         return true;
     }

@@ -11,19 +11,19 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.gianlu.cardcastapi.Models.Deck;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.PagerAdapter;
 import com.gianlu.pretendyourexyzzy.CardcastDeck.CardsFragment;
 import com.gianlu.pretendyourexyzzy.CardcastDeck.InfoFragment;
 import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
 
 public class CardcastDeckActivity extends AppCompatActivity {
     private static IOngoingGame handler;
     private String code;
     private String name;
 
-    public static void startActivity(Context context, Deck deck, IOngoingGame handler) {
+    public static void startActivity(Context context, CardcastDeck deck, IOngoingGame handler) {
         startActivity(context, deck.code, deck.name, handler);
     }
 

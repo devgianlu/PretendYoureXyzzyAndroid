@@ -184,5 +184,10 @@ public class StarredCardsManager {
         public boolean isUnknown() {
             return false;
         }
+
+        @Override
+        public boolean isBlack() {
+            return false;
+        }
     }
 }

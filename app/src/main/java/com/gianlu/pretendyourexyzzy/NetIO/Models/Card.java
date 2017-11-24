@@ -64,6 +64,11 @@ public class Card implements BaseCard {
         return id == -1 && watermark.isEmpty() && originalText.isEmpty();
     }
 
+    @Override
+    public boolean isBlack() {
+        return numPick != -1;
+    }
+
     public JSONObject toJSON() throws JSONException {
         return new JSONObject()
                 .put("cid", id)

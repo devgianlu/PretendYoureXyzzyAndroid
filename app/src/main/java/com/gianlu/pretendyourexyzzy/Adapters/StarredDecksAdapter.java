@@ -50,7 +50,7 @@ public class StarredDecksAdapter extends RecyclerView.Adapter<StarredDecksAdapte
             }
         });
 
-        CommonUtils.setCardTopMargin(context, holder);
+        CommonUtils.setRecyclerViewTopMargin(context, holder);
     }
 
     @Override
