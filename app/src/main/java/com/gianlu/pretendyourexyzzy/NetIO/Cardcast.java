@@ -230,7 +230,10 @@ public class Cardcast {
             this.val = val;
         }
 
+        @Nullable
         public static Category parse(String val) {
+            if (val == null || val.equals("null")) return null;
+
             for (Category category : values())
                 if (Objects.equals(category.val, val))
                     return category;
