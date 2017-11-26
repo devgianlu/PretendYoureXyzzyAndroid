@@ -76,8 +76,6 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         namesFragment = NamesFragment.getInstance();
         transaction.add(R.id.main_container, namesFragment, TAG_PLAYERS);
-        // globalChatFragment = GlobalChatFragment.getInstance();
-        // transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
         gamesFragment = GamesFragment.getInstance(this);
         transaction.add(R.id.main_container, gamesFragment, TAG_GAMES);
         cardcastFragment = CardcastFragment.getInstance();
@@ -126,11 +124,6 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
                     case R.id.main_players:
                         if (namesFragment != null) namesFragment.scrollToTop();
                         break;
-                    /*
-                    case R.id.main_globalChat:
-                        if (globalChatFragment != null) globalChatFragment.scrollToTop();
-                        break;
-                        */
                     case R.id.main_games:
                         if (gamesFragment != null) gamesFragment.scrollToTop();
                         break;
@@ -200,17 +193,17 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
 
     @Override
     public boolean canAddCardcastDeck() {
-        return ongoingGameFragment != null && ongoingGameFragment.shouldShowCardcastAdd();
+        return ongoingGameFragment != null && ongoingGameFragment.canAddCardcastDeck();
     }
 
     @Override
     public void addCardcastDeck(String code) {
         if (!canAddCardcastDeck()) return;
-        ongoingGameFragment.addCardcastCardSet(code);
+        ongoingGameFragment.addCardcastDeck(code);
     }
 
     @Override
-    public void addStarredDecks() {
+    public void addCardcastStarredDecks() {
         if (!canAddCardcastDeck()) return;
         ongoingGameFragment.addCardcastStarredDecks();
     }
@@ -240,11 +233,6 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
                 case TAG_PLAYERS:
                     transaction.add(R.id.main_container, namesFragment, TAG_PLAYERS);
                     break;
-                /*
-                case TAG_GLOBAL_CHAT:
-                    transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
-                    break;
-                    */
                 case TAG_GAMES:
                     transaction.add(R.id.main_container, gamesFragment, TAG_GAMES);
                     break;

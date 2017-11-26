@@ -27,6 +27,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -640,7 +642,7 @@ public class PYX {
         });
     }
 
-    public void listCardcastCardSets(final int gid, final IResult<List<CardSet>> listener) {
+    public void listCardcastCardSets(final int gid, @Nullable final Cardcast cardcast, final IResult<List<CardSet>> listener) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -648,13 +650,17 @@ public class PYX {
                     JSONObject obj = ajaxServletRequestSync(OP.LIST_CARDCAST_CARD_SETS, new BasicNameValuePair("gid", String.valueOf(gid)));
                     final List<CardSet> sets = CommonUtils.toTList(obj.getJSONArray("css"), CardSet.class);
 
+                    if (cardcast != null)
+                        for (CardSet set : sets)
+                            set.cardcastDeck = cardcast.guessDeckSync(set);
+
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
                             listener.onDone(PYX.this, sets);
                         }
                     });
-                } catch (IOException | JSONException | PYXException ex) {
+                } catch (IOException | JSONException | PYXException | URISyntaxException | ParseException ex) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {

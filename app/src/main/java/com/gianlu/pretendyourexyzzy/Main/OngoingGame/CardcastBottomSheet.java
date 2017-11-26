@@ -1,27 +1,34 @@
 package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 
+import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.commonutils.NiceBaseBottomSheet;
 import com.gianlu.pretendyourexyzzy.Adapters.CardSetsAdapter;
+import com.gianlu.pretendyourexyzzy.CardcastDeckActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.List;
 
 public class CardcastBottomSheet extends NiceBaseBottomSheet {
-    private final ISheet listener;
+    private final CardcastDeckActivity.IOngoingGame listener;
     private RecyclerView list;
     private ViewGroup contentParent;
 
-    public CardcastBottomSheet(ViewGroup parent, ISheet listener) {
+    public CardcastBottomSheet(ViewGroup parent, CardcastDeckActivity.IOngoingGame listener) {
         super(parent, R.layout.cardcast_sheet_header, R.layout.cardcast_sheet, false);
         this.listener = listener;
     }
@@ -44,17 +51,17 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet {
         } else {
             list.setVisibility(View.VISIBLE);
             MessageLayout.hide(contentParent);
-            list.setAdapter(new CardSetsAdapter(getContext(), cards));
+            list.setAdapter(new CardSetsAdapter(getContext(), cards, listener));
         }
     }
 
     @Override
     protected boolean onPrepareAction(@NonNull FloatingActionButton fab, Object... payloads) {
-        if (listener.shouldShowCardcastAdd()) {
+        if (listener.canAddCardcastDeck()) {
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listener.addCardcastDeck();
+                    showAddCardcastDeckDialog();
                 }
             });
 
@@ -62,6 +69,33 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet {
         } else {
             return false;
         }
+    }
+
+    private void showAddCardcastDeckDialog() {
+        final EditText code = new EditText(getContext());
+        code.setHint("XXXXX");
+        code.setAllCaps(true);
+        code.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        code.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5), new InputFilter.AllCaps()});
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.addCardcast)
+                .setView(code)
+                .setNeutralButton(R.string.addStarred, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (listener != null) listener.addCardcastStarredDecks();
+                    }
+                })
+                .setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (listener != null) listener.addCardcastDeck(code.getText().toString());
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null);
+
+        CommonUtils.showDialog(getContext(), builder);
     }
 
     @Override
@@ -74,11 +108,5 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet {
 
         List<CardSet> cards = (List<CardSet>) payloads[0];
         updateContentViews(cards);
-    }
-
-    public interface ISheet {
-        void addCardcastDeck();
-
-        boolean shouldShowCardcastAdd();
     }
 }

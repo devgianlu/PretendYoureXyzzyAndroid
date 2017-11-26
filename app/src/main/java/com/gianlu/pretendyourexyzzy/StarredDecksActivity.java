@@ -46,7 +46,7 @@ public class StarredDecksActivity extends AppCompatActivity implements StarredDe
                 onBackPressed();
                 return true;
             case R.id.starredDecks_add:
-                handler.addStarredDecks();
+                handler.addCardcastStarredDecks();
                 return true;
         }
 

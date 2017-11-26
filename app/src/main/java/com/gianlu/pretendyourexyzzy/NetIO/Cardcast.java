@@ -1,16 +1,24 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.LruCache;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.Prefs;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCost;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeckInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDecks;
+import com.gianlu.pretendyourexyzzy.PKeys;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,8 +30,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -44,11 +56,16 @@ public class Cardcast {
     private final HttpClient client;
     private final ExecutorService executor;
     private final Handler handler;
+    private final LruCache<String, String> cachedDeckNames;
+    private final SharedPreferences preferences;
 
-    private Cardcast() {
+    private Cardcast(Context context) {
         this.client = HttpClients.createDefault();
         this.handler = new Handler(Looper.getMainLooper());
         this.executor = Executors.newSingleThreadExecutor();
+        this.cachedDeckNames = new LruCache<>(100);
+        this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        loadCache();
     }
 
     @SuppressLint("SimpleDateFormat")
@@ -56,9 +73,56 @@ public class Cardcast {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
     }
 
-    public static Cardcast get() {
-        if (instance == null) instance = new Cardcast();
+    public static Cardcast get(Context context) {
+        if (instance == null) instance = new Cardcast(context);
         return instance;
+    }
+
+    @Nullable
+    private CardcastDeck findDeck(CardcastDecks decks, CardSet set) {
+        if (decks.size() == 1) {
+            return decks.get(0);
+        } else {
+            for (CardcastDeck deck : decks) {
+                if (deck.calls == set.blackCards && deck.responses == set.whiteCards)
+                    return deck;
+            }
+        }
+
+        return null;
+    }
+
+    private void loadCache() {
+        Set<String> names = Prefs.getSet(preferences, PKeys.CACHED_DECK_NAMES, new HashSet<String>());
+        Iterator<String> namesIter = names.iterator();
+        Set<String> codes = Prefs.getSet(preferences, PKeys.CACHED_DECK_CODES, new HashSet<String>());
+        Iterator<String> codesIter = codes.iterator();
+
+        while (namesIter.hasNext() && codesIter.hasNext())
+            cachedDeckNames.put(namesIter.next(), codesIter.next());
+    }
+
+    private void addCachedDeckName(String name, String code) {
+        cachedDeckNames.put(name, code);
+
+        Map<String, String> snapshot = cachedDeckNames.snapshot();
+        Prefs.putSet(preferences, PKeys.CACHED_DECK_NAMES, snapshot.keySet());
+        Prefs.putSet(preferences, PKeys.CACHED_DECK_CODES, new HashSet<>(snapshot.values()));
+    }
+
+    public CardcastDeck guessDeckSync(final CardSet set) throws JSONException, IOException, URISyntaxException, ParseException {
+        String cachedCode = cachedDeckNames.get(set.name);
+        if (cachedCode != null) {
+            return new CardcastDeckInfo((JSONObject) basicRequest("decks/" + cachedCode));
+        } else {
+            final List<NameValuePair> params = new ArrayList<>();
+            params.add(new BasicNameValuePair("search", set.name));
+
+            final CardcastDecks decks = new CardcastDecks((JSONObject) basicRequest("decks", params));
+            final CardcastDeck match = findDeck(decks, set);
+            if (match != null) addCachedDeckName(set.name, match.code);
+            return match;
+        }
     }
 
     @NonNull

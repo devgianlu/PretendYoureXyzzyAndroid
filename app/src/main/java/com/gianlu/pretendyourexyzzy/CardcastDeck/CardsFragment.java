@@ -66,7 +66,7 @@ public class CardsFragment extends Fragment implements Cardcast.IResult<List<Car
             return layout;
         }
 
-        Cardcast cardcast = Cardcast.get();
+        Cardcast cardcast = Cardcast.get(getContext());
         if (whiteCards) cardcast.getResponses(code, this);
         else cardcast.getCalls(code, this);
 

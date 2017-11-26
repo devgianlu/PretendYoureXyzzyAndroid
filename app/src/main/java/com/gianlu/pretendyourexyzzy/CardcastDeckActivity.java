@@ -119,6 +119,6 @@ public class CardcastDeckActivity extends AppCompatActivity {
 
         void addCardcastDeck(String code);
 
-        void addStarredDecks();
+        void addCardcastStarredDecks();
     }
 }

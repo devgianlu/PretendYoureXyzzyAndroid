@@ -164,7 +164,7 @@ public class CardcastFragment extends Fragment implements Cardcast.IDecks, Cardc
         layout.enableSwipeRefresh(R.color.colorAccent);
         layout.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
-        cardcast = Cardcast.get();
+        cardcast = Cardcast.get(getContext());
         cardcast.getDecks(search, LIMIT, 0, this);
 
         layout.setRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {

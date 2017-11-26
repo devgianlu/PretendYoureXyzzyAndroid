@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:minHeight="128dp">
+    android:minHeight="156dp">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/cardcastBottomSheet_list"

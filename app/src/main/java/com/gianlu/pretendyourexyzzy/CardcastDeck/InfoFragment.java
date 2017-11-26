@@ -50,7 +50,7 @@ public class InfoFragment extends Fragment implements Cardcast.IResult<CardcastD
             return layout;
         }
 
-        Cardcast.get().getDeckInfo(code, this);
+        Cardcast.get(getContext()).getDeckInfo(code, this);
 
         return layout;
     }
