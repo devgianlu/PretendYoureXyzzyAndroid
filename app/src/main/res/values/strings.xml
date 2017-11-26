@@ -84,9 +84,9 @@
     <string name="cardSetsLabel">Card sets</string>
     <string name="cardcast">Cardcast</string>
     <string name="add">Add</string>
-    <string name="addCardcast">Add Cardcast card set</string>
-    <string name="cardcastAdded">Cardcast card set added.</string>
-    <string name="failedAddingCardcast">Failed adding the Cardcast card set!</string>
+    <string name="addCardcast">Add Cardcast deck</string>
+    <string name="cardcastAdded">Cardcast deck added.</string>
+    <string name="failedAddingCardcast">Failed adding the Cardcast deck!</string>
     <string name="notEnoughPlayers">Not enough players!</string>
     <string name="noCardSets">No card sets.</string>
     <string name="judgeLeft">Judge left!</string>
@@ -134,4 +134,5 @@
     <string name="failedJudging">Failed judging!</string>
     <string name="showLocked">Show locked games</string>
     <string name="addedCardToStarred">This card has been starred.</string>
+    <string name="addStarred">Add starred</string>
 </resources>

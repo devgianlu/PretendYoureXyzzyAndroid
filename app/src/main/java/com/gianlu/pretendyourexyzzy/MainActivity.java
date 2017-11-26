@@ -28,7 +28,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements GamesFragment.IFragment, OngoingGameFragment.IFragment, CardcastDeckActivity.IOngoingGame {
-    // private final static String TAG_GLOBAL_CHAT = "globalChat";
     private final static String TAG_GAMES = "games";
     private final static String TAG_GAME_CHAT = "gameChat";
     private static final String TAG_PLAYERS = "players";
@@ -36,7 +35,6 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
     private static final String TAG_CARDCAST = "cardcast";
     private BottomNavigationView navigation;
     private NamesFragment namesFragment;
-    // private GlobalChatFragment globalChatFragment;
     private GamesFragment gamesFragment;
     private CardcastFragment cardcastFragment;
     private GameChatFragment gameChatFragment;
@@ -201,20 +199,20 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
     }
 
     @Override
-    public boolean hasOngoingGame() {
-        return ongoingGameFragment != null && ongoingGameFragment.canEdit();
+    public boolean canAddCardcastDeck() {
+        return ongoingGameFragment != null && ongoingGameFragment.shouldShowCardcastAdd();
     }
 
     @Override
     public void addCardcastDeck(String code) {
-        if (!hasOngoingGame()) return;
+        if (!canAddCardcastDeck()) return;
         ongoingGameFragment.addCardcastCardSet(code);
     }
 
     @Override
     public void addStarredDecks() {
-        if (!hasOngoingGame()) return;
-        ongoingGameFragment.addStarredDecks();
+        if (!canAddCardcastDeck()) return;
+        ongoingGameFragment.addCardcastStarredDecks();
     }
 
     private void setKeepScreenOn(boolean on) {

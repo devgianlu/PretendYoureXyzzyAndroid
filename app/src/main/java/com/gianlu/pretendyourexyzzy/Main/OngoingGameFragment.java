@@ -196,7 +196,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
                 shareGame();
                 return true;
             case R.id.ongoingGame_cardcast:
-                cardcastBottomSheet.expandLoading();
+                cardcastBottomSheet.expandAsLoading();
                 pyx.listCardcastCardSets(gameId, new PYX.IResult<List<CardSet>>() {
                     @Override
                     public void onDone(PYX pyx, List<CardSet> result) {
@@ -396,12 +396,19 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
 
         final EditText code = new EditText(getContext());
         code.setHint("XXXXX");
+        code.setAllCaps(true);
         code.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-        code.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5)});
+        code.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5), new InputFilter.AllCaps()});
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.addCardcast)
                 .setView(code)
+                .setNeutralButton(R.string.addStarred, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        addCardcastStarredDecks();
+                    }
+                })
                 .setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -413,8 +420,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
         CommonUtils.showDialog(getActivity(), builder);
     }
 
-    @Override
-    public void addStarredDecks() {
+    public void addCardcastStarredDecks() {
         new Thread() {
             @Override
             public void run() {
@@ -431,9 +437,10 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
 
                 if (hasErrors)
                     Toaster.show(getActivity(), Utils.Messages.PARTIAL_ADD_STARRED_DECKS_FAILED);
+
                 Toaster.show(getActivity(), Utils.Messages.ADDED_STARRED_DECKS);
 
-                if (cardcastBottomSheet != null && cardcastBottomSheet.shouldUpdate()) {
+                if (cardcastBottomSheet != null && cardcastBottomSheet.isExpanded()) {
                     pyx.listCardcastCardSets(gameId, new PYX.IResult<List<CardSet>>() {
                         @Override
                         public void onDone(PYX pyx, List<CardSet> result) {
@@ -453,7 +460,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
     }
 
     @Override
-    public boolean canEdit() {
+    public boolean shouldShowCardcastAdd() {
         return amHost() && getGame() != null && getGame().status == Game.Status.LOBBY;
     }
 
@@ -467,7 +474,7 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
             @Override
             public void onDone(PYX pyx) {
                 Toaster.show(getActivity(), Utils.Messages.CARDCAST_ADDED);
-                if (cardcastBottomSheet != null && cardcastBottomSheet.shouldUpdate()) {
+                if (cardcastBottomSheet != null && cardcastBottomSheet.isExpanded()) {
                     pyx.listCardcastCardSets(gameId, new PYX.IResult<List<CardSet>>() {
                         @Override
                         public void onDone(PYX pyx, List<CardSet> result) {
@@ -492,6 +499,11 @@ public class OngoingGameFragment extends Fragment implements CardcastBottomSheet
     }
 
     public void onBackPressed() {
+        if (isVisible() && cardcastBottomSheet != null && cardcastBottomSheet.isExpanded()) {
+            cardcastBottomSheet.collapse();
+            return;
+        }
+
         if (getContext() == null) return;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());

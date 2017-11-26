@@ -1,78 +1,84 @@
 package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewGroup;
 
-import com.gianlu.commonutils.BaseBottomSheet;
 import com.gianlu.commonutils.MessageLayout;
+import com.gianlu.commonutils.NiceBaseBottomSheet;
 import com.gianlu.pretendyourexyzzy.Adapters.CardSetsAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.List;
 
-public class CardcastBottomSheet extends BaseBottomSheet<List<CardSet>> {
+public class CardcastBottomSheet extends NiceBaseBottomSheet {
     private final ISheet listener;
     private RecyclerView list;
-    private Button add;
-    private Button addStarred;
+    private ViewGroup contentParent;
 
-    public CardcastBottomSheet(View parent, ISheet listener) {
-        super(parent, R.layout.cardcast_bottom_sheet, false);
+    public CardcastBottomSheet(ViewGroup parent, ISheet listener) {
+        super(parent, R.layout.cardcast_sheet_header, R.layout.cardcast_sheet, false);
         this.listener = listener;
     }
 
     @Override
-    public void bindViews() {
-        title.setText(R.string.cardcast);
-        list = content.findViewById(R.id.cardcastBottomSheet_list);
-        list.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
-        list.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
-        add = content.findViewById(R.id.cardcastBottomSheet_add);
-        addStarred = content.findViewById(R.id.cardcastBottomSheet_addStarred);
+    @SuppressWarnings("unchecked")
+    protected void onUpdateViews(Object... payloads) {
+        updateContentViews((List<CardSet>) payloads[0]);
     }
 
     @Override
-    protected void setupView(@NonNull List<CardSet> item) {
-        add.setVisibility(listener.canEdit() ? View.VISIBLE : View.GONE);
-        addStarred.setVisibility(listener.canEdit() ? View.VISIBLE : View.GONE);
-        add.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                listener.addCardcastDeck();
-            }
-        });
-        addStarred.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                listener.addStarredDecks();
-            }
-        });
+    protected void onCreateHeaderView(@NonNull ViewGroup parent, Object... payloads) {
+        parent.setBackgroundResource(R.color.colorAccent_light);
+    }
 
-        if (item.isEmpty()) {
+    private void updateContentViews(List<CardSet> cards) {
+        if (cards.isEmpty()) {
             list.setVisibility(View.GONE);
-            MessageLayout.show(content, R.string.noCardSets, R.drawable.ic_info_outline_black_48dp);
+            MessageLayout.show(contentParent, R.string.noCardSets, R.drawable.ic_info_outline_black_48dp);
         } else {
             list.setVisibility(View.VISIBLE);
-            MessageLayout.hide(content);
-            list.setAdapter(new CardSetsAdapter(context, item));
+            MessageLayout.hide(contentParent);
+            list.setAdapter(new CardSetsAdapter(getContext(), cards));
         }
     }
 
     @Override
-    protected void updateView(@NonNull List<CardSet> item) {
-        setupView(item);
+    protected boolean onPrepareAction(@NonNull FloatingActionButton fab, Object... payloads) {
+        if (listener.shouldShowCardcastAdd()) {
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.addCardcastDeck();
+                }
+            });
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    protected void onCreateContentView(@NonNull ViewGroup parent, Object... payloads) {
+        contentParent = parent;
+        list = parent.findViewById(R.id.cardcastBottomSheet_list);
+        list.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        list.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
+
+        List<CardSet> cards = (List<CardSet>) payloads[0];
+        updateContentViews(cards);
     }
 
     public interface ISheet {
         void addCardcastDeck();
 
-        void addStarredDecks();
-
-        boolean canEdit();
+        boolean shouldShowCardcastAdd();
     }
 }
