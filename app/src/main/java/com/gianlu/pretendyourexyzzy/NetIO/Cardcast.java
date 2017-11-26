@@ -84,7 +84,7 @@ public class Cardcast {
             return decks.get(0);
         } else {
             for (CardcastDeck deck : decks) {
-                if (deck.calls == set.blackCards && deck.responses == set.whiteCards)
+                if (deck.name.equals(set.name) && deck.calls == set.blackCards && deck.responses == set.whiteCards)
                     return deck;
             }
         }
