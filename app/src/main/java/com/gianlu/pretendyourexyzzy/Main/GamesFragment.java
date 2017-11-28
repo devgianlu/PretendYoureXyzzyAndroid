@@ -86,13 +86,18 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     }
 
     @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        menu.findItem(R.id.gamesFragment_showLocked).setChecked(!Prefs.getBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, false));
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.gamesFragment_showLocked:
-                boolean checked = !item.isChecked();
-                item.setChecked(checked);
-                Prefs.putBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, checked);
-                if (adapter != null) adapter.setFilters(Collections.singletonList(!checked));
+                boolean show = !item.isChecked();
+                item.setChecked(show);
+                Prefs.putBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, !show);
+                if (adapter != null) adapter.setFilters(Collections.singletonList(!show));
                 return true;
         }
 
@@ -210,7 +215,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     @Override
     public void onDone(PYX pyx, GamesList result) {
         if (!isAdded()) return;
-        adapter = new GamesAdapter(getContext(), result, !Prefs.getBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, false), this);
+        adapter = new GamesAdapter(getContext(), result, Prefs.getBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, false), this);
         recyclerViewLayout.loadListData(adapter);
         recyclerViewLayout.getList().getLayoutManager().onRestoreInstanceState(recyclerViewSavedInstance);
         recyclerViewSavedInstance = null;
