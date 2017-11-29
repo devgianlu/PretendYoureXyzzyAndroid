@@ -279,7 +279,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
         CommonUtils.setText(spectatorLimit, String.valueOf(options.spectatorsLimit));
         final Spinner idleTimeMultiplier = layout.findViewById(R.id.editGameOptions_idleTimeMultiplier);
         idleTimeMultiplier.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, Game.Options.VALID_TIME_MULTIPLIERS));
-        idleTimeMultiplier.setSelection(CommonUtils.indexOf(Game.Options.VALID_TIME_MULTIPLIERS, options.timeMultiplier));
+        idleTimeMultiplier.setSelection(Game.Options.timeMultiplierIndex(options.timeMultiplier));
         final TextInputLayout blankCards = layout.findViewById(R.id.editGameOptions_blankCards);
         CommonUtils.setText(blankCards, String.valueOf(options.blanksLimit));
         final TextInputLayout password = layout.findViewById(R.id.editGameOptions_password);

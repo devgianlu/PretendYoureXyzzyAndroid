@@ -144,6 +144,12 @@ public class Game implements Filterable<Boolean>, Serializable {
             this.password = password;
         }
 
+        public static int timeMultiplierIndex(String timeMultiplier) {
+            int index = CommonUtils.indexOf(VALID_TIME_MULTIPLIERS, timeMultiplier);
+            if (index == -1) index = 3; // 1x
+            return index;
+        }
+
         private static int parseIntOrThrow(String val, @IdRes int fieldId) throws InvalidFieldException {
             try {
                 return Integer.parseInt(val);
