@@ -90,12 +90,6 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
                         setTitle(getString(R.string.playersLabel) + " - " + getString(R.string.app_name));
                         switchTo(TAG_PLAYERS);
                         break;
-                    /*
-                    case R.id.main_globalChat:
-                        setTitle(getString(R.string.globalChat) + " - " + getString(R.string.app_name));
-                        switchTo(TAG_GLOBAL_CHAT);
-                        break;
-                        */
                     case R.id.main_games:
                         setTitle(getString(R.string.games) + " - " + getString(R.string.app_name));
                         switchTo(TAG_GAMES);

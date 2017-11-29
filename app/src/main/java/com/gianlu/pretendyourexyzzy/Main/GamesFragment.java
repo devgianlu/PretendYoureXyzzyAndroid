@@ -46,8 +46,6 @@ import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONException;
 
-import java.util.Collections;
-
 public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, GamesAdapter.IAdapter, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
     private static final String POLL_TAG = "games";
     private GamesList lastResult;
@@ -97,7 +95,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
                 boolean show = !item.isChecked();
                 item.setChecked(show);
                 Prefs.putBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, !show);
-                if (adapter != null) adapter.setFilters(Collections.singletonList(!show));
+                if (adapter != null) adapter.setFilterOutLockedLobbies(!show);
                 return true;
         }
 
@@ -206,6 +204,8 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     public void onResume() {
         super.onResume();
         updateActivityTitle();
+        if (adapter != null)
+            adapter.setFilterOutLockedLobbies(Prefs.getBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, false));
     }
 
     public void scrollToTop() {

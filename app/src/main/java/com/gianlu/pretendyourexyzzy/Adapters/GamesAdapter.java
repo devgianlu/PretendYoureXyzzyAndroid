@@ -17,11 +17,10 @@ import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.R;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHolder, Game, GamesAdapter.SortBy, Boolean> {
+public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHolder, Game, GamesAdapter.SortBy, Game.Protection> {
     private final Context context;
     private final IAdapter handler;
     private final LayoutInflater inflater;
@@ -32,7 +31,12 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         this.handler = handler;
         this.inflater = LayoutInflater.from(context);
         setHasStableIds(true);
-        setFilters(Collections.singletonList(filterOutLockedLobbies));
+        setFilterOutLockedLobbies(filterOutLockedLobbies);
+    }
+
+    public void setFilterOutLockedLobbies(boolean filter) {
+        if (filter) setFilters(Game.Protection.LOCKED);
+        else setFilters();
     }
 
     @Override

@@ -268,7 +268,8 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
 
     @SuppressLint("InflateParams")
     private void editGameOptions() {
-        if (!isAdded() || getGame() == null || getContext() == null) return;
+        if (!isAdded() || getGame() == null || getContext() == null || pyx.firstLoad == null)
+            return;
         Game.Options options = getGame().options;
         final ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.dialog_edit_game_options, null, false);
         final TextInputLayout scoreLimit = layout.findViewById(R.id.editGameOptions_scoreLimit);

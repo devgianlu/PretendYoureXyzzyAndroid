@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
-public class Game implements Filterable<Boolean>, Serializable {
+public class Game implements Filterable<Game.Protection>, Serializable {
     public final String host;
     public final int gid;
     public final boolean hasPassword;
@@ -54,8 +54,13 @@ public class Game implements Filterable<Boolean>, Serializable {
     }
 
     @Override
-    public Boolean getFilterable() {
-        return hasPassword;
+    public Protection getFilterable() {
+        return hasPassword ? Protection.LOCKED : Protection.OPEN;
+    }
+
+    public enum Protection {
+        LOCKED,
+        OPEN
     }
 
     public enum Status {
