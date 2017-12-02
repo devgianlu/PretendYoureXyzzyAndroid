@@ -221,6 +221,8 @@ public class CardcastFragment extends Fragment implements Cardcast.IDecks, Cardc
     @Override
     public boolean onClose() {
         searchView.setQuery(null, true);
+        search = new Cardcast.Search(null, search.categories, search.direction, search.sort, search.nsfw);
+        refreshAdapter();
         return false;
     }
 }
