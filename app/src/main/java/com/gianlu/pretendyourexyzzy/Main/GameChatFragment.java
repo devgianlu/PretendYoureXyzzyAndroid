@@ -116,6 +116,7 @@ public class GameChatFragment extends Fragment implements ChatAdapter.IAdapter, 
     public void onPollMessage(PollMessage message) throws JSONException {
         if (game == null || !isAdded()) return;
         adapter.newMessage(message, game);
+        recyclerViewLayout.getList().scrollToPosition(adapter.getItemCount() - 1);
     }
 
     @Override
