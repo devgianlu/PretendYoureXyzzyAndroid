@@ -162,7 +162,7 @@ public class Cardcast {
             public void run() {
                 try {
                     final CardcastDecks decks = new CardcastDecks((JSONObject) basicRequest("decks", params));
-                    if (decks.isEmpty() && Pattern.matches("(?:[a-zA-Z]|\\d){5}", search.query)) {
+                    if (decks.isEmpty() && offset == 0 && Pattern.matches("(?:[a-zA-Z]|\\d){5}", search.query)) {
                         final CardcastDeckInfo info = new CardcastDeckInfo((JSONObject) basicRequest("decks/" + search.query));
                         handler.post(new Runnable() {
                             @Override

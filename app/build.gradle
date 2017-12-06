@@ -3,14 +3,15 @@ apply plugin: 'io.fabric'
 
 android {
     compileSdkVersion 27
-    buildToolsVersion '26.0.2'
+
     defaultConfig {
         applicationId "com.gianlu.pretendyourexyzzy"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 19
-        versionName "1.5.1"
+        versionCode 20
+        versionName "1.5.2"
     }
+
     buildTypes {
         release {
             minifyEnabled false
