@@ -23,4 +23,16 @@ public class CardcastDecks extends ArrayList<CardcastDeck> {
         for (int i = 0; i < decksArray.length(); i++)
             add(new CardcastDeck(decksArray.getJSONObject(i)));
     }
+
+    private CardcastDecks() {
+        totalDecks = 1;
+        offset = 0;
+        count = 1;
+    }
+
+    public static CardcastDecks singleton(CardcastDeckInfo info) {
+        CardcastDecks decks = new CardcastDecks();
+        decks.add(info);
+        return decks;
+    }
 }

@@ -180,7 +180,11 @@ public class CardcastFragment extends Fragment implements Cardcast.IDecks, Cardc
     @Override
     public void onDone(Cardcast.Search search, CardcastDecks decks) {
         if (!isAdded()) return;
-        layout.loadListData(new CardcastDecksAdapter(getContext(), cardcast, search, decks, LIMIT, this));
+        if (decks.isEmpty()) {
+            layout.showMessage(R.string.searchNoDecks, false);
+        } else {
+            layout.loadListData(new CardcastDecksAdapter(getContext(), cardcast, search, decks, LIMIT, this));
+        }
     }
 
     @Override

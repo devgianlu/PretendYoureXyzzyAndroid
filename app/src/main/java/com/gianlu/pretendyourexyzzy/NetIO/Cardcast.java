@@ -38,6 +38,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.HttpStatus;
@@ -161,6 +162,18 @@ public class Cardcast {
             public void run() {
                 try {
                     final CardcastDecks decks = new CardcastDecks((JSONObject) basicRequest("decks", params));
+                    if (decks.isEmpty() && Pattern.matches("(?:[a-zA-Z]|\\d){5}", search.query)) {
+                        final CardcastDeckInfo info = new CardcastDeckInfo((JSONObject) basicRequest("decks/" + search.query));
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onDone(search, CardcastDecks.singleton(info));
+                            }
+                        });
+
+                        return;
+                    }
+
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
