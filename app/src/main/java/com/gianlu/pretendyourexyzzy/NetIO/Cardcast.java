@@ -163,15 +163,20 @@ public class Cardcast {
                 try {
                     final CardcastDecks decks = new CardcastDecks((JSONObject) basicRequest("decks", params));
                     if (decks.isEmpty() && offset == 0 && Pattern.matches("(?:[a-zA-Z]|\\d){5}", search.query)) {
-                        final CardcastDeckInfo info = new CardcastDeckInfo((JSONObject) basicRequest("decks/" + search.query));
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.onDone(search, CardcastDecks.singleton(info));
-                            }
-                        });
+                        try {
+                            final CardcastDeckInfo info = new CardcastDeckInfo((JSONObject) basicRequest("decks/" + search.query));
+                            cachedDeckNames.put(info.name, info.code);
 
-                        return;
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    listener.onDone(search, CardcastDecks.singleton(info));
+                                }
+                            });
+
+                            return;
+                        } catch (URISyntaxException | IOException | JSONException ignored) {
+                        }
                     }
 
                     handler.post(new Runnable() {
