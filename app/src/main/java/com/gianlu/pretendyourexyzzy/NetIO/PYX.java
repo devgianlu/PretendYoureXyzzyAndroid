@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.crashlytics.android.Crashlytics;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Prefs;
@@ -123,6 +124,9 @@ public class PYX {
         try {
             raiseException(obj);
         } catch (PYXException ex) {
+            Crashlytics.log(operation + "; " + Arrays.toString(params) + "; " + ex.errorCode + "; " + hasRetriedFirstLoad);
+            Crashlytics.logException(ex);
+
             if (operation == OP.FIRST_LOAD && !hasRetriedFirstLoad && Objects.equals(ex.errorCode, "se")) {
                 hasRetriedFirstLoad = true;
                 return ajaxServletRequestSync(operation, params);
@@ -130,6 +134,8 @@ public class PYX {
 
             throw ex;
         }
+
+        Crashlytics.log(operation + "; " + Arrays.toString(params));
 
         return obj;
     }
