@@ -8,8 +8,8 @@ android {
         applicationId "com.gianlu.pretendyourexyzzy"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 20
-        versionName "1.5.2"
+        versionCode 21
+        versionName "1.5.3"
     }
 
     buildTypes {
