@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <Preference
+        android:key="showTutorial"
+        android:summary="@string/showBeginnerTutorial_summary"
+        android:title="@string/showBeginnerTutorial" />
+
+    <Preference
+        android:key="restartTutorial"
+        android:summary="@string/restartInAppTutorial_summary"
+        android:title="@string/restartInAppTutorial" />
+</PreferenceScreen>

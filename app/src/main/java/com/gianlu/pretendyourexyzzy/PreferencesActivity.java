@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 
 import com.gianlu.commonutils.AppCompatPreferenceActivity;
@@ -33,11 +34,41 @@ public class PreferencesActivity extends AppCompatPreferenceActivity {
         super.onHeaderClick(header, position);
     }
 
+    public static class GeneralFragment extends AppCompatPreferenceFragment {
+
+        @Override
+        public void onCreate(@Nullable Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.pref_general);
+            getActivity().setTitle(R.string.general);
+            setHasOptionsMenu(true);
+
+            findPreference("showTutorial").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                public boolean onPreferenceClick(Preference preference) {
+                    startActivity(new Intent(getActivity(), TutorialActivity.class));
+                    return true;
+                }
+            });
+
+            findPreference("restartTutorial").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                public boolean onPreferenceClick(Preference preference) {
+                    TutorialManager.restartTutorial(getActivity());
+                    return true;
+                }
+            });
+        }
+
+        @Override
+        protected Class getParent() {
+            return PreferencesActivity.class;
+        }
+    }
+
     public static class ThirdPartFragment extends AppCompatPreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.thrid_part_pref);
+            addPreferencesFromResource(R.xml.pref_thrid_part);
             getActivity().setTitle(R.string.third_part);
             setHasOptionsMenu(true);
 

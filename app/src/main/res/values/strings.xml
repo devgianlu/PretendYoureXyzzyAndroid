@@ -138,7 +138,6 @@
     <string name="searchNoDecks">No decks found, try searching the deck code</string>
     <string name="cardcastDeckRemoved">Deck removed successfully.</string>
     <string name="failedRemovingCardcastDeck">Failed removing the deck!</string>
-
     <string name="tutorial_firstTitle">Welcome to Pretend You\'re Xyzzy</string>
     <string name="tutorial_firstDesc">Pretend You\'re Xyzzy is an online cards game based on Cards Against Humanity. In this tutorial I\'ll explain you how to play.</string>
     <string name="tutorial_secondTitle">The rules</string>
@@ -167,4 +166,9 @@
     <string name="tutorial_setupGame_desc">Here you can customize your game options. Don\'t forget you can also add Cardcast decks from the menu up here.</string>
     <string name="tutorial_startGame">Start game</string>
     <string name="tutorial_startGame_desc">Once you\'re done, start the game. To do that you must have at least 3 players and a given number of cards.</string>
+    <string name="general">General</string>
+    <string name="showBeginnerTutorial">Show beginner tutorial</string>
+    <string name="restartInAppTutorial">Restart features tutorial</string>
+    <string name="showBeginnerTutorial_summary">Show the intro tutorial for the app</string>
+    <string name="restartInAppTutorial_summary">Features tutorial will be shown again while using the app</string>
 </resources>
