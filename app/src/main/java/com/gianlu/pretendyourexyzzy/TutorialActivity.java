@@ -47,10 +47,10 @@ public class TutorialActivity extends AppIntro {
         showSkipButton(true);
         setProgressButtonEnabled(true);
 
-        addSlide(newSlide(R.string.firstTitle, R.string.firstDesc, R.drawable.ic_logo));
-        addSlide(newSlide(R.string.secondTitle, R.string.secondDesc, 0));
-        addSlide(newSlide(R.string.thirdTitle, R.string.thirdDesc, 0));
-        addSlide(newSlide(R.string.fourthTitle, R.string.fourthDesc, 0));
+        addSlide(newSlide(R.string.tutorial_firstTitle, R.string.tutorial_firstDesc, R.drawable.ic_logo));
+        addSlide(newSlide(R.string.tutorial_secondTitle, R.string.tutorial_secondDesc, 0));
+        addSlide(newSlide(R.string.tutorial_thirdTitle, R.string.tutorial_thirdDesc, 0));
+        addSlide(newSlide(R.string.tutorial_fourthTitle, R.string.tutorial_fourthDesc, 0));
     }
 
     @Override

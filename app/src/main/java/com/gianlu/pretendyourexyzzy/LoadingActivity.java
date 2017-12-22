@@ -15,6 +15,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.ConnectivityChecker;
 import com.gianlu.commonutils.Logging;
@@ -41,6 +43,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
     private Button registerSubmit;
     private int launchGameId = -1;
     private String launchGamePassword;
+    private Button changeServer;
     private boolean launchGameShouldRequest;
 
     private void changeServerDialog(boolean dismissible) {
@@ -98,7 +101,8 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
         register = findViewById(R.id.loading_register);
         registerNickname = findViewById(R.id.loading_registerNickname);
         registerSubmit = findViewById(R.id.loading_registerSubmit);
-        Button changeServer = findViewById(R.id.loading_changeServer);
+
+        changeServer = findViewById(R.id.loading_changeServer);
         changeServer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -208,6 +212,30 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                 });
             }
         });
+
+        if (TutorialManager.shouldShowHintFor(this, TutorialManager.Discovery.LOGIN)) {
+            new TapTargetSequence(this)
+                    .target(Utils.tapTargetForView(registerNickname, R.string.tutorial_chooseNickname, R.string.tutorial_chooseNickname_desc))
+                    .target(Utils.tapTargetForView(changeServer, R.string.tutorial_changeServer, R.string.tutorial_changeServer_desc))
+                    .target(Utils.tapTargetForView(registerSubmit, R.string.tutorial_joinTheServer, R.string.tutorial_joinTheServer_desc))
+                    .listener(new TapTargetSequence.Listener() {
+                        @Override
+                        public void onSequenceFinish() {
+                            TutorialManager.setHintShown(LoadingActivity.this, TutorialManager.Discovery.LOGIN);
+                        }
+
+                        @Override
+                        public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
+
+                        }
+
+                        @Override
+                        public void onSequenceCanceled(TapTarget lastTarget) {
+
+                        }
+                    }).start();
+        }
+
     }
 
     @Override

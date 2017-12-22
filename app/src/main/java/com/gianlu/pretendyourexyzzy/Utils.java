@@ -3,7 +3,11 @@ package com.gianlu.pretendyourexyzzy;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
+import android.support.design.widget.FloatingActionButton;
+import android.view.View;
 
+import com.getkeepsafe.taptargetview.TapTarget;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
@@ -101,6 +105,11 @@ public class Utils {
                 return set;
 
         return null;
+    }
+
+    public static TapTarget tapTargetForView(View view, @StringRes int title, @StringRes int desc) {
+        Context ctx = view.getContext();
+        return TapTarget.forView(view, ctx.getString(title), ctx.getString(desc)).transparentTarget(view instanceof FloatingActionButton);
     }
 
     public static class Messages {

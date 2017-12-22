@@ -27,6 +27,8 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.SearchView;
 
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
@@ -42,6 +44,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
 import com.gianlu.pretendyourexyzzy.PKeys;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.TutorialManager;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONException;
@@ -57,6 +60,8 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     private String launchGamePassword = null;
     private boolean launchGameShouldRequest;
     private Parcelable recyclerViewSavedInstance;
+    private FloatingActionButton createGame;
+    private boolean isShowingHint = false;
 
     public static GamesFragment getInstance(IFragment handler) {
         GamesFragment fragment = new GamesFragment();
@@ -129,7 +134,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         recyclerViewLayout = layout.findViewById(R.id.gamesFragment_recyclerViewLayout);
         recyclerViewLayout.enableSwipeRefresh(R.color.colorAccent);
         recyclerViewLayout.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-        FloatingActionButton createGame = layout.findViewById(R.id.gamesFragment_createGame);
+        createGame = layout.findViewById(R.id.gamesFragment_createGame);
 
         final PYX pyx = PYX.get(getContext());
 
@@ -213,7 +218,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     }
 
     @Override
-    public void onDone(PYX pyx, GamesList result) {
+    public void onDone(PYX pyx, final GamesList result) {
         if (!isAdded()) return;
         adapter = new GamesAdapter(getContext(), result, Prefs.getBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, false), this);
         recyclerViewLayout.loadListData(adapter);
@@ -222,9 +227,45 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
 
         lastResult = result;
         updateActivityTitle();
-
-        if (launchGameGid != -1)
+        if (launchGameGid != -1) {
             launchGameInternal(launchGameGid, launchGamePassword, launchGameShouldRequest);
+        } else {
+            recyclerViewLayout.getList().post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!isShowingHint && getActivity() != null && TutorialManager.shouldShowHintFor(getContext(), TutorialManager.Discovery.GAMES) && !result.isEmpty() && isVisible()) {
+                        scrollToTop();
+                        GamesAdapter.ViewHolder holder = (GamesAdapter.ViewHolder) recyclerViewLayout.getList().findViewHolderForLayoutPosition(0);
+                        if (holder != null) {
+                            isShowingHint = true;
+                            new TapTargetSequence(getActivity())
+                                    .target(Utils.tapTargetForView(holder.status, R.string.tutorial_gameStatus, R.string.tutorial_gameStatus_desc))
+                                    .target(Utils.tapTargetForView(holder.locked, R.string.tutorial_gameLocked, R.string.tutorial_gameLocked_desc))
+                                    .target(Utils.tapTargetForView(holder.spectate, R.string.tutorial_spectateGame, R.string.tutorial_spectateGame_desc))
+                                    .target(Utils.tapTargetForView(holder.join, R.string.tutorial_joinGame, R.string.tutorial_joinGame_desc))
+                                    .target(Utils.tapTargetForView(createGame, R.string.tutorial_createGame, R.string.tutorial_createGame_desc))
+                                    .listener(new TapTargetSequence.Listener() {
+                                        @Override
+                                        public void onSequenceFinish() {
+                                            TutorialManager.setHintShown(getContext(), TutorialManager.Discovery.GAMES);
+                                            isShowingHint = false;
+                                        }
+
+                                        @Override
+                                        public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
+
+                                        }
+
+                                        @Override
+                                        public void onSequenceCanceled(TapTarget lastTarget) {
+
+                                        }
+                                    }).start();
+                        }
+                    }
+                }
+            });
+        }
     }
 
     private void updateActivityTitle() {

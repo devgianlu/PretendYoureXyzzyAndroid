@@ -129,14 +129,14 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
+        public final ImageView locked;
+        public final ImageView status;
+        public final Button spectate;
+        public final Button join;
         final TextView name;
         final SuperTextView players;
         final SuperTextView spectators;
         final SuperTextView goal;
-        final ImageView locked;
-        final ImageView status;
-        final Button spectate;
-        final Button join;
 
         ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.item_game, parent, false));

@@ -26,6 +26,7 @@ dependencies {
     api 'me.zhanghai.android.materialratingbar:library:1.2.0'
     api 'cz.msebera.android:httpclient:4.4.1.2'
     api 'com.github.apl-devs:appintro:v4.2.2'
+    api 'com.getkeepsafe.taptargetview:taptargetview:1.10.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

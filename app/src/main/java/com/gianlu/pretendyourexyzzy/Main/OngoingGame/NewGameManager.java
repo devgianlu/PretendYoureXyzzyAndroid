@@ -50,8 +50,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter {
+    public final FloatingActionButton startGame;
     private final Context context;
-    private final FloatingActionButton startGame;
     private final PyxCard blackCard;
     private final TextView instructions;
     private final PYX pyx;

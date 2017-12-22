@@ -29,6 +29,8 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
@@ -49,6 +51,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.TutorialManager;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONException;
@@ -164,6 +167,31 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
         loading.setVisibility(View.GONE);
         container.setVisibility(View.VISIBLE);
         MessageLayout.hide(layout);
+
+        if (getActivity() != null && TutorialManager.shouldShowHintFor(getContext(), TutorialManager.Discovery.CREATE_GAME) && isVisible() && Objects.equals(me.nickname, info.game.host)) {
+            View options = getActivity().getWindow().getDecorView().findViewById(R.id.ongoingGame_options);
+            if (options != null) {
+                new TapTargetSequence(getActivity())
+                        .target(Utils.tapTargetForView(options, R.string.tutorial_setupGame, R.string.tutorial_setupGame_desc))
+                        .target(Utils.tapTargetForView(manager.startGame, R.string.tutorial_startGame, R.string.tutorial_startGame_desc))
+                        .listener(new TapTargetSequence.Listener() {
+                            @Override
+                            public void onSequenceFinish() {
+                                TutorialManager.setHintShown(getContext(), TutorialManager.Discovery.CREATE_GAME);
+                            }
+
+                            @Override
+                            public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
+
+                            }
+
+                            @Override
+                            public void onSequenceCanceled(TapTarget lastTarget) {
+
+                            }
+                        }).start();
+            }
+        }
     }
 
     @Override

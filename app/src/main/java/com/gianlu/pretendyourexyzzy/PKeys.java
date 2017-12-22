@@ -13,7 +13,8 @@ public enum PKeys implements Prefs.PrefKey {
     LAST_JSESSIONID("lastJSessionId"),
     CACHED_DECK_NAMES("cachedDeckNames"),
     CACHED_DECK_CODES("cachedDeckCodes"),
-    FIRST_RUN("first_run");
+    FIRST_RUN("first_run"),
+    TUTORIAL_DISCOVERIES("tutorialDiscoveries");
 
     private final String key;
 
