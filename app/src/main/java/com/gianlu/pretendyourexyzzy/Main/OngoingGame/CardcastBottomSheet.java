@@ -24,12 +24,14 @@ import com.gianlu.pretendyourexyzzy.R;
 import java.util.List;
 
 public class CardcastBottomSheet extends NiceBaseBottomSheet {
+    private final int gid;
     private final CardcastDeckActivity.IOngoingGame listener;
     private RecyclerView list;
     private ViewGroup contentParent;
 
-    public CardcastBottomSheet(ViewGroup parent, CardcastDeckActivity.IOngoingGame listener) {
-        super(parent, R.layout.cardcast_sheet_header, R.layout.cardcast_sheet, false);
+    public CardcastBottomSheet(ViewGroup parent, int gid, CardcastDeckActivity.IOngoingGame listener) {
+        super(parent, R.layout.sheet_header_cardcast, R.layout.sheet_cardcast, false);
+        this.gid = gid;
         this.listener = listener;
     }
 
@@ -51,7 +53,7 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet {
         } else {
             list.setVisibility(View.VISIBLE);
             MessageLayout.hide(contentParent);
-            list.setAdapter(new CardSetsAdapter(getContext(), cards, listener));
+            list.setAdapter(new CardSetsAdapter(getContext(), gid, cards, listener));
         }
     }
 

@@ -135,11 +135,10 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
         layout = (CoordinatorLayout) inflater.inflate(R.layout.fragment_ongoing_game, parent, false);
         loading = layout.findViewById(R.id.ongoingGame_loading);
         container = layout.findViewById(R.id.ongoingGame_container);
-        cardcastBottomSheet = new CardcastBottomSheet(layout, this);
 
-        me = (User) getArguments().getSerializable("me");
-        Game game = (Game) getArguments().getSerializable("game");
-        if (game == null) {
+        Bundle args = getArguments();
+        Game game;
+        if (args == null || (me = (User) args.getSerializable("me")) == null || (game = (Game) getArguments().getSerializable("game")) == null) {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.GONE);
             MessageLayout.show(layout, R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
@@ -147,6 +146,8 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
         }
 
         gameId = game.gid;
+        cardcastBottomSheet = new CardcastBottomSheet(layout, gameId, this);
+
         pyx = PYX.get(getContext());
         pyx.getGameInfoAndCards(game.gid, this);
 

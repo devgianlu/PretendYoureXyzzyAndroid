@@ -139,7 +139,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         final Button join;
 
         ViewHolder(ViewGroup parent) {
-            super(inflater.inflate(R.layout.game_item, parent, false));
+            super(inflater.inflate(R.layout.item_game, parent, false));
 
             name = itemView.findViewById(R.id.gameItem_name);
             status = itemView.findViewById(R.id.gameItem_status);

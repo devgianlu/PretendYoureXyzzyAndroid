@@ -70,7 +70,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         final SuperTextView text;
 
         ViewHolder(ViewGroup parent) {
-            super(inflater.inflate(R.layout.chat_item, parent, false));
+            super(inflater.inflate(R.layout.item_chat, parent, false));
             text = (SuperTextView) itemView;
         }
     }

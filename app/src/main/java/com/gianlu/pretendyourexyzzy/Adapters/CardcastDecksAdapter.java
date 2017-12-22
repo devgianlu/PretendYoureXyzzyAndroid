@@ -118,7 +118,7 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
         final TextView whiteCards;
 
         ViewHolder(ViewGroup parent) {
-            super(inflater.inflate(R.layout.cardcast_deck_item, parent, false));
+            super(inflater.inflate(R.layout.item_cardcast_deck, parent, false));
 
             example = itemView.findViewById(R.id.cardcastDeckItem_example);
             name = itemView.findViewById(R.id.cardcastDeckItem_name);

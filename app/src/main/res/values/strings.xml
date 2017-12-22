@@ -136,4 +136,6 @@
     <string name="addedCardToStarred">This card has been starred.</string>
     <string name="addStarred">Add starred</string>
     <string name="searchNoDecks">No decks found, try searching the deck code</string>
+    <string name="cardcastDeckRemoved">Deck removed successfully.</string>
+    <string name="failedRemovingCardcastDeck">Failed removing the deck!</string>
 </resources>

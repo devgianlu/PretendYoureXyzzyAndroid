@@ -41,7 +41,7 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
         final TextView text;
 
         ViewHolder(ViewGroup parent) {
-            super(inflater.inflate(R.layout.name_item, parent, false));
+            super(inflater.inflate(R.layout.item_name, parent, false));
             text = (TextView) itemView;
         }
     }

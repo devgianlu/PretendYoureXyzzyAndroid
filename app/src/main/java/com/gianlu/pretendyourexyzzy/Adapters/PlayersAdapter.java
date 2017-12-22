@@ -104,7 +104,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         final ImageView status;
 
         ViewHolder(ViewGroup parent) {
-            super(inflater.inflate(R.layout.player_item, parent, false));
+            super(inflater.inflate(R.layout.item_player, parent, false));
             setIsRecyclable(true);
 
             name = itemView.findViewById(R.id.playerItem_name);

@@ -67,7 +67,7 @@ public class StarredDecksAdapter extends RecyclerView.Adapter<StarredDecksAdapte
         final TextView code;
 
         ViewHolder(ViewGroup parent) {
-            super(inflater.inflate(R.layout.starred_deck_item, parent, false));
+            super(inflater.inflate(R.layout.item_starred_deck, parent, false));
 
             name = itemView.findViewById(R.id.starredDeckItem_name);
             code = itemView.findViewById(R.id.starredDeckItem_code);

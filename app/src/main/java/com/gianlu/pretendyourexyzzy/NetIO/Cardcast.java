@@ -52,7 +52,7 @@ import cz.msebera.android.httpclient.message.BasicNameValuePair;
 import cz.msebera.android.httpclient.util.EntityUtils;
 
 public class Cardcast {
-    public static final String BASE_URL = "https://api.cardcastgame.com/v1/";
+    private static final String BASE_URL = "https://api.cardcastgame.com/v1/";
     private static Cardcast instance;
     private final HttpClient client;
     private final ExecutorService executor;
@@ -251,6 +251,7 @@ public class Cardcast {
             public void run() {
                 try {
                     final CardcastDeckInfo info = new CardcastDeckInfo((JSONObject) basicRequest("decks/" + code));
+                    cachedDeckNames.put(info.name, info.code);
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
