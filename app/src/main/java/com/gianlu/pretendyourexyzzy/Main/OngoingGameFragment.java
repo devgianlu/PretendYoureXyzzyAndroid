@@ -482,7 +482,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
     }
 
     @Override
-    public boolean canAddCardcastDeck() {
+    public boolean canModifyCardcastDecks() {
         return amHost() && getGame() != null && getGame().status == Game.Status.LOBBY;
     }
 

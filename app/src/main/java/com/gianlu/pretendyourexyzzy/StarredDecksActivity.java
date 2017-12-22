@@ -35,7 +35,7 @@ public class StarredDecksActivity extends AppCompatActivity implements StarredDe
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.starredDecks_add).setVisible(handler != null && handler.canAddCardcastDeck());
+        menu.findItem(R.id.starredDecks_add).setVisible(handler != null && handler.canModifyCardcastDecks());
         return true;
     }
 

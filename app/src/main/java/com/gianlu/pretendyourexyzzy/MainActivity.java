@@ -186,19 +186,19 @@ public class MainActivity extends AppCompatActivity implements GamesFragment.IFr
     }
 
     @Override
-    public boolean canAddCardcastDeck() {
-        return ongoingGameFragment != null && ongoingGameFragment.canAddCardcastDeck();
+    public boolean canModifyCardcastDecks() {
+        return ongoingGameFragment != null && ongoingGameFragment.canModifyCardcastDecks();
     }
 
     @Override
     public void addCardcastDeck(String code) {
-        if (!canAddCardcastDeck()) return;
+        if (!canModifyCardcastDecks()) return;
         ongoingGameFragment.addCardcastDeck(code);
     }
 
     @Override
     public void addCardcastStarredDecks() {
-        if (!canAddCardcastDeck()) return;
+        if (!canModifyCardcastDecks()) return;
         ongoingGameFragment.addCardcastStarredDecks();
     }
 

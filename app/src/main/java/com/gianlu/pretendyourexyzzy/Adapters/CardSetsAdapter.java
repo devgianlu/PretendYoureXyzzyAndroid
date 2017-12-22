@@ -56,7 +56,6 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
         holder.blackCards.setText(String.valueOf(item.blackCards));
 
         if (item.cardcastDeck != null) {
-            holder.remove.setVisibility(View.VISIBLE);
             holder.author.setHtml(R.string.byLowercase, item.cardcastDeck.author.username);
             holder.code.setText(item.cardcastDeck.code);
             holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -65,33 +64,39 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
                     CardcastDeckActivity.startActivity(context, item.cardcastDeck, handler);
                 }
             });
-            holder.remove.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    final ProgressDialog pd = CommonUtils.fastIndeterminateProgressDialog(context, R.string.loading);
-                    CommonUtils.showDialog(context, pd);
 
-                    pyx.removeCardcastCardSet(gid, item.cardcastDeck.code, new PYX.ISuccess() {
-                        @Override
-                        public void onDone(PYX pyx) {
-                            pd.dismiss();
-                            sets.remove(holder.getAdapterPosition());
-                            Toaster.show(context, Utils.Messages.CARDSET_REMOVED, new Runnable() {
-                                @Override
-                                public void run() {
-                                    notifyItemRemoved(holder.getAdapterPosition());
-                                }
-                            });
-                        }
+            if (handler != null && handler.canModifyCardcastDecks()) {
+                holder.remove.setVisibility(View.VISIBLE);
+                holder.remove.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final ProgressDialog pd = CommonUtils.fastIndeterminateProgressDialog(context, R.string.loading);
+                        CommonUtils.showDialog(context, pd);
 
-                        @Override
-                        public void onException(Exception ex) {
-                            pd.dismiss();
-                            Toaster.show(context, Utils.Messages.FAILED_REMOVING_CARDSET, ex);
-                        }
-                    });
-                }
-            });
+                        pyx.removeCardcastCardSet(gid, item.cardcastDeck.code, new PYX.ISuccess() {
+                            @Override
+                            public void onDone(PYX pyx) {
+                                pd.dismiss();
+                                sets.remove(holder.getAdapterPosition());
+                                Toaster.show(context, Utils.Messages.CARDSET_REMOVED, new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        notifyItemRemoved(holder.getAdapterPosition());
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onException(Exception ex) {
+                                pd.dismiss();
+                                Toaster.show(context, Utils.Messages.FAILED_REMOVING_CARDSET, ex);
+                            }
+                        });
+                    }
+                });
+            } else {
+                holder.remove.setVisibility(View.GONE);
+            }
         } else {
             holder.remove.setVisibility(View.GONE);
         }

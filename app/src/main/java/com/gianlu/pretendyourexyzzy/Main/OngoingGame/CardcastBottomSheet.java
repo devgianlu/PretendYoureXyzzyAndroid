@@ -59,7 +59,7 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet {
 
     @Override
     protected boolean onPrepareAction(@NonNull FloatingActionButton fab, Object... payloads) {
-        if (listener.canAddCardcastDeck()) {
+        if (listener.canModifyCardcastDecks()) {
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

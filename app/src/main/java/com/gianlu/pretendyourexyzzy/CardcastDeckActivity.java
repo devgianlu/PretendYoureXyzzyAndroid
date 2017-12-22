@@ -42,7 +42,7 @@ public class CardcastDeckActivity extends AppCompatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.cardcastDeckInfo_add).setVisible(handler != null && handler.canAddCardcastDeck());
+        menu.findItem(R.id.cardcastDeckInfo_add).setVisible(handler != null && handler.canModifyCardcastDecks());
         menu.findItem(R.id.cardcastDeckInfo_toggleStar).setIcon(StarredDecksManager.hasDeck(this, code) ? R.drawable.ic_star_white_48dp : R.drawable.ic_star_border_white_48dp);
         return true;
     }
@@ -115,7 +115,7 @@ public class CardcastDeckActivity extends AppCompatActivity {
     }
 
     public interface IOngoingGame {
-        boolean canAddCardcastDeck();
+        boolean canModifyCardcastDecks();
 
         void addCardcastDeck(String code);
 
