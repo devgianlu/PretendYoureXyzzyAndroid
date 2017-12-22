@@ -93,6 +93,24 @@ public class PreferencesActivity extends AppCompatPreferenceActivity {
                 }
             });
 
+            findPreference("tapTargetView").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                public boolean onPreferenceClick(Preference preference) {
+                    CommonUtils.showDialog(getActivity(), builder
+                            .setTitle("Tap Target View")
+                            .setMessage(R.string.tapTargetView_details));
+                    return true;
+                }
+            });
+
+            findPreference("appIntro").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                public boolean onPreferenceClick(Preference preference) {
+                    CommonUtils.showDialog(getActivity(), builder
+                            .setTitle("App Intro")
+                            .setMessage(R.string.appIntro_details));
+                    return true;
+                }
+            });
+
             findPreference("apacheLicense").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.apache.org/licenses/LICENSE-2.0")));
