@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.gianlu.commonutils.AnalyticsApplication;
 import com.gianlu.commonutils.Prefs;
 import com.github.paolorotolo.appintro.AppIntro;
 import com.github.paolorotolo.appintro.AppIntroBaseFragment;
@@ -55,11 +56,13 @@ public class TutorialActivity extends AppIntro {
 
     @Override
     public void onSkipPressed(Fragment currentFragment) {
+        AnalyticsApplication.sendAnalytics(this, Utils.ACTION_SKIP_TUTORIAL);
         done();
     }
 
     @Override
     public void onDonePressed(Fragment currentFragment) {
+        AnalyticsApplication.sendAnalytics(this, Utils.ACTION_DONE_TUTORIAL);
         done();
     }
 

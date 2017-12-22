@@ -25,7 +25,8 @@ public class Utils {
     public static final String ACTION_JOIN_GAME = "joined_game";
     public static final String ACTION_SPECTATE_GAME = "spectate_game";
     public static final String ACTION_LEFT_GAME = "left_game";
-    public static final String ACTION_SENT_GLOBAL_MSG = "sent_message_global";
+    public static final String ACTION_SKIP_TUTORIAL = "skipped_tutorial";
+    public static final String ACTION_DONE_TUTORIAL = "did_tutorial";
     public static final String ACTION_SENT_GAME_MSG = "sent_message_game";
     public static final String ACTION_ADDED_CARDCAST = "added_cardcast_deck";
     public static final String ACTION_JUDGE_CARD = "judged_card";
