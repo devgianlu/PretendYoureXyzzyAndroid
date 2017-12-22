@@ -172,5 +172,5 @@
     <string name="showBeginnerTutorial_summary">Show the intro tutorial for the app</string>
     <string name="restartInAppTutorial_summary">Features tutorial will be shown again while using the app</string>
     <string name="tapTargetView_details">Copyright 2016 Keepsafe Software Inc.</string>
-    <string name="appIntro_details">Copyright 2015 Paolo Rotolo    Copyright 2016 Maximilian Narr</string>
+    <string name="appIntro_details">Copyright 2015 Paolo Rotolo\nCopyright 2016 Maximilian Narr</string>
 </resources>
