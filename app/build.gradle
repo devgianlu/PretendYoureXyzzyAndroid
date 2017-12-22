@@ -25,6 +25,7 @@ dependencies {
     api 'com.android.support:cardview-v7:27.0.2'
     api 'me.zhanghai.android.materialratingbar:library:1.2.0'
     api 'cz.msebera.android:httpclient:4.4.1.2'
+    api 'com.github.apl-devs:appintro:v4.2.2'
 }
 
 apply plugin: 'com.google.gms.google-services'

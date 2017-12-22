@@ -12,7 +12,8 @@ public enum PKeys implements Prefs.PrefKey {
     STARRED_DECKS("starredDecks"),
     LAST_JSESSIONID("lastJSessionId"),
     CACHED_DECK_NAMES("cachedDeckNames"),
-    CACHED_DECK_CODES("cachedDeckCodes");
+    CACHED_DECK_CODES("cachedDeckCodes"),
+    FIRST_RUN("first_run");
 
     private final String key;
 

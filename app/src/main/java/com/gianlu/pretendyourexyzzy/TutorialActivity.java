@@ -1,0 +1,103 @@
+package com.gianlu.pretendyourexyzzy;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.gianlu.commonutils.Prefs;
+import com.github.paolorotolo.appintro.AppIntro;
+import com.github.paolorotolo.appintro.AppIntroBaseFragment;
+import com.github.paolorotolo.appintro.AppIntroFragment;
+import com.github.paolorotolo.appintro.model.SliderPage;
+
+public class TutorialActivity extends AppIntro {
+    private final static String ROBOTO_MEDIUM = "fonts/Roboto-Medium.ttf";
+    private final static String ROBOTO_THIN = "fonts/Roboto-Thin.ttf";
+
+    private static SliderPage getDefault() {
+        SliderPage page = new SliderPage();
+        page.setDescTypeface(ROBOTO_THIN);
+        page.setTitleTypeface(ROBOTO_MEDIUM);
+        return page;
+    }
+
+    private Fragment newSlide(@StringRes int title, @StringRes int desc, @DrawableRes int image) {
+        SliderPage page = getDefault();
+        page.setTitle(getString(title));
+        page.setDescription(getString(desc));
+        page.setImageDrawable(image);
+        return image == 0 ? NoImageAppIntroFragment.newInstance(page) : AppIntroFragment.newInstance(page);
+    }
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        ActionBar bar = getSupportActionBar();
+        if (bar != null) bar.hide();
+
+        showStatusBar(false);
+        showSkipButton(true);
+        setProgressButtonEnabled(true);
+
+        addSlide(newSlide(R.string.firstTitle, R.string.firstDesc, R.drawable.ic_logo));
+        addSlide(newSlide(R.string.secondTitle, R.string.secondDesc, 0));
+        addSlide(newSlide(R.string.thirdTitle, R.string.thirdDesc, 0));
+        addSlide(newSlide(R.string.fourthTitle, R.string.fourthDesc, 0));
+    }
+
+    @Override
+    public void onSkipPressed(Fragment currentFragment) {
+        done();
+    }
+
+    @Override
+    public void onDonePressed(Fragment currentFragment) {
+        done();
+    }
+
+    private void done() {
+        Prefs.putBoolean(this, PKeys.FIRST_RUN, false);
+        startActivity(new Intent(this, LoadingActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+    }
+
+    public static class NoImageAppIntroFragment extends AppIntroBaseFragment {
+
+        public static NoImageAppIntroFragment newInstance(SliderPage sliderPage) {
+            NoImageAppIntroFragment slide = new NoImageAppIntroFragment();
+            Bundle args = new Bundle();
+            args.putString(ARG_TITLE, sliderPage.getTitleString());
+            args.putString(ARG_TITLE_TYPEFACE, sliderPage.getTitleTypeface());
+            args.putString(ARG_DESC, sliderPage.getDescriptionString());
+            args.putString(ARG_DESC_TYPEFACE, sliderPage.getDescTypeface());
+            args.putInt(ARG_BG_COLOR, sliderPage.getBgColor());
+            args.putInt(ARG_TITLE_COLOR, sliderPage.getTitleColor());
+            args.putInt(ARG_DESC_COLOR, sliderPage.getDescColor());
+            slide.setArguments(args);
+
+            return slide;
+        }
+
+        @Nullable
+        @Override
+        @SuppressWarnings("ConstantConditions")
+        public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+            View v = super.onCreateView(inflater, container, savedInstanceState);
+            ((ViewGroup) v).getChildAt(1).setVisibility(View.GONE);
+            return v;
+        }
+
+        @Override
+        protected int getLayoutId() {
+            return com.github.paolorotolo.appintro.R.layout.fragment_intro;
+        }
+    }
+}

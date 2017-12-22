@@ -82,12 +82,17 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
             @Override
             public void run() {
                 finished = true;
-                if (goTo != null)
-                    startActivity(goTo);
+                if (goTo != null) startActivity(goTo);
             }
         }, 1000);
 
         Logging.clearLogs(this);
+
+        if (Prefs.getBoolean(this, PKeys.FIRST_RUN, true)) {
+            startActivity(new Intent(this, TutorialActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+            return;
+        }
 
         loading = findViewById(R.id.loading_loading);
         register = findViewById(R.id.loading_register);

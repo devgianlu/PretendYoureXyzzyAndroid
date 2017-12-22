@@ -9,7 +9,7 @@
     <!--
     <item
         android:id="@+id/main_globalChat"
-        android:icon="@drawable/ic_chat_black_48dp"
+        andric_logoicon="@drawable/ic_chat_black_48dp"
         android:title="@string/globalChat" />
         -->
 

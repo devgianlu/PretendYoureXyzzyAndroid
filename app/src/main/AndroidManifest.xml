@@ -44,6 +44,12 @@
             </intent-filter>
         </activity>
 
+        <!-- Tutorial activity -->
+        <activity
+            android:name=".TutorialActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/FullscreenTheme" />
+
         <!-- Main activity (with all the fragments) -->
         <activity
             android:name=".MainActivity"
