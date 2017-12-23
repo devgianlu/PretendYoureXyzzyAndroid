@@ -14,12 +14,19 @@ import android.view.ViewGroup;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.NamesAdapter;
+import com.gianlu.pretendyourexyzzy.NetIO.FirestoreHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class NamesFragment extends Fragment implements PYX.IResult<List<String>> {
+    private final FirestoreHelper firestore = FirestoreHelper.getInstance();
     private RecyclerViewLayout layout;
     private int names = -1;
 
@@ -70,12 +77,28 @@ public class NamesFragment extends Fragment implements PYX.IResult<List<String>>
     }
 
     @Override
-    public void onDone(PYX pyx, List<String> result) {
+    public void onDone(PYX pyx, final List<String> result) {
         if (!isAdded()) return;
 
-        layout.loadListData(new NamesAdapter(getContext(), result));
+        firestore.getMobileNicknames().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot snapshot) {
+                loadListData(result, snapshot.getDocuments());
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception ex) {
+                loadListData(result, new ArrayList<DocumentSnapshot>());
+                Logging.logMe(ex);
+            }
+        });
+
         names = result.size();
         updateActivityTitle();
+    }
+
+    private void loadListData(List<String> result, List<DocumentSnapshot> mobiles) {
+        layout.loadListData(new NamesAdapter(getContext(), result, mobiles));
     }
 
     @Override

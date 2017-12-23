@@ -64,6 +64,7 @@ public class PYX {
     private final HttpClient client;
     private final SharedPreferences preferences;
     private final BasicCookieStore cookieStore;
+    private final FirestoreHelper firestore;
     public FirstLoad firstLoad;
     private PollingThread pollingThread;
     private boolean hasRetriedFirstLoad = false;
@@ -74,6 +75,7 @@ public class PYX {
         this.server = Servers.valueOf(Prefs.getString(context, PKeys.LAST_SERVER, Servers.PYX1.name()));
         this.client = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        this.firestore = FirestoreHelper.getInstance();
 
         String lastJSessionId = getLastJSessionId();
         if (lastJSessionId != null) {
@@ -210,6 +212,8 @@ public class PYX {
                             listener.onDone(PYX.this, user);
                         }
                     });
+
+                    firestore.setNickname(server, nickname);
                 } catch (PYXException | IOException | JSONException ex) {
                     handler.post(new Runnable() {
                         @Override
@@ -233,6 +237,7 @@ public class PYX {
                     }
 
                     ajaxServletRequestSync(OP.LOGOUT);
+                    firestore.loggedOut();
 
                     removeLastJSessionId();
                     firstLoad = null;
