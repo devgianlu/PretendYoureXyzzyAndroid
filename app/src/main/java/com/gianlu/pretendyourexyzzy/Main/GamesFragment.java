@@ -203,14 +203,14 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     @Override
     public void onHiddenChanged(boolean hidden) {
         if (!hidden) updateActivityTitle();
+        if (adapter != null)
+            adapter.setFilterOutLockedLobbies(Prefs.getBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, false));
     }
 
     @Override
     public void onResume() {
         super.onResume();
         updateActivityTitle();
-        if (adapter != null)
-            adapter.setFilterOutLockedLobbies(Prefs.getBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, false));
     }
 
     public void scrollToTop() {

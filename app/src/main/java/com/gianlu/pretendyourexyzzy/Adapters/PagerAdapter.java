@@ -2,12 +2,12 @@ package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class PagerAdapter extends FragmentPagerAdapter {
+public class PagerAdapter extends FragmentStatePagerAdapter {
     private final List<Fragment> fragments;
 
     public PagerAdapter(FragmentManager fm, Fragment... fragments) {
