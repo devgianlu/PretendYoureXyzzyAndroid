@@ -98,6 +98,7 @@ public class NamesFragment extends Fragment implements PYX.IResult<List<String>>
     }
 
     private void loadListData(List<String> result, List<DocumentSnapshot> mobiles) {
+        if (!isAdded()) return;
         layout.loadListData(new NamesAdapter(getContext(), result, mobiles));
     }
 
