@@ -29,6 +29,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -111,16 +112,18 @@ public class PYX {
         HttpPost post = new HttpPost(server.uri.toString() + "AjaxServlet");
         List<NameValuePair> paramsList = new ArrayList<>(Arrays.asList(params));
         paramsList.add(new BasicNameValuePair("o", operation.val));
-        post.setEntity(new UrlEncodedFormEntity(paramsList));
+        post.setEntity(new UrlEncodedFormEntity(paramsList, Charset.forName("UTF-8")));
 
         HttpResponse resp = client.execute(post);
         updateJSessionId();
 
         StatusLine sl = resp.getStatusLine();
-        if (sl.getStatusCode() != HttpStatus.SC_OK)
+        if (sl.getStatusCode() != HttpStatus.SC_OK) {
+            post.releaseConnection();
             throw new StatusCodeException(sl);
+        }
 
-        JSONObject obj = new JSONObject(EntityUtils.toString(resp.getEntity()));
+        JSONObject obj = new JSONObject(EntityUtils.toString(resp.getEntity(), Charset.forName("UTF-8")));
         post.releaseConnection();
 
         try {
