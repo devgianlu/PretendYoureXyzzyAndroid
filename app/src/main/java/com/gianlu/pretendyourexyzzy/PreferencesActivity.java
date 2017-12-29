@@ -12,12 +12,13 @@ import com.gianlu.commonutils.AppCompatPreferenceActivity;
 import com.gianlu.commonutils.AppCompatPreferenceFragment;
 import com.gianlu.commonutils.BaseAboutFragment;
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.DeletableItemsAdapter;
 import com.gianlu.commonutils.LogsActivity;
+import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 
 import java.util.List;
 
 public class PreferencesActivity extends AppCompatPreferenceActivity {
-
 
     @Override
     public void onBuildHeaders(List<Header> target) {
@@ -42,6 +43,34 @@ public class PreferencesActivity extends AppCompatPreferenceActivity {
             addPreferencesFromResource(R.xml.pref_general);
             getActivity().setTitle(R.string.general);
             setHasOptionsMenu(true);
+
+            findPreference("viewServers").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    final List<PYX.Server> servers = PYX.Server.loadUserServers(getActivity());
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle(R.string.changeServer)
+                            .setAdapter(new DeletableItemsAdapter<>(getActivity(), servers, new DeletableItemsAdapter.OnDelete<PYX.Server>() {
+                                @Override
+                                public void delete(PYX.Server element) {
+                                    PYX.Server.removeServer(getActivity(), element);
+                                }
+                            }), null)
+                            .setNeutralButton(android.R.string.ok, null);
+
+                    CommonUtils.showDialog(getActivity(), builder);
+                    return true;
+                }
+            });
+
+            findPreference("clearServers").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    PYX.Server.clearUserServers(getActivity());
+                    return true;
+                }
+            });
 
             findPreference("showTutorial").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {

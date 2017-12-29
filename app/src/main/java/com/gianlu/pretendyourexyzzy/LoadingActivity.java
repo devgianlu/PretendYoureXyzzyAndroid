@@ -116,11 +116,17 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                                 return;
                             }
 
+                            String uriStr = uriText.getText().toString();
+                            if (uriStr.isEmpty()) {
+                                Toaster.show(LoadingActivity.this, Utils.Messages.INVALID_SERVER_URL);
+                                return;
+                            }
+
                             URI uri;
                             try {
-                                uri = URI.create(uriText.getText().toString());
+                                uri = URI.create(uriStr);
                             } catch (IllegalArgumentException ex) {
-                                Toaster.show(LoadingActivity.this, Utils.Messages.INVALID_SERVER_URL);
+                                Toaster.show(LoadingActivity.this, Utils.Messages.INVALID_SERVER_URL, ex);
                                 return;
                             }
 

@@ -916,6 +916,32 @@ public class PYX {
             Prefs.putJSONArray(context, PKeys.USER_SERVERS, array);
         }
 
+        public static void clearUserServers(Context context) {
+            Prefs.remove(context, PKeys.USER_SERVERS);
+        }
+
+        public static void removeServer(Context context, Server server) {
+            try {
+                JSONArray array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
+                for (int i = 0; i < array.length(); i++) {
+                    JSONObject obj = array.getJSONObject(i);
+                    if (Objects.equals(obj.optString("name"), server.name)) {
+                        array.remove(i);
+                        break;
+                    }
+                }
+
+                Prefs.putJSONArray(context, PKeys.USER_SERVERS, array);
+            } catch (JSONException ex) {
+                Logging.logMe(ex);
+            }
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+
         private JSONObject toJSON() throws JSONException {
             return new JSONObject()
                     .put("name", name)

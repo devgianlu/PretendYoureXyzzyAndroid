@@ -180,4 +180,10 @@
     <string name="failedAddingServer">Failed adding a new server!</string>
     <string name="invalidServerURL">The server URL is invalid.</string>
     <string name="serverAlreadyExists">A server with this name already exists.</string>
+    <string name="tutorial">Tutorial</string>
+    <string name="servers">Servers</string>
+    <string name="viewServers">View user added servers</string>
+    <string name="clearServers">Clear user added servers</string>
+    <string name="viewServers_summary">View or delete user added servers</string>
+    <string name="clearServers_summary">Remove all user added servers</string>
 </resources>
