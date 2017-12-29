@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -12,6 +13,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
@@ -27,7 +29,11 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
 
+import org.json.JSONException;
+
+import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,23 +53,92 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
     private boolean launchGameShouldRequest;
 
     private void changeServerDialog(boolean dismissible) {
-        int selectedServer = CommonUtils.indexOf(PYX.Servers.values(), PYX.Servers.valueOf(Prefs.getString(LoadingActivity.this, PKeys.LAST_SERVER, PYX.Servers.PYX1.name())));
+        final List<PYX.Server> availableServers = new ArrayList<>();
+        availableServers.addAll(PYX.Server.pyxServers.values());
+        availableServers.addAll(PYX.Server.loadUserServers(this));
+
+        int selectedServer = PYX.Server.indexOf(availableServers, Prefs.getString(LoadingActivity.this, PKeys.LAST_SERVER, "PYX1"));
+        if (selectedServer < 0) selectedServer = 0;
+
+        CharSequence[] availableStrings = new CharSequence[availableServers.size()];
+        for (int i = 0; i < availableStrings.length; i++)
+            availableStrings[i] = availableServers.get(i).name;
+
         AlertDialog.Builder builder = new AlertDialog.Builder(LoadingActivity.this);
         builder.setTitle(R.string.changeServer)
                 .setCancelable(dismissible)
-                .setSingleChoiceItems(PYX.Servers.formalValues(), selectedServer, new DialogInterface.OnClickListener() {
+                .setSingleChoiceItems(availableStrings, selectedServer, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
-                        setServer(PYX.Servers.values()[which]);
+                        setServer(availableServers.get(which));
                         recreate();
                     }
                 });
+
+        builder.setNeutralButton(R.string.add, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                createNewServerDialog();
+                dialog.dismiss();
+            }
+        });
 
         if (dismissible)
             builder.setNegativeButton(android.R.string.cancel, null);
 
         CommonUtils.showDialog(LoadingActivity.this, builder);
+    }
+
+    @SuppressLint("InflateParams")
+    private void createNewServerDialog() {
+        LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_create_server, null, false);
+        final EditText nameText = layout.findViewById(R.id.createServer_name);
+        final EditText uriText = layout.findViewById(R.id.createServer_uri);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.createServer)
+                .setView(layout)
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.create, null);
+
+        final AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(final DialogInterface dialogInterface) {
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        try {
+                            String name = nameText.getText().toString();
+                            if (!PYX.Server.isNameOk(LoadingActivity.this, name)) {
+                                Toaster.show(LoadingActivity.this, Utils.Messages.SERVER_ALREADY_EXISTS);
+                                return;
+                            }
+
+                            URI uri;
+                            try {
+                                uri = URI.create(uriText.getText().toString());
+                            } catch (IllegalArgumentException ex) {
+                                Toaster.show(LoadingActivity.this, Utils.Messages.INVALID_SERVER_URL);
+                                return;
+                            }
+
+                            PYX.Server server = new PYX.Server(uri, name);
+                            PYX.Server.addServer(LoadingActivity.this, server);
+                            setServer(server);
+                            recreate();
+                        } catch (JSONException ex) {
+                            Toaster.show(LoadingActivity.this, Utils.Messages.FAILED_ADDING_SERVER, ex);
+                        }
+
+                        dialogInterface.dismiss();
+                    }
+                });
+            }
+        });
+
+        CommonUtils.showDialog(this, dialog);
     }
 
     @Override
@@ -113,7 +188,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
         if (Objects.equals(getIntent().getAction(), Intent.ACTION_VIEW) || Objects.equals(getIntent().getAction(), Intent.ACTION_SEND)) {
             Uri url = getIntent().getData();
             if (url != null) {
-                PYX.Servers server = PYX.Servers.fromUrl(url.toString());
+                PYX.Server server = PYX.Server.fromPyxUrl(url.toString());
                 if (server != null) setServer(server);
 
                 String fragment = url.getFragment();
@@ -153,9 +228,9 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
         }).start();
     }
 
-    private void setServer(PYX.Servers server) {
+    private void setServer(PYX.Server server) {
         PYX.invalidate();
-        Prefs.putString(LoadingActivity.this, PKeys.LAST_SERVER, server.name());
+        Prefs.putString(LoadingActivity.this, PKeys.LAST_SERVER, server.name);
     }
 
     @SuppressWarnings("ConstantConditions")

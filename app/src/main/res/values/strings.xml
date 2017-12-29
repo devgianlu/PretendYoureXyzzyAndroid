@@ -149,7 +149,7 @@
     <string name="tutorial_chooseNickname">Choose a nickname</string>
     <string name="tutorial_chooseNickname_desc">Select a nickname to play, this won\'t be permanent.</string>
     <string name="tutorial_changeServer">Change server</string>
-    <string name="tutorial_changeServer_desc">There are multiple servers available, choose the one you like the most.</string>
+    <string name="tutorial_changeServer_desc">There are multiple servers available, choose the one you like the most. You can also create your own server and add it here.</string>
     <string name="tutorial_joinTheServer">Join the server</string>
     <string name="tutorial_joinTheServer_desc">Get ready to play and join the lobby, here you\'ll be pleased with many games.</string>
     <string name="tutorial_gameStatus">Game status</string>
@@ -173,4 +173,11 @@
     <string name="restartInAppTutorial_summary">Features tutorial will be shown again while using the app</string>
     <string name="tapTargetView_details">Copyright 2016 Keepsafe Software Inc.</string>
     <string name="appIntro_details">Copyright 2015 Paolo Rotolo\nCopyright 2016 Maximilian Narr</string>
+    <string name="createServer">Create server</string>
+    <string name="cancel">Cancel</string>
+    <string name="url">URL</string>
+    <string name="create">Create</string>
+    <string name="failedAddingServer">Failed adding a new server!</string>
+    <string name="invalidServerURL">The server URL is invalid.</string>
+    <string name="serverAlreadyExists">A server with this name already exists.</string>
 </resources>

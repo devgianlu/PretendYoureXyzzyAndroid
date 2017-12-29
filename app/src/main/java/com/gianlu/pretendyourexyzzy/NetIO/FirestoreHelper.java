@@ -60,13 +60,13 @@ public class FirestoreHelper {
         }
     }
 
-    public void setNickname(final PYX.Servers server, final String nickname) {
+    public void setNickname(final PYX.Server server, final String nickname) {
         executorService.execute(new Runnable() {
             @Override
             public void run() {
                 Map<String, Object> data = new HashMap<>();
                 data.put("nickname", nickname);
-                data.put("server", server.name());
+                data.put("server", server.uri);
 
                 try {
                     FirebaseUser user = getCurrentUserSync();

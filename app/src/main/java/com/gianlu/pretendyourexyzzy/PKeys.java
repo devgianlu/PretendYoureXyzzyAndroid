@@ -7,6 +7,7 @@ public enum PKeys implements Prefs.PrefKey {
     LAST_NICKNAME("lastNickname"),
     FILTER_LOCKED_LOBBIES("filterLockedLobbies"),
     LAST_SERVER("lastServer"),
+    USER_SERVERS("userServers"),
     STARRED_CARDS("starredCards"),
     KEEP_SCREEN_ON("keepScreenOn"),
     STARRED_DECKS("starredDecks"),

@@ -21,7 +21,7 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
     private final LayoutInflater inflater;
     private final List<DocumentSnapshot> mobiles;
     private final List<String> players;
-    private final PYX.Servers currentServer;
+    private final PYX.Server currentServer;
 
     public NamesAdapter(Context context, List<String> players, List<DocumentSnapshot> mobiles) {
         this.players = players;
@@ -51,7 +51,7 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
 
     private boolean isMobile(String name) {
         for (DocumentSnapshot snapshot : mobiles)
-            if (Objects.equals(snapshot.getString("nickname"), name) && Objects.equals(snapshot.getString("server"), currentServer.name()))
+            if (Objects.equals(snapshot.getString("nickname"), name) && Objects.equals(snapshot.getString("server"), currentServer.uri.toString()))
                 return true;
 
         return false;

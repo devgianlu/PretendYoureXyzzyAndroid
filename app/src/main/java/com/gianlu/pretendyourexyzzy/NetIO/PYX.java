@@ -33,7 +33,9 @@ import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
@@ -59,7 +61,7 @@ import cz.msebera.android.httpclient.util.EntityUtils;
 
 public class PYX {
     private static PYX instance;
-    public final Servers server;
+    public final Server server;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler handler;
     private final HttpClient client;
@@ -73,7 +75,7 @@ public class PYX {
     private PYX(Context context) {
         this.handler = new Handler(context.getMainLooper());
         this.cookieStore = new BasicCookieStore();
-        this.server = Servers.valueOf(Prefs.getString(context, PKeys.LAST_SERVER, Servers.PYX1.name()));
+        this.server = Server.lastServer(context);
         this.client = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
         this.firestore = FirestoreHelper.getInstance();
@@ -773,45 +775,6 @@ public class PYX {
         }
     }
 
-    public enum Servers {
-        PYX1(URI.create("https://pyx-1.pretendyoure.xyz/zy/"), "The Biggest, Blackest Dick"),
-        PYX2(URI.create("https://pyx-2.pretendyoure.xyz/zy/"), "A Falcon with a Box on its Head"),
-        PYX3(URI.create("https://pyx-3.pretendyoure.xyz/zy/"), "Dickfingers");
-
-        private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
-        public final URI uri;
-        public final String name;
-
-        Servers(URI uri, String name) {
-            this.uri = uri;
-            this.name = name;
-        }
-
-        @Nullable
-        public static Servers fromUrl(String url) {
-            Matcher matcher = URL_PATTERN.matcher(url);
-            if (matcher.find()) {
-                switch (matcher.group(1)) {
-                    case "1":
-                        return PYX1;
-                    case "2":
-                        return PYX2;
-                    case "3":
-                        return PYX3;
-                }
-            }
-
-            return null;
-        }
-
-        public static String[] formalValues() {
-            Servers[] values = values();
-            String[] formalValues = new String[values.length];
-            for (int i = 0; i < values.length; i++) formalValues[i] = values[i].name;
-            return formalValues;
-        }
-    }
-
     public interface IGameInfoAndCards {
         void onGameInfoAndCards(GameInfo info, GameCards cards);
 
@@ -834,6 +797,130 @@ public class PYX {
         void onPollMessage(PollMessage message) throws JSONException;
 
         void onStoppedPolling();
+    }
+
+    public static class Server {
+        public final static Map<String, Server> pyxServers = new HashMap<>();
+        private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
+
+        static {
+            pyxServers.put("PYX1", new Server(URI.create("https://pyx-1.pretendyoure.xyz/zy/"), "The Biggest, Blackest Dick"));
+            pyxServers.put("PYX2", new Server(URI.create("https://pyx-2.pretendyoure.xyz/zy/"), "A Falcon with a Box on its Head"));
+            pyxServers.put("PYX3", new Server(URI.create("https://pyx-3.pretendyoure.xyz/zy/"), "Dickfingers"));
+        }
+
+        public final URI uri;
+        public final String name;
+
+        public Server(URI uri, String name) {
+            this.uri = uri;
+            this.name = name;
+        }
+
+        public Server(JSONObject obj) throws JSONException {
+            uri = URI.create(obj.getString("uri"));
+            name = obj.getString("name");
+        }
+
+        @Nullable
+        public static Server fromPyxUrl(String url) {
+            Matcher matcher = URL_PATTERN.matcher(url);
+            if (matcher.find()) {
+                switch (matcher.group(1)) {
+                    case "1":
+                        return pyxServers.get("PYX1");
+                    case "2":
+                        return pyxServers.get("PYX2");
+                    case "3":
+                        return pyxServers.get("PYX3");
+                }
+            }
+
+            return null;
+        }
+
+        public static int indexOf(List<Server> servers, String name) {
+            for (int i = 0; i < servers.size(); i++)
+                if (Objects.equals(servers.get(i).name, name))
+                    return i;
+
+            return -1;
+        }
+
+        @NonNull
+        public static List<Server> loadUserServers(Context context) {
+            List<Server> servers = new ArrayList<>();
+            JSONArray array;
+            try {
+                array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
+            } catch (JSONException ex) {
+                Logging.logMe(ex);
+                return new ArrayList<>();
+            }
+
+            for (int i = 0; i < array.length(); i++) {
+                try {
+                    servers.add(new Server(array.getJSONObject(i)));
+                } catch (JSONException ex) {
+                    Logging.logMe(ex);
+                }
+            }
+
+            return servers;
+        }
+
+        public static boolean isNameOk(Context context, String name) {
+            try {
+                return !(name == null || name.isEmpty() || getUserServer(context, name) != null);
+            } catch (Exception ex) {
+                Logging.logMe(ex);
+                return false;
+            }
+        }
+
+        @Nullable
+        public static Server getUserServer(Context context, String name) throws JSONException {
+            JSONArray array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject obj = array.getJSONObject(i);
+                if (Objects.equals(obj.optString("name"), name))
+                    return new Server(obj);
+            }
+
+            return null;
+        }
+
+        @NonNull
+        public static Server lastServer(Context context) {
+            String name = Prefs.getString(context, PKeys.LAST_SERVER, "PYX1");
+
+            Server server = null;
+            if (name.startsWith("PYX")) server = fromPyxUrl(name);
+
+            if (server == null) {
+                try {
+                    server = getUserServer(context, name);
+                } catch (JSONException ex) {
+                    Logging.logMe(ex);
+                }
+            }
+
+            if (server == null) server = pyxServers.get("PYX1");
+
+            return server;
+        }
+
+        public static void addServer(Context context, Server server) throws JSONException {
+            JSONArray array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
+            array.put(server.toJSON());
+            Prefs.putJSONArray(context, PKeys.USER_SERVERS, array);
+        }
+
+        private JSONObject toJSON() throws JSONException {
+            return new JSONObject()
+                    .put("name", name)
+                    .put("uri", uri.toString());
+        }
     }
 
     public class PollingThread extends Thread {

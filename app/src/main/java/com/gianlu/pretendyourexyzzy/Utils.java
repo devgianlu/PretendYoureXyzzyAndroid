@@ -142,5 +142,8 @@ public class Utils {
         public static final Toaster.Message STARRED_CARD = new Toaster.Message(R.string.addedCardToStarred, false);
         public static final Toaster.Message CARDSET_REMOVED = new Toaster.Message(R.string.cardcastDeckRemoved, false);
         public static final Toaster.Message FAILED_REMOVING_CARDSET = new Toaster.Message(R.string.failedRemovingCardcastDeck, true);
+        public static final Toaster.Message SERVER_ALREADY_EXISTS = new Toaster.Message(R.string.serverAlreadyExists, false);
+        public static final Toaster.Message INVALID_SERVER_URL = new Toaster.Message(R.string.invalidServerURL, false);
+        public static final Toaster.Message FAILED_ADDING_SERVER = new Toaster.Message(R.string.failedAddingServer, true);
     }
 }
