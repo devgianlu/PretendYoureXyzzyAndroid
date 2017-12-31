@@ -44,11 +44,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cz.msebera.android.httpclient.HttpEntity;
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.HttpStatus;
 import cz.msebera.android.httpclient.NameValuePair;
 import cz.msebera.android.httpclient.StatusLine;
 import cz.msebera.android.httpclient.client.HttpClient;
+import cz.msebera.android.httpclient.client.config.RequestConfig;
 import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity;
 import cz.msebera.android.httpclient.client.methods.HttpPost;
 import cz.msebera.android.httpclient.cookie.Cookie;
@@ -60,6 +62,7 @@ import cz.msebera.android.httpclient.util.EntityUtils;
 
 
 public class PYX {
+    private final static int CONNECTION_TIMEOUT = 5000;
     private static PYX instance;
     public final Server server;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -76,9 +79,14 @@ public class PYX {
         this.handler = new Handler(context.getMainLooper());
         this.cookieStore = new BasicCookieStore();
         this.server = Server.lastServer(context);
-        this.client = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
         this.firestore = FirestoreHelper.getInstance();
+        this.client = HttpClients.custom()
+                .setDefaultRequestConfig(RequestConfig.custom()
+                        .setConnectTimeout(CONNECTION_TIMEOUT)
+                        .setSocketTimeout(CONNECTION_TIMEOUT)
+                        .setConnectionRequestTimeout(CONNECTION_TIMEOUT).build())
+                .setDefaultCookieStore(cookieStore).build();
 
         String lastJSessionId = getLastJSessionId();
         if (lastJSessionId != null) {
@@ -119,32 +127,31 @@ public class PYX {
         HttpResponse resp = client.execute(post);
         updateJSessionId();
 
-        StatusLine sl = resp.getStatusLine();
-        if (sl.getStatusCode() != HttpStatus.SC_OK) {
+        HttpEntity entity = resp.getEntity();
+        if (entity != null) {
+            JSONObject obj = new JSONObject(EntityUtils.toString(entity, Charset.forName("UTF-8")));
             post.releaseConnection();
-            throw new StatusCodeException(sl);
-        }
 
-        JSONObject obj = new JSONObject(EntityUtils.toString(resp.getEntity(), Charset.forName("UTF-8")));
-        post.releaseConnection();
+            try {
+                raiseException(obj);
+            } catch (PYXException ex) {
+                Crashlytics.log(operation + "; " + Arrays.toString(params) + "; " + ex.errorCode + "; " + hasRetriedFirstLoad);
+                Crashlytics.logException(ex);
 
-        try {
-            raiseException(obj);
-        } catch (PYXException ex) {
-            Crashlytics.log(operation + "; " + Arrays.toString(params) + "; " + ex.errorCode + "; " + hasRetriedFirstLoad);
-            Crashlytics.logException(ex);
+                if (operation == OP.FIRST_LOAD && !hasRetriedFirstLoad && Objects.equals(ex.errorCode, "se")) {
+                    hasRetriedFirstLoad = true;
+                    return ajaxServletRequestSync(operation, params);
+                }
 
-            if (operation == OP.FIRST_LOAD && !hasRetriedFirstLoad && Objects.equals(ex.errorCode, "se")) {
-                hasRetriedFirstLoad = true;
-                return ajaxServletRequestSync(operation, params);
+                throw ex;
             }
 
-            throw ex;
+            Crashlytics.log(operation + "; " + Arrays.toString(params));
+
+            return obj;
+        } else {
+            throw new StatusCodeException(resp.getStatusLine());
         }
-
-        Crashlytics.log(operation + "; " + Arrays.toString(params));
-
-        return obj;
     }
 
     public void startPolling() {
