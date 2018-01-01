@@ -226,7 +226,7 @@ public class PYX {
                         }
                     });
 
-                    firestore.setNickname(server, nickname);
+                    // firestore.setNickname(server, nickname);
                 } catch (PYXException | IOException | JSONException ex) {
                     handler.post(new Runnable() {
                         @Override
@@ -250,7 +250,7 @@ public class PYX {
                     }
 
                     ajaxServletRequestSync(OP.LOGOUT);
-                    firestore.loggedOut();
+                    // firestore.loggedOut();
 
                     removeLastJSessionId();
                     firstLoad = null;

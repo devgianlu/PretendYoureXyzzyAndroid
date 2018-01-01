@@ -17,10 +17,7 @@ import com.gianlu.pretendyourexyzzy.Adapters.NamesAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.FirestoreHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,6 +77,9 @@ public class NamesFragment extends Fragment implements PYX.IResult<List<String>>
     public void onDone(PYX pyx, final List<String> result) {
         if (!isAdded()) return;
 
+        loadListData(result, new ArrayList<DocumentSnapshot>());
+
+        /*
         firestore.getMobileNicknames().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot snapshot) {
@@ -92,6 +92,7 @@ public class NamesFragment extends Fragment implements PYX.IResult<List<String>>
                 Logging.logMe(ex);
             }
         });
+        */
 
         names = result.size();
         updateActivityTitle();
