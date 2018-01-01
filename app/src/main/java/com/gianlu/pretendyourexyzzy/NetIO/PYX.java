@@ -56,6 +56,7 @@ import cz.msebera.android.httpclient.client.config.RequestConfig;
 import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity;
 import cz.msebera.android.httpclient.client.methods.HttpPost;
 import cz.msebera.android.httpclient.client.protocol.HttpClientContext;
+import cz.msebera.android.httpclient.conn.ConnectionPoolTimeoutException;
 import cz.msebera.android.httpclient.cookie.Cookie;
 import cz.msebera.android.httpclient.impl.client.BasicCookieStore;
 import cz.msebera.android.httpclient.impl.client.HttpClients;
@@ -120,7 +121,7 @@ public class PYX {
     }
 
     private static void raiseException(JSONObject obj) throws PYXException {
-        if (obj.optBoolean("e", false)) throw new PYXException(obj);
+        if (obj.optBoolean("e", false) || obj.has("ec")) throw new PYXException(obj);
     }
 
     @NonNull
@@ -129,13 +130,25 @@ public class PYX {
         return pollingThread;
     }
 
-    private JSONObject ajaxServletRequestSync(OP operation, NameValuePair... params) throws IOException, JSONException, PYXException {
+    private JSONObject ajaxServletRequestSync(OP operation, NameValuePair... params) throws JSONException, PYXException, IOException {
+        return ajaxServletRequestSync(operation, false, params);
+    }
+
+    private JSONObject ajaxServletRequestSync(OP operation, boolean retry, NameValuePair... params) throws IOException, JSONException, PYXException {
         HttpPost post = new HttpPost(server.uri.toString() + "AjaxServlet");
         List<NameValuePair> paramsList = new ArrayList<>(Arrays.asList(params));
         paramsList.add(new BasicNameValuePair("o", operation.val));
         post.setEntity(new UrlEncodedFormEntity(paramsList, Charset.forName("UTF-8")));
 
-        HttpResponse resp = client.execute(post, ajaxContext);
+        HttpResponse resp;
+        try {
+            resp = client.execute(post, ajaxContext);
+        } catch (ConnectionPoolTimeoutException ex) {
+            Logging.logMe(ex);
+            if (retry) throw ex;
+            else return ajaxServletRequestSync(operation, true, params);
+        }
+
         updateJSessionId();
 
         HttpEntity entity = resp.getEntity();
@@ -151,7 +164,7 @@ public class PYX {
 
                 if (operation == OP.FIRST_LOAD && !hasRetriedFirstLoad && Objects.equals(ex.errorCode, "se")) {
                     hasRetriedFirstLoad = true;
-                    return ajaxServletRequestSync(operation, params);
+                    return ajaxServletRequestSync(operation, false, params);
                 }
 
                 throw ex;
