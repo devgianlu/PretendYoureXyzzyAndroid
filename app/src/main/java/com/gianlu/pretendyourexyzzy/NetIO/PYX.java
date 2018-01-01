@@ -41,6 +41,7 @@ import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,6 +55,7 @@ import cz.msebera.android.httpclient.client.HttpClient;
 import cz.msebera.android.httpclient.client.config.RequestConfig;
 import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity;
 import cz.msebera.android.httpclient.client.methods.HttpPost;
+import cz.msebera.android.httpclient.client.protocol.HttpClientContext;
 import cz.msebera.android.httpclient.cookie.Cookie;
 import cz.msebera.android.httpclient.impl.client.BasicCookieStore;
 import cz.msebera.android.httpclient.impl.client.HttpClients;
@@ -63,7 +65,8 @@ import cz.msebera.android.httpclient.util.EntityUtils;
 
 
 public class PYX {
-    private final static int CONNECTION_TIMEOUT = 5000;
+    private final static int AJAX_TIMEOUT = (int) TimeUnit.SECONDS.toMillis(5);
+    private final static int POLLING_TIMEOUT = (int) TimeUnit.SECONDS.toMillis(30);
     private static PYX instance;
     public final Server server;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -71,7 +74,8 @@ public class PYX {
     private final HttpClient client;
     private final SharedPreferences preferences;
     private final BasicCookieStore cookieStore;
-    private final FirestoreHelper firestore;
+    private final HttpClientContext ajaxContext;
+    private final HttpClientContext pollingContext;
     public FirstLoad firstLoad;
     private PollingThread pollingThread;
     private boolean hasRetriedFirstLoad = false;
@@ -81,13 +85,19 @@ public class PYX {
         this.cookieStore = new BasicCookieStore();
         this.server = Server.lastServer(context);
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        this.firestore = FirestoreHelper.getInstance();
-        this.client = HttpClients.custom()
-                .setDefaultRequestConfig(RequestConfig.custom()
-                        .setConnectTimeout(CONNECTION_TIMEOUT)
-                        .setSocketTimeout(CONNECTION_TIMEOUT)
-                        .setConnectionRequestTimeout(CONNECTION_TIMEOUT).build())
-                .setDefaultCookieStore(cookieStore).build();
+        this.client = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
+
+        this.ajaxContext = new HttpClientContext();
+        this.ajaxContext.setRequestConfig(RequestConfig.custom()
+                .setConnectTimeout(AJAX_TIMEOUT)
+                .setSocketTimeout(AJAX_TIMEOUT)
+                .setConnectionRequestTimeout(AJAX_TIMEOUT).build());
+
+        this.pollingContext = new HttpClientContext();
+        this.pollingContext.setRequestConfig(RequestConfig.custom()
+                .setConnectTimeout(POLLING_TIMEOUT)
+                .setSocketTimeout(POLLING_TIMEOUT)
+                .setConnectionRequestTimeout(POLLING_TIMEOUT).build());
 
         String lastJSessionId = getLastJSessionId();
         if (lastJSessionId != null) {
@@ -125,7 +135,7 @@ public class PYX {
         paramsList.add(new BasicNameValuePair("o", operation.val));
         post.setEntity(new UrlEncodedFormEntity(paramsList, Charset.forName("UTF-8")));
 
-        HttpResponse resp = client.execute(post);
+        HttpResponse resp = client.execute(post, ajaxContext);
         updateJSessionId();
 
         HttpEntity entity = resp.getEntity();
@@ -825,7 +835,7 @@ public class PYX {
             this.name = name;
         }
 
-        public Server(JSONObject obj) throws JSONException {
+        Server(JSONObject obj) throws JSONException {
             uri = URI.create(obj.getString("uri"));
             name = obj.getString("name");
         }
@@ -978,7 +988,7 @@ public class PYX {
             while (!shouldStop) {
                 try {
                     HttpPost post = new HttpPost(server.uri.toString() + "LongPollServlet");
-                    HttpResponse resp = client.execute(post);
+                    HttpResponse resp = client.execute(post, pollingContext);
 
                     StatusLine sl = resp.getStatusLine();
                     if (sl.getStatusCode() != HttpStatus.SC_OK)
