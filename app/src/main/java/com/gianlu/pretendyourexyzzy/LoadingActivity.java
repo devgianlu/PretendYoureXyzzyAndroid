@@ -22,7 +22,7 @@ import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.ConnectivityChecker;
 import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.Prefs;
+import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;

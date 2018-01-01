@@ -11,8 +11,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.gianlu.commonutils.AnalyticsApplication;
-import com.gianlu.commonutils.Prefs;
+import com.gianlu.commonutils.Analytics.AnalyticsApplication;
+import com.gianlu.commonutils.Preferences.Prefs;
 import com.github.paolorotolo.appintro.AppIntro;
 import com.github.paolorotolo.appintro.AppIntroBaseFragment;
 import com.github.paolorotolo.appintro.AppIntroFragment;

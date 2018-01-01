@@ -11,8 +11,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.gianlu.commonutils.Adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.Sorting.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.R;

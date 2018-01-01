@@ -2,9 +2,9 @@ package com.gianlu.pretendyourexyzzy.Cards;
 
 import android.content.Context;
 
-import com.gianlu.commonutils.AnalyticsApplication;
+import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.Prefs;
+import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.PKeys;

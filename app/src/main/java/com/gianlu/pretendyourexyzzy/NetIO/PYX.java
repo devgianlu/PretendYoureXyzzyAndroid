@@ -8,9 +8,10 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.crashlytics.android.Crashlytics;
+import com.gianlu.commonutils.Adapters.GeneralItemsAdapter;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.Prefs;
+import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
@@ -806,7 +807,7 @@ public class PYX {
         void onStoppedPolling();
     }
 
-    public static class Server {
+    public static class Server implements GeneralItemsAdapter.Item {
         public final static Map<String, Server> pyxServers = new HashMap<>();
         private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
 
@@ -953,6 +954,17 @@ public class PYX {
             return new JSONObject()
                     .put("name", name)
                     .put("uri", uri.toString());
+        }
+
+        @Override
+        public String getPrimaryText() {
+            return name;
+        }
+
+        @Nullable
+        @Override
+        public String getSecondaryText() {
+            return uri.toString();
         }
     }
 

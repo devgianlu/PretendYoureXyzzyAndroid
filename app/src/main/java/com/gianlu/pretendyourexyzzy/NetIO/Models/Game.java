@@ -7,8 +7,8 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 
+import com.gianlu.commonutils.Adapters.Filterable;
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.Sorting.Filterable;
 import com.gianlu.pretendyourexyzzy.R;
 
 import org.json.JSONArray;

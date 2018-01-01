@@ -13,7 +13,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
-import com.gianlu.commonutils.AnalyticsApplication;
+import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.SuppressingLinearLayoutManager;
 import com.gianlu.commonutils.Toaster;

@@ -1,6 +1,6 @@
 package com.gianlu.pretendyourexyzzy;
 
-import com.gianlu.commonutils.Prefs;
+import com.gianlu.commonutils.Preferences.Prefs;
 
 
 public enum PKeys implements Prefs.PrefKey {

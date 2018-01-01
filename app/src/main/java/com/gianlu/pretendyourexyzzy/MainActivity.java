@@ -13,8 +13,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
-import com.gianlu.commonutils.AnalyticsApplication;
-import com.gianlu.commonutils.Prefs;
+import com.gianlu.commonutils.Analytics.AnalyticsApplication;
+import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Main.CardcastFragment;
 import com.gianlu.pretendyourexyzzy.Main.GameChatFragment;

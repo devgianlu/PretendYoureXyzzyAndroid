@@ -11,7 +11,7 @@ import android.support.annotation.Nullable;
 import android.util.LruCache;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.Prefs;
+import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCost;

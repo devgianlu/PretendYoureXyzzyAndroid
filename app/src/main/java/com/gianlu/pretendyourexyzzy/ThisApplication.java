@@ -1,6 +1,6 @@
 package com.gianlu.pretendyourexyzzy;
 
-import com.gianlu.commonutils.AnalyticsApplication;
+import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.ConnectivityChecker;
 
 import java.io.IOException;
