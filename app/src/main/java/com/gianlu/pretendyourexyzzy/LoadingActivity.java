@@ -22,6 +22,7 @@ import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.ConnectivityChecker;
 import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
@@ -31,14 +32,10 @@ import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
 
 import org.json.JSONException;
 
-import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import cz.msebera.android.httpclient.NameValuePair;
-import cz.msebera.android.httpclient.client.utils.URLEncodedUtils;
 
 public class LoadingActivity extends AppCompatActivity implements PYX.IResult<FirstLoad> {
     private Intent goTo;
@@ -122,15 +119,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                                 return;
                             }
 
-                            URI uri;
-                            try {
-                                uri = URI.create(uriStr);
-                            } catch (IllegalArgumentException ex) {
-                                Toaster.show(LoadingActivity.this, Utils.Messages.INVALID_SERVER_URL, ex);
-                                return;
-                            }
-
-                            PYX.Server server = new PYX.Server(uri, name);
+                            PYX.Server server = new PYX.Server(Uri.parse(uriStr), name);
                             PYX.Server.addServer(LoadingActivity.this, server);
                             setServer(server);
                             recreate();
@@ -199,16 +188,16 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
 
                 String fragment = url.getFragment();
                 if (fragment != null) {
-                    List<NameValuePair> params = URLEncodedUtils.parse(fragment, Charset.forName("UTF-8"));
+                    List<NameValuePair> params = CommonUtils.splitQuery(fragment);
                     for (NameValuePair pair : params) {
-                        if (Objects.equals(pair.getName(), "game")) {
+                        if (Objects.equals(pair.key(), "game")) {
                             try {
-                                launchGameId = Integer.parseInt(pair.getValue());
+                                launchGameId = Integer.parseInt(pair.value(""));
                             } catch (NumberFormatException ex) {
                                 Logging.logMe(ex);
                             }
-                        } else if (Objects.equals(pair.getName(), "password")) {
-                            launchGamePassword = pair.getValue();
+                        } else if (Objects.equals(pair.key(), "password")) {
+                            launchGamePassword = pair.value("");
                         }
                     }
 

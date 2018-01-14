@@ -18,8 +18,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import java.util.List;
 import java.util.Objects;
 
-import cz.msebera.android.httpclient.NameValuePair;
-
 public class Utils {
     public static final String ACTION_STARRED_CARD_ADD = "added_starred_card";
     public static final String ACTION_JOIN_GAME = "joined_game";
@@ -70,15 +68,6 @@ public class Utils {
         if (blackCard.text.size() > 1) builder.append(blackCard.text.get(1));
 
         return builder.toString();
-    }
-
-    @Nullable
-    public static String getParamValue(List<NameValuePair> pairs, String key) {
-        for (NameValuePair pair : pairs)
-            if (Objects.equals(pair.getName(), key))
-                return pair.getValue();
-
-        return null;
     }
 
     @Nullable

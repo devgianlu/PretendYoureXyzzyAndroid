@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -11,6 +12,7 @@ import com.crashlytics.android.Crashlytics;
 import com.gianlu.commonutils.Adapters.GeneralItemsAdapter;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
@@ -28,7 +30,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.text.ParseException;
@@ -46,66 +47,47 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import cz.msebera.android.httpclient.HttpEntity;
-import cz.msebera.android.httpclient.HttpResponse;
-import cz.msebera.android.httpclient.HttpStatus;
-import cz.msebera.android.httpclient.NameValuePair;
-import cz.msebera.android.httpclient.StatusLine;
-import cz.msebera.android.httpclient.client.HttpClient;
-import cz.msebera.android.httpclient.client.config.RequestConfig;
-import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity;
-import cz.msebera.android.httpclient.client.methods.HttpPost;
-import cz.msebera.android.httpclient.client.protocol.HttpClientContext;
-import cz.msebera.android.httpclient.conn.ConnectionPoolTimeoutException;
-import cz.msebera.android.httpclient.cookie.Cookie;
-import cz.msebera.android.httpclient.impl.client.BasicCookieStore;
-import cz.msebera.android.httpclient.impl.client.HttpClients;
-import cz.msebera.android.httpclient.impl.cookie.BasicClientCookie2;
-import cz.msebera.android.httpclient.message.BasicNameValuePair;
-import cz.msebera.android.httpclient.util.EntityUtils;
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
+import okhttp3.FormBody;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okhttp3.internal.Util;
 
 
 public class PYX {
-    private final static int AJAX_TIMEOUT = (int) TimeUnit.SECONDS.toMillis(5);
-    private final static int POLLING_TIMEOUT = (int) TimeUnit.SECONDS.toMillis(30);
+    private final static int AJAX_TIMEOUT = 5;
+    private final static int POLLING_TIMEOUT = 30;
     private static PYX instance;
     public final Server server;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler handler;
-    private final HttpClient client;
+    private final OkHttpClient client;
     private final SharedPreferences preferences;
-    private final BasicCookieStore cookieStore;
-    private final HttpClientContext ajaxContext;
-    private final HttpClientContext pollingContext;
+    private final BasicCookiesJar cookieJar;
     public FirstLoad firstLoad;
     private PollingThread pollingThread;
     private boolean hasRetriedFirstLoad = false;
 
     private PYX(Context context) {
         this.handler = new Handler(context.getMainLooper());
-        this.cookieStore = new BasicCookieStore();
+        this.cookieJar = new BasicCookiesJar();
         this.server = Server.lastServer(context);
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        this.client = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
-
-        this.ajaxContext = new HttpClientContext();
-        this.ajaxContext.setRequestConfig(RequestConfig.custom()
-                .setConnectTimeout(AJAX_TIMEOUT)
-                .setSocketTimeout(AJAX_TIMEOUT)
-                .setConnectionRequestTimeout(AJAX_TIMEOUT).build());
-
-        this.pollingContext = new HttpClientContext();
-        this.pollingContext.setRequestConfig(RequestConfig.custom()
-                .setConnectTimeout(POLLING_TIMEOUT)
-                .setSocketTimeout(POLLING_TIMEOUT)
-                .setConnectionRequestTimeout(POLLING_TIMEOUT).build());
+        this.client = new OkHttpClient.Builder().cookieJar(cookieJar).build();
 
         String lastJSessionId = getLastJSessionId();
         if (lastJSessionId != null) {
-            BasicClientCookie2 cookie = new BasicClientCookie2("JSESSIONID", lastJSessionId);
-            cookie.setDomain(server.uri.getHost());
-            cookie.setPath(server.uri.getPath());
-            cookieStore.addCookie(cookie);
+            Cookie cookie = new Cookie.Builder()
+                    .name("JSESSIONID")
+                    .value(lastJSessionId)
+                    .domain(server.uri.getHost())
+                    .path(server.uri.getPath()).build();
+
+            cookieJar.cookies.add(cookie);
 
             if (BuildConfig.DEBUG) System.out.println("Trying to resume session: " + cookie);
         }
@@ -130,51 +112,45 @@ public class PYX {
         return pollingThread;
     }
 
-    private JSONObject ajaxServletRequestSync(OP operation, NameValuePair... params) throws JSONException, PYXException, IOException {
-        return ajaxServletRequestSync(operation, false, params);
-    }
+    private JSONObject ajaxServletRequestSync(OP operation, NameValuePair... params) throws IOException, JSONException, PYXException {
+        FormBody.Builder reqBody = new FormBody.Builder(Charset.forName("UTF-8")).add("o", operation.val);
+        for (NameValuePair pair : params) reqBody.add(pair.key(), pair.value(""));
 
-    private JSONObject ajaxServletRequestSync(OP operation, boolean retry, NameValuePair... params) throws IOException, JSONException, PYXException {
-        HttpPost post = new HttpPost(server.uri.toString() + "AjaxServlet");
-        List<NameValuePair> paramsList = new ArrayList<>(Arrays.asList(params));
-        paramsList.add(new BasicNameValuePair("o", operation.val));
-        post.setEntity(new UrlEncodedFormEntity(paramsList, Charset.forName("UTF-8")));
+        Request request = new Request.Builder()
+                .url(server.uri.toString() + "AjaxServlet")
+                .post(reqBody.build())
+                .build();
 
-        HttpResponse resp;
-        try {
-            resp = client.execute(post, ajaxContext);
-        } catch (ConnectionPoolTimeoutException ex) {
-            Logging.logMe(ex);
-            if (retry) throw ex;
-            else return ajaxServletRequestSync(operation, true, params);
-        }
+        try (Response resp = client.newBuilder()
+                .connectTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
+                .build().newCall(request).execute()) {
+            updateJSessionId();
 
-        updateJSessionId();
+            ResponseBody respBody = resp.body();
+            if (respBody != null) {
+                JSONObject obj = new JSONObject(respBody.string());
 
-        HttpEntity entity = resp.getEntity();
-        if (entity != null) {
-            JSONObject obj = new JSONObject(EntityUtils.toString(entity, Charset.forName("UTF-8")));
-            post.releaseConnection();
+                try {
+                    raiseException(obj);
+                } catch (PYXException ex) {
+                    Crashlytics.log(operation + "; " + Arrays.toString(params) + "; " + ex.errorCode + "; " + hasRetriedFirstLoad);
+                    Crashlytics.logException(ex);
 
-            try {
-                raiseException(obj);
-            } catch (PYXException ex) {
-                Crashlytics.log(operation + "; " + Arrays.toString(params) + "; " + ex.errorCode + "; " + hasRetriedFirstLoad);
-                Crashlytics.logException(ex);
+                    if (operation == OP.FIRST_LOAD && !hasRetriedFirstLoad && Objects.equals(ex.errorCode, "se")) {
+                        hasRetriedFirstLoad = true;
+                        return ajaxServletRequestSync(operation, params);
+                    }
 
-                if (operation == OP.FIRST_LOAD && !hasRetriedFirstLoad && Objects.equals(ex.errorCode, "se")) {
-                    hasRetriedFirstLoad = true;
-                    return ajaxServletRequestSync(operation, false, params);
+                    throw ex;
                 }
 
-                throw ex;
+                Crashlytics.log(operation + "; " + Arrays.toString(params));
+
+                return obj;
+            } else {
+                throw new StatusCodeException(resp);
             }
-
-            Crashlytics.log(operation + "; " + Arrays.toString(params));
-
-            return obj;
-        } else {
-            throw new StatusCodeException(resp.getStatusLine());
         }
     }
 
@@ -184,9 +160,9 @@ public class PYX {
     }
 
     private void updateJSessionId() {
-        for (Cookie cookie : cookieStore.getCookies()) {
-            if (Objects.equals(cookie.getName(), "JSESSIONID")) {
-                preferences.edit().putString(PKeys.LAST_JSESSIONID.getKey(), cookie.getValue()).apply();
+        for (Cookie cookie : cookieJar.cookies) {
+            if (Objects.equals(cookie.name(), "JSESSIONID")) {
+                preferences.edit().putString(PKeys.LAST_JSESSIONID.getKey(), cookie.value()).apply();
                 break;
             }
         }
@@ -229,7 +205,7 @@ public class PYX {
     }
 
     private User registerUserSync(@NonNull final String nickname) throws JSONException, PYXException, IOException {
-        JSONObject obj = ajaxServletRequestSync(OP.REGISTER, new BasicNameValuePair("n", nickname));
+        JSONObject obj = ajaxServletRequestSync(OP.REGISTER, new NameValuePair("n", nickname));
         final String confirmNick = obj.getString("n");
         if (!Objects.equals(confirmNick, nickname.trim())) throw new RuntimeException("WTF?!");
         return new User(confirmNick);
@@ -319,9 +295,9 @@ public class PYX {
             public void run() {
                 try {
                     ajaxServletRequestSync(OP.GAME_CHAT,
-                            new BasicNameValuePair("gid", String.valueOf(gid)),
-                            new BasicNameValuePair("m", message),
-                            new BasicNameValuePair("me", "false"));
+                            new NameValuePair("gid", String.valueOf(gid)),
+                            new NameValuePair("m", message),
+                            new NameValuePair("me", "false"));
 
                     handler.post(new Runnable() {
                         @Override
@@ -347,8 +323,8 @@ public class PYX {
             public void run() {
                 try {
                     ajaxServletRequestSync(OP.CHAT,
-                            new BasicNameValuePair("m", message),
-                            new BasicNameValuePair("me", "false"));
+                            new NameValuePair("m", message),
+                            new NameValuePair("me", "false"));
 
                     handler.post(new Runnable() {
                         @Override
@@ -374,8 +350,8 @@ public class PYX {
             public void run() {
                 try {
                     ajaxServletRequestSync(OP.JOIN_GAME,
-                            new BasicNameValuePair("gid", String.valueOf(gid)),
-                            new BasicNameValuePair("pw", password));
+                            new NameValuePair("gid", String.valueOf(gid)),
+                            new NameValuePair("pw", password));
 
                     handler.post(new Runnable() {
                         @Override
@@ -401,8 +377,8 @@ public class PYX {
             public void run() {
                 try {
                     ajaxServletRequestSync(OP.SPECTATE_GAME,
-                            new BasicNameValuePair("gid", String.valueOf(gid)),
-                            new BasicNameValuePair("pw", password));
+                            new NameValuePair("gid", String.valueOf(gid)),
+                            new NameValuePair("pw", password));
 
                     handler.post(new Runnable() {
                         @Override
@@ -427,7 +403,7 @@ public class PYX {
             @Override
             public void run() {
                 try {
-                    ajaxServletRequestSync(OP.LEAVE_GAME, new BasicNameValuePair("gid", String.valueOf(gid)));
+                    ajaxServletRequestSync(OP.LEAVE_GAME, new NameValuePair("gid", String.valueOf(gid)));
 
                     handler.post(new Runnable() {
                         @Override
@@ -454,10 +430,10 @@ public class PYX {
             @Override
             public void run() {
                 try {
-                    JSONObject infoObj = ajaxServletRequestSync(OP.GET_GAME_INFO, new BasicNameValuePair("gid", String.valueOf(gid)));
+                    JSONObject infoObj = ajaxServletRequestSync(OP.GET_GAME_INFO, new NameValuePair("gid", String.valueOf(gid)));
                     final GameInfo info = new GameInfo(infoObj);
 
-                    JSONObject cardsObj = ajaxServletRequestSync(OP.GET_GAME_CARDS, new BasicNameValuePair("gid", String.valueOf(gid)));
+                    JSONObject cardsObj = ajaxServletRequestSync(OP.GET_GAME_CARDS, new NameValuePair("gid", String.valueOf(gid)));
                     final GameCards cards = new GameCards(cardsObj);
 
                     handler.post(new Runnable() {
@@ -483,7 +459,7 @@ public class PYX {
             @Override
             public void run() {
                 try {
-                    JSONObject obj = ajaxServletRequestSync(OP.GET_GAME_INFO, new BasicNameValuePair("gid", String.valueOf(gid)));
+                    JSONObject obj = ajaxServletRequestSync(OP.GET_GAME_INFO, new NameValuePair("gid", String.valueOf(gid)));
                     final GameInfo info = new GameInfo(obj);
 
                     handler.post(new Runnable() {
@@ -509,7 +485,7 @@ public class PYX {
             @Override
             public void run() {
                 try {
-                    JSONObject obj = ajaxServletRequestSync(OP.GET_GAME_CARDS, new BasicNameValuePair("gid", String.valueOf(gid)));
+                    JSONObject obj = ajaxServletRequestSync(OP.GET_GAME_CARDS, new NameValuePair("gid", String.valueOf(gid)));
                     final GameCards cards = new GameCards(obj);
 
                     handler.post(new Runnable() {
@@ -536,8 +512,8 @@ public class PYX {
             public void run() {
                 try {
                     ajaxServletRequestSync(OP.CHANGE_GAME_OPTIONS,
-                            new BasicNameValuePair("gid", String.valueOf(gid)),
-                            new BasicNameValuePair("go", options.toJSON().toString()));
+                            new NameValuePair("gid", String.valueOf(gid)),
+                            new NameValuePair("go", options.toJSON().toString()));
 
                     handler.post(new Runnable() {
                         @Override
@@ -589,9 +565,9 @@ public class PYX {
             public void run() {
                 try {
                     ajaxServletRequestSync(OP.PLAY_CARD,
-                            new BasicNameValuePair("gid", String.valueOf(gid)),
-                            new BasicNameValuePair("cid", String.valueOf(cid)),
-                            new BasicNameValuePair("m", customText));
+                            new NameValuePair("gid", String.valueOf(gid)),
+                            new NameValuePair("cid", String.valueOf(cid)),
+                            new NameValuePair("m", customText));
 
                     handler.post(new Runnable() {
                         @Override
@@ -617,8 +593,8 @@ public class PYX {
             public void run() {
                 try {
                     ajaxServletRequestSync(OP.JUDGE_SELECT,
-                            new BasicNameValuePair("gid", String.valueOf(gid)),
-                            new BasicNameValuePair("cid", String.valueOf(cid)));
+                            new NameValuePair("gid", String.valueOf(gid)),
+                            new NameValuePair("cid", String.valueOf(cid)));
 
                     handler.post(new Runnable() {
                         @Override
@@ -669,7 +645,7 @@ public class PYX {
             @Override
             public void run() {
                 try {
-                    ajaxServletRequestSync(OP.START_GAME, new BasicNameValuePair("gid", String.valueOf(gid)));
+                    ajaxServletRequestSync(OP.START_GAME, new NameValuePair("gid", String.valueOf(gid)));
 
                     handler.post(new Runnable() {
                         @Override
@@ -694,7 +670,7 @@ public class PYX {
             @Override
             public void run() {
                 try {
-                    JSONObject obj = ajaxServletRequestSync(OP.LIST_CARDCAST_CARD_SETS, new BasicNameValuePair("gid", String.valueOf(gid)));
+                    JSONObject obj = ajaxServletRequestSync(OP.LIST_CARDCAST_CARD_SETS, new NameValuePair("gid", String.valueOf(gid)));
                     final List<CardSet> sets = CommonUtils.toTList(obj.getJSONArray("css"), CardSet.class);
 
                     if (cardcast != null)
@@ -721,8 +697,8 @@ public class PYX {
 
     public void addCardcastCardSetSync(int gid, String code) throws JSONException, PYXException, IOException {
         ajaxServletRequestSync(OP.ADD_CARDCAST_CARD_SET,
-                new BasicNameValuePair("gid", String.valueOf(gid)),
-                new BasicNameValuePair("cci", code));
+                new NameValuePair("gid", String.valueOf(gid)),
+                new NameValuePair("cci", code));
     }
 
     public void addCardcastCardSet(final int gid, final String code, final ISuccess listener) {
@@ -756,8 +732,8 @@ public class PYX {
             public void run() {
                 try {
                     ajaxServletRequestSync(OP.REMOVE_CARDCAST_CARD_SET,
-                            new BasicNameValuePair("gid", String.valueOf(gid)),
-                            new BasicNameValuePair("cci", code));
+                            new NameValuePair("gid", String.valueOf(gid)),
+                            new NameValuePair("cci", code));
 
                     handler.post(new Runnable() {
                         @Override
@@ -830,26 +806,48 @@ public class PYX {
         void onStoppedPolling();
     }
 
+    private static class BasicCookiesJar implements CookieJar {
+        final List<Cookie> cookies = new ArrayList<>();
+
+        @Override
+        public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+            for (Cookie cookie : cookies) {
+                for (int i = 0; i < this.cookies.size(); i++) {
+                    if (Objects.equals(this.cookies.get(i).name(), cookie.name())) {
+                        this.cookies.set(i, cookie);
+                    } else {
+                        this.cookies.add(cookie);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public List<Cookie> loadForRequest(HttpUrl url) {
+            return cookies;
+        }
+    }
+
     public static class Server implements GeneralItemsAdapter.Item {
         public final static Map<String, Server> pyxServers = new HashMap<>();
         private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
 
         static {
-            pyxServers.put("PYX1", new Server(URI.create("https://pyx-1.pretendyoure.xyz/zy/"), "The Biggest, Blackest Dick"));
-            pyxServers.put("PYX2", new Server(URI.create("https://pyx-2.pretendyoure.xyz/zy/"), "A Falcon with a Box on its Head"));
-            pyxServers.put("PYX3", new Server(URI.create("https://pyx-3.pretendyoure.xyz/zy/"), "Dickfingers"));
+            pyxServers.put("PYX1", new Server(Uri.parse("https://pyx-1.pretendyoure.xyz/zy/"), "The Biggest, Blackest Dick"));
+            pyxServers.put("PYX2", new Server(Uri.parse("https://pyx-2.pretendyoure.xyz/zy/"), "A Falcon with a Box on its Head"));
+            pyxServers.put("PYX3", new Server(Uri.parse("https://pyx-3.pretendyoure.xyz/zy/"), "Dickfingers"));
         }
 
-        public final URI uri;
+        public final Uri uri;
         public final String name;
 
-        public Server(URI uri, String name) {
+        public Server(Uri uri, String name) {
             this.uri = uri;
             this.name = name;
         }
 
         Server(JSONObject obj) throws JSONException {
-            uri = URI.create(obj.getString("uri"));
+            uri = Uri.parse(obj.getString("uri"));
             name = obj.getString("name");
         }
 
@@ -1000,24 +998,31 @@ public class PYX {
         public void run() {
             while (!shouldStop) {
                 try {
-                    HttpPost post = new HttpPost(server.uri.toString() + "LongPollServlet");
-                    HttpResponse resp = client.execute(post, pollingContext);
+                    Request request = new Request.Builder()
+                            .post(Util.EMPTY_REQUEST)
+                            .url(server.uri.toString() + "LongPollServlet")
+                            .build();
 
-                    StatusLine sl = resp.getStatusLine();
-                    if (sl.getStatusCode() != HttpStatus.SC_OK)
-                        throw new StatusCodeException(sl);
+                    try (Response resp = client.newBuilder()
+                            .connectTimeout(POLLING_TIMEOUT, TimeUnit.SECONDS)
+                            .readTimeout(POLLING_TIMEOUT, TimeUnit.SECONDS)
+                            .build().newCall(request).execute()) {
+                        if (resp.code() != 200) throw new StatusCodeException(resp);
 
-                    String json = EntityUtils.toString(resp.getEntity());
-                    post.releaseConnection();
+                        String json;
+                        ResponseBody body = resp.body();
+                        if (body != null) json = body.string();
+                        else throw new IOException("Body is empty!");
 
-                    if (json.startsWith("{")) {
-                        JSONObject obj = new JSONObject(json);
-                        raiseException(obj);
-                    } else if (json.startsWith("[")) {
-                        JSONArray array = new JSONArray(json);
-                        dispatchDone(CommonUtils.toTList(array, PollMessage.class));
+                        if (json.startsWith("{")) {
+                            JSONObject obj = new JSONObject(json);
+                            raiseException(obj);
+                        } else if (json.startsWith("[")) {
+                            JSONArray array = new JSONArray(json);
+                            dispatchDone(CommonUtils.toTList(array, PollMessage.class));
+                        }
                     }
-                } catch (final IOException | JSONException | PYXException ex) {
+                } catch (IOException | JSONException | PYXException ex) {
                     dispatchEx(ex);
                 }
             }

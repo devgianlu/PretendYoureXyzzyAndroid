@@ -2,11 +2,11 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 
 import java.io.IOException;
 
-import cz.msebera.android.httpclient.StatusLine;
+import okhttp3.Response;
 
 public class StatusCodeException extends IOException {
-    public StatusCodeException(StatusLine sl) {
-        this(sl.getStatusCode(), sl.getReasonPhrase());
+    public StatusCodeException(Response resp) {
+        this(resp.code(), resp.message());
     }
 
     public StatusCodeException(int code, String message) {

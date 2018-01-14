@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -35,6 +36,7 @@ import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
+import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
@@ -57,17 +59,9 @@ import com.gianlu.pretendyourexyzzy.Utils;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import cz.msebera.android.httpclient.NameValuePair;
-import cz.msebera.android.httpclient.client.utils.URIBuilder;
-import cz.msebera.android.httpclient.client.utils.URLEncodedUtils;
-import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
 public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCards, NewGameManager.IManager, CardcastDeckActivity.IOngoingGame {
     private IFragment handler;
@@ -259,26 +253,20 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
 
     private void shareGame() {
         if (getGame() == null) return;
-        URI uri = pyx.server.uri;
-        URIBuilder builder = new URIBuilder();
-        builder.setScheme(uri.getScheme())
-                .setHost(uri.getHost())
-                .setPath("/zy/game.jsp");
+        Uri.Builder builder = pyx.server.uri.buildUpon();
+        builder.path("/zy/game.jsp");
 
         List<NameValuePair> params = new ArrayList<>();
-        params.add(new BasicNameValuePair("game", String.valueOf(gameId)));
+        params.add(new NameValuePair("game", String.valueOf(gameId)));
         if (getGame().hasPassword)
-            params.add(new BasicNameValuePair("password", getGame().options.password));
-        builder.setFragment(URLEncodedUtils.format(params, Charset.forName("UTF-8")));
+            params.add(new NameValuePair("password", getGame().options.password));
 
-        try {
-            Intent i = new Intent(Intent.ACTION_SEND);
-            i.setType("text/plain");
-            i.putExtra(Intent.EXTRA_TEXT, builder.build().toASCIIString());
-            startActivity(Intent.createChooser(i, "Share game..."));
-        } catch (URISyntaxException ex) {
-            Toaster.show(getActivity(), Utils.Messages.FAILED_SHARING, ex);
-        }
+        builder.fragment(CommonUtils.formQuery(params));
+
+        Intent i = new Intent(Intent.ACTION_SEND);
+        i.setType("text/plain");
+        i.putExtra(Intent.EXTRA_TEXT, builder.toString());
+        startActivity(Intent.createChooser(i, "Share game..."));
     }
 
     private void showSpectators() {

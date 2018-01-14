@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
@@ -11,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.util.LruCache;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
@@ -40,28 +42,22 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
-import cz.msebera.android.httpclient.HttpResponse;
-import cz.msebera.android.httpclient.HttpStatus;
-import cz.msebera.android.httpclient.NameValuePair;
-import cz.msebera.android.httpclient.StatusLine;
-import cz.msebera.android.httpclient.client.HttpClient;
-import cz.msebera.android.httpclient.client.methods.HttpGet;
-import cz.msebera.android.httpclient.client.utils.URIBuilder;
-import cz.msebera.android.httpclient.impl.client.HttpClients;
-import cz.msebera.android.httpclient.message.BasicNameValuePair;
-import cz.msebera.android.httpclient.util.EntityUtils;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class Cardcast {
     private static final String BASE_URL = "https://api.cardcastgame.com/v1/";
     private static Cardcast instance;
-    private final HttpClient client;
+    private final OkHttpClient client;
     private final ExecutorService executor;
     private final Handler handler;
     private final LruCache<String, String> cachedDeckNames;
     private final SharedPreferences preferences;
 
     private Cardcast(Context context) {
-        this.client = HttpClients.createDefault();
+        this.client = new OkHttpClient();
         this.handler = new Handler(Looper.getMainLooper());
         this.executor = Executors.newSingleThreadExecutor();
         this.cachedDeckNames = new LruCache<>(100);
@@ -117,7 +113,7 @@ public class Cardcast {
             return new CardcastDeckInfo((JSONObject) basicRequest("decks/" + cachedCode));
         } else {
             final List<NameValuePair> params = new ArrayList<>();
-            params.add(new BasicNameValuePair("search", set.name));
+            params.add(new NameValuePair("search", set.name));
 
             final CardcastDecks decks = new CardcastDecks((JSONObject) basicRequest("decks", params));
             final CardcastDeck match = findDeck(decks, set);
@@ -128,19 +124,25 @@ public class Cardcast {
 
     @NonNull
     private Object basicRequest(@NonNull String endpoint, List<NameValuePair> params) throws URISyntaxException, IOException, JSONException {
-        URIBuilder builder = new URIBuilder(BASE_URL + endpoint);
-        builder.setParameters(params);
-        HttpGet get = new HttpGet(builder.build());
+        Uri.Builder builder = Uri.parse(BASE_URL + endpoint).buildUpon();
+        for (NameValuePair pair : params) builder.appendQueryParameter(pair.key(), pair.value(""));
 
-        HttpResponse resp = client.execute(get);
+        Request request = new Request.Builder()
+                .get()
+                .url(builder.toString())
+                .build();
 
-        StatusLine sl = resp.getStatusLine();
-        if (sl.getStatusCode() < HttpStatus.SC_OK || sl.getStatusCode() >= HttpStatus.SC_MULTIPLE_CHOICES)
-            throw new StatusCodeException(sl);
+        try (Response resp = client.newCall(request).execute()) {
+            if (resp.code() < 200 || resp.code() >= 300)
+                throw new StatusCodeException(resp);
 
-        String json = EntityUtils.toString(resp.getEntity());
-        if (json.startsWith("[")) return new JSONArray(json);
-        else return new JSONObject(json);
+            ResponseBody body = resp.body();
+            if (body == null) throw new IOException("Body is empty!");
+
+            String json = body.string();
+            if (json.startsWith("[")) return new JSONArray(json);
+            else return new JSONObject(json);
+        }
     }
 
     private Object basicRequest(@NonNull String endpoint, NameValuePair... params) throws URISyntaxException, IOException, JSONException {
@@ -149,13 +151,13 @@ public class Cardcast {
 
     public void getDecks(final Search search, final int limit, final int offset, final IDecks listener) {
         final List<NameValuePair> params = new ArrayList<>();
-        if (search.query != null) params.add(new BasicNameValuePair("search", search.query));
-        params.add(new BasicNameValuePair("category", search.categories == null ? "" : CommonUtils.join(search.categories, ",")));
-        params.add(new BasicNameValuePair("direction", search.direction.val));
-        params.add(new BasicNameValuePair("sort", search.sort.val));
-        params.add(new BasicNameValuePair("limit", String.valueOf(limit)));
-        params.add(new BasicNameValuePair("offset", String.valueOf(offset)));
-        params.add(new BasicNameValuePair("nsfw", String.valueOf(search.nsfw)));
+        if (search.query != null) params.add(new NameValuePair("search", search.query));
+        params.add(new NameValuePair("category", search.categories == null ? "" : CommonUtils.join(search.categories, ",")));
+        params.add(new NameValuePair("direction", search.direction.val));
+        params.add(new NameValuePair("sort", search.sort.val));
+        params.add(new NameValuePair("limit", String.valueOf(limit)));
+        params.add(new NameValuePair("offset", String.valueOf(offset)));
+        params.add(new NameValuePair("nsfw", String.valueOf(search.nsfw)));
 
         executor.execute(new Runnable() {
             @Override
