@@ -63,7 +63,7 @@ public class PYX {
     private final static int POLLING_TIMEOUT = 30;
     private static PYX instance;
     public final Server server;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newFixedThreadPool(5);
     private final Handler handler;
     private final OkHttpClient client;
     private final SharedPreferences preferences;
