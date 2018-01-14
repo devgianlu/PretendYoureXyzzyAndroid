@@ -375,7 +375,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
 
             @Override
             public void onException(Exception ex) {
-                pd.dismiss();
+                if (isAdded()) pd.dismiss();
 
                 if (ex instanceof PYXException) {
                     switch (((PYXException) ex).errorCode) {
