@@ -32,6 +32,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
 
 import org.json.JSONException;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -119,11 +121,11 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                                 return;
                             }
 
-                            PYX.Server server = new PYX.Server(Uri.parse(uriStr), name);
+                            PYX.Server server = new PYX.Server(new URI(uriStr), name);
                             PYX.Server.addServer(LoadingActivity.this, server);
                             setServer(server);
                             recreate();
-                        } catch (JSONException ex) {
+                        } catch (JSONException | URISyntaxException ex) {
                             Toaster.show(LoadingActivity.this, Utils.Messages.FAILED_ADDING_SERVER, ex);
                         }
 

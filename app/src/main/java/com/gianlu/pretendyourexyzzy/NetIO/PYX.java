@@ -30,6 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.text.ParseException;
@@ -833,16 +834,16 @@ public class PYX {
         private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
 
         static {
-            pyxServers.put("PYX1", new Server(Uri.parse("https://pyx-1.pretendyoure.xyz/zy/"), "The Biggest, Blackest Dick"));
-            pyxServers.put("PYX2", new Server(Uri.parse("https://pyx-2.pretendyoure.xyz/zy/"), "A Falcon with a Box on its Head"));
-            pyxServers.put("PYX3", new Server(Uri.parse("https://pyx-3.pretendyoure.xyz/zy/"), "Dickfingers"));
+            pyxServers.put("PYX1", new Server(URI.create("https://pyx-1.pretendyoure.xyz/zy/"), "The Biggest, Blackest Dick"));
+            pyxServers.put("PYX2", new Server(URI.create("https://pyx-2.pretendyoure.xyz/zy/"), "A Falcon with a Box on its Head"));
+            pyxServers.put("PYX3", new Server(URI.create("https://pyx-3.pretendyoure.xyz/zy/"), "Dickfingers"));
         }
 
         public final Uri uri;
         public final String name;
 
-        public Server(Uri uri, String name) {
-            this.uri = uri;
+        public Server(URI uri, String name) {
+            this.uri = Uri.parse(uri.toASCIIString());
             this.name = name;
         }
 
