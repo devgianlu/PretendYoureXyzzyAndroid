@@ -27,8 +27,6 @@ dependencies {
     api 'com.squareup.okhttp3:okhttp:3.9.1'
     api 'com.github.apl-devs:appintro:v4.2.2'
     api 'com.getkeepsafe.taptargetview:taptargetview:1.10.0'
-    api 'com.google.firebase:firebase-auth:11.8.0'
-    api 'com.google.firebase:firebase-firestore:11.8.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

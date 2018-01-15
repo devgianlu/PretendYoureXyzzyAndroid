@@ -8,26 +8,19 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
-import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> {
     private final LayoutInflater inflater;
-    private final List<DocumentSnapshot> mobiles;
     private final List<String> players;
-    private final PYX.Server currentServer;
 
-    public NamesAdapter(Context context, List<String> players, List<DocumentSnapshot> mobiles) {
+    public NamesAdapter(Context context, List<String> players) {
         this.players = players;
         this.inflater = LayoutInflater.from(context);
-        this.mobiles = mobiles;
-        this.currentServer = PYX.get(context).server;
 
         Collections.sort(players, new Comparator<String>() {
             @Override
@@ -50,10 +43,6 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
     }
 
     private boolean isMobile(String name) {
-        for (DocumentSnapshot snapshot : mobiles)
-            if (Objects.equals(snapshot.getString("nickname"), name) && Objects.equals(snapshot.getString("server"), currentServer.uri.toString()))
-                return true;
-
         return false;
     }
 
