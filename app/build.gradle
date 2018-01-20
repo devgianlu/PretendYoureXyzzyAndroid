@@ -8,8 +8,8 @@ android {
         applicationId "com.gianlu.pretendyourexyzzy"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 27
-        versionName "1.7.2"
+        versionCode 28
+        versionName "1.7.3"
     }
 
     buildTypes {
@@ -26,7 +26,7 @@ dependencies {
     api 'me.zhanghai.android.materialratingbar:library:1.2.0'
     api 'com.squareup.okhttp3:okhttp:3.9.1'
     api 'com.github.apl-devs:appintro:v4.2.2'
-    api 'com.getkeepsafe.taptargetview:taptargetview:1.10.0'
+    api 'com.getkeepsafe.taptargetview:taptargetview:1.11.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
