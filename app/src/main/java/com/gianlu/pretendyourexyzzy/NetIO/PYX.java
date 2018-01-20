@@ -926,7 +926,9 @@ public class PYX {
             String name = Prefs.getString(context, PKeys.LAST_SERVER, "PYX1");
 
             Server server = null;
-            if (name.startsWith("PYX")) server = fromPyxUrl(name);
+            for (Server pyxServer : pyxServers.values())
+                if (Objects.equals(pyxServer.name, name))
+                    server = pyxServer;
 
             if (server == null) {
                 try {
