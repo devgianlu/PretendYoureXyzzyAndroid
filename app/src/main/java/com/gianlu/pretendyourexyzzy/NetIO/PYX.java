@@ -81,7 +81,7 @@ public class PYX {
         this.client = new OkHttpClient.Builder().cookieJar(cookieJar).build();
 
         String lastJSessionId = getLastJSessionId();
-        if (lastJSessionId != null) {
+        if (lastJSessionId != null && server.uri.getHost() != null && server.uri.getPath() != null) {
             Cookie cookie = new Cookie.Builder()
                     .name("JSESSIONID")
                     .value(lastJSessionId)
@@ -813,6 +813,7 @@ public class PYX {
         @Override
         public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
             for (Cookie cookie : cookies) {
+                if (cookie == null) continue;
                 for (int i = 0; i < this.cookies.size(); i++) {
                     if (Objects.equals(this.cookies.get(i).name(), cookie.name())) {
                         this.cookies.set(i, cookie);
