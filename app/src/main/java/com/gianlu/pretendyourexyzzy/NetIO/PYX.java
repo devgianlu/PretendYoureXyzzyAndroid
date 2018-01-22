@@ -35,6 +35,7 @@ import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -161,7 +162,7 @@ public class PYX {
 
     private void updateJSessionId() {
         for (Cookie cookie : cookieJar.cookies) {
-            if (Objects.equals(cookie.name(), "JSESSIONID")) {
+            if (cookie != null && Objects.equals(cookie.name(), "JSESSIONID")) {
                 preferences.edit().putString(PKeys.LAST_JSESSIONID.getKey(), cookie.value()).apply();
                 break;
             }
@@ -807,14 +808,16 @@ public class PYX {
     }
 
     private static class BasicCookiesJar implements CookieJar {
-        final List<Cookie> cookies = new ArrayList<>();
+        final List<Cookie> cookies = Collections.synchronizedList(new ArrayList<Cookie>());
 
         @Override
         public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
             for (Cookie cookie : cookies) {
                 if (cookie == null) continue;
                 for (int i = 0; i < this.cookies.size(); i++) {
-                    if (Objects.equals(this.cookies.get(i).name(), cookie.name())) {
+                    Cookie anotherCookie = this.cookies.get(i);
+                    if (anotherCookie == null) continue;
+                    if (Objects.equals(anotherCookie.name(), cookie.name())) {
                         this.cookies.set(i, cookie);
                     } else {
                         this.cookies.add(cookie);
