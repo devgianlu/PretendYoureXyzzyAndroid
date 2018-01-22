@@ -31,7 +31,7 @@ public class StarredDecksManager {
 
             return false;
         } catch (JSONException ex) {
-            Logging.logMe(ex);
+            Logging.log(ex);
             return false;
         }
     }
@@ -43,7 +43,7 @@ public class StarredDecksManager {
             if (!starredDecks.contains(deck)) starredDecks.add(deck);
             saveDecks(context, starredDecks);
         } catch (JSONException ex) {
-            Logging.logMe(ex);
+            Logging.log(ex);
         }
 
         AnalyticsApplication.sendAnalytics(context, Utils.ACTION_STARRED_DECK_ADD);
@@ -55,7 +55,7 @@ public class StarredDecksManager {
             for (StarredDeck deck : decks) starredDecksArray.put(deck.toJSON());
             Prefs.putBase64String(context, PKeys.STARRED_DECKS, starredDecksArray.toString());
         } catch (JSONException ex) {
-            Logging.logMe(ex);
+            Logging.log(ex);
         }
     }
 
@@ -70,7 +70,7 @@ public class StarredDecksManager {
 
             saveDecks(context, starredDecks);
         } catch (JSONException ex) {
-            Logging.logMe(ex);
+            Logging.log(ex);
         }
     }
 
@@ -81,7 +81,7 @@ public class StarredDecksManager {
             Collections.reverse(decks);
             return decks;
         } catch (JSONException ex) {
-            Logging.logMe(ex);
+            Logging.log(ex);
             return new ArrayList<>();
         }
     }
@@ -90,7 +90,7 @@ public class StarredDecksManager {
         try {
             return new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_DECKS, "[]")).length() > 0;
         } catch (JSONException ex) {
-            Logging.logMe(ex);
+            Logging.log(ex);
             return false;
         }
     }
@@ -104,6 +104,7 @@ public class StarredDecksManager {
             this.name = name;
         }
 
+        @SuppressWarnings("unused")
         public StarredDeck(JSONObject obj) throws JSONException {
             code = obj.getString("code");
             name = obj.getString("name");

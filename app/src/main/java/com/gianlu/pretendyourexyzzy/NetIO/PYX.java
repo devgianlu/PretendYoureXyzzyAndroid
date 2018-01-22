@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -30,7 +29,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.URI;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.text.ParseException;
@@ -81,12 +80,12 @@ public class PYX {
         this.client = new OkHttpClient.Builder().cookieJar(cookieJar).build();
 
         String lastJSessionId = getLastJSessionId();
-        if (lastJSessionId != null && server.uri.getHost() != null && server.uri.getPath() != null) {
+        if (lastJSessionId != null && server.url.host() != null && server.url.encodedPath() != null) {
             Cookie cookie = new Cookie.Builder()
                     .name("JSESSIONID")
                     .value(lastJSessionId)
-                    .domain(server.uri.getHost())
-                    .path(server.uri.getPath()).build();
+                    .domain(server.url.host())
+                    .path(server.url.encodedPath()).build();
 
             cookieJar.cookies.add(cookie);
 
@@ -118,7 +117,7 @@ public class PYX {
         for (NameValuePair pair : params) reqBody.add(pair.key(), pair.value(""));
 
         Request request = new Request.Builder()
-                .url(server.uri.toString() + "AjaxServlet")
+                .url(server.url.newBuilder().addPathSegment("AjaxServlet").build())
                 .post(reqBody.build())
                 .build();
 
@@ -835,22 +834,25 @@ public class PYX {
         private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
 
         static {
-            pyxServers.put("PYX1", new Server(URI.create("https://pyx-1.pretendyoure.xyz/zy/"), "The Biggest, Blackest Dick"));
-            pyxServers.put("PYX2", new Server(URI.create("https://pyx-2.pretendyoure.xyz/zy/"), "A Falcon with a Box on its Head"));
-            pyxServers.put("PYX3", new Server(URI.create("https://pyx-3.pretendyoure.xyz/zy/"), "Dickfingers"));
+            try {
+                pyxServers.put("PYX1", new Server(HttpUrl.parse("https://pyx-1.pretendyoure.xyz/zy/"), "The Biggest, Blackest Dick"));
+                pyxServers.put("PYX2", new Server(HttpUrl.parse("https://pyx-2.pretendyoure.xyz/zy/"), "A Falcon with a Box on its Head"));
+                pyxServers.put("PYX3", new Server(HttpUrl.parse("https://pyx-3.pretendyoure.xyz/zy/"), "Dickfingers"));
+            } catch (MalformedURLException ignored) {
+            }
         }
 
-        public final Uri uri;
+        public final HttpUrl url;
         public final String name;
 
-        public Server(URI uri, String name) {
-            this.uri = Uri.parse(uri.toASCIIString());
+        public Server(HttpUrl url, String name) throws MalformedURLException {
+            if (url == null) throw new MalformedURLException("Invalid url!");
+            this.url = url;
             this.name = name;
         }
 
-        Server(JSONObject obj) throws JSONException {
-            uri = Uri.parse(obj.getString("uri"));
-            name = obj.getString("name");
+        Server(JSONObject obj) throws JSONException, MalformedURLException {
+            this(HttpUrl.parse(obj.getString("uri")), obj.getString("name"));
         }
 
         @Nullable
@@ -885,15 +887,15 @@ public class PYX {
             try {
                 array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
             } catch (JSONException ex) {
-                Logging.logMe(ex);
+                Logging.log(ex);
                 return new ArrayList<>();
             }
 
             for (int i = 0; i < array.length(); i++) {
                 try {
                     servers.add(new Server(array.getJSONObject(i)));
-                } catch (JSONException ex) {
-                    Logging.logMe(ex);
+                } catch (JSONException | MalformedURLException ex) {
+                    Logging.log(ex);
                 }
             }
 
@@ -904,13 +906,13 @@ public class PYX {
             try {
                 return !(name == null || name.isEmpty() || getUserServer(context, name) != null);
             } catch (Exception ex) {
-                Logging.logMe(ex);
+                Logging.log(ex);
                 return false;
             }
         }
 
         @Nullable
-        public static Server getUserServer(Context context, String name) throws JSONException {
+        public static Server getUserServer(Context context, String name) throws JSONException, MalformedURLException {
             JSONArray array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
@@ -933,8 +935,8 @@ public class PYX {
             if (server == null) {
                 try {
                     server = getUserServer(context, name);
-                } catch (JSONException ex) {
-                    Logging.logMe(ex);
+                } catch (JSONException | MalformedURLException ex) {
+                    Logging.log(ex);
                 }
             }
 
@@ -966,7 +968,7 @@ public class PYX {
 
                 Prefs.putJSONArray(context, PKeys.USER_SERVERS, array);
             } catch (JSONException ex) {
-                Logging.logMe(ex);
+                Logging.log(ex);
             }
         }
 
@@ -978,7 +980,7 @@ public class PYX {
         private JSONObject toJSON() throws JSONException {
             return new JSONObject()
                     .put("name", name)
-                    .put("uri", uri.toString());
+                    .put("uri", url.toString());
         }
 
         @Override
@@ -989,7 +991,7 @@ public class PYX {
         @Nullable
         @Override
         public String getSecondaryText() {
-            return uri.toString();
+            return url.toString();
         }
     }
 
@@ -1004,7 +1006,7 @@ public class PYX {
                 try {
                     Request request = new Request.Builder()
                             .post(Util.EMPTY_REQUEST)
-                            .url(server.uri.toString() + "LongPollServlet")
+                            .url(server.url.newBuilder().addPathSegment("LongPollServlet").build())
                             .build();
 
                     try (Response resp = client.newBuilder()
@@ -1063,7 +1065,7 @@ public class PYX {
                 });
             }
 
-            Logging.logMe(ex);
+            Logging.log(ex);
         }
 
         public void addListener(String tag, IEventListener listener) {

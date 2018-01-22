@@ -81,7 +81,7 @@ public class NamesFragment extends Fragment implements PYX.IResult<List<String>>
 
     @Override
     public void onException(Exception ex) {
-        Logging.logMe(ex);
+        Logging.log(ex);
         if (isAdded())
             layout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);
     }

@@ -78,7 +78,7 @@ public class InfoFragment extends Fragment implements Cardcast.IResult<CardcastD
 
     @Override
     public void onException(Exception ex) {
-        Logging.logMe(ex);
+        Logging.log(ex);
         loading.setVisibility(View.GONE);
         container.setVisibility(View.GONE);
         if (isAdded())

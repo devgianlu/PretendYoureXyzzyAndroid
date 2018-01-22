@@ -40,7 +40,7 @@ public class StarredCardsManager {
 
             return !a;
         } catch (JSONException ex) {
-            Logging.logMe(ex);
+            Logging.log(ex);
             return false;
         }
     }
@@ -51,7 +51,7 @@ public class StarredCardsManager {
             for (StarredCard card : cards) starredCardsArray.put(card.toJSON());
             Prefs.putBase64String(context, PKeys.STARRED_CARDS, starredCardsArray.toString());
         } catch (JSONException ex) {
-            Logging.logMe(ex);
+            Logging.log(ex);
         }
     }
 
@@ -62,7 +62,7 @@ public class StarredCardsManager {
             starredCards.remove(card);
             saveCards(context, starredCards);
         } catch (JSONException ex) {
-            Logging.logMe(ex);
+            Logging.log(ex);
         }
     }
 
@@ -73,7 +73,7 @@ public class StarredCardsManager {
             Collections.reverse(cards);
             return cards;
         } catch (JSONException ex) {
-            Logging.logMe(ex);
+            Logging.log(ex);
             return new ArrayList<>();
         }
     }
@@ -82,7 +82,7 @@ public class StarredCardsManager {
         try {
             return new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_CARDS, "[]")).length() > 0;
         } catch (JSONException ex) {
-            Logging.logMe(ex);
+            Logging.log(ex);
             return false;
         }
     }

@@ -32,11 +32,12 @@ import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
 
 import org.json.JSONException;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import okhttp3.HttpUrl;
 
 
 public class LoadingActivity extends AppCompatActivity implements PYX.IResult<FirstLoad> {
@@ -121,11 +122,11 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                                 return;
                             }
 
-                            PYX.Server server = new PYX.Server(new URI(uriStr), name);
+                            PYX.Server server = new PYX.Server(HttpUrl.parse(uriStr), name);
                             PYX.Server.addServer(LoadingActivity.this, server);
                             setServer(server);
                             recreate();
-                        } catch (JSONException | URISyntaxException ex) {
+                        } catch (JSONException | MalformedURLException ex) {
                             Toaster.show(LoadingActivity.this, Utils.Messages.FAILED_ADDING_SERVER, ex);
                         }
 
@@ -196,7 +197,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
                             try {
                                 launchGameId = Integer.parseInt(pair.value(""));
                             } catch (NumberFormatException ex) {
-                                Logging.logMe(ex);
+                                Logging.log(ex);
                             }
                         } else if (Objects.equals(pair.key(), "password")) {
                             launchGamePassword = pair.value("");
@@ -257,7 +258,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
 
                     @Override
                     public void onException(Exception ex) {
-                        Logging.logMe(ex);
+                        Logging.log(ex);
 
                         loading.setVisibility(View.GONE);
                         register.setVisibility(View.VISIBLE);

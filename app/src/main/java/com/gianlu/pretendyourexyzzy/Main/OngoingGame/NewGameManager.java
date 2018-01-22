@@ -165,7 +165,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                 wcp = ex.obj.getInt("wcp");
                 bcp = ex.obj.getInt("bcp");
             } catch (JSONException exx) {
-                Logging.logMe(exx);
+                Logging.log(exx);
                 return true;
             }
 
@@ -259,7 +259,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
 
             @Override
             public void onException(Exception ex) {
-                Logging.logMe(ex);
+                Logging.log(ex);
             }
         });
     }

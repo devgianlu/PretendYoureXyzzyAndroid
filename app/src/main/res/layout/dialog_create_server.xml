@@ -27,4 +27,11 @@
             android:layout_height="wrap_content"
             android:inputType="textUri" />
     </android.support.design.widget.TextInputLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/createServer_help"
+        android:textAlignment="center"
+        android:textSize="12sp" />
 </LinearLayout>

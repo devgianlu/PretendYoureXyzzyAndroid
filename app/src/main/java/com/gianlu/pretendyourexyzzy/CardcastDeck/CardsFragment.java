@@ -87,7 +87,7 @@ public class CardsFragment extends Fragment implements Cardcast.IResult<List<Car
 
     @Override
     public void onException(Exception ex) {
-        Logging.logMe(ex);
+        Logging.log(ex);
         if (isAdded())
             layout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);
     }

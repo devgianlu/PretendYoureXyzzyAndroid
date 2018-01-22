@@ -186,4 +186,5 @@
     <string name="clearServers">Clear user added servers</string>
     <string name="viewServers_summary">View or delete user added servers</string>
     <string name="clearServers_summary">Remove all user added servers</string>
+    <string name="createServer_help">The address must be of the following type: http://example.com/</string>
 </resources>

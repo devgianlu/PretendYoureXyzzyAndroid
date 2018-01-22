@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -62,6 +61,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import okhttp3.HttpUrl;
 
 public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCards, NewGameManager.IManager, CardcastDeckActivity.IOngoingGame {
     private IFragment handler;
@@ -190,7 +191,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
 
     @Override
     public void onException(Exception ex) {
-        Logging.logMe(ex);
+        Logging.log(ex);
         loading.setVisibility(View.GONE);
         container.setVisibility(View.GONE);
         if (isAdded())
@@ -253,8 +254,8 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
 
     private void shareGame() {
         if (getGame() == null) return;
-        Uri.Builder builder = pyx.server.uri.buildUpon();
-        builder.path("/zy/game.jsp");
+        HttpUrl.Builder builder = pyx.server.url.newBuilder();
+        builder.addPathSegment("game.jsp");
 
         List<NameValuePair> params = new ArrayList<>();
         params.add(new NameValuePair("game", String.valueOf(gameId)));
@@ -491,7 +492,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
                         pyx.addCardcastCardSetSync(gameId, deck.code);
                     } catch (JSONException | PYXException | IOException ex) {
                         hasErrors = true;
-                        Logging.logMe(ex);
+                        Logging.log(ex);
                     }
                 }
 
