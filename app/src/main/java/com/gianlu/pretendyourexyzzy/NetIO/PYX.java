@@ -88,7 +88,9 @@ public class PYX {
                     .domain(server.url.host())
                     .path(server.url.encodedPath()).build();
 
-            cookieJar.cookies.add(cookie);
+            synchronized (cookieJar.cookies) {
+                cookieJar.cookies.add(cookie);
+            }
 
             if (BuildConfig.DEBUG) System.out.println("Trying to resume session: " + cookie);
         }
@@ -161,10 +163,12 @@ public class PYX {
     }
 
     private void updateJSessionId() {
-        for (Cookie cookie : cookieJar.cookies) {
-            if (cookie != null && Objects.equals(cookie.name(), "JSESSIONID")) {
-                preferences.edit().putString(PKeys.LAST_JSESSIONID.getKey(), cookie.value()).apply();
-                break;
+        synchronized (cookieJar.cookies) {
+            for (Cookie cookie : cookieJar.cookies) {
+                if (cookie != null && Objects.equals(cookie.name(), "JSESSIONID")) {
+                    preferences.edit().putString(PKeys.LAST_JSESSIONID.getKey(), cookie.value()).apply();
+                    break;
+                }
             }
         }
     }
@@ -812,15 +816,17 @@ public class PYX {
 
         @Override
         public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-            for (Cookie cookie : cookies) {
-                if (cookie == null) continue;
-                for (int i = 0; i < this.cookies.size(); i++) {
-                    Cookie anotherCookie = this.cookies.get(i);
-                    if (anotherCookie == null) continue;
-                    if (Objects.equals(anotherCookie.name(), cookie.name())) {
-                        this.cookies.set(i, cookie);
-                    } else {
-                        this.cookies.add(cookie);
+            synchronized (this.cookies) {
+                for (Cookie cookie : cookies) {
+                    if (cookie == null) continue;
+                    for (int i = 0; i < this.cookies.size(); i++) {
+                        Cookie anotherCookie = this.cookies.get(i);
+                        if (anotherCookie == null) continue;
+                        if (Objects.equals(anotherCookie.name(), cookie.name())) {
+                            this.cookies.set(i, cookie);
+                        } else {
+                            this.cookies.add(cookie);
+                        }
                     }
                 }
             }
