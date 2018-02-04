@@ -336,14 +336,14 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
             @Override
             public void onDone(PYX pyx) {
                 participateGame(game.gid);
-                pd.dismiss();
+                if (getActivity() != null && !getActivity().isFinishing()) pd.dismiss();
 
                 AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_SPECTATE_GAME);
             }
 
             @Override
             public void onException(Exception ex) {
-                pd.dismiss();
+                if (getActivity() != null && !getActivity().isFinishing()) pd.dismiss();
 
                 if (ex instanceof PYXException) {
                     switch (((PYXException) ex).errorCode) {
