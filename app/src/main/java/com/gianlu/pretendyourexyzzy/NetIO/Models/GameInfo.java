@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
+import android.support.annotation.Keep;
+
 import com.gianlu.commonutils.CommonUtils;
 
 import org.json.JSONException;
@@ -56,6 +58,7 @@ public class GameInfo {
         public final int score;
         public final PlayerStatus status;
 
+        @Keep
         public Player(JSONObject obj) throws JSONException {
             name = obj.getString("N");
             score = obj.getInt("sc");

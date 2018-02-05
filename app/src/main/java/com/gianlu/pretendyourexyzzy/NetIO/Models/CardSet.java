@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
+import android.support.annotation.Keep;
 import android.support.annotation.Nullable;
 
 import org.json.JSONException;
@@ -18,6 +19,7 @@ public class CardSet implements Serializable {
     @Nullable
     public CardcastDeck cardcastDeck;
 
+    @Keep
     public CardSet(JSONObject obj) throws JSONException {
         weight = obj.getInt("w");
         id = obj.getInt("cid");

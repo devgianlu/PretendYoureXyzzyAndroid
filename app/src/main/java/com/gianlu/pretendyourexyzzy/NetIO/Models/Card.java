@@ -1,6 +1,8 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 
+import android.support.annotation.Keep;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,6 +21,7 @@ public class Card implements BaseCard {
     private final String originalWatermark;
     public boolean winner = false;
 
+    @Keep
     public Card(JSONObject obj) throws JSONException {
         id = obj.getInt("cid");
 

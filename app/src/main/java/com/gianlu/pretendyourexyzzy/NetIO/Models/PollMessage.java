@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
+import android.support.annotation.Keep;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,6 +15,7 @@ public class PollMessage {
     public final JSONObject obj;
     public final Event event;
 
+    @Keep
     public PollMessage(JSONObject obj) throws JSONException {
         event = Event.parse(obj.getString("E"));
         sender = obj.optString("f", null);

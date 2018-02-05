@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.Cards;
 
 import android.content.Context;
+import android.support.annotation.Keep;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
@@ -105,6 +106,7 @@ public class StarredDecksManager {
         }
 
         @SuppressWarnings("unused")
+        @Keep
         public StarredDeck(JSONObject obj) throws JSONException {
             code = obj.getString("code");
             name = obj.getString("name");
