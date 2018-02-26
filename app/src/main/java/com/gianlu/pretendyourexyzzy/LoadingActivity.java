@@ -23,6 +23,7 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.ConnectivityChecker;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
+import com.gianlu.commonutils.OfflineActivity;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
@@ -209,21 +210,17 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
             }
         }
 
-        new Thread(new Runnable() {
+        ConnectivityChecker.checkAsync(new ConnectivityChecker.OnCheck() {
             @Override
-            public void run() {
-                if (ConnectivityChecker.checkSync(LoadingActivity.this)) {
-                    PYX.get(LoadingActivity.this).firstLoad(LoadingActivity.this);
-                } else {
-                    Toaster.show(LoadingActivity.this, Toaster.Message.OFFLINE, new Runnable() {
-                        @Override
-                        public void run() {
-                            finish();
-                        }
-                    });
-                }
+            public void goodToGo() {
+                PYX.get(LoadingActivity.this).firstLoad(LoadingActivity.this);
             }
-        }).start();
+
+            @Override
+            public void offline() {
+                OfflineActivity.startActivity(LoadingActivity.this, R.string.app_name, LoadingActivity.class);
+            }
+        });
     }
 
     private void setServer(PYX.Server server) {

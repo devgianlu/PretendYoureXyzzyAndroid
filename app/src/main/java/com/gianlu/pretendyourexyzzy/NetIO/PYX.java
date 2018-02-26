@@ -7,13 +7,11 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.crashlytics.android.Crashlytics;
 import com.gianlu.commonutils.Adapters.GeneralItemsAdapter;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.Preferences.Prefs;
-import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -35,7 +33,6 @@ import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,8 +45,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import okhttp3.Cookie;
-import okhttp3.CookieJar;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -67,32 +62,21 @@ public class PYX {
     private final ExecutorService executor = Executors.newFixedThreadPool(5);
     private final Handler handler;
     private final OkHttpClient client;
+    private final Object sessionIdLock = new Object();
     private final SharedPreferences preferences;
-    private final BasicCookiesJar cookieJar;
     public FirstLoad firstLoad;
     private PollingThread pollingThread;
     private boolean hasRetriedFirstLoad = false;
+    private String sessionId = null;
 
     private PYX(Context context) {
         this.handler = new Handler(context.getMainLooper());
-        this.cookieJar = new BasicCookiesJar();
         this.server = Server.lastServer(context);
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        this.client = new OkHttpClient.Builder().cookieJar(cookieJar).build();
+        this.client = new OkHttpClient.Builder().build();
 
-        String lastJSessionId = getLastJSessionId();
-        if (lastJSessionId != null && server.url.host() != null && server.url.encodedPath() != null) {
-            Cookie cookie = new Cookie.Builder()
-                    .name("JSESSIONID")
-                    .value(lastJSessionId)
-                    .domain(server.url.host())
-                    .path(server.url.encodedPath()).build();
-
-            synchronized (cookieJar.cookies) {
-                cookieJar.cookies.add(cookie);
-            }
-
-            if (BuildConfig.DEBUG) System.out.println("Trying to resume session: " + cookie);
+        synchronized (sessionIdLock) {
+            this.sessionId = Prefs.getString(preferences, PKeys.LAST_JSESSIONID, null);
         }
     }
 
@@ -109,6 +93,18 @@ public class PYX {
         if (obj.optBoolean("e", false) || obj.has("ec")) throw new PYXException(obj);
     }
 
+    @Nullable
+    private static String findSessionId(Response response) {
+        for (String cookie : response.headers("Set-Cookie")) {
+            String[] segments = cookie.split(";");
+            String[] keyValue = segments[0].split("=");
+            if (Objects.equals(keyValue[0], "JSESSIONID"))
+                return keyValue[1];
+        }
+
+        return null;
+    }
+
     @NonNull
     public PollingThread getPollingThread() {
         if (pollingThread == null) startPolling();
@@ -119,16 +115,27 @@ public class PYX {
         FormBody.Builder reqBody = new FormBody.Builder(Charset.forName("UTF-8")).add("o", operation.val);
         for (NameValuePair pair : params) reqBody.add(pair.key(), pair.value(""));
 
-        Request request = new Request.Builder()
+        Request.Builder builder = new Request.Builder()
                 .url(server.url.newBuilder().addPathSegment("AjaxServlet").build())
-                .post(reqBody.build())
-                .build();
+                .post(reqBody.build());
+
+        synchronized (sessionIdLock) {
+            if (sessionId != null)
+                builder.header("Cookie", "JSESSIONID=" + sessionId);
+        }
 
         try (Response resp = client.newBuilder()
                 .connectTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
                 .readTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
-                .build().newCall(request).execute()) {
-            updateJSessionId();
+                .build().newCall(builder.build()).execute()) {
+
+            if (operation == OP.REGISTER) {
+                synchronized (sessionIdLock) {
+                    sessionId = findSessionId(resp);
+                }
+
+                updateLastSessionId();
+            }
 
             ResponseBody respBody = resp.body();
             if (respBody != null) {
@@ -137,8 +144,7 @@ public class PYX {
                 try {
                     raiseException(obj);
                 } catch (PYXException ex) {
-                    Crashlytics.log(operation + "; " + Arrays.toString(params) + "; " + ex.errorCode + "; " + hasRetriedFirstLoad);
-                    Crashlytics.logException(ex);
+                    Logging.log(operation + "; " + Arrays.toString(params) + "; " + ex.errorCode + "; " + hasRetriedFirstLoad, true);
 
                     if (operation == OP.FIRST_LOAD && !hasRetriedFirstLoad && Objects.equals(ex.errorCode, "se")) {
                         hasRetriedFirstLoad = true;
@@ -148,7 +154,7 @@ public class PYX {
                     throw ex;
                 }
 
-                Crashlytics.log(operation + "; " + Arrays.toString(params));
+                Logging.log(operation + "; " + Arrays.toString(params), false);
 
                 return obj;
             } else {
@@ -160,26 +166,6 @@ public class PYX {
     public void startPolling() {
         pollingThread = new PollingThread();
         pollingThread.start();
-    }
-
-    private void updateJSessionId() {
-        synchronized (cookieJar.cookies) {
-            for (Cookie cookie : cookieJar.cookies) {
-                if (cookie != null && Objects.equals(cookie.name(), "JSESSIONID")) {
-                    preferences.edit().putString(PKeys.LAST_JSESSIONID.getKey(), cookie.value()).apply();
-                    break;
-                }
-            }
-        }
-    }
-
-    private void removeLastJSessionId() {
-        preferences.edit().remove(PKeys.LAST_JSESSIONID.getKey()).apply();
-    }
-
-    @Nullable
-    private String getLastJSessionId() {
-        return preferences.getString(PKeys.LAST_JSESSIONID.getKey(), null);
     }
 
     public void firstLoad(final IResult<FirstLoad> listener) {
@@ -229,8 +215,6 @@ public class PYX {
                             listener.onDone(PYX.this, user);
                         }
                     });
-
-                    // firestore.setNickname(server, nickname);
                 } catch (PYXException | IOException | JSONException ex) {
                     handler.post(new Runnable() {
                         @Override
@@ -241,6 +225,14 @@ public class PYX {
                 }
             }
         });
+    }
+
+    private void updateLastSessionId() {
+        Prefs.putString(preferences, PKeys.LAST_JSESSIONID, sessionId);
+    }
+
+    private void removeLastSessionId() {
+        Prefs.remove(preferences, PKeys.LAST_JSESSIONID);
     }
 
     public void logout() {
@@ -254,9 +246,8 @@ public class PYX {
                     }
 
                     ajaxServletRequestSync(OP.LOGOUT);
-                    // firestore.loggedOut();
 
-                    removeLastJSessionId();
+                    removeLastSessionId();
                     firstLoad = null;
                 } catch (IOException | JSONException | PYXException ignored) {
                 }
@@ -301,33 +292,6 @@ public class PYX {
                 try {
                     ajaxServletRequestSync(OP.GAME_CHAT,
                             new NameValuePair("gid", String.valueOf(gid)),
-                            new NameValuePair("m", message),
-                            new NameValuePair("me", "false"));
-
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(instance);
-                        }
-                    });
-                } catch (IOException | JSONException | PYXException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-    public void sendMessage(final String message, final ISuccess listener) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    ajaxServletRequestSync(OP.CHAT,
                             new NameValuePair("m", message),
                             new NameValuePair("me", "false"));
 
@@ -471,32 +435,6 @@ public class PYX {
                         @Override
                         public void run() {
                             listener.onDone(PYX.this, info);
-                        }
-                    });
-                } catch (IOException | JSONException | PYXException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-    public void getGameCards(final int gid, final IResult<GameCards> listener) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    JSONObject obj = ajaxServletRequestSync(OP.GET_GAME_CARDS, new NameValuePair("gid", String.valueOf(gid)));
-                    final GameCards cards = new GameCards(obj);
-
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(PYX.this, cards);
                         }
                     });
                 } catch (IOException | JSONException | PYXException ex) {
@@ -811,33 +749,6 @@ public class PYX {
         void onStoppedPolling();
     }
 
-    private static class BasicCookiesJar implements CookieJar {
-        final List<Cookie> cookies = Collections.synchronizedList(new ArrayList<Cookie>());
-
-        @Override
-        public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-            synchronized (this.cookies) {
-                for (Cookie cookie : cookies) {
-                    if (cookie == null) continue;
-                    for (int i = 0; i < this.cookies.size(); i++) {
-                        Cookie anotherCookie = this.cookies.get(i);
-                        if (anotherCookie == null) continue;
-                        if (Objects.equals(anotherCookie.name(), cookie.name())) {
-                            this.cookies.set(i, cookie);
-                        } else {
-                            this.cookies.add(cookie);
-                        }
-                    }
-                }
-            }
-        }
-
-        @Override
-        public List<Cookie> loadForRequest(HttpUrl url) {
-            return cookies;
-        }
-    }
-
     public static class Server implements GeneralItemsAdapter.Item {
         public final static Map<String, Server> pyxServers = new HashMap<>();
         private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
@@ -921,7 +832,7 @@ public class PYX {
         }
 
         @Nullable
-        public static Server getUserServer(Context context, String name) throws JSONException, MalformedURLException {
+        static Server getUserServer(Context context, String name) throws JSONException, MalformedURLException {
             JSONArray array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
@@ -933,7 +844,7 @@ public class PYX {
         }
 
         @NonNull
-        public static Server lastServer(Context context) {
+        static Server lastServer(Context context) {
             String name = Prefs.getString(context, PKeys.LAST_SERVER, "PYX1");
 
             Server server = null;
@@ -1013,15 +924,18 @@ public class PYX {
         public void run() {
             while (!shouldStop) {
                 try {
-                    Request request = new Request.Builder()
+                    Request.Builder builder = new Request.Builder()
                             .post(Util.EMPTY_REQUEST)
-                            .url(server.url.newBuilder().addPathSegment("LongPollServlet").build())
-                            .build();
+                            .url(server.url.newBuilder().addPathSegment("LongPollServlet").build());
+
+                    synchronized (sessionIdLock) {
+                        builder.header("Cookie", "JSESSIONID=" + sessionId);
+                    }
 
                     try (Response resp = client.newBuilder()
                             .connectTimeout(POLLING_TIMEOUT, TimeUnit.SECONDS)
                             .readTimeout(POLLING_TIMEOUT, TimeUnit.SECONDS)
-                            .build().newCall(request).execute()) {
+                            .build().newCall(builder.build()).execute()) {
                         if (resp.code() != 200) throw new StatusCodeException(resp);
 
                         String json;
