@@ -17,6 +17,7 @@ import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
 
 public class StarredDecksActivity extends AppCompatActivity implements StarredDecksAdapter.IAdapter {
     private static CardcastDeckActivity.IOngoingGame handler;
+    private RecyclerViewLayout layout;
 
     public static void startActivity(Context context, CardcastDeckActivity.IOngoingGame handler) {
         if (StarredDecksManager.hasAnyDeck(context)) {
@@ -56,7 +57,7 @@ public class StarredDecksActivity extends AppCompatActivity implements StarredDe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        RecyclerViewLayout layout = new RecyclerViewLayout(this);
+        layout = new RecyclerViewLayout(this);
         setContentView(layout);
         setTitle(R.string.starredDecks);
 
@@ -66,6 +67,13 @@ public class StarredDecksActivity extends AppCompatActivity implements StarredDe
         layout.disableSwipeRefresh();
         layout.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary_background));
         layout.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        layout.loadListData(new StarredDecksAdapter(this, StarredDecksManager.loadDecks(this), this));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
         layout.loadListData(new StarredDecksAdapter(this, StarredDecksManager.loadDecks(this), this));
     }
 
