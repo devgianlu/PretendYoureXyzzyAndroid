@@ -115,7 +115,6 @@ public class Utils {
         public static final Toaster.Message FAILED_CREATING_GAME = new Toaster.Message(R.string.failedCreatingGame, true);
         public static final Toaster.Message FAILED_START_GAME = new Toaster.Message(R.string.failedStartGame, true);
         public static final Toaster.Message GAME_STARTED = new Toaster.Message(R.string.gameStarted, false);
-        public static final Toaster.Message FAILED_SHARING = new Toaster.Message(R.string.failedSharing, true);
         public static final Toaster.Message OPTIONS_CHANGED = new Toaster.Message(R.string.optionsChanged, false);
         public static final Toaster.Message FAILED_CHANGING_OPTIONS = new Toaster.Message(R.string.failedChangingOptions, true);
         public static final Toaster.Message CARDCAST_ADDED = new Toaster.Message(R.string.cardcastAdded, false);
@@ -131,8 +130,5 @@ public class Utils {
         public static final Toaster.Message STARRED_CARD = new Toaster.Message(R.string.addedCardToStarred, false);
         public static final Toaster.Message CARDSET_REMOVED = new Toaster.Message(R.string.cardcastDeckRemoved, false);
         public static final Toaster.Message FAILED_REMOVING_CARDSET = new Toaster.Message(R.string.failedRemovingCardcastDeck, true);
-        public static final Toaster.Message SERVER_ALREADY_EXISTS = new Toaster.Message(R.string.serverAlreadyExists, false);
-        public static final Toaster.Message INVALID_SERVER_URL = new Toaster.Message(R.string.invalidServerURL, false);
-        public static final Toaster.Message FAILED_ADDING_SERVER = new Toaster.Message(R.string.failedAddingServer, true);
     }
 }

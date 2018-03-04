@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.Adapters;
 
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -22,7 +23,8 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
-        return getItem(position).getArguments().getString("title");
+        Bundle args = getItem(position).getArguments();
+        return args == null ? null : args.getString("title");
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,12 +32,13 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
     }
 
     @Override
-    public NamesAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    @NonNull
+    public NamesAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new ViewHolder(parent);
     }
 
     @Override
-    public void onBindViewHolder(NamesAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull NamesAdapter.ViewHolder holder, int position) {
         String name = players.get(position);
         holder.text.setText(name);
         holder.mobile.setVisibility(isMobile(name) ? View.VISIBLE : View.GONE);

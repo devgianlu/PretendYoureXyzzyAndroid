@@ -56,6 +56,12 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:launchMode="singleTask" />
 
+        <!-- Manager servers activity -->
+        <activity
+            android:name=".ManageServersActivity"
+            android:parentActivityName=".LoadingActivity"
+            android:screenOrientation="portrait" />
+
         <!-- Starred cards activity -->
         <activity
             android:name=".StarredCardsActivity"

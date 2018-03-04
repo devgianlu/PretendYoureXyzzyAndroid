@@ -21,9 +21,9 @@ public class CardsGroup<C extends BaseCard> extends ArrayList<C> {
         return false;
     }
 
-    public void setWinner(boolean winner) {
+    public void setWinner() {
         for (BaseCard card : this)
             if (card instanceof Card)
-                ((Card) card).setWinner(winner);
+                ((Card) card).setWinner();
     }
 }

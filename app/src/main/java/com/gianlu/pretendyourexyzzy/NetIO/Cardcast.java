@@ -123,7 +123,7 @@ public class Cardcast {
     }
 
     @NonNull
-    private Object basicRequest(@NonNull String endpoint, List<NameValuePair> params) throws URISyntaxException, IOException, JSONException {
+    private Object basicRequest(@NonNull String endpoint, List<NameValuePair> params) throws IOException, JSONException {
         Uri.Builder builder = Uri.parse(BASE_URL + endpoint).buildUpon();
         for (NameValuePair pair : params) builder.appendQueryParameter(pair.key(), pair.value(""));
 
@@ -187,7 +187,7 @@ public class Cardcast {
                             listener.onDone(search, decks);
                         }
                     });
-                } catch (JSONException | ParseException | URISyntaxException | IOException ex) {
+                } catch (JSONException | ParseException | IOException ex) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {

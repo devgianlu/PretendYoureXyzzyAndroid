@@ -17,7 +17,7 @@ import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
-import com.gianlu.pretendyourexyzzy.Cards.PyxCard;
+import com.gianlu.pretendyourexyzzy.Cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.Cards.StarredCardsManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
@@ -68,7 +68,7 @@ public class StarredCardsActivity extends AppCompatActivity implements CardsAdap
         cards.setTag(card);
 
         int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
-        PyxCard blackCard = new PyxCard(this, card.blackCard, null, null);
+        GameCardView blackCard = new GameCardView(this, card.blackCard, null, null);
         cards.addView(blackCard);
         ((LinearLayout.LayoutParams) blackCard.getLayoutParams()).setMargins(margin, margin, margin, margin);
 

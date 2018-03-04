@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -34,13 +35,14 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         for (BaseCard card : cards) this.cards.add(CardsGroup.singleton(card));
     }
 
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new ViewHolder();
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
         ((PyxCardsGroupView) holder.itemView).setCards(cards.get(position), action);
         if (manageMargins) {
             ((PyxCardsGroupView) holder.itemView).setIsFirstOfParent(position == 0);
@@ -91,7 +93,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
                         list.getLayoutManager().smoothScrollToPosition(list, null, i);
                 }
 
-                group.setWinner(true);
+                group.setWinner();
                 notifyItemChanged(i);
                 break;
             }

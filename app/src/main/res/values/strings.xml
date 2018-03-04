@@ -173,18 +173,7 @@
     <string name="restartInAppTutorial_summary">Features tutorial will be shown again while using the app</string>
     <string name="tapTargetView_details">Copyright 2016 Keepsafe Software Inc.</string>
     <string name="appIntro_details">Copyright 2015 Paolo Rotolo\nCopyright 2016 Maximilian Narr</string>
-    <string name="createServer">Create server</string>
-    <string name="cancel">Cancel</string>
-    <string name="url">URL</string>
-    <string name="create">Create</string>
-    <string name="failedAddingServer">Failed adding a new server!</string>
-    <string name="invalidServerURL">The server URL is invalid.</string>
-    <string name="serverAlreadyExists">A server with this name already exists.</string>
     <string name="tutorial">Tutorial</string>
-    <string name="servers">Servers</string>
-    <string name="viewServers">View user added servers</string>
-    <string name="clearServers">Clear user added servers</string>
-    <string name="viewServers_summary">View or delete user added servers</string>
-    <string name="clearServers_summary">Remove all user added servers</string>
-    <string name="createServer_help">The address must be of the following type: http://example.com/</string>
+    <string name="manage">Manage</string>
+    <string name="manageServers">Manage servers</string>
 </resources>

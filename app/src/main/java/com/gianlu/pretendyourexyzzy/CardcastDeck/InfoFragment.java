@@ -42,8 +42,9 @@ public class InfoFragment extends Fragment implements Cardcast.IResult<CardcastD
         container = layout.findViewById(R.id.cardcastDeckInfo_container);
         loading = layout.findViewById(R.id.cardcastDeckInfo_loading);
 
-        String code = getArguments().getString("code", null);
-        if (code == null) {
+        Bundle args = getArguments();
+        String code;
+        if (args == null || (code = args.getString("code", null)) == null) {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.GONE);
             MessageLayout.show(layout, R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);

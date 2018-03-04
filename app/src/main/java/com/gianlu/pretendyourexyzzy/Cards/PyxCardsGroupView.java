@@ -68,7 +68,7 @@ public class PyxCardsGroupView extends LinearLayout {
         while (iterator.hasNext()) {
             final BaseCard card = iterator.next();
 
-            PyxCard pyxCard = new PyxCard(getContext(), card, action, new PyxCard.ICard() {
+            GameCardView pyxCard = new GameCardView(getContext(), card, action, new GameCardView.ICard() {
                 @Override
                 public void onDelete() {
                     if (listener != null)

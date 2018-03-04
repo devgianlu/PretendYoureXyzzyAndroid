@@ -115,7 +115,7 @@ public class Card implements BaseCard {
         return winner;
     }
 
-    public void setWinner(boolean winner) {
-        this.winner = winner;
+    public void setWinner() {
+        this.winner = true;
     }
 }

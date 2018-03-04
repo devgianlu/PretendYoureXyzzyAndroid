@@ -22,27 +22,27 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.R;
 
-public class PyxCard extends CardView {
+public class GameCardView extends CardView {
     private final ICard listener;
     private final PyxCardsGroupView.Action mainAction;
     private BaseCard card;
     private int width;
 
-    public PyxCard(@NonNull Context context) {
+    public GameCardView(@NonNull Context context) {
         this(context, null, 0);
     }
 
-    public PyxCard(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public GameCardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public PyxCard(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
+    public GameCardView(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.listener = null;
         this.mainAction = null;
     }
 
-    public PyxCard(Context context, BaseCard card, @Nullable PyxCardsGroupView.Action mainAction, @Nullable ICard listener) {
+    public GameCardView(Context context, BaseCard card, @Nullable PyxCardsGroupView.Action mainAction, @Nullable ICard listener) {
         super(context);
         this.card = card;
         this.mainAction = mainAction;

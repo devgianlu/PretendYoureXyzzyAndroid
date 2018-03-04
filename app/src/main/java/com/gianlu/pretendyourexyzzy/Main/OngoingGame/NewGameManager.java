@@ -27,7 +27,7 @@ import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
-import com.gianlu.pretendyourexyzzy.Cards.PyxCard;
+import com.gianlu.pretendyourexyzzy.Cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.Cards.StarredCardsManager;
 import com.gianlu.pretendyourexyzzy.LoadingActivity;
@@ -52,7 +52,7 @@ import java.util.Objects;
 public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter {
     public final FloatingActionButton startGame;
     private final Context context;
-    private final PyxCard blackCard;
+    private final GameCardView blackCard;
     private final TextView instructions;
     private final PYX pyx;
     private final PlayersAdapter playersAdapter;

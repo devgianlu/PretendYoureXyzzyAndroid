@@ -52,8 +52,8 @@ public class GameChatFragment extends Fragment implements ChatAdapter.IAdapter, 
         recyclerViewLayout.setLayoutManager(llm);
         recyclerViewLayout.getList().addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 
-        game = (Game) getArguments().getSerializable("game");
-        if (game == null) {
+        Bundle args = getArguments();
+        if (args == null || (game = (Game) args.getSerializable("game")) == null) {
             recyclerViewLayout.showMessage(R.string.failedLoading, true);
             return layout;
         }

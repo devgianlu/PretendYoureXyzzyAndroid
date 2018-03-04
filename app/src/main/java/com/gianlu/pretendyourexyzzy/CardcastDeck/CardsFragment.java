@@ -59,15 +59,15 @@ public class CardsFragment extends Fragment implements Cardcast.IResult<List<Car
             }
         });
 
-        boolean whiteCards = getArguments().getBoolean("whiteCards", true);
-        String code = getArguments().getString("code", null);
-        if (code == null) {
+        Bundle args = getArguments();
+        String code;
+        if (args == null || (code = args.getString("code", null)) == null) {
             layout.showMessage(R.string.failedLoading, true);
             return layout;
         }
 
         Cardcast cardcast = Cardcast.get(getContext());
-        if (whiteCards) cardcast.getResponses(code, this);
+        if (args.getBoolean("whiteCards", true)) cardcast.getResponses(code, this);
         else cardcast.getCalls(code, this);
 
         return layout;

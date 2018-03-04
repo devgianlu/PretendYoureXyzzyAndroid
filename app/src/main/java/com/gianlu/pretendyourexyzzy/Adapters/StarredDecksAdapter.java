@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.Adapters;
 
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,7 +29,8 @@ public class StarredDecksAdapter extends RecyclerView.Adapter<StarredDecksAdapte
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    @NonNull
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new ViewHolder(parent);
     }
 
@@ -38,7 +40,7 @@ public class StarredDecksAdapter extends RecyclerView.Adapter<StarredDecksAdapte
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final StarredDecksManager.StarredDeck deck = decks.get(position);
 
         holder.name.setText(deck.name);
