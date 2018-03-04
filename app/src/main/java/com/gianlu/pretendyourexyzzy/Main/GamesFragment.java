@@ -203,8 +203,6 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     @Override
     public void onHiddenChanged(boolean hidden) {
         if (!hidden) updateActivityTitle();
-        if (adapter != null)
-            adapter.setFilterOutLockedLobbies(Prefs.getBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, false));
     }
 
     @Override
@@ -233,38 +231,43 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
             recyclerViewLayout.getList().post(new Runnable() {
                 @Override
                 public void run() {
-                    if (!isShowingHint && getActivity() != null && TutorialManager.shouldShowHintFor(getContext(), TutorialManager.Discovery.GAMES) && !result.isEmpty() && isVisible()) {
-                        scrollToTop();
-                        GamesAdapter.ViewHolder holder = (GamesAdapter.ViewHolder) recyclerViewLayout.getList().findViewHolderForLayoutPosition(0);
-                        if (holder != null) {
-                            isShowingHint = true;
-                            new TapTargetSequence(getActivity())
-                                    .target(Utils.tapTargetForView(holder.status, R.string.tutorial_gameStatus, R.string.tutorial_gameStatus_desc))
-                                    .target(Utils.tapTargetForView(holder.locked, R.string.tutorial_gameLocked, R.string.tutorial_gameLocked_desc))
-                                    .target(Utils.tapTargetForView(holder.spectate, R.string.tutorial_spectateGame, R.string.tutorial_spectateGame_desc))
-                                    .target(Utils.tapTargetForView(holder.join, R.string.tutorial_joinGame, R.string.tutorial_joinGame_desc))
-                                    .target(Utils.tapTargetForView(createGame, R.string.tutorial_createGame, R.string.tutorial_createGame_desc))
-                                    .listener(new TapTargetSequence.Listener() {
-                                        @Override
-                                        public void onSequenceFinish() {
-                                            TutorialManager.setHintShown(getContext(), TutorialManager.Discovery.GAMES);
-                                            isShowingHint = false;
-                                        }
-
-                                        @Override
-                                        public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
-
-                                        }
-
-                                        @Override
-                                        public void onSequenceCanceled(TapTarget lastTarget) {
-
-                                        }
-                                    }).start();
-                        }
-                    }
+                    if (!isShowingHint && TutorialManager.shouldShowHintFor(getContext(), TutorialManager.Discovery.GAMES) && !result.isEmpty() && isVisible())
+                        showHints();
                 }
             });
+        }
+    }
+
+    private void showHints() {
+        if (getActivity() == null) return;
+
+        scrollToTop();
+        GamesAdapter.ViewHolder holder = (GamesAdapter.ViewHolder) recyclerViewLayout.getList().findViewHolderForLayoutPosition(0);
+        if (holder != null) {
+            isShowingHint = true;
+            new TapTargetSequence(getActivity())
+                    .target(Utils.tapTargetForView(holder.status, R.string.tutorial_gameStatus, R.string.tutorial_gameStatus_desc))
+                    .target(Utils.tapTargetForView(holder.locked, R.string.tutorial_gameLocked, R.string.tutorial_gameLocked_desc))
+                    .target(Utils.tapTargetForView(holder.spectate, R.string.tutorial_spectateGame, R.string.tutorial_spectateGame_desc))
+                    .target(Utils.tapTargetForView(holder.join, R.string.tutorial_joinGame, R.string.tutorial_joinGame_desc))
+                    .target(Utils.tapTargetForView(createGame, R.string.tutorial_createGame, R.string.tutorial_createGame_desc))
+                    .listener(new TapTargetSequence.Listener() {
+                        @Override
+                        public void onSequenceFinish() {
+                            TutorialManager.setHintShown(getContext(), TutorialManager.Discovery.GAMES);
+                            isShowingHint = false;
+                        }
+
+                        @Override
+                        public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
+
+                        }
+
+                        @Override
+                        public void onSequenceCanceled(TapTarget lastTarget) {
+
+                        }
+                    }).start();
         }
     }
 
