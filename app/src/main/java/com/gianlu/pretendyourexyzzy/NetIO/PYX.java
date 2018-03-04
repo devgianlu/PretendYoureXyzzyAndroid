@@ -2,12 +2,12 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.gianlu.commonutils.Adapters.GeneralItemsAdapter;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
@@ -27,7 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.text.ParseException;
@@ -749,30 +748,31 @@ public class PYX {
         void onStoppedPolling();
     }
 
-    public static class Server implements GeneralItemsAdapter.Item {
+    public static class Server {
         public final static Map<String, Server> pyxServers = new HashMap<>();
         private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
 
         static {
             try {
-                pyxServers.put("PYX1", new Server(HttpUrl.parse("https://pyx-1.pretendyoure.xyz/zy/"), "The Biggest, Blackest Dick"));
-                pyxServers.put("PYX2", new Server(HttpUrl.parse("https://pyx-2.pretendyoure.xyz/zy/"), "A Falcon with a Box on its Head"));
-                pyxServers.put("PYX3", new Server(HttpUrl.parse("https://pyx-3.pretendyoure.xyz/zy/"), "Dickfingers"));
-            } catch (MalformedURLException ignored) {
+                pyxServers.put("PYX1", new Server(parseUrlOrThrow("https://pyx-1.pretendyoure.xyz/zy/"), "The Biggest, Blackest Dick"));
+                pyxServers.put("PYX2", new Server(parseUrlOrThrow("https://pyx-2.pretendyoure.xyz/zy/"), "A Falcon with a Box on its Head"));
+                pyxServers.put("PYX3", new Server(parseUrlOrThrow("https://pyx-3.pretendyoure.xyz/zy/"), "Dickfingers"));
+            } catch (JSONException ex) {
+                Logging.log(ex);
             }
         }
 
         public final HttpUrl url;
         public final String name;
+        public ServersChecker.CheckResult status = null;
 
-        public Server(HttpUrl url, String name) throws MalformedURLException {
-            if (url == null) throw new MalformedURLException("Invalid url!");
+        public Server(@NonNull HttpUrl url, @NonNull String name) {
             this.url = url;
             this.name = name;
         }
 
-        Server(JSONObject obj) throws JSONException, MalformedURLException {
-            this(HttpUrl.parse(obj.getString("uri")), obj.getString("name"));
+        Server(JSONObject obj) throws JSONException {
+            this(parseUrlOrThrow(obj.getString("uri")), obj.getString("name"));
         }
 
         @Nullable
@@ -801,6 +801,32 @@ public class PYX {
         }
 
         @NonNull
+        private static HttpUrl parseUrlOrThrow(String str) throws JSONException {
+            if (str == null) throw new JSONException("str is null");
+
+            try {
+                HttpUrl url = HttpUrl.parse(str);
+                if (url == null) throw new JSONException("Invalid url: " + str);
+                return url;
+            } catch (IllegalStateException ex) {
+                if (Build.VERSION.SDK_INT >= 27) throw new JSONException(ex);
+                else throw new JSONException(ex.getMessage());
+            }
+        }
+
+        @Nullable
+        public static HttpUrl parseUrl(String str) {
+            if (str == null) return null;
+
+            try {
+                return HttpUrl.parse(str);
+            } catch (IllegalStateException ex) {
+                Logging.log(ex);
+                return null;
+            }
+        }
+
+        @NonNull
         public static List<Server> loadUserServers(Context context) {
             List<Server> servers = new ArrayList<>();
             JSONArray array;
@@ -814,7 +840,7 @@ public class PYX {
             for (int i = 0; i < array.length(); i++) {
                 try {
                     servers.add(new Server(array.getJSONObject(i)));
-                } catch (JSONException | MalformedURLException ex) {
+                } catch (JSONException ex) {
                     Logging.log(ex);
                 }
             }
@@ -822,17 +848,8 @@ public class PYX {
             return servers;
         }
 
-        public static boolean isNameOk(Context context, String name) {
-            try {
-                return !(name == null || name.isEmpty() || getUserServer(context, name) != null);
-            } catch (Exception ex) {
-                Logging.log(ex);
-                return false;
-            }
-        }
-
         @Nullable
-        static Server getUserServer(Context context, String name) throws JSONException, MalformedURLException {
+        private static Server getUserServer(Context context, String name) throws JSONException {
             JSONArray array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
@@ -844,7 +861,7 @@ public class PYX {
         }
 
         @NonNull
-        static Server lastServer(Context context) {
+        private static Server lastServer(Context context) {
             String name = Prefs.getString(context, PKeys.LAST_SERVER, "PYX1");
 
             Server server = null;
@@ -855,7 +872,7 @@ public class PYX {
             if (server == null) {
                 try {
                     server = getUserServer(context, name);
-                } catch (JSONException | MalformedURLException ex) {
+                } catch (JSONException ex) {
                     Logging.log(ex);
                 }
             }
@@ -867,12 +884,13 @@ public class PYX {
 
         public static void addServer(Context context, Server server) throws JSONException {
             JSONArray array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
+            for (int i = array.length() - 1; i >= 0; i--) {
+                if (Objects.equals(array.getJSONObject(i).getString("name"), server.name))
+                    array.remove(i);
+            }
+
             array.put(server.toJson());
             Prefs.putJSONArray(context, PKeys.USER_SERVERS, array);
-        }
-
-        public static void clearUserServers(Context context) {
-            Prefs.remove(context, PKeys.USER_SERVERS);
         }
 
         public static void removeServer(Context context, Server server) {
@@ -892,6 +910,23 @@ public class PYX {
             }
         }
 
+        public static boolean hasServer(Context context, String name) {
+            try {
+                return getUserServer(context, name) != null;
+            } catch (JSONException ex) {
+                Logging.log(ex);
+                return true;
+            }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Server server = (Server) o;
+            return url.equals(server.url) && name.equals(server.name);
+        }
+
         @Override
         public String toString() {
             return name;
@@ -901,17 +936,6 @@ public class PYX {
             return new JSONObject()
                     .put("name", name)
                     .put("uri", url.toString());
-        }
-
-        @Override
-        public String getPrimaryText() {
-            return name;
-        }
-
-        @Nullable
-        @Override
-        public String getSecondaryText() {
-            return url.toString();
         }
     }
 

@@ -176,4 +176,11 @@
     <string name="tutorial">Tutorial</string>
     <string name="manage">Manage</string>
     <string name="manageServers">Manage servers</string>
+    <string name="noServers">There are no custom servers.</string>
+    <string name="addServer">Add server</string>
+    <string name="serverUrl">Server URL</string>
+    <string name="invalidServerName">The name is invalid.</string>
+    <string name="invalidServerUrl">The server URL is invalid.</string>
+    <string name="failedAddingServer">Failed adding a new server!</string>
+    <string name="remove">Remove</string>
 </resources>
