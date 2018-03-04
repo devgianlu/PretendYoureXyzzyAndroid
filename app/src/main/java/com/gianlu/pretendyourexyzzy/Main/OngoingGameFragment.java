@@ -296,9 +296,9 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
         CommonUtils.setText(playerLimit, String.valueOf(options.playersLimit));
         final TextInputLayout spectatorLimit = layout.findViewById(R.id.editGameOptions_spectatorLimit);
         CommonUtils.setText(spectatorLimit, String.valueOf(options.spectatorsLimit));
-        final Spinner idleTimeMultiplier = layout.findViewById(R.id.editGameOptions_idleTimeMultiplier);
-        idleTimeMultiplier.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, Game.Options.VALID_TIME_MULTIPLIERS));
-        idleTimeMultiplier.setSelection(Game.Options.timeMultiplierIndex(options.timeMultiplier));
+        final Spinner timerMultiplier = layout.findViewById(R.id.editGameOptions_timerMultiplier);
+        timerMultiplier.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, Game.Options.VALID_TIMER_MULTIPLIERS));
+        timerMultiplier.setSelection(Game.Options.timerMultiplierIndex(options.timerMultiplier));
         final TextInputLayout blankCards = layout.findViewById(R.id.editGameOptions_blankCards);
         CommonUtils.setText(blankCards, String.valueOf(options.blanksLimit));
         final TextInputLayout password = layout.findViewById(R.id.editGameOptions_password);
@@ -336,7 +336,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
 
                         Game.Options newOptions;
                         try {
-                            newOptions = Game.Options.validateAndCreate(idleTimeMultiplier.getSelectedItem().toString(), CommonUtils.getText(spectatorLimit), CommonUtils.getText(playerLimit), CommonUtils.getText(scoreLimit), CommonUtils.getText(blankCards), cardSets, CommonUtils.getText(password));
+                            newOptions = Game.Options.validateAndCreate(timerMultiplier.getSelectedItem().toString(), CommonUtils.getText(spectatorLimit), CommonUtils.getText(playerLimit), CommonUtils.getText(scoreLimit), CommonUtils.getText(blankCards), cardSets, CommonUtils.getText(password));
                         } catch (Game.Options.InvalidFieldException ex) {
                             View view = layout.findViewById(ex.fieldId);
                             if (view != null && view instanceof TextInputLayout) {
@@ -384,10 +384,10 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
         playerLimit.setHtml(R.string.playerLimit, options.playersLimit);
         SuperTextView spectatorLimit = layout.findViewById(R.id.gameOptions_spectatorLimit);
         spectatorLimit.setHtml(R.string.spectatorLimit, options.spectatorsLimit);
-        SuperTextView idleTimeMultiplier = layout.findViewById(R.id.gameOptions_idleTimeMultiplier);
-        idleTimeMultiplier.setHtml(R.string.timeMultiplier, options.timeMultiplier);
+        SuperTextView timerMultiplier = layout.findViewById(R.id.gameOptions_timerMultiplier);
+        timerMultiplier.setHtml(R.string.timerMultiplier, options.timerMultiplier);
         SuperTextView cardSets = layout.findViewById(R.id.gameOptions_cardSets);
-        cardSets.setHtml(R.string.cardSets, options.cardSets.isEmpty() ? "none" : CommonUtils.join(pyx.firstLoad.createCardSetNamesList(options.cardSets), ", "));
+        cardSets.setHtml(R.string.cardSets, options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(pyx.firstLoad.createCardSetNamesList(options.cardSets), ", "));
         SuperTextView blankCards = layout.findViewById(R.id.gameOptions_blankCards);
         blankCards.setHtml(R.string.blankCards, options.blanksLimit);
         SuperTextView password = layout.findViewById(R.id.gameOptions_password);

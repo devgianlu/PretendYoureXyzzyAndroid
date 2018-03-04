@@ -53,7 +53,7 @@ public class StarredDecksManager {
     private static void saveDecks(Context context, List<StarredDeck> decks) {
         try {
             JSONArray starredDecksArray = new JSONArray();
-            for (StarredDeck deck : decks) starredDecksArray.put(deck.toJSON());
+            for (StarredDeck deck : decks) starredDecksArray.put(deck.toJson());
             Prefs.putBase64String(context, PKeys.STARRED_DECKS, starredDecksArray.toString());
         } catch (JSONException ex) {
             Logging.log(ex);
@@ -120,7 +120,7 @@ public class StarredDecksManager {
             return code.equals(that.code) && name.equals(that.name);
         }
 
-        public JSONObject toJSON() throws JSONException {
+        public JSONObject toJson() throws JSONException {
             return new JSONObject()
                     .put("code", code)
                     .put("name", name);

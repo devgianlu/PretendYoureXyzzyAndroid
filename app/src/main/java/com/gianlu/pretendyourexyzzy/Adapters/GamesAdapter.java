@@ -8,13 +8,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.gianlu.commonutils.Adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
+import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.Comparator;
@@ -24,12 +27,14 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
     private final Context context;
     private final IAdapter handler;
     private final LayoutInflater inflater;
+    private final PYX pyx;
 
     public GamesAdapter(Context context, List<Game> objs, boolean filterOutLockedLobbies, IAdapter handler) {
         super(objs, SortBy.NUM_PLAYERS);
         this.context = context;
         this.handler = handler;
         this.inflater = LayoutInflater.from(context);
+        this.pyx = PYX.get(context);
         setHasStableIds(true);
         setFilterOutLockedLobbies(filterOutLockedLobbies);
     }
@@ -83,7 +88,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         final Game game = objs.get(position);
         holder.name.setText(game.host);
         holder.players.setHtml(R.string.players, game.players.size(), game.options.playersLimit);
@@ -91,6 +96,9 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         holder.goal.setHtml(R.string.goal, game.options.scoreLimit);
         holder.locked.setImageResource(game.hasPassword ? R.drawable.ic_lock_outline_black_48dp : R.drawable.ic_lock_open_black_48dp);
         holder.status.setImageResource(game.status == Game.Status.LOBBY ? R.drawable.ic_hourglass_empty_black_48dp : R.drawable.ic_casino_black_48dp);
+        holder.cardsets.setHtml(R.string.cardSets, game.options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(pyx.firstLoad.createCardSetNamesList(game.options.cardSets), ", "));
+        holder.timerMultiplier.setHtml(R.string.timerMultiplier, game.options.timerMultiplier);
+        holder.blankCards.setHtml(R.string.blankCards, game.options.blanksLimit);
 
         holder.spectate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,6 +111,13 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
             @Override
             public void onClick(View v) {
                 if (handler != null) handler.joinGame(game);
+            }
+        });
+
+        holder.expand.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CommonUtils.handleCollapseClick(holder.expand, holder.details);
             }
         });
 
@@ -133,10 +148,15 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         public final ImageView status;
         public final Button spectate;
         public final Button join;
+        final ImageButton expand;
         final TextView name;
         final SuperTextView players;
         final SuperTextView spectators;
         final SuperTextView goal;
+        final LinearLayout details;
+        final SuperTextView cardsets;
+        final SuperTextView timerMultiplier;
+        final SuperTextView blankCards;
 
         ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.item_game, parent, false));
@@ -149,6 +169,11 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
             goal = itemView.findViewById(R.id.gameItem_goal);
             spectate = itemView.findViewById(R.id.gameItem_spectate);
             join = itemView.findViewById(R.id.gameItem_join);
+            expand = itemView.findViewById(R.id.gameItem_expand);
+            details = itemView.findViewById(R.id.gameItem_details);
+            cardsets = details.findViewById(R.id.gameItem_cardsets);
+            timerMultiplier = details.findViewById(R.id.gameItem_timerMultiplier);
+            blankCards = details.findViewById(R.id.gameItem_blankCards);
         }
     }
 }

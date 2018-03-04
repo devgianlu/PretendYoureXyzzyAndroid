@@ -71,14 +71,52 @@
                     android:id="@+id/gameItem_goal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
+
+                <LinearLayout
+                    android:id="@+id/gameItem_details"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <com.gianlu.commonutils.SuperTextView
+                        android:id="@+id/gameItem_timerMultiplier"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <com.gianlu.commonutils.SuperTextView
+                        android:id="@+id/gameItem_blankCards"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <com.gianlu.commonutils.SuperTextView
+                        android:id="@+id/gameItem_cardsets"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="end"
             android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/gameItem_expand"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:adjustViewBounds="true"
+                android:alpha="0.54"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_keyboard_arrow_down_black_48dp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
             <Button
                 android:id="@+id/gameItem_spectate"

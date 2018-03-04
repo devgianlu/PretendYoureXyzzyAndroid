@@ -72,7 +72,7 @@ public class Card implements BaseCard {
         return numPick != -1;
     }
 
-    public JSONObject toJSON() throws JSONException {
+    public JSONObject toJson() throws JSONException {
         return new JSONObject()
                 .put("cid", id)
                 .put("PK", numPick)

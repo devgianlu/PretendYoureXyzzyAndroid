@@ -43,7 +43,7 @@
     <string name="judgeSkipped">Judge %s has been skipped!</string>
     <string name="scoreLimit"><![CDATA[<b>Score limit:</b>]]> %d</string>
     <string name="playerLimit"><![CDATA[<b>Players limit:</b>]]> %d</string>
-    <string name="timeMultiplier"><![CDATA[<b>Idle time multiplier:</b>]]> %s</string>
+    <string name="timerMultiplier"><![CDATA[<b>Timer multiplier:</b>]]> %s</string>
     <string name="spectatorLimit"><![CDATA[<b>Spectators limit:</b>]]> %d</string>
     <string name="blankCards"><![CDATA[<b>Blank cards:</b>]]> %d</string>
     <string name="cardSets"><![CDATA[<b>Card sets:</b>]]> %s</string>
@@ -75,10 +75,10 @@
     <string name="passwordLabel">Password</string>
     <string name="hidePassword">Hide password</string>
     <string name="blankCardsLabel">Blank cards</string>
-    <string name="idleTimeMultiplierLabel">Idle time multiplier</string>
+    <string name="timerMultiplierLabel">Timer multiplier</string>
     <string name="spectatorsLimitLabel">Spectators limit</string>
     <string name="playersLimitLabel">Players limit</string>
-    <string name="invalidTimeMultiplier">Invalid idle time multiplier!</string>
+    <string name="invalidTimerMultiplier">Invalid timer multiplier!</string>
     <string name="invalidNumber">Invalid number!</string>
     <string name="outOfRange">The value is out of range! Min: %1$d. Max: %2$d</string>
     <string name="cardSetsLabel">Card sets</string>

@@ -48,7 +48,7 @@ public class StarredCardsManager {
     private static void saveCards(Context context, List<StarredCard> cards) {
         try {
             JSONArray starredCardsArray = new JSONArray();
-            for (StarredCard card : cards) starredCardsArray.put(card.toJSON());
+            for (StarredCard card : cards) starredCardsArray.put(card.toJson());
             Prefs.putBase64String(context, PKeys.STARRED_CARDS, starredCardsArray.toString());
         } catch (JSONException ex) {
             Logging.log(ex);
@@ -164,12 +164,12 @@ public class StarredCardsManager {
             return id;
         }
 
-        JSONObject toJSON() throws JSONException {
+        JSONObject toJson() throws JSONException {
             JSONArray whiteCardsArray = new JSONArray();
-            for (Card whiteCard : whiteCards) whiteCardsArray.put(whiteCard.toJSON());
+            for (Card whiteCard : whiteCards) whiteCardsArray.put(whiteCard.toJson());
             return new JSONObject().put("id", id)
                     .put("wc", whiteCardsArray)
-                    .put("bc", blackCard.toJSON());
+                    .put("bc", blackCard.toJson());
         }
 
         @Override

@@ -25,7 +25,7 @@
             android:layout_height="wrap_content" />
 
         <com.gianlu.commonutils.SuperTextView
-            android:id="@+id/gameOptions_idleTimeMultiplier"
+            android:id="@+id/gameOptions_timerMultiplier"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 

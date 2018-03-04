@@ -110,14 +110,14 @@ public class Game implements Filterable<Game.Protection>, Serializable {
     }
 
     public static class Options implements Serializable {
-        public static final String[] VALID_TIME_MULTIPLIERS = {"0.25x", "0.5x", "0.75x", "1x", "1.25x", "1.5x", "1.75x", "2x", "2.5x", "3x", "4x", "5x", "10x", "Unlimited"};
+        public static final String[] VALID_TIMER_MULTIPLIERS = {"0.25x", "0.5x", "0.75x", "1x", "1.25x", "1.5x", "1.75x", "2x", "2.5x", "3x", "4x", "5x", "10x", "Unlimited"};
         private static final int BL_MIN = 0;
         private static final int BL_MAX = 30;
         private static final int VL_PL_MAX = 20;
         private static final int VL_PL_MIN = 3;
         private static final int SL_MAX = 69;
         private static final int SL_MIN = 4;
-        public final String timeMultiplier;
+        public final String timerMultiplier;
         public final int spectatorsLimit;
         public final int playersLimit;
         public final int scoreLimit;
@@ -126,7 +126,7 @@ public class Game implements Filterable<Game.Protection>, Serializable {
         public final String password;
 
         Options(JSONObject obj) throws JSONException {
-            timeMultiplier = obj.getString("tm");
+            timerMultiplier = obj.getString("tm");
             spectatorsLimit = obj.getInt("vL");
             playersLimit = obj.getInt("pL");
             scoreLimit = obj.getInt("sl");
@@ -139,8 +139,8 @@ public class Game implements Filterable<Game.Protection>, Serializable {
                 cardSets.add(cardsSetsArray.getInt(i));
         }
 
-        Options(String timeMultiplier, int spectatorsLimit, int playersLimit, int scoreLimit, int blanksLimit, ArrayList<Integer> cardSets, @Nullable String password) {
-            this.timeMultiplier = timeMultiplier;
+        Options(String timerMultiplier, int spectatorsLimit, int playersLimit, int scoreLimit, int blanksLimit, ArrayList<Integer> cardSets, @Nullable String password) {
+            this.timerMultiplier = timerMultiplier;
             this.spectatorsLimit = spectatorsLimit;
             this.playersLimit = playersLimit;
             this.scoreLimit = scoreLimit;
@@ -149,8 +149,8 @@ public class Game implements Filterable<Game.Protection>, Serializable {
             this.password = password;
         }
 
-        public static int timeMultiplierIndex(String timeMultiplier) {
-            int index = CommonUtils.indexOf(VALID_TIME_MULTIPLIERS, timeMultiplier);
+        public static int timerMultiplierIndex(String timerMultiplier) {
+            int index = CommonUtils.indexOf(VALID_TIMER_MULTIPLIERS, timerMultiplier);
             if (index == -1) index = 3; // 1x
             return index;
         }
@@ -168,9 +168,9 @@ public class Game implements Filterable<Game.Protection>, Serializable {
                 throw new InvalidFieldException(fieldId, min, max);
         }
 
-        public static Options validateAndCreate(String timeMultiplier, String spectatorsLimit, String playersLimit, String scoreLimit, String blanksLimit, LinearLayout cardSets, String password) throws InvalidFieldException {
-            if (!CommonUtils.contains(VALID_TIME_MULTIPLIERS, timeMultiplier))
-                throw new InvalidFieldException(R.id.editGameOptions_idleTimeMultiplier, R.string.invalidTimeMultiplier);
+        public static Options validateAndCreate(String timerMultiplier, String spectatorsLimit, String playersLimit, String scoreLimit, String blanksLimit, LinearLayout cardSets, String password) throws InvalidFieldException {
+            if (!CommonUtils.contains(VALID_TIMER_MULTIPLIERS, timerMultiplier))
+                throw new InvalidFieldException(R.id.gameOptions_timerMultiplier, R.string.invalidTimerMultiplier);
 
             int vL = parseIntOrThrow(spectatorsLimit, R.id.editGameOptions_spectatorLimit);
             checkMaxMin(vL, VL_PL_MIN, VL_PL_MAX, R.id.editGameOptions_spectatorLimit);
@@ -191,13 +191,13 @@ public class Game implements Filterable<Game.Protection>, Serializable {
                     cardSetIds.add(((CardSet) view.getTag()).id);
             }
 
-            return new Game.Options(timeMultiplier, vL, pL, sl, bl, cardSetIds, password);
+            return new Game.Options(timerMultiplier, vL, pL, sl, bl, cardSetIds, password);
         }
 
-        public JSONObject toJSON() throws JSONException {
+        public JSONObject toJson() throws JSONException {
             return new JSONObject()
                     .put("css", CommonUtils.join(cardSets, ","))
-                    .put("tm", timeMultiplier)
+                    .put("tm", timerMultiplier)
                     .put("vL", spectatorsLimit)
                     .put("pL", playersLimit)
                     .put("sl", scoreLimit)

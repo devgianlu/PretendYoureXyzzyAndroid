@@ -456,7 +456,7 @@ public class PYX {
                 try {
                     ajaxServletRequestSync(OP.CHANGE_GAME_OPTIONS,
                             new NameValuePair("gid", String.valueOf(gid)),
-                            new NameValuePair("go", options.toJSON().toString()));
+                            new NameValuePair("go", options.toJson().toString()));
 
                     handler.post(new Runnable() {
                         @Override
@@ -867,7 +867,7 @@ public class PYX {
 
         public static void addServer(Context context, Server server) throws JSONException {
             JSONArray array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
-            array.put(server.toJSON());
+            array.put(server.toJson());
             Prefs.putJSONArray(context, PKeys.USER_SERVERS, array);
         }
 
@@ -897,7 +897,7 @@ public class PYX {
             return name;
         }
 
-        private JSONObject toJSON() throws JSONException {
+        private JSONObject toJson() throws JSONException {
             return new JSONObject()
                     .put("name", name)
                     .put("uri", url.toString());
