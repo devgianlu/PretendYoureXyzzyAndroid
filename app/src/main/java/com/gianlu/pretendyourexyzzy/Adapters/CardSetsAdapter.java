@@ -26,16 +26,20 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
     private final int gid;
     private final List<CardSet> sets;
     private final LayoutInflater inflater;
-    private final CardcastDeckActivity.IOngoingGame handler;
+    private final IAdapter listener;
+    private final CardcastDeckActivity.IOngoingGame ongoingGameListener;
     private final PYX pyx;
 
-    public CardSetsAdapter(Context context, int gid, List<CardSet> sets, CardcastDeckActivity.IOngoingGame handler) {
+    public CardSetsAdapter(Context context, int gid, List<CardSet> sets, IAdapter listener, CardcastDeckActivity.IOngoingGame ongoingGameListener) {
         this.context = context;
         this.gid = gid;
         this.sets = sets;
         this.inflater = LayoutInflater.from(context);
-        this.handler = handler;
+        this.listener = listener;
+        this.ongoingGameListener = ongoingGameListener;
         this.pyx = PYX.get(context);
+
+        listener.shouldUpdateItemCount(getItemCount());
     }
 
     @Override
@@ -61,11 +65,11 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    CardcastDeckActivity.startActivity(context, item.cardcastDeck, handler);
+                    CardcastDeckActivity.startActivity(context, item.cardcastDeck, ongoingGameListener);
                 }
             });
 
-            if (handler != null && handler.canModifyCardcastDecks()) {
+            if (ongoingGameListener != null && ongoingGameListener.canModifyCardcastDecks()) {
                 holder.remove.setVisibility(View.VISIBLE);
                 holder.remove.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -82,6 +86,7 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
                                     @Override
                                     public void run() {
                                         notifyItemRemoved(holder.getAdapterPosition());
+                                        listener.shouldUpdateItemCount(getItemCount());
                                     }
                                 });
                             }
@@ -105,6 +110,10 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
     @Override
     public int getItemCount() {
         return sets.size();
+    }
+
+    public interface IAdapter {
+        void shouldUpdateItemCount(int count);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

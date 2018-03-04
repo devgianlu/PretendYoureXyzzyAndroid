@@ -23,7 +23,7 @@ import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.List;
 
-public class CardcastBottomSheet extends NiceBaseBottomSheet {
+public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSetsAdapter.IAdapter {
     private final int gid;
     private final CardcastDeckActivity.IOngoingGame listener;
     private RecyclerView list;
@@ -47,14 +47,7 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet {
     }
 
     private void updateContentViews(List<CardSet> cards) {
-        if (cards.isEmpty()) {
-            list.setVisibility(View.GONE);
-            MessageLayout.show(contentParent, R.string.noCardSets, R.drawable.ic_info_outline_black_48dp);
-        } else {
-            list.setVisibility(View.VISIBLE);
-            MessageLayout.hide(contentParent);
-            list.setAdapter(new CardSetsAdapter(getContext(), gid, cards, listener));
-        }
+        list.setAdapter(new CardSetsAdapter(getContext(), gid, cards, this, listener));
     }
 
     @Override
@@ -110,5 +103,16 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet {
 
         List<CardSet> cards = (List<CardSet>) payloads[0];
         updateContentViews(cards);
+    }
+
+    @Override
+    public void shouldUpdateItemCount(int count) {
+        if (count == 0) {
+            list.setVisibility(View.GONE);
+            MessageLayout.show(contentParent, R.string.noCardSets, R.drawable.ic_info_outline_black_48dp);
+        } else {
+            list.setVisibility(View.VISIBLE);
+            MessageLayout.hide(contentParent);
+        }
     }
 }
