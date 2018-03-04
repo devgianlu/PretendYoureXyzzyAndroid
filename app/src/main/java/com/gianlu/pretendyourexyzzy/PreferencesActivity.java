@@ -74,15 +74,6 @@ public class PreferencesActivity extends AppCompatPreferenceActivity {
             final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setPositiveButton(android.R.string.ok, null);
 
-            findPreference("httpclientAndroid").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                public boolean onPreferenceClick(Preference preference) {
-                    CommonUtils.showDialog(getActivity(), builder
-                            .setTitle("httpclient-android")
-                            .setMessage(R.string.httpclientAndroid_details));
-                    return true;
-                }
-            });
-
             findPreference("materialRatingBar").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
                     CommonUtils.showDialog(getActivity(), builder

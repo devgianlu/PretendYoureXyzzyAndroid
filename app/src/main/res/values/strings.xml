@@ -119,7 +119,6 @@
     <string name="addToOngoingGame">Add to the ongoing game</string>
     <string name="preferences">Preferences</string>
     <string name="logs">Logs</string>
-    <string name="httpclientAndroid_details">https://github.com/smarek/httpclient-android</string>
     <string name="materialRatingBar_details">Copyright 2016 Zhang Hai</string>
     <string name="starredDecks">Starred decks</string>
     <string name="noStarredDecks">You have no starred decks!</string>
