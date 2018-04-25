@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.Main;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -33,6 +34,7 @@ import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.commonutils.NameValuePair;
@@ -64,7 +66,7 @@ import java.util.Objects;
 
 import okhttp3.HttpUrl;
 
-public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCards, NewGameManager.IManager, CardcastDeckActivity.IOngoingGame {
+public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCards, NewGameManager.IManager, CardcastDeckActivity.IOngoingGame, CardcastBottomSheet.IDialog {
     private IFragment handler;
     private CoordinatorLayout layout;
     private ProgressBar loading;
@@ -144,7 +146,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
         }
 
         gameId = game.gid;
-        cardcastBottomSheet = new CardcastBottomSheet(layout, gameId, this);
+        cardcastBottomSheet = new CardcastBottomSheet(layout, gameId, this, this);
 
         pyx = PYX.get(getContext());
         pyx.getGameInfoAndCards(game.gid, this);
@@ -249,7 +251,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
                 .setView(recyclerView)
                 .setPositiveButton(android.R.string.ok, null);
 
-        CommonUtils.showDialog(getActivity(), builder);
+        DialogUtils.showDialog(getActivity(), builder);
     }
 
     private void shareGame() {
@@ -281,7 +283,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
                 .setView(spectators)
                 .setPositiveButton(android.R.string.ok, null);
 
-        CommonUtils.showDialog(getActivity(), builder);
+        DialogUtils.showDialog(getActivity(), builder);
     }
 
     @SuppressLint("InflateParams")
@@ -348,20 +350,20 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
                             return;
                         }
 
-                        dialog.dismiss();
+                        DialogUtils.dismissDialog(getActivity());
 
-                        final ProgressDialog pd = CommonUtils.fastIndeterminateProgressDialog(getContext(), R.string.loading);
-                        CommonUtils.showDialog(getContext(), pd);
+                        final ProgressDialog pd = DialogUtils.progressDialog(getContext(), R.string.loading);
+                        DialogUtils.showDialog(getActivity(), pd);
                         pyx.changeGameOptions(gameId, newOptions, new PYX.ISuccess() {
                             @Override
                             public void onDone(PYX pyx) {
-                                pd.dismiss();
+                                DialogUtils.dismissDialog(getActivity());
                                 Toaster.show(getActivity(), Utils.Messages.OPTIONS_CHANGED);
                             }
 
                             @Override
                             public void onException(Exception ex) {
-                                pd.dismiss();
+                                DialogUtils.dismissDialog(getActivity());
                                 Toaster.show(getActivity(), Utils.Messages.FAILED_CHANGING_OPTIONS, ex);
                             }
                         });
@@ -370,7 +372,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
             }
         });
 
-        CommonUtils.showDialog(getActivity(), dialog);
+        DialogUtils.showDialog(getActivity(), dialog);
     }
 
     @SuppressLint("InflateParams")
@@ -400,7 +402,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
                 .setView(layout)
                 .setPositiveButton(android.R.string.ok, null);
 
-        CommonUtils.showDialog(getActivity(), builder);
+        DialogUtils.showDialog(getActivity(), builder);
     }
 
     @Nullable
@@ -462,12 +464,22 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
                 })
                 .setNegativeButton(android.R.string.no, null);
 
-        CommonUtils.showDialog(getActivity(), builder);
+        DialogUtils.showDialog(getActivity(), builder);
     }
 
     @Override
     public void shouldLeaveGame() {
         leaveGame();
+    }
+
+    @Override
+    public void showDialog(AlertDialog.Builder builder) {
+        DialogUtils.showDialog(getActivity(), builder);
+    }
+
+    @Override
+    public void showDialog(Dialog dialog) {
+        DialogUtils.showDialog(getActivity(), dialog);
     }
 
     @Override

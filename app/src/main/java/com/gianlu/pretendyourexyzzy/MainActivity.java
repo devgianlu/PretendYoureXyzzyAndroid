@@ -8,12 +8,12 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
+import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Main.CardcastFragment;
@@ -27,7 +27,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity implements GamesFragment.IFragment, OngoingGameFragment.IFragment, CardcastDeckActivity.IOngoingGame {
+public class MainActivity extends ActivityWithDialog implements GamesFragment.IFragment, OngoingGameFragment.IFragment, CardcastDeckActivity.IOngoingGame {
     private final static String TAG_GAMES = "games";
     private final static String TAG_GAME_CHAT = "gameChat";
     private static final String TAG_PLAYERS = "players";

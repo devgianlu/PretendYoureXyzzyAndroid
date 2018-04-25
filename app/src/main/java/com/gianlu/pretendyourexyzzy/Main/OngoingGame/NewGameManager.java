@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
@@ -130,8 +132,8 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
     }
 
     private void startGame() {
-        final ProgressDialog pd = CommonUtils.fastIndeterminateProgressDialog(context, R.string.loading);
-        CommonUtils.showDialog(context, pd);
+        final ProgressDialog pd = DialogUtils.progressDialog(context, R.string.loading);
+        handler.showDialog(pd);
 
         pyx.startGame(gameInfo.game.gid, new PYX.ISuccess() {
             @Override
@@ -182,8 +184,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                     .setView(layout)
                     .setPositiveButton(android.R.string.ok, null);
 
-            CommonUtils.showDialog(context, builder);
-
+            handler.showDialog(builder);
             return false;
         } else {
             return true;
@@ -482,7 +483,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                             }
                         });
 
-                CommonUtils.showDialog(context, builder);
+                handler.showDialog(builder);
             } else {
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 builder.setTitle(R.string.areYouSurePlayCard)
@@ -494,7 +495,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                             }
                         });
 
-                CommonUtils.showDialog(context, builder);
+                handler.showDialog(builder);
             }
         } else if (myLastStatus == GameInfo.PlayerStatus.JUDGING || myLastStatus == GameInfo.PlayerStatus.JUDGE) {
             pyx.judgeCard(gameInfo.game.gid, card.id, new PYX.ISuccess() {
@@ -532,6 +533,10 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
 
     public interface IManager {
         void shouldLeaveGame();
+
+        void showDialog(AlertDialog.Builder builder);
+
+        void showDialog(Dialog dialog);
     }
 
     private static final class Instructions {

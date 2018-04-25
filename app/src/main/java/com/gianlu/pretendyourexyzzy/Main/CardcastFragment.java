@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.SearchView;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.CardcastDecksAdapter;
@@ -112,7 +113,7 @@ public class CardcastFragment extends Fragment implements Cardcast.IDecks, Cardc
                 })
                 .setNegativeButton(android.R.string.cancel, null);
 
-        CommonUtils.showDialog(getActivity(), builder);
+        DialogUtils.showDialog(getActivity(), builder);
     }
 
     private void refreshAdapter() {

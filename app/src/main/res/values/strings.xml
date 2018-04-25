@@ -182,4 +182,7 @@
     <string name="invalidServerUrl">The server URL is invalid.</string>
     <string name="failedAddingServer">Failed adding a new server!</string>
     <string name="remove">Remove</string>
+    <string name="appIntro">App Intro</string>
+    <string name="tapTargetView">TapTargetView</string>
+    <string name="materialRatingBar">MaterialRatingBar</string>
 </resources>

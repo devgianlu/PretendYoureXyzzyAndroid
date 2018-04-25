@@ -6,7 +6,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.text.Editable;
@@ -16,7 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.ServersAdapter;
@@ -28,7 +27,7 @@ import java.util.Objects;
 
 import okhttp3.HttpUrl;
 
-public class ManageServersActivity extends AppCompatActivity implements ServersAdapter.IAdapter {
+public class ManageServersActivity extends ActivityWithDialog implements ServersAdapter.IAdapter {
     private RecyclerViewLayout layout;
     private ServersAdapter adapter;
 
@@ -149,7 +148,7 @@ public class ManageServersActivity extends AppCompatActivity implements ServersA
             }
         });
 
-        CommonUtils.showDialog(this, dialog);
+        showDialog(dialog);
     }
 
     @Override

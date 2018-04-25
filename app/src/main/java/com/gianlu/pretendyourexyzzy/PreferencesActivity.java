@@ -6,13 +6,12 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 
-import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.LogsActivity;
 import com.gianlu.commonutils.Preferences.AppCompatPreferenceActivity;
 import com.gianlu.commonutils.Preferences.AppCompatPreferenceFragment;
 import com.gianlu.commonutils.Preferences.BaseAboutFragment;
+import com.gianlu.commonutils.Preferences.BaseThirdPartProjectsFragment;
 
 import java.util.List;
 
@@ -63,50 +62,15 @@ public class PreferencesActivity extends AppCompatPreferenceActivity {
         }
     }
 
-    public static class ThirdPartFragment extends AppCompatPreferenceFragment {
+    public static class ThirdPartFragment extends BaseThirdPartProjectsFragment {
+        @NonNull
         @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_thrid_part);
-            getActivity().setTitle(R.string.third_part);
-            setHasOptionsMenu(true);
-
-            final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setPositiveButton(android.R.string.ok, null);
-
-            findPreference("materialRatingBar").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                public boolean onPreferenceClick(Preference preference) {
-                    CommonUtils.showDialog(getActivity(), builder
-                            .setTitle("MaterialRatingBar")
-                            .setMessage(R.string.materialRatingBar_details));
-                    return true;
-                }
-            });
-
-            findPreference("tapTargetView").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                public boolean onPreferenceClick(Preference preference) {
-                    CommonUtils.showDialog(getActivity(), builder
-                            .setTitle("Tap Target View")
-                            .setMessage(R.string.tapTargetView_details));
-                    return true;
-                }
-            });
-
-            findPreference("appIntro").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                public boolean onPreferenceClick(Preference preference) {
-                    CommonUtils.showDialog(getActivity(), builder
-                            .setTitle("App Intro")
-                            .setMessage(R.string.appIntro_details));
-                    return true;
-                }
-            });
-
-            findPreference("apacheLicense").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                public boolean onPreferenceClick(Preference preference) {
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.apache.org/licenses/LICENSE-2.0")));
-                    return true;
-                }
-            });
+        protected ThirdPartProject[] getProjects() {
+            return new ThirdPartProject[]{
+                    new ThirdPartProject(R.string.materialRatingBar, R.string.materialRatingBar_details, ThirdPartProject.License.APACHE),
+                    new ThirdPartProject(R.string.tapTargetView, R.string.tapTargetView_details, ThirdPartProject.License.APACHE),
+                    new ThirdPartProject(R.string.appIntro, R.string.appIntro_details, ThirdPartProject.License.APACHE)
+            };
         }
 
         @Override
@@ -125,6 +89,12 @@ public class PreferencesActivity extends AppCompatPreferenceActivity {
         @Override
         protected String getPackageName() {
             return "com.gianlu.pretendyourexyzzy";
+        }
+
+        @Nullable
+        @Override
+        protected Uri getOpenSourceUrl() {
+            return null;
         }
 
 

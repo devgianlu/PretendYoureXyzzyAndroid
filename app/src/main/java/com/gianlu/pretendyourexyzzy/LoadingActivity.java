@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -19,6 +18,7 @@ import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.ConnectivityChecker;
+import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.OfflineActivity;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Objects;
 
 
-public class LoadingActivity extends AppCompatActivity implements PYX.IResult<FirstLoad> {
+public class LoadingActivity extends ActivityWithDialog implements PYX.IResult<FirstLoad> {
     private Intent goTo;
     private boolean finished = false;
     private ProgressBar loading;
@@ -164,7 +164,7 @@ public class LoadingActivity extends AppCompatActivity implements PYX.IResult<Fi
         if (dismissible)
             builder.setNegativeButton(android.R.string.cancel, null);
 
-        CommonUtils.showDialog(LoadingActivity.this, builder);
+        showDialog(builder);
     }
 
     private void setServer(PYX.Server server) {

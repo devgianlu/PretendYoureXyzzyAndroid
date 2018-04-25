@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.Adapters;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -11,7 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.CardcastDeckActivity;
@@ -76,8 +77,8 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
                 holder.remove.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        final ProgressDialog pd = CommonUtils.fastIndeterminateProgressDialog(context, R.string.loading);
-                        CommonUtils.showDialog(context, pd);
+                        final ProgressDialog pd = DialogUtils.progressDialog(context, R.string.loading);
+                        listener.showDialog(pd);
 
                         pyx.removeCardcastCardSet(gid, item.cardcastDeck.code, new PYX.ISuccess() {
                             @Override
@@ -116,6 +117,8 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
 
     public interface IAdapter {
         void shouldUpdateItemCount(int count);
+
+        void showDialog(Dialog dialog);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

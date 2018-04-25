@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -32,7 +33,7 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
     private final Random random = new Random();
 
     public CardcastDecksAdapter(Context context, Cardcast cardcast, Cardcast.Search search, CardcastDecks items, int limit, IAdapter listener) {
-        super(context, items, -1, -1, false);
+        super(new Config<CardcastDeck>(context).items(items).undeterminedPages().noSeparators());
         this.inflater = LayoutInflater.from(context);
         this.cardcast = cardcast;
         this.search = search;
@@ -52,11 +53,11 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
     }
 
     @Override
-    protected void userBindViewHolder(ViewHolder holder, int position) {
-        final CardcastDeck deck = items.get(position).getItem();
+    protected void userBindViewHolder(@NonNull ViewHolder holder, @NonNull ItemEnclosure<CardcastDeck> item, int position) {
+        final CardcastDeck deck = item.getItem();
 
         holder.name.setText(deck.name);
-        holder.author.setText(context.getString(R.string.byLowercase, deck.author.username));
+        holder.author.setText(getContext().getString(R.string.byLowercase, deck.author.username));
         holder.nsfw.setVisibility(deck.hasNsfwCards ? View.VISIBLE : View.GONE);
 
         if (deck.sampleCalls != null && !deck.sampleCalls.isEmpty()
@@ -81,7 +82,7 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
             }
         });
 
-        CommonUtils.setRecyclerViewTopMargin(context, holder);
+        CommonUtils.setRecyclerViewTopMargin(getContext(), holder);
     }
 
     @Override

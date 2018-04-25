@@ -1,7 +1,6 @@
 package com.gianlu.pretendyourexyzzy.Main;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -30,7 +29,7 @@ import android.widget.SearchView;
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
-import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.RecyclerViewLayout;
@@ -141,25 +140,20 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         createGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final ProgressDialog pd = CommonUtils.fastIndeterminateProgressDialog(getContext(), R.string.loading);
-                CommonUtils.showDialog(getContext(), pd);
+                DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
                 pyx.createGame(new PYX.IResult<Integer>() {
                     @Override
                     public void onDone(PYX pyx, Integer result) {
                         pyx.getGameInfo(result, new PYX.IResult<GameInfo>() {
                             @Override
                             public void onDone(PYX pyx, GameInfo result) {
-                                if (getActivity() != null && !getActivity().isFinishing())
-                                    pd.dismiss();
-
+                                DialogUtils.dismissDialog(getActivity());
                                 if (handler != null) handler.onParticipatingGame(result.game);
                             }
 
                             @Override
                             public void onException(Exception ex) {
-                                if (getActivity() != null && !getActivity().isFinishing())
-                                    pd.dismiss();
-
+                                DialogUtils.dismissDialog(getActivity());
                                 Toaster.show(getActivity(), Utils.Messages.FAILED_JOINING, ex);
                             }
                         });
@@ -167,7 +161,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
 
                     @Override
                     public void onException(Exception ex) {
-                        if (getActivity() != null && !getActivity().isFinishing()) pd.dismiss();
+                        DialogUtils.dismissDialog(getActivity());
                         Toaster.show(getActivity(), Utils.Messages.FAILED_CREATING_GAME, ex);
                     }
                 });
@@ -333,20 +327,21 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     }
 
     private void spectateGame(final Game game, @Nullable String password) {
-        final ProgressDialog pd = CommonUtils.fastIndeterminateProgressDialog(getContext(), R.string.loading);
-        CommonUtils.showDialog(getContext(), pd);
+        if (getContext() == null) return;
+
+        DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
         PYX.get(getContext()).spectateGame(game.gid, password, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
                 participateGame(game.gid);
-                if (getActivity() != null && !getActivity().isFinishing()) pd.dismiss();
+                DialogUtils.dismissDialog(getActivity());
 
                 AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_SPECTATE_GAME);
             }
 
             @Override
             public void onException(Exception ex) {
-                if (getActivity() != null && !getActivity().isFinishing()) pd.dismiss();
+                DialogUtils.dismissDialog(getActivity());
 
                 if (ex instanceof PYXException) {
                     switch (((PYXException) ex).errorCode) {
@@ -365,20 +360,21 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     }
 
     private void joinGame(final Game game, @Nullable String password) {
-        final ProgressDialog pd = CommonUtils.fastIndeterminateProgressDialog(getContext(), R.string.loading);
-        CommonUtils.showDialog(getContext(), pd);
+        if (getContext() == null) return;
+
+        DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
         PYX.get(getContext()).joinGame(game.gid, password, new PYX.ISuccess() {
             @Override
             public void onDone(PYX pyx) {
                 participateGame(game.gid);
-                if (getActivity() != null && !getActivity().isFinishing()) pd.dismiss();
+                DialogUtils.dismissDialog(getActivity());
 
                 AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_JOIN_GAME);
             }
 
             @Override
             public void onException(Exception ex) {
-                if (isAdded()) pd.dismiss();
+                DialogUtils.dismissDialog(getActivity());
 
                 if (ex instanceof PYXException) {
                     switch (((PYXException) ex).errorCode) {
@@ -416,7 +412,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
                     }
                 });
 
-        CommonUtils.showDialog(getActivity(), builder);
+        DialogUtils.showDialog(getActivity(), builder);
     }
 
     @Override

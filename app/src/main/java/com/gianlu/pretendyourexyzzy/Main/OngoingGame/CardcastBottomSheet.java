@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -13,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
-import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.commonutils.NiceBaseBottomSheet;
 import com.gianlu.pretendyourexyzzy.Adapters.CardSetsAdapter;
@@ -26,13 +26,21 @@ import java.util.List;
 public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSetsAdapter.IAdapter {
     private final int gid;
     private final CardcastDeckActivity.IOngoingGame listener;
+    private final IDialog dialog;
     private RecyclerView list;
     private ViewGroup contentParent;
 
-    public CardcastBottomSheet(ViewGroup parent, int gid, CardcastDeckActivity.IOngoingGame listener) {
+    public CardcastBottomSheet(ViewGroup parent, int gid, CardcastDeckActivity.IOngoingGame listener, IDialog dialog) {
         super(parent, R.layout.sheet_header_cardcast, R.layout.sheet_cardcast, false);
         this.gid = gid;
         this.listener = listener;
+        this.dialog = dialog;
+    }
+
+    public interface IDialog {
+        void showDialog(Dialog dialog);
+
+        void showDialog(AlertDialog.Builder builder);
     }
 
     @Override
@@ -90,7 +98,7 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSets
                 })
                 .setNegativeButton(android.R.string.cancel, null);
 
-        CommonUtils.showDialog(getContext(), builder);
+        dialog.showDialog(builder);
     }
 
     @Override
@@ -114,5 +122,10 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSets
             list.setVisibility(View.VISIBLE);
             MessageLayout.hide(contentParent);
         }
+    }
+
+    @Override
+    public void showDialog(Dialog dialog) {
+        this.dialog.showDialog(dialog);
     }
 }
