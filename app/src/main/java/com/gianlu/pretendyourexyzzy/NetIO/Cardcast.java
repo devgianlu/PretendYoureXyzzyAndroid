@@ -28,7 +28,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -108,7 +107,7 @@ public class Cardcast {
         Prefs.putSet(preferences, PKeys.CACHED_DECK_CODES, new HashSet<>(snapshot.values()));
     }
 
-    public CardcastDeck guessDeckSync(final CardSet set) throws JSONException, IOException, URISyntaxException, ParseException {
+    public CardcastDeck guessDeckSync(final CardSet set) throws JSONException, IOException, ParseException {
         String cachedCode = cachedDeckNames.get(set.name);
         if (cachedCode != null) {
             return new CardcastDeckInfo((JSONObject) basicRequest("decks/" + cachedCode));
@@ -178,7 +177,7 @@ public class Cardcast {
                             });
 
                             return;
-                        } catch (URISyntaxException | IOException | JSONException ex) {
+                        } catch (IOException | JSONException ex) {
                             Logging.log(ex);
                         }
                     }
@@ -213,7 +212,7 @@ public class Cardcast {
                             listener.onDone(cards);
                         }
                     });
-                } catch (IOException | URISyntaxException | JSONException | ParseException ex) {
+                } catch (IOException | JSONException | ParseException ex) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -237,7 +236,7 @@ public class Cardcast {
                             listener.onDone(cards);
                         }
                     });
-                } catch (IOException | URISyntaxException | JSONException | ParseException ex) {
+                } catch (IOException | JSONException | ParseException ex) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -262,7 +261,7 @@ public class Cardcast {
                             listener.onDone(info);
                         }
                     });
-                } catch (IOException | URISyntaxException | ParseException | JSONException ex) {
+                } catch (IOException | ParseException | JSONException ex) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -286,7 +285,7 @@ public class Cardcast {
                             listener.onDone(cost);
                         }
                     });
-                } catch (IOException | URISyntaxException | JSONException ex) {
+                } catch (IOException | JSONException ex) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
