@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.util.LruCache;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
@@ -145,7 +146,7 @@ public class Cardcast {
         }
     }
 
-    private Object basicRequest(@NonNull String endpoint, NameValuePair... params) throws URISyntaxException, IOException, JSONException {
+    private Object basicRequest(@NonNull String endpoint, NameValuePair... params) throws IOException, JSONException {
         return basicRequest(endpoint, Arrays.asList(params));
     }
 
@@ -177,7 +178,8 @@ public class Cardcast {
                             });
 
                             return;
-                        } catch (URISyntaxException | IOException | JSONException ignored) {
+                        } catch (URISyntaxException | IOException | JSONException ex) {
+                            Logging.log(ex);
                         }
                     }
 

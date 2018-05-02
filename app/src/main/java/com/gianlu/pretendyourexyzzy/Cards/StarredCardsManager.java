@@ -127,7 +127,8 @@ public class StarredCardsManager {
 
                     try {
                         blackText = blackText.replaceFirst("____", "<u>" + whiteText + "</u>");
-                    } catch (ArrayIndexOutOfBoundsException ignored) {
+                    } catch (ArrayIndexOutOfBoundsException ex) {
+                        Logging.log(ex);
                     }
 
                     firstCapital = false;

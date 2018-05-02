@@ -28,6 +28,7 @@ public class FirstLoad implements Serializable {
         cardSets = CommonUtils.toTList(obj.getJSONArray("css"), CardSet.class);
     }
 
+    @NonNull
     public List<String> createCardSetNamesList(List<Integer> includeIds) {
         List<String> names = new ArrayList<>();
         for (int id : includeIds) {

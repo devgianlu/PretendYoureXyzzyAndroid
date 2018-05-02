@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy;
 
+import android.support.annotation.NonNull;
+
 import com.gianlu.commonutils.Preferences.Prefs;
 
 
@@ -23,6 +25,7 @@ public enum PKeys implements Prefs.PrefKey {
         this.key = key;
     }
 
+    @NonNull
     @Override
     public String getKey() {
         return key;

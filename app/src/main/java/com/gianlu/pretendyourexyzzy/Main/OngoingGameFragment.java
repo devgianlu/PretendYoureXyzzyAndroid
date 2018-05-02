@@ -47,6 +47,7 @@ import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastBottomSheet;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.NewGameManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
@@ -288,8 +289,10 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
 
     @SuppressLint("InflateParams")
     private void editGameOptions() {
-        if (!isAdded() || getGame() == null || getContext() == null || pyx.firstLoad == null)
+        FirstLoad firstLoad = pyx.firstLoad();
+        if (!isAdded() || getGame() == null || getContext() == null || firstLoad == null)
             return;
+
         Game.Options options = getGame().options;
         final ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.dialog_edit_game_options, null, false);
         final TextInputLayout scoreLimit = layout.findViewById(R.id.editGameOptions_scoreLimit);
@@ -307,7 +310,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
         CommonUtils.setText(password, options.password);
         final LinearLayout cardSets = layout.findViewById(R.id.editGameOptions_cardSets);
         cardSets.removeAllViews();
-        for (CardSet set : pyx.firstLoad.cardSets) {
+        for (CardSet set : firstLoad.cardSets) {
             CheckBox item = new CheckBox(getContext());
             item.setTag(set);
             item.setText(set.name);
@@ -377,7 +380,9 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
 
     @SuppressLint("InflateParams")
     private void showGameOptions() {
-        if (getContext() == null || getGame() == null || pyx.firstLoad == null) return;
+        FirstLoad firstLoad = pyx.firstLoad();
+        if (getContext() == null || getGame() == null || firstLoad == null) return;
+
         Game.Options options = getGame().options;
         ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.dialog_game_options, null, false);
         SuperTextView scoreLimit = layout.findViewById(R.id.gameOptions_scoreLimit);
@@ -389,7 +394,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
         SuperTextView timerMultiplier = layout.findViewById(R.id.gameOptions_timerMultiplier);
         timerMultiplier.setHtml(R.string.timerMultiplier, options.timerMultiplier);
         SuperTextView cardSets = layout.findViewById(R.id.gameOptions_cardSets);
-        cardSets.setHtml(R.string.cardSets, options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(pyx.firstLoad.createCardSetNamesList(options.cardSets), ", "));
+        cardSets.setHtml(R.string.cardSets, options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(firstLoad.createCardSetNamesList(options.cardSets), ", "));
         SuperTextView blankCards = layout.findViewById(R.id.gameOptions_blankCards);
         blankCards.setHtml(R.string.blankCards, options.blanksLimit);
         SuperTextView password = layout.findViewById(R.id.gameOptions_password);

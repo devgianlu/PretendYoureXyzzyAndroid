@@ -62,11 +62,12 @@ public class PYX {
     private final Handler handler;
     private final OkHttpClient client;
     private final Object sessionIdLock = new Object();
+    private final Object firstLoadLock = new Object();
     private final SharedPreferences preferences;
-    public FirstLoad firstLoad;
+    private FirstLoad firstLoad;
     private PollingThread pollingThread;
     private boolean hasRetriedFirstLoad = false;
-    private String sessionId = null;
+    private String sessionId;
 
     private PYX(Context context) {
         this.handler = new Handler(context.getMainLooper());
@@ -102,6 +103,13 @@ public class PYX {
         }
 
         return null;
+    }
+
+    @Nullable
+    public FirstLoad firstLoad() {
+        synchronized (firstLoadLock) {
+            return firstLoad;
+        }
     }
 
     @NonNull
@@ -174,7 +182,10 @@ public class PYX {
                 try {
                     JSONObject obj = ajaxServletRequestSync(OP.FIRST_LOAD);
                     final FirstLoad result = new FirstLoad(obj);
-                    firstLoad = result;
+
+                    synchronized (firstLoadLock) {
+                        firstLoad = result;
+                    }
 
                     handler.post(new Runnable() {
                         @Override
@@ -247,8 +258,12 @@ public class PYX {
                     ajaxServletRequestSync(OP.LOGOUT);
 
                     removeLastSessionId();
-                    firstLoad = null;
-                } catch (IOException | JSONException | PYXException ignored) {
+
+                    synchronized (firstLoadLock) {
+                        firstLoad = null;
+                    }
+                } catch (IOException | JSONException | PYXException ex) {
+                    Logging.log(ex);
                 }
             }
         });

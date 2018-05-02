@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.Toaster;
@@ -55,7 +56,7 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
         LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_add_server, null, false);
 
         final TextInputLayout nameField = layout.findViewById(R.id.addServer_name);
-        nameField.getEditText().addTextChangedListener(new TextWatcher() {
+        CommonUtils.getEditText(nameField).addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -72,7 +73,7 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
             }
         });
         final TextInputLayout urlField = layout.findViewById(R.id.addServer_url);
-        urlField.getEditText().addTextChangedListener(new TextWatcher() {
+        CommonUtils.getEditText(urlField).addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -96,8 +97,8 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
                 .setPositiveButton(server == null ? R.string.add : R.string.apply, null);
 
         if (server != null) {
-            nameField.getEditText().setText(server.name);
-            urlField.getEditText().setText(server.url.toString());
+            CommonUtils.setText(nameField, server.name);
+            CommonUtils.setText(urlField, server.url.toString());
             builder.setNeutralButton(R.string.remove, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -114,13 +115,13 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
                 dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        String nameStr = nameField.getEditText().getText().toString();
+                        String nameStr = CommonUtils.getText(nameField);
                         if (nameStr.isEmpty() || (server != null && !Objects.equals(server.name, nameStr) && PYX.Server.hasServer(ManageServersActivity.this, nameStr))) {
                             nameField.setError(getString(R.string.invalidServerName));
                             return;
                         }
 
-                        String urlStr = urlField.getEditText().getText().toString();
+                        String urlStr = CommonUtils.getText(urlField);
                         HttpUrl url = PYX.Server.parseUrl(urlStr);
                         if (url == null) {
                             urlField.setError(getString(R.string.invalidServerUrl));

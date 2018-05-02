@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.gianlu.commonutils.Adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.SuperTextView;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
@@ -56,7 +57,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
     }
 
     @Override
-    protected boolean matchQuery(Game item, @Nullable String query) {
+    protected boolean matchQuery(@NonNull Game item, @Nullable String query) {
         return query == null || item.host.toLowerCase().contains(query.toLowerCase());
     }
 
@@ -97,9 +98,15 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         holder.goal.setHtml(R.string.goal, game.options.scoreLimit);
         holder.locked.setImageResource(game.hasPassword ? R.drawable.ic_lock_outline_black_48dp : R.drawable.ic_lock_open_black_48dp);
         holder.status.setImageResource(game.status == Game.Status.LOBBY ? R.drawable.ic_hourglass_empty_black_48dp : R.drawable.ic_casino_black_48dp);
-        holder.cardsets.setHtml(R.string.cardSets, game.options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(pyx.firstLoad.createCardSetNamesList(game.options.cardSets), ", "));
         holder.timerMultiplier.setHtml(R.string.timerMultiplier, game.options.timerMultiplier);
         holder.blankCards.setHtml(R.string.blankCards, game.options.blanksLimit);
+
+        FirstLoad firstLoad = pyx.firstLoad();
+        if (firstLoad == null) {
+            holder.cardsets.setHtml(R.string.cardSets, game.options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(game.options.cardSets, ", "));
+        } else {
+            holder.cardsets.setHtml(R.string.cardSets, game.options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(firstLoad.createCardSetNamesList(game.options.cardSets), ", "));
+        }
 
         holder.spectate.setOnClickListener(new View.OnClickListener() {
             @Override
