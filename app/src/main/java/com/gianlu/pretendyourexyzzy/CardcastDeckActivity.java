@@ -16,19 +16,18 @@ import com.gianlu.pretendyourexyzzy.Adapters.PagerAdapter;
 import com.gianlu.pretendyourexyzzy.CardcastDeck.CardsFragment;
 import com.gianlu.pretendyourexyzzy.CardcastDeck.InfoFragment;
 import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
 
 public class CardcastDeckActivity extends AppCompatActivity {
-    private static IOngoingGame handler;
     private String code;
     private String name;
 
-    public static void startActivity(Context context, CardcastDeck deck, IOngoingGame handler) {
-        startActivity(context, deck.code, deck.name, handler);
+    public static void startActivity(Context context, CardcastDeck deck) {
+        startActivity(context, deck.code, deck.name);
     }
 
-    public static void startActivity(Context context, String code, String name, IOngoingGame handler) {
-        CardcastDeckActivity.handler = handler;
+    public static void startActivity(Context context, String code, String name) {
         context.startActivity(new Intent(context, CardcastDeckActivity.class)
                 .putExtra("code", code)
                 .putExtra("title", name));
@@ -42,7 +41,8 @@ public class CardcastDeckActivity extends AppCompatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.cardcastDeckInfo_add).setVisible(handler != null && handler.canModifyCardcastDecks());
+        OngoingGameHelper.Listener listener = OngoingGameHelper.get();
+        menu.findItem(R.id.cardcastDeckInfo_add).setVisible(listener != null && listener.canModifyCardcastDecks());
         menu.findItem(R.id.cardcastDeckInfo_toggleStar).setIcon(StarredDecksManager.hasDeck(this, code) ? R.drawable.ic_star_white_48dp : R.drawable.ic_star_border_white_48dp);
         return true;
     }
@@ -54,7 +54,8 @@ public class CardcastDeckActivity extends AppCompatActivity {
                 onBackPressed();
                 return true;
             case R.id.cardcastDeckInfo_add:
-                if (handler != null && code != null) handler.addCardcastDeck(code);
+                OngoingGameHelper.Listener listener = OngoingGameHelper.get();
+                if (listener != null && code != null) listener.addCardcastDeck(code);
                 return true;
             case R.id.cardcastDeckInfo_toggleStar:
                 if (StarredDecksManager.hasDeck(this, code))
@@ -112,13 +113,5 @@ public class CardcastDeckActivity extends AppCompatActivity {
                 CardsFragment.getInstance(this, false, code),
                 CardsFragment.getInstance(this, true, code)));
         tabs.setupWithViewPager(pager);
-    }
-
-    public interface IOngoingGame {
-        boolean canModifyCardcastDecks();
-
-        void addCardcastDeck(String code);
-
-        void addCardcastStarredDecks();
     }
 }

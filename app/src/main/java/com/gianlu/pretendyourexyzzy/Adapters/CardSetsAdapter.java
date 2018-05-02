@@ -16,6 +16,7 @@ import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.CardcastDeckActivity;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
@@ -29,10 +30,10 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
     private final List<CardSet> sets;
     private final LayoutInflater inflater;
     private final IAdapter listener;
-    private final CardcastDeckActivity.IOngoingGame ongoingGameListener;
+    private final OngoingGameHelper.Listener ongoingGameListener;
     private final PYX pyx;
 
-    public CardSetsAdapter(Context context, int gid, List<CardSet> sets, IAdapter listener, CardcastDeckActivity.IOngoingGame ongoingGameListener) {
+    public CardSetsAdapter(Context context, int gid, List<CardSet> sets, IAdapter listener, OngoingGameHelper.Listener ongoingGameListener) {
         this.context = context;
         this.gid = gid;
         this.sets = sets;
@@ -68,7 +69,7 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    CardcastDeckActivity.startActivity(context, item.cardcastDeck, ongoingGameListener);
+                    CardcastDeckActivity.startActivity(context, item.cardcastDeck);
                 }
             });
 

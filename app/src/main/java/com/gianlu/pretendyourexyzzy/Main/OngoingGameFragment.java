@@ -41,7 +41,6 @@ import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
-import com.gianlu.pretendyourexyzzy.CardcastDeckActivity;
 import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastBottomSheet;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.NewGameManager;
@@ -67,7 +66,7 @@ import java.util.Objects;
 
 import okhttp3.HttpUrl;
 
-public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCards, NewGameManager.IManager, CardcastDeckActivity.IOngoingGame, CardcastBottomSheet.IDialog {
+public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCards, NewGameManager.IManager, OngoingGameHelper.Listener, CardcastBottomSheet.IDialog {
     private IFragment handler;
     private CoordinatorLayout layout;
     private ProgressBar loading;

@@ -17,7 +17,7 @@ import android.widget.EditText;
 import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.commonutils.NiceBaseBottomSheet;
 import com.gianlu.pretendyourexyzzy.Adapters.CardSetsAdapter;
-import com.gianlu.pretendyourexyzzy.CardcastDeckActivity;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.R;
 
@@ -25,12 +25,12 @@ import java.util.List;
 
 public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSetsAdapter.IAdapter {
     private final int gid;
-    private final CardcastDeckActivity.IOngoingGame listener;
+    private final OngoingGameHelper.Listener listener;
     private final IDialog dialog;
     private RecyclerView list;
     private ViewGroup contentParent;
 
-    public CardcastBottomSheet(ViewGroup parent, int gid, CardcastDeckActivity.IOngoingGame listener, IDialog dialog) {
+    public CardcastBottomSheet(ViewGroup parent, int gid, OngoingGameHelper.Listener listener, IDialog dialog) {
         super(parent, R.layout.sheet_header_cardcast, R.layout.sheet_cardcast, false);
         this.gid = gid;
         this.listener = listener;

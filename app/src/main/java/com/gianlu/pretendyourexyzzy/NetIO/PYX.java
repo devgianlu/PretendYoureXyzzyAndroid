@@ -27,7 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -640,7 +639,7 @@ public class PYX {
                             listener.onDone(PYX.this, sets);
                         }
                     });
-                } catch (IOException | JSONException | PYXException | URISyntaxException | ParseException ex) {
+                } catch (IOException | JSONException | PYXException | ParseException ex) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {

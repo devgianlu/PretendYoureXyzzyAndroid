@@ -21,13 +21,14 @@ import com.gianlu.pretendyourexyzzy.Main.GameChatFragment;
 import com.gianlu.pretendyourexyzzy.Main.GamesFragment;
 import com.gianlu.pretendyourexyzzy.Main.NamesFragment;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameFragment;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 
 import java.util.Objects;
 
-public class MainActivity extends ActivityWithDialog implements GamesFragment.IFragment, OngoingGameFragment.IFragment, CardcastDeckActivity.IOngoingGame {
+public class MainActivity extends ActivityWithDialog implements GamesFragment.IFragment, OngoingGameFragment.IFragment, OngoingGameHelper.Listener {
     private final static String TAG_GAMES = "games";
     private final static String TAG_GAME_CHAT = "gameChat";
     private static final String TAG_PLAYERS = "players";
@@ -72,6 +73,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.IF
             finish();
             return;
         }
+
+        OngoingGameHelper.setup(this);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         namesFragment = NamesFragment.getInstance();
@@ -175,7 +178,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.IF
                 StarredCardsActivity.startActivity(this);
                 return true;
             case R.id.main_starredDecks:
-                StarredDecksActivity.startActivity(this, this);
+                StarredDecksActivity.startActivity(this);
                 return true;
             case R.id.main_preferences:
                 startActivity(new Intent(this, PreferencesActivity.class));

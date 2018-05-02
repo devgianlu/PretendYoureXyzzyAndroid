@@ -197,7 +197,7 @@ public class CardcastFragment extends Fragment implements Cardcast.IDecks, Cardc
 
     @Override
     public void onDeckSelected(CardcastDeck deck) {
-        CardcastDeckActivity.startActivity(getContext(), deck, (CardcastDeckActivity.IOngoingGame) getActivity());
+        CardcastDeckActivity.startActivity(getContext(), deck);
     }
 
     @Override
