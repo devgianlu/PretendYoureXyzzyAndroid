@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
@@ -13,6 +14,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
+import com.gianlu.pretendyourexyzzy.PKeys;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,6 +42,8 @@ public class RegisteredPyx extends FirstLoadedPyx {
         this.user = user;
         this.pollingThread = new PollingThread();
         this.pollingThread.start();
+
+        Prefs.putString(preferences, PKeys.LAST_JSESSIONID, user.sessionId);
     }
 
     @NonNull

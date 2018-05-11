@@ -27,7 +27,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 
-public class GameChatFragment extends Fragment implements ChatAdapter.IAdapter, Pyx.OnEventListener {
+public class GameChatFragment extends Fragment implements ChatAdapter.Listener, Pyx.OnEventListener {
     private static final String POLL_TAG = "gameChat";
     private RecyclerViewLayout recyclerViewLayout;
     private ChatAdapter adapter;

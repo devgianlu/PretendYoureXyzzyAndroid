@@ -21,7 +21,7 @@ import com.gianlu.pretendyourexyzzy.R;
 
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 
-public class InfoFragment extends Fragment implements Cardcast.IResult<CardcastDeckInfo> {
+public class InfoFragment extends Fragment implements Cardcast.OnResult<CardcastDeckInfo> {
     private FrameLayout layout;
     private LinearLayout container;
     private ProgressBar loading;
@@ -57,7 +57,9 @@ public class InfoFragment extends Fragment implements Cardcast.IResult<CardcastD
     }
 
     @Override
-    public void onDone(CardcastDeckInfo result) {
+    public void onDone(@NonNull CardcastDeckInfo result) {
+        if (!isAdded()) return;
+
         loading.setVisibility(View.GONE);
         container.setVisibility(View.VISIBLE);
         MessageLayout.hide(layout);
@@ -67,7 +69,7 @@ public class InfoFragment extends Fragment implements Cardcast.IResult<CardcastD
         TextView description = container.findViewById(R.id.cardcastDeckInfo_description);
         description.setText(result.description);
         TextView author = container.findViewById(R.id.cardcastDeckInfo_author);
-        if (isAdded()) author.setText(getString(R.string.byUppercase, result.author.username));
+        author.setText(getString(R.string.byUppercase, result.author.username));
         MaterialRatingBar rating = container.findViewById(R.id.cardcastDeckInfo_rating);
         rating.setRating(result.rating);
         rating.setEnabled(false);
@@ -78,7 +80,7 @@ public class InfoFragment extends Fragment implements Cardcast.IResult<CardcastD
     }
 
     @Override
-    public void onException(Exception ex) {
+    public void onException(@NonNull Exception ex) {
         Logging.log(ex);
         loading.setVisibility(View.GONE);
         container.setVisibility(View.GONE);

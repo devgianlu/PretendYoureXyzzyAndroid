@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -27,7 +26,6 @@ import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
@@ -194,7 +192,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                     @Override
                     public void onDone(@NonNull RegisteredPyx result) {
                         Prefs.putString(LoadingActivity.this, PKeys.LAST_NICKNAME, result.user().nickname);
-                        goTo(MainActivity.class, result.user());
+                        goTo(MainActivity.class);
                     }
 
                     @Override
@@ -259,7 +257,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
 
             result.upgrade(fl.user);
-            goTo(MainActivity.class, fl.user);
+            goTo(MainActivity.class);
         } else {
             showRegisterUI(result);
         }
@@ -284,9 +282,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         });
     }
 
-    private void goTo(Class goTo, @Nullable User user) {
+    private void goTo(Class goTo) {
         Intent intent = new Intent(LoadingActivity.this, goTo).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-        if (user != null) intent.putExtra("user", user);
         intent.putExtra("shouldRequest", launchGameShouldRequest);
         if (launchGameId != -1) intent.putExtra("gid", launchGameId);
         if (launchGamePassword != null) intent.putExtra("password", launchGamePassword);

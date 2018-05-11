@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -7,6 +8,7 @@ import android.support.annotation.Nullable;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
+import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -14,6 +16,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
+import com.gianlu.pretendyourexyzzy.PKeys;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,11 +37,13 @@ public final class PyxRequests {
         return new PyxRequestWithResult<>(Pyx.Op.FIRST_LOAD, new Pyx.Processor<FirstLoad>() {
             @NonNull
             @Override
-            public FirstLoad process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            public FirstLoad process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
                 User user = null;
-                String sessionId = findSessionId(response);
-                if (sessionId != null && obj.has("n"))
-                    user = new User(sessionId, obj);
+                if (obj.getBoolean("ip") && obj.has("n")) {
+                    String lastSessionId = Prefs.getString(prefs, PKeys.LAST_JSESSIONID, null);
+                    if (lastSessionId != null) user = new User(lastSessionId, obj);
+                }
+
                 return new FirstLoad(obj, user);
             }
         });
@@ -54,7 +59,7 @@ public final class PyxRequests {
         return new PyxRequestWithResult<>(Pyx.Op.REGISTER, new Pyx.Processor<User>() {
             @NonNull
             @Override
-            public User process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            public User process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
                 String sessionId = findSessionId(response);
                 if (sessionId == null) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1)
@@ -96,7 +101,7 @@ public final class PyxRequests {
         return new PyxRequestWithResult<>(Pyx.Op.CREATE_GAME, new Pyx.Processor<Integer>() {
             @NonNull
             @Override
-            public Integer process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            public Integer process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
                 return obj.getInt("gid");
             }
         });
@@ -117,7 +122,7 @@ public final class PyxRequests {
         return new PyxRequestWithResult<>(Pyx.Op.GET_GAME_INFO, new Pyx.Processor<GameInfo>() {
             @NonNull
             @Override
-            public GameInfo process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            public GameInfo process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
                 return new GameInfo(obj);
             }
         }, new NameValuePair("gid", String.valueOf(gid)));
@@ -133,7 +138,7 @@ public final class PyxRequests {
         return new PyxRequestWithResult<>(Pyx.Op.GET_NAMES_LIST, new Pyx.Processor<List<String>>() {
             @NonNull
             @Override
-            public List<String> process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            public List<String> process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
                 return CommonUtils.toStringsList(obj.getJSONArray("nl"), false);
             }
         });
@@ -151,7 +156,7 @@ public final class PyxRequests {
         return new PyxRequestWithResult<>(Pyx.Op.GET_GAME_CARDS, new Pyx.Processor<GameCards>() {
             @NonNull
             @Override
-            public GameCards process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            public GameCards process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
                 return new GameCards(obj);
             }
         }, new NameValuePair("gid", String.valueOf(gid)));
@@ -182,7 +187,7 @@ public final class PyxRequests {
         return new PyxRequestWithResult<>(Pyx.Op.LIST_CARDCAST_CARD_SETS, new Pyx.Processor<List<CardSet>>() {
             @NonNull
             @Override
-            public List<CardSet> process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            public List<CardSet> process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
                 List<CardSet> cards = new ArrayList<>();
                 JSONArray array = obj.getJSONArray("css");
                 for (int i = 0; i < array.length(); i++) {
@@ -213,7 +218,7 @@ public final class PyxRequests {
         return new PyxRequestWithResult<>(Pyx.Op.GET_GAMES_LIST, new Pyx.Processor<GamesList>() {
             @NonNull
             @Override
-            public GamesList process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            public GamesList process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
                 JSONArray array = obj.getJSONArray("gl");
                 final GamesList games = new GamesList(obj.getInt("mg"));
                 for (int i = 0; i < array.length(); i++)

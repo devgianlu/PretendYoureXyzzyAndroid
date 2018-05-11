@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.widget.DividerItemDecoration;
@@ -28,7 +29,7 @@ import java.util.Objects;
 
 import okhttp3.HttpUrl;
 
-public class ManageServersActivity extends ActivityWithDialog implements ServersAdapter.IAdapter {
+public class ManageServersActivity extends ActivityWithDialog implements ServersAdapter.Listener {
     private RecyclerViewLayout layout;
     private ServersAdapter adapter;
 
@@ -59,12 +60,10 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
         CommonUtils.getEditText(nameField).addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
             }
 
             @Override
@@ -76,12 +75,10 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
         CommonUtils.getEditText(urlField).addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
             }
 
             @Override
@@ -176,7 +173,7 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
     }
 
     @Override
-    public void serverSelected(Pyx.Server server) {
+    public void serverSelected(@NonNull Pyx.Server server) {
         addServer(server);
     }
 }

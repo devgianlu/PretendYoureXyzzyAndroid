@@ -15,14 +15,14 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> implements PyxCardsGroupView.ICard {
+public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> implements PyxCardsGroupView.CardListener {
     private final Context context;
     private final List<CardsGroup<? extends BaseCard>> cards;
-    private final IAdapter listener;
+    private final Listener listener;
     private final boolean manageMargins;
     private final PyxCardsGroupView.Action action;
 
-    public CardsAdapter(Context context, boolean manageMargins, @Nullable PyxCardsGroupView.Action action, IAdapter listener) {
+    public CardsAdapter(Context context, boolean manageMargins, @Nullable PyxCardsGroupView.Action action, Listener listener) {
         this.context = context;
         this.manageMargins = manageMargins;
         this.action = action;
@@ -30,7 +30,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         this.cards = new ArrayList<>();
     }
 
-    public CardsAdapter(Context context, boolean manageMargins, List<? extends BaseCard> cards, @Nullable PyxCardsGroupView.Action action, IAdapter listener) {
+    public CardsAdapter(Context context, boolean manageMargins, List<? extends BaseCard> cards, @Nullable PyxCardsGroupView.Action action, Listener listener) {
         this(context, manageMargins, action, listener);
         for (BaseCard card : cards) this.cards.add(CardsGroup.singleton(card));
     }
@@ -121,7 +121,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         if (listener != null) listener.onCardAction(action, group, card);
     }
 
-    public interface IAdapter {
+    public interface Listener {
         @Nullable
         RecyclerView getCardsRecyclerView();
 

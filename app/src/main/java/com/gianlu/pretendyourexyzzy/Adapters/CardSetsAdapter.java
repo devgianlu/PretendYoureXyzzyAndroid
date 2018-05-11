@@ -31,11 +31,11 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
     private final int gid;
     private final List<CardSet> sets;
     private final LayoutInflater inflater;
-    private final IAdapter listener;
+    private final Listener listener;
     private final OngoingGameHelper.Listener ongoingGameListener;
     private final Pyx pyx;
 
-    public CardSetsAdapter(Context context, int gid, List<CardSet> sets, RegisteredPyx pyx, IAdapter listener, OngoingGameHelper.Listener ongoingGameListener) {
+    public CardSetsAdapter(Context context, int gid, List<CardSet> sets, RegisteredPyx pyx, Listener listener, OngoingGameHelper.Listener ongoingGameListener) {
         this.context = context;
         this.gid = gid;
         this.sets = sets;
@@ -115,7 +115,7 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
         return sets.size();
     }
 
-    public interface IAdapter {
+    public interface Listener {
         void shouldUpdateItemCount(int count);
 
         void showDialog(Dialog dialog);

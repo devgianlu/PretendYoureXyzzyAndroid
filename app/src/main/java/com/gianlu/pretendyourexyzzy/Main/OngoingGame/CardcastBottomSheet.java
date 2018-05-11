@@ -24,15 +24,15 @@ import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.List;
 
-public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSetsAdapter.IAdapter {
+public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSetsAdapter.Listener {
     private final int gid;
     private final RegisteredPyx pyx;
     private final OngoingGameHelper.Listener listener;
-    private final IDialog dialog;
+    private final DialogsHelper dialog;
     private RecyclerView list;
     private ViewGroup contentParent;
 
-    public CardcastBottomSheet(ViewGroup parent, int gid, RegisteredPyx pyx, OngoingGameHelper.Listener listener, IDialog dialog) {
+    public CardcastBottomSheet(ViewGroup parent, int gid, RegisteredPyx pyx, OngoingGameHelper.Listener listener, DialogsHelper dialog) {
         super(parent, R.layout.sheet_header_cardcast, R.layout.sheet_cardcast, false);
         this.gid = gid;
         this.pyx = pyx;
@@ -40,7 +40,7 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSets
         this.dialog = dialog;
     }
 
-    public interface IDialog {
+    public interface DialogsHelper {
         void showDialog(Dialog dialog);
 
         void showDialog(AlertDialog.Builder builder);

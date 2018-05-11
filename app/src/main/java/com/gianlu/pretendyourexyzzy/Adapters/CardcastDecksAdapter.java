@@ -29,10 +29,10 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
     private final Cardcast cardcast;
     private final Cardcast.Search search;
     private final int limit;
-    private final IAdapter listener;
+    private final Listener listener;
     private final Random random = new Random();
 
-    public CardcastDecksAdapter(Context context, Cardcast cardcast, Cardcast.Search search, CardcastDecks items, int limit, IAdapter listener) {
+    public CardcastDecksAdapter(Context context, Cardcast cardcast, Cardcast.Search search, CardcastDecks items, int limit, Listener listener) {
         super(new Config<CardcastDeck>(context).items(items).undeterminedPages().noSeparators());
         this.inflater = LayoutInflater.from(context);
         this.cardcast = cardcast;
@@ -92,21 +92,21 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
 
     @Override
     protected void moreContent(int page, final IContentProvider<CardcastDeck> provider) {
-        cardcast.getDecks(search, limit, limit * page, new Cardcast.IDecks() {
+        cardcast.getDecks(search, limit, limit * page, new Cardcast.OnDecks() {
             @Override
-            public void onDone(Cardcast.Search search, CardcastDecks decks) {
+            public void onDone(@NonNull Cardcast.Search search, @NonNull CardcastDecks decks) {
                 provider.onMoreContent(decks);
             }
 
             @Override
-            public void onException(Exception ex) {
+            public void onException(@NonNull Exception ex) {
                 provider.onFailed(ex);
             }
         });
     }
 
-    public interface IAdapter {
-        void onDeckSelected(CardcastDeck deck);
+    public interface Listener {
+        void onDeckSelected(@NonNull CardcastDeck deck);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

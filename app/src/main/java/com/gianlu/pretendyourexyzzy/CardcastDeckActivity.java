@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
@@ -23,11 +24,11 @@ public class CardcastDeckActivity extends AppCompatActivity {
     private String code;
     private String name;
 
-    public static void startActivity(Context context, CardcastDeck deck) {
+    public static void startActivity(Context context, @NonNull CardcastDeck deck) {
         startActivity(context, deck.code, deck.name);
     }
 
-    public static void startActivity(Context context, String code, String name) {
+    public static void startActivity(Context context, @NonNull String code, @NonNull String name) {
         context.startActivity(new Intent(context, CardcastDeckActivity.class)
                 .putExtra("code", code)
                 .putExtra("title", name));
@@ -99,12 +100,10 @@ public class CardcastDeckActivity extends AppCompatActivity {
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-
             }
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-
             }
         });
 

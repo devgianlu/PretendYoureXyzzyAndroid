@@ -53,7 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.IAdapter {
+public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listener {
     public final FloatingActionButton startGame;
     private final Context context;
     private final GameCardView blackCard;
@@ -63,12 +63,12 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.IAdapte
     private final CardsAdapter handAdapter;
     private final CardsAdapter tableCardsAdapter;
     private final RecyclerView whiteCardsList;
-    private final IManager handler;
+    private final Listener handler;
     public GameInfo gameInfo;
     private GameInfo.PlayerStatus myLastStatus;
     private boolean playedForLast = false;
 
-    public NewGameManager(Context context, ViewGroup layout, RegisteredPyx pyx, GameInfo gameInfo, GameCards cards, IManager handler) {
+    public NewGameManager(Context context, ViewGroup layout, RegisteredPyx pyx, GameInfo gameInfo, GameCards cards, Listener handler) {
         this.context = context;
         this.gameInfo = gameInfo;
         this.handler = handler;
@@ -531,7 +531,7 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.IAdapte
         });
     }
 
-    public interface IManager {
+    public interface Listener {
         void shouldLeaveGame();
 
         void showDialog(AlertDialog.Builder builder);

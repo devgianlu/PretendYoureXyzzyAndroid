@@ -24,7 +24,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 
 import java.util.Objects;
 
-public class StarredCardsActivity extends AppCompatActivity implements CardsAdapter.IAdapter {
+public class StarredCardsActivity extends AppCompatActivity implements CardsAdapter.Listener {
     private RecyclerView list;
     private LinearLayout cards;
 

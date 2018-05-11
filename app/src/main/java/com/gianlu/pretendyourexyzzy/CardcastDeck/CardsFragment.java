@@ -26,7 +26,7 @@ import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.List;
 
-public class CardsFragment extends Fragment implements Cardcast.IResult<List<CardcastCard>>, CardsAdapter.IAdapter {
+public class CardsFragment extends Fragment implements Cardcast.OnResult<List<CardcastCard>>, CardsAdapter.Listener {
     private RecyclerViewLayout layout;
 
     public static CardsFragment getInstance(Context context, boolean whiteCards, String code) {
@@ -74,7 +74,7 @@ public class CardsFragment extends Fragment implements Cardcast.IResult<List<Car
     }
 
     @Override
-    public void onDone(List<CardcastCard> result) {
+    public void onDone(@NonNull List<CardcastCard> result) {
         if (!isAdded()) return;
 
         if (result.isEmpty()) {
@@ -86,7 +86,7 @@ public class CardsFragment extends Fragment implements Cardcast.IResult<List<Car
     }
 
     @Override
-    public void onException(Exception ex) {
+    public void onException(@NonNull Exception ex) {
         Logging.log(ex);
         if (isAdded())
             layout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);

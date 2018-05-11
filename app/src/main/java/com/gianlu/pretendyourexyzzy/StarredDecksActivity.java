@@ -16,7 +16,7 @@ import com.gianlu.pretendyourexyzzy.Adapters.StarredDecksAdapter;
 import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 
-public class StarredDecksActivity extends AppCompatActivity implements StarredDecksAdapter.IAdapter {
+public class StarredDecksActivity extends AppCompatActivity implements StarredDecksAdapter.Listener {
     private RecyclerViewLayout layout;
 
     public static void startActivity(Context context) {

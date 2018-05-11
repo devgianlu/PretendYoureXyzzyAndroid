@@ -35,7 +35,7 @@ import com.gianlu.pretendyourexyzzy.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CardcastFragment extends Fragment implements Cardcast.IDecks, CardcastDecksAdapter.IAdapter, MenuItem.OnActionExpandListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
+public class CardcastFragment extends Fragment implements Cardcast.OnDecks, CardcastDecksAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
     private final static int LIMIT = 12;
     private RecyclerViewLayout layout;
     private Cardcast cardcast;
@@ -178,8 +178,9 @@ public class CardcastFragment extends Fragment implements Cardcast.IDecks, Cardc
     }
 
     @Override
-    public void onDone(Cardcast.Search search, CardcastDecks decks) {
+    public void onDone(@NonNull Cardcast.Search search, @NonNull CardcastDecks decks) {
         if (!isAdded()) return;
+
         if (decks.isEmpty()) {
             layout.showMessage(R.string.searchNoDecks, false);
         } else {
@@ -188,14 +189,14 @@ public class CardcastFragment extends Fragment implements Cardcast.IDecks, Cardc
     }
 
     @Override
-    public void onException(Exception ex) {
+    public void onException(@NonNull Exception ex) {
         Logging.log(ex);
         if (isAdded())
             layout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);
     }
 
     @Override
-    public void onDeckSelected(CardcastDeck deck) {
+    public void onDeckSelected(@NonNull CardcastDeck deck) {
         CardcastDeckActivity.startActivity(getContext(), deck);
     }
 

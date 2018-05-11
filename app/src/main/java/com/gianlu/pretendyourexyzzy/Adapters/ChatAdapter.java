@@ -16,9 +16,9 @@ import java.util.List;
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     private final List<PollMessage> messages;
     private final LayoutInflater inflater;
-    private final IAdapter handler;
+    private final Listener handler;
 
-    public ChatAdapter(Context context, IAdapter handler) {
+    public ChatAdapter(Context context, Listener handler) {
         this.handler = handler;
         this.messages = new ArrayList<>();
         this.inflater = LayoutInflater.from(context);
@@ -62,7 +62,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         if (handler != null) handler.onItemCountChanged(messages.size());
     }
 
-    public interface IAdapter {
+    public interface Listener {
         void onItemCountChanged(int count);
     }
 

@@ -25,11 +25,11 @@ import java.util.List;
 
 public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHolder, Game, GamesAdapter.SortBy, Game.Protection> {
     private final Context context;
-    private final IAdapter handler;
+    private final Listener handler;
     private final LayoutInflater inflater;
     private final FirstLoadedPyx pyx;
 
-    public GamesAdapter(Context context, List<Game> objs, FirstLoadedPyx pyx, boolean filterOutLockedLobbies, IAdapter handler) {
+    public GamesAdapter(Context context, List<Game> objs, FirstLoadedPyx pyx, boolean filterOutLockedLobbies, Listener handler) {
         super(objs, SortBy.NUM_PLAYERS);
         this.context = context;
         this.pyx = pyx;
@@ -135,7 +135,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         NUM_SPECTATORS
     }
 
-    public interface IAdapter {
+    public interface Listener {
         @Nullable
         RecyclerView getRecyclerView();
 

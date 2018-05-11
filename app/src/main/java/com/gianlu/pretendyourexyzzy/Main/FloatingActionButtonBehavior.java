@@ -17,20 +17,12 @@ public class FloatingActionButtonBehavior extends CoordinatorLayout.Behavior {
 
     private static void kickOut(View fab) {
         fab.setTag(false);
-
-        fab.animate()
-                .translationY(fab.getHeight() * 2)
-                .setDuration(150)
-                .start();
+        fab.animate().translationY(fab.getHeight() * 2).setDuration(150).start();
     }
 
     private static void kickIn(View fab) {
         fab.setTag(true);
-
-        fab.animate()
-                .translationY(0)
-                .setDuration(150)
-                .start();
+        fab.animate().translationY(0).setDuration(150).start();
     }
 
     @Override
@@ -45,12 +37,8 @@ public class FloatingActionButtonBehavior extends CoordinatorLayout.Behavior {
 
     @Override
     public void onNestedScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull View child, @NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
-        if (child.getTag() == null)
-            child.setTag(true);
-
-        if (dyConsumed > 0 && ((boolean) child.getTag()))
-            kickOut(child);
-        else if (dyConsumed < 0 && (!(boolean) child.getTag()))
-            kickIn(child);
+        if (child.getTag() == null) child.setTag(true);
+        if (dyConsumed > 0 && ((boolean) child.getTag())) kickOut(child);
+        else if (dyConsumed < 0 && (!(boolean) child.getTag())) kickIn(child);
     }
 }

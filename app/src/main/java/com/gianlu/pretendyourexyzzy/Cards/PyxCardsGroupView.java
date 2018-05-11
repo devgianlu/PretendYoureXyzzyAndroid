@@ -21,10 +21,10 @@ public class PyxCardsGroupView extends LinearLayout {
     private final int mCardsMargin;
     private final int mLineWidth;
     private final Paint mLinePaint;
-    private final ICard listener;
+    private final CardListener listener;
     private CardsGroup<? extends BaseCard> cards;
 
-    public PyxCardsGroupView(Context context, ICard listener) {
+    public PyxCardsGroupView(Context context, CardListener listener) {
         super(context);
         this.listener = listener;
         setOrientation(HORIZONTAL);
@@ -42,7 +42,7 @@ public class PyxCardsGroupView extends LinearLayout {
         mLinePaint.setPathEffect(new DashPathEffect(new float[]{20, 10}, 0));
     }
 
-    public PyxCardsGroupView(Context context, CardsGroup<? extends BaseCard> whiteCards, @Nullable Action action, ICard listener) {
+    public PyxCardsGroupView(Context context, CardsGroup<? extends BaseCard> whiteCards, @Nullable Action action, CardListener listener) {
         this(context, listener);
         setCards(whiteCards, action);
     }
@@ -68,7 +68,7 @@ public class PyxCardsGroupView extends LinearLayout {
         while (iterator.hasNext()) {
             final BaseCard card = iterator.next();
 
-            GameCardView pyxCard = new GameCardView(getContext(), card, action, new GameCardView.ICard() {
+            GameCardView pyxCard = new GameCardView(getContext(), card, action, new GameCardView.CardListener() {
                 @Override
                 public void onDelete() {
                     if (listener != null)
@@ -112,7 +112,7 @@ public class PyxCardsGroupView extends LinearLayout {
         TOGGLE_STAR
     }
 
-    public interface ICard {
+    public interface CardListener {
         void onCardAction(Action action, CardsGroup<? extends BaseCard> group, BaseCard card);
     }
 }

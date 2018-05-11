@@ -48,7 +48,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.TutorialManager;
 import com.gianlu.pretendyourexyzzy.Utils;
 
-public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, GamesAdapter.IAdapter, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
+public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, GamesAdapter.Listener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
     private static final String POLL_TAG = "games";
     private GamesList lastResult;
     private RecyclerViewLayout recyclerViewLayout;

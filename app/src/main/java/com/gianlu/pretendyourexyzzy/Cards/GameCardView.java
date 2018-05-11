@@ -23,7 +23,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.R;
 
 public class GameCardView extends CardView {
-    private final ICard listener;
+    private final CardListener listener;
     private final PyxCardsGroupView.Action mainAction;
     private BaseCard card;
     private int width;
@@ -42,7 +42,7 @@ public class GameCardView extends CardView {
         this.mainAction = null;
     }
 
-    public GameCardView(Context context, BaseCard card, @Nullable PyxCardsGroupView.Action mainAction, @Nullable ICard listener) {
+    public GameCardView(Context context, BaseCard card, @Nullable PyxCardsGroupView.Action mainAction, @Nullable CardListener listener) {
         super(context);
         this.card = card;
         this.mainAction = mainAction;
@@ -156,7 +156,7 @@ public class GameCardView extends CardView {
         init();
     }
 
-    interface ICard {
+    interface CardListener {
         void onDelete();
 
         void onToggleStar();

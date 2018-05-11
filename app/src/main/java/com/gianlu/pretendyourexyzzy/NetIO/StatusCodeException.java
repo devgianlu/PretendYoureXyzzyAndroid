@@ -5,11 +5,11 @@ import java.io.IOException;
 import okhttp3.Response;
 
 public class StatusCodeException extends IOException {
-    public StatusCodeException(Response resp) {
+    StatusCodeException(Response resp) {
         this(resp.code(), resp.message());
     }
 
-    public StatusCodeException(int code, String message) {
+    StatusCodeException(int code, String message) {
         super(code + ": " + message);
     }
 }

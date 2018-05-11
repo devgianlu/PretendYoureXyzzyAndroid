@@ -150,7 +150,7 @@ public class Cardcast {
         return basicRequest(endpoint, Arrays.asList(params));
     }
 
-    public void getDecks(final Search search, final int limit, final int offset, final IDecks listener) {
+    public void getDecks(final Search search, final int limit, final int offset, final OnDecks listener) {
         final List<NameValuePair> params = new ArrayList<>();
         if (search.query != null) params.add(new NameValuePair("search", search.query));
         params.add(new NameValuePair("category", search.categories == null ? "" : CommonUtils.join(search.categories, ",")));
@@ -201,7 +201,7 @@ public class Cardcast {
         });
     }
 
-    public void getResponses(final String code, final IResult<List<CardcastCard>> listener) {
+    public void getResponses(final String code, final OnResult<List<CardcastCard>> listener) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -225,7 +225,7 @@ public class Cardcast {
         });
     }
 
-    public void getCalls(final String code, final IResult<List<CardcastCard>> listener) {
+    public void getCalls(final String code, final OnResult<List<CardcastCard>> listener) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -249,7 +249,7 @@ public class Cardcast {
         });
     }
 
-    public void getDeckInfo(final String code, final IResult<CardcastDeckInfo> listener) {
+    public void getDeckInfo(final String code, final OnResult<CardcastDeckInfo> listener) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -274,7 +274,7 @@ public class Cardcast {
         });
     }
 
-    public void getCost(final String code, final IResult<CardcastCost> listener) {
+    public void getCost(final String code, final OnResult<CardcastCost> listener) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -358,16 +358,16 @@ public class Cardcast {
         }
     }
 
-    public interface IDecks {
-        void onDone(Search search, CardcastDecks decks);
+    public interface OnDecks {
+        void onDone(@NonNull Search search, @NonNull CardcastDecks decks);
 
-        void onException(Exception ex);
+        void onException(@NonNull Exception ex);
     }
 
-    public interface IResult<E> {
-        void onDone(E result);
+    public interface OnResult<E> {
+        void onDone(@NonNull E result);
 
-        void onException(Exception ex);
+        void onException(@NonNull Exception ex);
     }
 
     public static class Search {

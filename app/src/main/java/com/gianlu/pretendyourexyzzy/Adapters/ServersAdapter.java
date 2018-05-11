@@ -22,9 +22,9 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
     private final LayoutInflater inflater;
     private final List<Pyx.Server> servers;
     private final ServersChecker checker;
-    private final IAdapter listener;
+    private final Listener listener;
 
-    public ServersAdapter(Context context, List<Pyx.Server> servers, IAdapter listener) {
+    public ServersAdapter(Context context, List<Pyx.Server> servers, Listener listener) {
         this.inflater = LayoutInflater.from(context);
         this.servers = servers;
         this.listener = listener;
@@ -102,10 +102,10 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
         if (index != -1) notifyItemChanged(index);
     }
 
-    public interface IAdapter {
+    public interface Listener {
         void shouldUpdateItemCount(int count);
 
-        void serverSelected(Pyx.Server server);
+        void serverSelected(@NonNull Pyx.Server server);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

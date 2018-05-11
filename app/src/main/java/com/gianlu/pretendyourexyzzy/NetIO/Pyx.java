@@ -46,10 +46,10 @@ public class Pyx implements Closeable {
     protected final static int AJAX_TIMEOUT = 5;
     protected final static int POLLING_TIMEOUT = 30;
     public final Server server;
-    protected final ExecutorService executor = Executors.newFixedThreadPool(5);
     protected final Handler handler;
     protected final OkHttpClient client;
     protected final SharedPreferences preferences;
+    protected final ExecutorService executor = Executors.newFixedThreadPool(5);
 
     Pyx(Context context) {
         this.handler = new Handler(context.getMainLooper());
@@ -88,10 +88,18 @@ public class Pyx implements Closeable {
     }
 
     protected void prepareRequest(@NonNull Op operation, @NonNull Request.Builder request) {
+        if (operation == Op.FIRST_LOAD) {
+            String lastSessionId = Prefs.getString(preferences, PKeys.LAST_JSESSIONID, null);
+            if (lastSessionId != null) request.addHeader("Cookie", "JSESSIONID=" + lastSessionId);
+        }
+    }
+
+    protected final PyxResponse request(@NonNull Op operation, NameValuePair... params) throws IOException, JSONException, PyxException {
+        return request(operation, false, params);
     }
 
     @NonNull
-    protected final PyxResponse request(@NonNull Op operation, NameValuePair... params) throws IOException, JSONException, PyxException {
+    private PyxResponse request(@NonNull Op operation, boolean retried, NameValuePair... params) throws IOException, JSONException, PyxException {
         FormBody.Builder reqBody = new FormBody.Builder(Charset.forName("UTF-8")).add("o", operation.val);
         for (NameValuePair pair : params) reqBody.add(pair.key(), pair.value(""));
 
@@ -114,6 +122,7 @@ public class Pyx implements Closeable {
                     raiseException(obj);
                     Logging.log(operation + "; " + Arrays.toString(params), false);
                 } catch (PyxException ex) {
+                    if (!retried) return request(operation, true, params);
                     Logging.log(operation + "; " + Arrays.toString(params) + "; " + ex.errorCode, true);
                     throw ex;
                 }
@@ -140,7 +149,7 @@ public class Pyx implements Closeable {
     @NonNull
     public final <E> E requestSync(PyxRequestWithResult<E> request) throws JSONException, PyxException, IOException {
         PyxResponse resp = request(request.op, request.params);
-        return request.processor.process(resp.resp, resp.obj);
+        return request.processor.process(preferences, resp.resp, resp.obj);
     }
 
     public final void firstLoad(final OnResult<FirstLoadedPyx> listener) {
@@ -166,10 +175,8 @@ public class Pyx implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         client.dispatcher().executorService().shutdown();
-        client.connectionPool().evictAll();
-        client.cache().close();
     }
 
     public enum Op {
@@ -203,7 +210,7 @@ public class Pyx implements Closeable {
 
     public interface Processor<E> {
         @NonNull
-        E process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException;
+        E process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException;
     }
 
     public interface OnSuccess {
@@ -486,7 +493,7 @@ public class Pyx implements Closeable {
         public void run() {
             try {
                 PyxResponse resp = request(request.op, request.params);
-                final E result = request.processor.process(resp.resp, resp.obj);
+                final E result = request.processor.process(preferences, resp.resp, resp.obj);
                 handler.post(new Runnable() {
                     @Override
                     public void run() {

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -50,7 +51,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
@@ -66,28 +66,33 @@ import java.util.Objects;
 
 import okhttp3.HttpUrl;
 
-public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameInfoAndCards>, NewGameManager.IManager, OngoingGameHelper.Listener, CardcastBottomSheet.IDialog {
-    private IFragment handler;
+public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameInfoAndCards>, NewGameManager.Listener, OngoingGameHelper.Listener, CardcastBottomSheet.DialogsHelper {
+    private OnLeftGame onLeftGame;
     private CoordinatorLayout layout;
     private ProgressBar loading;
     private LinearLayout container;
     private NewGameManager manager;
-    private User me;
     private int gid;
     private RegisteredPyx pyx;
     private CardcastBottomSheet cardcastBottomSheet;
     private Cardcast cardcast;
 
-    public static OngoingGameFragment getInstance(int gid, User me, OngoingGameFragment.IFragment handler, @Nullable SavedState savedState) {
+    public static OngoingGameFragment getInstance(int gid, @Nullable SavedState savedState) {
         OngoingGameFragment fragment = new OngoingGameFragment();
-        fragment.handler = handler;
         fragment.setHasOptionsMenu(true);
         fragment.setInitialSavedState(savedState);
         Bundle args = new Bundle();
-        args.putSerializable("me", me);
         args.putSerializable("gid", gid);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        if (context instanceof OnLeftGame)
+            onLeftGame = (OnLeftGame) context;
     }
 
     @Override
@@ -116,7 +121,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
         pyx.request(PyxRequests.leaveGame(gid), new Pyx.OnSuccess() {
             @Override
             public void onDone() {
-                if (handler != null) handler.onLeftGame();
+                if (onLeftGame != null) onLeftGame.onLeftGame();
             }
 
             @Override
@@ -127,7 +132,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
     }
 
     private boolean amHost() {
-        return getGame() != null && Objects.equals(getGame().host, me.nickname);
+        return getGame() != null && Objects.equals(getGame().host, pyx.user().nickname);
     }
 
     @Nullable
@@ -138,7 +143,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
         container = layout.findViewById(R.id.ongoingGame_container);
 
         Bundle args = getArguments();
-        if (args == null || (me = (User) args.getSerializable("me")) == null || (gid = args.getInt("gid", -1)) == -1) {
+        if (args == null || (gid = args.getInt("gid", -1)) == -1) {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.GONE);
             MessageLayout.show(layout, R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
@@ -173,7 +178,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
         container.setVisibility(View.VISIBLE);
         MessageLayout.hide(layout);
 
-        if (getActivity() != null && TutorialManager.shouldShowHintFor(getContext(), TutorialManager.Discovery.CREATE_GAME) && isVisible() && Objects.equals(me.nickname, result.info.game.host)) {
+        if (getActivity() != null && TutorialManager.shouldShowHintFor(getContext(), TutorialManager.Discovery.CREATE_GAME) && isVisible() && Objects.equals(pyx.user().nickname, result.info.game.host)) {
             View options = getActivity().getWindow().getDecorView().findViewById(R.id.ongoingGame_options);
             if (options != null) {
                 new TapTargetSequence(getActivity())
@@ -521,9 +526,5 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
                 Toaster.show(getActivity(), Utils.Messages.FAILED_ADDING_CARDCAST, ex);
             }
         });
-    }
-
-    public interface IFragment {
-        void onLeftGame();
     }
 }

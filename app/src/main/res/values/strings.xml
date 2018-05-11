@@ -142,7 +142,7 @@
     <string name="tutorial_secondTitle">The rules</string>
     <string name="tutorial_secondDesc">Every turn a Black Card is played by the Card Czar, everyone else answers the question or completes the fill-in-the-blank phrase. Once everyone played, the Card Czar chooses the funniest play, whoever submitted it gets one point. In the next turn a new player becomes the Card Czar and everyone is drawn back up with ten cards.</string>
     <string name="tutorial_thirdTitle">Cardcast</string>
-    <string name="tutorial_thirdDesc">This game supports Cardcast integration: with Cardcast you can create custom decks and add them to your own game. You can also search for decks someone else made and use them.</string>
+    <string name="tutorial_thirdDesc">This game supports Cardcast integration: with Cardcast you can create custom decks (from the website <a>cardcastgame.com</a>) and add them to your own game. You can also search for decks someone else made and use them.</string>
     <string name="tutorial_fourthTitle">More features</string>
     <string name="tutorial_fourthDesc">More features are available in this app, you\'ll learn them as you go. Good game!</string>
     <string name="tutorial_chooseNickname">Choose a nickname</string>

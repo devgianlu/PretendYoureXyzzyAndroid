@@ -19,9 +19,9 @@ public class StarredDecksAdapter extends RecyclerView.Adapter<StarredDecksAdapte
     private final Context context;
     private final List<StarredDecksManager.StarredDeck> decks;
     private final LayoutInflater inflater;
-    private final IAdapter listener;
+    private final Listener listener;
 
-    public StarredDecksAdapter(Context context, List<StarredDecksManager.StarredDeck> decks, IAdapter listener) {
+    public StarredDecksAdapter(Context context, List<StarredDecksManager.StarredDeck> decks, Listener listener) {
         this.context = context;
         this.decks = decks;
         this.inflater = LayoutInflater.from(context);
@@ -60,7 +60,7 @@ public class StarredDecksAdapter extends RecyclerView.Adapter<StarredDecksAdapte
         return decks.size();
     }
 
-    public interface IAdapter {
+    public interface Listener {
         void onDeckSelected(StarredDecksManager.StarredDeck deck);
     }
 

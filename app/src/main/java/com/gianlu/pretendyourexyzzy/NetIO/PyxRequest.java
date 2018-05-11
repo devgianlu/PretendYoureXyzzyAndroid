@@ -8,7 +8,7 @@ public class PyxRequest {
     public final Pyx.Op op;
     public final NameValuePair[] params;
 
-    public PyxRequest(@NonNull Pyx.Op op, NameValuePair... params) {
+    PyxRequest(@NonNull Pyx.Op op, NameValuePair... params) {
         this.op = op;
         this.params = params;
     }
