@@ -3,10 +3,6 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.gianlu.commonutils.Logging;
-
-import java.io.IOException;
-
 class InstanceHolder {
     private static InstanceHolder holder;
     private Pyx pyx = null;
@@ -50,14 +46,7 @@ class InstanceHolder {
     }
 
     public synchronized void invalidate() {
-        if (pyx != null) {
-            try {
-                pyx.close();
-            } catch (IOException ex) {
-                Logging.log(ex);
-            }
-        }
-
+        if (pyx != null) pyx.close();
         pyx = null;
     }
 
