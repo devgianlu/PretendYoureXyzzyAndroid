@@ -79,7 +79,7 @@ public class Pyx implements Closeable {
         InstanceHolder.holder().instantiateStandard(context);
     }
 
-    private static void raiseException(JSONObject obj) throws PyxException {
+    static void raiseException(JSONObject obj) throws PyxException {
         if (obj.optBoolean("e", false) || obj.has("ec")) throw new PyxException(obj);
     }
 

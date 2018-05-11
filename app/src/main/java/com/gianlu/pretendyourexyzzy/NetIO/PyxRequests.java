@@ -85,7 +85,7 @@ public final class PyxRequests {
         return new PyxRequest(Pyx.Op.LEAVE_GAME, new NameValuePair("gid", String.valueOf(gid)));
     }
 
-    public static PyxRequest changeGameOptions(int gid, Game.Options options) throws JSONException {
+    public static PyxRequest changeGameOptions(int gid, @NonNull Game.Options options) throws JSONException {
         return new PyxRequest(Pyx.Op.CHANGE_GAME_OPTIONS,
                 new NameValuePair("gid", String.valueOf(gid)),
                 new NameValuePair("go", options.toJson().toString()));
@@ -124,8 +124,7 @@ public final class PyxRequests {
     }
 
     @NonNull
-    public static PyxRequest sendGameMessage(int gid, String msg) {
-        // FIXME: new NameValuePair("me", "false") ??
+    public static PyxRequest sendGameMessage(int gid, @NonNull String msg) {
         return new PyxRequest(Pyx.Op.GAME_CHAT, new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("m", msg));
     }
 
@@ -141,7 +140,7 @@ public final class PyxRequests {
     }
 
     @NonNull
-    public static PyxRequest removeCardcastDeck(int gid, String code) {
+    public static PyxRequest removeCardcastDeck(int gid, @NonNull String code) {
         return new PyxRequest(Pyx.Op.REMOVE_CARDCAST_CARD_SET,
                 new NameValuePair("gid", String.valueOf(gid)),
                 new NameValuePair("cci", code));
@@ -171,7 +170,7 @@ public final class PyxRequests {
     }
 
     @NonNull
-    public static PyxRequest playCard(int gid, int cardId, String customText) {
+    public static PyxRequest playCard(int gid, int cardId, @Nullable String customText) {
         return new PyxRequest(Pyx.Op.PLAY_CARD,
                 new NameValuePair("gid", String.valueOf(gid)),
                 new NameValuePair("cid", String.valueOf(cardId)),
