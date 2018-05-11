@@ -122,8 +122,8 @@ public class Pyx implements Closeable {
                     raiseException(obj);
                     Logging.log(operation + "; " + Arrays.toString(params), false);
                 } catch (PyxException ex) {
+                    Logging.log("op = " + operation + ", params = " + Arrays.toString(params) + ", code = " + ex.errorCode + ", retried = " + retried, true);
                     if (!retried) return request(operation, true, params);
-                    Logging.log(operation + "; " + Arrays.toString(params) + "; " + ex.errorCode, true);
                     throw ex;
                 }
 
