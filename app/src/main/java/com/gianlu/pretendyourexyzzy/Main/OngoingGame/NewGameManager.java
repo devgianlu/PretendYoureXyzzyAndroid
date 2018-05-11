@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
@@ -39,9 +40,10 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
-import com.gianlu.pretendyourexyzzy.NetIO.PYX;
-import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
+import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
+import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 
@@ -51,29 +53,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter {
+public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.IAdapter {
     public final FloatingActionButton startGame;
     private final Context context;
     private final GameCardView blackCard;
     private final TextView instructions;
-    private final PYX pyx;
+    private final RegisteredPyx pyx;
     private final PlayersAdapter playersAdapter;
     private final CardsAdapter handAdapter;
     private final CardsAdapter tableCardsAdapter;
     private final RecyclerView whiteCardsList;
-    private final User me;
     private final IManager handler;
     public GameInfo gameInfo;
     private GameInfo.PlayerStatus myLastStatus;
     private boolean playedForLast = false;
 
-    public NewGameManager(Context context, ViewGroup layout, User me, GameInfo gameInfo, GameCards cards, IManager handler) {
+    public NewGameManager(Context context, ViewGroup layout, RegisteredPyx pyx, GameInfo gameInfo, GameCards cards, IManager handler) {
         this.context = context;
-        this.me = me;
         this.gameInfo = gameInfo;
         this.handler = handler;
-        this.pyx = PYX.get(context);
-        this.pyx.getPollingThread().addListener("gameManager", this);
+        this.pyx = pyx;
+        this.pyx.polling().addListener("gameManager", this);
 
         startGame = layout.findViewById(R.id.gameLayout_startGame);
         instructions = layout.findViewById(R.id.gameLayout_instructions);
@@ -92,7 +92,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
         tableCardsAdapter = new CardsAdapter(context, true, PyxCardsGroupView.Action.TOGGLE_STAR, this);
         tableCardsAdapter.notifyItemInserted(cards.whiteCards);
 
-        GameInfo.Player alsoMe = Utils.find(gameInfo.players, me.nickname);
+        GameInfo.Player alsoMe = Utils.find(gameInfo.players, pyx.user().nickname);
         if (alsoMe != null) handleMyStatusChange(alsoMe.status);
         else handleMyStatusChange(GameInfo.PlayerStatus.SPECTATOR);
 
@@ -118,7 +118,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
     }
 
     private void checkIfLobby() {
-        if (gameInfo.game.status == Game.Status.LOBBY && Objects.equals(gameInfo.game.host, me.nickname)) {
+        if (gameInfo.game.status == Game.Status.LOBBY && Objects.equals(gameInfo.game.host, pyx.user().nickname)) {
             startGame.setVisibility(View.VISIBLE);
             startGame.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -135,24 +135,24 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
         final ProgressDialog pd = DialogUtils.progressDialog(context, R.string.loading);
         handler.showDialog(pd);
 
-        pyx.startGame(gameInfo.game.gid, new PYX.ISuccess() {
+        pyx.request(PyxRequests.startGame(gameInfo.game.gid), new Pyx.OnSuccess() {
             @Override
-            public void onDone(PYX pyx) {
+            public void onDone() {
                 pd.dismiss();
                 Toaster.show(context, Utils.Messages.GAME_STARTED);
             }
 
             @Override
-            public void onException(Exception ex) {
+            public void onException(@NonNull Exception ex) {
                 pd.dismiss();
-                if (ex instanceof PYXException && !cannotStartGameDialog((PYXException) ex))
+                if (ex instanceof PyxException && !cannotStartGameDialog((PyxException) ex))
                     Toaster.show(context, Utils.Messages.FAILED_START_GAME, ex);
             }
         });
     }
 
     @SuppressWarnings("InflateParams")
-    private boolean cannotStartGameDialog(PYXException ex) {
+    private boolean cannotStartGameDialog(PyxException ex) {
         if (Objects.equals(ex.errorCode, "nep")) {
             Toaster.show(context, Utils.Messages.NOT_ENOUGH_PLAYERS);
             return true;
@@ -247,19 +247,19 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
     }
 
     private void refreshPlayersList() {
-        pyx.getGameInfo(gameInfo.game.gid, new PYX.IResult<GameInfo>() {
+        pyx.request(PyxRequests.getGameInfo(gameInfo.game.gid), new Pyx.OnResult<GameInfo>() {
             @Override
-            public void onDone(PYX pyx, GameInfo result) {
+            public void onDone(@NonNull GameInfo result) {
                 gameInfo = result;
                 playersAdapter.notifyDataSetChanged(result.players);
 
                 for (GameInfo.Player player : result.players)
-                    if (Objects.equals(player.name, me.nickname))
+                    if (Objects.equals(player.name, pyx.user().nickname))
                         handleMyStatusChange(player.status);
             }
 
             @Override
-            public void onException(Exception ex) {
+            public void onException(@NonNull Exception ex) {
                 Logging.log(ex);
             }
         });
@@ -274,7 +274,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
         gameInfo.notifyPlayerChanged(player);
 
         if (player.status == GameInfo.PlayerStatus.IDLE) addWhiteCard();
-        if (Objects.equals(player.name, me.nickname)) handleMyStatusChange(player.status);
+        if (Objects.equals(player.name, pyx.user().nickname)) handleMyStatusChange(player.status);
     }
 
     private void removeCardFromHand(Card card) {
@@ -401,7 +401,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                 handleWinner(winner, message.obj.getInt("WC") /* intermission: message.obj.getInt("i") */);
                 if (myLastStatus != GameInfo.PlayerStatus.SPECTATOR)
                     updateInstructions(Instructions.WINNER_AND_NEW_ROUND(winner));
-                if (Objects.equals(winner, me.nickname))
+                if (Objects.equals(winner, pyx.user().nickname))
                     handleMyStatusChange(GameInfo.PlayerStatus.WINNER);
                 break;
             case GAME_STATE_CHANGE:
@@ -436,7 +436,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
 
     private void setAmLastPlaying() {
         for (GameInfo.Player player : gameInfo.players) {
-            if (!Objects.equals(player.name, me.nickname) && player.status == GameInfo.PlayerStatus.PLAYING) {
+            if (!Objects.equals(player.name, pyx.user().nickname) && player.status == GameInfo.PlayerStatus.PLAYING) {
                 playedForLast = false;
                 return;
             }
@@ -498,14 +498,14 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
                 handler.showDialog(builder);
             }
         } else if (myLastStatus == GameInfo.PlayerStatus.JUDGING || myLastStatus == GameInfo.PlayerStatus.JUDGE) {
-            pyx.judgeCard(gameInfo.game.gid, card.id, new PYX.ISuccess() {
+            pyx.request(PyxRequests.judgeCard(gameInfo.game.gid, card.id), new Pyx.OnSuccess() {
                 @Override
-                public void onDone(PYX pyx) {
+                public void onDone() {
                     AnalyticsApplication.sendAnalytics(context, Utils.ACTION_JUDGE_CARD);
                 }
 
                 @Override
-                public void onException(Exception ex) {
+                public void onException(@NonNull Exception ex) {
                     Toaster.show(context, Utils.Messages.FAILED_JUDGING, ex);
                 }
             });
@@ -513,9 +513,9 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
     }
 
     private void playCard(final Card card, @Nullable final String customText) {
-        pyx.playCard(gameInfo.game.gid, card.id, customText, new PYX.ISuccess() {
+        pyx.request(PyxRequests.playCard(gameInfo.game.gid, card.id, customText), new Pyx.OnSuccess() {
             @Override
-            public void onDone(PYX pyx) {
+            public void onDone() {
                 removeCardFromHand(card);
                 setAmLastPlaying();
 
@@ -525,7 +525,7 @@ public class NewGameManager implements PYX.IEventListener, CardsAdapter.IAdapter
             }
 
             @Override
-            public void onException(Exception ex) {
+            public void onException(@NonNull Exception ex) {
                 Toaster.show(context, Utils.Messages.FAILED_PLAYING, ex);
             }
         });

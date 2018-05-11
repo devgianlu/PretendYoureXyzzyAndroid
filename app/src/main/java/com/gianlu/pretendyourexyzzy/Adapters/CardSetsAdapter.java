@@ -18,7 +18,9 @@ import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.CardcastDeckActivity;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
-import com.gianlu.pretendyourexyzzy.NetIO.PYX;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
+import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 
@@ -31,16 +33,16 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
     private final LayoutInflater inflater;
     private final IAdapter listener;
     private final OngoingGameHelper.Listener ongoingGameListener;
-    private final PYX pyx;
+    private final Pyx pyx;
 
-    public CardSetsAdapter(Context context, int gid, List<CardSet> sets, IAdapter listener, OngoingGameHelper.Listener ongoingGameListener) {
+    public CardSetsAdapter(Context context, int gid, List<CardSet> sets, RegisteredPyx pyx, IAdapter listener, OngoingGameHelper.Listener ongoingGameListener) {
         this.context = context;
         this.gid = gid;
         this.sets = sets;
         this.inflater = LayoutInflater.from(context);
         this.listener = listener;
         this.ongoingGameListener = ongoingGameListener;
-        this.pyx = PYX.get(context);
+        this.pyx = pyx;
 
         listener.shouldUpdateItemCount(getItemCount());
     }
@@ -81,22 +83,19 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
                         final ProgressDialog pd = DialogUtils.progressDialog(context, R.string.loading);
                         listener.showDialog(pd);
 
-                        pyx.removeCardcastCardSet(gid, item.cardcastDeck.code, new PYX.ISuccess() {
+                        pyx.request(PyxRequests.removeCardcastDeck(gid, item.cardcastDeck.code), new Pyx.OnSuccess() {
                             @Override
-                            public void onDone(PYX pyx) {
+                            public void onDone() {
                                 pd.dismiss();
                                 sets.remove(holder.getAdapterPosition());
-                                Toaster.show(context, Utils.Messages.CARDSET_REMOVED, new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        notifyItemRemoved(holder.getAdapterPosition());
-                                        listener.shouldUpdateItemCount(getItemCount());
-                                    }
-                                });
+                                notifyItemRemoved(holder.getAdapterPosition());
+                                listener.shouldUpdateItemCount(getItemCount());
+
+                                Toaster.show(context, Utils.Messages.CARDSET_REMOVED);
                             }
 
                             @Override
-                            public void onException(Exception ex) {
+                            public void onException(@NonNull Exception ex) {
                                 pd.dismiss();
                                 Toaster.show(context, Utils.Messages.FAILED_REMOVING_CARDSET, ex);
                             }

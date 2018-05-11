@@ -2,13 +2,11 @@ package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import com.gianlu.commonutils.SuperTextView;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.R;
 
@@ -50,14 +48,14 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         return messages.size();
     }
 
-    private void add(PollMessage message, @Nullable Game game) {
-        if (message.event == PollMessage.Event.CHAT && ((message.gid == -1 && game == null) || (game != null && message.gid == game.gid)))
+    private void add(PollMessage message, int gid) {
+        if (message.event == PollMessage.Event.CHAT && ((message.gid == -1 && gid == -1) || (gid != -1 && message.gid == gid)))
             messages.add(message);
     }
 
-    public void newMessage(PollMessage message, Game game) {
+    public void newMessage(PollMessage message, int gid) {
         synchronized (messages) {
-            add(message, game);
+            add(message, gid);
             notifyItemInserted(messages.size() - 1);
         }
 

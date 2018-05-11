@@ -14,6 +14,7 @@ import android.view.WindowManager;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
+import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Main.CardcastFragment;
@@ -22,13 +23,13 @@ import com.gianlu.pretendyourexyzzy.Main.GamesFragment;
 import com.gianlu.pretendyourexyzzy.Main.NamesFragment;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
+import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
-import com.gianlu.pretendyourexyzzy.NetIO.PYX;
+import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 
 import java.util.Objects;
 
-public class MainActivity extends ActivityWithDialog implements GamesFragment.IFragment, OngoingGameFragment.IFragment, OngoingGameHelper.Listener {
+public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OngoingGameFragment.IFragment, OngoingGameHelper.Listener {
     private final static String TAG_GAMES = "games";
     private final static String TAG_GAME_CHAT = "gameChat";
     private static final String TAG_PLAYERS = "players";
@@ -41,17 +42,17 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.IF
     private GameChatFragment gameChatFragment;
     private OngoingGameFragment ongoingGameFragment;
     private User user;
-    private Game currentGame = null;
+    private int currentGid = -1;
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        if (ongoingGameFragment != null && currentGame != null) {
+        if (ongoingGameFragment != null && currentGid != -1) {
             Fragment.SavedState state = getSupportFragmentManager().saveFragmentInstanceState(ongoingGameFragment);
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.remove(ongoingGameFragment);
-            ongoingGameFragment = OngoingGameFragment.getInstance(currentGame, user, this, state);
+            ongoingGameFragment = OngoingGameFragment.getInstance(currentGid, user, this, state);
             transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
 
             navigation.getMenu().clear();
@@ -165,8 +166,14 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.IF
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.main_logout:
-                PYX.get(this).logout();
-                startActivity(new Intent(this, LoadingActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                try {
+                    RegisteredPyx.get().logout();
+                } catch (LevelMismatchException ex) {
+                    Logging.log(ex);
+                }
+
+                startActivity(new Intent(this, LoadingActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                 finish();
                 return true;
             case R.id.main_keepScreenOn:
@@ -249,22 +256,22 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.IF
     }
 
     @Override
-    public void onParticipatingGame(Game game) {
+    public void onParticipatingGame(@NonNull Integer gid) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        ongoingGameFragment = OngoingGameFragment.getInstance(game, user, this, null);
+        ongoingGameFragment = OngoingGameFragment.getInstance(gid, user, this, null);
         transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
-        gameChatFragment = GameChatFragment.getInstance(game);
+        gameChatFragment = GameChatFragment.getInstance(gid);
         transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT).commitNowAllowingStateLoss();
         navigation.getMenu().clear();
         navigation.inflateMenu(R.menu.navigation_ongoing_game);
         navigation.setSelectedItemId(R.id.main_ongoingGame);
 
-        currentGame = game;
+        currentGid = gid;
     }
 
     @Override
     public void onLeftGame() {
-        currentGame = null;
+        currentGid = -1;
 
         navigation.getMenu().clear();
         navigation.inflateMenu(R.menu.navigation_lobby);

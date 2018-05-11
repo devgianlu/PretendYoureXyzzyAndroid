@@ -11,7 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.gianlu.pretendyourexyzzy.NetIO.PYX;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.ServersChecker;
 import com.gianlu.pretendyourexyzzy.R;
 
@@ -20,11 +20,11 @@ import java.util.Locale;
 
 public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHolder> implements ServersChecker.OnResult {
     private final LayoutInflater inflater;
-    private final List<PYX.Server> servers;
+    private final List<Pyx.Server> servers;
     private final ServersChecker checker;
     private final IAdapter listener;
 
-    public ServersAdapter(Context context, List<PYX.Server> servers, IAdapter listener) {
+    public ServersAdapter(Context context, List<Pyx.Server> servers, IAdapter listener) {
         this.inflater = LayoutInflater.from(context);
         this.servers = servers;
         this.listener = listener;
@@ -35,11 +35,11 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
     }
 
     public void startTests() {
-        for (PYX.Server server : servers) checker.check(server, this);
+        for (Pyx.Server server : servers) checker.check(server, this);
         notifyDataSetChanged();
     }
 
-    public void notifyItemRemoved(PYX.Server server) {
+    public void notifyItemRemoved(Pyx.Server server) {
         int index = servers.indexOf(server);
         if (index != -1) {
             servers.remove(index);
@@ -56,7 +56,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        final PYX.Server server = servers.get(position);
+        final Pyx.Server server = servers.get(position);
         holder.name.setText(server.name);
         holder.url.setText(server.url.toString());
 
@@ -97,7 +97,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
     }
 
     @Override
-    public void serverChecked(PYX.Server server) {
+    public void serverChecked(Pyx.Server server) {
         int index = servers.indexOf(server);
         if (index != -1) notifyItemChanged(index);
     }
@@ -105,7 +105,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
     public interface IAdapter {
         void shouldUpdateItemCount(int count);
 
-        void serverSelected(PYX.Server server);
+        void serverSelected(Pyx.Server server);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

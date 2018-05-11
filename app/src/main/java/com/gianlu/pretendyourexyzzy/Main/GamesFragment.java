@@ -35,22 +35,24 @@ import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.GamesAdapter;
+import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
-import com.gianlu.pretendyourexyzzy.NetIO.PYX;
-import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
+import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
+import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.PKeys;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.TutorialManager;
 import com.gianlu.pretendyourexyzzy.Utils;
 
-public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, GamesAdapter.IAdapter, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
+public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, GamesAdapter.IAdapter, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
     private static final String POLL_TAG = "games";
     private GamesList lastResult;
     private RecyclerViewLayout recyclerViewLayout;
-    private IFragment handler;
+    private OnParticipateGame handler;
     private SearchView searchView;
     private GamesAdapter adapter;
     private int launchGameGid = -1;
@@ -59,8 +61,9 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     private Parcelable recyclerViewSavedInstance;
     private FloatingActionButton createGame;
     private boolean isShowingHint = false;
+    private RegisteredPyx pyx;
 
-    public static GamesFragment getInstance(IFragment handler) {
+    public static GamesFragment getInstance(OnParticipateGame handler) {
         GamesFragment fragment = new GamesFragment();
         fragment.setHasOptionsMenu(true);
         fragment.handler = handler;
@@ -132,12 +135,18 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         recyclerViewLayout.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         createGame = layout.findViewById(R.id.gamesFragment_createGame);
 
-        final PYX pyx = PYX.get(getContext());
+        try {
+            pyx = RegisteredPyx.get();
+        } catch (LevelMismatchException ex) {
+            Logging.log(ex);
+            recyclerViewLayout.showMessage(R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
+            return layout;
+        }
 
         recyclerViewLayout.enableSwipeRefresh(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                pyx.getGamesList(GamesFragment.this);
+                pyx.request(PyxRequests.getGamesList(), GamesFragment.this);
             }
         }, R.color.colorAccent);
 
@@ -145,26 +154,15 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
             @Override
             public void onClick(View v) {
                 DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
-                pyx.createGame(new PYX.IResult<Integer>() {
+                pyx.request(PyxRequests.createGame(), new Pyx.OnResult<Integer>() {
                     @Override
-                    public void onDone(PYX pyx, Integer result) {
-                        pyx.getGameInfo(result, new PYX.IResult<GameInfo>() {
-                            @Override
-                            public void onDone(PYX pyx, GameInfo result) {
-                                DialogUtils.dismissDialog(getActivity());
-                                if (handler != null) handler.onParticipatingGame(result.game);
-                            }
-
-                            @Override
-                            public void onException(Exception ex) {
-                                DialogUtils.dismissDialog(getActivity());
-                                Toaster.show(getActivity(), Utils.Messages.FAILED_JOINING, ex);
-                            }
-                        });
+                    public void onDone(@NonNull Integer result) {
+                        DialogUtils.dismissDialog(getActivity());
+                        if (handler != null) handler.onParticipatingGame(result);
                     }
 
                     @Override
-                    public void onException(Exception ex) {
+                    public void onException(@NonNull Exception ex) {
                         DialogUtils.dismissDialog(getActivity());
                         Toaster.show(getActivity(), Utils.Messages.FAILED_CREATING_GAME, ex);
                     }
@@ -172,14 +170,14 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
             }
         });
 
-        pyx.getGamesList(this);
+        pyx.request(PyxRequests.getGamesList(), this);
 
-        pyx.getPollingThread().addListener(POLL_TAG, new PYX.IEventListener() {
+        pyx.polling().addListener(POLL_TAG, new Pyx.OnEventListener() {
             @Override
             public void onPollMessage(PollMessage message) {
                 if (message.event == PollMessage.Event.GAME_LIST_REFRESH) {
                     recyclerViewSavedInstance = recyclerViewLayout.getList().getLayoutManager().onSaveInstanceState();
-                    pyx.getGamesList(GamesFragment.this);
+                    pyx.request(PyxRequests.getGamesList(), GamesFragment.this);
                 }
             }
 
@@ -207,9 +205,9 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     }
 
     @Override
-    public void onDone(PYX pyx, final GamesList result) {
+    public void onDone(@NonNull final GamesList result) {
         if (!isAdded()) return;
-        adapter = new GamesAdapter(getContext(), result, Prefs.getBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, false), this);
+        adapter = new GamesAdapter(getContext(), result, pyx, Prefs.getBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, false), this);
         recyclerViewLayout.loadListData(adapter);
         recyclerViewLayout.getList().getLayoutManager().onRestoreInstanceState(recyclerViewSavedInstance);
         recyclerViewSavedInstance = null;
@@ -269,7 +267,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     }
 
     @Override
-    public void onException(Exception ex) {
+    public void onException(@NonNull Exception ex) {
         Logging.log(ex);
         if (isAdded())
             recyclerViewLayout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);
@@ -284,64 +282,50 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
     @Override
     public void spectateGame(final Game game) {
         if (game.hasPassword) {
-            askForPassword(new IPassword() {
+            askForPassword(new OnPassword() {
                 @Override
                 public void onPassword(@Nullable String password) {
-                    spectateGame(game, password);
+                    spectateGame(game.gid, password);
                 }
             });
         } else {
-            spectateGame(game, null);
+            spectateGame(game.gid, null);
         }
     }
 
     @Override
     public void joinGame(final Game game) {
         if (game.hasPassword) {
-            askForPassword(new IPassword() {
+            askForPassword(new OnPassword() {
                 @Override
                 public void onPassword(@Nullable String password) {
-                    joinGame(game, password);
+                    joinGame(game.gid, password);
                 }
             });
         } else {
-            joinGame(game, null);
+            joinGame(game.gid, null);
         }
     }
 
-    private void participateGame(int gid) {
-        PYX.get(getContext()).getGameInfo(gid, new PYX.IResult<GameInfo>() {
-            @Override
-            public void onDone(PYX pyx, GameInfo result) {
-                if (handler != null) handler.onParticipatingGame(result.game);
-            }
-
-            @Override
-            public void onException(Exception ex) {
-                Toaster.show(getActivity(), Utils.Messages.FAILED_LOADING, ex);
-            }
-        });
-    }
-
-    private void spectateGame(final Game game, @Nullable String password) {
+    private void spectateGame(final int gid, @Nullable String password) {
         if (getContext() == null) return;
 
         DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
-        PYX.get(getContext()).spectateGame(game.gid, password, new PYX.ISuccess() {
+        pyx.request(PyxRequests.spectateGame(gid, password), new Pyx.OnSuccess() {
             @Override
-            public void onDone(PYX pyx) {
-                participateGame(game.gid);
+            public void onDone() {
+                if (handler != null) handler.onParticipatingGame(gid);
                 DialogUtils.dismissDialog(getActivity());
 
                 AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_SPECTATE_GAME);
             }
 
             @Override
-            public void onException(Exception ex) {
+            public void onException(@NonNull Exception ex) {
                 DialogUtils.dismissDialog(getActivity());
 
-                if (ex instanceof PYXException) {
-                    switch (((PYXException) ex).errorCode) {
+                if (ex instanceof PyxException) {
+                    switch (((PyxException) ex).errorCode) {
                         case "wp":
                             Toaster.show(getActivity(), Utils.Messages.WRONG_PASSWORD, ex);
                             return;
@@ -356,25 +340,25 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         });
     }
 
-    private void joinGame(final Game game, @Nullable String password) {
+    private void joinGame(final int gid, @Nullable String password) {
         if (getContext() == null) return;
 
         DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
-        PYX.get(getContext()).joinGame(game.gid, password, new PYX.ISuccess() {
+        pyx.request(PyxRequests.joinGame(gid, password), new Pyx.OnSuccess() {
             @Override
-            public void onDone(PYX pyx) {
-                participateGame(game.gid);
+            public void onDone() {
+                if (handler != null) handler.onParticipatingGame(gid);
                 DialogUtils.dismissDialog(getActivity());
 
                 AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_JOIN_GAME);
             }
 
             @Override
-            public void onException(Exception ex) {
+            public void onException(@NonNull Exception ex) {
                 DialogUtils.dismissDialog(getActivity());
 
-                if (ex instanceof PYXException) {
-                    switch (((PYXException) ex).errorCode) {
+                if (ex instanceof PyxException) {
+                    switch (((PyxException) ex).errorCode) {
                         case "wp":
                             Toaster.show(getActivity(), Utils.Messages.WRONG_PASSWORD, ex);
                             return;
@@ -389,7 +373,7 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         });
     }
 
-    private void askForPassword(final IPassword listener) {
+    private void askForPassword(final OnPassword listener) {
         if (getContext() == null) {
             listener.onPassword(null);
             return;
@@ -438,19 +422,21 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         launchGameGid = -1;
         if (game != null) {
             if (shouldRequest) {
-                if (password != null) joinGame(game, password);
+                if (password != null) joinGame(gid, password);
                 else joinGame(game);
             } else {
-                participateGame(gid);
+                if (handler != null) handler.onParticipatingGame(gid);
             }
+        } else {
+            Toaster.show(getActivity(), Utils.Messages.FAILED_JOINING);
         }
     }
 
-    public interface IFragment {
-        void onParticipatingGame(Game game);
+    public interface OnParticipateGame {
+        void onParticipatingGame(@NonNull Integer gid);
     }
 
-    private interface IPassword {
+    private interface OnPassword {
         void onPassword(@Nullable String password);
     }
 }

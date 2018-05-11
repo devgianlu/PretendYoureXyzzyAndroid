@@ -20,7 +20,7 @@ import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.ServersAdapter;
-import com.gianlu.pretendyourexyzzy.NetIO.PYX;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 
 import org.json.JSONException;
 
@@ -47,12 +47,12 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
     }
 
     private void loadServers() {
-        adapter = new ServersAdapter(this, PYX.Server.loadUserServers(this), this);
+        adapter = new ServersAdapter(this, Pyx.Server.loadUserServers(this), this);
         layout.loadListData(adapter, false);
     }
 
     @SuppressLint("InflateParams")
-    private void addServer(@Nullable final PYX.Server server) {
+    private void addServer(@Nullable final Pyx.Server server) {
         LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_add_server, null, false);
 
         final TextInputLayout nameField = layout.findViewById(R.id.addServer_name);
@@ -102,7 +102,7 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
             builder.setNeutralButton(R.string.remove, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    PYX.Server.removeServer(ManageServersActivity.this, server);
+                    Pyx.Server.removeServer(ManageServersActivity.this, server);
                     adapter.notifyItemRemoved(server);
                 }
             });
@@ -116,21 +116,21 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
                     @Override
                     public void onClick(View v) {
                         String nameStr = CommonUtils.getText(nameField);
-                        if (nameStr.isEmpty() || (server != null && !Objects.equals(server.name, nameStr) && PYX.Server.hasServer(ManageServersActivity.this, nameStr))) {
+                        if (nameStr.isEmpty() || (server != null && !Objects.equals(server.name, nameStr) && Pyx.Server.hasServer(ManageServersActivity.this, nameStr))) {
                             nameField.setError(getString(R.string.invalidServerName));
                             return;
                         }
 
                         String urlStr = CommonUtils.getText(urlField);
-                        HttpUrl url = PYX.Server.parseUrl(urlStr);
+                        HttpUrl url = Pyx.Server.parseUrl(urlStr);
                         if (url == null) {
                             urlField.setError(getString(R.string.invalidServerUrl));
                             return;
                         }
 
-                        PYX.Server server = new PYX.Server(url, nameStr);
+                        Pyx.Server server = new Pyx.Server(url, nameStr);
                         try {
-                            PYX.Server.addServer(ManageServersActivity.this, server);
+                            Pyx.Server.addServer(ManageServersActivity.this, server);
                             loadServers();
                         } catch (JSONException ex) {
                             Toaster.show(ManageServersActivity.this, Utils.Messages.FAILED_ADDING_SERVER, ex);
@@ -176,7 +176,7 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
     }
 
     @Override
-    public void serverSelected(PYX.Server server) {
+    public void serverSelected(Pyx.Server server) {
         addServer(server);
     }
 }

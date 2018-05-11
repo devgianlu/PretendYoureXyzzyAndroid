@@ -14,28 +14,30 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
+import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.SuppressingLinearLayoutManager;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.ChatAdapter;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
+import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
-import com.gianlu.pretendyourexyzzy.NetIO.PYX;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
+import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 
-import org.json.JSONException;
-
-public class GameChatFragment extends Fragment implements ChatAdapter.IAdapter, PYX.IEventListener {
+public class GameChatFragment extends Fragment implements ChatAdapter.IAdapter, Pyx.OnEventListener {
     private static final String POLL_TAG = "gameChat";
     private RecyclerViewLayout recyclerViewLayout;
     private ChatAdapter adapter;
-    private Game game;
+    private int gid;
+    private RegisteredPyx pyx;
 
-    public static GameChatFragment getInstance(Game game) {
+    public static GameChatFragment getInstance(int gid) {
         GameChatFragment fragment = new GameChatFragment();
         Bundle args = new Bundle();
-        args.putSerializable("game", game);
+        args.putSerializable("gid", gid);
         fragment.setArguments(args);
         return fragment;
     }
@@ -53,7 +55,7 @@ public class GameChatFragment extends Fragment implements ChatAdapter.IAdapter, 
         recyclerViewLayout.getList().addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 
         Bundle args = getArguments();
-        if (args == null || (game = (Game) args.getSerializable("game")) == null) {
+        if (args == null || (gid = args.getInt("gid", -1)) == -1) {
             recyclerViewLayout.showMessage(R.string.failedLoading, true);
             return layout;
         }
@@ -61,7 +63,13 @@ public class GameChatFragment extends Fragment implements ChatAdapter.IAdapter, 
         adapter = new ChatAdapter(getContext(), this);
         recyclerViewLayout.loadListData(adapter);
 
-        final PYX pyx = PYX.get(getContext());
+        try {
+            pyx = RegisteredPyx.get();
+        } catch (LevelMismatchException ex) {
+            Logging.log(ex);
+            recyclerViewLayout.showMessage(R.string.failedLoading, true);
+            return layout;
+        }
 
         final EditText message = layout.findViewById(R.id.chatFragment_message);
         final ImageButton send = layout.findViewById(R.id.chatFragment_send);
@@ -69,13 +77,13 @@ public class GameChatFragment extends Fragment implements ChatAdapter.IAdapter, 
             @Override
             public void onClick(View v) {
                 String msg = message.getText().toString();
-                if (msg.isEmpty() || game == null) return;
+                if (msg.isEmpty()) return;
 
                 message.setEnabled(false);
                 send.setEnabled(false);
-                pyx.sendGameMessage(game.gid, msg, new PYX.ISuccess() {
+                pyx.request(PyxRequests.sendGameMessage(gid, msg), new Pyx.OnSuccess() {
                     @Override
-                    public void onDone(PYX pyx) {
+                    public void onDone() {
                         message.setText(null);
                         message.setEnabled(true);
                         send.setEnabled(true);
@@ -84,7 +92,7 @@ public class GameChatFragment extends Fragment implements ChatAdapter.IAdapter, 
                     }
 
                     @Override
-                    public void onException(Exception ex) {
+                    public void onException(@NonNull Exception ex) {
                         Toaster.show(getActivity(), Utils.Messages.FAILED_SEND_MESSAGE, ex, new Runnable() {
                             @Override
                             public void run() {
@@ -97,7 +105,7 @@ public class GameChatFragment extends Fragment implements ChatAdapter.IAdapter, 
             }
         });
 
-        pyx.getPollingThread().addListener(POLL_TAG, this);
+        pyx.polling().addListener(POLL_TAG, this);
 
         return layout;
     }
@@ -113,9 +121,9 @@ public class GameChatFragment extends Fragment implements ChatAdapter.IAdapter, 
     }
 
     @Override
-    public void onPollMessage(PollMessage message) throws JSONException {
-        if (game == null || !isAdded()) return;
-        adapter.newMessage(message, game);
+    public void onPollMessage(PollMessage message) {
+        if (!isAdded()) return;
+        adapter.newMessage(message, gid);
         recyclerViewLayout.getList().scrollToPosition(adapter.getItemCount() - 1);
     }
 

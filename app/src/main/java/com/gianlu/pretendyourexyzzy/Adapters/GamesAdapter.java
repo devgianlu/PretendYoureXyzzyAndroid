@@ -16,9 +16,8 @@ import android.widget.TextView;
 import com.gianlu.commonutils.Adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.SuperTextView;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
+import com.gianlu.pretendyourexyzzy.NetIO.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
-import com.gianlu.pretendyourexyzzy.NetIO.PYX;
 import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.Comparator;
@@ -28,14 +27,14 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
     private final Context context;
     private final IAdapter handler;
     private final LayoutInflater inflater;
-    private final PYX pyx;
+    private final FirstLoadedPyx pyx;
 
-    public GamesAdapter(Context context, List<Game> objs, boolean filterOutLockedLobbies, IAdapter handler) {
+    public GamesAdapter(Context context, List<Game> objs, FirstLoadedPyx pyx, boolean filterOutLockedLobbies, IAdapter handler) {
         super(objs, SortBy.NUM_PLAYERS);
         this.context = context;
+        this.pyx = pyx;
         this.handler = handler;
         this.inflater = LayoutInflater.from(context);
-        this.pyx = PYX.get(context);
         setHasStableIds(true);
         setFilterOutLockedLobbies(filterOutLockedLobbies);
     }
@@ -100,13 +99,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         holder.status.setImageResource(game.status == Game.Status.LOBBY ? R.drawable.ic_hourglass_empty_black_48dp : R.drawable.ic_casino_black_48dp);
         holder.timerMultiplier.setHtml(R.string.timerMultiplier, game.options.timerMultiplier);
         holder.blankCards.setHtml(R.string.blankCards, game.options.blanksLimit);
-
-        FirstLoad firstLoad = pyx.firstLoad();
-        if (firstLoad == null) {
-            holder.cardsets.setHtml(R.string.cardSets, game.options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(game.options.cardSets, ", "));
-        } else {
-            holder.cardsets.setHtml(R.string.cardSets, game.options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(firstLoad.createCardSetNamesList(game.options.cardSets), ", "));
-        }
+        holder.cardsets.setHtml(R.string.cardSets, game.options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(pyx.firstLoad().createCardSetNamesList(game.options.cardSets), ", "));
 
         holder.spectate.setOnClickListener(new View.OnClickListener() {
             @Override

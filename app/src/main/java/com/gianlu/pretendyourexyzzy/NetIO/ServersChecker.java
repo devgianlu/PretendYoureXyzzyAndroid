@@ -33,18 +33,18 @@ public class ServersChecker {
     }
 
     @NonNull
-    private static Request createRequest(PYX.Server server) {
+    private static Request createRequest(Pyx.Server server) {
         return new Request.Builder().get().url(server.url).build();
     }
 
-    private void validateResponse(PYX.Server server, Response response, long latency) { // TODO: Should be more strict
+    private void validateResponse(Pyx.Server server, Response response, long latency) { // TODO: Should be more strict
         CheckResult result;
         if (response.code() == 200) result = new CheckResult(ServerStatus.ONLINE, latency);
         else result = new CheckResult(ServerStatus.ERROR, -1);
         server.status = result;
     }
 
-    private void handleException(PYX.Server server, Throwable ex) {
+    private void handleException(Pyx.Server server, Throwable ex) {
         CheckResult result;
         if (ex instanceof SocketTimeoutException || ex instanceof UnknownHostException)
             result = new CheckResult(ServerStatus.OFFLINE, -1);
@@ -54,7 +54,7 @@ public class ServersChecker {
         server.status = result;
     }
 
-    public void check(PYX.Server server, OnResult listener) {
+    public void check(Pyx.Server server, OnResult listener) {
         server.status = null;
         executorService.execute(new Runner(server, listener));
     }
@@ -66,7 +66,7 @@ public class ServersChecker {
     }
 
     public interface OnResult {
-        void serverChecked(PYX.Server server);
+        void serverChecked(Pyx.Server server);
     }
 
     public class CheckResult {
@@ -80,10 +80,10 @@ public class ServersChecker {
     }
 
     public class Runner implements Runnable {
-        private final PYX.Server server;
+        private final Pyx.Server server;
         private final OnResult listener;
 
-        Runner(PYX.Server server, OnResult listener) {
+        Runner(Pyx.Server server, OnResult listener) {
             this.server = server;
             this.listener = listener;
         }

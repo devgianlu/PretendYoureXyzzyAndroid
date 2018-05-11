@@ -45,46 +45,47 @@ import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastBottomSheet;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.NewGameManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
+import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
-import com.gianlu.pretendyourexyzzy.NetIO.PYX;
-import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
+import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.TutorialManager;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONException;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import okhttp3.HttpUrl;
 
-public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCards, NewGameManager.IManager, OngoingGameHelper.Listener, CardcastBottomSheet.IDialog {
+public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameInfoAndCards>, NewGameManager.IManager, OngoingGameHelper.Listener, CardcastBottomSheet.IDialog {
     private IFragment handler;
     private CoordinatorLayout layout;
     private ProgressBar loading;
     private LinearLayout container;
     private NewGameManager manager;
     private User me;
-    private int gameId;
-    private PYX pyx;
+    private int gid;
+    private RegisteredPyx pyx;
     private CardcastBottomSheet cardcastBottomSheet;
+    private Cardcast cardcast;
 
-    public static OngoingGameFragment getInstance(Game game, User me, OngoingGameFragment.IFragment handler, @Nullable SavedState savedState) {
+    public static OngoingGameFragment getInstance(int gid, User me, OngoingGameFragment.IFragment handler, @Nullable SavedState savedState) {
         OngoingGameFragment fragment = new OngoingGameFragment();
         fragment.handler = handler;
         fragment.setHasOptionsMenu(true);
         fragment.setInitialSavedState(savedState);
         Bundle args = new Bundle();
         args.putSerializable("me", me);
-        args.putSerializable("game", game);
+        args.putSerializable("gid", gid);
         fragment.setArguments(args);
         return fragment;
     }
@@ -112,14 +113,14 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
     }
 
     private void leaveGame() {
-        pyx.leaveGame(gameId, new PYX.ISuccess() {
+        pyx.request(PyxRequests.leaveGame(gid), new Pyx.OnSuccess() {
             @Override
-            public void onDone(PYX pyx) {
+            public void onDone() {
                 if (handler != null) handler.onLeftGame();
             }
 
             @Override
-            public void onException(Exception ex) {
+            public void onException(@NonNull Exception ex) {
                 Toaster.show(getActivity(), Utils.Messages.FAILED_LEAVING, ex);
             }
         });
@@ -137,27 +138,34 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
         container = layout.findViewById(R.id.ongoingGame_container);
 
         Bundle args = getArguments();
-        Game game;
-        if (args == null || (me = (User) args.getSerializable("me")) == null || (game = (Game) getArguments().getSerializable("game")) == null) {
+        if (args == null || (me = (User) args.getSerializable("me")) == null || (gid = args.getInt("gid", -1)) == -1) {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.GONE);
             MessageLayout.show(layout, R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
             return layout;
         }
 
-        gameId = game.gid;
-        cardcastBottomSheet = new CardcastBottomSheet(layout, gameId, this, this);
+        try {
+            pyx = RegisteredPyx.get();
+            cardcast = Cardcast.get(getContext());
+        } catch (LevelMismatchException ex) {
+            Logging.log(ex);
+            loading.setVisibility(View.GONE);
+            container.setVisibility(View.GONE);
+            MessageLayout.show(layout, R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
+            return layout;
+        }
 
-        pyx = PYX.get(getContext());
-        pyx.getGameInfoAndCards(game.gid, this);
+        cardcastBottomSheet = new CardcastBottomSheet(layout, gid, pyx, this, this);
+        pyx.getGameInfoAndCards(gid, this);
 
         return layout;
     }
 
     @Override
-    public void onGameInfoAndCards(GameInfo info, GameCards cards) {
+    public void onDone(@NonNull GameInfoAndCards result) {
         if (manager == null && isAdded())
-            manager = new NewGameManager(getActivity(), container, me, info, cards, this);
+            manager = new NewGameManager(getActivity(), container, pyx, result.info, result.cards, this);
 
         updateActivityTitle();
 
@@ -165,7 +173,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
         container.setVisibility(View.VISIBLE);
         MessageLayout.hide(layout);
 
-        if (getActivity() != null && TutorialManager.shouldShowHintFor(getContext(), TutorialManager.Discovery.CREATE_GAME) && isVisible() && Objects.equals(me.nickname, info.game.host)) {
+        if (getActivity() != null && TutorialManager.shouldShowHintFor(getContext(), TutorialManager.Discovery.CREATE_GAME) && isVisible() && Objects.equals(me.nickname, result.info.game.host)) {
             View options = getActivity().getWindow().getDecorView().findViewById(R.id.ongoingGame_options);
             if (options != null) {
                 new TapTargetSequence(getActivity())
@@ -179,12 +187,10 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
 
                             @Override
                             public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
-
                             }
 
                             @Override
                             public void onSequenceCanceled(TapTarget lastTarget) {
-
                             }
                         }).start();
             }
@@ -192,7 +198,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
     }
 
     @Override
-    public void onException(Exception ex) {
+    public void onException(@NonNull Exception ex) {
         Logging.log(ex);
         loading.setVisibility(View.GONE);
         container.setVisibility(View.GONE);
@@ -222,14 +228,14 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
                 return true;
             case R.id.ongoingGame_cardcast:
                 cardcastBottomSheet.expandAsLoading();
-                pyx.listCardcastCardSets(gameId, Cardcast.get(getContext()), new PYX.IResult<List<CardSet>>() {
+                pyx.request(PyxRequests.listCardcastDecks(gid, cardcast), new Pyx.OnResult<List<CardSet>>() {
                     @Override
-                    public void onDone(PYX pyx, List<CardSet> result) {
+                    public void onDone(@NonNull List<CardSet> result) {
                         if (cardcastBottomSheet != null) cardcastBottomSheet.expand(result);
                     }
 
                     @Override
-                    public void onException(Exception ex) {
+                    public void onException(@NonNull Exception ex) {
                         Toaster.show(getActivity(), Utils.Messages.FAILED_LOADING, ex);
                     }
                 });
@@ -260,7 +266,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
         builder.addPathSegment("game.jsp");
 
         List<NameValuePair> params = new ArrayList<>();
-        params.add(new NameValuePair("game", String.valueOf(gameId)));
+        params.add(new NameValuePair("game", String.valueOf(gid)));
         if (getGame().hasPassword)
             params.add(new NameValuePair("password", getGame().options.password));
 
@@ -288,9 +294,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
 
     @SuppressLint("InflateParams")
     private void editGameOptions() {
-        FirstLoad firstLoad = pyx.firstLoad();
-        if (!isAdded() || getGame() == null || getContext() == null || firstLoad == null)
-            return;
+        if (!isAdded() || getGame() == null || getContext() == null) return;
 
         Game.Options options = getGame().options;
         final ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.dialog_edit_game_options, null, false);
@@ -309,7 +313,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
         CommonUtils.setText(password, options.password);
         final LinearLayout cardSets = layout.findViewById(R.id.editGameOptions_cardSets);
         cardSets.removeAllViews();
-        for (CardSet set : firstLoad.cardSets) {
+        for (CardSet set : pyx.firstLoad().cardSets) {
             CheckBox item = new CheckBox(getContext());
             item.setTag(set);
             item.setText(set.name);
@@ -354,21 +358,26 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
 
                         DialogUtils.dismissDialog(getActivity());
 
-                        final ProgressDialog pd = DialogUtils.progressDialog(getContext(), R.string.loading);
-                        DialogUtils.showDialog(getActivity(), pd);
-                        pyx.changeGameOptions(gameId, newOptions, new PYX.ISuccess() {
-                            @Override
-                            public void onDone(PYX pyx) {
-                                DialogUtils.dismissDialog(getActivity());
-                                Toaster.show(getActivity(), Utils.Messages.OPTIONS_CHANGED);
-                            }
+                        try {
+                            final ProgressDialog pd = DialogUtils.progressDialog(getContext(), R.string.loading);
+                            DialogUtils.showDialog(getActivity(), pd);
+                            pyx.request(PyxRequests.changeGameOptions(gid, newOptions), new Pyx.OnSuccess() {
+                                @Override
+                                public void onDone() {
+                                    DialogUtils.dismissDialog(getActivity());
+                                    Toaster.show(getActivity(), Utils.Messages.OPTIONS_CHANGED);
+                                }
 
-                            @Override
-                            public void onException(Exception ex) {
-                                DialogUtils.dismissDialog(getActivity());
-                                Toaster.show(getActivity(), Utils.Messages.FAILED_CHANGING_OPTIONS, ex);
-                            }
-                        });
+                                @Override
+                                public void onException(@NonNull Exception ex) {
+                                    DialogUtils.dismissDialog(getActivity());
+                                    Toaster.show(getActivity(), Utils.Messages.FAILED_CHANGING_OPTIONS, ex);
+                                }
+                            });
+                        } catch (JSONException ex) {
+                            DialogUtils.dismissDialog(getActivity());
+                            Toaster.show(getActivity(), Utils.Messages.FAILED_CHANGING_OPTIONS, ex);
+                        }
                     }
                 });
             }
@@ -380,7 +389,7 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
     @SuppressLint("InflateParams")
     private void showGameOptions() {
         FirstLoad firstLoad = pyx.firstLoad();
-        if (getContext() == null || getGame() == null || firstLoad == null) return;
+        if (getContext() == null || getGame() == null) return;
 
         Game.Options options = getGame().options;
         ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.dialog_game_options, null, false);
@@ -421,29 +430,18 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
             return;
         }
 
-        pyx.addCardcastCardSet(gameId, code, new PYX.ISuccess() {
+        pyx.addCardcastDeckAndList(gid, code, cardcast, new Pyx.OnResult<List<CardSet>>() {
             @Override
-            public void onDone(PYX pyx) {
+            public void onDone(@NonNull List<CardSet> result) {
                 Toaster.show(getActivity(), Utils.Messages.CARDCAST_ADDED);
-                if (cardcastBottomSheet != null && cardcastBottomSheet.isExpanded()) {
-                    pyx.listCardcastCardSets(gameId, Cardcast.get(getContext()), new PYX.IResult<List<CardSet>>() {
-                        @Override
-                        public void onDone(PYX pyx, List<CardSet> result) {
-                            cardcastBottomSheet.update(result);
-                        }
-
-                        @Override
-                        public void onException(Exception ex) {
-                            Toaster.show(getActivity(), Utils.Messages.FAILED_LOADING, ex);
-                        }
-                    });
-                }
-
                 AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_ADDED_CARDCAST);
+
+                if (cardcastBottomSheet != null && cardcastBottomSheet.isExpanded())
+                    cardcastBottomSheet.update(result);
             }
 
             @Override
-            public void onException(Exception ex) {
+            public void onException(@NonNull Exception ex) {
                 Toaster.show(getActivity(), Utils.Messages.FAILED_ADDING_CARDCAST, ex);
             }
         });
@@ -493,47 +491,36 @@ public class OngoingGameFragment extends Fragment implements PYX.IGameInfoAndCar
 
     @Override
     public void addCardcastStarredDecks() {
-        new Thread() {
+        List<StarredDecksManager.StarredDeck> starredDecks = StarredDecksManager.loadDecks(getContext());
+        if (starredDecks.isEmpty()) {
+            Toaster.show(getActivity(), Utils.Messages.NO_STARRED_DECKS);
+            return;
+        }
+
+        List<String> codes = new ArrayList<>();
+        for (StarredDecksManager.StarredDeck deck : starredDecks)
+            codes.add(deck.code);
+
+        pyx.addCardcastDecksAndList(gid, codes, cardcast, new Pyx.OnResult<List<CardSet>>() {
             @Override
-            public void run() {
-                boolean hasErrors = false;
-                List<StarredDecksManager.StarredDeck> starredDecks = StarredDecksManager.loadDecks(getContext());
-                if (starredDecks.isEmpty()) {
-                    Toaster.show(getActivity(), Utils.Messages.NO_STARRED_DECKS);
+            public void onDone(@NonNull List<CardSet> result) {
+                Toaster.show(getActivity(), Utils.Messages.ADDED_STARRED_DECKS);
+                AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_ADDED_CARDCAST);
+
+                if (cardcastBottomSheet != null && cardcastBottomSheet.isExpanded())
+                    cardcastBottomSheet.update(result);
+            }
+
+            @Override
+            public void onException(@NonNull Exception ex) {
+                if (ex instanceof RegisteredPyx.PartialCardcastAddFail) {
+                    Toaster.show(getActivity(), Utils.Messages.PARTIAL_ADD_STARRED_DECKS_FAILED, ((RegisteredPyx.PartialCardcastAddFail) ex).getCodes());
                     return;
                 }
 
-                for (StarredDecksManager.StarredDeck deck : starredDecks) {
-                    try {
-                        pyx.addCardcastCardSetSync(gameId, deck.code);
-                    } catch (JSONException | PYXException | IOException ex) {
-                        hasErrors = true;
-                        Logging.log(ex);
-                    }
-                }
-
-                if (hasErrors)
-                    Toaster.show(getActivity(), Utils.Messages.PARTIAL_ADD_STARRED_DECKS_FAILED);
-                else
-                    Toaster.show(getActivity(), Utils.Messages.ADDED_STARRED_DECKS);
-
-                if (cardcastBottomSheet != null && cardcastBottomSheet.isExpanded()) {
-                    pyx.listCardcastCardSets(gameId, Cardcast.get(getContext()), new PYX.IResult<List<CardSet>>() {
-                        @Override
-                        public void onDone(PYX pyx, List<CardSet> result) {
-                            cardcastBottomSheet.update(result);
-                        }
-
-                        @Override
-                        public void onException(Exception ex) {
-                            Toaster.show(getActivity(), Utils.Messages.FAILED_LOADING, ex);
-                        }
-                    });
-                }
-
-                AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_ADDED_CARDCAST);
+                Toaster.show(getActivity(), Utils.Messages.FAILED_ADDING_CARDCAST, ex);
             }
-        }.start();
+        });
     }
 
     public interface IFragment {

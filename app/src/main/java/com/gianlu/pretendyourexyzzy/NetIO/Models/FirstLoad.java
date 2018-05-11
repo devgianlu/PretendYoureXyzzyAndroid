@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.pretendyourexyzzy.Utils;
@@ -17,15 +18,15 @@ public class FirstLoad implements Serializable {
     public final NextOp nextOperation;
     public final boolean inProgress;
     public final ArrayList<CardSet> cardSets;
-    public final String nickname;
+    public final User user;
     public final int gameId;
 
-    public FirstLoad(JSONObject obj) throws JSONException {
-        nextOperation = NextOp.parse(obj.getString("next"));
-        inProgress = obj.getBoolean("ip");
-        nickname = obj.optString("n", null);
-        gameId = obj.optInt("gid", -1);
-        cardSets = CommonUtils.toTList(obj.getJSONArray("css"), CardSet.class);
+    public FirstLoad(JSONObject obj, @Nullable User user) throws JSONException {
+        this.nextOperation = NextOp.parse(obj.getString("next"));
+        this.inProgress = obj.getBoolean("ip");
+        this.gameId = obj.optInt("gid", -1);
+        this.cardSets = CommonUtils.toTList(obj.getJSONArray("css"), CardSet.class);
+        this.user = user;
     }
 
     @NonNull

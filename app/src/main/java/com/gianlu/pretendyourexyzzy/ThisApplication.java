@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.ConnectivityChecker;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -31,5 +32,7 @@ public class ThisApplication extends AnalyticsApplication {
                 return connection.getResponseCode() == 200;
             }
         });
+
+        Pyx.instantiate(this);
     }
 }

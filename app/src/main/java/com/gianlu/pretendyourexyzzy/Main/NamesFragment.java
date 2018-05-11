@@ -14,14 +14,18 @@ import android.view.ViewGroup;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.NamesAdapter;
-import com.gianlu.pretendyourexyzzy.NetIO.PYX;
+import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
+import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.List;
 
-public class NamesFragment extends Fragment implements PYX.IResult<List<String>> {
+public class NamesFragment extends Fragment implements Pyx.OnResult<List<String>> {
     private RecyclerViewLayout layout;
     private int names = -1;
+    private RegisteredPyx pyx;
 
     public static NamesFragment getInstance() {
         return new NamesFragment();
@@ -50,15 +54,22 @@ public class NamesFragment extends Fragment implements PYX.IResult<List<String>>
         layout = new RecyclerViewLayout(inflater);
         layout.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
-        final PYX pyx = PYX.get(getContext());
+        try {
+            pyx = RegisteredPyx.get();
+        } catch (LevelMismatchException ex) {
+            Logging.log(ex);
+            layout.showMessage(R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
+            return layout;
+        }
+
         layout.enableSwipeRefresh(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                pyx.getNamesList(NamesFragment.this);
+                pyx.request(PyxRequests.getNamesList(), NamesFragment.this);
             }
         }, R.color.colorAccent);
 
-        pyx.getNamesList(this);
+        pyx.request(PyxRequests.getNamesList(), this);
 
         return layout;
     }
@@ -68,7 +79,7 @@ public class NamesFragment extends Fragment implements PYX.IResult<List<String>>
     }
 
     @Override
-    public void onDone(PYX pyx, final List<String> result) {
+    public void onDone(@NonNull final List<String> result) {
         if (!isAdded()) return;
 
         layout.loadListData(new NamesAdapter(getContext(), result));
@@ -78,7 +89,7 @@ public class NamesFragment extends Fragment implements PYX.IResult<List<String>>
     }
 
     @Override
-    public void onException(Exception ex) {
+    public void onException(@NonNull Exception ex) {
         Logging.log(ex);
         if (isAdded())
             layout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);

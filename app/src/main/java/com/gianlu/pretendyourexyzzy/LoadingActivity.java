@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.ActionBar;
@@ -24,17 +25,19 @@ import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.OfflineActivity;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.pretendyourexyzzy.NetIO.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
-import com.gianlu.pretendyourexyzzy.NetIO.PYX;
-import com.gianlu.pretendyourexyzzy.NetIO.PYXException;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
+import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 
-public class LoadingActivity extends ActivityWithDialog implements PYX.IResult<FirstLoad> {
+public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx> {
     private Intent goTo;
     private boolean finished = false;
     private ProgressBar loading;
@@ -93,7 +96,7 @@ public class LoadingActivity extends ActivityWithDialog implements PYX.IResult<F
         if (Objects.equals(getIntent().getAction(), Intent.ACTION_VIEW) || Objects.equals(getIntent().getAction(), Intent.ACTION_SEND)) {
             Uri url = getIntent().getData();
             if (url != null) {
-                PYX.Server server = PYX.Server.fromPyxUrl(url.toString());
+                Pyx.Server server = Pyx.Server.fromPyxUrl(url.toString());
                 if (server != null) setServer(server);
 
                 String fragment = url.getFragment();
@@ -119,7 +122,7 @@ public class LoadingActivity extends ActivityWithDialog implements PYX.IResult<F
         ConnectivityChecker.checkAsync(new ConnectivityChecker.OnCheck() {
             @Override
             public void goodToGo() {
-                PYX.get(LoadingActivity.this).firstLoad(LoadingActivity.this);
+                Pyx.get(LoadingActivity.this).firstLoad(LoadingActivity.this);
             }
 
             @Override
@@ -130,11 +133,11 @@ public class LoadingActivity extends ActivityWithDialog implements PYX.IResult<F
     }
 
     private void changeServerDialog(boolean dismissible) {
-        final List<PYX.Server> availableServers = new ArrayList<>();
-        availableServers.addAll(PYX.Server.pyxServers.values());
-        availableServers.addAll(PYX.Server.loadUserServers(this));
+        final List<Pyx.Server> availableServers = new ArrayList<>();
+        availableServers.addAll(Pyx.Server.pyxServers.values());
+        availableServers.addAll(Pyx.Server.loadUserServers(this));
 
-        int selectedServer = PYX.Server.indexOf(availableServers, Prefs.getString(LoadingActivity.this, PKeys.LAST_SERVER, "PYX1"));
+        int selectedServer = Pyx.Server.indexOf(availableServers, Prefs.getString(LoadingActivity.this, PKeys.LAST_SERVER, "PYX1"));
         if (selectedServer < 0) selectedServer = 0;
 
         CharSequence[] availableStrings = new CharSequence[availableServers.size()];
@@ -167,20 +170,18 @@ public class LoadingActivity extends ActivityWithDialog implements PYX.IResult<F
         showDialog(builder);
     }
 
-    private void setServer(PYX.Server server) {
-        PYX.invalidate();
+    private void setServer(Pyx.Server server) {
+        Pyx.invalidate();
         Prefs.putString(LoadingActivity.this, PKeys.LAST_SERVER, server.name);
     }
 
-    @SuppressWarnings("ConstantConditions")
-    private void showRegisterUI(final PYX pyx) {
+    private void showRegisterUI(final FirstLoadedPyx pyx) {
         loading.setVisibility(View.GONE);
         register.setVisibility(View.VISIBLE);
         registerNickname.setErrorEnabled(false);
 
         String lastNickname = Prefs.getString(LoadingActivity.this, PKeys.LAST_NICKNAME, null);
-        if (lastNickname != null)
-            registerNickname.getEditText().setText(lastNickname);
+        if (lastNickname != null) CommonUtils.setText(registerNickname, lastNickname);
 
         registerSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -188,24 +189,23 @@ public class LoadingActivity extends ActivityWithDialog implements PYX.IResult<F
                 loading.setVisibility(View.VISIBLE);
                 register.setVisibility(View.GONE);
 
-                @SuppressWarnings("ConstantConditions") String nick = registerNickname.getEditText().getText().toString();
-                pyx.registerUser(nick, new PYX.IResult<User>() {
+                String nick = CommonUtils.getText(registerNickname);
+                pyx.register(nick, new Pyx.OnResult<RegisteredPyx>() {
                     @Override
-                    public void onDone(PYX pyx, User result) {
-                        pyx.startPolling();
-                        Prefs.putString(LoadingActivity.this, PKeys.LAST_NICKNAME, result.nickname);
-                        goTo(MainActivity.class, result);
+                    public void onDone(@NonNull RegisteredPyx result) {
+                        Prefs.putString(LoadingActivity.this, PKeys.LAST_NICKNAME, result.user().nickname);
+                        goTo(MainActivity.class, result.user());
                     }
 
                     @Override
-                    public void onException(Exception ex) {
+                    public void onException(@NonNull Exception ex) {
                         Logging.log(ex);
 
                         loading.setVisibility(View.GONE);
                         register.setVisibility(View.VISIBLE);
 
-                        if (ex instanceof PYXException) {
-                            switch (((PYXException) ex).errorCode) {
+                        if (ex instanceof PyxException) {
+                            switch (((PyxException) ex).errorCode) {
                                 case "rn":
                                     registerNickname.setError(getString(R.string.reservedNickname));
                                     return;
@@ -240,37 +240,35 @@ public class LoadingActivity extends ActivityWithDialog implements PYX.IResult<F
 
                         @Override
                         public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
-
                         }
 
                         @Override
                         public void onSequenceCanceled(TapTarget lastTarget) {
-
                         }
                     }).start();
         }
-
     }
 
     @Override
-    public void onDone(final PYX pyx, FirstLoad result) {
-        if (result.inProgress) {
-            pyx.startPolling();
-            if (result.nextOperation == FirstLoad.NextOp.GAME) {
-                launchGameId = result.gameId;
+    public void onDone(@NonNull FirstLoadedPyx result) {
+        FirstLoad fl = result.firstLoad();
+        if (fl.inProgress && fl.user != null) {
+            if (fl.nextOperation == FirstLoad.NextOp.GAME) {
+                launchGameId = fl.gameId;
                 launchGameShouldRequest = false;
             }
 
-            goTo(MainActivity.class, new User(result.nickname));
+            result.upgrade(fl.user);
+            goTo(MainActivity.class, fl.user);
         } else {
-            showRegisterUI(pyx);
+            showRegisterUI(result);
         }
     }
 
     @Override
-    public void onException(Exception ex) {
-        if (ex instanceof PYXException) {
-            if (Objects.equals(((PYXException) ex).errorCode, "se")) {
+    public void onException(@NonNull Exception ex) {
+        if (ex instanceof PyxException) {
+            if (Objects.equals(((PyxException) ex).errorCode, "se")) {
                 loading.setVisibility(View.GONE);
                 register.setVisibility(View.VISIBLE);
 

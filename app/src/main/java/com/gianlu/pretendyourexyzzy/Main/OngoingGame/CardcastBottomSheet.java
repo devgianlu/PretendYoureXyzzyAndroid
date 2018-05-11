@@ -19,20 +19,23 @@ import com.gianlu.commonutils.NiceBaseBottomSheet;
 import com.gianlu.pretendyourexyzzy.Adapters.CardSetsAdapter;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
+import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.List;
 
 public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSetsAdapter.IAdapter {
     private final int gid;
+    private final RegisteredPyx pyx;
     private final OngoingGameHelper.Listener listener;
     private final IDialog dialog;
     private RecyclerView list;
     private ViewGroup contentParent;
 
-    public CardcastBottomSheet(ViewGroup parent, int gid, OngoingGameHelper.Listener listener, IDialog dialog) {
+    public CardcastBottomSheet(ViewGroup parent, int gid, RegisteredPyx pyx, OngoingGameHelper.Listener listener, IDialog dialog) {
         super(parent, R.layout.sheet_header_cardcast, R.layout.sheet_cardcast, false);
         this.gid = gid;
+        this.pyx = pyx;
         this.listener = listener;
         this.dialog = dialog;
     }
@@ -55,7 +58,7 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSets
     }
 
     private void updateContentViews(List<CardSet> cards) {
-        list.setAdapter(new CardSetsAdapter(getContext(), gid, cards, this, listener));
+        list.setAdapter(new CardSetsAdapter(getContext(), gid, cards, pyx, this, listener));
     }
 
     @Override

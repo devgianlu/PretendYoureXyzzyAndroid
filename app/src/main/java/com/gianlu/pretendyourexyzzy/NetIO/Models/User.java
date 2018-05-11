@@ -1,16 +1,22 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import com.gianlu.commonutils.Drawer.BaseDrawerProfile;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.Serializable;
 
 public class User implements BaseDrawerProfile, Serializable {
     public final String nickname;
+    public final String sessionId;
 
-    public User(String nickname) {
-        this.nickname = nickname;
+    public User(@NonNull String sessionId, JSONObject obj) throws JSONException {
+        this.sessionId = sessionId;
+        this.nickname = obj.getString("n");
     }
 
     @Override

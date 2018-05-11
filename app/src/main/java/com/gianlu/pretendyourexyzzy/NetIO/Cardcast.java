@@ -70,6 +70,7 @@ public class Cardcast {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
     }
 
+    @NonNull
     public static Cardcast get(Context context) {
         if (instance == null) instance = new Cardcast(context);
         return instance;
