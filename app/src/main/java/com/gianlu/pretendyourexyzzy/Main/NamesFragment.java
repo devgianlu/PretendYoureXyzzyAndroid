@@ -48,17 +48,15 @@ public class NamesFragment extends Fragment implements PYX.IResult<List<String>>
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         layout = new RecyclerViewLayout(inflater);
-        layout.enableSwipeRefresh(R.color.colorAccent);
         layout.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
         final PYX pyx = PYX.get(getContext());
-
-        layout.setRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        layout.enableSwipeRefresh(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 pyx.getNamesList(NamesFragment.this);
             }
-        });
+        }, R.color.colorAccent);
 
         pyx.getNamesList(this);
 

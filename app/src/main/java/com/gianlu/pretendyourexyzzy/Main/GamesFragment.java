@@ -46,8 +46,6 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.TutorialManager;
 import com.gianlu.pretendyourexyzzy.Utils;
 
-import org.json.JSONException;
-
 public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, GamesAdapter.IAdapter, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
     private static final String POLL_TAG = "games";
     private GamesList lastResult;
@@ -131,11 +129,17 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
         if (getContext() == null) return layout;
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
         recyclerViewLayout = layout.findViewById(R.id.gamesFragment_recyclerViewLayout);
-        recyclerViewLayout.enableSwipeRefresh(R.color.colorAccent);
         recyclerViewLayout.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         createGame = layout.findViewById(R.id.gamesFragment_createGame);
 
         final PYX pyx = PYX.get(getContext());
+
+        recyclerViewLayout.enableSwipeRefresh(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                pyx.getGamesList(GamesFragment.this);
+            }
+        }, R.color.colorAccent);
 
         createGame.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -168,18 +172,11 @@ public class GamesFragment extends Fragment implements PYX.IResult<GamesList>, G
             }
         });
 
-        recyclerViewLayout.setRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                pyx.getGamesList(GamesFragment.this);
-            }
-        });
-
         pyx.getGamesList(this);
 
         pyx.getPollingThread().addListener(POLL_TAG, new PYX.IEventListener() {
             @Override
-            public void onPollMessage(PollMessage message) throws JSONException {
+            public void onPollMessage(PollMessage message) {
                 if (message.event == PollMessage.Event.GAME_LIST_REFRESH) {
                     recyclerViewSavedInstance = recyclerViewLayout.getList().getLayoutManager().onSaveInstanceState();
                     pyx.getGamesList(GamesFragment.this);

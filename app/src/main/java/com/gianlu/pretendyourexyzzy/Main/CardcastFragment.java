@@ -162,18 +162,17 @@ public class CardcastFragment extends Fragment implements Cardcast.IDecks, Cardc
         layout = new RecyclerViewLayout(inflater);
         if (getContext() == null) return null;
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
-        layout.enableSwipeRefresh(R.color.colorAccent);
         layout.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
         cardcast = Cardcast.get(getContext());
-        cardcast.getDecks(search, LIMIT, 0, this);
-
-        layout.setRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        layout.enableSwipeRefresh(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 cardcast.getDecks(search, LIMIT, 0, CardcastFragment.this);
             }
-        });
+        }, R.color.colorAccent);
+
+        cardcast.getDecks(search, LIMIT, 0, this);
 
         return layout;
     }
