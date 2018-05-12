@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -24,7 +23,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 
 import java.util.Objects;
 
-public class StarredCardsActivity extends AppCompatActivity implements CardsAdapter.Listener {
+public class StarredCardsActivity extends ActivityWithDialog implements CardsAdapter.Listener {
     private RecyclerView list;
     private LinearLayout cards;
 
