@@ -249,12 +249,10 @@ public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, 
 
                         @Override
                         public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
-
                         }
 
                         @Override
                         public void onSequenceCanceled(TapTarget lastTarget) {
-
                         }
                     }).start();
         }
