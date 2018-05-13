@@ -426,7 +426,7 @@ public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, 
                 if (handler != null) handler.onParticipatingGame(gid);
             }
         } else {
-            Toaster.show(getActivity(), Utils.Messages.FAILED_JOINING);
+            Toaster.show(getActivity(), Utils.Messages.FAILED_JOINING, new NullPointerException("Couldn't find game for " + gid));
         }
     }
 

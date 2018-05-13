@@ -126,7 +126,6 @@ public class Utils {
         public static final Toaster.Message PARTIAL_ADD_STARRED_DECKS_FAILED = new Toaster.Message(R.string.addStarredDecksFailedPartial, true);
         public static final Toaster.Message FAILED_PLAYING = new Toaster.Message(R.string.failedPlayingCard, true);
         public static final Toaster.Message FAILED_JUDGING = new Toaster.Message(R.string.failedJudging, true);
-        public static final Toaster.Message JUDGE_LEFT = new Toaster.Message(R.string.judgeLeft, false);
         public static final Toaster.Message STARRED_CARD = new Toaster.Message(R.string.addedCardToStarred, false);
         public static final Toaster.Message CARDSET_REMOVED = new Toaster.Message(R.string.cardcastDeckRemoved, false);
         public static final Toaster.Message FAILED_REMOVING_CARDSET = new Toaster.Message(R.string.failedRemovingCardcastDeck, true);
