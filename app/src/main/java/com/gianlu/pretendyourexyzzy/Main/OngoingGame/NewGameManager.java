@@ -51,9 +51,10 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
-public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listener {
+public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listener { // TODO: Show timings (how much time to play it's left)
     public final FloatingActionButton startGame;
     private final Context context;
     private final GameCardView blackCard;
@@ -105,13 +106,13 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
                     break;
                 case JUDGING:
                     GameInfo.Player judge = findJudge();
-                    if (judge != null) updateInstructions(Instructions.IS_JUDGING(judge.name));
+                    if (judge != null) updateInstructions(Instruction.IS_JUDGING, judge.name);
                     break;
                 case LOBBY:
-                    updateInstructions(Instructions.WAITING_FOR_START);
+                    updateInstructions(Instruction.WAITING_FOR_START);
                     break;
                 case PLAYING:
-                    updateInstructions(Instructions.WAITING_FOR_ROUND_TO_END);
+                    updateInstructions(Instruction.WAITING_FOR_ROUND_TO_END);
                     break;
             }
         }
@@ -191,8 +192,28 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
         }
     }
 
-    private void updateInstructions(String text) {
-        instructions.setText(text); // TODO: Should be responsible for showing toasts
+    private void updateInstructions(@NonNull Instruction instr, Object... args) {
+        switch (instr.kind) {
+            case BOTH:
+                updateText(instr.text, args);
+                updateToast(instr.toast, args);
+                break;
+            case TOAST:
+                updateToast(instr.text, args);
+                break;
+            case TEXT:
+                updateText(instr.text, args);
+                break;
+        }
+    }
+
+    private void updateToast(@NonNull String text, Object... args) {
+        Toaster.show(context, String.format(Locale.getDefault(), text, args), Toast.LENGTH_SHORT, null, null, null);
+    }
+
+    private void updateText(@NonNull String text, Object... args) {
+        if (myLastStatus != GameInfo.PlayerStatus.SPECTATOR)
+            instructions.setText(String.format(Locale.getDefault(), text, args));
     }
 
     private void tableCardsChanged(List<CardsGroup<Card>> cards) {
@@ -226,7 +247,7 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
             case JUDGING:
                 if (myLastStatus != GameInfo.PlayerStatus.SPECTATOR) {
                     GameInfo.Player judge = findJudge();
-                    if (judge != null) updateInstructions(Instructions.IS_JUDGING(judge.name));
+                    if (judge != null) updateInstructions(Instruction.IS_JUDGING, judge.name);
                 }
 
                 tableCardsChanged(GameCards.toWhiteCardsList(message.obj.getJSONArray("wc")));
@@ -246,7 +267,7 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
         checkIfLobby();
     }
 
-    private void refreshPlayersList() {
+    private void refreshPlayersList() { // TODO: Can we avoid this?
         pyx.request(PyxRequests.getGameInfo(gameInfo.game.gid), new Pyx.OnResult<GameInfo>() {
             @Override
             public void onDone(@NonNull GameInfo result) {
@@ -283,7 +304,8 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
 
     private void handleWinner(String winner, int winningCard) {
         tableCardsAdapter.notifyWinningCard(winningCard);
-        Toaster.show(context, Instructions.THIS_GUY_WON_TOAST(winner), Toast.LENGTH_SHORT, null, null, null);
+        if (winner.equals(pyx.user().nickname)) updateInstructions(Instruction.YOU_WINNER);
+        else updateInstructions(Instruction.WINNER, winner);
     }
 
     private void handleMyStatusChange(GameInfo.PlayerStatus newStatus) {
@@ -291,11 +313,11 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
 
         switch (newStatus) {
             case HOST:
-                updateInstructions(Instructions.GAME_HOST);
+                updateInstructions(Instruction.GAME_HOST);
                 break;
             case IDLE:
                 if (!playedForLast) {
-                    updateInstructions(Instructions.WAITING_FOR_OTHER_PLAYERS);
+                    updateInstructions(Instruction.WAITING_FOR_OTHER_PLAYERS);
                     playedForLast = false;
                 }
 
@@ -304,13 +326,13 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
                 break;
             case JUDGE:
                 if (gameInfo.game.status == Game.Status.PLAYING)
-                    updateInstructions(Instructions.JUDGE);
+                    updateInstructions(Instruction.JUDGE);
 
                 if (whiteCardsList.getAdapter() != tableCardsAdapter)
                     whiteCardsList.swapAdapter(tableCardsAdapter, true);
                 break;
             case JUDGING:
-                updateInstructions(Instructions.SELECT_WINNING_CARD);
+                updateInstructions(Instruction.SELECT_WINNING_CARD);
 
                 if (whiteCardsList.getAdapter() != tableCardsAdapter)
                     whiteCardsList.swapAdapter(tableCardsAdapter, true);
@@ -318,16 +340,16 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
             case PLAYING:
                 BaseCard blackCard = this.blackCard.getCard();
                 if (blackCard != null)
-                    updateInstructions(Instructions.PICK_CARDS(blackCard.getNumPick()));
+                    updateInstructions(Instruction.PICK_CARDS, blackCard.getNumPick());
 
                 if (whiteCardsList.getAdapter() != handAdapter)
                     whiteCardsList.swapAdapter(handAdapter, true);
                 break;
             case WINNER:
-                updateInstructions(Instructions.WINNER);
+                // FIXME: Won game (check that, not sure)
                 break;
             case SPECTATOR:
-                updateInstructions(Instructions.SPECTATOR);
+                updateInstructions(Instruction.SPECTATOR);
 
                 if (whiteCardsList.getAdapter() != tableCardsAdapter)
                     whiteCardsList.swapAdapter(tableCardsAdapter, true);
@@ -368,9 +390,6 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
             case GAME_JUDGE_LEFT:
                 setBlackCard(null);
                 tableCardsChanged(new ArrayList<CardsGroup<Card>>());
-                if (myLastStatus != GameInfo.PlayerStatus.SPECTATOR)
-                    updateInstructions(Instructions.JUDGE_LEFT);
-                Toaster.show(context, Utils.Messages.JUDGE_LEFT);
                 return;
             case GAME_OPTIONS_CHANGED:
                 gameInfo = new GameInfo(new Game(message.obj.getJSONObject("gi")), gameInfo.players);
@@ -388,28 +407,22 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
             case GAME_PLAYER_SKIPPED:
                 String skipped = message.obj.optString("n", null);
                 setPlayerSkipped(skipped);
-                if (skipped != null)
-                    Toaster.show(context, skipped + " has been skipped.", Toast.LENGTH_SHORT, null, null, null);
+                if (skipped != null) updateInstructions(Instruction.PLAYER_SKIPPED, skipped);
                 break;
             case GAME_JUDGE_SKIPPED:
                 String judge = message.obj.optString("n", null);
-                if (judge != null)
-                    Toaster.show(context, "Judge " + judge + " has been skipped.", Toast.LENGTH_SHORT, null, null, null);
+                if (judge != null) updateInstructions(Instruction.JUDGE_SKIPPED, judge);
                 break;
             case GAME_ROUND_COMPLETE:
                 String winner = message.obj.getString("rw");
                 handleWinner(winner, message.obj.getInt("WC") /* intermission: message.obj.getInt("i") */);
-                if (myLastStatus != GameInfo.PlayerStatus.SPECTATOR)
-                    updateInstructions(Instructions.WINNER_AND_NEW_ROUND(winner));
-                if (Objects.equals(winner, pyx.user().nickname))
-                    handleMyStatusChange(GameInfo.PlayerStatus.WINNER);
                 break;
             case GAME_STATE_CHANGE:
                 handleGameStatusChange(Game.Status.parse(message.obj.getString("gs")), message);
                 break;
             case HAND_DEAL:
                 handCardsChanged(CommonUtils.toTList(message.obj.getJSONArray("h"), Card.class));
-                handleMyStatusChange(GameInfo.PlayerStatus.PLAYING);
+                handleMyStatusChange(GameInfo.PlayerStatus.PLAYING); // FIXME: Is this needed?
                 break;
             case HURRY_UP:
                 Toaster.show(context, Utils.Messages.HURRY_UP);
@@ -426,6 +439,9 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
 
     private void handlePlayerLeave(String nickname) {
         playersAdapter.notifyItemRemoved(nickname);
+        GameInfo.Player judge = findJudge();
+        if (judge != null && Objects.equals(nickname, judge.name))
+            updateInstructions(Instruction.JUDGE_LEFT, nickname);
     }
 
     @Override
@@ -531,40 +547,50 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
         });
     }
 
+    private enum Instruction {
+        JUDGE("You're the Card Czar! Waiting for other players...", Kind.TEXT),
+        SELECT_WINNING_CARD("Select the winning card(s).", Kind.TEXT),
+        YOU_WINNER("You won this round! A new round will begin shortly...", "You won this round!"),
+        SPECTATOR("You're a spectator.", Kind.TEXT),
+        GAME_HOST("You're the game host! Start the game when you're ready.", Kind.TEXT),
+        WAITING_FOR_ROUND_TO_END("Waiting for the current round to end...", Kind.TEXT),
+        WAITING_FOR_START("Waiting for the game to start...", Kind.TEXT),
+        JUDGE_LEFT("Judge %s left. A new round will begin shortly.", "Judge %s left."),
+        IS_JUDGING("%s is judging...", Kind.TEXT),
+        WINNER("%s won this round! A new round will begin shortly...", "%s won this round!"),
+        WAITING_FOR_OTHER_PLAYERS("Waiting for other players...", Kind.TEXT),
+        PLAYER_SKIPPED("%s has been skipped.", Kind.TOAST),
+        PICK_CARDS("Select %d card(s) to play. Your hand:", Kind.TEXT),
+        JUDGE_SKIPPED("Judge %s has been skipped.", Kind.TOAST);
+
+        private final String toast;
+        private final String text;
+        private final Kind kind;
+
+        Instruction(String text, Kind kind) {
+            this.text = text;
+            this.kind = kind;
+            this.toast = null;
+        }
+
+        Instruction(String text, String toast) {
+            this.toast = toast;
+            this.text = text;
+            this.kind = Kind.BOTH;
+        }
+
+        public enum Kind {
+            TOAST,
+            TEXT,
+            BOTH
+        }
+    }
+
     public interface Listener {
         void shouldLeaveGame();
 
         void showDialog(AlertDialog.Builder builder);
 
         void showDialog(Dialog dialog);
-    }
-
-    private static final class Instructions {
-        static final String WAITING_FOR_OTHER_PLAYERS = "Waiting for other players...";
-        static final String JUDGE = "You're the Card Czar! Waiting for other players...";
-        static final String SELECT_WINNING_CARD = "Select the winning card(s).";
-        static final String WINNER = "You won this round! A new round will begin shortly.";
-        static final String SPECTATOR = "You're a spectator.";
-        static final String GAME_HOST = "You're the game host! Start the game when you're ready.";
-        static final String WAITING_FOR_ROUND_TO_END = "Waiting for the current round to end...";
-        static final String WAITING_FOR_START = "Waiting for the game to start...";
-        static final String JUDGE_LEFT = "Judge left. A new round will begin shortly.";
-
-        static String PICK_CARDS(int numPick) {
-            if (numPick == 1) return "Select one card to play. Your hand: ";
-            else return "Select " + numPick + " cards to play. Your hand:";
-        }
-
-        static String IS_JUDGING(String name) {
-            return name + " is judging...";
-        }
-
-        static String WINNER_AND_NEW_ROUND(String winner) {
-            return winner + " won this round. A new round will begin shortly.";
-        }
-
-        static String THIS_GUY_WON_TOAST(String winner) {
-            return winner + " won this round!";
-        }
     }
 }
