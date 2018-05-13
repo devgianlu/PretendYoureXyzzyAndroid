@@ -114,7 +114,8 @@ public class Game implements Filterable<Game.Protection>, Serializable {
         private static final int BL_MIN = 0;
         private static final int BL_MAX = 30;
         private static final int VL_PL_MAX = 20;
-        private static final int VL_PL_MIN = 3;
+        private static final int VL_MIN = 0;
+        private static final int PL_MIN = 3;
         private static final int SL_MAX = 69;
         private static final int SL_MIN = 4;
         public final String timerMultiplier;
@@ -173,10 +174,10 @@ public class Game implements Filterable<Game.Protection>, Serializable {
                 throw new InvalidFieldException(R.id.gameOptions_timerMultiplier, R.string.invalidTimerMultiplier);
 
             int vL = parseIntOrThrow(spectatorsLimit, R.id.editGameOptions_spectatorLimit);
-            checkMaxMin(vL, VL_PL_MIN, VL_PL_MAX, R.id.editGameOptions_spectatorLimit);
+            checkMaxMin(vL, VL_MIN, VL_PL_MAX, R.id.editGameOptions_spectatorLimit);
 
             int pL = parseIntOrThrow(playersLimit, R.id.editGameOptions_playerLimit);
-            checkMaxMin(pL, VL_PL_MIN, VL_PL_MAX, R.id.editGameOptions_playerLimit);
+            checkMaxMin(pL, PL_MIN, VL_PL_MAX, R.id.editGameOptions_playerLimit);
 
             int sl = parseIntOrThrow(scoreLimit, R.id.editGameOptions_scoreLimit);
             checkMaxMin(sl, SL_MIN, SL_MAX, R.id.editGameOptions_scoreLimit);
