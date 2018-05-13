@@ -87,10 +87,7 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
                             @Override
                             public void onDone() {
                                 pd.dismiss();
-                                sets.remove(holder.getAdapterPosition());
-                                notifyItemRemoved(holder.getAdapterPosition());
-                                listener.shouldUpdateItemCount(getItemCount());
-
+                                remove(holder.getAdapterPosition());
                                 Toaster.show(context, Utils.Messages.CARDSET_REMOVED);
                             }
 
@@ -108,6 +105,13 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
         } else {
             holder.remove.setVisibility(View.GONE);
         }
+    }
+
+    private void remove(int pos) {
+        if (pos == -1) return;
+        sets.remove(pos);
+        notifyItemRemoved(pos);
+        listener.shouldUpdateItemCount(getItemCount());
     }
 
     @Override

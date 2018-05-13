@@ -192,7 +192,7 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
     }
 
     private void updateInstructions(String text) {
-        instructions.setText(text);
+        instructions.setText(text); // TODO: Should be responsible for showing toasts
     }
 
     private void tableCardsChanged(List<CardsGroup<Card>> cards) {
