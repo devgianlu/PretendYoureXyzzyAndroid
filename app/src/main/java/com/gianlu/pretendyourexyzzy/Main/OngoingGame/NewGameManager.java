@@ -295,7 +295,12 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
         gameInfo.notifyPlayerChanged(player);
 
         if (player.status == GameInfo.PlayerStatus.IDLE) addWhiteCard();
-        if (Objects.equals(player.name, pyx.user().nickname)) handleMyStatusChange(player.status);
+        if (Objects.equals(player.name, pyx.user().nickname)) {
+            handleMyStatusChange(player.status);
+        } else {
+            if (player.status == GameInfo.PlayerStatus.WINNER)
+                updateInstructions(Instruction.GAME_WINNER, player.name);
+        }
     }
 
     private void removeCardFromHand(Card card) {
@@ -304,8 +309,8 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
 
     private void handleWinner(String winner, int winningCard) {
         tableCardsAdapter.notifyWinningCard(winningCard);
-        if (winner.equals(pyx.user().nickname)) updateInstructions(Instruction.YOU_WINNER);
-        else updateInstructions(Instruction.WINNER, winner);
+        if (winner.equals(pyx.user().nickname)) updateInstructions(Instruction.YOU_ROUND_WINNER);
+        else updateInstructions(Instruction.ROUND_WINNER, winner);
     }
 
     private void handleMyStatusChange(GameInfo.PlayerStatus newStatus) {
@@ -346,7 +351,7 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
                     whiteCardsList.swapAdapter(handAdapter, true);
                 break;
             case WINNER:
-                // FIXME: Won game (check that, not sure)
+                updateInstructions(Instruction.YOU_GAME_WINNER);
                 break;
             case SPECTATOR:
                 updateInstructions(Instruction.SPECTATOR);
@@ -550,18 +555,20 @@ public class NewGameManager implements Pyx.OnEventListener, CardsAdapter.Listene
     private enum Instruction {
         JUDGE("You're the Card Czar! Waiting for other players...", Kind.TEXT),
         SELECT_WINNING_CARD("Select the winning card(s).", Kind.TEXT),
-        YOU_WINNER("You won this round! A new round will begin shortly...", "You won this round!"),
+        YOU_ROUND_WINNER("You won this round! A new round will begin shortly...", "You won this round!"),
         SPECTATOR("You're a spectator.", Kind.TEXT),
         GAME_HOST("You're the game host! Start the game when you're ready.", Kind.TEXT),
         WAITING_FOR_ROUND_TO_END("Waiting for the current round to end...", Kind.TEXT),
         WAITING_FOR_START("Waiting for the game to start...", Kind.TEXT),
         JUDGE_LEFT("Judge %s left. A new round will begin shortly.", "Judge %s left."),
         IS_JUDGING("%s is judging...", Kind.TEXT),
-        WINNER("%s won this round! A new round will begin shortly...", "%s won this round!"),
+        ROUND_WINNER("%s won this round! A new round will begin shortly...", "%s won this round!"),
         WAITING_FOR_OTHER_PLAYERS("Waiting for other players...", Kind.TEXT),
         PLAYER_SKIPPED("%s has been skipped.", Kind.TOAST),
         PICK_CARDS("Select %d card(s) to play. Your hand:", Kind.TEXT),
-        JUDGE_SKIPPED("Judge %s has been skipped.", Kind.TOAST);
+        JUDGE_SKIPPED("Judge %s has been skipped.", Kind.TOAST),
+        GAME_WINNER("%s won the game! Waiting for the host to start a new game...", "%s won the game!"),
+        YOU_GAME_WINNER("You won the game! Waiting for the host to start a new game...", "You won the game!");
 
         private final String toast;
         private final String text;
