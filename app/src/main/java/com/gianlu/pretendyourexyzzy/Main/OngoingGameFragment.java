@@ -43,8 +43,8 @@ import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGame.BestGameManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastBottomSheet;
-import com.gianlu.pretendyourexyzzy.Main.OngoingGame.NewGameManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
@@ -66,12 +66,12 @@ import java.util.Objects;
 
 import okhttp3.HttpUrl;
 
-public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameInfoAndCards>, NewGameManager.Listener, OngoingGameHelper.Listener, CardcastBottomSheet.DialogsHelper {
+public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameInfoAndCards>, BestGameManager.Listener, OngoingGameHelper.Listener, CardcastBottomSheet.DialogsHelper {
     private OnLeftGame onLeftGame;
     private CoordinatorLayout layout;
     private ProgressBar loading;
     private LinearLayout container;
-    private NewGameManager manager;
+    private BestGameManager manager;
     private int gid;
     private RegisteredPyx pyx;
     private CardcastBottomSheet cardcastBottomSheet;
@@ -109,7 +109,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
     private void updateActivityTitle() {
         Activity activity = getActivity();
         if (manager != null && activity != null && isVisible())
-            activity.setTitle(manager.gameInfo.game.host + " - " + getString(R.string.app_name));
+            activity.setTitle(manager.gameInfo().game.host + " - " + getString(R.string.app_name));
     }
 
     @Override
@@ -170,7 +170,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
     @Override
     public void onDone(@NonNull GameInfoAndCards result) {
         if (manager == null && isAdded())
-            manager = new NewGameManager(getActivity(), container, pyx, result.info, result.cards, this);
+            manager = new BestGameManager(getActivity(), container, pyx, result, this);
 
         updateActivityTitle();
 
@@ -183,7 +183,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
             if (options != null) {
                 new TapTargetSequence(getActivity())
                         .target(Utils.tapTargetForView(options, R.string.tutorial_setupGame, R.string.tutorial_setupGame_desc))
-                        .target(Utils.tapTargetForView(manager.startGame, R.string.tutorial_startGame, R.string.tutorial_startGame_desc))
+                        .target(Utils.tapTargetForView(manager.getStartGameButton(), R.string.tutorial_startGame, R.string.tutorial_startGame_desc))
                         .listener(new TapTargetSequence.Listener() {
                             @Override
                             public void onSequenceFinish() {
@@ -218,7 +218,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
                 leaveGame();
                 return true;
             case R.id.ongoingGame_options:
-                if (amHost() && manager.gameInfo.game.status == Game.Status.LOBBY)
+                if (amHost() && manager.gameInfo().game.status == Game.Status.LOBBY)
                     editGameOptions();
                 else showGameOptions();
                 return true;
@@ -255,7 +255,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
         RecyclerView recyclerView = new RecyclerView(getContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
-        recyclerView.setAdapter(new PlayersAdapter(getContext(), manager.gameInfo.players));
+        recyclerView.setAdapter(new PlayersAdapter(getContext(), manager.gameInfo().players));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.playersLabel)
@@ -298,7 +298,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
     }
 
     @SuppressLint("InflateParams")
-    private void editGameOptions() {
+    private void editGameOptions() { // TODO: FragmentDialog?
         if (!isAdded() || getGame() == null || getContext() == null) return;
 
         Game.Options options = getGame().options;
@@ -425,7 +425,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
 
     @Nullable
     private Game getGame() {
-        return manager == null ? null : manager.gameInfo.game;
+        return manager == null ? null : manager.gameInfo().game;
     }
 
     @Override

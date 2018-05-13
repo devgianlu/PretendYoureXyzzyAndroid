@@ -125,8 +125,9 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         CommonUtils.setRecyclerViewTopMargin(context, holder);
     }
 
+    @NonNull
     public List<Game> getGames() {
-        return objs;
+        return originalObjs;
     }
 
     public enum SortBy {

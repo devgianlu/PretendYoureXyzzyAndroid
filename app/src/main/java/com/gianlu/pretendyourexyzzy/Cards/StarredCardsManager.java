@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.Cards;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.Logging;
@@ -66,6 +67,7 @@ public class StarredCardsManager {
         }
     }
 
+    @NonNull
     public static List<StarredCard> loadCards(Context context) {
         try {
             JSONArray starredCardsArray = new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_CARDS, "[]"));

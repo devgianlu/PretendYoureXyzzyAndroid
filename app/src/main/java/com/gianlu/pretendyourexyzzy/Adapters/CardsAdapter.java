@@ -30,9 +30,9 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         this.cards = new ArrayList<>();
     }
 
-    public CardsAdapter(Context context, boolean manageMargins, List<? extends BaseCard> cards, @Nullable PyxCardsGroupView.Action action, Listener listener) {
+    public CardsAdapter(Context context, boolean manageMargins, List<? extends BaseCard> cards, PyxCardsGroupView.Action action, Listener listener) {
         this(context, manageMargins, action, listener);
-        for (BaseCard card : cards) this.cards.add(CardsGroup.singleton(card));
+        groupAndNotifyDataSetChanged(cards);
     }
 
     @NonNull
@@ -55,9 +55,15 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         return cards.size();
     }
 
-    public void notifyDataSetChanged(List<CardsGroup<Card>> whiteCards) {
+    public void notifyDataSetChanged(List<CardsGroup<Card>> cards) {
         this.cards.clear();
-        this.cards.addAll(whiteCards);
+        this.cards.addAll(cards);
+        notifyDataSetChanged();
+    }
+
+    public void groupAndNotifyDataSetChanged(List<? extends BaseCard> cards) {
+        this.cards.clear();
+        for (BaseCard card : cards) this.cards.add(CardsGroup.singleton(card));
         notifyDataSetChanged();
     }
 
