@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,12 +80,6 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         }
     }
 
-    public void notifyDataSetChanged(List<GameInfo.Player> players) {
-        this.players.clear();
-        this.players.addAll(players);
-        notifyDataSetChanged();
-    }
-
     public void notifyItemRemoved(String nickname) {
         for (int i = 0; i < players.size(); i++) {
             if (Objects.equals(players.get(i).name, nickname)) {
@@ -98,6 +93,20 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
     public void notifyItemInserted(GameInfo.Player player) {
         this.players.add(player);
         notifyItemInserted(players.size() - 1);
+    }
+
+    public void playerChanged(@NonNull GameInfo.Player player) {
+        int pos = Utils.indexOf(players, player.name);
+        if (pos != -1) {
+            players.set(pos, player);
+            notifyItemChanged(pos);
+        }
+    }
+
+    public void setPlayers(List<GameInfo.Player> players) {
+        this.players.clear();
+        this.players.addAll(players);
+        notifyDataSetChanged();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

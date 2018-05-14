@@ -18,6 +18,7 @@ import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.CardcastDeckActivity;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
@@ -60,18 +61,19 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
-        final CardSet item = sets.get(position);
+        CardSet item = sets.get(position);
         holder.name.setText(Html.fromHtml(item.name));
         holder.whiteCards.setText(String.valueOf(item.whiteCards));
         holder.blackCards.setText(String.valueOf(item.blackCards));
 
-        if (item.cardcastDeck != null) {
-            holder.author.setHtml(R.string.byLowercase, item.cardcastDeck.author.username);
-            holder.code.setText(item.cardcastDeck.code);
+        final CardcastDeck deck = item.cardcastDeck();
+        if (deck != null) {
+            holder.author.setHtml(R.string.byLowercase, deck.author.username);
+            holder.code.setText(deck.code);
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    CardcastDeckActivity.startActivity(context, item.cardcastDeck);
+                    CardcastDeckActivity.startActivity(context, deck);
                 }
             });
 
@@ -83,7 +85,7 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
                         final ProgressDialog pd = DialogUtils.progressDialog(context, R.string.loading);
                         listener.showDialog(pd);
 
-                        pyx.request(PyxRequests.removeCardcastDeck(gid, item.cardcastDeck.code), new Pyx.OnSuccess() {
+                        pyx.request(PyxRequests.removeCardcastDeck(gid, deck.code), new Pyx.OnSuccess() {
                             @Override
                             public void onDone() {
                                 pd.dismiss();

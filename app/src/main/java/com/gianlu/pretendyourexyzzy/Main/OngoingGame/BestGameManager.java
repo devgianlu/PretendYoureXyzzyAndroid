@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
@@ -20,6 +21,7 @@ import com.gianlu.pretendyourexyzzy.Cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
@@ -28,12 +30,15 @@ import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.List;
 import java.util.Locale;
-import java.util.logging.Logger;
+import java.util.Objects;
 
 public class BestGameManager implements Pyx.OnEventListener {
     private final static String POLLING = BestGameManager.class.getName();
-    private final static Logger logger = Logger.getLogger(BestGameManager.class.getName());
     private final Ui ui;
     private final Data data;
     private final Listener listener;
@@ -42,34 +47,43 @@ public class BestGameManager implements Pyx.OnEventListener {
 
     public BestGameManager(Context context, ViewGroup layout, RegisteredPyx pyx, GameInfoAndCards bundle, Listener listener) {
         this.context = context;
-        this.ui = new Ui(layout);
         this.pyx = pyx;
-        this.data = new Data(bundle);
         this.listener = listener;
+        this.ui = new Ui(layout);
+        this.data = new Data(bundle);
 
         this.pyx.polling().addListener(POLLING, this);
+        this.data.setup();
     }
 
     @Override
-    public void onPollMessage(PollMessage message) {
-        if (message.event != PollMessage.Event.CHAT)
-            logger.fine(message.event.name() + " -> " + message.obj);
+    public void onPollMessage(PollMessage msg) throws JSONException {
+        if (msg.event != PollMessage.Event.CHAT)
+            System.out.println(msg.event.name() + " -> " + msg.obj);
 
-        switch (message.event) {
+        switch (msg.event) {
+            case HAND_DEAL:
+                data.handDeal(CommonUtils.toTList(msg.obj.getJSONArray("h"), Card.class));
+                break;
+            case GAME_STATE_CHANGE:
+                data.gameStateChanged(Game.Status.parse(msg.obj.getString("gs")), msg.obj);
+                break;
+            case GAME_PLAYER_INFO_CHANGE:
+                data.gamePlayerInfoChanged(new GameInfo.Player(msg.obj.getJSONObject("pi")));
+                break;
+            case GAME_ROUND_COMPLETE:
+                data.gameRoundComplete(msg.obj.getString("rw"), msg.obj.getInt("WC"), msg.obj.getInt("i"));
+                break;
             case GAME_BLACK_RESHUFFLE:
             case GAME_SPECTATOR_JOIN:
             case CARDCAST_REMOVE_CARDSET:
             case CARDCAST_ADD_CARDSET:
             case GAME_WHITE_RESHUFFLE:
-            case GAME_STATE_CHANGE:
-            case HAND_DEAL:
             case GAME_OPTIONS_CHANGED:
             case GAME_SPECTATOR_LEAVE:
             case GAME_JUDGE_LEFT:
             case GAME_PLAYER_SKIPPED:
             case GAME_JUDGE_SKIPPED:
-            case GAME_ROUND_COMPLETE:
-            case GAME_PLAYER_INFO_CHANGE:
             case GAME_PLAYER_JOIN:
             case GAME_PLAYER_LEAVE:
             case GAME_PLAYER_KICKED_IDLE:
@@ -96,6 +110,11 @@ public class BestGameManager implements Pyx.OnEventListener {
     @NonNull
     public View getStartGameButton() {
         return ui.startGame;
+    }
+
+    @NonNull
+    public String me() {
+        return pyx.user().nickname;
     }
 
     private enum UiEvent {
@@ -144,19 +163,152 @@ public class BestGameManager implements Pyx.OnEventListener {
     }
 
     private class Data implements CardsAdapter.Listener {
-        private final GameCards cards;
         private final GameInfo info;
         private final CardsAdapter handAdapter;
         private final CardsAdapter tableAdapter;
         private final PlayersAdapter playersAdapter;
+        private int judgeIndex = 0;
 
         Data(GameInfoAndCards bundle) {
-            cards = bundle.cards;
+            GameCards cards = bundle.cards;
             info = bundle.info;
 
-            handAdapter = new CardsAdapter(context, true, PyxCardsGroupView.Action.TOGGLE_STAR, this);
-            tableAdapter = new CardsAdapter(context, true, PyxCardsGroupView.Action.TOGGLE_STAR, this);
             playersAdapter = new PlayersAdapter(context, info.players);
+            playersAdapter.setPlayers(info.players);
+            ui.playersList.setAdapter(playersAdapter);
+
+            handAdapter = new CardsAdapter(context, true, PyxCardsGroupView.Action.TOGGLE_STAR, this);
+            handAdapter.setCards(cards.hand);
+
+            tableAdapter = new CardsAdapter(context, true, PyxCardsGroupView.Action.TOGGLE_STAR, this);
+            tableAdapter.setCardGroups(cards.whiteCards);
+
+            ui.blackCard(cards.blackCard);
+        }
+
+        public void setup() { // Called ONLY from constructor
+            GameInfo.Player me = info.player(me());
+            if (me != null) {
+                switch (me.status) {
+                    case JUDGE:
+                    case JUDGING:
+                        ui.showTableCards();
+                        break;
+                    case PLAYING:
+                        ui.showHandCards();
+                    case IDLE:
+                        ui.showTableCards();
+                        break;
+                    case HOST:
+                    case WINNER:
+                    case SPECTATOR:
+                        break;
+                }
+            }
+
+            for (int i = 0; i < info.players.size(); i++) {
+                GameInfo.Player player = info.players.get(i);
+                switch (player.status) {
+                    case JUDGE:
+                    case JUDGING:
+                        judgeIndex = i;
+                        break;
+                    case HOST:
+                    case IDLE:
+                    case PLAYING:
+                    case WINNER:
+                    case SPECTATOR:
+                        break;
+                }
+            }
+        }
+
+        public void gameStateChanged(Game.Status status, JSONObject obj) throws JSONException {
+            info.game.status = status;
+
+            switch (status) {
+                case PLAYING:
+                    playingState(new Card(obj.getJSONObject("bc")));
+                    nextRound();
+                    break;
+                case JUDGING:
+                    judgingState(CardsGroup.list(obj.getJSONArray("wc")));
+                    break;
+                case LOBBY:
+                    break;
+                case DEALING:
+                case ROUND_OVER:
+                    break;
+            }
+        }
+
+        public void nextRound() {
+            judgeIndex++;
+            if (judgeIndex >= info.players.size()) judgeIndex = 0;
+
+            for (int i = 0; i < info.players.size(); i++) {
+                GameInfo.Player player = info.players.get(i);
+                if (i == judgeIndex) {
+                    player.status = GameInfo.PlayerStatus.JUDGE;
+                } else {
+                    player.status = GameInfo.PlayerStatus.PLAYING;
+                }
+
+                gamePlayerInfoChanged(player); // Allowed, not notified by server
+            }
+        }
+
+        public void handDeal(List<Card> cards) { // FIXME: Can be done more reliably (with game status?)
+            if (cards.size() == 10) handAdapter.setCards(cards);
+            else handAdapter.addCards(cards);
+        }
+
+        private void playingState(@NonNull Card blackCard) {
+            ui.blackCard(blackCard);
+        }
+
+        private void judgingState(List<CardsGroup> cards) {
+            tableAdapter.setCardGroups(cards);
+        }
+
+        public void gameRoundComplete(String roundWinner, int winningCard, int intermission) {
+            if (Objects.equals(roundWinner, me())) ui.event(UiEvent.YOU_ROUND_WINNER);
+            else ui.event(UiEvent.ROUND_WINNER, roundWinner);
+
+            tableAdapter.notifyWinningCard(winningCard);
+        }
+
+        public void gamePlayerInfoChanged(GameInfo.Player player) {
+            playersAdapter.playerChanged(player);
+
+            switch (player.status) {
+                case JUDGING:
+                    if (Objects.equals(player.name, me())) {
+                        ui.showTableCards();
+                    }
+                    break;
+                case JUDGE:
+                    if (Objects.equals(player.name, me())) {
+                        ui.showTableCards();
+                    }
+                    break;
+                case IDLE:
+                    if (Objects.equals(player.name, me())) {
+                        ui.showTableCards();
+                    }
+
+                    if (info.game.status == Game.Status.PLAYING)
+                        tableAdapter.addBlankCard();
+                    break;
+                case PLAYING:
+                    if (Objects.equals(player.name, me())) {
+                        ui.showHandCards();
+                    }
+                    break;
+                case HOST:
+                case WINNER:
+                case SPECTATOR:
+            }
         }
 
         @Nullable
@@ -166,8 +318,12 @@ public class BestGameManager implements Pyx.OnEventListener {
         }
 
         @Override
-        public void onCardAction(PyxCardsGroupView.Action action, CardsGroup<? extends BaseCard> group, BaseCard card) {
-            // Called by table and by hand
+        public void onCardAction(PyxCardsGroupView.Action action, CardsGroup group, BaseCard card) {
+            if (action == PyxCardsGroupView.Action.SELECT) {
+                // TODO
+            } else if (action == PyxCardsGroupView.Action.TOGGLE_STAR) {
+                // TODO
+            }
         }
     }
 
@@ -201,6 +357,16 @@ public class BestGameManager implements Pyx.OnEventListener {
         //****************//
         // Public methods //
         //****************//
+
+        public void showTableCards() {
+            if (whiteCardsList.getAdapter() != data.tableAdapter)
+                whiteCardsList.swapAdapter(data.tableAdapter, true);
+        }
+
+        public void showHandCards() {
+            if (whiteCardsList.getAdapter() != data.handAdapter)
+                whiteCardsList.swapAdapter(data.handAdapter, true);
+        }
 
         public void blackCard(@Nullable Card card) {
             blackCard.setCard(card);

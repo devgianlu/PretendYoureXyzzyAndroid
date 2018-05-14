@@ -1,5 +1,8 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 
 import org.json.JSONArray;
@@ -29,6 +32,7 @@ public class CardcastCard implements BaseCard {
             text.add(textArray.getString(i));
     }
 
+    @NonNull
     public static List<CardcastCard> toCardsList(String code, JSONArray array) throws JSONException, ParseException {
         List<CardcastCard> list = new ArrayList<>();
         for (int i = 0; i < array.length(); i++)
@@ -37,7 +41,8 @@ public class CardcastCard implements BaseCard {
     }
 
     @Override
-    public String getText() {
+    @NonNull
+    public String text() {
         StringBuilder builder = new StringBuilder();
 
         boolean first = true;
@@ -51,23 +56,24 @@ public class CardcastCard implements BaseCard {
     }
 
     @Override
-    public String getWatermark() {
+    @Nullable
+    public String watermark() {
         return deckCode;
     }
 
     @Override
-    public int getNumPick() {
+    public int numPick() {
         if (text.size() == 1) return -1;
         return text.size() - 1;
     }
 
     @Override
-    public int getNumDraw() {
+    public int numDraw() {
         return 0;
     }
 
     @Override
-    public int getId() {
+    public int id() {
         return id.hashCode();
     }
 
@@ -80,12 +86,18 @@ public class CardcastCard implements BaseCard {
     }
 
     @Override
-    public boolean isUnknown() {
+    public boolean unknown() {
         return false;
     }
 
     @Override
-    public boolean isBlack() {
+    public boolean black() {
         return text.size() > 1;
+    }
+
+    @Override
+    @Nullable
+    public JSONObject toJson() {
+        return null;
     }
 }

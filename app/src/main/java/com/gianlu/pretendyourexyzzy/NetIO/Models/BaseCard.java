@@ -1,19 +1,30 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public interface BaseCard {
-    String getText();
+    @NonNull
+    String text();
 
-    String getWatermark();
+    @Nullable
+    String watermark();
 
-    int getNumPick();
+    int numPick();
 
-    int getNumDraw();
+    int numDraw();
 
-    int getId();
+    int id();
 
     boolean equals(Object o);
 
-    boolean isUnknown();
+    boolean unknown();
 
-    boolean isBlack();
+    boolean black();
+
+    @Nullable
+    JSONObject toJson() throws JSONException;
 }

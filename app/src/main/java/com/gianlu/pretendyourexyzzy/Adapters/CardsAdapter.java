@@ -17,7 +17,7 @@ import java.util.List;
 
 public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> implements PyxCardsGroupView.CardListener {
     private final Context context;
-    private final List<CardsGroup<? extends BaseCard>> cards;
+    private final List<CardsGroup> cards;
     private final Listener listener;
     private final boolean manageMargins;
     private final PyxCardsGroupView.Action action;
@@ -33,6 +33,11 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public CardsAdapter(Context context, boolean manageMargins, List<? extends BaseCard> cards, PyxCardsGroupView.Action action, Listener listener) {
         this(context, manageMargins, action, listener);
         groupAndNotifyDataSetChanged(cards);
+    }
+
+    @NonNull
+    public List<CardsGroup> getCards() {
+        return cards;
     }
 
     @NonNull
@@ -55,9 +60,9 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         return cards.size();
     }
 
-    public void notifyDataSetChanged(List<CardsGroup<Card>> cards) {
+    public void setCards(List<Card> cards) {
         this.cards.clear();
-        this.cards.addAll(cards);
+        for (Card card : cards) this.cards.add(CardsGroup.singleton(card));
         notifyDataSetChanged();
     }
 
@@ -67,7 +72,13 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         notifyDataSetChanged();
     }
 
-    public void notifyItemInserted(List<CardsGroup<Card>> cards) {
+    public void notifyDataSetChanged(List<CardsGroup> cards) {
+        this.cards.clear();
+        this.cards.addAll(cards);
+        notifyDataSetChanged();
+    }
+
+    public void notifyItemInserted(List<CardsGroup> cards) {
         this.cards.addAll(cards);
         notifyItemRangeInserted(this.cards.size() - cards.size(), cards.size());
         notifyItemChanged(this.cards.size() - cards.size() - 1); // Needed to re-compute the margins
@@ -77,7 +88,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         for (int i = cards.size() - 1; i >= 0; i--) {
             List<? extends BaseCard> subCards = cards.get(i);
             for (BaseCard card : subCards) {
-                if (card.getId() == removeCard.getId()) {
+                if (card.id() == removeCard.id()) {
                     cards.remove(i);
                     notifyItemRemoved(i);
                     return;
@@ -88,7 +99,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
 
     public void notifyWinningCard(int winnerCardId) {
         for (int i = 0; i < cards.size(); i++) {
-            CardsGroup<? extends BaseCard> group = cards.get(i);
+            CardsGroup group = cards.get(i);
             if (group.hasCard(winnerCardId)) {
                 RecyclerView list = listener != null ? listener.getCardsRecyclerView() : null;
                 if (list != null && list.getLayoutManager() instanceof LinearLayoutManager) { // Scroll only if item is not visible
@@ -106,14 +117,14 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         }
     }
 
-    public void addBlankCard() {
+    public void addBlankCard() { // FIXME: What if black card has two pick?
         cards.add(CardsGroup.singleton(Card.newBlankCard()));
         notifyItemInserted(cards.size() - 1);
         notifyItemChanged(cards.size() - 2); // Needed to re-compute the margins
     }
 
     @Override
-    public void onCardAction(PyxCardsGroupView.Action action, CardsGroup<? extends BaseCard> group, BaseCard card) {
+    public void onCardAction(PyxCardsGroupView.Action action, CardsGroup group, BaseCard card) {
         switch (action) {
             case DELETE:
                 int pos = cards.indexOf(group);
@@ -127,11 +138,23 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         if (listener != null) listener.onCardAction(action, group, card);
     }
 
+    public void addCards(List<Card> cards) {
+        for (Card card : cards) this.cards.add(CardsGroup.singleton(card));
+        notifyItemRangeInserted(this.cards.size() - cards.size(), cards.size());
+        notifyItemChanged(this.cards.size() - cards.size() - 1); // Needed to re-compute the margins FIXME: Avoid possibly?
+    }
+
+    public void setCardGroups(List<CardsGroup> cards) {
+        this.cards.clear();
+        this.cards.addAll(cards);
+        notifyDataSetChanged();
+    }
+
     public interface Listener {
         @Nullable
         RecyclerView getCardsRecyclerView();
 
-        void onCardAction(PyxCardsGroupView.Action action, CardsGroup<? extends BaseCard> group, BaseCard card);
+        void onCardAction(PyxCardsGroupView.Action action, CardsGroup group, BaseCard card);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

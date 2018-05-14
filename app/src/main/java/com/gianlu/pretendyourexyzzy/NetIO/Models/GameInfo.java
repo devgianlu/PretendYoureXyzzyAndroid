@@ -1,6 +1,8 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 import android.support.annotation.Keep;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.gianlu.commonutils.CommonUtils;
 
@@ -22,6 +24,14 @@ public class GameInfo {
     public GameInfo(Game game, List<Player> players) {
         this.game = game;
         this.players = players;
+    }
+
+    @Nullable
+    public Player player(@NonNull String nick) {
+        for (Player player : players)
+            if (Objects.equals(player.name, nick)) return player;
+
+        return null;
     }
 
     public void notifyPlayerChanged(Player player) {
@@ -56,7 +66,7 @@ public class GameInfo {
     public static class Player {
         public final String name;
         public final int score;
-        public final PlayerStatus status;
+        public PlayerStatus status;
 
         @Keep
         public Player(JSONObject obj) throws JSONException {

@@ -84,7 +84,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
     }
 
     @Override
-    public void onCardAction(PyxCardsGroupView.Action action, CardsGroup<? extends BaseCard> group, BaseCard card) {
+    public void onCardAction(PyxCardsGroupView.Action action, CardsGroup group, BaseCard card) {
         if (card instanceof StarredCardsManager.StarredCard) {
             switch (action) {
                 case SELECT:

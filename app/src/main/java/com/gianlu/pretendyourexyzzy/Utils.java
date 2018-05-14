@@ -102,6 +102,13 @@ public class Utils {
         return TapTarget.forView(view, ctx.getString(title), ctx.getString(desc)).transparentTarget(view instanceof FloatingActionButton);
     }
 
+    public static int indexOf(List<GameInfo.Player> players, String nick) {
+        for (int i = 0; i < players.size(); i++)
+            if (Objects.equals(players.get(i).name, nick)) return i;
+
+        return -1;
+    }
+
     public static class Messages {
         public static final Toaster.Message FAILED_LOADING = new Toaster.Message(R.string.failedLoading, true);
         public static final Toaster.Message FAILED_SEND_MESSAGE = new Toaster.Message(R.string.failedSendMessage, true);

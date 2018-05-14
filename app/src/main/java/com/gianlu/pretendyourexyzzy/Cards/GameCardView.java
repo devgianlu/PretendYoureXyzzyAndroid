@@ -76,7 +76,7 @@ public class GameCardView extends CardView {
         LinearLayout content = findViewById(R.id.pyxCard_content);
         LinearLayout unknown = findViewById(R.id.pyxCard_unknown);
 
-        if (card.isUnknown()) {
+        if (card.unknown()) {
             unknown.setVisibility(VISIBLE);
             content.setVisibility(GONE);
         } else {
@@ -86,23 +86,23 @@ public class GameCardView extends CardView {
             if (card instanceof Card && ((Card) card).isWinner())
                 setCardBackgroundColor(colorAccent);
             else
-                setCardBackgroundColor(card.isBlack() ? Color.BLACK : Color.WHITE);
+                setCardBackgroundColor(card.black() ? Color.BLACK : Color.WHITE);
 
             SuperTextView text = content.findViewById(R.id.pyxCard_text);
-            text.setTextColor(card.isBlack() ? Color.WHITE : Color.BLACK);
+            text.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
             text.setTypeface(roboto);
             TextView watermark = content.findViewById(R.id.pyxCard_watermark);
-            watermark.setTextColor(card.isBlack() ? Color.WHITE : Color.BLACK);
+            watermark.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
             SuperTextView numPick = content.findViewById(R.id.pyxCard_numPick);
-            numPick.setTextColor(card.isBlack() ? Color.WHITE : Color.BLACK);
+            numPick.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
             SuperTextView numDraw = content.findViewById(R.id.pyxCard_numDraw);
-            numDraw.setTextColor(card.isBlack() ? Color.WHITE : Color.BLACK);
+            numDraw.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
 
-            text.setHtml(card.getText());
-            watermark.setText(card.getWatermark());
-            if (card.isBlack()) {
-                numPick.setHtml(R.string.numPick, card.getNumPick());
-                if (card.getNumDraw() > 0) numDraw.setHtml(R.string.numDraw, card.getNumDraw());
+            text.setHtml(card.text());
+            watermark.setText(card.watermark());
+            if (card.black()) {
+                numPick.setHtml(R.string.numPick, card.numPick());
+                if (card.numDraw() > 0) numDraw.setHtml(R.string.numDraw, card.numDraw());
                 else numDraw.setVisibility(GONE);
             } else {
                 numDraw.setVisibility(GONE);

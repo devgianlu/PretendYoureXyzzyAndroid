@@ -90,13 +90,13 @@ public class StarredCardsManager {
     }
 
     public static class StarredCard implements BaseCard {
-        private static final Random random = new Random();
+        private static final Random random = new Random(); // FIXME
         public final Card blackCard;
-        public final CardsGroup<Card> whiteCards;
+        public final CardsGroup whiteCards;
         public final int id;
         private String cachedSentence;
 
-        public StarredCard(Card blackCard, CardsGroup<Card> whiteCards) {
+        public StarredCard(Card blackCard, CardsGroup whiteCards) {
             this.blackCard = blackCard;
             this.whiteCards = whiteCards;
             this.id = random.nextInt();
@@ -106,21 +106,19 @@ public class StarredCardsManager {
             blackCard = new Card(obj.getJSONObject("bc"));
             id = obj.getInt("id");
 
-            whiteCards = new CardsGroup<>();
-            JSONArray whiteCardsArray = obj.getJSONArray("wc");
-            for (int i = 0; i < whiteCardsArray.length(); i++)
-                whiteCards.add(new Card(whiteCardsArray.getJSONObject(i)));
+            whiteCards = new CardsGroup(obj.getJSONArray("wc"));
         }
 
+        @NonNull
         private String createSentence() {
             if (cachedSentence == null) {
                 String blackText = blackCard.text;
                 if (!blackText.contains("____"))
-                    return blackText + "\n<u>" + whiteCards.get(0).getText() + "</u>";
+                    return blackText + "\n<u>" + whiteCards.get(0).text() + "</u>";
 
                 boolean firstCapital = blackText.startsWith("____");
                 for (BaseCard whiteCard : whiteCards) {
-                    String whiteText = whiteCard.getText();
+                    String whiteText = whiteCard.text();
                     if (whiteText.endsWith("."))
                         whiteText = whiteText.substring(0, whiteText.length() - 1);
 
@@ -142,34 +140,36 @@ public class StarredCardsManager {
             return cachedSentence;
         }
 
+        @NonNull
         @Override
-        public String getText() {
+        public String text() {
             return createSentence();
         }
 
         @Override
-        public String getWatermark() {
+        public String watermark() {
             return null;
         }
 
         @Override
-        public int getNumPick() {
+        public int numPick() {
             return -1;
         }
 
         @Override
-        public int getNumDraw() {
+        public int numDraw() {
             return -1;
         }
 
         @Override
-        public int getId() {
+        public int id() {
             return id;
         }
 
-        JSONObject toJson() throws JSONException {
+        @Override
+        public JSONObject toJson() throws JSONException {
             JSONArray whiteCardsArray = new JSONArray();
-            for (Card whiteCard : whiteCards) whiteCardsArray.put(whiteCard.toJson());
+            for (BaseCard whiteCard : whiteCards) whiteCardsArray.put(whiteCard.toJson());
             return new JSONObject().put("id", id)
                     .put("wc", whiteCardsArray)
                     .put("bc", blackCard.toJson());
@@ -184,12 +184,12 @@ public class StarredCardsManager {
         }
 
         @Override
-        public boolean isUnknown() {
+        public boolean unknown() {
             return false;
         }
 
         @Override
-        public boolean isBlack() {
+        public boolean black() {
             return false;
         }
     }

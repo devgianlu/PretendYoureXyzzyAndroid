@@ -22,7 +22,7 @@ public class PyxCardsGroupView extends LinearLayout {
     private final int mLineWidth;
     private final Paint mLinePaint;
     private final CardListener listener;
-    private CardsGroup<? extends BaseCard> cards;
+    private CardsGroup cards;
 
     public PyxCardsGroupView(Context context, CardListener listener) {
         super(context);
@@ -42,7 +42,7 @@ public class PyxCardsGroupView extends LinearLayout {
         mLinePaint.setPathEffect(new DashPathEffect(new float[]{20, 10}, 0));
     }
 
-    public PyxCardsGroupView(Context context, CardsGroup<? extends BaseCard> whiteCards, @Nullable Action action, CardListener listener) {
+    public PyxCardsGroupView(Context context, CardsGroup whiteCards, @Nullable Action action, CardListener listener) {
         this(context, listener);
         setCards(whiteCards, action);
     }
@@ -59,7 +59,7 @@ public class PyxCardsGroupView extends LinearLayout {
             ((LayoutParams) getChildAt(0).getLayoutParams()).rightMargin = lastOfParent ? mCardsMargin : mCardsMargin / 2;
     }
 
-    public void setCards(CardsGroup<? extends BaseCard> cards, @Nullable Action action) {
+    public void setCards(CardsGroup cards, @Nullable Action action) {
         this.cards = cards;
 
         removeAllViews();
@@ -113,6 +113,6 @@ public class PyxCardsGroupView extends LinearLayout {
     }
 
     public interface CardListener {
-        void onCardAction(Action action, CardsGroup<? extends BaseCard> group, BaseCard card);
+        void onCardAction(Action action, CardsGroup group, BaseCard card);
     }
 }

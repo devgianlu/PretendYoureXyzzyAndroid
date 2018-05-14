@@ -2,6 +2,8 @@ package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 
 import android.support.annotation.Keep;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,6 +52,7 @@ public class Card implements BaseCard {
         this.writeIn = writeIn;
     }
 
+    @NonNull
     public static Card newBlankCard() {
         return new Card(-1, "", "", -1, -1, false);
     }
@@ -63,12 +66,12 @@ public class Card implements BaseCard {
     }
 
     @Override
-    public boolean isUnknown() {
+    public boolean unknown() {
         return id == -1 && watermark.isEmpty() && originalText.isEmpty();
     }
 
     @Override
-    public boolean isBlack() {
+    public boolean black() {
         return numPick != -1;
     }
 
@@ -82,32 +85,34 @@ public class Card implements BaseCard {
                 .put("W", originalWatermark);
     }
 
+    @NonNull
     @Override
-    public String getText() {
+    public String text() {
         return text;
     }
 
     @Override
-    public String getWatermark() {
+    @Nullable
+    public String watermark() {
         return watermark;
     }
 
     @Override
-    public int getNumPick() {
+    public int numPick() {
         return numPick;
     }
 
     @Override
-    public int getNumDraw() {
+    public int numDraw() {
         return numDraw;
     }
 
-    public boolean isWriteIn() {
+    public boolean writeIn() {
         return writeIn;
     }
 
     @Override
-    public int getId() {
+    public int id() {
         return id;
     }
 

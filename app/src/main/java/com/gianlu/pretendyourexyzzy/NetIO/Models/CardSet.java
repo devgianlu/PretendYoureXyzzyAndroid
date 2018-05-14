@@ -16,8 +16,7 @@ public class CardSet implements Serializable {
     public final int blackCards;
     public final int whiteCards;
     public final boolean baseDeck;
-    @Nullable
-    public CardcastDeck cardcastDeck;
+    private CardcastDeck cardcastDeck;
 
     @Keep
     public CardSet(JSONObject obj) throws JSONException {
@@ -28,5 +27,14 @@ public class CardSet implements Serializable {
         blackCards = obj.getInt("bcid");
         baseDeck = obj.getBoolean("bd");
         whiteCards = obj.getInt("wcid");
+    }
+
+    @Nullable
+    public CardcastDeck cardcastDeck() {
+        return cardcastDeck;
+    }
+
+    public void cardcastDeck(CardcastDeck deck) {
+        cardcastDeck = deck;
     }
 }
