@@ -192,5 +192,10 @@ public class StarredCardsManager {
         public boolean black() {
             return false;
         }
+
+        @Override
+        public boolean writeIn() {
+            return false;
+        }
     }
 }

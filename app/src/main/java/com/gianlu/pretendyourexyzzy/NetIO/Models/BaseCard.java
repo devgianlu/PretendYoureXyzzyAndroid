@@ -25,6 +25,8 @@ public interface BaseCard {
 
     boolean black();
 
+    boolean writeIn();
+
     @Nullable
     JSONObject toJson() throws JSONException;
 }

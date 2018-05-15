@@ -84,19 +84,6 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         notifyItemChanged(this.cards.size() - cards.size() - 1); // Needed to re-compute the margins
     }
 
-    public void notifyItemRemoved(BaseCard removeCard) {
-        for (int i = cards.size() - 1; i >= 0; i--) {
-            List<? extends BaseCard> subCards = cards.get(i);
-            for (BaseCard card : subCards) {
-                if (card.id() == removeCard.id()) {
-                    cards.remove(i);
-                    notifyItemRemoved(i);
-                    return;
-                }
-            }
-        }
-    }
-
     public void notifyWinningCard(int winnerCardId) {
         for (int i = 0; i < cards.size(); i++) {
             CardsGroup group = cards.get(i);
@@ -153,6 +140,17 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public void clear() {
         this.cards.clear();
         notifyDataSetChanged();
+    }
+
+    public void removeCard(@NonNull BaseCard card) {
+        for (int i = cards.size() - 1; i >= 0; i--) {
+            CardsGroup group = cards.get(i);
+            if (group.contains(card)) {
+                cards.remove(i);
+                notifyItemRemoved(i);
+                break;
+            }
+        }
     }
 
     public interface Listener {

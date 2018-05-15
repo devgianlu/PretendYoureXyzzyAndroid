@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,6 +15,7 @@ import android.widget.Toast;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
@@ -28,6 +30,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
@@ -75,7 +78,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                 data.gamePlayerInfoChanged(new GameInfo.Player(msg.obj.getJSONObject("pi")));
                 break;
             case GAME_ROUND_COMPLETE:
-                data.gameRoundComplete(msg.obj.getString("rw"), msg.obj.getInt("WC"), msg.obj.getInt("i"));
+                data.gameRoundComplete(msg.obj.getString("rw"), msg.obj.getInt("WC"), msg.obj.getString("rP"), msg.obj.getInt("i"));
                 break;
             case GAME_OPTIONS_CHANGED:
                 data.gameOptionsChanged(new Game.Options(msg.obj.getJSONObject("go")));
@@ -95,13 +98,15 @@ public class BestGameManager implements Pyx.OnEventListener {
             case GAME_JUDGE_LEFT:
                 data.gameJudgeLeft();
                 break;
+            case GAME_JUDGE_SKIPPED:
+                data.gameJudgeSkipped();
+                break;
             case GAME_BLACK_RESHUFFLE:
             case GAME_SPECTATOR_JOIN:
             case CARDCAST_REMOVE_CARDSET:
             case CARDCAST_ADD_CARDSET:
             case GAME_WHITE_RESHUFFLE:
             case GAME_SPECTATOR_LEAVE:
-            case GAME_JUDGE_SKIPPED:
             case GAME_PLAYER_KICKED_IDLE:
             case KICKED_FROM_GAME_IDLE:
                 break;
@@ -122,7 +127,18 @@ public class BestGameManager implements Pyx.OnEventListener {
     }
 
     private void startGame() {
-        // TODO
+        pyx.request(PyxRequests.startGame(gid()), new Pyx.OnSuccess() {
+            @Override
+            public void onDone() {
+                Toaster.show(context, Utils.Messages.GAME_STARTED);
+            }
+
+            @Override
+            public void onException(@NonNull Exception ex) {
+                if (!(ex instanceof PyxException) || !ui.handleStartGameException((PyxException) ex))
+                    Toaster.show(context, Utils.Messages.FAILED_START_GAME, ex);
+            }
+        });
     }
 
     @NonNull
@@ -138,6 +154,11 @@ public class BestGameManager implements Pyx.OnEventListener {
     @NonNull
     public String me() {
         return pyx.user().nickname;
+    }
+
+    @NonNull
+    public String host() {
+        return gameInfo().game.host;
     }
 
     public int gid() {
@@ -189,6 +210,8 @@ public class BestGameManager implements Pyx.OnEventListener {
 
     public interface Listener {
         void shouldLeaveGame(); // TODO
+
+        void showDialog(AlertDialog.Builder dialog);
     }
 
     private class Data implements CardsAdapter.Listener {
@@ -250,11 +273,14 @@ public class BestGameManager implements Pyx.OnEventListener {
                         break;
                 }
             }
+
+            ui.setStartGameVisible(info.game.status == Game.Status.LOBBY && Objects.equals(host(), me()));
         }
 
-        public void gameStateChanged(Game.Status status, JSONObject obj) throws JSONException {
+        public void gameStateChanged(@NonNull Game.Status status, @NonNull JSONObject obj) throws JSONException {
             info.game.status = status;
 
+            ui.setStartGameVisible(status == Game.Status.LOBBY && Objects.equals(host(), me()));
             switch (status) {
                 case PLAYING:
                     playingState(new Card(obj.getJSONObject("bc")));
@@ -298,14 +324,14 @@ public class BestGameManager implements Pyx.OnEventListener {
             tableAdapter.setCardGroups(cards);
         }
 
-        public void gameRoundComplete(String roundWinner, int winningCard, int intermission) {
+        public void gameRoundComplete(String roundWinner, int winningCard, String roundPermalink, int intermission) {
             if (Objects.equals(roundWinner, me())) ui.event(UiEvent.YOU_ROUND_WINNER);
             else ui.event(UiEvent.ROUND_WINNER, roundWinner);
 
             tableAdapter.notifyWinningCard(winningCard);
         }
 
-        public void gamePlayerInfoChanged(GameInfo.Player player) {
+        public void gamePlayerInfoChanged(@NonNull GameInfo.Player player) {
             playersAdapter.playerChanged(player);
             info.playerChanged(player);
 
@@ -349,12 +375,12 @@ public class BestGameManager implements Pyx.OnEventListener {
             }
         }
 
-        public void gamePlayerJoin(GameInfo.Player player) {
+        public void gamePlayerJoin(@NonNull GameInfo.Player player) {
             info.newPlayer(player);
             playersAdapter.newPlayer(player);
         }
 
-        public void gamePlayerLeave(String nick) {
+        public void gamePlayerLeave(@NonNull String nick) {
             info.removePlayer(nick);
             playersAdapter.removePlayer(nick);
         }
@@ -389,10 +415,19 @@ public class BestGameManager implements Pyx.OnEventListener {
         public void gameJudgeLeft() {
             GameInfo.Player judge = info.players.get(judgeIndex);
             ui.event(UiEvent.JUDGE_LEFT, judge.name);
-            judgeIndex++; // Will be incremented by #nextRound()
+            judgeIndex--; // Will be incremented by #nextRound()
 
             tableAdapter.clear();
             ui.showTableCards();
+        }
+
+        public void gameJudgeSkipped() {
+            GameInfo.Player judge = info.players.get(judgeIndex);
+            ui.event(UiEvent.JUDGE_SKIPPED, judge.name);
+        }
+
+        public void removeFromHand(@NonNull BaseCard card) {
+            handAdapter.removeCard(card);
         }
     }
 
@@ -402,7 +437,6 @@ public class BestGameManager implements Pyx.OnEventListener {
         private final TextView instructions;
         private final RecyclerView whiteCardsList;
         private final RecyclerView playersList;
-
 
         Ui(ViewGroup layout) {
             blackCard = layout.findViewById(R.id.gameLayout_blackCard);
@@ -427,6 +461,26 @@ public class BestGameManager implements Pyx.OnEventListener {
         //****************//
         // Public methods //
         //****************//
+
+        /**
+         * @return Whether the exception has been handled
+         */
+        public boolean handleStartGameException(PyxException ex) {
+            if (Objects.equals(ex.errorCode, "nep")) {
+                Toaster.show(context, Utils.Messages.NOT_ENOUGH_PLAYERS);
+                return true;
+            } else if (Objects.equals(ex.errorCode, "nec")) {
+                try {
+                    listener.showDialog(Dialogs.notEnoughCards(context, ex));
+                    return true;
+                } catch (JSONException exx) {
+                    Logging.log(exx);
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
 
         public void showTableCards() {
             if (whiteCardsList.getAdapter() != data.tableAdapter)
@@ -457,8 +511,38 @@ public class BestGameManager implements Pyx.OnEventListener {
             }
         }
 
-        public void judgeSelectCard(@NonNull BaseCard card) {
-            // TODO: Confirmation dialog
+        public void judgeSelectCard(@NonNull final BaseCard card) {
+            listener.showDialog(Dialogs.confirmation(context, new Dialogs.OnConfirmed() {
+                @Override
+                public void onConfirmed() {
+                    judgeSelectCardInternal(card);
+                }
+            }));
+        }
+
+        public void playCard(@NonNull final BaseCard card) {
+            if (card.writeIn()) {
+                listener.showDialog(Dialogs.askText(context, new Dialogs.OnText() {
+                    @Override
+                    public void onText(@NonNull String text) {
+                        playCardInternal(card, text);
+                    }
+                }));
+            } else {
+                listener.showDialog(Dialogs.confirmation(context, new Dialogs.OnConfirmed() {
+                    @Override
+                    public void onConfirmed() {
+                        playCardInternal(card, null);
+                    }
+                }));
+            }
+        }
+
+        //*****************//
+        // Private methods //
+        //*****************//
+
+        private void judgeSelectCardInternal(@NonNull BaseCard card) {
             pyx.request(PyxRequests.judgeCard(gid(), card.id()), new Pyx.OnSuccess() {
                 @Override
                 public void onDone() {
@@ -472,12 +556,16 @@ public class BestGameManager implements Pyx.OnEventListener {
             });
         }
 
-        public void playCard(@NonNull BaseCard card) {
-            // TODO: Confirmation dialog
-            pyx.request(PyxRequests.playCard(gid(), card.id(), null /* TODO: FIXME */), new Pyx.OnSuccess() {
+        private void playCardInternal(@NonNull final BaseCard card, @Nullable final String customText) {
+            pyx.request(PyxRequests.playCard(gid(), card.id(), customText), new Pyx.OnSuccess() {
                 @Override
                 public void onDone() {
-                    AnalyticsApplication.sendAnalytics(context, Utils.ACTION_PLAY_CARD); // TODO: Card /w custom text
+                    data.removeFromHand(card);
+
+                    if (customText == null)
+                        AnalyticsApplication.sendAnalytics(context, Utils.ACTION_PLAY_CARD);
+                    else
+                        AnalyticsApplication.sendAnalytics(context, Utils.ACTION_PLAY_CUSTOM_CARD);
                 }
 
                 @Override
@@ -486,10 +574,6 @@ public class BestGameManager implements Pyx.OnEventListener {
                 }
             });
         }
-
-        //*****************//
-        // Private methods //
-        //*****************//
 
         private void uiToast(@NonNull String text, Object... args) {
             Toaster.show(context, String.format(Locale.getDefault(), text, args), Toast.LENGTH_SHORT, null, null, null);
@@ -502,6 +586,10 @@ public class BestGameManager implements Pyx.OnEventListener {
         @Nullable
         public BaseCard blackCard() {
             return blackCard.getCard();
+        }
+
+        public void setStartGameVisible(boolean set) {
+            startGame.setVisibility(set ? View.VISIBLE : View.GONE);
         }
     }
 }

@@ -96,6 +96,11 @@ public class CardcastCard implements BaseCard {
     }
 
     @Override
+    public boolean writeIn() {
+        return false;
+    }
+
+    @Override
     @Nullable
     public JSONObject toJson() {
         return null;
