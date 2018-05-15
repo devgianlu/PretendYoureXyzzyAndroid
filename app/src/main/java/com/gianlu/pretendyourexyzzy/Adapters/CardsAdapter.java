@@ -150,6 +150,11 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         notifyDataSetChanged();
     }
 
+    public void clear() {
+        this.cards.clear();
+        notifyDataSetChanged();
+    }
+
     public interface Listener {
         @Nullable
         RecyclerView getCardsRecyclerView();

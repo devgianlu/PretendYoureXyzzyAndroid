@@ -21,12 +21,12 @@ import java.util.Comparator;
 import java.util.Objects;
 
 public class Game implements Filterable<Game.Protection>, Serializable {
-    public final String host;
     public final int gid;
-    public final boolean hasPassword;
     public final ArrayList<String> players;
     public final ArrayList<String> spectators;
-    public final Options options;
+    public String host;
+    public boolean hasPassword; // TODO: Where is this updated?
+    public Options options;
     public Status status;
 
     public Game(JSONObject obj) throws JSONException {
@@ -126,7 +126,7 @@ public class Game implements Filterable<Game.Protection>, Serializable {
         public final ArrayList<Integer> cardSets;
         public final String password;
 
-        Options(JSONObject obj) throws JSONException {
+        public Options(JSONObject obj) throws JSONException {
             timerMultiplier = obj.getString("tm");
             spectatorsLimit = obj.getInt("vL");
             playersLimit = obj.getInt("pL");

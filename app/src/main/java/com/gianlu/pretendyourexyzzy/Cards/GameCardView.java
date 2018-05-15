@@ -147,6 +147,7 @@ public class GameCardView extends CardView {
         super.onMeasure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), heightMeasureSpec);
     }
 
+    @Nullable
     public BaseCard getCard() {
         return card;
     }

@@ -15,7 +15,6 @@ import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHolder> {
     private final List<GameInfo.Player> players;
@@ -72,29 +71,6 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         return players.size();
     }
 
-    public void notifyItemChanged(GameInfo.Player player) {
-        int pos = players.indexOf(player);
-        if (pos != -1) {
-            players.set(pos, player);
-            notifyItemChanged(pos);
-        }
-    }
-
-    public void notifyItemRemoved(String nickname) {
-        for (int i = 0; i < players.size(); i++) {
-            if (Objects.equals(players.get(i).name, nickname)) {
-                players.remove(i);
-                notifyItemRemoved(i);
-                break;
-            }
-        }
-    }
-
-    public void notifyItemInserted(GameInfo.Player player) {
-        this.players.add(player);
-        notifyItemInserted(players.size() - 1);
-    }
-
     public void playerChanged(@NonNull GameInfo.Player player) {
         int pos = Utils.indexOf(players, player.name);
         if (pos != -1) {
@@ -107,6 +83,19 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         this.players.clear();
         this.players.addAll(players);
         notifyDataSetChanged();
+    }
+
+    public void removePlayer(String nick) {
+        int pos = Utils.indexOf(players, nick);
+        if (pos != -1) {
+            players.remove(pos);
+            notifyItemRemoved(pos);
+        }
+    }
+
+    public void newPlayer(GameInfo.Player player) {
+        players.add(player);
+        notifyItemInserted(players.size() - 1);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
