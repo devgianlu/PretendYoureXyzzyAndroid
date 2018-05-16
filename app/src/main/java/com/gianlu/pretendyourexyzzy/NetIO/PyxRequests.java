@@ -16,6 +16,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.WhoisResult;
 import com.gianlu.pretendyourexyzzy.PKeys;
 
 import org.json.JSONArray;
@@ -226,5 +227,16 @@ public final class PyxRequests {
                 return games;
             }
         });
+    }
+
+    @NonNull
+    public static PyxRequestWithResult<WhoisResult> whois(String name) {
+        return new PyxRequestWithResult<>(Pyx.Op.WHOIS, new Pyx.Processor<WhoisResult>() {
+            @NonNull
+            @Override
+            public WhoisResult process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+                return new WhoisResult(obj);
+            }
+        }, new NameValuePair("n", name));
     }
 }

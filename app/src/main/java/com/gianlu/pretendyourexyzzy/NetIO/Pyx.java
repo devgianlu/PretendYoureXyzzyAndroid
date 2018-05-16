@@ -199,7 +199,8 @@ public class Pyx implements Closeable {
         CHANGE_GAME_OPTIONS("cgo"),
         LIST_CARDCAST_CARD_SETS("clc"),
         ADD_CARDCAST_CARD_SET("cac"),
-        REMOVE_CARDCAST_CARD_SET("crc");
+        REMOVE_CARDCAST_CARD_SET("crc"),
+        WHOIS("Wi");
 
         private final String val;
 

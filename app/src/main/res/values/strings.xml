@@ -185,8 +185,13 @@
     <string name="appIntro">App Intro</string>
     <string name="tapTargetView">TapTargetView</string>
     <string name="materialRatingBar">MaterialRatingBar</string>
-    <string name="idCode">Identification code</string>
+    <string name="idCodeLabel">Identification code</string>
+    <string name="idCode"><![CDATA[<b>ID code:</b>]]> %s</string>
     <string name="invalidIdCode">ID code must be between 8 and 100 characters long.</string>
+    <string name="generate">Generate</string>
+    <string name="sigil"><![CDATA[<b>Sigil:</b>]]> %s</string>
+    <string name="admin">Admin</string>
+    <string name="sigilNone"><![CDATA[<i>None</i>]]></string>
 
     <!-- Game messages -->
     <string name="game_spectator">You\'re a spectator. Just watch!</string>
@@ -212,5 +217,4 @@
     <string name="game_gameWinner_short">%s won the game!</string>
     <string name="game_youGameWinner_long">You won the game! Waiting for the host to start a new game…</string>
     <string name="game_youGameWinner_short">You won the game!</string>
-    <string name="generate">Generate</string>
 </resources>

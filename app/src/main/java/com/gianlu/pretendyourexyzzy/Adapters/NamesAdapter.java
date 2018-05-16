@@ -17,13 +17,15 @@ import java.util.List;
 
 public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> {
     private final LayoutInflater inflater;
-    private final List<String> players;
+    private final Listener listener;
+    private final List<String> names;
 
-    public NamesAdapter(Context context, List<String> players) {
-        this.players = players;
+    public NamesAdapter(Context context, List<String> names, Listener listener) {
+        this.names = names;
         this.inflater = LayoutInflater.from(context);
+        this.listener = listener;
 
-        Collections.sort(players, new Comparator<String>() {
+        Collections.sort(names, new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
                 return o1.compareToIgnoreCase(o2);
@@ -39,9 +41,15 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull NamesAdapter.ViewHolder holder, int position) {
-        String name = players.get(position);
+        final String name = names.get(position);
         holder.text.setText(name);
         holder.mobile.setVisibility(isMobile(name) ? View.VISIBLE : View.GONE);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onNameSelected(name);
+            }
+        });
     }
 
     private boolean isMobile(String name) {
@@ -50,7 +58,11 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
 
     @Override
     public int getItemCount() {
-        return players.size();
+        return names.size();
+    }
+
+    public interface Listener {
+        void onNameSelected(@NonNull String name);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
