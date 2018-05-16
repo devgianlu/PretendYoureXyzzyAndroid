@@ -29,6 +29,13 @@ public class CardsGroup extends ArrayList<BaseCard> {
     }
 
     @NonNull
+    public static CardsGroup unknown(int pick) {
+        CardsGroup group = new CardsGroup();
+        for (int i = 0; i < pick; i++) group.add(Card.newBlankCard());
+        return group;
+    }
+
+    @NonNull
     public static List<CardsGroup> list(@NonNull JSONArray array) throws JSONException {
         List<CardsGroup> list = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) list.add(new CardsGroup(array.getJSONArray(i)));

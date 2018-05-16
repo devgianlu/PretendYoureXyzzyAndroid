@@ -18,7 +18,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class StarredCardsManager {
     private static List<StarredCard> toStarredCardsList(JSONArray array) throws JSONException {
@@ -90,7 +90,6 @@ public class StarredCardsManager {
     }
 
     public static class StarredCard implements BaseCard {
-        private static final Random random = new Random(); // FIXME
         public final BaseCard blackCard;
         public final CardsGroup whiteCards;
         public final int id;
@@ -99,7 +98,7 @@ public class StarredCardsManager {
         public StarredCard(@NonNull BaseCard blackCard, @NonNull CardsGroup whiteCards) {
             this.blackCard = blackCard;
             this.whiteCards = whiteCards;
-            this.id = random.nextInt();
+            this.id = ThreadLocalRandom.current().nextInt();
         }
 
         StarredCard(JSONObject obj) throws JSONException {

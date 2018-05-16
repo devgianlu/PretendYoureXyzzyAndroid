@@ -279,7 +279,7 @@ public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, 
 
     @Override
     public void spectateGame(final Game game) {
-        if (game.hasPassword) {
+        if (game.hasPassword()) {
             askForPassword(new OnPassword() {
                 @Override
                 public void onPassword(@Nullable String password) {
@@ -293,7 +293,7 @@ public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, 
 
     @Override
     public void joinGame(final Game game) {
-        if (game.hasPassword) {
+        if (game.hasPassword()) {
             askForPassword(new OnPassword() {
                 @Override
                 public void onPassword(@Nullable String password) {

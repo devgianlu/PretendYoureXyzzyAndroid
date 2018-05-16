@@ -272,7 +272,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
 
         List<NameValuePair> params = new ArrayList<>();
         params.add(new NameValuePair("game", String.valueOf(gid)));
-        if (getGame().hasPassword)
+        if (getGame().hasPassword())
             params.add(new NameValuePair("password", getGame().options.password));
 
         builder.fragment(CommonUtils.formQuery(params));

@@ -134,7 +134,9 @@ public class BestGameManager implements Pyx.OnEventListener {
 
     @Override
     public void onStoppedPolling() {
-        // TODO
+        Toaster.show(context, Utils.Messages.FAILED_LOADING);
+        pyx.request(PyxRequests.leaveGame(gid()), null);
+        listener.shouldLeaveGame();
     }
 
     private void startGame() {
@@ -397,8 +399,10 @@ public class BestGameManager implements Pyx.OnEventListener {
                             ui.event(UiEvent.WAITING_FOR_OTHER_PLAYERS);
                     }
 
-                    if (info.game.status == Game.Status.PLAYING)
-                        tableAdapter.addBlankCard();
+                    if (info.game.status == Game.Status.PLAYING) {
+                        BaseCard bc = ui.blackCard();
+                        if (bc != null) tableAdapter.addBlankCards(bc);
+                    }
                     break;
                 case PLAYING:
                     if (Objects.equals(player.name, me())) {

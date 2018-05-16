@@ -15,7 +15,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> implements PyxCardsGroupView.CardListener {
+public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> implements PyxCardsGroupView.CardListener { // FIXME: Can we avoid the margins stuff?
     private final Context context;
     private final List<CardsGroup> cards;
     private final Listener listener;
@@ -40,6 +40,12 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         return cards;
     }
 
+    public void setCards(List<Card> cards) {
+        this.cards.clear();
+        for (Card card : cards) this.cards.add(CardsGroup.singleton(card));
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -60,28 +66,10 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         return cards.size();
     }
 
-    public void setCards(List<Card> cards) {
-        this.cards.clear();
-        for (Card card : cards) this.cards.add(CardsGroup.singleton(card));
-        notifyDataSetChanged();
-    }
-
-    public void groupAndNotifyDataSetChanged(List<? extends BaseCard> cards) {
+    private void groupAndNotifyDataSetChanged(List<? extends BaseCard> cards) {
         this.cards.clear();
         for (BaseCard card : cards) this.cards.add(CardsGroup.singleton(card));
         notifyDataSetChanged();
-    }
-
-    public void notifyDataSetChanged(List<CardsGroup> cards) {
-        this.cards.clear();
-        this.cards.addAll(cards);
-        notifyDataSetChanged();
-    }
-
-    public void notifyItemInserted(List<CardsGroup> cards) {
-        this.cards.addAll(cards);
-        notifyItemRangeInserted(this.cards.size() - cards.size(), cards.size());
-        notifyItemChanged(this.cards.size() - cards.size() - 1); // Needed to re-compute the margins
     }
 
     public void notifyWinningCard(int winnerCardId) {
@@ -104,8 +92,8 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         }
     }
 
-    public void addBlankCard() { // FIXME: What if black card has two pick?
-        cards.add(CardsGroup.singleton(Card.newBlankCard()));
+    public void addBlankCards(@NonNull BaseCard bc) {
+        cards.add(CardsGroup.unknown(bc.numPick()));
         notifyItemInserted(cards.size() - 1);
         notifyItemChanged(cards.size() - 2); // Needed to re-compute the margins
     }
@@ -128,7 +116,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public void addCards(List<Card> cards) {
         for (Card card : cards) this.cards.add(CardsGroup.singleton(card));
         notifyItemRangeInserted(this.cards.size() - cards.size(), cards.size());
-        notifyItemChanged(this.cards.size() - cards.size() - 1); // Needed to re-compute the margins FIXME: Avoid possibly?
+        notifyItemChanged(this.cards.size() - cards.size() - 1); // Needed to re-compute the margins
     }
 
     public void setCardGroups(List<CardsGroup> cards) {

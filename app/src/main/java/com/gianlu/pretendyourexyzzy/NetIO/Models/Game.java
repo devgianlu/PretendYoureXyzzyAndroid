@@ -25,7 +25,6 @@ public class Game implements Filterable<Game.Protection>, Serializable {
     public final ArrayList<String> players;
     public final ArrayList<String> spectators;
     public String host;
-    public boolean hasPassword; // TODO: Where is this updated?
     public Options options;
     public Status status;
 
@@ -33,7 +32,6 @@ public class Game implements Filterable<Game.Protection>, Serializable {
         host = obj.getString("H");
         gid = obj.getInt("gid");
         status = Status.parse(obj.getString("S"));
-        hasPassword = obj.getBoolean("hp");
         options = new Options(obj.getJSONObject("go"));
 
         JSONArray playersArray = obj.getJSONArray("P");
@@ -55,7 +53,11 @@ public class Game implements Filterable<Game.Protection>, Serializable {
 
     @Override
     public Protection getFilterable() {
-        return hasPassword ? Protection.LOCKED : Protection.OPEN;
+        return hasPassword() ? Protection.LOCKED : Protection.OPEN;
+    }
+
+    public boolean hasPassword() {
+        return options.password != null && !options.password.isEmpty();
     }
 
     public enum Protection {
