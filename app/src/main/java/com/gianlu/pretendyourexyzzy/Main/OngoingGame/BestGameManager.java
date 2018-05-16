@@ -174,8 +174,8 @@ public class BestGameManager implements Pyx.OnEventListener {
         YOU_JUDGE("You're the Card Czar! Waiting for other players...", Kind.TEXT),
         SELECT_WINNING_CARD("Select the winning card(s).", Kind.TEXT),
         YOU_ROUND_WINNER("You won this round! A new round will begin shortly...", "You won this round!"),
-        SPECTATOR("You're a spectator.", Kind.TEXT),
-        GAME_HOST("You're the game host! Start the game when you're ready.", Kind.TEXT),
+        SPECTATOR("You're a spectator. Just watch.", Kind.TEXT),
+        YOU_GAME_HOST("You're the game host! Start the game when you're ready.", Kind.TEXT),
         WAITING_FOR_ROUND_TO_END("Waiting for the current round to end...", Kind.TEXT),
         WAITING_FOR_START("Waiting for the game to start...", Kind.TEXT),
         JUDGE_LEFT("Judge %s left. A new round will begin shortly.", "Judge %s left."),
@@ -244,27 +244,6 @@ public class BestGameManager implements Pyx.OnEventListener {
         }
 
         public void setup() { // Called ONLY from constructor
-            GameInfo.Player me = info.player(me());
-            if (me != null) {
-                switch (me.status) {
-                    case JUDGE:
-                    case JUDGING:
-                        ui.showTableCards();
-                        break;
-                    case PLAYING:
-                        ui.showHandCards();
-                    case IDLE:
-                        ui.showTableCards();
-                        break;
-                    case HOST:
-                    case WINNER:
-                    case SPECTATOR:
-                        break;
-                }
-            }
-
-            // TODO: Set event text
-
             for (int i = 0; i < info.players.size(); i++) {
                 GameInfo.Player player = info.players.get(i);
                 switch (player.status) {
@@ -278,6 +257,49 @@ public class BestGameManager implements Pyx.OnEventListener {
                     case WINNER:
                     case SPECTATOR:
                         break;
+                }
+            }
+
+            if (info.game.spectators.contains(me())) {
+                ui.showTableCards();
+                ui.event(UiEvent.SPECTATOR);
+            } else {
+                GameInfo.Player me = info.player(me());
+                if (me != null) {
+                    switch (me.status) {
+                        case JUDGE:
+                            ui.event(UiEvent.YOU_JUDGE);
+                            ui.showTableCards();
+                            break;
+                        case JUDGING:
+                            ui.event(UiEvent.SELECT_WINNING_CARD);
+                            ui.showTableCards();
+                            break;
+                        case PLAYING:
+                            BaseCard bc = ui.blackCard();
+                            if (bc != null) ui.event(UiEvent.PICK_CARDS, bc.numPick());
+                            ui.showHandCards();
+                            break;
+                        case IDLE:
+                            ui.showTableCards();
+
+                            if (info.game.status == Game.Status.JUDGING) {
+                                GameInfo.Player judge = info.players.get(judgeIndex);
+                                ui.event(UiEvent.IS_JUDGING, judge.name);
+                            } else {
+                                ui.event(UiEvent.WAITING_FOR_ROUND_TO_END);
+                            }
+                            break;
+                        case WINNER:
+                            ui.event(UiEvent.YOU_GAME_WINNER);
+                            break;
+                        case HOST:
+                            ui.event(UiEvent.YOU_GAME_HOST);
+                            break;
+                        case SPECTATOR:
+                            ui.showTableCards();
+                            break;
+                    }
                 }
             }
 
@@ -378,9 +400,14 @@ public class BestGameManager implements Pyx.OnEventListener {
                         if (bc != null) ui.event(UiEvent.PICK_CARDS, bc.numPick());
                     }
                     break;
-                case HOST:
                 case WINNER:
+                    ui.event(UiEvent.YOU_GAME_WINNER);
+                    break;
+                case HOST:
+                    ui.event(UiEvent.YOU_GAME_HOST);
+                    break;
                 case SPECTATOR:
+                    ui.showTableCards();
                     break;
             }
         }
@@ -409,12 +436,17 @@ public class BestGameManager implements Pyx.OnEventListener {
             if (action == PyxCardsGroupView.Action.SELECT) {
                 GameInfo.Player me = info.player(me());
                 if (me != null) {
-                    if (me.status == GameInfo.PlayerStatus.PLAYING && info.game.status == Game.Status.PLAYING)
+                    if (me.status == GameInfo.PlayerStatus.PLAYING && info.game.status == Game.Status.PLAYING) {
                         ui.playCard(card);
-                    else if ((me.status == GameInfo.PlayerStatus.JUDGE || me.status == GameInfo.PlayerStatus.JUDGING) && info.game.status == Game.Status.JUDGING)
+                    } else if ((me.status == GameInfo.PlayerStatus.JUDGE || me.status == GameInfo.PlayerStatus.JUDGING) && info.game.status == Game.Status.JUDGING) {
                         ui.judgeSelectCard(card);
-                    else
-                        ui.event(UiEvent.NOT_YOUR_TURN);
+                    } else {
+                        if (info.game.spectators.contains(me())) {
+                            Toaster.show(context, Utils.Messages.SPECTATOR);
+                        } else {
+                            ui.event(UiEvent.NOT_YOUR_TURN);
+                        }
+                    }
                 }
             } else if (action == PyxCardsGroupView.Action.TOGGLE_STAR) {
                 BaseCard bc = ui.blackCard();

@@ -185,4 +185,5 @@
     <string name="appIntro">App Intro</string>
     <string name="tapTargetView">TapTargetView</string>
     <string name="materialRatingBar">MaterialRatingBar</string>
+    <string name="spectatorMessage">You\'re a spectator. Just watch!</string>
 </resources>

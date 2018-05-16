@@ -118,7 +118,6 @@ public class Utils {
         public static final Toaster.Message FAILED_SPECTATING = new Toaster.Message(R.string.failedSpectating, true);
         public static final Toaster.Message FAILED_LEAVING = new Toaster.Message(R.string.failedLeaving, true);
         public static final Toaster.Message NO_STARRED_CARDS = new Toaster.Message(R.string.noStarredCards, false);
-        public static final Toaster.Message HURRY_UP = new Toaster.Message(R.string.hurryUp, false);
         public static final Toaster.Message FAILED_CREATING_GAME = new Toaster.Message(R.string.failedCreatingGame, true);
         public static final Toaster.Message FAILED_START_GAME = new Toaster.Message(R.string.failedStartGame, true);
         public static final Toaster.Message GAME_STARTED = new Toaster.Message(R.string.gameStarted, false);
@@ -137,5 +136,6 @@ public class Utils {
         public static final Toaster.Message CARDSET_REMOVED = new Toaster.Message(R.string.cardcastDeckRemoved, false);
         public static final Toaster.Message FAILED_REMOVING_CARDSET = new Toaster.Message(R.string.failedRemovingCardcastDeck, true);
         public static final Toaster.Message FAILED_ADDING_SERVER = new Toaster.Message(R.string.failedAddingServer, true);
+        public static final Toaster.Message SPECTATOR = new Toaster.Message(R.string.spectatorMessage, false);
     }
 }
