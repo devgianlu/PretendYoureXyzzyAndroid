@@ -101,14 +101,17 @@ public class BestGameManager implements Pyx.OnEventListener {
             case GAME_JUDGE_SKIPPED:
                 data.gameJudgeSkipped();
                 break;
+            case GAME_PLAYER_KICKED_IDLE:
+                ui.event(UiEvent.PLAYER_KICKED, msg.obj.getString("n"));
+                break;
             case GAME_BLACK_RESHUFFLE:
+            case GAME_WHITE_RESHUFFLE:
+                break;
             case GAME_SPECTATOR_JOIN:
+            case GAME_SPECTATOR_LEAVE:
+                break;
             case CARDCAST_REMOVE_CARDSET:
             case CARDCAST_ADD_CARDSET:
-            case GAME_WHITE_RESHUFFLE:
-            case GAME_SPECTATOR_LEAVE:
-            case GAME_PLAYER_KICKED_IDLE:
-            case KICKED_FROM_GAME_IDLE:
                 break;
             case CHAT:
             case BANNED:
@@ -117,6 +120,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             case NEW_PLAYER:
             case NOOP:
             case PLAYER_LEAVE:
+            case KICKED_FROM_GAME_IDLE:
                 break;
         }
     }
@@ -183,7 +187,8 @@ public class BestGameManager implements Pyx.OnEventListener {
         GAME_WINNER("%s won the game! Waiting for the host to start a new game...", "%s won the game!"),
         YOU_GAME_WINNER("You won the game! Waiting for the host to start a new game...", "You won the game!"),
         NOT_YOUR_TURN("Not your turn!", Kind.TOAST),
-        HURRY_UP("Hurry up!", Kind.TOAST);
+        HURRY_UP("Hurry up!", Kind.TOAST),
+        PLAYER_KICKED("%s has been kicked for being idle.", Kind.TOAST);
 
         private final String toast;
         private final String text;
@@ -383,6 +388,9 @@ public class BestGameManager implements Pyx.OnEventListener {
         public void gamePlayerLeave(@NonNull String nick) {
             info.removePlayer(nick);
             playersAdapter.removePlayer(nick);
+
+            int pos = Utils.indexOf(info.players, nick);
+            if (pos < judgeIndex) judgeIndex--;
         }
 
         @Nullable
