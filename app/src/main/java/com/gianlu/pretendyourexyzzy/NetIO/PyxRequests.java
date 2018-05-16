@@ -55,7 +55,7 @@ public final class PyxRequests {
     }
 
     @NonNull
-    public static PyxRequestWithResult<User> register(@NonNull String nickname) {
+    public static PyxRequestWithResult<User> register(@NonNull String nickname, @Nullable String idCode) {
         return new PyxRequestWithResult<>(Pyx.Op.REGISTER, new Pyx.Processor<User>() {
             @NonNull
             @Override
@@ -70,7 +70,7 @@ public final class PyxRequests {
 
                 return new User(sessionId, obj);
             }
-        }, new NameValuePair("n", nickname));
+        }, new NameValuePair("n", nickname), new NameValuePair("idc", idCode));
     }
 
     @Nullable

@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -30,6 +31,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -46,6 +48,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private String launchGamePassword;
     private Button changeServer;
     private boolean launchGameShouldRequest;
+    private TextInputLayout registerIdCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,12 +85,21 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         register = findViewById(R.id.loading_register);
         registerNickname = findViewById(R.id.loading_registerNickname);
         registerSubmit = findViewById(R.id.loading_registerSubmit);
+        registerIdCode = findViewById(R.id.loading_registerIdCode);
 
         changeServer = findViewById(R.id.loading_changeServer);
         changeServer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 changeServerDialog(true);
+            }
+        });
+
+        Button generateIdCode = findViewById(R.id.loading_generateIdCode);
+        generateIdCode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CommonUtils.setText(registerIdCode, CommonUtils.randomString(100, new SecureRandom()));
             }
         });
 
@@ -168,18 +180,28 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         showDialog(builder);
     }
 
-    private void setServer(Pyx.Server server) {
+    private void setServer(@NonNull Pyx.Server server) {
         Pyx.invalidate();
         Prefs.putString(LoadingActivity.this, PKeys.LAST_SERVER, server.name);
+    }
+
+    @Nullable
+    private String getIdCode() {
+        String id = CommonUtils.getText(registerIdCode).trim();
+        return id.isEmpty() ? null : id;
     }
 
     private void showRegisterUI(final FirstLoadedPyx pyx) {
         loading.setVisibility(View.GONE);
         register.setVisibility(View.VISIBLE);
         registerNickname.setErrorEnabled(false);
+        registerIdCode.setErrorEnabled(false);
 
         String lastNickname = Prefs.getString(LoadingActivity.this, PKeys.LAST_NICKNAME, null);
         if (lastNickname != null) CommonUtils.setText(registerNickname, lastNickname);
+
+        String lastIdCode = Prefs.getString(LoadingActivity.this, PKeys.LAST_ID_CODE, null);
+        if (lastIdCode != null) CommonUtils.setText(registerIdCode, lastIdCode);
 
         registerSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -187,11 +209,13 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 loading.setVisibility(View.VISIBLE);
                 register.setVisibility(View.GONE);
 
+                final String idCode = getIdCode();
                 String nick = CommonUtils.getText(registerNickname);
-                pyx.register(nick, new Pyx.OnResult<RegisteredPyx>() {
+                pyx.register(nick, idCode, new Pyx.OnResult<RegisteredPyx>() {
                     @Override
                     public void onDone(@NonNull RegisteredPyx result) {
                         Prefs.putString(LoadingActivity.this, PKeys.LAST_NICKNAME, result.user().nickname);
+                        Prefs.putString(LoadingActivity.this, PKeys.LAST_ID_CODE, idCode);
                         goTo(MainActivity.class);
                     }
 
@@ -215,6 +239,9 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                                     return;
                                 case "tmu":
                                     registerNickname.setError(getString(R.string.tooManyUsers));
+                                    return;
+                                case "iid":
+                                    registerIdCode.setError(getString(R.string.invalidIdCode));
                                     return;
                             }
                         }

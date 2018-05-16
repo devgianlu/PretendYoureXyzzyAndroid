@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
@@ -22,11 +23,11 @@ public class FirstLoadedPyx extends Pyx {
         return firstLoad;
     }
 
-    public final void register(@NonNull String nickname, final OnResult<RegisteredPyx> listener) {
+    public final void register(@NonNull String nickname, @Nullable String idCode, final OnResult<RegisteredPyx> listener) {
         try {
             listener.onDone((RegisteredPyx) InstanceHolder.holder().get(InstanceHolder.Level.REGISTERED));
         } catch (LevelMismatchException exx) {
-            request(PyxRequests.register(nickname), new OnResult<User>() {
+            request(PyxRequests.register(nickname, idCode), new OnResult<User>() {
                 @Override
                 public void onDone(@NonNull User result) {
                     listener.onDone(upgrade(result));

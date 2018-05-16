@@ -185,6 +185,8 @@
     <string name="appIntro">App Intro</string>
     <string name="tapTargetView">TapTargetView</string>
     <string name="materialRatingBar">MaterialRatingBar</string>
+    <string name="idCode">Identification code</string>
+    <string name="invalidIdCode">ID code must be between 8 and 100 characters long.</string>
 
     <!-- Game messages -->
     <string name="game_spectator">You\'re a spectator. Just watch!</string>
@@ -210,4 +212,5 @@
     <string name="game_gameWinner_short">%s won the game!</string>
     <string name="game_youGameWinner_long">You won the game! Waiting for the host to start a new game…</string>
     <string name="game_youGameWinner_short">You won the game!</string>
+    <string name="generate">Generate</string>
 </resources>
