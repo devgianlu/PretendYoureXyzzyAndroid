@@ -185,5 +185,29 @@
     <string name="appIntro">App Intro</string>
     <string name="tapTargetView">TapTargetView</string>
     <string name="materialRatingBar">MaterialRatingBar</string>
-    <string name="spectatorMessage">You\'re a spectator. Just watch!</string>
+
+    <!-- Game messages -->
+    <string name="game_spectator">You\'re a spectator. Just watch!</string>
+    <string name="game_youJudge">You\'re the Card Czar! Waiting for other players…</string>
+    <string name="game_selectWinningCard">Select the winning card(s):</string>
+    <string name="game_youRoundWinner_long">You won this round! A new round will begin shortly…</string>
+    <string name="game_youRoundWinner_short">You won this round!</string>
+    <string name="game_youGameHost">You\'re the game host! Start the game when you\'re ready.</string>
+    <string name="game_waitingForRoundToEnd">Waiting for the current round to end…</string>
+    <string name="game_waitingForStart">Waiting for the game to start…</string>
+    <string name="game_isJudging">%s is judging…</string>
+    <string name="game_waitingForPlayers">Waiting for other players…</string>
+    <string name="game_playerSkipped">%s has been skipped.</string>
+    <string name="game_pickCards">Select %d card(s) to play. Your hand:</string>
+    <string name="game_judgeSkipped">Judge %s has been skipped.</string>
+    <string name="game_notYourTurn">Not your turn!</string>
+    <string name="game_playerKickedIdle">%s has been kicked for being idle.</string>
+    <string name="game_judgeLeft_long">Judge %s left. A new round will begin shortly.</string>
+    <string name="game_judgeLeft_short">Judge %s left.</string>
+    <string name="game_roundWinner_long">%s won this round! A new round will begin shortly…</string>
+    <string name="game_roundWinner_short">%s won this round!</string>
+    <string name="game_gameWinner_long">%s won the game! Waiting for the host to start a new game…</string>
+    <string name="game_gameWinner_short">%s won the game!</string>
+    <string name="game_youGameWinner_long">You won the game! Waiting for the host to start a new game…</string>
+    <string name="game_youGameWinner_short">You won the game!</string>
 </resources>

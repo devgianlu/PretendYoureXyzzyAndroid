@@ -37,6 +37,14 @@ public class GameInfo {
         game.players.add(player.name);
     }
 
+    public void newSpectator(@NonNull String nick) {
+        game.spectators.add(nick);
+    }
+
+    public void removeSpectator(@NonNull String nick) {
+        game.spectators.remove(nick);
+    }
+
     public enum PlayerStatus {
         HOST("sh" /* Wait for players then click Start Game. */),
         IDLE("si" /* Waiting for players..." */),

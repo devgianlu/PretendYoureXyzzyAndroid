@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
@@ -41,7 +42,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 public class BestGameManager implements Pyx.OnEventListener {
@@ -104,20 +104,26 @@ public class BestGameManager implements Pyx.OnEventListener {
                 break;
             case GAME_PLAYER_KICKED_IDLE:
                 ui.event(UiEvent.PLAYER_KICKED, msg.obj.getString("n"));
+                listener.shouldLeaveGame();
+                break;
+            case GAME_SPECTATOR_JOIN:
+                data.gameSpectatorJoin(msg.obj.getString("n"));
+                break;
+            case GAME_SPECTATOR_LEAVE:
+                data.gameSpectatorLeave(msg.obj.getString("n"));
+                break;
+            case KICKED:
+            case BANNED:
+                listener.shouldLeaveGame();
                 break;
             case GAME_BLACK_RESHUFFLE:
             case GAME_WHITE_RESHUFFLE:
-                break;
-            case GAME_SPECTATOR_JOIN:
-            case GAME_SPECTATOR_LEAVE:
                 break;
             case CARDCAST_REMOVE_CARDSET:
             case CARDCAST_ADD_CARDSET:
                 break;
             case CHAT:
-            case BANNED:
             case GAME_LIST_REFRESH:
-            case KICKED:
             case NEW_PLAYER:
             case NOOP:
             case PLAYER_LEAVE:
@@ -170,38 +176,39 @@ public class BestGameManager implements Pyx.OnEventListener {
         return gameInfo().game.gid;
     }
 
-    private enum UiEvent { // TODO: If we could use res this would be perfect
-        YOU_JUDGE("You're the Card Czar! Waiting for other players...", Kind.TEXT),
-        SELECT_WINNING_CARD("Select the winning card(s).", Kind.TEXT),
-        YOU_ROUND_WINNER("You won this round! A new round will begin shortly...", "You won this round!"),
-        SPECTATOR("You're a spectator. Just watch.", Kind.TEXT),
-        YOU_GAME_HOST("You're the game host! Start the game when you're ready.", Kind.TEXT),
-        WAITING_FOR_ROUND_TO_END("Waiting for the current round to end...", Kind.TEXT),
-        WAITING_FOR_START("Waiting for the game to start...", Kind.TEXT),
-        JUDGE_LEFT("Judge %s left. A new round will begin shortly.", "Judge %s left."),
-        IS_JUDGING("%s is judging...", Kind.TEXT),
-        ROUND_WINNER("%s won this round! A new round will begin shortly...", "%s won this round!"),
-        WAITING_FOR_OTHER_PLAYERS("Waiting for other players...", Kind.TEXT),
-        PLAYER_SKIPPED("%s has been skipped.", Kind.TOAST),
-        PICK_CARDS("Select %d card(s) to play. Your hand:", Kind.TEXT),
-        JUDGE_SKIPPED("Judge %s has been skipped.", Kind.TOAST),
-        GAME_WINNER("%s won the game! Waiting for the host to start a new game...", "%s won the game!"),
-        YOU_GAME_WINNER("You won the game! Waiting for the host to start a new game...", "You won the game!"),
-        NOT_YOUR_TURN("Not your turn!", Kind.TOAST),
-        HURRY_UP("Hurry up!", Kind.TOAST),
-        PLAYER_KICKED("%s has been kicked for being idle.", Kind.TOAST);
+    private enum UiEvent {
+        YOU_JUDGE(R.string.game_youJudge, Kind.TEXT),
+        SELECT_WINNING_CARD(R.string.game_selectWinningCard, Kind.TEXT),
+        YOU_ROUND_WINNER(R.string.game_youRoundWinner_long, R.string.game_youRoundWinner_short),
+        SPECTATOR_TEXT(R.string.game_spectator, Kind.TEXT),
+        YOU_GAME_HOST(R.string.game_youGameHost, Kind.TEXT),
+        WAITING_FOR_ROUND_TO_END(R.string.game_waitingForRoundToEnd, Kind.TEXT),
+        WAITING_FOR_START(R.string.game_waitingForStart, Kind.TEXT),
+        JUDGE_LEFT(R.string.game_judgeLeft_long, R.string.game_judgeLeft_short),
+        IS_JUDGING(R.string.game_isJudging, Kind.TEXT),
+        ROUND_WINNER(R.string.game_roundWinner_long, R.string.game_roundWinner_short),
+        WAITING_FOR_OTHER_PLAYERS(R.string.game_waitingForPlayers, Kind.TEXT),
+        PLAYER_SKIPPED(R.string.game_playerSkipped, Kind.TOAST),
+        PICK_CARDS(R.string.game_pickCards, Kind.TEXT),
+        JUDGE_SKIPPED(R.string.game_judgeSkipped, Kind.TOAST),
+        GAME_WINNER(R.string.game_gameWinner_long, R.string.game_gameWinner_short),
+        YOU_GAME_WINNER(R.string.game_youGameWinner_long, R.string.game_youGameWinner_short),
+        NOT_YOUR_TURN(R.string.game_notYourTurn, Kind.TOAST),
+        HURRY_UP(R.string.hurryUp, Kind.TOAST),
+        PLAYER_KICKED(R.string.game_playerKickedIdle, Kind.TOAST),
+        SPECTATOR_TOAST(R.string.game_spectator, Kind.TOAST);
 
-        private final String toast;
-        private final String text;
+        private final int toast;
+        private final int text;
         private final Kind kind;
 
-        UiEvent(String text, Kind kind) {
+        UiEvent(@StringRes int text, Kind kind) {
             this.text = text;
             this.kind = kind;
-            this.toast = null;
+            this.toast = 0;
         }
 
-        UiEvent(String text, String toast) {
+        UiEvent(@StringRes int text, @StringRes int toast) {
             this.toast = toast;
             this.text = text;
             this.kind = Kind.BOTH;
@@ -215,7 +222,7 @@ public class BestGameManager implements Pyx.OnEventListener {
     }
 
     public interface Listener {
-        void shouldLeaveGame(); // TODO
+        void shouldLeaveGame();
 
         void showDialog(AlertDialog.Builder dialog);
     }
@@ -262,7 +269,7 @@ public class BestGameManager implements Pyx.OnEventListener {
 
             if (info.game.spectators.contains(me())) {
                 ui.showTableCards();
-                ui.event(UiEvent.SPECTATOR);
+                ui.event(UiEvent.SPECTATOR_TEXT);
             } else {
                 GameInfo.Player me = info.player(me());
                 if (me != null) {
@@ -442,7 +449,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                         ui.judgeSelectCard(card);
                     } else {
                         if (info.game.spectators.contains(me())) {
-                            Toaster.show(context, Utils.Messages.SPECTATOR);
+                            ui.event(UiEvent.SPECTATOR_TOAST);
                         } else {
                             ui.event(UiEvent.NOT_YOUR_TURN);
                         }
@@ -475,6 +482,14 @@ public class BestGameManager implements Pyx.OnEventListener {
 
         public void removeFromHand(@NonNull BaseCard card) {
             handAdapter.removeCard(card);
+        }
+
+        public void gameSpectatorJoin(String nick) {
+            info.newSpectator(nick);
+        }
+
+        public void gameSpectatorLeave(String nick) {
+            info.removeSpectator(nick);
         }
     }
 
@@ -622,12 +637,12 @@ public class BestGameManager implements Pyx.OnEventListener {
             });
         }
 
-        private void uiToast(@NonNull String text, Object... args) {
-            Toaster.show(context, String.format(Locale.getDefault(), text, args), Toast.LENGTH_SHORT, null, null, null);
+        private void uiToast(int text, Object... args) {
+            Toaster.show(context, context.getString(text, args), Toast.LENGTH_SHORT, null, null, null);
         }
 
-        private void uiText(@NonNull String text, Object... args) {
-            instructions.setText(String.format(Locale.getDefault(), text, args));
+        private void uiText(int text, Object... args) {
+            instructions.setText(context.getString(text, args));
         }
 
         @Nullable

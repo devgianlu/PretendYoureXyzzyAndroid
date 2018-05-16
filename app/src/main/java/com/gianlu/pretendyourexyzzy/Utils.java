@@ -136,6 +136,5 @@ public class Utils {
         public static final Toaster.Message CARDSET_REMOVED = new Toaster.Message(R.string.cardcastDeckRemoved, false);
         public static final Toaster.Message FAILED_REMOVING_CARDSET = new Toaster.Message(R.string.failedRemovingCardcastDeck, true);
         public static final Toaster.Message FAILED_ADDING_SERVER = new Toaster.Message(R.string.failedAddingServer, true);
-        public static final Toaster.Message SPECTATOR = new Toaster.Message(R.string.spectatorMessage, false);
     }
 }
