@@ -227,6 +227,8 @@ public class BestGameManager implements Pyx.OnEventListener {
         void shouldLeaveGame();
 
         void showDialog(AlertDialog.Builder dialog);
+
+        void updateActivityTitle();
     }
 
     private class Data implements CardsAdapter.Listener {
@@ -434,6 +436,16 @@ public class BestGameManager implements Pyx.OnEventListener {
 
             int pos = Utils.indexOf(info.players, nick);
             if (pos < judgeIndex) judgeIndex--;
+
+            if (Objects.equals(host(), nick)) {
+                if (info.players.isEmpty()) {
+                    listener.shouldLeaveGame();
+                } else {
+                    GameInfo.Player newHost = info.players.get(0);
+                    info.game.host = newHost.name;
+                    listener.updateActivityTitle();
+                }
+            }
         }
 
         @Nullable
@@ -466,8 +478,10 @@ public class BestGameManager implements Pyx.OnEventListener {
             }
         }
 
-        public void gameOptionsChanged(@NonNull GameInfo info) { // TODO: May be useful
+        public void gameOptionsChanged(@NonNull GameInfo info) {
             this.info.game.options = info.game.options;
+            this.info.game.host = info.game.host;
+            listener.updateActivityTitle();
         }
 
         public void gameJudgeLeft() {

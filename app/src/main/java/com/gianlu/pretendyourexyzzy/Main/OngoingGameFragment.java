@@ -106,7 +106,8 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
         updateActivityTitle();
     }
 
-    private void updateActivityTitle() {
+    @Override
+    public void updateActivityTitle() {
         Activity activity = getActivity();
         if (manager != null && activity != null && isVisible())
             activity.setTitle(manager.gameInfo().game.host + " - " + getString(R.string.app_name));
