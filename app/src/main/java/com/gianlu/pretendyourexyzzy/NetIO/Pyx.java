@@ -55,7 +55,7 @@ public class Pyx implements Closeable {
         this.handler = new Handler(context.getMainLooper());
         this.server = Server.lastServer(context);
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        this.client = new OkHttpClient.Builder().build();
+        this.client = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
     }
 
     protected Pyx(Server server, Handler handler, OkHttpClient client, SharedPreferences preferences) {

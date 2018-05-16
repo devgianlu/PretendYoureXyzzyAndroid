@@ -57,7 +57,7 @@ public class Cardcast {
     private final SharedPreferences preferences;
 
     private Cardcast(Context context) {
-        this.client = new OkHttpClient();
+        this.client = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
         this.handler = new Handler(Looper.getMainLooper());
         this.executor = Executors.newSingleThreadExecutor();
         this.cachedDeckNames = new LruCache<>(100);

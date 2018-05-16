@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class ThisApplication extends AnalyticsApplication {
+    public static final String USER_AGENT = "PYX Android by devgianlu";
 
     @Override
     protected boolean isDebug() {
@@ -20,7 +21,7 @@ public class ThisApplication extends AnalyticsApplication {
     public void onCreate() {
         super.onCreate();
 
-        ConnectivityChecker.setUserAgent(getString(R.string.app_name));
+        ConnectivityChecker.setUserAgent(USER_AGENT);
         ConnectivityChecker.setProvider(new ConnectivityChecker.URLProvider() {
             @Override
             public URL getUrl(boolean useDotCom) throws MalformedURLException {
