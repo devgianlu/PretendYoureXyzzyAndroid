@@ -99,6 +99,6 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
     }
 
     @Override
-    public void onCardAction(PyxCardsGroupView.Action action, CardsGroup group, BaseCard card) {
+    public void onCardAction(@NonNull PyxCardsGroupView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
     }
 }

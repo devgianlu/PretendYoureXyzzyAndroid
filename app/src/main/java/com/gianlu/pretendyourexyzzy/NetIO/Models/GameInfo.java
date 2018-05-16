@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,11 +21,6 @@ public class GameInfo {
         players = CommonUtils.toTList(obj.getJSONArray("pi"), Player.class);
     }
 
-    public GameInfo(Game game, List<Player> players) {
-        this.game = game;
-        this.players = players;
-    }
-
     @Nullable
     public Player player(@NonNull String nick) {
         for (Player player : players)
@@ -36,19 +30,10 @@ public class GameInfo {
     }
 
     public void removePlayer(@NonNull String nick) {
-        int pos = Utils.indexOf(players, nick);
-        if (pos != -1) players.remove(pos);
-
         game.players.remove(nick);
     }
 
-    public void playerChanged(@NonNull Player player) {
-        int pos = players.indexOf(player);
-        if (pos != -1) players.set(pos, player);
-    }
-
     public void newPlayer(@NonNull Player player) {
-        players.add(player);
         game.players.add(player.name);
     }
 

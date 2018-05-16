@@ -22,6 +22,7 @@ import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
 import com.gianlu.pretendyourexyzzy.Cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCardsGroupView;
+import com.gianlu.pretendyourexyzzy.Cards.StarredCardsManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -81,7 +82,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                 data.gameRoundComplete(msg.obj.getString("rw"), msg.obj.getInt("WC"), msg.obj.getString("rP"), msg.obj.getInt("i"));
                 break;
             case GAME_OPTIONS_CHANGED:
-                data.gameOptionsChanged(new Game.Options(msg.obj.getJSONObject("go")));
+                data.gameOptionsChanged(new GameInfo(msg.obj.getJSONObject("gi")));
                 break;
             case HURRY_UP:
                 ui.event(UiEvent.HURRY_UP);
@@ -230,8 +231,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             GameCards cards = bundle.cards;
             info = bundle.info;
 
-            playersAdapter = new PlayersAdapter(context, info.players); // TODO: We could have one list instance
-            playersAdapter.setPlayers(info.players);
+            playersAdapter = new PlayersAdapter(context, info.players);
             ui.playersList.setAdapter(playersAdapter);
 
             handAdapter = new CardsAdapter(context, true, PyxCardsGroupView.Action.TOGGLE_STAR, this);
@@ -262,6 +262,8 @@ public class BestGameManager implements Pyx.OnEventListener {
                         break;
                 }
             }
+
+            // TODO: Set event text
 
             for (int i = 0; i < info.players.size(); i++) {
                 GameInfo.Player player = info.players.get(i);
@@ -338,7 +340,6 @@ public class BestGameManager implements Pyx.OnEventListener {
 
         public void gamePlayerInfoChanged(@NonNull GameInfo.Player player) {
             playersAdapter.playerChanged(player);
-            info.playerChanged(player);
 
             switch (player.status) {
                 case JUDGING:
@@ -352,7 +353,9 @@ public class BestGameManager implements Pyx.OnEventListener {
                 case JUDGE:
                     if (Objects.equals(player.name, me())) {
                         ui.showTableCards();
-                        ui.event(UiEvent.YOU_JUDGE);
+
+                        if (info.game.status != Game.Status.JUDGING) // Called after #gameRoundComplete()
+                            ui.event(UiEvent.YOU_JUDGE);
                     }
 
                     judgeIndex = Utils.indexOf(info.players, player.name); // Redundant, but for safety...
@@ -360,7 +363,9 @@ public class BestGameManager implements Pyx.OnEventListener {
                 case IDLE:
                     if (Objects.equals(player.name, me())) {
                         ui.showTableCards();
-                        ui.event(UiEvent.WAITING_FOR_OTHER_PLAYERS);
+
+                        if (info.game.status != Game.Status.JUDGING)
+                            ui.event(UiEvent.WAITING_FOR_OTHER_PLAYERS);
                     }
 
                     if (info.game.status == Game.Status.PLAYING)
@@ -400,24 +405,26 @@ public class BestGameManager implements Pyx.OnEventListener {
         }
 
         @Override
-        public void onCardAction(PyxCardsGroupView.Action action, CardsGroup group, BaseCard card) {
+        public void onCardAction(@NonNull PyxCardsGroupView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
             if (action == PyxCardsGroupView.Action.SELECT) {
                 GameInfo.Player me = info.player(me());
                 if (me != null) {
                     if (me.status == GameInfo.PlayerStatus.PLAYING && info.game.status == Game.Status.PLAYING)
                         ui.playCard(card);
-                    else if (me.status == GameInfo.PlayerStatus.JUDGING && info.game.status == Game.Status.JUDGING)
+                    else if ((me.status == GameInfo.PlayerStatus.JUDGE || me.status == GameInfo.PlayerStatus.JUDGING) && info.game.status == Game.Status.JUDGING)
                         ui.judgeSelectCard(card);
                     else
                         ui.event(UiEvent.NOT_YOUR_TURN);
                 }
             } else if (action == PyxCardsGroupView.Action.TOGGLE_STAR) {
-                // TODO
+                BaseCard bc = ui.blackCard();
+                if (bc != null && StarredCardsManager.addCard(context, new StarredCardsManager.StarredCard(bc, group)))
+                    Toaster.show(context, Utils.Messages.STARRED_CARD);
             }
         }
 
-        public void gameOptionsChanged(@NonNull Game.Options options) {
-            info.game.options = options;
+        public void gameOptionsChanged(@NonNull GameInfo info) { // TODO: May be useful
+            this.info.game.options = info.game.options;
         }
 
         public void gameJudgeLeft() {

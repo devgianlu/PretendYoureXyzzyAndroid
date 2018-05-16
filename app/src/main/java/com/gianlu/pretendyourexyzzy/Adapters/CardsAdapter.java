@@ -111,7 +111,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     @Override
-    public void onCardAction(PyxCardsGroupView.Action action, CardsGroup group, BaseCard card) {
+    public void onCardAction(@NonNull PyxCardsGroupView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
         switch (action) {
             case DELETE:
                 int pos = cards.indexOf(group);
@@ -157,7 +157,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         @Nullable
         RecyclerView getCardsRecyclerView();
 
-        void onCardAction(PyxCardsGroupView.Action action, CardsGroup group, BaseCard card);
+        void onCardAction(@NonNull PyxCardsGroupView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

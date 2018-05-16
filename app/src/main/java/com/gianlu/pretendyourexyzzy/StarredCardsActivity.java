@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
@@ -84,7 +85,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
     }
 
     @Override
-    public void onCardAction(PyxCardsGroupView.Action action, CardsGroup group, BaseCard card) {
+    public void onCardAction(@NonNull PyxCardsGroupView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
         if (card instanceof StarredCardsManager.StarredCard) {
             switch (action) {
                 case SELECT:

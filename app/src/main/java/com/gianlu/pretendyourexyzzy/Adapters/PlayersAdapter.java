@@ -79,12 +79,6 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         }
     }
 
-    public void setPlayers(List<GameInfo.Player> players) {
-        this.players.clear();
-        this.players.addAll(players);
-        notifyDataSetChanged();
-    }
-
     public void removePlayer(String nick) {
         int pos = Utils.indexOf(players, nick);
         if (pos != -1) {

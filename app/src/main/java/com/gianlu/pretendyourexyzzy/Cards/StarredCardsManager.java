@@ -91,12 +91,12 @@ public class StarredCardsManager {
 
     public static class StarredCard implements BaseCard {
         private static final Random random = new Random(); // FIXME
-        public final Card blackCard;
+        public final BaseCard blackCard;
         public final CardsGroup whiteCards;
         public final int id;
         private String cachedSentence;
 
-        public StarredCard(Card blackCard, CardsGroup whiteCards) {
+        public StarredCard(@NonNull BaseCard blackCard, @NonNull CardsGroup whiteCards) {
             this.blackCard = blackCard;
             this.whiteCards = whiteCards;
             this.id = random.nextInt();
@@ -112,7 +112,7 @@ public class StarredCardsManager {
         @NonNull
         private String createSentence() {
             if (cachedSentence == null) {
-                String blackText = blackCard.text;
+                String blackText = blackCard.text();
                 if (!blackText.contains("____"))
                     return blackText + "\n<u>" + whiteCards.get(0).text() + "</u>";
 
