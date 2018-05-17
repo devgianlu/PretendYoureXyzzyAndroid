@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="?attr/dialogPreferredPadding">
+    android:paddingBottom="8dp"
+    android:paddingEnd="?attr/dialogPreferredPadding"
+    android:paddingStart="?attr/dialogPreferredPadding"
+    android:paddingTop="?attr/dialogPreferredPadding">
 
     <com.gianlu.commonutils.SuperTextView
         android:id="@+id/userInfoDialog_sigil"
@@ -15,6 +18,37 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <!-- TODO: More data -->
+    <com.gianlu.commonutils.SuperTextView
+        android:id="@+id/userInfoDialog_connAt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <com.gianlu.commonutils.SuperTextView
+        android:id="@+id/userInfoDialog_idle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <com.gianlu.commonutils.SuperTextView
+        android:id="@+id/userInfoDialog_ipAddr"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <com.gianlu.commonutils.SuperTextView
+        android:id="@+id/userInfoDialog_client"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <com.gianlu.commonutils.SuperTextView
+        android:id="@+id/userInfoDialog_game"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/userInfoDialog_viewGame"
+        style="?attr/borderlessButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:text="@string/viewGame" />
 
 </LinearLayout>

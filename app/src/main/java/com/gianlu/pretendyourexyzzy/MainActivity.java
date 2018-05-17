@@ -28,7 +28,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 
 import java.util.Objects;
 
-public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, OngoingGameHelper.Listener {
+public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame {
     private final static String TAG_GAMES = "games";
     private final static String TAG_GAME_CHAT = "gameChat";
     private static final String TAG_PLAYERS = "players";
@@ -208,7 +208,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
-    private void switchTo(String tag) {
+    private void switchTo(@NonNull String tag) {
         FragmentManager manager = getSupportFragmentManager();
         Fragment fragment = manager.findFragmentByTag(tag);
         FragmentTransaction transaction = manager.beginTransaction()
@@ -283,5 +283,13 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         gameChatFragment = null;
 
         AnalyticsApplication.sendAnalytics(this, Utils.ACTION_LEFT_GAME);
+    }
+
+    @Override
+    public void viewGame(int gid, boolean locked) {
+        if (gamesFragment != null) {
+            navigation.setSelectedItemId(R.id.main_games);
+            gamesFragment.viewGame(gid, locked);
+        }
     }
 }

@@ -192,6 +192,12 @@
     <string name="sigil"><![CDATA[<b>Sigil:</b>]]> %s</string>
     <string name="admin">Admin</string>
     <string name="sigilNone"><![CDATA[<i>None</i>]]></string>
+    <string name="connectedAt"><![CDATA[<b>Connected at:</b>]]> %s</string>
+    <string name="idleFor"><![CDATA[<b>Idle for:</b>]]> %s</string>
+    <string name="ipAddress"><![CDATA[<b>IP address:</b>]]> %s</string>
+    <string name="clientName"><![CDATA[<b>Client name:</b>]]> %s</string>
+    <string name="gameHost"><![CDATA[<b>Game host:</b>]]> %s</string>
+    <string name="viewGame">View game</string>
 
     <!-- Game messages -->
     <string name="game_spectator">You\'re a spectator. Just watch!</string>

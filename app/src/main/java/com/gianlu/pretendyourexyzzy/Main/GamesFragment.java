@@ -430,6 +430,20 @@ public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, 
         }
     }
 
+    public void viewGame(int gid, boolean locked) {
+        if (locked && adapter.doesFilterOutLockedLobbies())
+            adapter.setFilterOutLockedLobbies(false);
+
+        int pos = Utils.indexOf(adapter.getVisibleGames(), gid);
+        if (pos != -1) {
+            RecyclerView list = recyclerViewLayout.getList();
+            list.scrollToPosition(pos);
+            RecyclerView.ViewHolder holder = list.findViewHolderForAdapterPosition(pos);
+            if (holder instanceof GamesAdapter.ViewHolder)
+                ((GamesAdapter.ViewHolder) holder).expand.performClick();
+        }
+    }
+
     public interface OnParticipateGame {
         void onParticipatingGame(@NonNull Integer gid);
     }

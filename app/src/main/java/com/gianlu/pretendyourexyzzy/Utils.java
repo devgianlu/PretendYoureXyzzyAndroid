@@ -109,6 +109,13 @@ public class Utils {
         return -1;
     }
 
+    public static int indexOf(List<Game> games, int gid) {
+        for (int i = 0; i < games.size(); i++)
+            if (games.get(i).gid == gid) return i;
+
+        return -1;
+    }
+
     public static class Messages {
         public static final Toaster.Message FAILED_LOADING = new Toaster.Message(R.string.failedLoading, true);
         public static final Toaster.Message FAILED_SEND_MESSAGE = new Toaster.Message(R.string.failedSendMessage, true);

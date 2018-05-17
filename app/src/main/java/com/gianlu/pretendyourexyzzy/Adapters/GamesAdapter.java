@@ -44,6 +44,10 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         else setFilters();
     }
 
+    public boolean doesFilterOutLockedLobbies() {
+        return filters.contains(Game.Protection.LOCKED);
+    }
+
     @Override
     public long getItemId(int position) {
         return objs.get(position).gid;
@@ -130,6 +134,11 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         return originalObjs;
     }
 
+    @NonNull
+    public List<Game> getVisibleGames() {
+        return objs;
+    }
+
     public enum SortBy {
         NAME,
         NUM_PLAYERS,
@@ -150,7 +159,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         public final ImageView status;
         public final Button spectate;
         public final Button join;
-        final ImageButton expand;
+        public final ImageButton expand;
         final TextView name;
         final SuperTextView players;
         final SuperTextView spectators;
