@@ -292,4 +292,9 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             gamesFragment.viewGame(gid, locked);
         }
     }
+
+    @Override
+    public boolean canViewGame() {
+        return ongoingGameFragment == null && gamesFragment != null && gamesFragment.isAdded();
+    }
 }

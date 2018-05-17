@@ -3,7 +3,7 @@ package com.gianlu.pretendyourexyzzy.Main;
 
 import android.support.annotation.Nullable;
 
-public class OngoingGameHelper {
+public final class OngoingGameHelper {
     private static Listener listener;
 
     public static void setup(Listener listener) {

@@ -1,6 +1,5 @@
 package com.gianlu.pretendyourexyzzy;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -21,6 +20,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.WhoisResult;
 import java.util.Date;
 
 public class UserInfoDialog extends DialogFragment {
+
+    private OnViewGame listener;
 
     @NonNull
     public static UserInfoDialog get(@NonNull WhoisResult user) {
@@ -52,6 +53,9 @@ public class UserInfoDialog extends DialogFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
+        if (context instanceof OnViewGame)
+            listener = (OnViewGame) context;
     }
 
     @Nullable
@@ -105,17 +109,20 @@ public class UserInfoDialog extends DialogFragment {
             game.setVisibility(View.VISIBLE);
             game.setHtml(R.string.gameHost, gameInfo.host);
 
-            viewGame.setVisibility(View.VISIBLE);
-            viewGame.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Activity activity = getActivity();
-                    if (activity instanceof OnViewGame) {
-                        ((OnViewGame) activity).viewGame(gameInfo.gid, gameInfo.hasPassword());
-                        dismiss();
+            if (listener != null && listener.canViewGame()) {
+                viewGame.setVisibility(View.VISIBLE);
+                viewGame.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (listener != null) {
+                            listener.viewGame(gameInfo.gid, gameInfo.hasPassword());
+                            dismiss();
+                        }
                     }
-                }
-            });
+                });
+            } else {
+                viewGame.setVisibility(View.GONE);
+            }
         }
 
         return layout;
@@ -123,5 +130,7 @@ public class UserInfoDialog extends DialogFragment {
 
     public interface OnViewGame {
         void viewGame(int gid, boolean locked);
+
+        boolean canViewGame();
     }
 }
