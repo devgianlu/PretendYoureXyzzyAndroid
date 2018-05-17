@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
@@ -215,20 +216,26 @@ public class Pyx implements Closeable {
     }
 
     public interface OnSuccess {
+        @UiThread
         void onDone();
 
+        @UiThread
         void onException(@NonNull Exception ex);
     }
 
     public interface OnResult<E> {
+        @UiThread
         void onDone(@NonNull E result);
 
+        @UiThread
         void onException(@NonNull Exception ex);
     }
 
     public interface OnEventListener {
+        @UiThread
         void onPollMessage(PollMessage message) throws JSONException;
 
+        @UiThread
         void onStoppedPolling();
     }
 
