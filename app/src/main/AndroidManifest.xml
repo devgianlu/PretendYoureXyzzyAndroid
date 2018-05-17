@@ -46,7 +46,7 @@
 
         <!-- Tutorial activity -->
         <activity
-            android:name=".TutorialActivity"
+            android:name=".SpareActivities.TutorialActivity"
             android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme" />
 
@@ -58,26 +58,26 @@
 
         <!-- Manager servers activity -->
         <activity
-            android:name=".ManageServersActivity"
+            android:name=".SpareActivities.ManageServersActivity"
             android:parentActivityName=".LoadingActivity"
             android:screenOrientation="portrait" />
 
         <!-- Starred cards activity -->
         <activity
-            android:name=".StarredCardsActivity"
+            android:name=".SpareActivities.StarredCardsActivity"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- Starred decks activity -->
         <activity
-            android:name=".StarredDecksActivity"
+            android:name=".SpareActivities.StarredDecksActivity"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" />
 
         <!-- Cardcast deck activity -->
         <activity
-            android:name=".CardcastDeckActivity"
+            android:name=".SpareActivities.CardcastDeckActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 

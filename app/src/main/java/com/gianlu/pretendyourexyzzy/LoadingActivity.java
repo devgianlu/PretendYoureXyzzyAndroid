@@ -30,6 +30,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
+import com.gianlu.pretendyourexyzzy.SpareActivities.ManageServersActivity;
+import com.gianlu.pretendyourexyzzy.SpareActivities.TutorialActivity;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;

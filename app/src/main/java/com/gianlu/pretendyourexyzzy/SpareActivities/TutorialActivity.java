@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy;
+package com.gianlu.pretendyourexyzzy.SpareActivities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,6 +13,10 @@ import android.view.ViewGroup;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.Preferences.Prefs;
+import com.gianlu.pretendyourexyzzy.LoadingActivity;
+import com.gianlu.pretendyourexyzzy.PKeys;
+import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.github.paolorotolo.appintro.AppIntro;
 import com.github.paolorotolo.appintro.AppIntroBaseFragment;
 import com.github.paolorotolo.appintro.AppIntroFragment;

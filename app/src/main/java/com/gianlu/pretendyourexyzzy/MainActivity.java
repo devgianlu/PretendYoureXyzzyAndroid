@@ -25,6 +25,8 @@ import com.gianlu.pretendyourexyzzy.Main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
+import com.gianlu.pretendyourexyzzy.SpareActivities.StarredCardsActivity;
+import com.gianlu.pretendyourexyzzy.SpareActivities.StarredDecksActivity;
 
 import java.util.Objects;
 

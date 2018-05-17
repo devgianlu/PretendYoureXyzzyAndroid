@@ -50,6 +50,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
@@ -66,7 +67,7 @@ import java.util.Objects;
 
 import okhttp3.HttpUrl;
 
-public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameInfoAndCards>, BestGameManager.Listener, OngoingGameHelper.Listener, CardcastBottomSheet.DialogsHelper {
+public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameInfoAndCards>, BestGameManager.Listener, OngoingGameHelper.Listener, CardcastBottomSheet.DialogsHelper, PlayersAdapter.Listener {
     private OnLeftGame onLeftGame;
     private CoordinatorLayout layout;
     private ProgressBar loading;
@@ -256,7 +257,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
         RecyclerView recyclerView = new RecyclerView(getContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
-        recyclerView.setAdapter(new PlayersAdapter(getContext(), manager.gameInfo().players));
+        recyclerView.setAdapter(new PlayersAdapter(getContext(), manager.gameInfo().players, this));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.playersLabel)
@@ -527,5 +528,10 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
                 Toaster.show(getActivity(), Utils.Messages.FAILED_ADDING_CARDCAST, ex);
             }
         });
+    }
+
+    @Override
+    public void onPlayerSelected(@NonNull GameInfo.Player player) {
+        // TODO: UserInfoDialog.get()
     }
 }

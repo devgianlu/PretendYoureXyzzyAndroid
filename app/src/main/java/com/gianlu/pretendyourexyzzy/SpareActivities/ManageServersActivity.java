@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy;
+package com.gianlu.pretendyourexyzzy.SpareActivities;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -22,6 +22,8 @@ import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.ServersAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONException;
 

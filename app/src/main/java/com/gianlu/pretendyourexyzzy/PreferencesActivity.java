@@ -12,6 +12,7 @@ import com.gianlu.commonutils.Preferences.AppCompatPreferenceActivity;
 import com.gianlu.commonutils.Preferences.AppCompatPreferenceFragment;
 import com.gianlu.commonutils.Preferences.BaseAboutFragment;
 import com.gianlu.commonutils.Preferences.BaseThirdPartProjectsFragment;
+import com.gianlu.pretendyourexyzzy.SpareActivities.TutorialActivity;
 
 import java.util.List;
 

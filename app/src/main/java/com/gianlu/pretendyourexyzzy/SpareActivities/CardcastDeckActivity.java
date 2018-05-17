@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy;
+package com.gianlu.pretendyourexyzzy.SpareActivities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +19,8 @@ import com.gianlu.pretendyourexyzzy.CardcastDeck.InfoFragment;
 import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
+import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 public class CardcastDeckActivity extends ActivityWithDialog {
     private String code;

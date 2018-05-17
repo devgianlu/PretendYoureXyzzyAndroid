@@ -25,11 +25,11 @@ import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.CardcastDecksAdapter;
-import com.gianlu.pretendyourexyzzy.CardcastDeckActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDecks;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeckActivity;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.ArrayList;

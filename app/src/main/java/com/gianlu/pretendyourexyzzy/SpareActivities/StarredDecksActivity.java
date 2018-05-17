@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy;
+package com.gianlu.pretendyourexyzzy.SpareActivities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +15,8 @@ import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.StarredDecksAdapter;
 import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
+import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 public class StarredDecksActivity extends ActivityWithDialog implements StarredDecksAdapter.Listener {
     private RecyclerViewLayout layout;

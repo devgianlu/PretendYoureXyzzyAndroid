@@ -15,7 +15,6 @@ import android.widget.TextView;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
-import com.gianlu.pretendyourexyzzy.CardcastDeckActivity;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
@@ -23,6 +22,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeckActivity;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.List;
