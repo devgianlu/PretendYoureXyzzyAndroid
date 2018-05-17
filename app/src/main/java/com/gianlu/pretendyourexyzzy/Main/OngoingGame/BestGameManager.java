@@ -579,8 +579,9 @@ public class BestGameManager implements Pyx.OnEventListener {
         public void event(@NonNull UiEvent ev, Object... args) {
             switch (ev.kind) {
                 case BOTH:
-                    uiText(ev.text, args);
                     uiToast(ev.toast, args);
+                    if (ev == UiEvent.SPECTATOR_TEXT || !gameInfo().game.spectators.contains(me()))
+                        uiText(ev.text, args);
                     break;
                 case TOAST:
                     uiToast(ev.text, args);
