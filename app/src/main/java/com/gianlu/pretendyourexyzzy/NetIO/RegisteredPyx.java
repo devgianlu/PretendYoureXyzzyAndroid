@@ -23,9 +23,10 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -219,7 +220,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
     }
 
     public class PollingThread extends Thread {
-        private final WeakHashMap<String, OnEventListener> listeners = new WeakHashMap<>();
+        private final Map<String, OnEventListener> listeners = new HashMap<>();
         private final AtomicInteger exCount = new AtomicInteger(0);
         private volatile boolean shouldStop = false;
 
@@ -263,7 +264,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
             handler.post(new NotifyMessage(messages));
         }
 
-        private void dispatchEx(final Exception ex) {
+        private void dispatchEx(Exception ex) {
             exCount.getAndIncrement();
             if (exCount.get() > 5) {
                 safeStop();
@@ -279,6 +280,10 @@ public class RegisteredPyx extends FirstLoadedPyx {
 
         void safeStop() {
             shouldStop = true;
+        }
+
+        public void removeListener(String tag) {
+            this.listeners.remove(tag);
         }
 
         private class NotifyException implements Runnable {

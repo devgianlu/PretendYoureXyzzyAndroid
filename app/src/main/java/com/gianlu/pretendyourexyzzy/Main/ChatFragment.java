@@ -95,22 +95,23 @@ public class ChatFragment extends Fragment implements ChatAdapter.Listener, Pyx.
 
                     @Override
                     public void onException(@NonNull Exception ex) {
-                        Toaster.show(getActivity(), Utils.Messages.FAILED_SEND_MESSAGE, ex, new Runnable() {
-                            @Override
-                            public void run() {
-                                message.setEnabled(true);
-                                send.setEnabled(true);
-                            }
-                        });
+                        Toaster.show(getActivity(), Utils.Messages.FAILED_SEND_MESSAGE, ex);
+                        message.setEnabled(true);
+                        send.setEnabled(true);
                     }
                 });
-
             }
         });
 
         pyx.polling().addListener(ChatFragment.class.getName() + gid, this);
 
         return layout;
+    }
+
+    @Override
+    public void onDestroy() {
+        pyx.polling().removeListener(ChatFragment.class.getName() + gid);
+        super.onDestroy();
     }
 
     private void send(String msg, Pyx.OnSuccess listener) {

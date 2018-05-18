@@ -48,8 +48,8 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.TutorialManager;
 import com.gianlu.pretendyourexyzzy.Utils;
 
-public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, GamesAdapter.Listener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
-    private static final String POLL_TAG = "games";
+public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, GamesAdapter.Listener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, Pyx.OnEventListener {
+    private static final String POLLING = GamesFragment.class.getName();
     private GamesList lastResult;
     private RecyclerViewLayout recyclerViewLayout;
     private OnParticipateGame handler;
@@ -173,19 +173,7 @@ public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, 
 
         pyx.request(PyxRequests.getGamesList(), this);
 
-        pyx.polling().addListener(POLL_TAG, new Pyx.OnEventListener() {
-            @Override
-            public void onPollMessage(PollMessage message) {
-                if (message.event == PollMessage.Event.GAME_LIST_REFRESH) {
-                    recyclerViewSavedInstance = recyclerViewLayout.getList().getLayoutManager().onSaveInstanceState();
-                    pyx.request(PyxRequests.getGamesList(), GamesFragment.this);
-                }
-            }
-
-            @Override
-            public void onStoppedPolling() {
-            }
-        });
+        pyx.polling().addListener(POLLING, this);
 
         return layout;
     }
@@ -443,6 +431,18 @@ public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, 
             if (holder instanceof GamesAdapter.ViewHolder)
                 ((GamesAdapter.ViewHolder) holder).expand.performClick();
         }
+    }
+
+    @Override
+    public void onPollMessage(PollMessage message) {
+        if (message.event == PollMessage.Event.GAME_LIST_REFRESH) {
+            recyclerViewSavedInstance = recyclerViewLayout.getList().getLayoutManager().onSaveInstanceState();
+            pyx.request(PyxRequests.getGamesList(), GamesFragment.this);
+        }
+    }
+
+    @Override
+    public void onStoppedPolling() {
     }
 
     public interface OnParticipateGame {

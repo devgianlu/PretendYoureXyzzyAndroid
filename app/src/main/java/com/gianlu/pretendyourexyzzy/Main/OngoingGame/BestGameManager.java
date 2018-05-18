@@ -63,6 +63,10 @@ public class BestGameManager implements Pyx.OnEventListener {
         this.data.setup();
     }
 
+    public void onDestroy() {
+        this.pyx.polling().removeListener(POLLING);
+    }
+
     @Override
     public void onPollMessage(PollMessage msg) throws JSONException {
         if (msg.event != PollMessage.Event.CHAT)

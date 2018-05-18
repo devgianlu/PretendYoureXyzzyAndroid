@@ -172,6 +172,12 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
     }
 
     @Override
+    public void onDestroy() {
+        if (manager != null) manager.onDestroy();
+        super.onDestroy();
+    }
+
+    @Override
     public void onDone(@NonNull GameInfoAndCards result) {
         if (manager == null && isAdded())
             manager = new BestGameManager(getActivity(), container, pyx, result, this, this);
