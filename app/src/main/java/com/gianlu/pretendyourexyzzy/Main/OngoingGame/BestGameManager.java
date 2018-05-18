@@ -52,12 +52,12 @@ public class BestGameManager implements Pyx.OnEventListener {
     private final RegisteredPyx pyx;
     private final Context context;
 
-    public BestGameManager(Context context, ViewGroup layout, RegisteredPyx pyx, GameInfoAndCards bundle, Listener listener) {
+    public BestGameManager(Context context, ViewGroup layout, RegisteredPyx pyx, GameInfoAndCards bundle, Listener listener, PlayersAdapter.Listener playersListener) {
         this.context = context;
         this.pyx = pyx;
         this.listener = listener;
         this.ui = new Ui(layout);
-        this.data = new Data(bundle);
+        this.data = new Data(bundle, playersListener);
 
         this.pyx.polling().addListener(POLLING, this);
         this.data.setup();
@@ -238,11 +238,11 @@ public class BestGameManager implements Pyx.OnEventListener {
         private final PlayersAdapter playersAdapter;
         private int judgeIndex = 0;
 
-        Data(GameInfoAndCards bundle) {
+        Data(GameInfoAndCards bundle, PlayersAdapter.Listener listener) {
             GameCards cards = bundle.cards;
             info = bundle.info;
 
-            playersAdapter = new PlayersAdapter(context, info.players, null /* FIXME */);
+            playersAdapter = new PlayersAdapter(context, info.players, listener);
             ui.playersList.setAdapter(playersAdapter);
 
             handAdapter = new CardsAdapter(context, true, PyxCardsGroupView.Action.TOGGLE_STAR, this);

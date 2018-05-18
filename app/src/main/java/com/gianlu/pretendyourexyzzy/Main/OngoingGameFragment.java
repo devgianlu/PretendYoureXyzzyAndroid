@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -57,6 +58,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.TutorialManager;
+import com.gianlu.pretendyourexyzzy.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONException;
@@ -172,7 +174,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
     @Override
     public void onDone(@NonNull GameInfoAndCards result) {
         if (manager == null && isAdded())
-            manager = new BestGameManager(getActivity(), container, pyx, result, this);
+            manager = new BestGameManager(getActivity(), container, pyx, result, this, this);
 
         updateActivityTitle();
 
@@ -532,6 +534,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
 
     @Override
     public void onPlayerSelected(@NonNull GameInfo.Player player) {
-        // TODO: UserInfoDialog.get()
+        final FragmentActivity activity = getActivity();
+        if (activity != null) UserInfoDialog.loadAndShow(pyx, activity, player.name);
     }
 }

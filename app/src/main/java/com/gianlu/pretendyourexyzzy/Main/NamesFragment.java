@@ -6,27 +6,22 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
-import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.NamesAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Name;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.WhoisResult;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.UserInfoDialog;
-import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.List;
 
@@ -106,22 +101,6 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     @Override
     public void onNameSelected(@NonNull String name) {
         final FragmentActivity activity = getActivity();
-        if (activity == null) return;
-
-        final FragmentManager manager = activity.getSupportFragmentManager();
-        DialogUtils.showDialog(activity, DialogUtils.progressDialog(activity, R.string.loading));
-        pyx.request(PyxRequests.whois(name), new Pyx.OnResult<WhoisResult>() {
-            @Override
-            public void onDone(@NonNull WhoisResult result) {
-                DialogUtils.dismissDialog(activity);
-                UserInfoDialog.get(result).show(manager, null);
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                DialogUtils.dismissDialog(activity);
-                Toaster.show(getActivity(), Utils.Messages.FAILED_LOADING, ex);
-            }
-        });
+        if (activity != null) UserInfoDialog.loadAndShow(pyx, activity, name);
     }
 }
