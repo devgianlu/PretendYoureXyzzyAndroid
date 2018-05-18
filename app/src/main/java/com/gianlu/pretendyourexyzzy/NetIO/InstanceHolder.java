@@ -17,7 +17,7 @@ class InstanceHolder {
     }
 
     @NonNull
-    public synchronized Pyx instantiateStandard(Context context) {
+    public synchronized Pyx instantiateStandard(@NonNull Context context) {
         if (pyx == null) pyx = new Pyx(context);
         return pyx;
     }

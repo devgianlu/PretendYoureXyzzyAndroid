@@ -33,7 +33,7 @@ public class FirstLoad implements Serializable {
     public List<String> createCardSetNamesList(List<Integer> includeIds) {
         List<String> names = new ArrayList<>();
         for (int id : includeIds) {
-            CardSet set = Utils.find(cardSets, id);
+            CardSet set = Utils.findCardSet(cardSets, id);
             if (set != null) names.add(set.name);
         }
 

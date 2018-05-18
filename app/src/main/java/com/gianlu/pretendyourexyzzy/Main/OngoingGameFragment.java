@@ -1,9 +1,7 @@
 package com.gianlu.pretendyourexyzzy.Main;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,9 +9,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -25,12 +23,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.ScrollView;
-import android.widget.Spinner;
 
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
@@ -44,12 +38,14 @@ import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
+import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
+import com.gianlu.pretendyourexyzzy.Dialogs.EditGameOptionsDialog;
+import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.BestGameManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastBottomSheet;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
@@ -58,10 +54,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.TutorialManager;
-import com.gianlu.pretendyourexyzzy.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.Utils;
-
-import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -307,130 +300,19 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
         DialogUtils.showDialog(getActivity(), builder);
     }
 
-    @SuppressLint("InflateParams")
-    private void editGameOptions() { // TODO: FragmentDialog?
-        if (!isAdded() || getGame() == null || getContext() == null) return;
 
-        Game.Options options = getGame().options;
-        final ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.dialog_edit_game_options, null, false);
-        final TextInputLayout scoreLimit = layout.findViewById(R.id.editGameOptions_scoreLimit);
-        CommonUtils.setText(scoreLimit, String.valueOf(options.scoreLimit));
-        final TextInputLayout playerLimit = layout.findViewById(R.id.editGameOptions_playerLimit);
-        CommonUtils.setText(playerLimit, String.valueOf(options.playersLimit));
-        final TextInputLayout spectatorLimit = layout.findViewById(R.id.editGameOptions_spectatorLimit);
-        CommonUtils.setText(spectatorLimit, String.valueOf(options.spectatorsLimit));
-        final Spinner timerMultiplier = layout.findViewById(R.id.editGameOptions_timerMultiplier);
-        timerMultiplier.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, Game.Options.VALID_TIMER_MULTIPLIERS));
-        timerMultiplier.setSelection(Game.Options.timerMultiplierIndex(options.timerMultiplier));
-        final TextInputLayout blankCards = layout.findViewById(R.id.editGameOptions_blankCards);
-        CommonUtils.setText(blankCards, String.valueOf(options.blanksLimit));
-        final TextInputLayout password = layout.findViewById(R.id.editGameOptions_password);
-        CommonUtils.setText(password, options.password);
-        final LinearLayout cardSets = layout.findViewById(R.id.editGameOptions_cardSets);
-        cardSets.removeAllViews();
-        for (CardSet set : pyx.firstLoad().cardSets) {
-            CheckBox item = new CheckBox(getContext());
-            item.setTag(set);
-            item.setText(set.name);
-            item.setChecked(getGame().options.cardSets.contains(set.id));
-            cardSets.addView(item);
+    private void editGameOptions() {
+        Game game = getGame();
+        FragmentActivity activity = getActivity();
+        if (game != null && activity != null) {
+            FragmentManager manager = activity.getSupportFragmentManager();
+            EditGameOptionsDialog.get(gid, game.options).show(manager, null);
         }
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle(R.string.editGameOptions)
-                .setView(layout)
-                .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(R.string.apply, null);
-
-        final AlertDialog dialog = builder.create();
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialogInterface) {
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View button) {
-                        scoreLimit.setErrorEnabled(false);
-                        playerLimit.setErrorEnabled(false);
-                        spectatorLimit.setErrorEnabled(false);
-                        blankCards.setErrorEnabled(false);
-                        password.setErrorEnabled(false);
-
-                        if (getContext() == null) return;
-
-                        Game.Options newOptions;
-                        try {
-                            newOptions = Game.Options.validateAndCreate(timerMultiplier.getSelectedItem().toString(), CommonUtils.getText(spectatorLimit), CommonUtils.getText(playerLimit), CommonUtils.getText(scoreLimit), CommonUtils.getText(blankCards), cardSets, CommonUtils.getText(password));
-                        } catch (Game.Options.InvalidFieldException ex) {
-                            View view = layout.findViewById(ex.fieldId);
-                            if (view != null && view instanceof TextInputLayout) {
-                                if (ex.throwMessage == R.string.outOfRange)
-                                    ((TextInputLayout) view).setError(getString(R.string.outOfRange, ex.min, ex.max));
-                                else
-                                    ((TextInputLayout) view).setError(getString(ex.throwMessage));
-                            }
-                            return;
-                        }
-
-                        DialogUtils.dismissDialog(getActivity());
-
-                        try {
-                            final ProgressDialog pd = DialogUtils.progressDialog(getContext(), R.string.loading);
-                            DialogUtils.showDialog(getActivity(), pd);
-                            pyx.request(PyxRequests.changeGameOptions(gid, newOptions), new Pyx.OnSuccess() {
-                                @Override
-                                public void onDone() {
-                                    DialogUtils.dismissDialog(getActivity());
-                                    Toaster.show(getActivity(), Utils.Messages.OPTIONS_CHANGED);
-                                }
-
-                                @Override
-                                public void onException(@NonNull Exception ex) {
-                                    DialogUtils.dismissDialog(getActivity());
-                                    Toaster.show(getActivity(), Utils.Messages.FAILED_CHANGING_OPTIONS, ex);
-                                }
-                            });
-                        } catch (JSONException ex) {
-                            DialogUtils.dismissDialog(getActivity());
-                            Toaster.show(getActivity(), Utils.Messages.FAILED_CHANGING_OPTIONS, ex);
-                        }
-                    }
-                });
-            }
-        });
-
-        DialogUtils.showDialog(getActivity(), dialog);
     }
 
-    @SuppressLint("InflateParams")
     private void showGameOptions() {
-        FirstLoad firstLoad = pyx.firstLoad();
-        if (getContext() == null || getGame() == null) return;
-
-        Game.Options options = getGame().options;
-        ScrollView layout = (ScrollView) LayoutInflater.from(getContext()).inflate(R.layout.dialog_game_options, null, false);
-        SuperTextView scoreLimit = layout.findViewById(R.id.gameOptions_scoreLimit);
-        scoreLimit.setHtml(R.string.scoreLimit, options.scoreLimit);
-        SuperTextView playerLimit = layout.findViewById(R.id.gameOptions_playerLimit);
-        playerLimit.setHtml(R.string.playerLimit, options.playersLimit);
-        SuperTextView spectatorLimit = layout.findViewById(R.id.gameOptions_spectatorLimit);
-        spectatorLimit.setHtml(R.string.spectatorLimit, options.spectatorsLimit);
-        SuperTextView timerMultiplier = layout.findViewById(R.id.gameOptions_timerMultiplier);
-        timerMultiplier.setHtml(R.string.timerMultiplier, options.timerMultiplier);
-        SuperTextView cardSets = layout.findViewById(R.id.gameOptions_cardSets);
-        cardSets.setHtml(R.string.cardSets, options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(firstLoad.createCardSetNamesList(options.cardSets), ", "));
-        SuperTextView blankCards = layout.findViewById(R.id.gameOptions_blankCards);
-        blankCards.setHtml(R.string.blankCards, options.blanksLimit);
-        SuperTextView password = layout.findViewById(R.id.gameOptions_password);
-        if (options.password == null || options.password.isEmpty())
-            password.setVisibility(View.GONE);
-        else password.setHtml(R.string.password, options.password);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle(R.string.gameOptions)
-                .setView(layout)
-                .setPositiveButton(android.R.string.ok, null);
-
-        DialogUtils.showDialog(getActivity(), builder);
+        if (getContext() != null && getGame() != null)
+            DialogUtils.showDialog(getActivity(), Dialogs.gameOptions(getContext(), getGame().options, pyx.firstLoad()));
     }
 
     @Nullable

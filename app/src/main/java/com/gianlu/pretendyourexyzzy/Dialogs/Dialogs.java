@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
+package com.gianlu.pretendyourexyzzy.Dialogs;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -6,17 +6,60 @@ import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.SuperTextView;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.R;
 
 import org.json.JSONException;
 
 public final class Dialogs {
+
+    @NonNull
+    @SuppressLint("InflateParams")
+    public static AlertDialog.Builder gameOptions(@NonNull Context context, @NonNull Game.Options options, @NonNull FirstLoad firstLoad) {
+        ScrollView layout = (ScrollView) LayoutInflater.from(context).inflate(R.layout.dialog_game_options, null, false);
+
+        SuperTextView scoreLimit = layout.findViewById(R.id.gameOptions_scoreLimit);
+        scoreLimit.setHtml(R.string.scoreLimit, options.scoreLimit);
+
+        SuperTextView playerLimit = layout.findViewById(R.id.gameOptions_playerLimit);
+        playerLimit.setHtml(R.string.playerLimit, options.playersLimit);
+
+        SuperTextView spectatorLimit = layout.findViewById(R.id.gameOptions_spectatorLimit);
+        spectatorLimit.setHtml(R.string.spectatorLimit, options.spectatorsLimit);
+
+        SuperTextView timerMultiplier = layout.findViewById(R.id.gameOptions_timerMultiplier);
+        timerMultiplier.setHtml(R.string.timerMultiplier, options.timerMultiplier);
+
+        SuperTextView cardSets = layout.findViewById(R.id.gameOptions_cardSets);
+        cardSets.setHtml(R.string.cardSets, options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(firstLoad.createCardSetNamesList(options.cardSets), ", "));
+
+        SuperTextView blankCards = layout.findViewById(R.id.gameOptions_blankCards);
+        blankCards.setHtml(R.string.blankCards, options.blanksLimit);
+
+        SuperTextView password = layout.findViewById(R.id.gameOptions_password);
+        if (options.password == null || options.password.isEmpty())
+            password.setVisibility(View.GONE);
+        else
+            password.setHtml(R.string.password, options.password);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(R.string.gameOptions)
+                .setView(layout)
+                .setPositiveButton(android.R.string.ok, null);
+
+        return builder;
+    }
 
     @NonNull
     @SuppressLint("InflateParams")

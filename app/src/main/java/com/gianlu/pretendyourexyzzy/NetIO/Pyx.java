@@ -8,6 +8,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
+import android.support.annotation.WorkerThread;
 
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
@@ -52,7 +53,7 @@ public class Pyx implements Closeable {
     protected final SharedPreferences preferences;
     protected final ExecutorService executor = Executors.newFixedThreadPool(5);
 
-    Pyx(Context context) {
+    Pyx(@NonNull Context context) {
         this.handler = new Handler(context.getMainLooper());
         this.server = Server.lastServer(context);
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -72,15 +73,15 @@ public class Pyx implements Closeable {
     }
 
     @NonNull
-    public static Pyx get(Context context) {
+    public static Pyx get(@NonNull Context context) {
         return InstanceHolder.holder().instantiateStandard(context);
     }
 
-    public static void instantiate(Context context) {
+    public static void instantiate(@NonNull Context context) {
         InstanceHolder.holder().instantiateStandard(context);
     }
 
-    static void raiseException(JSONObject obj) throws PyxException {
+    static void raiseException(@NonNull JSONObject obj) throws PyxException {
         if (obj.optBoolean("e", false) || obj.has("ec")) throw new PyxException(obj);
     }
 
@@ -95,11 +96,13 @@ public class Pyx implements Closeable {
         }
     }
 
+    @WorkerThread
     protected final PyxResponse request(@NonNull Op operation, NameValuePair... params) throws IOException, JSONException, PyxException {
         return request(operation, false, params);
     }
 
     @NonNull
+    @WorkerThread
     private PyxResponse request(@NonNull Op operation, boolean retried, NameValuePair... params) throws IOException, JSONException, PyxException {
         FormBody.Builder reqBody = new FormBody.Builder(Charset.forName("UTF-8")).add("o", operation.val);
         for (NameValuePair pair : params) reqBody.add(pair.key(), pair.value(""));
@@ -139,6 +142,7 @@ public class Pyx implements Closeable {
         executor.execute(new RequestRunner(request, listener));
     }
 
+    @WorkerThread
     public final void requestSync(PyxRequest request) throws JSONException, PyxException, IOException {
         request(request.op, request.params);
     }
@@ -148,6 +152,7 @@ public class Pyx implements Closeable {
     }
 
     @NonNull
+    @WorkerThread
     public final <E> E requestSync(PyxRequestWithResult<E> request) throws JSONException, PyxException, IOException {
         PyxResponse resp = request(request.op, request.params);
         return request.processor.process(preferences, resp.resp, resp.obj);

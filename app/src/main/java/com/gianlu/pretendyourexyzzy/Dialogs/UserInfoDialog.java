@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy;
+package com.gianlu.pretendyourexyzzy.Dialogs;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -23,6 +23,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.WhoisResult;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
+import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.Date;
 
@@ -71,7 +73,8 @@ public class UserInfoDialog extends DialogFragment {
         Bundle args = getArguments();
         if (args == null || (user = (WhoisResult) args.getSerializable("user")) == null)
             return null;
-        else return user;
+        else
+            return user;
     }
 
     @Override

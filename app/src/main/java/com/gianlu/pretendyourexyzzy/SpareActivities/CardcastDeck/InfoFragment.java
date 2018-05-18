@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.CardcastDeck;
+package com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeck;
 
 import android.content.Context;
 import android.os.Bundle;

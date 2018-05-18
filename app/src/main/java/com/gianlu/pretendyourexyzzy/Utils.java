@@ -71,26 +71,18 @@ public class Utils {
         return builder.toString();
     }
 
-    @Nullable
-    public static GameInfo.Player find(List<GameInfo.Player> players, String name) {
-        for (GameInfo.Player player : players)
-            if (Objects.equals(player.name, name))
-                return player;
-
-        return null;
-    }
 
     @Nullable
-    public static Game findGame(List<Game> sets, int id) {
-        for (Game game : sets)
-            if (Objects.equals(game.gid, id))
+    public static Game findGame(List<Game> games, int gid) {
+        for (Game game : games)
+            if (game.gid == gid)
                 return game;
 
         return null;
     }
 
     @Nullable
-    public static CardSet find(List<CardSet> sets, int id) {
+    public static CardSet findCardSet(List<CardSet> sets, int id) {
         for (CardSet set : sets)
             if (Objects.equals(set.id, id))
                 return set;
@@ -98,6 +90,7 @@ public class Utils {
         return null;
     }
 
+    @NonNull
     public static TapTarget tapTargetForView(View view, @StringRes int title, @StringRes int desc) {
         Context ctx = view.getContext();
         return TapTarget.forView(view, ctx.getString(title), ctx.getString(desc)).transparentTarget(view instanceof FloatingActionButton);

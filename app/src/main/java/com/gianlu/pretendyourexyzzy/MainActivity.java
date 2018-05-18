@@ -14,9 +14,12 @@ import android.view.WindowManager;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
+import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.pretendyourexyzzy.Dialogs.EditGameOptionsDialog;
+import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.Main.CardcastFragment;
 import com.gianlu.pretendyourexyzzy.Main.ChatFragment;
 import com.gianlu.pretendyourexyzzy.Main.GamesFragment;
@@ -25,13 +28,18 @@ import com.gianlu.pretendyourexyzzy.Main.OnLeftGame;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.SpareActivities.StarredCardsActivity;
 import com.gianlu.pretendyourexyzzy.SpareActivities.StarredDecksActivity;
 
+import org.json.JSONException;
+
 import java.util.Objects;
 
-public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame {
+public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame {
     private final static String TAG_GAMES = "games";
     private final static String TAG_GAME_CHAT = "gameChat";
     private static final String TAG_PLAYERS = "players";
@@ -332,5 +340,28 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     @Override
     public boolean canViewGame() {
         return ongoingGameFragment == null && gamesFragment != null && gamesFragment.isAdded();
+    }
+
+    @Override
+    public void changeGameOptions(int gid, @NonNull Game.Options options) {
+        try {
+            showDialog(DialogUtils.progressDialog(this, R.string.loading));
+            pyx.request(PyxRequests.changeGameOptions(gid, options), new Pyx.OnSuccess() {
+                @Override
+                public void onDone() {
+                    dismissDialog();
+                    Toaster.show(MainActivity.this, Utils.Messages.OPTIONS_CHANGED);
+                }
+
+                @Override
+                public void onException(@NonNull Exception ex) {
+                    dismissDialog();
+                    Toaster.show(MainActivity.this, Utils.Messages.FAILED_CHANGING_OPTIONS, ex);
+                }
+            });
+        } catch (JSONException ex) {
+            dismissDialog();
+            Toaster.show(this, Utils.Messages.FAILED_CHANGING_OPTIONS, ex);
+        }
     }
 }

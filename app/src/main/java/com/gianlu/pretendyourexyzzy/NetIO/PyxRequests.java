@@ -75,7 +75,7 @@ public final class PyxRequests {
     }
 
     @Nullable
-    private static String findSessionId(Response response) {
+    private static String findSessionId(@NonNull Response response) {
         for (String cookie : response.headers("Set-Cookie")) {
             String[] segments = cookie.split(";");
             String[] keyValue = segments[0].split("=");
