@@ -24,6 +24,7 @@ import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
 import com.gianlu.pretendyourexyzzy.Cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.Cards.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.Cards.StarredCardsManager;
+import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -86,7 +87,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                 data.gameRoundComplete(msg.obj.getString("rw"), msg.obj.getInt("WC"), msg.obj.getString("rP"), msg.obj.getInt("i"));
                 break;
             case GAME_OPTIONS_CHANGED:
-                data.gameOptionsChanged(new GameInfo(msg.obj.getJSONObject("gi")));
+                data.gameOptionsChanged(new Game(msg.obj.getJSONObject("gi")));
                 break;
             case HURRY_UP:
                 ui.event(UiEvent.HURRY_UP);
@@ -489,9 +490,9 @@ public class BestGameManager implements Pyx.OnEventListener {
             }
         }
 
-        public void gameOptionsChanged(@NonNull GameInfo info) {
-            this.info.game.options = info.game.options;
-            this.info.game.host = info.game.host;
+        public void gameOptionsChanged(@NonNull Game game) {
+            this.info.game.options = game.options;
+            this.info.game.host = game.host;
             listener.updateActivityTitle();
         }
 
