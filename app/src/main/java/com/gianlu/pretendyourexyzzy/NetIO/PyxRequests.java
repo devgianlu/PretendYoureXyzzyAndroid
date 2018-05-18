@@ -5,7 +5,6 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.Preferences.Prefs;
@@ -15,6 +14,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Name;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.WhoisResult;
 import com.gianlu.pretendyourexyzzy.PKeys;
@@ -135,12 +135,15 @@ public final class PyxRequests {
     }
 
     @NonNull
-    public static PyxRequestWithResult<List<String>> getNamesList() {
-        return new PyxRequestWithResult<>(Pyx.Op.GET_NAMES_LIST, new Pyx.Processor<List<String>>() {
+    public static PyxRequestWithResult<List<Name>> getNamesList() {
+        return new PyxRequestWithResult<>(Pyx.Op.GET_NAMES_LIST, new Pyx.Processor<List<Name>>() {
             @NonNull
             @Override
-            public List<String> process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-                return CommonUtils.toStringsList(obj.getJSONArray("nl"), false);
+            public List<Name> process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+                JSONArray array = obj.getJSONArray("nl");
+                List<Name> names = new ArrayList<>();
+                for (int i = 0; i < array.length(); i++) names.add(new Name(array.getString(i)));
+                return names;
             }
         });
     }

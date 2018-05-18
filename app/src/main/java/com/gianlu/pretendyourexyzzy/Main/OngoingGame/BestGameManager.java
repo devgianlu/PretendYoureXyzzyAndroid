@@ -242,7 +242,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             GameCards cards = bundle.cards;
             info = bundle.info;
 
-            playersAdapter = new PlayersAdapter(context, info.players);
+            playersAdapter = new PlayersAdapter(context, info.players, null /* FIXME */);
             ui.playersList.setAdapter(playersAdapter);
 
             handAdapter = new CardsAdapter(context, true, PyxCardsGroupView.Action.TOGGLE_STAR, this);

@@ -19,7 +19,7 @@ import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.NamesAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.UserInfo;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Name;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.WhoisResult;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
@@ -30,7 +30,7 @@ import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.List;
 
-public class NamesFragment extends Fragment implements Pyx.OnResult<List<String>>, NamesAdapter.Listener {
+public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>, NamesAdapter.Listener {
     private RecyclerViewLayout layout;
     private int names = -1;
     private RegisteredPyx pyx;
@@ -87,7 +87,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<String>
     }
 
     @Override
-    public void onDone(@NonNull final List<String> result) {
+    public void onDone(@NonNull final List<Name> result) {
         if (!isAdded()) return;
 
         layout.loadListData(new NamesAdapter(getContext(), result, this));
@@ -110,7 +110,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<String>
 
         final FragmentManager manager = activity.getSupportFragmentManager();
         DialogUtils.showDialog(activity, DialogUtils.progressDialog(activity, R.string.loading));
-        pyx.request(PyxRequests.whois(UserInfo.Sigil.removeSigil(name)), new Pyx.OnResult<WhoisResult>() {
+        pyx.request(PyxRequests.whois(name), new Pyx.OnResult<WhoisResult>() {
             @Override
             public void onDone(@NonNull WhoisResult result) {
                 DialogUtils.dismissDialog(activity);
