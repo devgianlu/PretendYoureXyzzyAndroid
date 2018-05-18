@@ -121,7 +121,7 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSets
     }
 
     @Override
-    public void showDialog(Dialog dialog) {
+    public void showDialog(@NonNull Dialog dialog) {
         this.dialog.showDialog(dialog);
     }
 

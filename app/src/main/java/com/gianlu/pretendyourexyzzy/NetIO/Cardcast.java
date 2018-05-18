@@ -108,6 +108,7 @@ public class Cardcast {
         Prefs.putSet(preferences, PKeys.CACHED_DECK_CODES, new HashSet<>(snapshot.values()));
     }
 
+    @Nullable
     public CardcastDeck guessDeckSync(final CardSet set) throws JSONException, IOException, ParseException {
         String cachedCode = cachedDeckNames.get(set.name);
         if (cachedCode != null) {
