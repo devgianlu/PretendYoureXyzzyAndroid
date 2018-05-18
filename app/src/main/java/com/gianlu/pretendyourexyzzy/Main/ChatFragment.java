@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.DividerItemDecoration;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +25,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 public class ChatFragment extends Fragment implements ChatAdapter.Listener, Pyx.OnEventListener {
@@ -57,7 +58,6 @@ public class ChatFragment extends Fragment implements ChatAdapter.Listener, Pyx.
         LinearLayoutManager llm = new SuppressingLinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         llm.setStackFromEnd(true);
         recyclerViewLayout.setLayoutManager(llm);
-        recyclerViewLayout.getList().addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 
         Bundle args = getArguments();
         if (args == null) gid = -1;
@@ -132,6 +132,14 @@ public class ChatFragment extends Fragment implements ChatAdapter.Listener, Pyx.
     public void onItemCountChanged(int count) {
         if (count == 0) recyclerViewLayout.showMessage(R.string.noMessages, false);
         else recyclerViewLayout.showList();
+    }
+
+    @Override
+    public void onChatItemSelected(@NonNull String sender) {
+        FragmentActivity activity = getActivity();
+        if (activity == null) return;
+
+        UserInfoDialog.loadAndShow(pyx, activity, sender);
     }
 
     @Override

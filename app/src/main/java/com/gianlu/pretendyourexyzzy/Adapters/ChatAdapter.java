@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.gianlu.commonutils.SuperTextView;
@@ -38,8 +39,14 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        PollMessage message = messages.get(position);
+        final PollMessage message = messages.get(position);
         holder.text.setHtml(SuperTextView.makeBold(message.sender) + ": " + message.message);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) listener.onChatItemSelected(message.sender);
+            }
+        });
     }
 
     @Override
@@ -60,6 +67,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
 
     public interface Listener {
         void onItemCountChanged(int count);
+
+        void onChatItemSelected(@NonNull String sender);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
