@@ -113,10 +113,10 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSets
     @Override
     public void shouldUpdateItemCount(int count) {
         if (count == 0) {
-            list.setVisibility(View.GONE);
+            if (listener != null) list.setVisibility(View.GONE);
             MessageLayout.show(contentParent, R.string.noCardSets, R.drawable.ic_info_outline_black_48dp);
         } else {
-            list.setVisibility(View.VISIBLE);
+            if (listener != null) list.setVisibility(View.VISIBLE);
             MessageLayout.hide(contentParent);
         }
     }
