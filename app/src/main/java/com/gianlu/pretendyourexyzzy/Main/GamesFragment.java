@@ -63,6 +63,7 @@ public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, 
     private boolean isShowingHint = false;
     private RegisteredPyx pyx;
 
+    @NonNull
     public static GamesFragment getInstance(OnParticipateGame handler) {
         GamesFragment fragment = new GamesFragment();
         fragment.setHasOptionsMenu(true);

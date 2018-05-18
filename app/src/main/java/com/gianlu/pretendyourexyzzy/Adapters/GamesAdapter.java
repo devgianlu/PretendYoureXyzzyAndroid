@@ -65,10 +65,6 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
     }
 
     @Override
-    protected void onBindViewHolder(ViewHolder holder, int position, @NonNull Game payload) {
-    }
-
-    @Override
     protected void shouldUpdateItemCount(int count) {
     }
 
@@ -93,8 +89,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
-        final Game game = objs.get(position);
+    public void onBindViewHolder(@NonNull final ViewHolder holder, int position, @NonNull final Game game) {
         holder.name.setText(game.host);
         holder.players.setHtml(R.string.players, game.players.size(), game.options.playersLimit);
         holder.spectators.setHtml(R.string.spectators, game.spectators.size(), game.options.spectatorsLimit);

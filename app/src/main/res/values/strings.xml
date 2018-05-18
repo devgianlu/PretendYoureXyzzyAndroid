@@ -198,6 +198,7 @@
     <string name="clientName"><![CDATA[<b>Client name:</b>]]> %s</string>
     <string name="gameHost"><![CDATA[<b>Game host:</b>]]> %s</string>
     <string name="viewGame">View game</string>
+    <string name="noNames">There are no names.</string>
 
     <!-- Game messages -->
     <string name="game_spectator">You\'re a spectator. Just watch!</string>

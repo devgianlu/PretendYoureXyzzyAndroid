@@ -3,11 +3,13 @@ package com.gianlu.pretendyourexyzzy.NetIO.Models;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import com.gianlu.commonutils.Adapters.Filterable;
 import com.gianlu.pretendyourexyzzy.R;
 
 import java.text.ParseException;
+import java.util.Comparator;
 
-public class Name implements Comparable<Name> {
+public class Name implements Filterable<String> {
     private final String name;
     private final String noSigil;
     private final Sigil sigil;
@@ -34,8 +36,8 @@ public class Name implements Comparable<Name> {
     }
 
     @Override
-    public int compareTo(@NonNull Name o) {
-        return noSigil.compareTo(o.noSigil);
+    public String getFilterable() {
+        return name;
     }
 
     public enum Sigil {
@@ -92,6 +94,22 @@ public class Name implements Comparable<Name> {
                 case NORMAL_USER:
                     return context.getString(R.string.sigilNone);
             }
+        }
+    }
+
+    public static class AzComparator implements Comparator<Name> {
+
+        @Override
+        public int compare(Name o1, Name o2) {
+            return o1.noSigil.compareTo(o2.noSigil);
+        }
+    }
+
+    public static class ZaComparator implements Comparator<Name> {
+
+        @Override
+        public int compare(Name o1, Name o2) {
+            return o2.noSigil.compareTo(o1.noSigil);
         }
     }
 }
