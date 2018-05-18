@@ -30,7 +30,7 @@
     <string name="gameFull">The game is full! Try later.</string>
     <string name="failedSpectating">Failed spectating the game!</string>
     <string name="ongoingGame">Ongoing game</string>
-    <string name="game">Game</string>
+    <string name="gameLabel">Game</string>
     <string name="leaveGame">Leave game</string>
     <string name="failedLeaving">Failed leaving the game!</string>
     <string name="search">Search</string>
@@ -196,9 +196,12 @@
     <string name="idleFor"><![CDATA[<b>Idle for:</b>]]> %s</string>
     <string name="ipAddress"><![CDATA[<b>IP address:</b>]]> %s</string>
     <string name="clientName"><![CDATA[<b>Client name:</b>]]> %s</string>
-    <string name="gameHost"><![CDATA[<b>Game host:</b>]]> %s</string>
     <string name="viewGame">View game</string>
     <string name="noNames">There are no names.</string>
+    <string name="gameStartedOpenDetails"><![CDATA[<b>Game:</b>]]> %1$s <![CDATA[<i>(started, %2$d/%3$d)</i>]]></string>
+    <string name="gameStartedLockedDetails"><![CDATA[<b>Game:</b>]]> %1$s <![CDATA[<i>(started, %2$d/%3$d, locked)</i>]]></string>
+    <string name="gameLobbyOpenDetails"><![CDATA[<b>Game:</b>]]> %1$s <![CDATA[<i>(lobby, %2$d/%3$d)</i>]]></string>
+    <string name="gameLobbyLockedDetails"><![CDATA[<b>Game:</b>]]> %1$s <![CDATA[<i>(lobby, %2$d/%3$d, locked)</i>]]></string>
 
     <!-- Game messages -->
     <string name="game_spectator">You\'re a spectator. Just watch!</string>

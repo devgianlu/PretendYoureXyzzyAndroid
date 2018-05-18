@@ -116,7 +116,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                         switchTo(TAG_CARDCAST);
                         break;
                     case R.id.main_ongoingGame:
-                        setTitle(getString(R.string.game) + " - " + getString(R.string.app_name));
+                        setTitle(getString(R.string.gameLabel) + " - " + getString(R.string.app_name));
                         switchTo(TAG_ONGOING_GAME);
                         break;
                     case R.id.main_gameChat:

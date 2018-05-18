@@ -131,7 +131,23 @@ public class UserInfoDialog extends DialogFragment {
             viewGame.setVisibility(View.GONE);
         } else {
             game.setVisibility(View.VISIBLE);
-            game.setHtml(R.string.gameHost, gameInfo.host);
+
+            Object[] args = new Object[3];
+            args[0] = gameInfo.host;
+            args[1] = gameInfo.players.size();
+            args[2] = gameInfo.options.playersLimit;
+
+            if (gameInfo.hasPassword(false)) {
+                if (gameInfo.status.isStarted())
+                    game.setHtml(R.string.gameStartedLockedDetails, args);
+                else
+                    game.setHtml(R.string.gameLobbyLockedDetails, args);
+            } else {
+                if (gameInfo.status.isStarted())
+                    game.setHtml(R.string.gameStartedOpenDetails, args);
+                else
+                    game.setHtml(R.string.gameLobbyOpenDetails, args);
+            }
 
             if (listener != null && listener.canViewGame()) {
                 viewGame.setVisibility(View.VISIBLE);

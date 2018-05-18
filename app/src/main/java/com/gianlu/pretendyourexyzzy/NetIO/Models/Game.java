@@ -88,6 +88,10 @@ public class Game implements Filterable<Game.Protection>, Serializable {
 
             throw new IllegalArgumentException("Cannot find status with value: " + val);
         }
+
+        public boolean isStarted() {
+            return this != LOBBY;
+        }
     }
 
     public static class NameComparator implements Comparator<Game> {
