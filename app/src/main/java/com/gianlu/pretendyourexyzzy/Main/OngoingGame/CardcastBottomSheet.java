@@ -64,7 +64,6 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSets
                     showAddCardcastDeckDialog();
                 }
             });
-
             return true;
         } else {
             return false;
@@ -127,8 +126,8 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSets
     }
 
     public interface DialogsHelper {
-        void showDialog(Dialog dialog);
+        void showDialog(@NonNull Dialog dialog);
 
-        void showDialog(AlertDialog.Builder builder);
+        void showDialog(@NonNull AlertDialog.Builder builder);
     }
 }

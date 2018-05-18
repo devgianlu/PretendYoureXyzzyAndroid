@@ -13,7 +13,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CardcastCard implements BaseCard {
+public class CardcastCard extends BaseCard {
     public final String id;
     public final List<String> text;
     public final long createdAt;

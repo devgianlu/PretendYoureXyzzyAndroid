@@ -39,6 +39,7 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
         this.search = search;
         this.limit = limit;
         this.listener = listener;
+        setHasStableIds(true);
     }
 
     @Override

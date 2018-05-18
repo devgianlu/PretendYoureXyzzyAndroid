@@ -490,12 +490,12 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
     }
 
     @Override
-    public void showDialog(AlertDialog.Builder builder) {
+    public void showDialog(@NonNull AlertDialog.Builder builder) {
         DialogUtils.showDialog(getActivity(), builder);
     }
 
     @Override
-    public void showDialog(Dialog dialog) {
+    public void showDialog(@NonNull Dialog dialog) {
         DialogUtils.showDialog(getActivity(), dialog);
     }
 

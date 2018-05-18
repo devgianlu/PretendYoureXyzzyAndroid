@@ -89,7 +89,7 @@ public class StarredCardsManager {
         }
     }
 
-    public static class StarredCard implements BaseCard {
+    public static class StarredCard extends BaseCard {
         public final BaseCard blackCard;
         public final CardsGroup whiteCards;
         public final int id;

@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CardsGroup extends ArrayList<BaseCard> {
@@ -54,5 +55,10 @@ public class CardsGroup extends ArrayList<BaseCard> {
         for (BaseCard card : this)
             if (card instanceof Card)
                 ((Card) card).setWinner();
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(toArray());
     }
 }

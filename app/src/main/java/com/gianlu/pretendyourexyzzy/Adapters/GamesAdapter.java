@@ -35,6 +35,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         this.pyx = pyx;
         this.handler = handler;
         this.inflater = LayoutInflater.from(context);
+
         setHasStableIds(true);
         setFilterOutLockedLobbies(filterOutLockedLobbies);
     }

@@ -28,11 +28,17 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         this.action = action;
         this.listener = listener;
         this.cards = new ArrayList<>();
+        setHasStableIds(true);
     }
 
     public CardsAdapter(Context context, boolean manageMargins, List<? extends BaseCard> cards, PyxCardsGroupView.Action action, Listener listener) {
         this(context, manageMargins, action, listener);
         groupAndNotifyDataSetChanged(cards);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return cards.get(position).hashCode();
     }
 
     @NonNull

@@ -45,6 +45,7 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
         this.ongoingGameListener = ongoingGameListener;
         this.pyx = pyx;
 
+        setHasStableIds(true);
         listener.shouldUpdateItemCount(getItemCount());
     }
 
@@ -124,7 +125,7 @@ public class CardSetsAdapter extends RecyclerView.Adapter<CardSetsAdapter.ViewHo
     public interface Listener {
         void shouldUpdateItemCount(int count);
 
-        void showDialog(Dialog dialog);
+        void showDialog(@NonNull Dialog dialog);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

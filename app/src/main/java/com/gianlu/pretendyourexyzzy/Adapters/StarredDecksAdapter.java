@@ -26,6 +26,7 @@ public class StarredDecksAdapter extends RecyclerView.Adapter<StarredDecksAdapte
         this.decks = decks;
         this.inflater = LayoutInflater.from(context);
         this.listener = listener;
+        setHasStableIds(true);
     }
 
     @Override

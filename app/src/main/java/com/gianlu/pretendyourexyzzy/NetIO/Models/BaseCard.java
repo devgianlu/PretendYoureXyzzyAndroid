@@ -6,27 +6,32 @@ import android.support.annotation.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public interface BaseCard {
+public abstract class BaseCard {
     @NonNull
-    String text();
+    public abstract String text();
 
     @Nullable
-    String watermark();
+    public abstract String watermark();
 
-    int numPick();
+    public abstract int numPick();
 
-    int numDraw();
+    public abstract int numDraw();
 
-    int id();
+    public abstract int id();
 
-    boolean equals(Object o);
+    public abstract boolean equals(Object o);
 
-    boolean unknown();
+    public abstract boolean unknown();
 
-    boolean black();
+    public abstract boolean black();
 
-    boolean writeIn();
+    public abstract boolean writeIn();
 
     @Nullable
-    JSONObject toJson() throws JSONException;
+    public abstract JSONObject toJson() throws JSONException;
+
+    @Override
+    public int hashCode() {
+        return id() * 31 + text().hashCode();
+    }
 }
