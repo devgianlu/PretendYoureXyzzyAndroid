@@ -139,7 +139,7 @@ public class UserInfoDialog extends DialogFragment {
                     @Override
                     public void onClick(View v) {
                         if (listener != null) {
-                            listener.viewGame(gameInfo.gid, gameInfo.hasPassword());
+                            listener.viewGame(gameInfo.gid, gameInfo.hasPassword(false));
                             dismiss();
                         }
                     }
