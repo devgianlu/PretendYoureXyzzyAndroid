@@ -16,13 +16,12 @@ import java.util.List;
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     private final List<PollMessage> messages;
     private final LayoutInflater inflater;
-    private final Listener handler;
+    private final Listener listener;
 
-    public ChatAdapter(Context context, Listener handler) {
-        this.handler = handler;
+    public ChatAdapter(Context context, Listener listener) {
+        this.listener = listener;
         this.messages = new ArrayList<>();
         this.inflater = LayoutInflater.from(context);
-        if (handler != null) handler.onItemCountChanged(0);
         setHasStableIds(true);
     }
 
@@ -48,18 +47,15 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         return messages.size();
     }
 
-    private void add(PollMessage message, int gid) {
-        if (message.event == PollMessage.Event.CHAT && ((message.gid == -1 && gid == -1) || (gid != -1 && message.gid == gid)))
-            messages.add(message);
-    }
+    public void newMessage(@NonNull PollMessage message, int gid) {
+        if (message.event == PollMessage.Event.CHAT && ((message.gid == -1 && gid == -1) || (gid != -1 && message.gid == gid))) {
+            synchronized (messages) {
+                messages.add(message);
+            }
 
-    public void newMessage(PollMessage message, int gid) {
-        synchronized (messages) {
-            add(message, gid);
             notifyItemInserted(messages.size() - 1);
+            if (listener != null) listener.onItemCountChanged(messages.size());
         }
-
-        if (handler != null) handler.onItemCountChanged(messages.size());
     }
 
     public interface Listener {

@@ -285,8 +285,17 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 launchGameShouldRequest = false;
             }
 
-            result.upgrade(fl.user);
-            goTo(MainActivity.class);
+            result.upgrade(fl.user, new Pyx.OnSuccess() {
+                @Override
+                public void onDone() {
+                    goTo(MainActivity.class);
+                }
+
+                @Override
+                public void onException(@NonNull Exception ex) {
+                    Toaster.show(LoadingActivity.this, Utils.Messages.FAILED_LOADING, ex);
+                }
+            });
         } else {
             showRegisterUI(result);
         }

@@ -16,8 +16,9 @@ import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Prefs;
+import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Main.CardcastFragment;
-import com.gianlu.pretendyourexyzzy.Main.GameChatFragment;
+import com.gianlu.pretendyourexyzzy.Main.ChatFragment;
 import com.gianlu.pretendyourexyzzy.Main.GamesFragment;
 import com.gianlu.pretendyourexyzzy.Main.NamesFragment;
 import com.gianlu.pretendyourexyzzy.Main.OnLeftGame;
@@ -36,13 +37,16 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     private static final String TAG_PLAYERS = "players";
     private static final String TAG_ONGOING_GAME = "ongoingGame";
     private static final String TAG_CARDCAST = "cardcast";
+    private static final String TAG_GLOBAL_CHAT = "globalChat";
     private BottomNavigationView navigation;
     private NamesFragment namesFragment;
     private GamesFragment gamesFragment;
     private CardcastFragment cardcastFragment;
-    private GameChatFragment gameChatFragment;
+    private ChatFragment gameChatFragment;
     private OngoingGameFragment ongoingGameFragment;
+    private ChatFragment globalChatFragment;
     private int currentGid = -1;
+    private RegisteredPyx pyx;
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -70,13 +74,29 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         OngoingGameHelper.setup(this);
 
+        try {
+            pyx = RegisteredPyx.get();
+        } catch (LevelMismatchException ex) {
+            Toaster.show(this, Utils.Messages.FAILED_LOADING, ex);
+            startActivity(new Intent(this, LoadingActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+            return;
+        }
+
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         namesFragment = NamesFragment.getInstance();
         transaction.add(R.id.main_container, namesFragment, TAG_PLAYERS);
         gamesFragment = GamesFragment.getInstance(this);
         transaction.add(R.id.main_container, gamesFragment, TAG_GAMES);
         cardcastFragment = CardcastFragment.getInstance();
-        transaction.add(R.id.main_container, cardcastFragment, TAG_CARDCAST).commitNow();
+        transaction.add(R.id.main_container, cardcastFragment, TAG_CARDCAST);
+
+        if (pyx.isGlobalChatEnabled()) {
+            globalChatFragment = ChatFragment.getGlobalInstance();
+            transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
+        }
+
+        transaction.commitNow();
 
         navigation = findViewById(R.id.main_navigation);
         navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -103,6 +123,10 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                         setTitle(getString(R.string.gameChat) + " - " + getString(R.string.app_name));
                         switchTo(TAG_GAME_CHAT);
                         break;
+                    case R.id.main_globalChat:
+                        setTitle(getString(R.string.globalChat) + " - " + getString(R.string.app_name));
+                        switchTo(TAG_GLOBAL_CHAT);
+                        break;
                 }
 
                 return true;
@@ -121,9 +145,14 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                     case R.id.main_gameChat:
                         if (gameChatFragment != null) gameChatFragment.scrollToTop();
                         break;
+                    case R.id.main_globalChat:
+                        if (globalChatFragment != null) globalChatFragment.scrollToTop();
+                        break;
                 }
             }
         });
+
+        if (!pyx.isGlobalChatEnabled()) navigation.getMenu().removeItem(R.id.main_globalChat);
 
         navigation.setSelectedItemId(R.id.main_games);
         setKeepScreenOn(Prefs.getBoolean(this, PKeys.KEEP_SCREEN_ON, true));
@@ -242,6 +271,9 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 case TAG_GAME_CHAT:
                     transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT);
                     break;
+                case TAG_GLOBAL_CHAT:
+                    transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
+                    break;
             }
         }
 
@@ -253,10 +285,11 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         ongoingGameFragment = OngoingGameFragment.getInstance(gid, null);
         transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
-        gameChatFragment = GameChatFragment.getInstance(gid);
+        gameChatFragment = ChatFragment.getGameInstance(gid);
         transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT).commitNowAllowingStateLoss();
         navigation.getMenu().clear();
         navigation.inflateMenu(R.menu.navigation_ongoing_game);
+        if (!pyx.isGlobalChatEnabled()) navigation.getMenu().removeItem(R.id.main_globalChat);
         navigation.setSelectedItemId(R.id.main_ongoingGame);
 
         currentGid = gid;
@@ -268,6 +301,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         navigation.getMenu().clear();
         navigation.inflateMenu(R.menu.navigation_lobby);
+        if (!pyx.isGlobalChatEnabled()) navigation.getMenu().removeItem(R.id.main_globalChat);
         navigation.setSelectedItemId(R.id.main_games);
 
         FragmentManager manager = getSupportFragmentManager();

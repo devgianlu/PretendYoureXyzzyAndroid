@@ -31,6 +31,7 @@ public class Utils {
     public static final String ACTION_PLAY_CUSTOM_CARD = "played_custom_card";
     public static final String ACTION_PLAY_CARD = "played_card";
     public static final String ACTION_STARRED_DECK_ADD = "added_starred_deck";
+    public static final String ACTION_SENT_MSG = "sent_message";
 
     public static String getCategoryFormal(Context context, Cardcast.Category category) {
         switch (category) {

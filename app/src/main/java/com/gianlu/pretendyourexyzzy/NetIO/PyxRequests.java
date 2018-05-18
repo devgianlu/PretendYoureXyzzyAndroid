@@ -135,6 +135,11 @@ public final class PyxRequests {
     }
 
     @NonNull
+    public static PyxRequest sendMessage(String msg) {
+        return new PyxRequest(Pyx.Op.CHAT, new NameValuePair("m", msg));
+    }
+
+    @NonNull
     public static PyxRequestWithResult<List<Name>> getNamesList() {
         return new PyxRequestWithResult<>(Pyx.Op.GET_NAMES_LIST, new Pyx.Processor<List<Name>>() {
             @NonNull

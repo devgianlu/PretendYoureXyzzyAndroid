@@ -27,19 +27,24 @@ import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 
-public class GameChatFragment extends Fragment implements ChatAdapter.Listener, Pyx.OnEventListener {
-    private static final String POLL_TAG = "gameChat";
+public class ChatFragment extends Fragment implements ChatAdapter.Listener, Pyx.OnEventListener {
     private RecyclerViewLayout recyclerViewLayout;
     private ChatAdapter adapter;
     private int gid;
     private RegisteredPyx pyx;
 
-    public static GameChatFragment getInstance(int gid) {
-        GameChatFragment fragment = new GameChatFragment();
+    @NonNull
+    public static ChatFragment getGameInstance(int gid) {
+        ChatFragment fragment = new ChatFragment();
         Bundle args = new Bundle();
         args.putSerializable("gid", gid);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @NonNull
+    public static ChatFragment getGlobalInstance() {
+        return new ChatFragment();
     }
 
     @Nullable
@@ -55,13 +60,12 @@ public class GameChatFragment extends Fragment implements ChatAdapter.Listener, 
         recyclerViewLayout.getList().addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 
         Bundle args = getArguments();
-        if (args == null || (gid = args.getInt("gid", -1)) == -1) {
-            recyclerViewLayout.showMessage(R.string.failedLoading, true);
-            return layout;
-        }
+        if (args == null) gid = -1;
+        else gid = args.getInt("gid", -1);
 
         adapter = new ChatAdapter(getContext(), this);
         recyclerViewLayout.loadListData(adapter);
+        onItemCountChanged(0);
 
         try {
             pyx = RegisteredPyx.get();
@@ -81,14 +85,14 @@ public class GameChatFragment extends Fragment implements ChatAdapter.Listener, 
 
                 message.setEnabled(false);
                 send.setEnabled(false);
-                pyx.request(PyxRequests.sendGameMessage(gid, msg), new Pyx.OnSuccess() {
+                send(msg, new Pyx.OnSuccess() {
                     @Override
                     public void onDone() {
                         message.setText(null);
                         message.setEnabled(true);
                         send.setEnabled(true);
 
-                        AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_SENT_GAME_MSG);
+
                     }
 
                     @Override
@@ -102,12 +106,23 @@ public class GameChatFragment extends Fragment implements ChatAdapter.Listener, 
                         });
                     }
                 });
+
             }
         });
 
-        pyx.polling().addListener(POLL_TAG, this);
+        pyx.polling().addListener(ChatFragment.class.getName() + gid, this);
 
         return layout;
+    }
+
+    private void send(String msg, Pyx.OnSuccess listener) {
+        if (gid == -1) {
+            pyx.request(PyxRequests.sendMessage(msg), listener);
+            AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_SENT_MSG);
+        } else {
+            pyx.request(PyxRequests.sendGameMessage(gid, msg), listener);
+            AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_SENT_GAME_MSG);
+        }
     }
 
     public void scrollToTop() {

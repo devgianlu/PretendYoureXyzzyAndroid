@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.WorkerThread;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
@@ -23,6 +24,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,13 +37,16 @@ import okhttp3.internal.Util;
 
 public class RegisteredPyx extends FirstLoadedPyx {
     private final User user;
+    private final boolean globalChatEnabled;
     private final PollingThread pollingThread;
 
+    @WorkerThread
     RegisteredPyx(Server server, Handler handler, OkHttpClient client, SharedPreferences preferences, FirstLoad firstLoad, User user) {
         super(server, handler, client, preferences, firstLoad);
         this.user = user;
         this.pollingThread = new PollingThread();
         this.pollingThread.start();
+        this.globalChatEnabled = testGlobalChat();
 
         Prefs.putString(preferences, PKeys.LAST_JSESSIONID, user.sessionId);
     }
@@ -54,6 +59,25 @@ public class RegisteredPyx extends FirstLoadedPyx {
     @Override
     protected final void prepareRequest(@NonNull Op operation, @NonNull Request.Builder request) {
         request.addHeader("Cookie", "JSESSIONID=" + user.sessionId);
+    }
+
+    private boolean testGlobalChat() { // Workaround for https://github.com/ajanata/PretendYoureXyzzy/issues/168
+        try {
+            requestSync(PyxRequests.sendMessage(""));
+            return true; // The message as been sent, but it shouldn't... Seems to work anyway...
+        } catch (JSONException | PyxException | IOException exx) {
+            if (exx instanceof PyxException) {
+                PyxException ex = (PyxException) exx;
+                if (Objects.equals(ex.errorCode, "nms")) {
+                    return true;
+                } else if (Objects.equals(ex.errorCode, "na")) {
+                    return false;
+                }
+            }
+
+            Logging.log(exx);
+            return false;
+        }
     }
 
     @NonNull
@@ -175,6 +199,10 @@ public class RegisteredPyx extends FirstLoadedPyx {
                 }
             }
         });
+    }
+
+    public boolean isGlobalChatEnabled() {
+        return globalChatEnabled;
     }
 
     public static class PartialCardcastAddFail extends Exception {

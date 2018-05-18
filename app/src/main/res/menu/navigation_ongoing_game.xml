@@ -6,12 +6,10 @@
         android:icon="@drawable/ic_supervisor_account_black_48dp"
         android:title="@string/playersLabel" />
 
-    <!--
     <item
         android:id="@+id/main_globalChat"
-        andric_logoicon="@drawable/ic_chat_black_48dp"
+        android:icon="@drawable/ic_chat_black_48dp"
         android:title="@string/globalChat" />
-        -->
 
     <item
         android:id="@+id/main_cardcast"

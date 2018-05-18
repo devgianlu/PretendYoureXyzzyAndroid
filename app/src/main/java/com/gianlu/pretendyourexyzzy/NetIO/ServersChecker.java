@@ -37,7 +37,7 @@ public class ServersChecker {
         return new Request.Builder().get().url(server.url).build();
     }
 
-    private void validateResponse(Pyx.Server server, Response response, long latency) { // TODO: Should be more strict
+    private void validateResponse(Pyx.Server server, Response response, long latency) { // See https://github.com/ajanata/PretendYoureXyzzy/issues/170
         CheckResult result;
         if (response.code() == 200) result = new CheckResult(ServerStatus.ONLINE, latency);
         else result = new CheckResult(ServerStatus.ERROR, -1);
