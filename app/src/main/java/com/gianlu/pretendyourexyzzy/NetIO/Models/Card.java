@@ -43,18 +43,18 @@ public class Card extends BaseCard {
         }
     }
 
-    private Card(int id, String text, String watermark, int numPick, int numDraw, boolean writeIn) {
-        this.id = id;
-        this.text = this.originalText = text;
-        this.watermark = this.originalWatermark = watermark;
-        this.numPick = numPick;
-        this.numDraw = numDraw;
-        this.writeIn = writeIn;
+    private Card() {
+        this.id = -1;
+        this.text = this.originalText = "";
+        this.watermark = this.originalWatermark = "";
+        this.numPick = -1;
+        this.numDraw = -1;
+        this.writeIn = false;
     }
 
     @NonNull
     public static Card newBlankCard() {
-        return new Card(-1, "", "", -1, -1, false);
+        return new Card();
     }
 
     @Override
@@ -75,6 +75,8 @@ public class Card extends BaseCard {
         return numPick != -1;
     }
 
+    @Override
+    @NonNull
     public JSONObject toJson() throws JSONException {
         return new JSONObject()
                 .put("cid", id)

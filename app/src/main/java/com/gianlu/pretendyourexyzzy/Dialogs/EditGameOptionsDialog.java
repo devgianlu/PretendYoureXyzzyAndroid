@@ -34,7 +34,6 @@ public class EditGameOptionsDialog extends DialogFragment {
     private TextInputLayout password;
     private LinearLayout cardSets;
     private LinearLayout layout;
-    private RegisteredPyx pyx;
     private int gid;
     private ApplyOptions listener;
 
@@ -103,6 +102,7 @@ public class EditGameOptionsDialog extends DialogFragment {
             return layout;
         }
 
+        RegisteredPyx pyx;
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
