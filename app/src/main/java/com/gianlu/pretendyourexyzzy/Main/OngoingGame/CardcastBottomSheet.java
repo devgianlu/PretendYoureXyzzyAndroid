@@ -40,12 +40,6 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSets
         this.dialog = dialog;
     }
 
-    public interface DialogsHelper {
-        void showDialog(Dialog dialog);
-
-        void showDialog(AlertDialog.Builder builder);
-    }
-
     @Override
     @SuppressWarnings("unchecked")
     protected void onUpdateViews(Object... payloads) {
@@ -130,5 +124,11 @@ public class CardcastBottomSheet extends NiceBaseBottomSheet implements CardSets
     @Override
     public void showDialog(Dialog dialog) {
         this.dialog.showDialog(dialog);
+    }
+
+    public interface DialogsHelper {
+        void showDialog(Dialog dialog);
+
+        void showDialog(AlertDialog.Builder builder);
     }
 }

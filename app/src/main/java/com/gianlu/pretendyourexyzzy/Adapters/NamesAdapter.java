@@ -20,11 +20,9 @@ import java.util.List;
 public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHolder, Name, NamesAdapter.Sorting, String> {
     private final LayoutInflater inflater;
     private final Listener listener;
-    private final List<Name> names;
 
     public NamesAdapter(Context context, List<Name> names, Listener listener) {
         super(names, Sorting.AZ);
-        this.names = names;
         this.inflater = LayoutInflater.from(context);
         this.listener = listener;
     }

@@ -91,8 +91,6 @@ public class ChatFragment extends Fragment implements ChatAdapter.Listener, Pyx.
                         message.setText(null);
                         message.setEnabled(true);
                         send.setEnabled(true);
-
-
                     }
 
                     @Override
