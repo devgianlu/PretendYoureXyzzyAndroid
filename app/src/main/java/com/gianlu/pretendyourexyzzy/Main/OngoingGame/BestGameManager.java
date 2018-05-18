@@ -297,6 +297,8 @@ public class BestGameManager implements Pyx.OnEventListener {
                             if (info.game.status == Game.Status.JUDGING) {
                                 GameInfo.Player judge = info.players.get(judgeIndex);
                                 ui.event(UiEvent.IS_JUDGING, judge.name);
+                            } else if (info.game.status == Game.Status.LOBBY) {
+                                ui.event(UiEvent.WAITING_FOR_START);
                             } else {
                                 ui.event(UiEvent.WAITING_FOR_ROUND_TO_END);
                             }
@@ -330,9 +332,14 @@ public class BestGameManager implements Pyx.OnEventListener {
                     judgingState(CardsGroup.list(obj.getJSONArray("wc")));
                     break;
                 case LOBBY:
+                    ui.event(UiEvent.WAITING_FOR_START);
+                    tableAdapter.clear();
+                    handAdapter.clear();
+                    ui.showTableCards();
                     break;
                 case DEALING:
                 case ROUND_OVER:
+                    // Never called
                     break;
             }
         }
