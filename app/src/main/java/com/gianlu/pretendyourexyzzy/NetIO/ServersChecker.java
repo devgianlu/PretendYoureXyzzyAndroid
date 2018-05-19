@@ -102,7 +102,7 @@ public class ServersChecker {
 
         @NonNull
         public static CheckResult online(@NonNull Stats stats, long latency) {
-            return new CheckResult(ServerStatus.ERROR, null, stats, latency);
+            return new CheckResult(ServerStatus.ONLINE, null, stats, latency);
         }
 
         public static class Stats {

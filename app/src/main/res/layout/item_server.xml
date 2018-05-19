@@ -63,5 +63,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+        <com.gianlu.commonutils.SuperTextView
+            android:id="@+id/serverItem_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/serverItem_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/red"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
     </LinearLayout>
 </LinearLayout>

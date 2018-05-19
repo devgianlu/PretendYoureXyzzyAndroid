@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.ServersChecker;
 import com.gianlu.pretendyourexyzzy.R;
@@ -63,6 +64,8 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
         if (server.status == null) {
             holder.checking.setVisibility(View.VISIBLE);
             holder.status.setVisibility(View.GONE);
+            holder.error.setVisibility(View.GONE);
+            holder.details.setVisibility(View.GONE);
         } else {
             holder.checking.setVisibility(View.GONE);
             holder.status.setVisibility(View.VISIBLE);
@@ -71,20 +74,27 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
                     holder.statusIcon.setImageResource(R.drawable.ic_done_black_48dp);
                     holder.latency.setVisibility(View.VISIBLE);
                     holder.latency.setText(String.format(Locale.getDefault(), "%dms", server.status.latency));
+                    holder.error.setVisibility(View.GONE);
 
-                    // TODO: Show stats
+                    ServersChecker.CheckResult.Stats stats = server.status.stats;
+                    holder.details.setVisibility(View.VISIBLE);
+                    holder.details.setHtml(R.string.usersAndGames, stats.users, stats.maxUsers, stats.games, stats.maxGames);
                     break;
                 case ERROR:
                     holder.statusIcon.setImageResource(R.drawable.ic_error_outline_black_48dp);
                     holder.latency.setVisibility(View.GONE);
+                    holder.details.setVisibility(View.GONE);
 
-                    // TODO: Show error message
+                    holder.error.setVisibility(View.VISIBLE);
+                    holder.error.setText(server.status.ex.getLocalizedMessage());
                     break;
                 case OFFLINE:
                     holder.statusIcon.setImageResource(R.drawable.ic_clear_black_48dp);
                     holder.latency.setVisibility(View.GONE);
+                    holder.details.setVisibility(View.GONE);
 
-                    // TODO: Show error message
+                    holder.error.setVisibility(View.VISIBLE);
+                    holder.error.setText(server.status.ex.getLocalizedMessage());
                     break;
             }
         }
@@ -121,6 +131,8 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
         final LinearLayout status;
         final ImageView statusIcon;
         final TextView latency;
+        final TextView error;
+        final SuperTextView details;
 
         public ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.item_server, parent, false));
@@ -131,6 +143,8 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
             status = itemView.findViewById(R.id.serverItem_status);
             statusIcon = status.findViewById(R.id.serverItem_statusIcon);
             latency = status.findViewById(R.id.serverItem_latency);
+            error = itemView.findViewById(R.id.serverItem_error);
+            details = itemView.findViewById(R.id.serverItem_details);
         }
     }
 }
