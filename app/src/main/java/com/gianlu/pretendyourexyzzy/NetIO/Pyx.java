@@ -293,7 +293,7 @@ public class Pyx implements Closeable {
     }
 
     public static class Server {
-        public final static Map<String, Server> pyxServers = new HashMap<>();
+        private final static Map<String, Server> pyxServers = new HashMap<>();
         private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
 
         static {
@@ -375,7 +375,14 @@ public class Pyx implements Closeable {
         }
 
         @NonNull
-        public static List<Server> loadUserServers(Context context) {
+        public static List<Server> loadAllServers(Context context) {
+            List<Server> servers = loadUserServers(context);
+            servers.addAll(0, pyxServers.values());
+            return servers;
+        }
+
+        @NonNull
+        private static List<Server> loadUserServers(Context context) {
             List<Server> servers = new ArrayList<>();
             JSONArray array;
             try {
@@ -442,19 +449,21 @@ public class Pyx implements Closeable {
         }
 
         public static void removeServer(Context context, Server server) {
-            try {
-                JSONArray array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
-                for (int i = 0; i < array.length(); i++) {
-                    JSONObject obj = array.getJSONObject(i);
-                    if (Objects.equals(obj.optString("name"), server.name)) {
-                        array.remove(i);
-                        break;
+            if (server.canDelete()) {
+                try {
+                    JSONArray array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.getJSONObject(i);
+                        if (Objects.equals(obj.optString("name"), server.name)) {
+                            array.remove(i);
+                            break;
+                        }
                     }
-                }
 
-                Prefs.putJSONArray(context, PKeys.USER_SERVERS, array);
-            } catch (JSONException ex) {
-                Logging.log(ex);
+                    Prefs.putJSONArray(context, PKeys.USER_SERVERS, array);
+                } catch (JSONException ex) {
+                    Logging.log(ex);
+                }
             }
         }
 
@@ -465,6 +474,10 @@ public class Pyx implements Closeable {
                 Logging.log(ex);
                 return true;
             }
+        }
+
+        public boolean canDelete() {
+            return !pyxServers.values().contains(this);
         }
 
         @NonNull

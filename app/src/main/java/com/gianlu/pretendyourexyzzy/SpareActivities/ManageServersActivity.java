@@ -34,7 +34,7 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
 
     @Override
     public void loadServers() {
-        adapter = new ServersAdapter(this, Pyx.Server.loadUserServers(this), this);
+        adapter = new ServersAdapter(this, Pyx.Server.loadAllServers(this), this);
         layout.loadListData(adapter, false);
     }
 
@@ -73,6 +73,6 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
 
     @Override
     public void serverSelected(@NonNull Pyx.Server server) {
-        showDialog(Dialogs.addServer(this, server, this));
+        if (server.canDelete()) showDialog(Dialogs.addServer(this, server, this));
     }
 }

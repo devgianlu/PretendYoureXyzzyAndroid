@@ -36,7 +36,6 @@ import com.gianlu.pretendyourexyzzy.SpareActivities.ManageServersActivity;
 import com.gianlu.pretendyourexyzzy.SpareActivities.TutorialActivity;
 
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -148,9 +147,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     private void changeServerDialog(boolean dismissible) {
-        final List<Pyx.Server> availableServers = new ArrayList<>();
-        availableServers.addAll(Pyx.Server.pyxServers.values());
-        availableServers.addAll(Pyx.Server.loadUserServers(this));
+        final List<Pyx.Server> availableServers = Pyx.Server.loadAllServers(this);
 
         int selectedServer = Pyx.Server.indexOf(availableServers, Prefs.getString(LoadingActivity.this, PKeys.LAST_SERVER, "PYX1"));
         if (selectedServer < 0) selectedServer = 0;
