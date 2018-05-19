@@ -14,8 +14,6 @@ public enum PKeys implements Prefs.PrefKey {
     KEEP_SCREEN_ON("keepScreenOn"),
     STARRED_DECKS("starredDecks"),
     LAST_JSESSIONID("lastJSessionId"),
-    CACHED_DECK_NAMES("cachedDeckNames"),
-    CACHED_DECK_CODES("cachedDeckCodes"),
     FIRST_RUN("first_run"),
     TUTORIAL_DISCOVERIES("tutorialDiscoveries"),
     LAST_ID_CODE("lastIdCode");

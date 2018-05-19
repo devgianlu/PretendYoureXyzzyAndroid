@@ -164,7 +164,7 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
         layout.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
-        cardcast = Cardcast.get(getContext());
+        cardcast = Cardcast.get();
         layout.enableSwipeRefresh(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {

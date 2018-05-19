@@ -16,7 +16,8 @@ public class CardSet implements Serializable {
     public final int blackCards;
     public final int whiteCards;
     public final boolean baseDeck;
-    private CardcastDeck cardcastDeck;
+    public final String cardcastCode;
+    private CardcastDeckInfo cardcastDeck;
 
     @Keep
     public CardSet(JSONObject obj) throws JSONException {
@@ -27,14 +28,17 @@ public class CardSet implements Serializable {
         blackCards = obj.getInt("bcid");
         baseDeck = obj.getBoolean("bd");
         whiteCards = obj.getInt("wcid");
+
+        if (id < 0) cardcastCode = Integer.toString(-id, 36).substring(0, 5).toUpperCase();
+        else cardcastCode = null;
+    }
+
+    public void cardcastDeck(CardcastDeckInfo cardcastDeck) {
+        this.cardcastDeck = cardcastDeck;
     }
 
     @Nullable
-    public CardcastDeck cardcastDeck() {
+    public CardcastDeckInfo cardcastDeck() {
         return cardcastDeck;
-    }
-
-    public void cardcastDeck(CardcastDeck deck) {
-        cardcastDeck = deck;
     }
 }

@@ -204,8 +204,8 @@ public final class PyxRequests {
                     cards.add(set);
 
                     try {
-                        set.cardcastDeck(cardcast.guessDeckSync(set));
-                    } catch (IOException | ParseException ex) {
+                        set.cardcastDeck(cardcast.getDeckInfoHitCache(set.cardcastCode));
+                    } catch (IOException | ParseException | JSONException ex) {
                         Logging.log(ex);
                     }
                 }

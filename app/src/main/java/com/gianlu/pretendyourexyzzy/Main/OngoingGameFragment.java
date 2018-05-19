@@ -149,7 +149,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
 
         try {
             pyx = RegisteredPyx.get();
-            cardcast = Cardcast.get(getContext());
+            cardcast = Cardcast.get();
         } catch (LevelMismatchException ex) {
             Logging.log(ex);
             loading.setVisibility(View.GONE);
