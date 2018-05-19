@@ -4,7 +4,11 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -15,14 +19,117 @@ import android.widget.TextView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.SuperTextView;
+import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONException;
 
+import java.util.Objects;
+
+import okhttp3.HttpUrl;
+
 public final class Dialogs {
+
+    @SuppressLint("InflateParams")
+    public static AlertDialog addServer(@NonNull final Context context, @Nullable final Pyx.Server server, @NonNull final OnAddServer listener) {
+        LinearLayout layout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.dialog_add_server, null, false);
+
+        final TextInputLayout nameField = layout.findViewById(R.id.addServer_name);
+        CommonUtils.getEditText(nameField).addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                nameField.setErrorEnabled(false);
+            }
+        });
+        final TextInputLayout urlField = layout.findViewById(R.id.addServer_url);
+        CommonUtils.getEditText(urlField).addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                urlField.setErrorEnabled(false);
+            }
+        });
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(R.string.addServer)
+                .setView(layout)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(server == null ? R.string.add : R.string.apply, null);
+
+        if (server != null) {
+            CommonUtils.setText(nameField, server.name);
+            CommonUtils.setText(urlField, server.url.toString());
+            builder.setNeutralButton(R.string.remove, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Pyx.Server.removeServer(context, server);
+                    listener.removeItem(server);
+                }
+            });
+        }
+
+        final AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(final DialogInterface dialogInterface) {
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String nameStr = CommonUtils.getText(nameField);
+                        if (nameStr.isEmpty() || (server != null && !Objects.equals(server.name, nameStr) && Pyx.Server.hasServer(context, nameStr))) {
+                            nameField.setError(context.getString(R.string.invalidServerName));
+                            return;
+                        }
+
+                        String urlStr = CommonUtils.getText(urlField);
+                        HttpUrl url = Pyx.Server.parseUrl(urlStr);
+                        if (url == null) {
+                            urlField.setError(context.getString(R.string.invalidServerUrl));
+                            return;
+                        }
+
+                        Pyx.Server server = new Pyx.Server(url, nameStr);
+                        try {
+                            Pyx.Server.addServer(context, server);
+                            listener.loadServers();
+                        } catch (JSONException ex) {
+                            Toaster.show(context, Utils.Messages.FAILED_ADDING_SERVER, ex);
+                        }
+
+                        dialogInterface.dismiss();
+                    }
+                });
+            }
+        });
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                listener.startTests();
+            }
+        });
+        return dialog;
+    }
 
     @NonNull
     @SuppressLint("InflateParams")
@@ -111,6 +218,14 @@ public final class Dialogs {
                         listener.onConfirmed();
                     }
                 }).setNegativeButton(android.R.string.no, null);
+    }
+
+    public interface OnAddServer {
+        void loadServers();
+
+        void removeItem(Pyx.Server server);
+
+        void startTests();
     }
 
     public interface OnConfirmed {

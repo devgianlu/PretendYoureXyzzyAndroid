@@ -39,7 +39,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
         notifyDataSetChanged();
     }
 
-    public void notifyItemRemoved(Pyx.Server server) {
+    public void removeItem(Pyx.Server server) {
         int index = servers.indexOf(server);
         if (index != -1) {
             servers.remove(index);
