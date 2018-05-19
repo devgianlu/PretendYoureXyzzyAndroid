@@ -31,7 +31,7 @@ public abstract class BaseCard {
     public abstract JSONObject toJson() throws JSONException;
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return id() * 31 + text().hashCode();
     }
 }
