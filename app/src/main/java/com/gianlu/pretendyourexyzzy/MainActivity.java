@@ -99,7 +99,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         cardcastFragment = CardcastFragment.getInstance();
         transaction.add(R.id.main_container, cardcastFragment, TAG_CARDCAST);
 
-        if (pyx.isGlobalChatEnabled()) {
+        if (pyx.config().globalChatEnabled) {
             globalChatFragment = ChatFragment.getGlobalInstance();
             transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
         }
@@ -107,7 +107,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         transaction.commitNow();
 
         navigation = findViewById(R.id.main_navigation);
-        if (!pyx.isGlobalChatEnabled()) navigation.getMenu().removeItem(R.id.main_globalChat);
+        if (!pyx.config().globalChatEnabled) navigation.getMenu().removeItem(R.id.main_globalChat);
         navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -299,7 +299,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT).commitNowAllowingStateLoss();
         navigation.getMenu().clear();
         navigation.inflateMenu(R.menu.navigation_ongoing_game);
-        if (!pyx.isGlobalChatEnabled()) navigation.getMenu().removeItem(R.id.main_globalChat);
+        if (!pyx.config().globalChatEnabled) navigation.getMenu().removeItem(R.id.main_globalChat);
         navigation.setSelectedItemId(R.id.main_ongoingGame);
 
         currentGid = gid;
@@ -311,7 +311,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         navigation.getMenu().clear();
         navigation.inflateMenu(R.menu.navigation_lobby);
-        if (!pyx.isGlobalChatEnabled()) navigation.getMenu().removeItem(R.id.main_globalChat);
+        if (!pyx.config().globalChatEnabled) navigation.getMenu().removeItem(R.id.main_globalChat);
         navigation.setSelectedItemId(R.id.main_games);
 
         FragmentManager manager = getSupportFragmentManager();

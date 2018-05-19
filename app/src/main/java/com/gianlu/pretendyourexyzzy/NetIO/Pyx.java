@@ -13,7 +13,9 @@ import android.support.annotation.WorkerThread;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.Preferences.Prefs;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CahConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoadAndConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.PKeys;
 
@@ -24,6 +26,7 @@ import org.json.JSONObject;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -158,23 +161,58 @@ public class Pyx implements Closeable {
         return request.processor.process(preferences, resp.resp, resp.obj);
     }
 
+    @WorkerThread
+    @NonNull
+    private FirstLoadAndConfig firstLoadSync() throws PyxException, IOException, JSONException {
+        FirstLoad fl = requestSync(PyxRequests.firstLoad());
+
+        CahConfig cahConfig;
+        try (Response resp = client.newBuilder()
+                .connectTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
+                .build().newCall(new Request.Builder()
+                        .url(server.config()).get().build()).execute()) {
+
+            ResponseBody respBody = resp.body();
+            if (respBody != null) cahConfig = new CahConfig(respBody.string());
+            else throw new StatusCodeException(resp);
+        } catch (ParseException ex) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) throw new JSONException(ex);
+            else throw new JSONException(ex.getMessage());
+        }
+
+        return new FirstLoadAndConfig(fl, cahConfig);
+    }
+
     public final void firstLoad(final OnResult<FirstLoadedPyx> listener) {
         final InstanceHolder holder = InstanceHolder.holder();
 
         try {
             listener.onDone((FirstLoadedPyx) holder.get(InstanceHolder.Level.FIRST_LOADED));
         } catch (LevelMismatchException exx) {
-            request(PyxRequests.firstLoad(), new OnResult<FirstLoad>() {
+            executor.execute(new Runnable() {
                 @Override
-                public void onDone(@NonNull FirstLoad result) {
-                    FirstLoadedPyx pyx = new FirstLoadedPyx(server, handler, client, preferences, result);
-                    holder.set(pyx);
-                    listener.onDone(pyx);
-                }
+                public void run() {
+                    try {
+                        FirstLoadAndConfig result = firstLoadSync();
 
-                @Override
-                public void onException(@NonNull Exception ex) {
-                    listener.onException(ex);
+                        final FirstLoadedPyx pyx = new FirstLoadedPyx(server, handler, client, preferences, result);
+                        holder.set(pyx);
+
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onDone(pyx);
+                            }
+                        });
+                    } catch (PyxException | IOException | JSONException ex) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onException(ex);
+                            }
+                        });
+                    }
                 }
             });
         }
@@ -273,6 +311,7 @@ public class Pyx implements Closeable {
         public ServersChecker.CheckResult status = null;
         private HttpUrl ajaxUrl;
         private HttpUrl pollingUrl;
+        private HttpUrl configUrl;
 
         public Server(@NonNull HttpUrl url, @NonNull String name) {
             this.url = url;
@@ -433,6 +472,14 @@ public class Pyx implements Closeable {
                 ajaxUrl = url.newBuilder().addPathSegment("AjaxServlet").build();
 
             return ajaxUrl;
+        }
+
+        @NonNull
+        public HttpUrl config() {
+            if (configUrl == null)
+                configUrl = url.newBuilder().addPathSegments("js/cah.config.js").build();
+
+            return configUrl;
         }
 
         @NonNull

@@ -4,9 +4,10 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.WorkerThread;
 
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CahConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoadAndConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 
 import org.json.JSONException;
@@ -16,16 +17,21 @@ import java.io.IOException;
 import okhttp3.OkHttpClient;
 
 public class FirstLoadedPyx extends Pyx {
-    protected final FirstLoad firstLoad;
+    private final FirstLoadAndConfig firstLoadAndConfig;
 
-    FirstLoadedPyx(Server server, Handler handler, OkHttpClient client, SharedPreferences preferences, FirstLoad firstLoad) {
+    FirstLoadedPyx(Server server, Handler handler, OkHttpClient client, SharedPreferences preferences, FirstLoadAndConfig firstLoadAndConfig) {
         super(server, handler, client, preferences);
-        this.firstLoad = firstLoad;
+        this.firstLoadAndConfig = firstLoadAndConfig;
     }
 
     @NonNull
-    public final FirstLoad firstLoad() {
-        return firstLoad;
+    public FirstLoad firstLoad() {
+        return firstLoadAndConfig.firstLoad;
+    }
+
+    @NonNull
+    public CahConfig config() {
+        return firstLoadAndConfig.cahConfig;
     }
 
     public final void register(@NonNull final String nickname, @Nullable final String idCode, final OnResult<RegisteredPyx> listener) {
@@ -57,25 +63,9 @@ public class FirstLoadedPyx extends Pyx {
         }
     }
 
-    public void upgrade(@NonNull final User user, final OnSuccess listener) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                upgrade(user);
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.onDone();
-                    }
-                });
-            }
-        });
-    }
-
     @NonNull
-    @WorkerThread
-    private RegisteredPyx upgrade(@NonNull User user) {
-        RegisteredPyx pyx = new RegisteredPyx(server, handler, client, preferences, firstLoad, user);
+    public RegisteredPyx upgrade(@NonNull User user) {
+        RegisteredPyx pyx = new RegisteredPyx(server, handler, client, preferences, firstLoadAndConfig, user);
         InstanceHolder.holder().set(pyx);
         return pyx;
     }
