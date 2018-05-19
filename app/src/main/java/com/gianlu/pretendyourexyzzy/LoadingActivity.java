@@ -2,12 +2,14 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
@@ -84,6 +86,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         }
 
         loading = findViewById(R.id.loading_loading);
+        loading.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(this, R.color.colorPrimary), PorterDuff.Mode.SRC_IN);
         register = findViewById(R.id.loading_register);
         registerNickname = findViewById(R.id.loading_registerNickname);
         registerSubmit = findViewById(R.id.loading_registerSubmit);

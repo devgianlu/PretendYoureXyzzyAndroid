@@ -15,7 +15,7 @@
         android:layout_width="128dp"
         android:layout_height="128dp"
         android:layout_gravity="center_horizontal"
-        android:src="@drawable/ic_logo" />
+        android:src="@drawable/ic_launcher" />
 
     <ProgressBar
         android:id="@+id/loading_loading"
