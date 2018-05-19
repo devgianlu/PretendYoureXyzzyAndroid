@@ -71,14 +71,20 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
                     holder.statusIcon.setImageResource(R.drawable.ic_done_black_48dp);
                     holder.latency.setVisibility(View.VISIBLE);
                     holder.latency.setText(String.format(Locale.getDefault(), "%dms", server.status.latency));
+
+                    // TODO: Show stats
                     break;
                 case ERROR:
                     holder.statusIcon.setImageResource(R.drawable.ic_error_outline_black_48dp);
                     holder.latency.setVisibility(View.GONE);
+
+                    // TODO: Show error message
                     break;
                 case OFFLINE:
                     holder.statusIcon.setImageResource(R.drawable.ic_clear_black_48dp);
                     holder.latency.setVisibility(View.GONE);
+
+                    // TODO: Show error message
                     break;
             }
         }

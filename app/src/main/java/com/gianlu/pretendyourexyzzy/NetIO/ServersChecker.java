@@ -3,19 +3,24 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.gianlu.commonutils.Logging;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.text.ParseException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class ServersChecker {
     private static final int TIMEOUT = 5; // sec
@@ -33,28 +38,31 @@ public class ServersChecker {
     }
 
     @NonNull
-    private static Request createRequest(Pyx.Server server) {
-        return new Request.Builder().get().url(server.url).build();
+    private static Request createRequest(@NonNull Pyx.Server server) {
+        return new Request.Builder().get().url(server.stats()).build();
     }
 
-    private void validateResponse(Pyx.Server server, Response response, long latency) { // See https://github.com/ajanata/PretendYoureXyzzy/issues/170
-        CheckResult result;
-        if (response.code() == 200) result = new CheckResult(ServerStatus.ONLINE, latency);
-        else result = new CheckResult(ServerStatus.ERROR, -1);
-        server.status = result;
+    @NonNull
+    private CheckResult validateResponse(@NonNull Response response, long latency) throws IOException {
+        ResponseBody body = response.body();
+        if (body == null) return CheckResult.error(new NullPointerException("body is null!"));
+
+        try {
+            return CheckResult.online(new CheckResult.Stats(body.string()), latency);
+        } catch (ParseException ex) {
+            throw new IOException(ex);
+        }
     }
 
-    private void handleException(Pyx.Server server, Throwable ex) {
-        CheckResult result;
+    @NonNull
+    private CheckResult handleException(@NonNull Throwable ex) {
         if (ex instanceof SocketTimeoutException || ex instanceof UnknownHostException)
-            result = new CheckResult(ServerStatus.OFFLINE, -1);
+            return CheckResult.offline(ex);
         else
-            result = new CheckResult(ServerStatus.ERROR, -1);
-
-        server.status = result;
+            return CheckResult.error(ex);
     }
 
-    public void check(Pyx.Server server, OnResult listener) {
+    public void check(@NonNull Pyx.Server server, OnResult listener) {
         server.status = null;
         executorService.execute(new Runner(server, listener));
     }
@@ -69,13 +77,80 @@ public class ServersChecker {
         void serverChecked(Pyx.Server server);
     }
 
-    public class CheckResult {
+    public static class CheckResult {
         public final ServerStatus status;
+        public final Stats stats;
         public final long latency;
+        public final Throwable ex;
 
-        CheckResult(ServerStatus status, long latency) {
+        private CheckResult(@NonNull ServerStatus status, @Nullable Throwable ex, @Nullable Stats stats, long latency) {
             this.status = status;
+            this.ex = ex;
+            this.stats = stats;
             this.latency = latency;
+        }
+
+        @NonNull
+        public static CheckResult offline(@NonNull Throwable ex) {
+            return new CheckResult(ServerStatus.OFFLINE, ex, null, -1);
+        }
+
+        @NonNull
+        public static CheckResult error(@NonNull Throwable ex) {
+            return new CheckResult(ServerStatus.ERROR, ex, null, -1);
+        }
+
+        @NonNull
+        public static CheckResult online(@NonNull Stats stats, long latency) {
+            return new CheckResult(ServerStatus.ERROR, null, stats, latency);
+        }
+
+        public static class Stats {
+            private static final Pattern PATTERN = Pattern.compile("(.+?)\\s(.+)");
+            public final int maxUsers;
+            public final int users;
+            public final int maxGames;
+            public final int games;
+
+            Stats(String str) throws ParseException {
+                Matcher matcher = PATTERN.matcher(str);
+
+                Integer maxUsersTmp = null;
+                Integer usersTmp = null;
+                Integer gamesTmp = null;
+                Integer maxGamesTmp = null;
+                while (matcher.find()) {
+                    String name = matcher.group(1);
+                    String val = matcher.group(2);
+
+                    switch (name) {
+                        case "USERS":
+                            usersTmp = Integer.parseInt(val);
+                            break;
+                        case "GAMES":
+                            gamesTmp = Integer.parseInt(val);
+                            break;
+                        case "MAX_USERS":
+                            maxUsersTmp = Integer.parseInt(val);
+                            break;
+                        case "MAX_GAMES":
+                            maxGamesTmp = Integer.parseInt(val);
+                            break;
+                    }
+                }
+
+                if (maxUsersTmp == null) throw new ParseException("MAX_USERS", 0);
+                else maxUsers = maxUsersTmp;
+
+                if (usersTmp == null) throw new ParseException("USERS", 0);
+                else users = usersTmp;
+
+                if (maxGamesTmp == null) throw new ParseException("MAX_GAMES", 0);
+                else maxGames = maxGamesTmp;
+
+                if (gamesTmp == null) throw new ParseException("GAMES", 0);
+                else games = gamesTmp;
+            }
         }
     }
 
@@ -93,10 +168,10 @@ public class ServersChecker {
             try {
                 long start = System.currentTimeMillis();
                 Response response = client.newCall(createRequest(server)).execute();
-                validateResponse(server, response, System.currentTimeMillis() - start);
+                server.status = validateResponse(response, System.currentTimeMillis() - start);
             } catch (IOException ex) {
                 Logging.log(ex);
-                handleException(server, ex);
+                server.status = handleException(ex);
             }
 
             handler.post(new Runnable() {

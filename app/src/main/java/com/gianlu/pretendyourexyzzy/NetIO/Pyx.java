@@ -308,10 +308,11 @@ public class Pyx implements Closeable {
 
         public final HttpUrl url;
         public final String name;
-        public ServersChecker.CheckResult status = null;
-        private HttpUrl ajaxUrl;
-        private HttpUrl pollingUrl;
-        private HttpUrl configUrl;
+        public transient volatile ServersChecker.CheckResult status = null;
+        private transient HttpUrl ajaxUrl;
+        private transient HttpUrl pollingUrl;
+        private transient HttpUrl configUrl;
+        private transient HttpUrl statsUrl;
 
         public Server(@NonNull HttpUrl url, @NonNull String name) {
             this.url = url;
@@ -464,6 +465,14 @@ public class Pyx implements Closeable {
                 Logging.log(ex);
                 return true;
             }
+        }
+
+        @NonNull
+        public HttpUrl stats() {
+            if (statsUrl == null)
+                statsUrl = url.newBuilder().addPathSegment("stats.jsp").build();
+
+            return statsUrl;
         }
 
         @NonNull
