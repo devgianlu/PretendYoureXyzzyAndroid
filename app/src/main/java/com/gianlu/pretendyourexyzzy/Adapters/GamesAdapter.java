@@ -90,7 +90,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final ViewHolder holder, int position, @NonNull final Game game) {
+    public void onSetupViewHolder(@NonNull final ViewHolder holder, int position, @NonNull final Game game) {
         holder.name.setText(game.host);
         holder.players.setHtml(R.string.players, game.players.size(), game.options.playersLimit);
         holder.spectators.setHtml(R.string.spectators, game.spectators.size(), game.options.spectatorsLimit);
@@ -123,6 +123,10 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         });
 
         CommonUtils.setRecyclerViewTopMargin(context, holder);
+    }
+
+    @Override
+    protected void onUpdateViewHolder(@NonNull ViewHolder holder, int position, @NonNull Game payload) {
     }
 
     @NonNull

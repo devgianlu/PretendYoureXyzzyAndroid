@@ -49,7 +49,7 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull final Name name) {
+    protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull final Name name) {
         holder.name.setHtml(name.sigil() == Name.Sigil.NORMAL_USER ? name.withSigil() : (SuperTextView.makeBold(name.sigil().symbol()) + name.noSigil()));
         holder.mobile.setVisibility(isMobile(name.noSigil()) ? View.VISIBLE : View.GONE);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -58,6 +58,10 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
                 listener.onNameSelected(name.noSigil());
             }
         });
+    }
+
+    @Override
+    protected void onUpdateViewHolder(@NonNull ViewHolder holder, int position, @NonNull Name payload) {
     }
 
     @Override
