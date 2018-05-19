@@ -212,6 +212,11 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 register.setVisibility(View.GONE);
 
                 final String idCode = getIdCode();
+                if (idCode == null && !pyx.config().insecureIdAllowed) {
+                    registerIdCode.setError(getString(R.string.mustProvideIdCode));
+                    return;
+                }
+
                 String nick = CommonUtils.getText(registerNickname);
                 pyx.register(nick, idCode, new Pyx.OnResult<RegisteredPyx>() {
                     @Override

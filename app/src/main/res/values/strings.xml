@@ -203,6 +203,7 @@
     <string name="gameLobbyOpenDetails"><![CDATA[<b>Game:</b>]]> %1$s <![CDATA[<i>(lobby, %2$d/%3$d)</i>]]></string>
     <string name="gameLobbyLockedDetails"><![CDATA[<b>Game:</b>]]> %1$s <![CDATA[<i>(lobby, %2$d/%3$d, locked)</i>]]></string>
     <string name="cancel">Cancel</string>
+    <string name="mustProvideIdCode">An ID code is strictly necessary to join this server.</string>
 
     <!-- Game messages -->
     <string name="game_spectator">You\'re a spectator. Just watch!</string>
