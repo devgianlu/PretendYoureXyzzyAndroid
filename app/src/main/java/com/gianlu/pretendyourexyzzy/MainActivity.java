@@ -107,6 +107,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         transaction.commitNow();
 
         navigation = findViewById(R.id.main_navigation);
+        if (!pyx.isGlobalChatEnabled()) navigation.getMenu().removeItem(R.id.main_globalChat);
         navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -159,8 +160,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 }
             }
         });
-
-        if (!pyx.isGlobalChatEnabled()) navigation.getMenu().removeItem(R.id.main_globalChat);
 
         navigation.setSelectedItemId(R.id.main_games);
         setKeepScreenOn(Prefs.getBoolean(this, PKeys.KEEP_SCREEN_ON, true));
@@ -274,13 +273,16 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                     transaction.add(R.id.main_container, cardcastFragment, TAG_CARDCAST);
                     break;
                 case TAG_ONGOING_GAME:
-                    transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
+                    if (ongoingGameFragment != null)
+                        transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
                     break;
                 case TAG_GAME_CHAT:
-                    transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT);
+                    if (gameChatFragment != null)
+                        transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT);
                     break;
                 case TAG_GLOBAL_CHAT:
-                    transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
+                    if (globalChatFragment != null)
+                        transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
                     break;
             }
         }
