@@ -21,6 +21,7 @@ import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.Date;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 
@@ -30,7 +31,7 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
     private final Cardcast.Search search;
     private final int limit;
     private final Listener listener;
-    private final Random random = new Random();
+    private final Random random = ThreadLocalRandom.current();
 
     public CardcastDecksAdapter(Context context, Cardcast cardcast, Cardcast.Search search, CardcastDecks items, int limit, Listener listener) {
         super(new Config<CardcastDeck>(context).items(items).undeterminedPages().noSeparators());
@@ -39,12 +40,6 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
         this.search = search;
         this.limit = limit;
         this.listener = listener;
-        setHasStableIds(true);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return items.get(position).getItem().name.hashCode();
     }
 
     @Nullable
