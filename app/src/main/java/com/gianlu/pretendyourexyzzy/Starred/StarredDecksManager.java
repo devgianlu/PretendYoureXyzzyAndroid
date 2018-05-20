@@ -1,10 +1,9 @@
-package com.gianlu.pretendyourexyzzy.Cards;
+package com.gianlu.pretendyourexyzzy.Starred;
 
 import android.content.Context;
-import android.support.annotation.Keep;
+import android.support.annotation.NonNull;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
-import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PKeys;
@@ -22,11 +21,10 @@ import java.util.Objects;
 
 public class StarredDecksManager {
 
-    public static boolean hasDeck(Context context, String code) {
+    public static boolean hasDeck(@NonNull Context context, @NonNull String code) {
         try {
-            JSONArray starredDecksArray = new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_DECKS, "[]"));
-            List<StarredDeck> starredDecks = CommonUtils.toTList(starredDecksArray, StarredDeck.class);
-            for (StarredDeck deck : starredDecks)
+            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_DECKS, "[]")));
+            for (StarredDeck deck : decks)
                 if (Objects.equals(deck.code, code))
                     return true;
 
@@ -37,12 +35,11 @@ public class StarredDecksManager {
         }
     }
 
-    public static void addDeck(Context context, StarredDeck deck) {
+    public static void addDeck(@NonNull Context context, @NonNull StarredDeck deck) {
         try {
-            JSONArray starredDecksArray = new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_DECKS, "[]"));
-            List<StarredDeck> starredDecks = CommonUtils.toTList(starredDecksArray, StarredDeck.class);
-            if (!starredDecks.contains(deck)) starredDecks.add(deck);
-            saveDecks(context, starredDecks);
+            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_DECKS, "[]")));
+            if (!decks.contains(deck)) decks.add(deck);
+            saveDecks(context, decks);
         } catch (JSONException ex) {
             Logging.log(ex);
         }
@@ -50,35 +47,33 @@ public class StarredDecksManager {
         AnalyticsApplication.sendAnalytics(context, Utils.ACTION_STARRED_DECK_ADD);
     }
 
-    private static void saveDecks(Context context, List<StarredDeck> decks) {
+    private static void saveDecks(@NonNull Context context, List<StarredDeck> decks) {
         try {
-            JSONArray starredDecksArray = new JSONArray();
-            for (StarredDeck deck : decks) starredDecksArray.put(deck.toJson());
-            Prefs.putBase64String(context, PKeys.STARRED_DECKS, starredDecksArray.toString());
+            JSONArray array = new JSONArray();
+            for (StarredDeck deck : decks) array.put(deck.toJson());
+            Prefs.putBase64String(context, PKeys.STARRED_DECKS, array.toString());
         } catch (JSONException ex) {
             Logging.log(ex);
         }
     }
 
-    public static void removeDeck(Context context, String code) {
+    public static void removeDeck(@NonNull Context context, @NonNull String code) {
         try {
-            JSONArray starredDecksArray = new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_DECKS, "[]"));
-            List<StarredDeck> starredDecks = CommonUtils.toTList(starredDecksArray, StarredDeck.class);
-            Iterator<StarredDeck> iterator = starredDecks.iterator();
+            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_DECKS, "[]")));
+            Iterator<StarredDeck> iterator = decks.iterator();
             while (iterator.hasNext())
                 if (Objects.equals(iterator.next().code, code))
                     iterator.remove();
 
-            saveDecks(context, starredDecks);
+            saveDecks(context, decks);
         } catch (JSONException ex) {
             Logging.log(ex);
         }
     }
 
-    public static List<StarredDeck> loadDecks(Context context) {
+    public static List<StarredDeck> loadDecks(@NonNull Context context) {
         try {
-            JSONArray starredDecksArray = new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_DECKS, "[]"));
-            List<StarredDeck> decks = CommonUtils.toTList(starredDecksArray, StarredDeck.class);
+            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_DECKS, "[]")));
             Collections.reverse(decks);
             return decks;
         } catch (JSONException ex) {
@@ -87,7 +82,7 @@ public class StarredDecksManager {
         }
     }
 
-    public static boolean hasAnyDeck(Context context) {
+    public static boolean hasAnyDeck(@NonNull Context context) {
         try {
             return new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_DECKS, "[]")).length() > 0;
         } catch (JSONException ex) {
@@ -105,11 +100,17 @@ public class StarredDecksManager {
             this.name = name;
         }
 
-        @SuppressWarnings("unused")
-        @Keep
-        public StarredDeck(JSONObject obj) throws JSONException {
+        private StarredDeck(JSONObject obj) throws JSONException {
             code = obj.getString("code");
             name = obj.getString("name");
+        }
+
+        @NonNull
+        private static List<StarredDeck> asList(JSONArray array) throws JSONException {
+            List<StarredDeck> decks = new ArrayList<>();
+            for (int i = 0; i < array.length(); i++)
+                decks.add(new StarredDeck(array.getJSONObject(i)));
+            return decks;
         }
 
         @Override
@@ -120,10 +121,9 @@ public class StarredDecksManager {
             return code.equals(that.code) && name.equals(that.name);
         }
 
-        public JSONObject toJson() throws JSONException {
-            return new JSONObject()
-                    .put("code", code)
-                    .put("name", name);
+        @NonNull
+        private JSONObject toJson() throws JSONException {
+            return new JSONObject().put("code", code).put("name", name);
         }
     }
 }

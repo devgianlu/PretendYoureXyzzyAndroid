@@ -17,11 +17,11 @@ import android.view.ViewGroup;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
-import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
-import com.gianlu.pretendyourexyzzy.Cards.PyxCardsGroupView;
+import com.gianlu.pretendyourexyzzy.CardViews.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.List;

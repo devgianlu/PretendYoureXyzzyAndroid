@@ -37,7 +37,6 @@ import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
-import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.Dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
@@ -53,6 +52,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Starred.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.TutorialManager;
 import com.gianlu.pretendyourexyzzy.Utils;
 

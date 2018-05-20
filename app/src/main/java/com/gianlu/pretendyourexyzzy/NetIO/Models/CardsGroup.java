@@ -1,9 +1,6 @@
-package com.gianlu.pretendyourexyzzy.Cards;
+package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 import android.support.annotation.NonNull;
-
-import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 
 import org.json.JSONArray;
 import org.json.JSONException;

@@ -14,12 +14,12 @@ import android.view.MenuItem;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.PagerAdapter;
-import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeck.CardsFragment;
 import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeck.InfoFragment;
+import com.gianlu.pretendyourexyzzy.Starred.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 public class CardcastDeckActivity extends ActivityWithDialog {

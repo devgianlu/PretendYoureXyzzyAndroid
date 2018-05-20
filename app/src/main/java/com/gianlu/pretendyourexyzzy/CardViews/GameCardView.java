@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.Cards;
+package com.gianlu.pretendyourexyzzy.CardViews;
 
 import android.content.Context;
 import android.content.res.TypedArray;

@@ -1,7 +1,6 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
 
 import org.json.JSONException;
 import org.json.JSONObject;

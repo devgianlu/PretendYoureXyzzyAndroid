@@ -17,12 +17,12 @@ import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
-import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
-import com.gianlu.pretendyourexyzzy.Cards.GameCardView;
-import com.gianlu.pretendyourexyzzy.Cards.PyxCardsGroupView;
-import com.gianlu.pretendyourexyzzy.Cards.StarredCardsManager;
+import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
+import com.gianlu.pretendyourexyzzy.CardViews.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Starred.StarredCardsManager;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.Objects;

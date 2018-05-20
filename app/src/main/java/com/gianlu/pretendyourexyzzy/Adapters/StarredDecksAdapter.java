@@ -10,8 +10,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Starred.StarredDecksManager;
 
 import java.util.List;
 

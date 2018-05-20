@@ -7,10 +7,10 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
-import com.gianlu.pretendyourexyzzy.Cards.CardsGroup;
-import com.gianlu.pretendyourexyzzy.Cards.PyxCardsGroupView;
+import com.gianlu.pretendyourexyzzy.CardViews.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
 
 import java.util.ArrayList;
 import java.util.List;

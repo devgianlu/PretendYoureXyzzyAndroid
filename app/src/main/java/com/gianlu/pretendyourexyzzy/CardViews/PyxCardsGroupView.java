@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.Cards;
+package com.gianlu.pretendyourexyzzy.CardViews;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
 
 import java.util.Iterator;
 

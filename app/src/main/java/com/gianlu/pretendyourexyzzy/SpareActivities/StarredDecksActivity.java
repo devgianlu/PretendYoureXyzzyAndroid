@@ -13,9 +13,9 @@ import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.StarredDecksAdapter;
-import com.gianlu.pretendyourexyzzy.Cards.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Starred.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 public class StarredDecksActivity extends ActivityWithDialog implements StarredDecksAdapter.Listener {
