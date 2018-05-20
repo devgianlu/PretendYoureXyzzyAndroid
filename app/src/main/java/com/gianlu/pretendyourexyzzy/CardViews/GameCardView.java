@@ -40,10 +40,11 @@ public class GameCardView extends CardView {
         super(context, attrs, defStyleAttr);
         this.listener = null;
         this.mainAction = null;
+        this.card = null;
     }
 
-    public GameCardView(Context context, BaseCard card, @Nullable PyxCardsGroupView.Action mainAction, @Nullable CardListener listener) {
-        super(context);
+    public GameCardView(@NonNull Context context, @NonNull BaseCard card, @Nullable PyxCardsGroupView.Action mainAction, @Nullable CardListener listener) {
+        super(context, null, 0);
         this.card = card;
         this.mainAction = mainAction;
         this.listener = listener;
@@ -80,25 +81,34 @@ public class GameCardView extends CardView {
             SuperTextView text = content.findViewById(R.id.pyxCard_text);
             text.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
             text.setTypeface(FontsManager.get().get(getContext(), FontsManager.ROBOTO_MEDIUM));
+            text.setHtml(card.text());
+
             TextView watermark = content.findViewById(R.id.pyxCard_watermark);
             watermark.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
+            watermark.setText(card.watermark());
+
             SuperTextView numPick = content.findViewById(R.id.pyxCard_numPick);
             numPick.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
+
             SuperTextView numDraw = content.findViewById(R.id.pyxCard_numDraw);
             numDraw.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
 
-            text.setHtml(card.text());
-            watermark.setText(card.watermark());
             if (card.black()) {
                 numPick.setHtml(R.string.numPick, card.numPick());
-                if (card.numDraw() > 0) numDraw.setHtml(R.string.numDraw, card.numDraw());
-                else numDraw.setVisibility(GONE);
+                numPick.setVisibility(VISIBLE);
+
+                if (card.numDraw() > 0) {
+                    numDraw.setHtml(R.string.numDraw, card.numDraw());
+                    numDraw.setVisibility(VISIBLE);
+                } else {
+                    numDraw.setVisibility(GONE);
+                }
             } else {
                 numDraw.setVisibility(GONE);
                 numPick.setVisibility(GONE);
             }
 
-            final ImageButton action = content.findViewById(R.id.pyxCard_action);
+            ImageButton action = content.findViewById(R.id.pyxCard_action);
             if (mainAction == null) {
                 action.setVisibility(GONE);
             } else {

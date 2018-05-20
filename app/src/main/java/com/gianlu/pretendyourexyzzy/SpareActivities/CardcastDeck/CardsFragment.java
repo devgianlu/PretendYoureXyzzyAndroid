@@ -75,14 +75,14 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
 
     @Override
     public void onDone(@NonNull List<CardcastCard> result) {
-        if (!isAdded()) return;
+        if (!isAdded() || getContext() == null) return;
 
         if (result.isEmpty()) {
             layout.showMessage(R.string.noCards, false);
             return;
         }
 
-        layout.loadListData(new CardsAdapter(getContext(), false, result, null, this));
+        layout.loadListData(new CardsAdapter(getContext(), result, null, this));
     }
 
     @Override

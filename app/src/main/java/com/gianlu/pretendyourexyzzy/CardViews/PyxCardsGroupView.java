@@ -11,19 +11,18 @@ import android.util.TypedValue;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
 
-import java.util.Iterator;
-
 @SuppressLint("ViewConstructor")
 public class PyxCardsGroupView extends LinearLayout {
-    private final int mPadding;
     private final int mCornerRadius;
-    private final int mCardsMargin;
     private final int mLineWidth;
+    private final int mPaddingSmall;
     private final Paint mLinePaint;
     private final CardListener listener;
+    private int mPadding;
     private CardsGroup cards;
 
     public PyxCardsGroupView(Context context, CardListener listener) {
@@ -32,10 +31,9 @@ public class PyxCardsGroupView extends LinearLayout {
         setOrientation(HORIZONTAL);
         setWillNotDraw(false);
 
-        mPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3, getResources().getDisplayMetrics());
+        mPaddingSmall = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
         mCornerRadius = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, getResources().getDisplayMetrics());
         mLineWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1.6f, getResources().getDisplayMetrics());
-        mCardsMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
 
         mLinePaint = new Paint();
         mLinePaint.setARGB(100, 0, 0, 0);
@@ -46,57 +44,63 @@ public class PyxCardsGroupView extends LinearLayout {
 
     public PyxCardsGroupView(Context context, CardsGroup whiteCards, @Nullable Action action, CardListener listener) {
         this(context, listener);
-        setCards(whiteCards, action);
+        setCards(whiteCards, action, null);
     }
 
-    public void setIsFirstOfParent(boolean firstOfParent) {
-        if (getChildCount() == 0) return;
-        if (cards.size() == 1)
-            ((LayoutParams) getChildAt(0).getLayoutParams()).leftMargin = firstOfParent ? mCardsMargin : mCardsMargin / 2;
+    private void calcPadding() {
+        mPadding = mPaddingSmall;
+        if (cards != null && cards.size() > 1) mPadding = (int) (mPadding * 1.5f);
     }
 
-    public void setIsLastOfParent(boolean lastOfParent) {
-        if (getChildCount() == 0) return;
-        if (cards.size() == 1)
-            ((LayoutParams) getChildAt(0).getLayoutParams()).rightMargin = lastOfParent ? mCardsMargin : mCardsMargin / 2;
-    }
-
-    public void setCards(CardsGroup cards, @Nullable Action action) {
+    public void setCards(@NonNull final CardsGroup cards, @Nullable Action action, @Nullable CardsAdapter.ViewHolder holder) {
         this.cards = cards;
+        calcPadding();
 
         removeAllViews();
 
-        Iterator<? extends BaseCard> iterator = cards.iterator();
-        while (iterator.hasNext()) {
-            final BaseCard card = iterator.next();
-
+        for (int i = 0; i < cards.size(); i++) {
+            final BaseCard card = cards.get(i);
             GameCardView pyxCard = new GameCardView(getContext(), card, action, new GameCardView.CardListener() {
                 @Override
                 public void onDelete() {
-                    if (listener != null)
-                        listener.onCardAction(Action.DELETE, PyxCardsGroupView.this.cards, card);
+                    if (listener != null) listener.onCardAction(Action.DELETE, cards, card);
                 }
 
                 @Override
                 public void onToggleStar() {
-                    if (listener != null)
-                        listener.onCardAction(Action.TOGGLE_STAR, PyxCardsGroupView.this.cards, card);
+                    if (listener != null) listener.onCardAction(Action.TOGGLE_STAR, cards, card);
                 }
             });
             pyxCard.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (listener != null)
-                        listener.onCardAction(Action.SELECT, PyxCardsGroupView.this.cards, card);
+                    if (listener != null) listener.onCardAction(Action.SELECT, cards, card);
                 }
             });
 
             addView(pyxCard);
 
-            if (cards.size() == 1)
-                ((LayoutParams) pyxCard.getLayoutParams()).setMargins(mCardsMargin / 2, mCardsMargin, mCardsMargin / 2, mCardsMargin);
-            else
-                ((LayoutParams) pyxCard.getLayoutParams()).setMargins(mCardsMargin, mCardsMargin, iterator.hasNext() ? 0 : mCardsMargin, mCardsMargin);
+            int paddingStart;
+            if (holder == null) {
+                if (i == 0) paddingStart = mPadding;
+                else paddingStart = 0;
+            } else {
+                if (cards.size() == 1) {
+                    if (holder.getLayoutPosition() == 0) paddingStart = mPadding;
+                    else if (i == 0) paddingStart = 0;
+                    else paddingStart = mPadding;
+                } else {
+                    if (i == 0) paddingStart = mPadding;
+                    else paddingStart = 0;
+                }
+            }
+
+            int paddingEnd;
+            if (i == cards.size() - 1) paddingEnd = mPadding;
+            else paddingEnd = mPaddingSmall;
+
+            LinearLayout.LayoutParams params = (LayoutParams) pyxCard.getLayoutParams();
+            params.setMargins(paddingStart, mPadding, paddingEnd, mPadding);
         }
     }
 
@@ -105,7 +109,7 @@ public class PyxCardsGroupView extends LinearLayout {
         super.onDraw(canvas);
 
         if (cards != null && cards.size() > 1)
-            canvas.drawRoundRect(mPadding, mPadding + mLineWidth / 2, canvas.getWidth() - mPadding, canvas.getHeight() - mPadding, mCornerRadius, mCornerRadius, mLinePaint);
+            canvas.drawRoundRect(mPadding / 2, mPadding / 2 + mLineWidth / 2, canvas.getWidth() - mPadding / 2, canvas.getHeight() - mPadding / 2, mCornerRadius, mCornerRadius, mLinePaint);
     }
 
     public enum Action {

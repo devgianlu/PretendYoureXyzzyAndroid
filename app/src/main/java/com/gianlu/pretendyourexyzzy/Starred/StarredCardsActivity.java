@@ -9,7 +9,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.TypedValue;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
@@ -50,7 +49,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
 
         list = findViewById(R.id.starredCards_list);
         list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        list.setAdapter(new CardsAdapter(this, true, StarredCardsManager.loadCards(this), PyxCardsGroupView.Action.DELETE, this));
+        list.setAdapter(new CardsAdapter(this, StarredCardsManager.loadCards(this), PyxCardsGroupView.Action.DELETE, this));
 
         cards = findViewById(R.id.starredCards_cards);
 
@@ -63,24 +62,17 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
         return list;
     }
 
-    private void showCards(StarredCardsManager.StarredCard card) {
+    private void showCards(@NonNull StarredCardsManager.StarredCard card) {
         MessageLayout.hide((ViewGroup) findViewById(R.id.starredCards_container));
 
         cards.removeAllViews();
         cards.setTag(card);
 
-        int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
-        GameCardView blackCard = new GameCardView(this, card.blackCard, null, null);
-        cards.addView(blackCard);
-        ((LinearLayout.LayoutParams) blackCard.getLayoutParams()).setMargins(margin, margin, margin, margin);
-
-        PyxCardsGroupView groupView = new PyxCardsGroupView(this, card.whiteCards, null, null);
-        cards.addView(groupView);
-        groupView.setIsFirstOfParent(true);
-        groupView.setIsLastOfParent(true);
+        cards.addView(new GameCardView(this, card.blackCard, null, null));
+        cards.addView(new PyxCardsGroupView(this, card.whiteCards, null, null));
     }
 
-    private void deleteCard(StarredCardsManager.StarredCard card) {
+    private void deleteCard(@NonNull StarredCardsManager.StarredCard card) {
         StarredCardsManager.removeCard(this, card);
         if (list.getAdapter().getItemCount() == 0) onBackPressed();
     }

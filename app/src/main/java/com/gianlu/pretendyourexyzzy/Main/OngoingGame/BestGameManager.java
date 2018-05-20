@@ -108,8 +108,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                 data.gameJudgeSkipped();
                 break;
             case GAME_PLAYER_KICKED_IDLE:
-                ui.event(UiEvent.PLAYER_KICKED, msg.obj.getString("n"));
-                listener.shouldLeaveGame();
+                data.gamePlayerKickedIdle(msg.obj.getString("n"));
                 break;
             case GAME_SPECTATOR_JOIN:
                 data.gameSpectatorJoin(msg.obj.getString("n"));
@@ -250,11 +249,11 @@ public class BestGameManager implements Pyx.OnEventListener {
             playersAdapter = new PlayersAdapter(context, info.players, listener);
             ui.playersList.setAdapter(playersAdapter);
 
-            handAdapter = new CardsAdapter(context, true, PyxCardsGroupView.Action.TOGGLE_STAR, this);
+            handAdapter = new CardsAdapter(context, PyxCardsGroupView.Action.TOGGLE_STAR, this);
             handAdapter.setCards(cards.hand);
 
-            tableAdapter = new CardsAdapter(context, true, PyxCardsGroupView.Action.TOGGLE_STAR, this);
-            tableAdapter.setCardGroups(cards.whiteCards);
+            tableAdapter = new CardsAdapter(context, PyxCardsGroupView.Action.TOGGLE_STAR, this);
+            tableAdapter.setCardGroups(cards.whiteCards); // FIXME: When joining with state == PLAYING and have a black card with numPick > 1, unknown cards number is wrong
 
             ui.blackCard(cards.blackCard);
         }
@@ -520,6 +519,11 @@ public class BestGameManager implements Pyx.OnEventListener {
 
         public void gameSpectatorLeave(String nick) {
             info.removeSpectator(nick);
+        }
+
+        public void gamePlayerKickedIdle(String nick) {
+            ui.event(UiEvent.PLAYER_KICKED, nick);
+            if (Objects.equals(nick, me())) listener.shouldLeaveGame();
         }
     }
 

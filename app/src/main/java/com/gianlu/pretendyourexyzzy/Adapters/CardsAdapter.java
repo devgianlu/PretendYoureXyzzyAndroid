@@ -15,23 +15,21 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> implements PyxCardsGroupView.CardListener { // FIXME: Can we avoid the margins stuff?
+public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> implements PyxCardsGroupView.CardListener {
     private final Context context;
     private final List<CardsGroup> cards;
     private final Listener listener;
-    private final boolean manageMargins;
     private final PyxCardsGroupView.Action action;
 
-    public CardsAdapter(Context context, boolean manageMargins, @Nullable PyxCardsGroupView.Action action, Listener listener) {
+    public CardsAdapter(@NonNull Context context, @Nullable PyxCardsGroupView.Action action, @NonNull Listener listener) {
         this.context = context;
-        this.manageMargins = manageMargins;
         this.action = action;
         this.listener = listener;
         this.cards = new ArrayList<>();
     }
 
-    public CardsAdapter(Context context, boolean manageMargins, List<? extends BaseCard> cards, PyxCardsGroupView.Action action, Listener listener) {
-        this(context, manageMargins, action, listener);
+    public CardsAdapter(@NonNull Context context, List<? extends BaseCard> cards, @Nullable PyxCardsGroupView.Action action, @NonNull Listener listener) {
+        this(context, action, listener);
         groupAndNotifyDataSetChanged(cards);
     }
 
@@ -54,11 +52,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
-        ((PyxCardsGroupView) holder.itemView).setCards(cards.get(position), action);
-        if (manageMargins) {
-            ((PyxCardsGroupView) holder.itemView).setIsFirstOfParent(position == 0);
-            ((PyxCardsGroupView) holder.itemView).setIsLastOfParent(position == getItemCount() - 1);
-        }
+        ((PyxCardsGroupView) holder.itemView).setCards(cards.get(position), action, holder);
     }
 
     @Override
