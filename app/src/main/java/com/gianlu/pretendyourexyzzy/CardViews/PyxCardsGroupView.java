@@ -42,7 +42,7 @@ public class PyxCardsGroupView extends LinearLayout {
         mLinePaint.setPathEffect(new DashPathEffect(new float[]{20, 10}, 0));
     }
 
-    public PyxCardsGroupView(Context context, CardsGroup whiteCards, @Nullable Action action, CardListener listener) {
+    public PyxCardsGroupView(Context context, CardsGroup whiteCards, @Nullable GameCardView.Action action, CardListener listener) {
         this(context, listener);
         setCards(whiteCards, action, false, null);
     }
@@ -77,7 +77,7 @@ public class PyxCardsGroupView extends LinearLayout {
         return new int[]{paddingStart, mPadding, paddingEnd, mPadding};
     }
 
-    public void setCards(@NonNull final CardsGroup cards, @Nullable Action action, boolean forGrid, @Nullable RecyclerView.ViewHolder holder) {
+    public void setCards(@NonNull final CardsGroup cards, @Nullable GameCardView.Action action, boolean forGrid, @Nullable RecyclerView.ViewHolder holder) {
         this.cards = cards;
         calcPaddings();
 
@@ -87,19 +87,15 @@ public class PyxCardsGroupView extends LinearLayout {
             final BaseCard card = cards.get(i);
             GameCardView pyxCard = new GameCardView(getContext(), card, action, new GameCardView.CardListener() {
                 @Override
-                public void onDelete() {
-                    if (listener != null) listener.onCardAction(Action.DELETE, cards, card);
-                }
-
-                @Override
-                public void onToggleStar() {
-                    if (listener != null) listener.onCardAction(Action.TOGGLE_STAR, cards, card);
+                public void onCardAction(@NonNull GameCardView.Action action, @NonNull BaseCard card) {
+                    if (listener != null) listener.onCardAction(action, cards, card);
                 }
             });
             pyxCard.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (listener != null) listener.onCardAction(Action.SELECT, cards, card);
+                    if (listener != null)
+                        listener.onCardAction(GameCardView.Action.SELECT, cards, card);
                 }
             });
 
@@ -119,13 +115,7 @@ public class PyxCardsGroupView extends LinearLayout {
             canvas.drawRoundRect(mPadding / 2, mPadding / 2 + mLineWidth / 2, canvas.getWidth() - mPadding / 2, canvas.getHeight() - mPadding / 2, mCornerRadius, mCornerRadius, mLinePaint);
     }
 
-    public enum Action {
-        SELECT,
-        DELETE,
-        TOGGLE_STAR
-    }
-
     public interface CardListener {
-        void onCardAction(@NonNull Action action, @NonNull CardsGroup group, @NonNull BaseCard card);
+        void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card);
     }
 }

@@ -21,7 +21,6 @@ import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
-import com.gianlu.pretendyourexyzzy.CardViews.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
@@ -249,10 +248,10 @@ public class BestGameManager implements Pyx.OnEventListener {
             playersAdapter = new PlayersAdapter(context, info.players, listener);
             ui.playersList.setAdapter(playersAdapter);
 
-            handAdapter = new CardsAdapter(context, PyxCardsGroupView.Action.TOGGLE_STAR, this);
+            handAdapter = new CardsAdapter(context, GameCardView.Action.TOGGLE_STAR, this);
             handAdapter.setCards(cards.hand);
 
-            tableAdapter = new CardsAdapter(context, PyxCardsGroupView.Action.TOGGLE_STAR, this);
+            tableAdapter = new CardsAdapter(context, GameCardView.Action.TOGGLE_STAR, this);
             tableAdapter.setCardGroups(cards.whiteCards, cards.blackCard);
 
             ui.blackCard(cards.blackCard);
@@ -466,8 +465,8 @@ public class BestGameManager implements Pyx.OnEventListener {
         }
 
         @Override
-        public void onCardAction(@NonNull PyxCardsGroupView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
-            if (action == PyxCardsGroupView.Action.SELECT) {
+        public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
+            if (action == GameCardView.Action.SELECT) {
                 GameInfo.Player me = info.player(me());
                 if (me != null) {
                     if (me.status == GameInfo.PlayerStatus.PLAYING && info.game.status == Game.Status.PLAYING) {
@@ -482,7 +481,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                         }
                     }
                 }
-            } else if (action == PyxCardsGroupView.Action.TOGGLE_STAR) {
+            } else if (action == GameCardView.Action.TOGGLE_STAR) {
                 BaseCard bc = ui.blackCard();
                 if (bc != null && StarredCardsManager.addCard(context, new StarredCardsManager.StarredCard(bc, group)))
                     Toaster.show(context, Utils.Messages.STARRED_CARD);

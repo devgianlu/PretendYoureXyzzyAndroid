@@ -1,9 +1,7 @@
 package com.gianlu.pretendyourexyzzy.CardViews;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
 import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -29,7 +27,7 @@ import com.gianlu.pretendyourexyzzy.R;
 
 public class GameCardView extends CardView {
     private final CardListener listener;
-    private final PyxCardsGroupView.Action mainAction;
+    private final Action mainAction;
     private BaseCard card;
     private int width;
 
@@ -48,7 +46,7 @@ public class GameCardView extends CardView {
         this.card = null;
     }
 
-    public GameCardView(@NonNull Context context, @NonNull BaseCard card, @Nullable PyxCardsGroupView.Action mainAction, @Nullable CardListener listener) {
+    public GameCardView(@NonNull Context context, @NonNull BaseCard card, @Nullable Action mainAction, @Nullable CardListener listener) {
         super(context, null, 0);
         this.card = card;
         this.mainAction = mainAction;
@@ -82,11 +80,11 @@ public class GameCardView extends CardView {
             ImageButton action = content.findViewById(R.id.pyxCard_action);
             if (mainAction == null) {
                 if (imageUrl != null) {
-                    action.setImageResource(R.drawable.baseline_open_in_new_black_48);
+                    action.setImageResource(R.drawable.baseline_open_in_new_24);
                     action.setOnClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(imageUrl)));
+                            if (listener != null) listener.onCardAction(Action.SELECT_IMG, card);
                         }
                     });
                 } else {
@@ -103,7 +101,8 @@ public class GameCardView extends CardView {
                         action.setOnClickListener(new OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                if (listener != null) listener.onDelete();
+                                if (listener != null)
+                                    listener.onCardAction(Action.DELETE, card);
                             }
                         });
                         break;
@@ -113,7 +112,8 @@ public class GameCardView extends CardView {
                         action.setOnClickListener(new OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                if (listener != null) listener.onToggleStar();
+                                if (listener != null)
+                                    listener.onCardAction(Action.TOGGLE_STAR, card);
                             }
                         });
                         break;
@@ -190,9 +190,14 @@ public class GameCardView extends CardView {
         init();
     }
 
-    interface CardListener {
-        void onDelete();
+    public enum Action {
+        SELECT,
+        DELETE,
+        TOGGLE_STAR,
+        SELECT_IMG
+    }
 
-        void onToggleStar();
+    interface CardListener {
+        void onCardAction(@NonNull Action action, @NonNull BaseCard card);
     }
 }

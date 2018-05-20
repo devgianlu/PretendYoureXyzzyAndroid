@@ -7,6 +7,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
 import com.gianlu.pretendyourexyzzy.CardViews.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
@@ -19,10 +20,10 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     private final Context context;
     private final List<CardsGroup> cards;
     private final Listener listener;
-    private final PyxCardsGroupView.Action action;
+    private final GameCardView.Action action;
     private final boolean forGrid;
 
-    public CardsAdapter(@NonNull Context context, @Nullable PyxCardsGroupView.Action action, @NonNull Listener listener) {
+    public CardsAdapter(@NonNull Context context, @Nullable GameCardView.Action action, @NonNull Listener listener) {
         this.context = context;
         this.action = action;
         this.listener = listener;
@@ -30,7 +31,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         this.forGrid = false;
     }
 
-    public CardsAdapter(@NonNull Context context, boolean forGrid, List<? extends BaseCard> cards, @Nullable PyxCardsGroupView.Action action, @NonNull Listener listener) {
+    public CardsAdapter(@NonNull Context context, boolean forGrid, List<? extends BaseCard> cards, @Nullable GameCardView.Action action, @NonNull Listener listener) {
         this.context = context;
         this.action = action;
         this.listener = listener;
@@ -98,7 +99,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     @Override
-    public void onCardAction(@NonNull PyxCardsGroupView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
+    public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
         switch (action) {
             case DELETE:
                 int pos = cards.indexOf(group);
@@ -152,7 +153,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         @Nullable
         RecyclerView getCardsRecyclerView();
 
-        void onCardAction(@NonNull PyxCardsGroupView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card);
+        void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

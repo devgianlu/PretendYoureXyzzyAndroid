@@ -49,7 +49,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
 
         list = findViewById(R.id.starredCards_list);
         list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        list.setAdapter(new CardsAdapter(this, false, StarredCardsManager.loadCards(this), PyxCardsGroupView.Action.DELETE, this));
+        list.setAdapter(new CardsAdapter(this, false, StarredCardsManager.loadCards(this), GameCardView.Action.DELETE, this));
 
         cards = findViewById(R.id.starredCards_cards);
 
@@ -87,7 +87,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
     }
 
     @Override
-    public void onCardAction(@NonNull PyxCardsGroupView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
+    public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
         if (card instanceof StarredCardsManager.StarredCard) {
             switch (action) {
                 case SELECT:
