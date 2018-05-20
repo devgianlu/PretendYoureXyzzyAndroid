@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.SpareActivities;
+package com.gianlu.pretendyourexyzzy.Starred;
 
 import android.content.Context;
 import android.content.Intent;
@@ -22,7 +22,6 @@ import com.gianlu.pretendyourexyzzy.CardViews.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.Starred.StarredCardsManager;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.Objects;

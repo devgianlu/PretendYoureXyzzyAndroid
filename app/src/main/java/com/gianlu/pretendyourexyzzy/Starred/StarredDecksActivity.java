@@ -1,8 +1,9 @@
-package com.gianlu.pretendyourexyzzy.SpareActivities;
+package com.gianlu.pretendyourexyzzy.Starred;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,7 +16,7 @@ import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.StarredDecksAdapter;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.Starred.StarredDecksManager;
+import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeckActivity;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 public class StarredDecksActivity extends ActivityWithDialog implements StarredDecksAdapter.Listener {
@@ -81,7 +82,7 @@ public class StarredDecksActivity extends ActivityWithDialog implements StarredD
     }
 
     @Override
-    public void onDeckSelected(StarredDecksManager.StarredDeck deck) {
+    public void onDeckSelected(@NonNull StarredDecksManager.StarredDeck deck) {
         CardcastDeckActivity.startActivity(this, deck.code, deck.name);
     }
 }

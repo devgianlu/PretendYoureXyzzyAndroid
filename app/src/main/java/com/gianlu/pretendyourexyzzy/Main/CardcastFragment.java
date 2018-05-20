@@ -30,7 +30,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDecks;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeckActivity;
-import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +76,7 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
         CharSequence[] stringFilters = new CharSequence[filters.length];
 
         for (int i = 0; i < filters.length; i++)
-            stringFilters[i] = Utils.getCategoryFormal(getContext(), filters[i]);
+            stringFilters[i] = filters[i].getFormal(getContext());
 
         final boolean[] checkedFilters = new boolean[filters.length];
         if (search.categories != null) {

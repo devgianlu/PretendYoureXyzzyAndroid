@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.SpareActivities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
+import com.gianlu.commonutils.FontsManager;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.LoadingActivity;
 import com.gianlu.pretendyourexyzzy.PKeys;
@@ -23,16 +25,16 @@ import com.github.paolorotolo.appintro.AppIntroFragment;
 import com.github.paolorotolo.appintro.model.SliderPage;
 
 public class TutorialActivity extends AppIntro {
-    private final static String ROBOTO_MEDIUM = "fonts/Roboto-Medium.ttf";
-    private final static String ROBOTO_THIN = "fonts/Roboto-Thin.ttf";
 
+    @NonNull
     private static SliderPage getDefault() {
         SliderPage page = new SliderPage();
-        page.setDescTypeface(ROBOTO_THIN);
-        page.setTitleTypeface(ROBOTO_MEDIUM);
+        page.setDescTypeface(FontsManager.ROBOTO_THIN);
+        page.setTitleTypeface(FontsManager.ROBOTO_MEDIUM);
         return page;
     }
 
+    @NonNull
     private Fragment newSlide(@StringRes int title, @StringRes int desc, @DrawableRes int image) {
         SliderPage page = getDefault();
         page.setTitle(getString(title));

@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,6 +18,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCost;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeckInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDecks;
+import com.gianlu.pretendyourexyzzy.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -274,6 +276,35 @@ public class Cardcast {
                     return category;
 
             throw new IllegalArgumentException("Cannot find a category for " + val);
+        }
+
+        @NonNull
+        public String getFormal(@NonNull Context context) {
+            switch (this) {
+                case BOOKS:
+                    return context.getString(R.string.books);
+                case COMMUNITY:
+                    return context.getString(R.string.community);
+                case GAMING:
+                    return context.getString(R.string.gaming);
+                case MOVIES:
+                    return context.getString(R.string.movies);
+                case MUSIC:
+                    return context.getString(R.string.music);
+                case SPORTS:
+                    return context.getString(R.string.sports);
+                case TECHNOLOGY:
+                    return context.getString(R.string.technology);
+                case TELEVISION:
+                    return context.getString(R.string.television);
+                case TRANSLATION:
+                    return context.getString(R.string.translation);
+                default:
+                case OTHER:
+                    return context.getString(R.string.other);
+                case RANDOM:
+                    return context.getString(R.string.random);
+            }
         }
 
         @Override

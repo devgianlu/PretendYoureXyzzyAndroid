@@ -267,7 +267,7 @@ public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, 
     }
 
     @Override
-    public void spectateGame(final Game game) {
+    public void spectateGame(@NonNull final Game game) {
         if (game.hasPassword(false)) {
             askForPassword(new OnPassword() {
                 @Override
@@ -281,7 +281,7 @@ public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, 
     }
 
     @Override
-    public void joinGame(final Game game) {
+    public void joinGame(@NonNull final Game game) {
         if (game.hasPassword(false)) {
             askForPassword(new OnPassword() {
                 @Override

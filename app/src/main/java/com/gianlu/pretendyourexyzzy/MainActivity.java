@@ -32,8 +32,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
-import com.gianlu.pretendyourexyzzy.SpareActivities.StarredCardsActivity;
-import com.gianlu.pretendyourexyzzy.SpareActivities.StarredDecksActivity;
+import com.gianlu.pretendyourexyzzy.Starred.StarredCardsActivity;
+import com.gianlu.pretendyourexyzzy.Starred.StarredDecksActivity;
 
 import org.json.JSONException;
 

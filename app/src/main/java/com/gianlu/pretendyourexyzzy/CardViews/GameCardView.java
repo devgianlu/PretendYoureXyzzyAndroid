@@ -1,9 +1,7 @@
 package com.gianlu.pretendyourexyzzy.CardViews;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,6 +15,8 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.FontsManager;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
@@ -58,24 +58,13 @@ public class GameCardView extends CardView {
         }
 
         setVisibility(VISIBLE);
-
         LayoutInflater.from(getContext()).inflate(R.layout.pyx_card, this, true);
-
         width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 156, getResources().getDisplayMetrics());
-
         setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, getResources().getDisplayMetrics()));
-
-        TypedArray a = getContext().getTheme().obtainStyledAttributes(R.style.AppTheme, new int[]{android.R.attr.selectableItemBackground});
-        int attributeResourceId = a.getResourceId(0, 0);
-        a.recycle();
-        setForeground(ContextCompat.getDrawable(getContext(), attributeResourceId));
-
-        Typeface roboto = Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Medium.ttf");
-        int colorAccent = ContextCompat.getColor(getContext(), R.color.colorAccent);
+        setForeground(CommonUtils.resolveAttrAsDrawable(getContext(), android.R.attr.selectableItemBackground));
 
         LinearLayout content = findViewById(R.id.pyxCard_content);
         LinearLayout unknown = findViewById(R.id.pyxCard_unknown);
-
         if (card.unknown()) {
             unknown.setVisibility(VISIBLE);
             content.setVisibility(GONE);
@@ -84,13 +73,13 @@ public class GameCardView extends CardView {
             content.setVisibility(VISIBLE);
 
             if (card instanceof Card && ((Card) card).isWinner())
-                setCardBackgroundColor(colorAccent);
+                setCardBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorAccent));
             else
                 setCardBackgroundColor(card.black() ? Color.BLACK : Color.WHITE);
 
             SuperTextView text = content.findViewById(R.id.pyxCard_text);
             text.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
-            text.setTypeface(roboto);
+            text.setTypeface(FontsManager.get().get(getContext(), FontsManager.ROBOTO_MEDIUM));
             TextView watermark = content.findViewById(R.id.pyxCard_watermark);
             watermark.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
             SuperTextView numPick = content.findViewById(R.id.pyxCard_numPick);

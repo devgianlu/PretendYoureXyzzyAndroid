@@ -9,7 +9,6 @@ import android.view.View;
 
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.gianlu.commonutils.Toaster;
-import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -33,34 +32,6 @@ public class Utils {
     public static final String ACTION_STARRED_DECK_ADD = "added_starred_deck";
     public static final String ACTION_SENT_MSG = "sent_message";
 
-    public static String getCategoryFormal(Context context, Cardcast.Category category) {
-        switch (category) {
-            case BOOKS:
-                return context.getString(R.string.books);
-            case COMMUNITY:
-                return context.getString(R.string.community);
-            case GAMING:
-                return context.getString(R.string.gaming);
-            case MOVIES:
-                return context.getString(R.string.movies);
-            case MUSIC:
-                return context.getString(R.string.music);
-            case SPORTS:
-                return context.getString(R.string.sports);
-            case TECHNOLOGY:
-                return context.getString(R.string.technology);
-            case TELEVISION:
-                return context.getString(R.string.television);
-            case TRANSLATION:
-                return context.getString(R.string.translation);
-            default:
-            case OTHER:
-                return context.getString(R.string.other);
-            case RANDOM:
-                return context.getString(R.string.random);
-        }
-    }
-
     @NonNull
     public static String composeCardcastDeckSentence(CardcastCard blackCard, CardcastCard whiteCard) {
         StringBuilder builder = new StringBuilder();
@@ -70,7 +41,6 @@ public class Utils {
 
         return builder.toString();
     }
-
 
     @Nullable
     public static Game findGame(List<Game> games, int gid) {

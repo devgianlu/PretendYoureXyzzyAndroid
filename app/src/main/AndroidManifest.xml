@@ -64,14 +64,14 @@
 
         <!-- Starred cards activity -->
         <activity
-            android:name=".SpareActivities.StarredCardsActivity"
+            android:name=".Starred.StarredCardsActivity"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- Starred decks activity -->
         <activity
-            android:name=".SpareActivities.StarredDecksActivity"
+            android:name=".Starred.StarredDecksActivity"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" />
 

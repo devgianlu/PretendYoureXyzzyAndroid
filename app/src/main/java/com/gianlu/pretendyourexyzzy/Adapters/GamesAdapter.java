@@ -149,9 +149,9 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         @Nullable
         RecyclerView getRecyclerView();
 
-        void spectateGame(Game game);
+        void spectateGame(@NonNull Game game);
 
-        void joinGame(Game game);
+        void joinGame(@NonNull Game game);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

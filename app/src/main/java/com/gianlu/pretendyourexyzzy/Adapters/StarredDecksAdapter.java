@@ -62,7 +62,7 @@ public class StarredDecksAdapter extends RecyclerView.Adapter<StarredDecksAdapte
     }
 
     public interface Listener {
-        void onDeckSelected(StarredDecksManager.StarredDeck deck);
+        void onDeckSelected(@NonNull StarredDecksManager.StarredDeck deck);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
