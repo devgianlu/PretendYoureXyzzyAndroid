@@ -12,7 +12,6 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -309,11 +308,8 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
 
     private void editGameOptions() {
         Game game = getGame();
-        FragmentActivity activity = getActivity();
-        if (game != null && activity != null) {
-            FragmentManager manager = activity.getSupportFragmentManager();
-            EditGameOptionsDialog.get(gid, game.options).show(manager, null);
-        }
+        if (game != null)
+            DialogUtils.showDialog(getActivity(), EditGameOptionsDialog.get(gid, game.options));
     }
 
     private void showGameOptions() {

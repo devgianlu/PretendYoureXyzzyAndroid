@@ -7,7 +7,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,13 +31,12 @@ public class UserInfoDialog extends DialogFragment {
     private OnViewGame listener;
 
     public static void loadAndShow(@NonNull RegisteredPyx pyx, @NonNull final FragmentActivity activity, @NonNull String name) {
-        final FragmentManager manager = activity.getSupportFragmentManager();
         DialogUtils.showDialog(activity, DialogUtils.progressDialog(activity, R.string.loading));
         pyx.request(PyxRequests.whois(name), new Pyx.OnResult<WhoisResult>() {
             @Override
             public void onDone(@NonNull WhoisResult result) {
                 DialogUtils.dismissDialog(activity);
-                UserInfoDialog.get(result).show(manager, null);
+                DialogUtils.showDialog(activity, UserInfoDialog.get(result));
             }
 
             @Override
