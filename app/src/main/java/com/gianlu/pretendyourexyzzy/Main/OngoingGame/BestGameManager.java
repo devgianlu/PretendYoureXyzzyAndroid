@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,6 +22,7 @@ import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
+import com.gianlu.pretendyourexyzzy.Dialogs.CardImageZoomDialog;
 import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
@@ -229,9 +231,11 @@ public class BestGameManager implements Pyx.OnEventListener {
     public interface Listener {
         void shouldLeaveGame();
 
-        void showDialog(AlertDialog.Builder dialog);
+        void showDialog(@NonNull AlertDialog.Builder dialog);
 
         void updateActivityTitle();
+
+        void showDialog(@NonNull DialogFragment dialog);
     }
 
     private class Data implements CardsAdapter.Listener {
@@ -485,6 +489,8 @@ public class BestGameManager implements Pyx.OnEventListener {
                 BaseCard bc = ui.blackCard();
                 if (bc != null && StarredCardsManager.addCard(context, new StarredCardsManager.StarredCard(bc, group)))
                     Toaster.show(context, Utils.Messages.STARRED_CARD);
+            } else if (action == GameCardView.Action.SELECT_IMG) {
+                listener.showDialog(CardImageZoomDialog.get(card));
             }
         }
 

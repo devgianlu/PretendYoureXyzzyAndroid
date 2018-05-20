@@ -14,10 +14,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
+import com.gianlu.pretendyourexyzzy.Dialogs.CardImageZoomDialog;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
@@ -100,5 +102,7 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
 
     @Override
     public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
+        if (action == GameCardView.Action.SELECT_IMG)
+            DialogUtils.showDialog(getActivity(), CardImageZoomDialog.get(card));
     }
 }

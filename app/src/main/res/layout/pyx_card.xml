@@ -15,6 +15,7 @@
             android:layout_height="0dp"
             android:layout_marginBottom="16dp"
             android:layout_weight="1"
+            android:adjustViewBounds="true"
             android:scaleType="centerCrop" />
 
         <com.gianlu.commonutils.SuperTextView

@@ -18,6 +18,7 @@ import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
 import com.gianlu.pretendyourexyzzy.CardViews.PyxCardsGroupView;
+import com.gianlu.pretendyourexyzzy.Dialogs.CardImageZoomDialog;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.R;
@@ -89,18 +90,22 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
     @Override
     public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
         if (card instanceof StarredCardsManager.StarredCard) {
+            StarredCardsManager.StarredCard starred = (StarredCardsManager.StarredCard) card;
             switch (action) {
                 case SELECT:
-                    showCards((StarredCardsManager.StarredCard) card);
+                    showCards(starred);
                     break;
                 case DELETE:
-                    deleteCard((StarredCardsManager.StarredCard) card);
+                    deleteCard(starred);
                     if (Objects.equals(cards.getTag(), card)) {
                         MessageLayout.show((ViewGroup) findViewById(R.id.starredCards_container), R.string.selectAStarredCard, R.drawable.ic_info_outline_black_48dp);
                         cards.removeAllViews();
                     }
                     break;
                 case TOGGLE_STAR:
+                    break;
+                case SELECT_IMG:
+                    showDialog(CardImageZoomDialog.get(card));
                     break;
             }
         }
