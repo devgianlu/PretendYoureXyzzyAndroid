@@ -253,7 +253,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             handAdapter.setCards(cards.hand);
 
             tableAdapter = new CardsAdapter(context, PyxCardsGroupView.Action.TOGGLE_STAR, this);
-            tableAdapter.setCardGroups(cards.whiteCards); // FIXME: When joining with state == PLAYING and have a black card with numPick > 1, unknown cards number is wrong
+            tableAdapter.setCardGroups(cards.whiteCards, cards.blackCard);
 
             ui.blackCard(cards.blackCard);
         }
@@ -372,7 +372,7 @@ public class BestGameManager implements Pyx.OnEventListener {
         }
 
         private void judgingState(List<CardsGroup> cards) {
-            tableAdapter.setCardGroups(cards);
+            tableAdapter.setCardGroups(cards, null);
         }
 
         public void gameRoundComplete(String roundWinner, int winningCard, String roundPermalink, int intermission) {

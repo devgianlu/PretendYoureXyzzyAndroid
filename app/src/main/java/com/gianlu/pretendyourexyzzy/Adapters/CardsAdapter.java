@@ -95,7 +95,6 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public void addBlankCards(@NonNull BaseCard bc) {
         cards.add(CardsGroup.unknown(bc.numPick()));
         notifyItemInserted(cards.size() - 1);
-        // notifyItemChanged(cards.size() - 2); // Needed to re-compute the margins
     }
 
     @Override
@@ -116,10 +115,18 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public void addCards(List<Card> cards) {
         for (Card card : cards) this.cards.add(CardsGroup.singleton(card));
         notifyItemRangeInserted(this.cards.size() - cards.size(), cards.size());
-        // notifyItemChanged(this.cards.size() - cards.size() - 1); // Needed to re-compute the margins
     }
 
-    public void setCardGroups(List<CardsGroup> cards) {
+    public void setCardGroups(List<CardsGroup> cards, @Nullable BaseCard blackCard) {
+        if (blackCard != null) {
+            for (CardsGroup group : cards) {
+                if (group.isUnknwon()) {
+                    for (int i = 1; i < blackCard.numPick(); i++)
+                        group.add(Card.newBlankCard());
+                }
+            }
+        }
+
         this.cards.clear();
         this.cards.addAll(cards);
         notifyDataSetChanged();

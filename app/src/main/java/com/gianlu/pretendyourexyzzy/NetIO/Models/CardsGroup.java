@@ -39,6 +39,10 @@ public class CardsGroup extends ArrayList<BaseCard> {
         return list;
     }
 
+    public boolean isUnknwon() {
+        return !isEmpty() && get(0).unknown(); // Assuming that if one cards is unknown, also the others are
+    }
+
     public boolean hasCard(int id) {
         for (BaseCard card : this)
             if (card.id() == id)
