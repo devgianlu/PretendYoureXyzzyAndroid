@@ -20,16 +20,22 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     private final List<CardsGroup> cards;
     private final Listener listener;
     private final PyxCardsGroupView.Action action;
+    private final boolean forGrid;
 
     public CardsAdapter(@NonNull Context context, @Nullable PyxCardsGroupView.Action action, @NonNull Listener listener) {
         this.context = context;
         this.action = action;
         this.listener = listener;
         this.cards = new ArrayList<>();
+        this.forGrid = false;
     }
 
-    public CardsAdapter(@NonNull Context context, List<? extends BaseCard> cards, @Nullable PyxCardsGroupView.Action action, @NonNull Listener listener) {
-        this(context, action, listener);
+    public CardsAdapter(@NonNull Context context, boolean forGrid, List<? extends BaseCard> cards, @Nullable PyxCardsGroupView.Action action, @NonNull Listener listener) {
+        this.context = context;
+        this.action = action;
+        this.listener = listener;
+        this.cards = new ArrayList<>();
+        this.forGrid = forGrid;
         groupAndNotifyDataSetChanged(cards);
     }
 
@@ -52,7 +58,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
-        ((PyxCardsGroupView) holder.itemView).setCards(cards.get(position), action, holder);
+        ((PyxCardsGroupView) holder.itemView).setCards(cards.get(position), action, forGrid, holder);
     }
 
     @Override
@@ -89,7 +95,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public void addBlankCards(@NonNull BaseCard bc) {
         cards.add(CardsGroup.unknown(bc.numPick()));
         notifyItemInserted(cards.size() - 1);
-        notifyItemChanged(cards.size() - 2); // Needed to re-compute the margins
+        // notifyItemChanged(cards.size() - 2); // Needed to re-compute the margins
     }
 
     @Override
@@ -110,7 +116,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public void addCards(List<Card> cards) {
         for (Card card : cards) this.cards.add(CardsGroup.singleton(card));
         notifyItemRangeInserted(this.cards.size() - cards.size(), cards.size());
-        notifyItemChanged(this.cards.size() - cards.size() - 1); // Needed to re-compute the margins
+        // notifyItemChanged(this.cards.size() - cards.size() - 1); // Needed to re-compute the margins
     }
 
     public void setCardGroups(List<CardsGroup> cards) {

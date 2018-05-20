@@ -44,7 +44,7 @@ public class PyxCardsGroupView extends LinearLayout {
 
     public PyxCardsGroupView(Context context, CardsGroup whiteCards, @Nullable Action action, CardListener listener) {
         this(context, listener);
-        setCards(whiteCards, action, null);
+        setCards(whiteCards, action, false, null);
     }
 
     public void calcPaddings() {
@@ -52,7 +52,9 @@ public class PyxCardsGroupView extends LinearLayout {
         if (cards != null && cards.size() > 1) mPadding = (int) (mPadding * 1.5f);
     }
 
-    public int[] getPaddings(int pos, @Nullable RecyclerView.ViewHolder holder) {
+    public int[] getPaddings(int pos, boolean forGrid, @Nullable RecyclerView.ViewHolder holder) {
+        if (forGrid) return new int[]{0, mPaddingSmall / 2, 0, mPaddingSmall / 2};
+
         int paddingStart;
         if (holder == null) {
             if (pos == 0) paddingStart = mPadding;
@@ -75,7 +77,7 @@ public class PyxCardsGroupView extends LinearLayout {
         return new int[]{paddingStart, mPadding, paddingEnd, mPadding};
     }
 
-    public void setCards(@NonNull final CardsGroup cards, @Nullable Action action, @Nullable RecyclerView.ViewHolder holder) {
+    public void setCards(@NonNull final CardsGroup cards, @Nullable Action action, boolean forGrid, @Nullable RecyclerView.ViewHolder holder) {
         this.cards = cards;
         calcPaddings();
 
@@ -103,7 +105,7 @@ public class PyxCardsGroupView extends LinearLayout {
 
             addView(pyxCard);
 
-            int[] paddings = getPaddings(i, holder);
+            int[] paddings = getPaddings(i, forGrid, holder);
             LinearLayout.LayoutParams params = (LayoutParams) pyxCard.getLayoutParams();
             params.setMargins(paddings[0], paddings[1], paddings[2], paddings[3]);
         }

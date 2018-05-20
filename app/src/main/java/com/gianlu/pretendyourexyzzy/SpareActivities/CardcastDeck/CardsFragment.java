@@ -52,7 +52,7 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 int screenWidth = layout.getList().getMeasuredWidth();
-                int cardWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 164, getResources().getDisplayMetrics()); // Added margins
+                int cardWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 156, getResources().getDisplayMetrics());
                 int padding = (screenWidth - cardWidth * 2) / 3;
                 layout.getList().setPaddingRelative(padding, 0, 0, 0);
                 layout.removeOnLayoutChangeListener(this);
@@ -82,7 +82,7 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
             return;
         }
 
-        layout.loadListData(new CardsAdapter(getContext(), result, null, this));
+        layout.loadListData(new CardsAdapter(getContext(), true, result, null, this));
     }
 
     @Override

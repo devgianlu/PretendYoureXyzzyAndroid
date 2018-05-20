@@ -49,7 +49,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
 
         list = findViewById(R.id.starredCards_list);
         list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        list.setAdapter(new CardsAdapter(this, StarredCardsManager.loadCards(this), PyxCardsGroupView.Action.DELETE, this));
+        list.setAdapter(new CardsAdapter(this, false, StarredCardsManager.loadCards(this), PyxCardsGroupView.Action.DELETE, this));
 
         cards = findViewById(R.id.starredCards_cards);
 
@@ -75,7 +75,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
         cards.addView(blackCard, 0);
 
         group.calcPaddings();
-        int[] paddings = group.getPaddings(0, null);
+        int[] paddings = group.getPaddings(0, false, null);
 
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) blackCard.getLayoutParams();
         params.setMargins(0, paddings[1], paddings[2], paddings[3]);
