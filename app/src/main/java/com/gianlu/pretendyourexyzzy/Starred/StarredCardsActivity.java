@@ -68,8 +68,17 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
         cards.removeAllViews();
         cards.setTag(card);
 
-        cards.addView(new GameCardView(this, card.blackCard, null, null));
-        cards.addView(new PyxCardsGroupView(this, card.whiteCards, null, null));
+        PyxCardsGroupView group = new PyxCardsGroupView(this, card.whiteCards, null, null);
+        cards.addView(group);
+
+        GameCardView blackCard = new GameCardView(this, card.blackCard, null, null);
+        cards.addView(blackCard, 0);
+
+        group.calcPaddings();
+        int[] paddings = group.getPaddings(0, null);
+
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) blackCard.getLayoutParams();
+        params.setMargins(0, paddings[1], paddings[2], paddings[3]);
     }
 
     private void deleteCard(@NonNull StarredCardsManager.StarredCard card) {

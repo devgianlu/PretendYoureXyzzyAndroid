@@ -7,11 +7,11 @@ import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
 
@@ -47,14 +47,37 @@ public class PyxCardsGroupView extends LinearLayout {
         setCards(whiteCards, action, null);
     }
 
-    private void calcPadding() {
+    public void calcPaddings() {
         mPadding = mPaddingSmall;
         if (cards != null && cards.size() > 1) mPadding = (int) (mPadding * 1.5f);
     }
 
-    public void setCards(@NonNull final CardsGroup cards, @Nullable Action action, @Nullable CardsAdapter.ViewHolder holder) {
+    public int[] getPaddings(int pos, @Nullable RecyclerView.ViewHolder holder) {
+        int paddingStart;
+        if (holder == null) {
+            if (pos == 0) paddingStart = mPadding;
+            else paddingStart = 0;
+        } else {
+            if (cards.size() == 1) {
+                if (holder.getLayoutPosition() == 0) paddingStart = mPadding;
+                else if (pos == 0) paddingStart = 0;
+                else paddingStart = mPadding;
+            } else {
+                if (pos == 0) paddingStart = mPadding;
+                else paddingStart = 0;
+            }
+        }
+
+        int paddingEnd;
+        if (pos == cards.size() - 1) paddingEnd = mPadding;
+        else paddingEnd = mPaddingSmall;
+
+        return new int[]{paddingStart, mPadding, paddingEnd, mPadding};
+    }
+
+    public void setCards(@NonNull final CardsGroup cards, @Nullable Action action, @Nullable RecyclerView.ViewHolder holder) {
         this.cards = cards;
-        calcPadding();
+        calcPaddings();
 
         removeAllViews();
 
@@ -80,27 +103,9 @@ public class PyxCardsGroupView extends LinearLayout {
 
             addView(pyxCard);
 
-            int paddingStart;
-            if (holder == null) {
-                if (i == 0) paddingStart = mPadding;
-                else paddingStart = 0;
-            } else {
-                if (cards.size() == 1) {
-                    if (holder.getLayoutPosition() == 0) paddingStart = mPadding;
-                    else if (i == 0) paddingStart = 0;
-                    else paddingStart = mPadding;
-                } else {
-                    if (i == 0) paddingStart = mPadding;
-                    else paddingStart = 0;
-                }
-            }
-
-            int paddingEnd;
-            if (i == cards.size() - 1) paddingEnd = mPadding;
-            else paddingEnd = mPaddingSmall;
-
+            int[] paddings = getPaddings(i, holder);
             LinearLayout.LayoutParams params = (LayoutParams) pyxCard.getLayoutParams();
-            params.setMargins(paddingStart, mPadding, paddingEnd, mPadding);
+            params.setMargins(paddings[0], paddings[1], paddings[2], paddings[3]);
         }
     }
 
