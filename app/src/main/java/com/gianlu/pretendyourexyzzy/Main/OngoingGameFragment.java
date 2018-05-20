@@ -115,7 +115,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
     }
 
     private void leaveGame() {
-        pyx.request(PyxRequests.leaveGame(gid), new Pyx.OnSuccess() {
+        if (pyx != null) pyx.request(PyxRequests.leaveGame(gid), new Pyx.OnSuccess() {
             @Override
             public void onDone() {
                 if (onLeftGame != null) onLeftGame.onLeftGame();
@@ -129,7 +129,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
     }
 
     private boolean amHost() {
-        return getGame() != null && Objects.equals(getGame().host, pyx.user().nickname);
+        return pyx != null && getGame() != null && Objects.equals(getGame().host, pyx.user().nickname);
     }
 
     @Nullable
