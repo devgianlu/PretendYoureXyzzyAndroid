@@ -70,7 +70,8 @@ public class PreferencesActivity extends AppCompatPreferenceActivity {
             return new ThirdPartProject[]{
                     new ThirdPartProject(R.string.materialRatingBar, R.string.materialRatingBar_details, ThirdPartProject.License.APACHE),
                     new ThirdPartProject(R.string.tapTargetView, R.string.tapTargetView_details, ThirdPartProject.License.APACHE),
-                    new ThirdPartProject(R.string.appIntro, R.string.appIntro_details, ThirdPartProject.License.APACHE)
+                    new ThirdPartProject(R.string.appIntro, R.string.appIntro_details, ThirdPartProject.License.APACHE),
+                    new ThirdPartProject(R.string.glide, R.string.glide_details, ThirdPartProject.License.APACHE)
             };
         }
 

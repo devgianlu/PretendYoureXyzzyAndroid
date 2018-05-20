@@ -1,20 +1,25 @@
 package com.gianlu.pretendyourexyzzy.CardViews;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.TextViewCompat;
 import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.FontsManager;
 import com.gianlu.commonutils.SuperTextView;
@@ -66,51 +71,27 @@ public class GameCardView extends CardView {
 
         LinearLayout content = findViewById(R.id.pyxCard_content);
         LinearLayout unknown = findViewById(R.id.pyxCard_unknown);
+        ImageView image = findViewById(R.id.pyxCard_image);
         if (card.unknown()) {
             unknown.setVisibility(VISIBLE);
             content.setVisibility(GONE);
+            image.setVisibility(GONE);
         } else {
-            unknown.setVisibility(GONE);
-            content.setVisibility(VISIBLE);
-
-            if (card instanceof Card && ((Card) card).isWinner())
-                setCardBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorAccent));
-            else
-                setCardBackgroundColor(card.black() ? Color.BLACK : Color.WHITE);
-
-            SuperTextView text = content.findViewById(R.id.pyxCard_text);
-            text.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
-            text.setTypeface(FontsManager.get().get(getContext(), FontsManager.ROBOTO_MEDIUM));
-            text.setHtml(card.text());
-
-            TextView watermark = content.findViewById(R.id.pyxCard_watermark);
-            watermark.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
-            watermark.setText(card.watermark());
-
-            SuperTextView numPick = content.findViewById(R.id.pyxCard_numPick);
-            numPick.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
-
-            SuperTextView numDraw = content.findViewById(R.id.pyxCard_numDraw);
-            numDraw.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
-
-            if (card.black()) {
-                numPick.setHtml(R.string.numPick, card.numPick());
-                numPick.setVisibility(VISIBLE);
-
-                if (card.numDraw() > 0) {
-                    numDraw.setHtml(R.string.numDraw, card.numDraw());
-                    numDraw.setVisibility(VISIBLE);
-                } else {
-                    numDraw.setVisibility(GONE);
-                }
-            } else {
-                numDraw.setVisibility(GONE);
-                numPick.setVisibility(GONE);
-            }
+            final String imageUrl = card.getImageUrl();
 
             ImageButton action = content.findViewById(R.id.pyxCard_action);
             if (mainAction == null) {
-                action.setVisibility(GONE);
+                if (imageUrl != null) {
+                    action.setImageResource(R.drawable.baseline_open_in_new_black_48);
+                    action.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(imageUrl)));
+                        }
+                    });
+                } else {
+                    action.setVisibility(GONE);
+                }
             } else {
                 switch (mainAction) {
                     case SELECT:
@@ -136,6 +117,59 @@ public class GameCardView extends CardView {
                             }
                         });
                         break;
+                }
+            }
+
+            if (card instanceof Card && ((Card) card).isWinner())
+                setCardBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorAccent));
+            else
+                setCardBackgroundColor(card.black() ? Color.BLACK : Color.WHITE);
+
+            SuperTextView text = content.findViewById(R.id.pyxCard_text);
+            text.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
+            text.setTypeface(FontsManager.get().get(getContext(), FontsManager.ROBOTO_MEDIUM));
+
+            TextView watermark = content.findViewById(R.id.pyxCard_watermark);
+            watermark.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
+            watermark.setText(card.watermark());
+
+            SuperTextView numPick = content.findViewById(R.id.pyxCard_numPick);
+            SuperTextView numDraw = content.findViewById(R.id.pyxCard_numDraw);
+
+            if (imageUrl != null) {
+                unknown.setVisibility(GONE);
+                image.setVisibility(VISIBLE);
+                content.setVisibility(VISIBLE);
+
+                text.setVisibility(GONE);
+                numDraw.setVisibility(GONE);
+                numPick.setVisibility(GONE);
+
+                Glide.with(this).load(imageUrl).into(image);
+            } else {
+                unknown.setVisibility(GONE);
+                image.setVisibility(GONE);
+                content.setVisibility(VISIBLE);
+
+                TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(text, 8, 18, 1, TypedValue.COMPLEX_UNIT_SP);
+                text.setHtml(card.text());
+
+                numPick.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
+                numDraw.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
+
+                if (card.black()) {
+                    numPick.setHtml(R.string.numPick, card.numPick());
+                    numPick.setVisibility(VISIBLE);
+
+                    if (card.numDraw() > 0) {
+                        numDraw.setHtml(R.string.numDraw, card.numDraw());
+                        numDraw.setVisibility(VISIBLE);
+                    } else {
+                        numDraw.setVisibility(GONE);
+                    }
+                } else {
+                    numDraw.setVisibility(GONE);
+                    numPick.setVisibility(GONE);
                 }
             }
         }

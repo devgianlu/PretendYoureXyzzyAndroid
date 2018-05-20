@@ -7,6 +7,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public abstract class BaseCard {
+    private transient String imageUrl = null;
+
     @NonNull
     public abstract String text();
 
@@ -26,6 +28,19 @@ public abstract class BaseCard {
     public abstract boolean black();
 
     public abstract boolean writeIn();
+
+    @Nullable
+    public final String getImageUrl() {
+        if (black()) return null;
+
+        if (imageUrl == null) {
+            String text = text();
+            if (text.startsWith("[img]") && text.endsWith("[/img]"))
+                imageUrl = text.substring(5, text.length() - 6);
+        }
+
+        return imageUrl;
+    }
 
     @Nullable
     public abstract JSONObject toJson() throws JSONException;
