@@ -75,22 +75,8 @@ public class GameCardView extends CardView {
             content.setVisibility(GONE);
             image.setVisibility(GONE);
         } else {
-            final String imageUrl = card.getImageUrl();
-
             ImageButton action = content.findViewById(R.id.pyxCard_action);
-            if (mainAction == null) {
-                if (imageUrl != null) {
-                    action.setImageResource(R.drawable.baseline_open_in_new_24);
-                    action.setOnClickListener(new OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            if (listener != null) listener.onCardAction(Action.SELECT_IMG, card);
-                        }
-                    });
-                } else {
-                    action.setVisibility(GONE);
-                }
-            } else {
+            if (mainAction != null) {
                 switch (mainAction) {
                     case SELECT:
                         action.setVisibility(GONE);
@@ -136,6 +122,7 @@ public class GameCardView extends CardView {
             SuperTextView numPick = content.findViewById(R.id.pyxCard_numPick);
             SuperTextView numDraw = content.findViewById(R.id.pyxCard_numDraw);
 
+            final String imageUrl = card.getImageUrl();
             if (imageUrl != null) {
                 unknown.setVisibility(GONE);
                 image.setVisibility(VISIBLE);
@@ -146,6 +133,29 @@ public class GameCardView extends CardView {
                 numPick.setVisibility(GONE);
 
                 Glide.with(this).load(imageUrl).into(image);
+
+                if (mainAction == null) {
+                    action.setVisibility(VISIBLE);
+                    action.setImageResource(R.drawable.baseline_open_in_new_24);
+                    action.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (listener != null) listener.onCardAction(Action.SELECT_IMG, card);
+                        }
+                    });
+                } else {
+                    setOnLongClickListener(new OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View v) {
+                            if (listener != null) {
+                                listener.onCardAction(Action.SELECT_IMG, card);
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        }
+                    });
+                }
             } else {
                 unknown.setVisibility(GONE);
                 image.setVisibility(GONE);
