@@ -136,7 +136,7 @@ public class GameCardView extends CardView {
 
                 if (mainAction == null) {
                     action.setVisibility(VISIBLE);
-                    action.setImageResource(R.drawable.baseline_open_in_new_24);
+                    action.setImageResource(R.drawable.ic_zoom_in_black_48dp);
                     action.setOnClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
