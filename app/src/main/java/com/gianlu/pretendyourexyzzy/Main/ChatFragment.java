@@ -110,7 +110,7 @@ public class ChatFragment extends Fragment implements ChatAdapter.Listener, Pyx.
 
     @Override
     public void onDestroy() {
-        pyx.polling().removeListener(ChatFragment.class.getName() + gid);
+        if (pyx != null) pyx.polling().removeListener(ChatFragment.class.getName() + gid);
         super.onDestroy();
     }
 
