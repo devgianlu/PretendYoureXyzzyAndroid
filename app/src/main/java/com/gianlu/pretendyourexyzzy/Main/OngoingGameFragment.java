@@ -394,6 +394,8 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
 
     @Override
     public void addCardcastStarredDecks() {
+        if (getContext() == null) return;
+
         List<StarredDecksManager.StarredDeck> starredDecks = StarredDecksManager.loadDecks(getContext());
         if (starredDecks.isEmpty()) {
             Toaster.show(getActivity(), Utils.Messages.NO_STARRED_DECKS);
