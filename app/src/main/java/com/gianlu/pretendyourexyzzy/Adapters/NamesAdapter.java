@@ -7,7 +7,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import com.gianlu.commonutils.Adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.SuperTextView;
@@ -33,10 +32,6 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
         return new ViewHolder(parent);
     }
 
-    private boolean isMobile(String name) {
-        return false;
-    }
-
     @Nullable
     @Override
     protected RecyclerView getRecyclerView() {
@@ -50,8 +45,7 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
 
     @Override
     protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull final Name name) {
-        holder.name.setHtml(name.sigil() == Name.Sigil.NORMAL_USER ? name.withSigil() : (SuperTextView.makeBold(name.sigil().symbol()) + name.noSigil()));
-        holder.mobile.setVisibility(isMobile(name.noSigil()) ? View.VISIBLE : View.GONE);
+        ((SuperTextView) holder.itemView).setHtml(name.sigil() == Name.Sigil.NORMAL_USER ? name.withSigil() : (SuperTextView.makeBold(name.sigil().symbol()) + name.noSigil()));
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -106,14 +100,8 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        final SuperTextView name;
-        final ImageView mobile;
-
         ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.item_name, parent, false));
-
-            name = itemView.findViewById(R.id.nameItem_name);
-            mobile = itemView.findViewById(R.id.nameItem_mobile);
         }
     }
 }
