@@ -501,17 +501,21 @@ public class BestGameManager implements Pyx.OnEventListener {
         }
 
         public void gameJudgeLeft() {
-            GameInfo.Player judge = info.players.get(judgeIndex);
-            ui.event(UiEvent.JUDGE_LEFT, judge.name);
-            judgeIndex--; // Will be incremented by #nextRound()
+            if (judgeIndex != -1) {
+                GameInfo.Player judge = info.players.get(judgeIndex);
+                ui.event(UiEvent.JUDGE_LEFT, judge.name);
+                judgeIndex--; // Will be incremented by #nextRound()
+            }
 
             tableAdapter.clear();
             ui.showTableCards();
         }
 
         public void gameJudgeSkipped() {
-            GameInfo.Player judge = info.players.get(judgeIndex);
-            ui.event(UiEvent.JUDGE_SKIPPED, judge.name);
+            if (judgeIndex != -1) {
+                GameInfo.Player judge = info.players.get(judgeIndex);
+                ui.event(UiEvent.JUDGE_SKIPPED, judge.name);
+            }
         }
 
         public void removeFromHand(@NonNull BaseCard card) {
