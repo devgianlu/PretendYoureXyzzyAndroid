@@ -26,18 +26,12 @@ public class StarredDecksAdapter extends RecyclerView.Adapter<StarredDecksAdapte
         this.decks = decks;
         this.inflater = LayoutInflater.from(context);
         this.listener = listener;
-        setHasStableIds(true);
     }
 
     @Override
     @NonNull
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new ViewHolder(parent);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return decks.get(position).code.hashCode();
     }
 
     @Override

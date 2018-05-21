@@ -26,12 +26,6 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         this.inflater = LayoutInflater.from(context);
         this.players = new ArrayList<>(players);
         this.listener = listener;
-        setHasStableIds(true);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return players.get(position).name.hashCode();
     }
 
     @Override
