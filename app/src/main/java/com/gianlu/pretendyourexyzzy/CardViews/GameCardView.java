@@ -132,7 +132,7 @@ public class GameCardView extends CardView {
                 numDraw.setVisibility(GONE);
                 numPick.setVisibility(GONE);
 
-                Glide.with(this).load(imageUrl).into(image);
+                Glide.with(this).load(card).into(image);
 
                 if (mainAction == null) {
                     action.setVisibility(VISIBLE);

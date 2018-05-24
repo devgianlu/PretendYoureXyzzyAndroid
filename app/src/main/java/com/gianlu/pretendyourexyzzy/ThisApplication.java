@@ -1,10 +1,14 @@
 package com.gianlu.pretendyourexyzzy;
 
+import com.bumptech.glide.Glide;
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.ConnectivityChecker;
+import com.gianlu.pretendyourexyzzy.NetIO.BaseCardUrlLoader;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -35,5 +39,7 @@ public class ThisApplication extends AnalyticsApplication {
         });
 
         Pyx.instantiate(this);
+
+        Glide.get(this).getRegistry().prepend(BaseCard.class, InputStream.class, new BaseCardUrlLoader.Factory());
     }
 }
