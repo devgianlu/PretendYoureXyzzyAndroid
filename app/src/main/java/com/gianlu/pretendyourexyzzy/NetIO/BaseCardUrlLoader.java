@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 public class BaseCardUrlLoader extends BaseGlideUrlLoader<BaseCard> {
     private static final Pattern IMGUR_PATTERN = Pattern.compile("^http(?:s|)://imgur\\.com/(.*)\\.(.+)$");
+    private static final Pattern IS_IMGUR_PATTERN = Pattern.compile("^http(?:s|)://imgur\\.com");
 
     private BaseCardUrlLoader() {
         super(new HttpGlideUrlLoader());
@@ -27,8 +28,10 @@ public class BaseCardUrlLoader extends BaseGlideUrlLoader<BaseCard> {
 
         if (url.endsWith(".gifv")) {
             url = url.substring(0, url.length() - 1);
-        } else if (!IMGUR_PATTERN.matcher(url).matches()) {
-            url += ".png";
+        } else if (IS_IMGUR_PATTERN.matcher(url).find()) {
+            if (!IMGUR_PATTERN.matcher(url).find()) {
+                url += ".png";
+            }
         }
 
         return url;
