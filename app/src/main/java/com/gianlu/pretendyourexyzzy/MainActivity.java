@@ -29,6 +29,7 @@ import com.gianlu.pretendyourexyzzy.Main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
@@ -169,6 +170,18 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             gamesFragment.launchGame(gid, getIntent().getStringExtra("password"), getIntent().getBooleanExtra("shouldRequest", true));
             getIntent().removeExtra("gid");
         }
+
+        pyx.getGameHistory("pyx-3_1522947890465_8794158", new Pyx.OnResult<GameHistory>() {
+            @Override
+            public void onDone(@NonNull GameHistory result) {
+                System.out.println(result);
+            }
+
+            @Override
+            public void onException(@NonNull Exception ex) {
+                ex.printStackTrace();
+            }
+        });
     }
 
     @Override

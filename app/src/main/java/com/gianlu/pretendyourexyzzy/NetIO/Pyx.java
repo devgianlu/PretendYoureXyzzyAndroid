@@ -16,6 +16,8 @@ import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CahConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoadAndConfig;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameHistory;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameRound;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.PKeys;
 
@@ -184,6 +186,76 @@ public class Pyx implements Closeable {
         return new FirstLoadAndConfig(fl, cahConfig);
     }
 
+    public final void getGameHistory(String gameId, final OnResult<GameHistory> listener) {
+        final HttpUrl url = server.gameHistory(gameId);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try (Response resp = client.newBuilder()
+                        .connectTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
+                        .readTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
+                        .build().newCall(new Request.Builder()
+                                .url(url).get().build()).execute()) {
+
+                    ResponseBody respBody = resp.body();
+                    if (respBody != null) {
+                        final GameHistory history = new GameHistory(new JSONArray(respBody.string()));
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onDone(history);
+                            }
+                        });
+                    } else {
+                        throw new StatusCodeException(resp);
+                    }
+                } catch (IOException | JSONException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public final void getGameRound(String roundId, final OnResult<GameRound> listener) {
+        final HttpUrl url = server.gameRound(roundId);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try (Response resp = client.newBuilder()
+                        .connectTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
+                        .readTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
+                        .build().newCall(new Request.Builder()
+                                .url(url).get().build()).execute()) {
+
+                    ResponseBody respBody = resp.body();
+                    if (respBody != null) {
+                        final GameRound round = new GameRound(new JSONObject(respBody.string()));
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onDone(round);
+                            }
+                        });
+                    } else {
+                        throw new StatusCodeException(resp);
+                    }
+                } catch (IOException | JSONException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     public final void firstLoad(final OnResult<FirstLoadedPyx> listener) {
         final InstanceHolder holder = InstanceHolder.holder();
 
@@ -286,7 +358,7 @@ public class Pyx implements Closeable {
         private final Response resp;
         private final JSONObject obj;
 
-        PyxResponse(Response resp, JSONObject obj) {
+        PyxResponse(@NonNull Response resp, @NonNull JSONObject obj) {
             this.resp = resp;
             this.obj = obj;
         }
@@ -298,9 +370,11 @@ public class Pyx implements Closeable {
 
         static {
             try {
-                pyxServers.put("PYX1", new Server(parseUrlOrThrow("https://pyx-1.pretendyoure.xyz/zy/"), "The Biggest, Blackest Dick"));
-                pyxServers.put("PYX2", new Server(parseUrlOrThrow("https://pyx-2.pretendyoure.xyz/zy/"), "A Falcon with a Box on its Head"));
-                pyxServers.put("PYX3", new Server(parseUrlOrThrow("https://pyx-3.pretendyoure.xyz/zy/"), "Dickfingers"));
+                HttpUrl pyxMetrics = parseUrlOrThrow("https://pretendyoure.xyz/zy/metrics/");
+
+                pyxServers.put("PYX1", new Server(parseUrlOrThrow("https://pyx-1.pretendyoure.xyz/zy/"), pyxMetrics, "The Biggest, Blackest Dick"));
+                pyxServers.put("PYX2", new Server(parseUrlOrThrow("https://pyx-2.pretendyoure.xyz/zy/"), pyxMetrics, "A Falcon with a Box on its Head"));
+                pyxServers.put("PYX3", new Server(parseUrlOrThrow("https://pyx-3.pretendyoure.xyz/zy/"), pyxMetrics, "Dickfingers"));
             } catch (JSONException ex) {
                 Logging.log(ex);
             }
@@ -308,19 +382,21 @@ public class Pyx implements Closeable {
 
         public final HttpUrl url;
         public final String name;
+        public final HttpUrl metricsUrl;
         public transient volatile ServersChecker.CheckResult status = null;
         private transient HttpUrl ajaxUrl;
         private transient HttpUrl pollingUrl;
         private transient HttpUrl configUrl;
         private transient HttpUrl statsUrl;
 
-        public Server(@NonNull HttpUrl url, @NonNull String name) {
+        public Server(@NonNull HttpUrl url, @Nullable HttpUrl metricsUrl, @NonNull String name) {
             this.url = url;
+            this.metricsUrl = metricsUrl;
             this.name = name;
         }
 
         Server(JSONObject obj) throws JSONException {
-            this(parseUrlOrThrow(obj.getString("uri")), obj.getString("name"));
+            this(parseUrlOrThrow(obj.getString("uri")), null, obj.getString("name"));
         }
 
         @Nullable
@@ -474,6 +550,18 @@ public class Pyx implements Closeable {
                 Logging.log(ex);
                 return true;
             }
+        }
+
+        @Nullable
+        public HttpUrl gameHistory(String id) {
+            if (metricsUrl == null) return null;
+            return metricsUrl.newBuilder().addPathSegments("game/" + id).build();
+        }
+
+        @Nullable
+        public HttpUrl gameRound(String id) {
+            if (metricsUrl == null) return null;
+            return metricsUrl.newBuilder().addPathSegments("round/" + id).build();
         }
 
         public boolean canDelete() {
