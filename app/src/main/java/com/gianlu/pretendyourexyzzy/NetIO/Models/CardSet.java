@@ -1,6 +1,5 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import android.support.annotation.Keep;
 import android.support.annotation.Nullable;
 
 import org.json.JSONException;
@@ -19,7 +18,6 @@ public class CardSet implements Serializable {
     public final String cardcastCode;
     private CardcastDeckInfo cardcastDeck;
 
-    @Keep
     public CardSet(JSONObject obj) throws JSONException {
         weight = obj.getInt("w");
         id = obj.getInt("cid");
@@ -28,9 +26,18 @@ public class CardSet implements Serializable {
         blackCards = obj.getInt("bcid");
         baseDeck = obj.getBoolean("bd");
         whiteCards = obj.getInt("wcid");
+        cardcastCode = getCardcastCode(id);
+    }
 
-        if (id < 0) cardcastCode = Integer.toString(-id, 36).substring(0, 5).toUpperCase();
-        else cardcastCode = null;
+    @Nullable
+    private static String getCardcastCode(int id) {
+        if (id < 0) {
+            String codeTmp = "00000";
+            codeTmp += Integer.toString(-id, 36);
+            return codeTmp.substring(codeTmp.length() - 5, codeTmp.length());
+        }
+
+        return null;
     }
 
     public void cardcastDeck(CardcastDeckInfo cardcastDeck) {
