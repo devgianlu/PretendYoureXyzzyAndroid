@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.CardViews;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,14 +13,20 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.FontsManager;
+import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
@@ -28,8 +35,17 @@ import com.gianlu.pretendyourexyzzy.R;
 public class GameCardView extends CardView {
     private final CardListener listener;
     private final Action mainAction;
+    private final int width;
+    private final SuperTextView text;
+    private final FrameLayout notText;
+    private final ProgressBar loading;
+    private final View unknown;
+    private final ImageView image;
+    private final SuperTextView numDraw;
+    private final SuperTextView numPick;
+    private final TextView watermark;
+    private final ImageButton action;
     private BaseCard card;
-    private int width;
 
     public GameCardView(@NonNull Context context) {
         this(context, null, 0);
@@ -40,148 +56,198 @@ public class GameCardView extends CardView {
     }
 
     public GameCardView(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        this.listener = null;
-        this.mainAction = null;
-        this.card = null;
+        this(context, attrs, defStyleAttr, null, null, null);
     }
 
     public GameCardView(@NonNull Context context, @NonNull BaseCard card, @Nullable Action mainAction, @Nullable CardListener listener) {
-        super(context, null, 0);
+        this(context, null, 0, card, mainAction, listener);
+    }
+
+    private GameCardView(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr, BaseCard card, Action mainAction, CardListener listener) {
+        super(context, attrs, defStyleAttr);
         this.card = card;
         this.mainAction = mainAction;
         this.listener = listener;
+
+        LayoutInflater.from(getContext()).inflate(R.layout.pyx_card, this, true);
+        width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 156, getResources().getDisplayMetrics());
+        setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, getResources().getDisplayMetrics()));
+        setForeground(CommonUtils.resolveAttrAsDrawable(getContext(), android.R.attr.selectableItemBackground));
+
+        text = findViewById(R.id.pyxCard_text);
+        text.setTypeface(FontsManager.get().get(getContext(), FontsManager.ROBOTO_MEDIUM));
+
+        watermark = findViewById(R.id.pyxCard_watermark);
+        numPick = findViewById(R.id.pyxCard_numPick);
+        numDraw = findViewById(R.id.pyxCard_numDraw);
+        action = findViewById(R.id.pyxCard_action);
+
+        notText = findViewById(R.id.pyxCard_notText);
+        loading = notText.findViewById(R.id.pyxCard_loading);
+        image = notText.findViewById(R.id.pyxCard_image);
+        unknown = notText.findViewById(R.id.pyxCard_unknown);
+
         init();
     }
 
+    private void showUnknown() {
+        text.setVisibility(GONE);
+        numPick.setVisibility(View.GONE);
+        numDraw.setVisibility(View.GONE);
+        watermark.setVisibility(View.GONE);
+        notText.setVisibility(VISIBLE);
+        unknown.setVisibility(VISIBLE);
+        image.setVisibility(GONE);
+        loading.setVisibility(GONE);
+    }
+
+    private void setupAction() {
+        if (mainAction != null) {
+            switch (mainAction) {
+                case SELECT:
+                    break;
+                case DELETE:
+                    action.setVisibility(VISIBLE);
+                    action.setImageResource(R.drawable.ic_delete_black_48dp);
+                    action.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (listener != null)
+                                listener.onCardAction(Action.DELETE, card);
+                        }
+                    });
+                    return;
+                case TOGGLE_STAR:
+                    action.setVisibility(VISIBLE);
+                    action.setImageResource(R.drawable.ic_star_black_48dp);
+                    action.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (listener != null)
+                                listener.onCardAction(Action.TOGGLE_STAR, card);
+                        }
+                    });
+                    return;
+            }
+
+            if (card.getImageUrl() != null) {
+                setOnLongClickListener(new OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        if (listener != null) {
+                            listener.onCardAction(Action.SELECT_IMG, card);
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                });
+            } else {
+                action.setVisibility(GONE);
+            }
+        } else {
+            if (card.getImageUrl() != null) {
+                action.setVisibility(VISIBLE);
+                action.setImageResource(R.drawable.ic_zoom_in_black_48dp);
+                action.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (listener != null) listener.onCardAction(Action.SELECT_IMG, card);
+                    }
+                });
+            } else {
+                action.setVisibility(GONE);
+            }
+        }
+    }
+
+    private void setupColors() {
+        if (card instanceof Card && ((Card) card).isWinner())
+            setCardBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorAccent));
+        else
+            setCardBackgroundColor(card.black() ? Color.BLACK : Color.WHITE);
+
+        text.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
+        watermark.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
+        numPick.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
+        numDraw.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
+    }
+
+    private void setupImageCard() {
+        text.setVisibility(GONE);
+        numDraw.setVisibility(GONE);
+        numPick.setVisibility(GONE);
+
+        notText.setVisibility(VISIBLE);
+        unknown.setVisibility(GONE);
+        loading.setVisibility(VISIBLE);
+
+        image.setVisibility(VISIBLE); // Must be so or Glide won't load
+        Glide.with(this).load(card).listener(new RequestListener<Drawable>() {
+            @Override
+            public boolean onLoadFailed(@Nullable GlideException ex, Object model, Target<Drawable> target, boolean isFirstResource) {
+                notText.setVisibility(GONE);
+                text.setVisibility(VISIBLE);
+                text.setTextSize(13);
+                text.setTextColor(ContextCompat.getColor(getContext(), R.color.red));
+                text.setText(R.string.failedLoadingImage);
+                Logging.log(ex);
+                return false;
+            }
+
+            @Override
+            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                text.setVisibility(GONE);
+                notText.setVisibility(VISIBLE);
+                loading.setVisibility(GONE);
+                unknown.setVisibility(GONE);
+                image.setVisibility(VISIBLE);
+                return false;
+            }
+        }).into(image);
+    }
+
+    private void setupTextCard() {
+        text.setVisibility(VISIBLE);
+        notText.setVisibility(GONE);
+
+        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(text, 8, 18, 1, TypedValue.COMPLEX_UNIT_SP);
+        text.setHtml(card.text());
+
+        if (card.black()) {
+            numPick.setHtml(R.string.numPick, card.numPick());
+            numPick.setVisibility(VISIBLE);
+
+            if (card.numDraw() > 0) {
+                numDraw.setHtml(R.string.numDraw, card.numDraw());
+                numDraw.setVisibility(VISIBLE);
+            } else {
+                numDraw.setVisibility(GONE);
+            }
+        } else {
+            numDraw.setVisibility(GONE);
+            numPick.setVisibility(GONE);
+        }
+    }
+
     private void init() {
-        removeAllViews();
         if (card == null) {
             setVisibility(GONE);
             return;
         }
 
         setVisibility(VISIBLE);
-        LayoutInflater.from(getContext()).inflate(R.layout.pyx_card, this, true);
-        width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 156, getResources().getDisplayMetrics());
-        setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, getResources().getDisplayMetrics()));
-        setForeground(CommonUtils.resolveAttrAsDrawable(getContext(), android.R.attr.selectableItemBackground));
 
-        LinearLayout content = findViewById(R.id.pyxCard_content);
-        LinearLayout unknown = findViewById(R.id.pyxCard_unknown);
-        ImageView image = findViewById(R.id.pyxCard_image);
         if (card.unknown()) {
-            unknown.setVisibility(VISIBLE);
-            content.setVisibility(GONE);
-            image.setVisibility(GONE);
+            showUnknown();
         } else {
-            ImageButton action = content.findViewById(R.id.pyxCard_action);
-            if (mainAction != null) {
-                switch (mainAction) {
-                    case SELECT:
-                        action.setVisibility(GONE);
-                        break;
-                    case DELETE:
-                        action.setVisibility(VISIBLE);
-                        action.setImageResource(R.drawable.ic_delete_black_48dp);
-                        action.setOnClickListener(new OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                if (listener != null)
-                                    listener.onCardAction(Action.DELETE, card);
-                            }
-                        });
-                        break;
-                    case TOGGLE_STAR:
-                        action.setVisibility(VISIBLE);
-                        action.setImageResource(R.drawable.ic_star_black_48dp);
-                        action.setOnClickListener(new OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                if (listener != null)
-                                    listener.onCardAction(Action.TOGGLE_STAR, card);
-                            }
-                        });
-                        break;
-                }
-            }
+            setupAction();
+            setupColors();
 
-            if (card instanceof Card && ((Card) card).isWinner())
-                setCardBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorAccent));
-            else
-                setCardBackgroundColor(card.black() ? Color.BLACK : Color.WHITE);
-
-            SuperTextView text = content.findViewById(R.id.pyxCard_text);
-            text.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
-            text.setTypeface(FontsManager.get().get(getContext(), FontsManager.ROBOTO_MEDIUM));
-
-            TextView watermark = content.findViewById(R.id.pyxCard_watermark);
-            watermark.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
             watermark.setText(card.watermark());
 
-            SuperTextView numPick = content.findViewById(R.id.pyxCard_numPick);
-            SuperTextView numDraw = content.findViewById(R.id.pyxCard_numDraw);
-
-            final String imageUrl = card.getImageUrl();
-            if (imageUrl != null) {
-                unknown.setVisibility(GONE);
-                image.setVisibility(VISIBLE);
-                content.setVisibility(VISIBLE);
-
-                text.setVisibility(GONE);
-                numDraw.setVisibility(GONE);
-                numPick.setVisibility(GONE);
-
-                Glide.with(this).load(card).into(image);
-
-                if (mainAction == null) {
-                    action.setVisibility(VISIBLE);
-                    action.setImageResource(R.drawable.ic_zoom_in_black_48dp);
-                    action.setOnClickListener(new OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            if (listener != null) listener.onCardAction(Action.SELECT_IMG, card);
-                        }
-                    });
-                } else {
-                    setOnLongClickListener(new OnLongClickListener() {
-                        @Override
-                        public boolean onLongClick(View v) {
-                            if (listener != null) {
-                                listener.onCardAction(Action.SELECT_IMG, card);
-                                return true;
-                            } else {
-                                return false;
-                            }
-                        }
-                    });
-                }
-            } else {
-                unknown.setVisibility(GONE);
-                image.setVisibility(GONE);
-                content.setVisibility(VISIBLE);
-
-                TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(text, 8, 18, 1, TypedValue.COMPLEX_UNIT_SP);
-                text.setHtml(card.text());
-
-                numPick.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
-                numDraw.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
-
-                if (card.black()) {
-                    numPick.setHtml(R.string.numPick, card.numPick());
-                    numPick.setVisibility(VISIBLE);
-
-                    if (card.numDraw() > 0) {
-                        numDraw.setHtml(R.string.numDraw, card.numDraw());
-                        numDraw.setVisibility(VISIBLE);
-                    } else {
-                        numDraw.setVisibility(GONE);
-                    }
-                } else {
-                    numDraw.setVisibility(GONE);
-                    numPick.setVisibility(GONE);
-                }
-            }
+            if (card.getImageUrl() != null) setupImageCard();
+            else setupTextCard();
         }
     }
 

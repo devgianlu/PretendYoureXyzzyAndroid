@@ -235,4 +235,5 @@
     <string name="usersAndGames"><![CDATA[<b>Users:</b>]]> %1$d/%2$d    <![CDATA[<b>Games:</b>]]> %3$d/%4$d</string>
     <string name="glide_details">Copyright 2014 Google, Inc. All rights reserved.</string>
     <string name="glide">Glide</string>
+    <string name="failedLoadingImage">Failed loading this image! Try to visit the link directly.</string>
 </resources>

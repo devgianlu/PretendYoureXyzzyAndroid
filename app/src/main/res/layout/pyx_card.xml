@@ -1,92 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="156dp"
+    android:layout_height="match_parent"
+    android:minHeight="188dp"
+    android:orientation="vertical"
+    android:paddingBottom="16dp">
 
-    <LinearLayout
-        android:id="@+id/pyxCard_content"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:minHeight="188dp"
-        android:orientation="vertical"
-        android:paddingBottom="16dp">
+    <com.gianlu.commonutils.SuperTextView
+        android:id="@+id/pyxCard_text"
+        android:layout_width="156dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="4dp"
+        android:layout_weight="1"
+        android:autoLink="web"
+        android:ellipsize="end"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:textSize="18sp" />
+
+    <FrameLayout
+        android:id="@+id/pyxCard_notText"
+        android:layout_width="156dp"
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <ImageView
             android:id="@+id/pyxCard_image"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="match_parent"
             android:layout_marginBottom="16dp"
-            android:layout_weight="1"
             android:adjustViewBounds="true"
             android:scaleType="centerCrop" />
 
-        <com.gianlu.commonutils.SuperTextView
-            android:id="@+id/pyxCard_text"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginBottom="4dp"
-            android:layout_weight="1"
-            android:autoLink="web"
-            android:ellipsize="end"
-            android:paddingEnd="16dp"
-            android:paddingStart="16dp"
-            android:paddingTop="16dp"
-            android:textSize="18sp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        <ProgressBar
+            android:id="@+id/pyxCard_loading"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingEnd="16dp"
-            android:paddingStart="16dp">
-
-            <ImageButton
-                android:id="@+id/pyxCard_action"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_gravity="end|bottom"
-                android:alpha="0.54"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:padding="4dp"
-                android:scaleType="fitCenter" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:orientation="vertical">
-
-                <com.gianlu.commonutils.SuperTextView
-                    android:id="@+id/pyxCard_numPick"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textAlignment="viewEnd" />
-
-                <com.gianlu.commonutils.SuperTextView
-                    android:id="@+id/pyxCard_numDraw"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textAlignment="viewEnd" />
-
-                <TextView
-                    android:id="@+id/pyxCard_watermark"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textAlignment="viewEnd" />
-            </LinearLayout>
-        </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/pyxCard_unknown"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_gravity="center"
+            android:indeterminate="true" />
 
         <ImageView
+            android:id="@+id/pyxCard_unknown"
             android:layout_width="156dp"
             android:layout_height="156dp"
             android:layout_gravity="center"
@@ -95,10 +50,48 @@
             android:scaleType="fitCenter"
             android:src="@drawable/ic_question_mark" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+    </FrameLayout>
 
+    <LinearLayout
+        android:layout_width="156dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp">
+
+        <ImageButton
+            android:id="@+id/pyxCard_action"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="end|bottom"
+            android:alpha="0.54"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:padding="4dp"
+            android:scaleType="fitCenter" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="vertical">
+
+            <com.gianlu.commonutils.SuperTextView
+                android:id="@+id/pyxCard_numPick"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAlignment="viewEnd" />
+
+            <com.gianlu.commonutils.SuperTextView
+                android:id="@+id/pyxCard_numDraw"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAlignment="viewEnd" />
+
+            <TextView
+                android:id="@+id/pyxCard_watermark"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAlignment="viewEnd" />
+        </LinearLayout>
     </LinearLayout>
-</merge>
+</LinearLayout>
