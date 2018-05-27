@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 
-public class CardSet implements Serializable {
+public class CardSet implements Serializable { // FIXME: This name is awful
     public final int weight;
     public final int id;
     public final String description;
