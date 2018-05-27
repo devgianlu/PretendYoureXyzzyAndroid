@@ -92,13 +92,14 @@ public class GameCardView extends CardView {
 
     private void showUnknown() {
         text.setVisibility(GONE);
-        numPick.setVisibility(View.GONE);
-        numDraw.setVisibility(View.GONE);
-        watermark.setVisibility(View.GONE);
+        numPick.setVisibility(GONE);
+        numDraw.setVisibility(GONE);
+        watermark.setVisibility(GONE);
         notText.setVisibility(VISIBLE);
         unknown.setVisibility(VISIBLE);
         image.setVisibility(GONE);
         loading.setVisibility(GONE);
+        action.setVisibility(GONE);
     }
 
     private void setupAction() {

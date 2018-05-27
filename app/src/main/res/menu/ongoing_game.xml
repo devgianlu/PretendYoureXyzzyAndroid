@@ -18,15 +18,8 @@
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/ongoingGame_share"
-        android:icon="@drawable/ic_share_white_48dp"
-        android:orderInCategory="1"
-        android:title="@string/share"
-        app:showAsAction="ifRoom" />
-
-    <item
         android:id="@+id/ongoingGame_players"
-        android:icon="@drawable/ic_person_white_48dp"
+        android:icon="@drawable/ic_people_white_48dp"
         android:orderInCategory="1"
         android:title="@string/playersLabel"
         app:showAsAction="ifRoom" />
@@ -39,7 +32,15 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/ongoingGame_share"
+        android:icon="@drawable/ic_share_white_48dp"
+        android:orderInCategory="1"
+        android:title="@string/share"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/ongoingGame_cardcast"
+        android:icon="@drawable/ic_cast_white_48dp"
         android:title="@string/cardcast"
-        app:showAsAction="never" />
+        app:showAsAction="ifRoom" />
 </menu>
