@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
@@ -34,19 +33,15 @@ import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.List;
 
-public class NewCardcastSheet extends BaseModalBottomSheet implements DecksAdapter.Listener {
+public class NewCardcastSheet extends BaseModalBottomSheet<Integer, List<CardSet>> implements DecksAdapter.Listener {
     private OngoingGameHelper.Listener listener;
     private RegisteredPyx pyx;
     private RecyclerView list;
     private ViewGroup body;
 
     @NonNull
-    public static NewCardcastSheet get(int gid) {
-        NewCardcastSheet sheet = new NewCardcastSheet();
-        Bundle args = new Bundle();
-        args.putInt("gid", gid);
-        sheet.setArguments(args);
-        return sheet;
+    public static NewCardcastSheet get() {
+        return new NewCardcastSheet();
     }
 
     @Override
@@ -58,29 +53,25 @@ public class NewCardcastSheet extends BaseModalBottomSheet implements DecksAdapt
     }
 
     @Override
-    protected boolean onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, @NonNull Bundle args) {
+    protected boolean onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, @NonNull Integer gid) {
         parent.setBackgroundResource(R.color.colorAccent_light);
         inflater.inflate(R.layout.sheet_header_cardcast, parent, true);
         return true;
     }
 
     @Override
-    protected void onRequestedUpdate(@NonNull Object... payloads) {
-        List<CardSet> cardSets = (List<CardSet>) payloads[0]; // FIXME
+    protected void onRequestedUpdate(@NonNull List<CardSet> cardSets) {
         list.setAdapter(new DecksAdapter(getContext(), cardSets, NewCardcastSheet.this, listener));
     }
 
     @Override
-    protected void onCreateBody(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, @NonNull Bundle args) throws MissingArgumentException {
+    protected void onCreateBody(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, @NonNull Integer gid) {
         inflater.inflate(R.layout.sheet_cardcast, parent, true);
         body = parent;
 
         list = parent.findViewById(R.id.cardcastSheet_list);
         list.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         list.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL)); // FIXME
-
-        final int gid = args.getInt("gid", -1);
-        if (gid == -1) throw new MissingArgumentException();
 
         try {
             pyx = RegisteredPyx.get();
@@ -106,7 +97,7 @@ public class NewCardcastSheet extends BaseModalBottomSheet implements DecksAdapt
     }
 
     @Override
-    protected void onCustomizeToolbar(@NonNull Toolbar toolbar, @NonNull Bundle args) {
+    protected void onCustomizeToolbar(@NonNull Toolbar toolbar, @NonNull Integer gid) {
         toolbar.setBackgroundResource(R.color.colorAccent_light);
         toolbar.setTitle(R.string.cardcast);
     }
@@ -141,7 +132,7 @@ public class NewCardcastSheet extends BaseModalBottomSheet implements DecksAdapt
     }
 
     @Override
-    protected boolean onCustomizeAction(@NonNull FloatingActionButton action, @NonNull Bundle args) {
+    protected boolean onCustomizeAction(@NonNull FloatingActionButton action, @NonNull Integer gid) {
         if (listener == null || !listener.canModifyCardcastDecks())
             return false;
 
@@ -169,12 +160,9 @@ public class NewCardcastSheet extends BaseModalBottomSheet implements DecksAdapt
 
     @Override
     public void removeDeck(@NonNull CardSet deck) {
-        Bundle args = getArguments();
-        int gid;
-        if (args == null || (gid = args.getInt("gid", -1)) == -1 || getContext() == null || deck.cardcastCode == null)
-            return;
+        if (getSetupPayload() == null || deck.cardcastCode == null) return;
 
-        pyx.request(PyxRequests.removeCardcastDeck(gid, deck.cardcastCode), new Pyx.OnSuccess() {
+        pyx.request(PyxRequests.removeCardcastDeck(getSetupPayload(), deck.cardcastCode), new Pyx.OnSuccess() {
             @Override
             public void onDone() {
                 Toaster.show(getActivity(), Utils.Messages.CARDSET_REMOVED);

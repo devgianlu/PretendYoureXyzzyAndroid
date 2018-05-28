@@ -239,8 +239,8 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
                 shareGame();
                 return true;
             case R.id.ongoingGame_cardcast:
-                cardcastSheet = NewCardcastSheet.get(gid);
-                DialogUtils.showDialog(getActivity(), cardcastSheet);
+                cardcastSheet = NewCardcastSheet.get();
+                cardcastSheet.show(getActivity(), gid);
                 return true;
         }
 
@@ -323,7 +323,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
                 Toaster.show(getActivity(), Utils.Messages.CARDCAST_ADDED);
                 AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_ADDED_CARDCAST);
 
-                if (cardcastSheet != null) cardcastSheet.triggerUpdate(result);
+                if (cardcastSheet != null) cardcastSheet.update(result);
             }
 
             @Override
@@ -390,7 +390,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
                 Toaster.show(getActivity(), Utils.Messages.ADDED_STARRED_DECKS);
                 AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_ADDED_CARDCAST);
 
-                if (cardcastSheet != null) cardcastSheet.triggerUpdate(result);
+                if (cardcastSheet != null) cardcastSheet.update(result);
             }
 
             @Override
