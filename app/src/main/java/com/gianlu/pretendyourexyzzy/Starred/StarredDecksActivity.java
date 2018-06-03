@@ -17,17 +17,15 @@ import com.gianlu.pretendyourexyzzy.Adapters.StarredDecksAdapter;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeckActivity;
-import com.gianlu.pretendyourexyzzy.Utils;
 
 public class StarredDecksActivity extends ActivityWithDialog implements StarredDecksAdapter.Listener {
     private RecyclerViewLayout layout;
 
     public static void startActivity(Context context) {
-        if (StarredDecksManager.hasAnyDeck(context)) {
+        if (StarredDecksManager.hasAnyDeck(context))
             context.startActivity(new Intent(context, StarredDecksActivity.class));
-        } else {
-            Toaster.show(context, Utils.Messages.NO_STARRED_DECKS);
-        }
+        else
+            Toaster.with(context).message(R.string.noStarredDecks).show();
     }
 
     @Override

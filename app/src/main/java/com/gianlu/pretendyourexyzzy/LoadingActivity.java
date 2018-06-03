@@ -253,7 +253,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                             }
                         }
 
-                        Toaster.show(LoadingActivity.this, Utils.Messages.FAILED_LOADING, ex);
+                        Toaster.with(LoadingActivity.this).message(R.string.failedLoading).ex(ex).show();
                     }
                 });
             }
@@ -308,12 +308,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         }
 
-        Toaster.show(LoadingActivity.this, Utils.Messages.FAILED_LOADING, ex, new Runnable() {
-            @Override
-            public void run() {
-                changeServerDialog(false);
-            }
-        });
+        Toaster.with(LoadingActivity.this).message(R.string.failedLoading).ex(ex).show();
+        changeServerDialog(false);
     }
 
     private void goTo(Class goTo) {

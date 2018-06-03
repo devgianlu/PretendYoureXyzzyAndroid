@@ -23,7 +23,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.Date;
 
@@ -42,7 +41,7 @@ public class UserInfoDialog extends DialogFragment {
             @Override
             public void onException(@NonNull Exception ex) {
                 DialogUtils.dismissDialog(activity);
-                Toaster.show(activity, Utils.Messages.FAILED_LOADING, ex);
+                Toaster.with(activity).message(R.string.failedLoading).ex(ex).show();
             }
         });
     }

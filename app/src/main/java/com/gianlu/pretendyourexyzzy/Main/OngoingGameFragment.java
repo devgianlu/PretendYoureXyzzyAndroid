@@ -7,8 +7,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
@@ -30,6 +28,7 @@ import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
+import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
 import com.gianlu.commonutils.NameValuePair;
@@ -61,7 +60,7 @@ import java.util.Objects;
 
 import okhttp3.HttpUrl;
 
-public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameInfoAndCards>, BestGameManager.Listener, OngoingGameHelper.Listener, PlayersAdapter.Listener {
+public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnResult<GameInfoAndCards>, BestGameManager.Listener, OngoingGameHelper.Listener, PlayersAdapter.Listener {
     private OnLeftGame onLeftGame;
     private FrameLayout layout;
     private ProgressBar loading;
@@ -99,11 +98,6 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
     }
 
     @Override
-    public void showDialog(@NonNull DialogFragment dialog) {
-        DialogUtils.showDialog(getActivity(), dialog);
-    }
-
-    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.ongoing_game, menu);
     }
@@ -117,7 +111,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
 
             @Override
             public void onException(@NonNull Exception ex) {
-                Toaster.show(getActivity(), Utils.Messages.FAILED_LEAVING, ex);
+                showToast(Toaster.build().message(R.string.failedLeaving).ex(ex));
             }
         });
     }
@@ -313,14 +307,14 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
     @Override
     public void addCardcastDeck(String code) {
         if (code == null || code.length() != 5) {
-            Toaster.show(getActivity(), Utils.Messages.INVALID_CARDCAST_CODE, code);
+            showToast(Toaster.build().message(R.string.invalidCardcastCode).extra(code));
             return;
         }
 
         pyx.addCardcastDeckAndList(gid, code, cardcast, new Pyx.OnResult<List<CardSet>>() {
             @Override
             public void onDone(@NonNull List<CardSet> result) {
-                Toaster.show(getActivity(), Utils.Messages.CARDCAST_ADDED);
+                showToast(Toaster.build().message(R.string.cardcastAdded));
                 AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_ADDED_CARDCAST);
 
                 if (cardcastSheet != null) cardcastSheet.update(result);
@@ -328,7 +322,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
 
             @Override
             public void onException(@NonNull Exception ex) {
-                Toaster.show(getActivity(), Utils.Messages.FAILED_ADDING_CARDCAST, ex);
+                showToast(Toaster.build().message(R.string.failedAddingCardcast).ex(ex));
             }
         });
     }
@@ -361,11 +355,6 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
     }
 
     @Override
-    public void showDialog(@NonNull AlertDialog.Builder builder) {
-        DialogUtils.showDialog(getActivity(), builder);
-    }
-
-    @Override
     public boolean canModifyCardcastDecks() {
         return amHost() && getGame() != null && getGame().status == Game.Status.LOBBY;
     }
@@ -376,7 +365,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
 
         List<StarredDecksManager.StarredDeck> starredDecks = StarredDecksManager.loadDecks(getContext());
         if (starredDecks.isEmpty()) {
-            Toaster.show(getActivity(), Utils.Messages.NO_STARRED_DECKS);
+            showToast(Toaster.build().message(R.string.noStarredDecks));
             return;
         }
 
@@ -387,7 +376,7 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
         pyx.addCardcastDecksAndList(gid, codes, cardcast, new Pyx.OnResult<List<CardSet>>() {
             @Override
             public void onDone(@NonNull List<CardSet> result) {
-                Toaster.show(getActivity(), Utils.Messages.ADDED_STARRED_DECKS);
+                showToast(Toaster.build().message(R.string.starredDecksAdded));
                 AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_ADDED_CARDCAST);
 
                 if (cardcastSheet != null) cardcastSheet.update(result);
@@ -396,11 +385,11 @@ public class OngoingGameFragment extends Fragment implements Pyx.OnResult<GameIn
             @Override
             public void onException(@NonNull Exception ex) {
                 if (ex instanceof RegisteredPyx.PartialCardcastAddFail) {
-                    Toaster.show(getActivity(), Utils.Messages.PARTIAL_ADD_STARRED_DECKS_FAILED, ((RegisteredPyx.PartialCardcastAddFail) ex).getCodes());
+                    showToast(Toaster.build().message(R.string.addStarredDecksFailedPartial).ex(ex).extra(((RegisteredPyx.PartialCardcastAddFail) ex).getCodes()));
                     return;
                 }
 
-                Toaster.show(getActivity(), Utils.Messages.FAILED_ADDING_CARDCAST, ex);
+                showToast(Toaster.build().message(R.string.failedAddingCardcast).ex(ex));
             }
         });
     }

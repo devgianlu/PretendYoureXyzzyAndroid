@@ -25,7 +25,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONException;
 
@@ -113,7 +112,7 @@ public final class Dialogs {
                             Pyx.Server.addServer(context, server);
                             listener.loadServers();
                         } catch (JSONException ex) {
-                            Toaster.show(context, Utils.Messages.FAILED_ADDING_SERVER, ex);
+                            Toaster.with(context).message(R.string.failedAddingServer).ex(ex).show();
                         }
 
                         dialogInterface.dismiss();

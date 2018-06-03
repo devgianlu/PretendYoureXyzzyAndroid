@@ -29,7 +29,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.List;
 
@@ -76,7 +75,7 @@ public class NewCardcastSheet extends BaseModalBottomSheet<Integer, List<CardSet
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
-            Toaster.show(getActivity(), Utils.Messages.FAILED_LOADING, ex);
+            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading).ex(ex));
             dismiss();
             return;
         }
@@ -90,7 +89,7 @@ public class NewCardcastSheet extends BaseModalBottomSheet<Integer, List<CardSet
 
             @Override
             public void onException(@NonNull Exception ex) {
-                Toaster.show(getActivity(), Utils.Messages.FAILED_LOADING, ex);
+                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading).ex(ex));
                 dismiss();
             }
         });
@@ -165,12 +164,12 @@ public class NewCardcastSheet extends BaseModalBottomSheet<Integer, List<CardSet
         pyx.request(PyxRequests.removeCardcastDeck(getSetupPayload(), deck.cardcastCode), new Pyx.OnSuccess() {
             @Override
             public void onDone() {
-                Toaster.show(getActivity(), Utils.Messages.CARDSET_REMOVED);
+                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.cardcastDeckRemoved));
             }
 
             @Override
             public void onException(@NonNull Exception ex) {
-                Toaster.show(getActivity(), Utils.Messages.FAILED_REMOVING_CARDSET, ex);
+                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedRemovingCardcastDeck).ex(ex));
             }
         });
     }

@@ -8,7 +8,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 
 import com.getkeepsafe.taptargetview.TapTarget;
-import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -78,34 +77,5 @@ public class Utils {
             if (games.get(i).gid == gid) return i;
 
         return -1;
-    }
-
-    public static class Messages {
-        public static final Toaster.Message FAILED_LOADING = new Toaster.Message(R.string.failedLoading, true);
-        public static final Toaster.Message FAILED_SEND_MESSAGE = new Toaster.Message(R.string.failedSendMessage, true);
-        public static final Toaster.Message FAILED_JOINING = new Toaster.Message(R.string.failedJoining, true);
-        public static final Toaster.Message WRONG_PASSWORD = new Toaster.Message(R.string.wrongPassword, false);
-        public static final Toaster.Message GAME_FULL = new Toaster.Message(R.string.gameFull, false);
-        public static final Toaster.Message FAILED_SPECTATING = new Toaster.Message(R.string.failedSpectating, true);
-        public static final Toaster.Message FAILED_LEAVING = new Toaster.Message(R.string.failedLeaving, true);
-        public static final Toaster.Message NO_STARRED_CARDS = new Toaster.Message(R.string.noStarredCards, false);
-        public static final Toaster.Message FAILED_CREATING_GAME = new Toaster.Message(R.string.failedCreatingGame, true);
-        public static final Toaster.Message FAILED_START_GAME = new Toaster.Message(R.string.failedStartGame, true);
-        public static final Toaster.Message GAME_STARTED = new Toaster.Message(R.string.gameStarted, false);
-        public static final Toaster.Message OPTIONS_CHANGED = new Toaster.Message(R.string.optionsChanged, false);
-        public static final Toaster.Message FAILED_CHANGING_OPTIONS = new Toaster.Message(R.string.failedChangingOptions, true);
-        public static final Toaster.Message CARDCAST_ADDED = new Toaster.Message(R.string.cardcastAdded, false);
-        public static final Toaster.Message FAILED_ADDING_CARDCAST = new Toaster.Message(R.string.failedAddingCardcast, true);
-        public static final Toaster.Message NOT_ENOUGH_PLAYERS = new Toaster.Message(R.string.notEnoughPlayers, false);
-        public static final Toaster.Message INVALID_CARDCAST_CODE = new Toaster.Message(R.string.invalidCardcastCode, false);
-        public static final Toaster.Message NO_STARRED_DECKS = new Toaster.Message(R.string.noStarredDecks, false);
-        public static final Toaster.Message ADDED_STARRED_DECKS = new Toaster.Message(R.string.starredDecksAdded, false);
-        public static final Toaster.Message PARTIAL_ADD_STARRED_DECKS_FAILED = new Toaster.Message(R.string.addStarredDecksFailedPartial, true);
-        public static final Toaster.Message FAILED_PLAYING = new Toaster.Message(R.string.failedPlayingCard, true);
-        public static final Toaster.Message FAILED_JUDGING = new Toaster.Message(R.string.failedJudging, true);
-        public static final Toaster.Message STARRED_CARD = new Toaster.Message(R.string.addedCardToStarred, false);
-        public static final Toaster.Message CARDSET_REMOVED = new Toaster.Message(R.string.cardcastDeckRemoved, false);
-        public static final Toaster.Message FAILED_REMOVING_CARDSET = new Toaster.Message(R.string.failedRemovingCardcastDeck, true);
-        public static final Toaster.Message FAILED_ADDING_SERVER = new Toaster.Message(R.string.failedAddingServer, true);
     }
 }

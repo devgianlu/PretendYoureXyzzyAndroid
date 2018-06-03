@@ -85,7 +85,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
-            Toaster.show(this, Utils.Messages.FAILED_LOADING, ex);
+            Toaster.with(this).message(R.string.failedLoading).ex(ex).show();
             startActivity(new Intent(this, LoadingActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
             return;
@@ -350,18 +350,18 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 @Override
                 public void onDone() {
                     dismissDialog();
-                    Toaster.show(MainActivity.this, Utils.Messages.OPTIONS_CHANGED);
+                    Toaster.with(MainActivity.this).message(R.string.optionsChanged).show();
                 }
 
                 @Override
                 public void onException(@NonNull Exception ex) {
                     dismissDialog();
-                    Toaster.show(MainActivity.this, Utils.Messages.FAILED_CHANGING_OPTIONS, ex);
+                    Toaster.with(MainActivity.this).message(R.string.failedChangingOptions).ex(ex).show();
                 }
             });
         } catch (JSONException ex) {
             dismissDialog();
-            Toaster.show(this, Utils.Messages.FAILED_CHANGING_OPTIONS, ex);
+            Toaster.with(this).message(R.string.failedChangingOptions).ex(ex).show();
         }
     }
 }

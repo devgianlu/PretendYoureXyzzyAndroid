@@ -22,7 +22,6 @@ import com.gianlu.pretendyourexyzzy.Dialogs.CardImageZoomDialog;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.Objects;
 
@@ -30,11 +29,11 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
     private RecyclerView list;
     private LinearLayout cards;
 
-    public static void startActivity(Context context) {
+    public static void startActivity(@NonNull Context context) {
         if (StarredCardsManager.hasAnyCard(context))
             context.startActivity(new Intent(context, StarredCardsActivity.class));
         else
-            Toaster.show(context, Utils.Messages.NO_STARRED_CARDS);
+            Toaster.with(context).message(R.string.noStarredCards).show();
     }
 
     @Override

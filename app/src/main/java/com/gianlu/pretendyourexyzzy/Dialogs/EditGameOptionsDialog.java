@@ -17,13 +17,13 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.Utils;
 
 public class EditGameOptionsDialog extends DialogFragment {
     private TextInputLayout scoreLimit;
@@ -106,7 +106,7 @@ public class EditGameOptionsDialog extends DialogFragment {
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
-            Toaster.show(getActivity(), Utils.Messages.FAILED_LOADING, ex);
+            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading).ex(ex));
             dismiss();
             return layout;
         }

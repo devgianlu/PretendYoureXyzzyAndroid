@@ -10,7 +10,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
@@ -30,6 +29,7 @@ import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
+import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.RecyclerViewLayout;
@@ -48,7 +48,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.TutorialManager;
 import com.gianlu.pretendyourexyzzy.Utils;
 
-public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, GamesAdapter.Listener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, Pyx.OnEventListener {
+public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<GamesList>, GamesAdapter.Listener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, Pyx.OnEventListener {
     private static final String POLLING = GamesFragment.class.getName();
     private GamesList lastResult;
     private RecyclerViewLayout recyclerViewLayout;
@@ -165,7 +165,7 @@ public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, 
                     @Override
                     public void onException(@NonNull Exception ex) {
                         DialogUtils.dismissDialog(getActivity());
-                        Toaster.show(getActivity(), Utils.Messages.FAILED_CREATING_GAME, ex);
+                        showToast(Toaster.build().message(R.string.failedCreatingGame).ex(ex));
                     }
                 });
             }
@@ -314,15 +314,15 @@ public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, 
                 if (ex instanceof PyxException) {
                     switch (((PyxException) ex).errorCode) {
                         case "wp":
-                            Toaster.show(getActivity(), Utils.Messages.WRONG_PASSWORD, ex);
+                            showToast(Toaster.build().message(R.string.wrongPassword).ex(ex).error(false));
                             return;
                         case "gf":
-                            Toaster.show(getActivity(), Utils.Messages.GAME_FULL, ex);
+                            showToast(Toaster.build().message(R.string.gameFull).ex(ex).error(false));
                             return;
                     }
                 }
 
-                Toaster.show(getActivity(), Utils.Messages.FAILED_SPECTATING, ex);
+                showToast(Toaster.build().message(R.string.failedSpectating).ex(ex));
             }
         });
     }
@@ -347,15 +347,15 @@ public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, 
                 if (ex instanceof PyxException) {
                     switch (((PyxException) ex).errorCode) {
                         case "wp":
-                            Toaster.show(getActivity(), Utils.Messages.WRONG_PASSWORD, ex);
+                            showToast(Toaster.build().message(R.string.wrongPassword).ex(ex).error(false));
                             return;
                         case "gf":
-                            Toaster.show(getActivity(), Utils.Messages.GAME_FULL, ex);
+                            showToast(Toaster.build().message(R.string.gameFull).ex(ex).error(false));
                             return;
                     }
                 }
 
-                Toaster.show(getActivity(), Utils.Messages.FAILED_JOINING, ex);
+                showToast(Toaster.build().message(R.string.failedJoining).ex(ex));
             }
         });
     }
@@ -415,7 +415,7 @@ public class GamesFragment extends Fragment implements Pyx.OnResult<GamesList>, 
                 if (handler != null) handler.onParticipatingGame(gid);
             }
         } else {
-            Toaster.show(getActivity(), Utils.Messages.FAILED_JOINING, new NullPointerException("Couldn't find game for " + gid));
+            showToast(Toaster.build().message(R.string.failedJoining).ex(new NullPointerException("Couldn't find game for " + gid)));
         }
     }
 

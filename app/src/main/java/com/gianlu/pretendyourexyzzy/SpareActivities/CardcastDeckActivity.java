@@ -20,7 +20,6 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeck.CardsFragment;
 import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeck.InfoFragment;
 import com.gianlu.pretendyourexyzzy.Starred.StarredDecksManager;
-import com.gianlu.pretendyourexyzzy.Utils;
 
 public class CardcastDeckActivity extends ActivityWithDialog {
     private String code;
@@ -86,7 +85,7 @@ public class CardcastDeckActivity extends ActivityWithDialog {
         code = getIntent().getStringExtra("code");
         name = getIntent().getStringExtra("title");
         if (code == null || name == null) {
-            Toaster.show(this, Utils.Messages.FAILED_LOADING, new NullPointerException("code or name is null!"));
+            Toaster.with(this).message(R.string.failedLoading).ex(new NullPointerException("code or name is null!")).show();
             onBackPressed();
             return;
         }

@@ -13,7 +13,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
@@ -139,7 +138,7 @@ public class BestGameManager implements Pyx.OnEventListener {
 
     @Override
     public void onStoppedPolling() {
-        Toaster.show(context, Utils.Messages.FAILED_LOADING);
+        Toaster.with(context).message(R.string.failedLoading).show();
         pyx.request(PyxRequests.leaveGame(gid()), null);
         listener.shouldLeaveGame();
     }
@@ -148,13 +147,13 @@ public class BestGameManager implements Pyx.OnEventListener {
         pyx.request(PyxRequests.startGame(gid()), new Pyx.OnSuccess() {
             @Override
             public void onDone() {
-                Toaster.show(context, Utils.Messages.GAME_STARTED);
+                Toaster.with(context).message(R.string.gameStarted).show();
             }
 
             @Override
             public void onException(@NonNull Exception ex) {
                 if (!(ex instanceof PyxException) || !ui.handleStartGameException((PyxException) ex))
-                    Toaster.show(context, Utils.Messages.FAILED_START_GAME, ex);
+                    Toaster.with(context).message(R.string.failedStartGame).ex(ex).show();
             }
         });
     }
@@ -488,7 +487,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             } else if (action == GameCardView.Action.TOGGLE_STAR) {
                 BaseCard bc = ui.blackCard();
                 if (bc != null && StarredCardsManager.addCard(context, new StarredCardsManager.StarredCard(bc, group)))
-                    Toaster.show(context, Utils.Messages.STARRED_CARD);
+                    Toaster.with(context).message(R.string.addedCardToStarred).show();
             } else if (action == GameCardView.Action.SELECT_IMG) {
                 listener.showDialog(CardImageZoomDialog.get(card));
             }
@@ -572,7 +571,7 @@ public class BestGameManager implements Pyx.OnEventListener {
          */
         public boolean handleStartGameException(PyxException ex) {
             if (Objects.equals(ex.errorCode, "nep")) {
-                Toaster.show(context, Utils.Messages.NOT_ENOUGH_PLAYERS);
+                Toaster.with(context).message(R.string.notEnoughPlayers).show();
                 return true;
             } else if (Objects.equals(ex.errorCode, "nec")) {
                 try {
@@ -658,7 +657,7 @@ public class BestGameManager implements Pyx.OnEventListener {
 
                 @Override
                 public void onException(@NonNull Exception ex) {
-                    Toaster.show(context, Utils.Messages.FAILED_JUDGING, ex);
+                    Toaster.with(context).message(R.string.failedJudging).ex(ex).show();
                 }
             });
         }
@@ -677,16 +676,16 @@ public class BestGameManager implements Pyx.OnEventListener {
 
                 @Override
                 public void onException(@NonNull Exception ex) {
-                    Toaster.show(context, Utils.Messages.FAILED_PLAYING, ex);
+                    Toaster.with(context).message(R.string.failedPlayingCard).ex(ex).show();
                 }
             });
         }
 
-        private void uiToast(int text, Object... args) {
-            Toaster.show(context, context.getString(text, args), Toast.LENGTH_SHORT, null, null, null);
+        private void uiToast(@StringRes int text, Object... args) {
+            Toaster.with(context).message(text, args).show();
         }
 
-        private void uiText(int text, Object... args) {
+        private void uiText(@StringRes int text, Object... args) {
             instructions.setText(context.getString(text, args));
         }
 
