@@ -34,4 +34,10 @@ public class GameRound {
                 subCards.add(new RoundCard(sub.getJSONObject(j)));
         }
     }
+
+    public int whiteCards() {
+        int count = winningCard.size();
+        for (List<RoundCard> cards : otherCards) count += cards.size();
+        return count;
+    }
 }
