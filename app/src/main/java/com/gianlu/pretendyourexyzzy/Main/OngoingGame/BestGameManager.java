@@ -1,6 +1,8 @@
 package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
@@ -44,6 +46,8 @@ import org.json.JSONObject;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class BestGameManager implements Pyx.OnEventListener {
     private final static String POLLING = BestGameManager.class.getName();
@@ -102,7 +106,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                 ui.event(UiEvent.PLAYER_SKIPPED, msg.obj.getString("n"));
                 break;
             case GAME_JUDGE_LEFT:
-                data.gameJudgeLeft();
+                data.gameJudgeLeft(msg.obj.getInt("i"));
                 break;
             case GAME_JUDGE_SKIPPED:
                 data.gameJudgeSkipped();
@@ -328,14 +332,16 @@ public class BestGameManager implements Pyx.OnEventListener {
         public void gameStateChanged(@NonNull Game.Status status, @NonNull JSONObject obj) throws JSONException {
             info.game.status = status;
 
+
             ui.setStartGameVisible(status == Game.Status.LOBBY && Objects.equals(host(), me()));
+
             switch (status) {
                 case PLAYING:
-                    playingState(new Card(obj.getJSONObject("bc")));
+                    playingState(new Card(obj.getJSONObject("bc")), obj.getInt("Pt"));
                     nextRound();
                     break;
                 case JUDGING:
-                    judgingState(CardsGroup.list(obj.getJSONArray("wc")));
+                    judgingState(CardsGroup.list(obj.getJSONArray("wc")), obj.getInt("Pt"));
                     break;
                 case LOBBY:
                     ui.event(UiEvent.WAITING_FOR_START);
@@ -369,12 +375,14 @@ public class BestGameManager implements Pyx.OnEventListener {
             else handAdapter.addCards(cards);
         }
 
-        private void playingState(@NonNull Card blackCard) {
+        private void playingState(@NonNull Card blackCard, int playTime) {
             ui.blackCard(blackCard);
+            ui.resetTimer(playTime);
         }
 
-        private void judgingState(List<CardsGroup> cards) {
+        private void judgingState(List<CardsGroup> cards, int playTime) {
             tableAdapter.setCardGroups(cards, null);
+            ui.resetTimer(playTime);
         }
 
         public void gameRoundComplete(String roundWinner, int winningCard, String roundPermalink, int intermission) {
@@ -382,6 +390,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             else ui.event(UiEvent.ROUND_WINNER, roundWinner);
 
             tableAdapter.notifyWinningCard(winningCard);
+            ui.resetTimer(intermission);
         }
 
         public void gamePlayerInfoChanged(@NonNull GameInfo.Player player) {
@@ -499,7 +508,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             listener.updateActivityTitle();
         }
 
-        public void gameJudgeLeft() {
+        public void gameJudgeLeft(int intermission) {
             if (judgeIndex != -1) {
                 GameInfo.Player judge = info.players.get(judgeIndex);
                 ui.event(UiEvent.JUDGE_LEFT, judge.name);
@@ -508,6 +517,7 @@ public class BestGameManager implements Pyx.OnEventListener {
 
             tableAdapter.clear();
             ui.showTableCards();
+            ui.resetTimer(intermission);
         }
 
         public void gameJudgeSkipped() {
@@ -541,10 +551,15 @@ public class BestGameManager implements Pyx.OnEventListener {
         private final TextView instructions;
         private final RecyclerView whiteCardsList;
         private final RecyclerView playersList;
+        private final TextView time;
+        private final Timer timer = new Timer();
+        private final Handler handler = new Handler(Looper.getMainLooper());
+        private TimeTask currentTask;
 
         Ui(ViewGroup layout) {
             blackCard = layout.findViewById(R.id.gameLayout_blackCard);
             instructions = layout.findViewById(R.id.gameLayout_instructions);
+            time = layout.findViewById(R.id.gameLayout_time);
 
             startGame = layout.findViewById(R.id.gameLayout_startGame);
             startGame.setOnClickListener(new View.OnClickListener() {
@@ -562,9 +577,11 @@ public class BestGameManager implements Pyx.OnEventListener {
             playersList.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
         }
 
-        //****************//
-        // Public methods //
-        //****************//
+        public void resetTimer(int millis) {
+            if (currentTask != null) currentTask.cancel();
+            currentTask = new TimeTask(millis / 1000);
+            timer.scheduleAtFixedRate(currentTask, 0, 1000);
+        }
 
         /**
          * @return Whether the exception has been handled
@@ -696,6 +713,27 @@ public class BestGameManager implements Pyx.OnEventListener {
 
         public void setStartGameVisible(boolean set) {
             startGame.setVisibility(set ? View.VISIBLE : View.GONE);
+        }
+
+        private class TimeTask extends TimerTask {
+            private int count;
+
+            TimeTask(int time) {
+                this.count = time;
+            }
+
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        time.setText(String.valueOf(count));
+                    }
+                });
+
+                if (count <= 0) cancel();
+                else count--;
+            }
         }
     }
 }
