@@ -12,8 +12,8 @@ import android.widget.TextView;
 
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeckActivity;
 
@@ -21,12 +21,12 @@ import java.util.List;
 
 public class DecksAdapter extends RecyclerView.Adapter<DecksAdapter.ViewHolder> {
     private final Context context;
-    private final List<CardSet> sets;
+    private final List<Deck> sets;
     private final LayoutInflater inflater;
     private final Listener listener;
     private final OngoingGameHelper.Listener ongoingGameListener;
 
-    public DecksAdapter(Context context, List<CardSet> sets, Listener listener, OngoingGameHelper.Listener ongoingGameListener) {
+    public DecksAdapter(Context context, List<Deck> sets, Listener listener, OngoingGameHelper.Listener ongoingGameListener) {
         this.context = context;
         this.sets = sets;
         this.inflater = LayoutInflater.from(context);
@@ -50,7 +50,7 @@ public class DecksAdapter extends RecyclerView.Adapter<DecksAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
-        final CardSet item = sets.get(position);
+        final Deck item = sets.get(position);
         holder.name.setText(Html.fromHtml(item.name));
         holder.whiteCards.setText(String.valueOf(item.whiteCards));
         holder.blackCards.setText(String.valueOf(item.blackCards));
@@ -98,7 +98,7 @@ public class DecksAdapter extends RecyclerView.Adapter<DecksAdapter.ViewHolder> 
     public interface Listener {
         void shouldUpdateItemCount(int count);
 
-        void removeDeck(@NonNull CardSet cardSet);
+        void removeDeck(@NonNull Deck deck);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

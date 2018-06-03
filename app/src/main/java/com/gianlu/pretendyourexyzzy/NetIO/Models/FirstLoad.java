@@ -17,7 +17,7 @@ import java.util.Objects;
 public class FirstLoad implements Serializable {
     public final NextOp nextOperation;
     public final boolean inProgress;
-    public final ArrayList<CardSet> cardSets;
+    public final ArrayList<Deck> decks;
     public final User user;
     public final int gameId;
 
@@ -25,7 +25,7 @@ public class FirstLoad implements Serializable {
         this.nextOperation = NextOp.parse(obj.getString("next"));
         this.inProgress = obj.getBoolean("ip");
         this.gameId = obj.optInt("gid", -1);
-        this.cardSets = CommonUtils.toTList(obj.getJSONArray("css"), CardSet.class);
+        this.decks = CommonUtils.toTList(obj.getJSONArray("css"), Deck.class);
         this.user = user;
     }
 
@@ -33,7 +33,7 @@ public class FirstLoad implements Serializable {
     public List<String> createCardSetNamesList(List<Integer> includeIds) {
         List<String> names = new ArrayList<>();
         for (int id : includeIds) {
-            CardSet set = Utils.findCardSet(cardSets, id);
+            Deck set = Utils.findCardSet(decks, id);
             if (set != null) names.add(set.name);
         }
 

@@ -198,7 +198,7 @@ public class Game implements Filterable<Game.Protection>, Serializable {
             for (int i = 0; i < cardSets.getChildCount(); i++) {
                 View view = cardSets.getChildAt(i);
                 if (view instanceof CheckBox && ((CheckBox) view).isChecked())
-                    cardSetIds.add(((CardSet) view.getTag()).id);
+                    cardSetIds.add(((Deck) view.getTag()).id);
             }
 
             return new Game.Options(timerMultiplier, vL, pL, sl, bl, cardSetIds, password);

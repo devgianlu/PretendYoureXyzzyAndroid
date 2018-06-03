@@ -6,8 +6,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.List;
 
-public class CardSet implements Serializable { // FIXME: This name is awful
+public class Deck implements Serializable {
     public final int weight;
     public final int id;
     public final String description;
@@ -18,7 +19,7 @@ public class CardSet implements Serializable { // FIXME: This name is awful
     public final String cardcastCode;
     private CardcastDeckInfo cardcastDeck;
 
-    public CardSet(JSONObject obj) throws JSONException {
+    public Deck(JSONObject obj) throws JSONException {
         weight = obj.getInt("w");
         id = obj.getInt("cid");
         description = obj.getString("csd");
@@ -27,6 +28,18 @@ public class CardSet implements Serializable { // FIXME: This name is awful
         baseDeck = obj.getBoolean("bd");
         whiteCards = obj.getInt("wcid");
         cardcastCode = getCardcastCode(id);
+    }
+
+    public static int countWhiteCards(List<Deck> decks) {
+        int count = 0;
+        for (Deck deck : decks) count += deck.whiteCards;
+        return count;
+    }
+
+    public static int countBlackCards(List<Deck> decks) {
+        int count = 0;
+        for (Deck deck : decks) count += deck.blackCards;
+        return count;
     }
 
     @Nullable

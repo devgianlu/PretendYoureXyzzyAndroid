@@ -8,7 +8,7 @@ import android.support.annotation.Nullable;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.Preferences.Prefs;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
@@ -192,15 +192,15 @@ public final class PyxRequests {
     }
 
     @NonNull
-    public static PyxRequestWithResult<List<CardSet>> listCardcastDecks(int gid, @NonNull final Cardcast cardcast) {
-        return new PyxRequestWithResult<>(Pyx.Op.LIST_CARDCAST_CARD_SETS, new Pyx.Processor<List<CardSet>>() {
+    public static PyxRequestWithResult<List<Deck>> listCardcastDecks(int gid, @NonNull final Cardcast cardcast) {
+        return new PyxRequestWithResult<>(Pyx.Op.LIST_CARDCAST_CARD_SETS, new Pyx.Processor<List<Deck>>() {
             @NonNull
             @Override
-            public List<CardSet> process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-                List<CardSet> cards = new ArrayList<>();
+            public List<Deck> process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+                List<Deck> cards = new ArrayList<>();
                 JSONArray array = obj.getJSONArray("css");
                 for (int i = 0; i < array.length(); i++) {
-                    CardSet set = new CardSet(array.getJSONObject(i));
+                    Deck set = new Deck(array.getJSONObject(i));
                     cards.add(set);
 
                     try {

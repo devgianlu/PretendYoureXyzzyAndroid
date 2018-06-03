@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Prefs;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoadAndConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
@@ -109,7 +109,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
         });
     }
 
-    public final void addCardcastDecksAndList(final int gid, final List<String> codes, @NonNull final Cardcast cardcast, final OnResult<List<CardSet>> listener) {
+    public final void addCardcastDecksAndList(final int gid, final List<String> codes, @NonNull final Cardcast cardcast, final OnResult<List<Deck>> listener) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -134,7 +134,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
                         });
                     }
 
-                    final List<CardSet> sets = requestSync(PyxRequests.listCardcastDecks(gid, cardcast));
+                    final List<Deck> sets = requestSync(PyxRequests.listCardcastDecks(gid, cardcast));
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -153,13 +153,13 @@ public class RegisteredPyx extends FirstLoadedPyx {
         });
     }
 
-    public final void addCardcastDeckAndList(final int gid, @NonNull final String code, @NonNull final Cardcast cardcast, final OnResult<List<CardSet>> listener) {
+    public final void addCardcastDeckAndList(final int gid, @NonNull final String code, @NonNull final Cardcast cardcast, final OnResult<List<Deck>> listener) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
                     requestSync(PyxRequests.addCardcastDeck(gid, code));
-                    final List<CardSet> sets = requestSync(PyxRequests.listCardcastDecks(gid, cardcast));
+                    final List<Deck> sets = requestSync(PyxRequests.listCardcastDecks(gid, cardcast));
                     handler.post(new Runnable() {
                         @Override
                         public void run() {

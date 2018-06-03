@@ -39,10 +39,10 @@ import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.Dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.BestGameManager;
-import com.gianlu.pretendyourexyzzy.Main.OngoingGame.NewCardcastSheet;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastSheet;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
@@ -69,7 +69,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     private int gid;
     private RegisteredPyx pyx;
     private Cardcast cardcast;
-    private NewCardcastSheet cardcastSheet;
+    private CardcastSheet cardcastSheet;
 
     @Override
     public void onAttach(Context context) {
@@ -233,7 +233,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
                 shareGame();
                 return true;
             case R.id.ongoingGame_cardcast:
-                cardcastSheet = NewCardcastSheet.get();
+                cardcastSheet = CardcastSheet.get();
                 cardcastSheet.show(getActivity(), gid);
                 return true;
         }
@@ -311,9 +311,9 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
             return;
         }
 
-        pyx.addCardcastDeckAndList(gid, code, cardcast, new Pyx.OnResult<List<CardSet>>() {
+        pyx.addCardcastDeckAndList(gid, code, cardcast, new Pyx.OnResult<List<Deck>>() {
             @Override
-            public void onDone(@NonNull List<CardSet> result) {
+            public void onDone(@NonNull List<Deck> result) {
                 showToast(Toaster.build().message(R.string.cardcastAdded));
                 AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_ADDED_CARDCAST);
 
@@ -373,9 +373,9 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         for (StarredDecksManager.StarredDeck deck : starredDecks)
             codes.add(deck.code);
 
-        pyx.addCardcastDecksAndList(gid, codes, cardcast, new Pyx.OnResult<List<CardSet>>() {
+        pyx.addCardcastDecksAndList(gid, codes, cardcast, new Pyx.OnResult<List<Deck>>() {
             @Override
-            public void onDone(@NonNull List<CardSet> result) {
+            public void onDone(@NonNull List<Deck> result) {
                 showToast(Toaster.build().message(R.string.starredDecksAdded));
                 AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_ADDED_CARDCAST);
 

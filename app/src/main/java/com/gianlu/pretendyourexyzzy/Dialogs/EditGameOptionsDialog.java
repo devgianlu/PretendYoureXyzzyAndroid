@@ -13,17 +13,20 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 public class EditGameOptionsDialog extends DialogFragment {
     private TextInputLayout scoreLimit;
@@ -32,10 +35,11 @@ public class EditGameOptionsDialog extends DialogFragment {
     private Spinner timerMultiplier;
     private TextInputLayout blankCards;
     private TextInputLayout password;
-    private LinearLayout cardSets;
+    private LinearLayout decks;
     private LinearLayout layout;
     private int gid;
     private ApplyOptions listener;
+    private TextView decksTitle;
 
     @NonNull
     public static EditGameOptionsDialog get(int gid, Game.Options options) {
@@ -64,7 +68,7 @@ public class EditGameOptionsDialog extends DialogFragment {
 
         Game.Options newOptions;
         try {
-            newOptions = Game.Options.validateAndCreate(timerMultiplier.getSelectedItem().toString(), CommonUtils.getText(spectatorLimit), CommonUtils.getText(playerLimit), CommonUtils.getText(scoreLimit), CommonUtils.getText(blankCards), cardSets, CommonUtils.getText(password));
+            newOptions = Game.Options.validateAndCreate(timerMultiplier.getSelectedItem().toString(), CommonUtils.getText(spectatorLimit), CommonUtils.getText(playerLimit), CommonUtils.getText(scoreLimit), CommonUtils.getText(blankCards), decks, CommonUtils.getText(password));
         } catch (Game.Options.InvalidFieldException ex) {
             View view = layout.findViewById(ex.fieldId);
             if (view != null && view instanceof TextInputLayout) {
@@ -130,15 +134,25 @@ public class EditGameOptionsDialog extends DialogFragment {
         password = layout.findViewById(R.id.editGameOptions_password);
         CommonUtils.setText(password, options.password);
 
-        cardSets = layout.findViewById(R.id.editGameOptions_cardSets);
-        cardSets.removeAllViews();
-        for (CardSet set : pyx.firstLoad().cardSets) {
+        decksTitle = layout.findViewById(R.id.editGameOptions_decksTitle);
+
+        decks = layout.findViewById(R.id.editGameOptions_decks);
+        decks.removeAllViews();
+        for (Deck set : pyx.firstLoad().decks) {
             CheckBox item = new CheckBox(getContext());
             item.setTag(set);
             item.setText(set.name);
             item.setChecked(options.cardSets.contains(set.id));
-            cardSets.addView(item);
+            item.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    updateDecksCount();
+                }
+            });
+            decks.addView(item);
         }
+
+        updateDecksCount();
 
         Button cancel = layout.findViewById(R.id.editGameOptions_cancel);
         cancel.setOnClickListener(new View.OnClickListener() {
@@ -157,6 +171,23 @@ public class EditGameOptionsDialog extends DialogFragment {
         });
 
         return layout;
+    }
+
+    private void updateDecksCount() {
+        int count = 0;
+        int black = 0;
+        int white = 0;
+        for (int i = 0; i < decks.getChildCount(); i++) {
+            CheckBox view = (CheckBox) decks.getChildAt(i);
+            if (view.isChecked()) {
+                Deck deck = (Deck) view.getTag();
+                count++;
+                black += deck.blackCards;
+                white += deck.whiteCards;
+            }
+        }
+
+        decksTitle.setText(String.format("%s (%s)", getString(R.string.cardSetsLabel), Utils.buildDeckCountString(count, black, white)));
     }
 
     public interface ApplyOptions {

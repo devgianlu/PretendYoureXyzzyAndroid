@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.gianlu.commonutils.BottomSheet.BaseModalBottomSheet;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
@@ -24,23 +25,25 @@ import com.gianlu.pretendyourexyzzy.Adapters.DecksAdapter;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.List;
 
-public class NewCardcastSheet extends BaseModalBottomSheet<Integer, List<CardSet>> implements DecksAdapter.Listener {
+public class CardcastSheet extends BaseModalBottomSheet<Integer, List<Deck>> implements DecksAdapter.Listener {
     private OngoingGameHelper.Listener listener;
     private RegisteredPyx pyx;
     private RecyclerView list;
     private ViewGroup body;
+    private TextView count;
 
     @NonNull
-    public static NewCardcastSheet get() {
-        return new NewCardcastSheet();
+    public static CardcastSheet get() {
+        return new CardcastSheet();
     }
 
     @Override
@@ -55,12 +58,17 @@ public class NewCardcastSheet extends BaseModalBottomSheet<Integer, List<CardSet
     protected boolean onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, @NonNull Integer gid) {
         parent.setBackgroundResource(R.color.colorAccent_light);
         inflater.inflate(R.layout.sheet_header_cardcast, parent, true);
+        count = parent.findViewById(R.id.cardcastSheet_count);
+        count.setVisibility(View.GONE);
         return true;
     }
 
     @Override
-    protected void onRequestedUpdate(@NonNull List<CardSet> cardSets) {
-        list.setAdapter(new DecksAdapter(getContext(), cardSets, NewCardcastSheet.this, listener));
+    protected void onRequestedUpdate(@NonNull List<Deck> decks) {
+        list.setAdapter(new DecksAdapter(getContext(), decks, CardcastSheet.this, listener));
+
+        count.setVisibility(View.VISIBLE);
+        count.setText(Utils.buildDeckCountString(decks.size(), Deck.countBlackCards(decks), Deck.countWhiteCards(decks)));
     }
 
     @Override
@@ -70,7 +78,7 @@ public class NewCardcastSheet extends BaseModalBottomSheet<Integer, List<CardSet
 
         list = parent.findViewById(R.id.cardcastSheet_list);
         list.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-        list.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL)); // FIXME
+        list.addItemDecoration(new DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL));
 
         try {
             pyx = RegisteredPyx.get();
@@ -80,10 +88,10 @@ public class NewCardcastSheet extends BaseModalBottomSheet<Integer, List<CardSet
             return;
         }
 
-        pyx.request(PyxRequests.listCardcastDecks(gid, Cardcast.get()), new Pyx.OnResult<List<CardSet>>() {
+        pyx.request(PyxRequests.listCardcastDecks(gid, Cardcast.get()), new Pyx.OnResult<List<Deck>>() {
             @Override
-            public void onDone(@NonNull List<CardSet> result) {
-                list.setAdapter(new DecksAdapter(getContext(), result, NewCardcastSheet.this, listener));
+            public void onDone(@NonNull List<Deck> result) {
+                update(result);
                 isLoading(false);
             }
 
@@ -158,7 +166,7 @@ public class NewCardcastSheet extends BaseModalBottomSheet<Integer, List<CardSet
     }
 
     @Override
-    public void removeDeck(@NonNull CardSet deck) {
+    public void removeDeck(@NonNull Deck deck) {
         if (getSetupPayload() == null || deck.cardcastCode == null) return;
 
         pyx.request(PyxRequests.removeCardcastDeck(getSetupPayload(), deck.cardcastCode), new Pyx.OnSuccess() {

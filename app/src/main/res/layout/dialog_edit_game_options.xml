@@ -94,12 +94,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
+                android:id="@+id/editGameOptions_decksTitle"
                 android:text="@string/cardSetsLabel"
                 android:textColor="@android:color/tertiary_text_light"
                 android:textSize="12sp" />
 
             <LinearLayout
-                android:id="@+id/editGameOptions_cardSets"
+                android:id="@+id/editGameOptions_decks"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
@@ -115,7 +116,7 @@
 
         <Button
             android:id="@+id/editGameOptions_cancel"
-            style="?attr/borderlessButtonStyle"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/cancel"
@@ -123,7 +124,7 @@
 
         <Button
             android:id="@+id/editGameOptions_apply"
-            style="?attr/borderlessButtonStyle"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/apply"

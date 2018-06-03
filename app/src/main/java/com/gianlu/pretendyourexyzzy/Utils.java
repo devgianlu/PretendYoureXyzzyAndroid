@@ -8,8 +8,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 
 import com.getkeepsafe.taptargetview.TapTarget;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.CardSet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 
@@ -32,6 +32,23 @@ public class Utils {
     public static final String ACTION_SENT_MSG = "sent_message";
 
     @NonNull
+    public static String buildDeckCountString(int decks, int black, int white) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(decks).append(" deck");
+        if (decks != 1) builder.append("s");
+        builder.append(", ");
+
+        builder.append(black).append(" black card");
+        if (black != 1) builder.append("s");
+        builder.append(", ");
+
+        builder.append(white).append(" white card");
+        if (white != 1) builder.append("s");
+
+        return builder.toString();
+    }
+
+    @NonNull
     public static String composeCardcastDeckSentence(CardcastCard blackCard, CardcastCard whiteCard) {
         StringBuilder builder = new StringBuilder();
         builder.append(blackCard.text.get(0));
@@ -51,8 +68,8 @@ public class Utils {
     }
 
     @Nullable
-    public static CardSet findCardSet(List<CardSet> sets, int id) {
-        for (CardSet set : sets)
+    public static Deck findCardSet(List<Deck> sets, int id) {
+        for (Deck set : sets)
             if (Objects.equals(set.id, id))
                 return set;
 
