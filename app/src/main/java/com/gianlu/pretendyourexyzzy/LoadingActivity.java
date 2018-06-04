@@ -27,7 +27,6 @@ import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.OfflineActivity;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
-import com.gianlu.pretendyourexyzzy.Dialogs.GameRoundDialog;
 import com.gianlu.pretendyourexyzzy.NetIO.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
@@ -145,8 +144,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 OfflineActivity.startActivity(LoadingActivity.this, R.string.app_name, LoadingActivity.class);
             }
         });
-
-        GameRoundDialog.get("pyx-3_1522947890465_8818329").show(getSupportFragmentManager(), null); // FIXME
     }
 
     private void changeServerDialog(boolean dismissible) {

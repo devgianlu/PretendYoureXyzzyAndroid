@@ -15,14 +15,14 @@ import com.gianlu.commonutils.FontsManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameRound;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.RoundCard;
 
+import java.util.List;
 import java.util.Random;
 
-// TODO: Multiple cards
 public class GameRoundSummary {
     private final static int PADDING = 48;
     private final static int CARD_HEIGHT = 512;
     private final static int CARD_WIDTH = 348;
-    private final static int MAX_COLUMNS = 5;
+    private final static int MAX_COLUMNS = 6; // Must be even
     private final static int CARD_RADIUS = 24;
     private final static int CARD_INTERNAL_PADDING = 36;
     private final static int MAX_TEXT_SIZE = 64;
@@ -44,6 +44,7 @@ public class GameRoundSummary {
     private final TextPaint whiteTextPaint;
     private final TextPaint blackTextPaint;
     private final Paint backgroundPaint;
+    private final Paint boxPaint;
     private final Random random = new Random();
     private final TextPaint grayTextPaint;
     private int rows;
@@ -86,6 +87,9 @@ public class GameRoundSummary {
         backgroundPaint = new Paint();
         backgroundPaint.setColor(BACKGROUND_COLOR);
 
+        boxPaint = new Paint();
+        boxPaint.setColor(Color.GRAY);
+
         bitmap = Bitmap.createBitmap(measureWidth(), measureHeight(), Bitmap.Config.ARGB_8888);
         canvas = new Canvas(bitmap);
         draw();
@@ -103,7 +107,7 @@ public class GameRoundSummary {
         return PADDING * (cols + 1) + CARD_WIDTH * cols;
     }
 
-    private void drawCard(int x, int y, boolean winner, RoundCard card) {
+    private void drawCard(int x, int y, boolean winner, @NonNull RoundCard card) {
         Paint paint;
         TextPaint textPaint;
         TextPaint watermarkPaint;
@@ -133,7 +137,7 @@ public class GameRoundSummary {
         watermarkPaint.setTextSize(WATERMARK_TEXT_SIZE);
         text = new StaticLayout(card.watermark, watermarkPaint, maxTextWidth, Layout.Alignment.ALIGN_OPPOSITE, 1, 0, true);
         maxTextHeight -= text.getHeight();
-        canvas.translate(rect.left, rect.top + maxTextHeight + CARD_INTERNAL_PADDING);
+        canvas.translate(rect.left + CARD_INTERNAL_PADDING, rect.top + maxTextHeight + CARD_INTERNAL_PADDING);
         text.draw(canvas);
         canvas.restore();
 
@@ -148,18 +152,31 @@ public class GameRoundSummary {
         canvas.restore();
     }
 
+    private int drawCards(int x, int y, boolean winner, List<RoundCard> cards) {
+        if (cards.size() == 1) {
+            drawCard(x + PADDING, y + PADDING, winner, cards.get(0));
+        } else {
+            RectF rect = new RectF(x + CARD_INTERNAL_PADDING, y + CARD_INTERNAL_PADDING, x + (CARD_WIDTH + PADDING) * cards.size(), y + CARD_HEIGHT + CARD_INTERNAL_PADDING);
+            canvas.drawRoundRect(rect, CARD_RADIUS, CARD_RADIUS, boxPaint);
+
+            for (int i = 0; i < cards.size(); i++)
+                drawCard(x + PADDING * (i + 1) + CARD_WIDTH * i, y + PADDING, winner, cards.get(i));
+        }
+
+        return cards.size();
+    }
+
     private void draw() {
         canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), backgroundPaint);
 
         drawCard(PADDING, PADDING, false, round.blackCard);
-        drawCard(PADDING * 2 + CARD_WIDTH, PADDING, true, round.winningCard.get(0));
+        drawCards(PADDING + CARD_WIDTH, 0, true, round.winningCard);
 
         int i = 0;
         for (int row = 0; row < rows; row++) {
-            for (int col = row == 0 ? 2 : 1; col < cols; col++) {
+            for (int col = row == 0 ? (1 + round.winningCard.size()) : 1; col < cols; ) {
                 if (i < round.otherCards.size()) {
-                    RoundCard card = round.otherCards.get(i).get(0);
-                    drawCard(PADDING * (col + 1) + CARD_WIDTH * col, PADDING * (row + 1) + CARD_HEIGHT * row, false, card);
+                    col += drawCards((PADDING + CARD_WIDTH) * col, (PADDING + CARD_HEIGHT) * row, false, round.otherCards.get(i));
                     i++;
                 } else {
                     break;
