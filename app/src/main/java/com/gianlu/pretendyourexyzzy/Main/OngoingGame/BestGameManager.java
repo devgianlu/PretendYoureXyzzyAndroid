@@ -32,6 +32,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
@@ -57,12 +58,12 @@ public class BestGameManager implements Pyx.OnEventListener {
     private final RegisteredPyx pyx;
     private final Context context;
 
-    public BestGameManager(Context context, ViewGroup layout, RegisteredPyx pyx, GameInfoAndCards bundle, Listener listener, PlayersAdapter.Listener playersListener) {
+    public BestGameManager(Context context, ViewGroup layout, RegisteredPyx pyx, GameInfoAndCards bundle, GamePermalink perm, Listener listener, PlayersAdapter.Listener playersListener) {
         this.context = context;
         this.pyx = pyx;
         this.listener = listener;
         this.ui = new Ui(layout);
-        this.data = new Data(bundle, playersListener);
+        this.data = new Data(bundle, perm, playersListener);
 
         this.pyx.polling().addListener(POLLING, this);
         this.data.setup();
@@ -88,7 +89,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                 data.gamePlayerInfoChanged(new GameInfo.Player(msg.obj.getJSONObject("pi")));
                 break;
             case GAME_ROUND_COMPLETE:
-                data.gameRoundComplete(msg.obj.getString("rw"), msg.obj.getInt("WC"), msg.obj.getString("rP"), msg.obj.getInt("i"));
+                data.gameRoundComplete(msg.obj.getString("rw"), msg.obj.getInt("WC"), msg.obj.optString("rP", null), msg.obj.getInt("i"));
                 break;
             case GAME_OPTIONS_CHANGED:
                 data.gameOptionsChanged(new Game(msg.obj.getJSONObject("gi")));
@@ -246,9 +247,12 @@ public class BestGameManager implements Pyx.OnEventListener {
         private final CardsAdapter handAdapter;
         private final CardsAdapter tableAdapter;
         private final PlayersAdapter playersAdapter;
+        private GamePermalink perm;
         private int judgeIndex = 0;
+        private String lastRoundPermalink = null;
 
-        Data(GameInfoAndCards bundle, PlayersAdapter.Listener listener) {
+        Data(GameInfoAndCards bundle, GamePermalink perm, PlayersAdapter.Listener listener) {
+            this.perm = perm;
             GameCards cards = bundle.cards;
             info = bundle.info;
 
@@ -331,10 +335,10 @@ public class BestGameManager implements Pyx.OnEventListener {
 
         public void gameStateChanged(@NonNull Game.Status status, @NonNull JSONObject obj) throws JSONException {
             info.game.status = status;
-
+            if (status == Game.Status.PLAYING && obj.has("gp"))
+                perm = new GamePermalink(gid(), obj);
 
             ui.setStartGameVisible(status == Game.Status.LOBBY && Objects.equals(host(), me()));
-
             switch (status) {
                 case PLAYING:
                     playingState(new Card(obj.getJSONObject("bc")), obj.getInt("Pt"));
@@ -385,9 +389,11 @@ public class BestGameManager implements Pyx.OnEventListener {
             ui.resetTimer(playTime);
         }
 
-        public void gameRoundComplete(String roundWinner, int winningCard, String roundPermalink, int intermission) {
+        public void gameRoundComplete(String roundWinner, int winningCard, @Nullable String roundPermalink, int intermission) {
             if (Objects.equals(roundWinner, me())) ui.event(UiEvent.YOU_ROUND_WINNER);
             else ui.event(UiEvent.ROUND_WINNER, roundWinner);
+
+            lastRoundPermalink = roundPermalink;
 
             tableAdapter.notifyWinningCard(winningCard);
             ui.resetTimer(intermission);

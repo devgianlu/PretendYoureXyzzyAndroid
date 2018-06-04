@@ -13,6 +13,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Name;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
@@ -31,7 +32,7 @@ import java.util.Objects;
 
 import okhttp3.Response;
 
-public final class PyxRequests {
+public final class PyxRequests { // FIXME: Should have one instance of each processor
 
     @NonNull
     public static PyxRequestWithResult<FirstLoad> firstLoad() {
@@ -98,24 +99,36 @@ public final class PyxRequests {
     }
 
     @NonNull
-    public static PyxRequestWithResult<Integer> createGame() {
-        return new PyxRequestWithResult<>(Pyx.Op.CREATE_GAME, new Pyx.Processor<Integer>() {
+    public static PyxRequestWithResult<GamePermalink> createGame() {
+        return new PyxRequestWithResult<>(Pyx.Op.CREATE_GAME, new Pyx.Processor<GamePermalink>() {
             @NonNull
             @Override
-            public Integer process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-                return obj.getInt("gid");
+            public GamePermalink process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+                return new GamePermalink(obj);
             }
         });
     }
 
     @NonNull
-    public static PyxRequest joinGame(int gid, @Nullable String password) {
-        return new PyxRequest(Pyx.Op.JOIN_GAME, new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("pw", password));
+    public static PyxRequestWithResult<GamePermalink> joinGame(final int gid, @Nullable String password) {
+        return new PyxRequestWithResult<>(Pyx.Op.JOIN_GAME, new Pyx.Processor<GamePermalink>() {
+            @NonNull
+            @Override
+            public GamePermalink process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+                return new GamePermalink(gid, obj);
+            }
+        }, new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("pw", password));
     }
 
     @NonNull
-    public static PyxRequest spectateGame(int gid, @Nullable String password) {
-        return new PyxRequest(Pyx.Op.SPECTATE_GAME, new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("pw", password));
+    public static PyxRequestWithResult<GamePermalink> spectateGame(final int gid, @Nullable String password) {
+        return new PyxRequestWithResult<>(Pyx.Op.SPECTATE_GAME, new Pyx.Processor<GamePermalink>() {
+            @NonNull
+            @Override
+            public GamePermalink process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+                return new GamePermalink(gid, obj);
+            }
+        }, new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("pw", password));
     }
 
     @NonNull

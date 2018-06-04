@@ -46,6 +46,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
@@ -66,10 +67,21 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     private ProgressBar loading;
     private LinearLayout container;
     private BestGameManager manager;
-    private int gid;
+    private GamePermalink perm;
     private RegisteredPyx pyx;
     private Cardcast cardcast;
     private CardcastSheet cardcastSheet;
+
+    @NonNull
+    public static OngoingGameFragment getInstance(@NonNull GamePermalink game, @Nullable SavedState savedState) {
+        OngoingGameFragment fragment = new OngoingGameFragment();
+        fragment.setHasOptionsMenu(true);
+        fragment.setInitialSavedState(savedState);
+        Bundle args = new Bundle();
+        args.putSerializable("game", game);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -103,7 +115,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     }
 
     private void leaveGame() {
-        if (pyx != null) pyx.request(PyxRequests.leaveGame(gid), new Pyx.OnSuccess() {
+        if (pyx != null) pyx.request(PyxRequests.leaveGame(perm.gid), new Pyx.OnSuccess() {
             @Override
             public void onDone() {
                 if (onLeftGame != null) onLeftGame.onLeftGame();
@@ -120,17 +132,6 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         return pyx != null && getGame() != null && Objects.equals(getGame().host, pyx.user().nickname);
     }
 
-    @NonNull
-    public static OngoingGameFragment getInstance(int gid, @Nullable SavedState savedState) {
-        OngoingGameFragment fragment = new OngoingGameFragment();
-        fragment.setHasOptionsMenu(true);
-        fragment.setInitialSavedState(savedState);
-        Bundle args = new Bundle();
-        args.putSerializable("gid", gid);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onDestroy() {
         if (manager != null) manager.onDestroy();
@@ -140,7 +141,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     @Override
     public void onDone(@NonNull GameInfoAndCards result) {
         if (manager == null && isAdded())
-            manager = new BestGameManager(getActivity(), container, pyx, result, this, this);
+            manager = new BestGameManager(getActivity(), container, pyx, result, perm, this, this);
 
         updateActivityTitle();
 
@@ -189,7 +190,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         container = layout.findViewById(R.id.ongoingGame_container);
 
         Bundle args = getArguments();
-        if (args == null || (gid = args.getInt("gid", -1)) == -1) {
+        if (args == null || (perm = (GamePermalink) args.getSerializable("game")) == null) {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.GONE);
             MessageLayout.show(layout, R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
@@ -207,7 +208,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
             return layout;
         }
 
-        pyx.getGameInfoAndCards(gid, this);
+        pyx.getGameInfoAndCards(perm.gid, this);
 
         return layout;
     }
@@ -234,7 +235,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
                 return true;
             case R.id.ongoingGame_cardcast:
                 cardcastSheet = CardcastSheet.get();
-                cardcastSheet.show(getActivity(), gid);
+                cardcastSheet.show(getActivity(), perm.gid);
                 return true;
         }
 
@@ -262,7 +263,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         builder.addPathSegment("game.jsp");
 
         List<NameValuePair> params = new ArrayList<>();
-        params.add(new NameValuePair("game", String.valueOf(gid)));
+        params.add(new NameValuePair("game", String.valueOf(perm.gid)));
         if (getGame().hasPassword(true))
             params.add(new NameValuePair("password", getGame().options.password));
 
@@ -291,7 +292,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     private void editGameOptions() {
         Game game = getGame();
         if (game != null)
-            DialogUtils.showDialog(getActivity(), EditGameOptionsDialog.get(gid, game.options));
+            DialogUtils.showDialog(getActivity(), EditGameOptionsDialog.get(perm.gid, game.options));
     }
 
     private void showGameOptions() {
@@ -311,7 +312,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
             return;
         }
 
-        pyx.addCardcastDeckAndList(gid, code, cardcast, new Pyx.OnResult<List<Deck>>() {
+        pyx.addCardcastDeckAndList(perm.gid, code, cardcast, new Pyx.OnResult<List<Deck>>() {
             @Override
             public void onDone(@NonNull List<Deck> result) {
                 showToast(Toaster.build().message(R.string.cardcastAdded));
@@ -373,7 +374,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         for (StarredDecksManager.StarredDeck deck : starredDecks)
             codes.add(deck.code);
 
-        pyx.addCardcastDecksAndList(gid, codes, cardcast, new Pyx.OnResult<List<Deck>>() {
+        pyx.addCardcastDecksAndList(perm.gid, codes, cardcast, new Pyx.OnResult<List<Deck>>() {
             @Override
             public void onDone(@NonNull List<Deck> result) {
                 showToast(Toaster.build().message(R.string.starredDecksAdded));

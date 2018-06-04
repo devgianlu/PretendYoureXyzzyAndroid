@@ -29,6 +29,7 @@ import com.gianlu.pretendyourexyzzy.Main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
@@ -53,18 +54,18 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     private ChatFragment gameChatFragment;
     private OngoingGameFragment ongoingGameFragment;
     private ChatFragment globalChatFragment;
-    private int currentGid = -1;
+    private GamePermalink currentGame = null;
     private RegisteredPyx pyx;
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        if (ongoingGameFragment != null && currentGid != -1) {
+        if (ongoingGameFragment != null && currentGame != null) {
             Fragment.SavedState state = getSupportFragmentManager().saveFragmentInstanceState(ongoingGameFragment);
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.remove(ongoingGameFragment);
-            ongoingGameFragment = OngoingGameFragment.getInstance(currentGid, state);
+            ongoingGameFragment = OngoingGameFragment.getInstance(currentGame, state);
             transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
 
             navigation.getMenu().clear();
@@ -164,9 +165,9 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         navigation.setSelectedItemId(R.id.main_games);
         setKeepScreenOn(Prefs.getBoolean(this, PKeys.KEEP_SCREEN_ON, true));
 
-        int gid = getIntent().getIntExtra("gid", -1);
-        if (gid != -1) {
-            gamesFragment.launchGame(gid, getIntent().getStringExtra("password"), getIntent().getBooleanExtra("shouldRequest", true));
+        GamePermalink perm = (GamePermalink) getIntent().getSerializableExtra("game");
+        if (perm != null) {
+            gamesFragment.launchGame(perm, getIntent().getStringExtra("password"), getIntent().getBooleanExtra("shouldRequest", true));
             getIntent().removeExtra("gid");
         }
     }
@@ -289,23 +290,23 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     @Override
-    public void onParticipatingGame(@NonNull Integer gid) {
+    public void onParticipatingGame(@NonNull GamePermalink game) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        ongoingGameFragment = OngoingGameFragment.getInstance(gid, null);
+        ongoingGameFragment = OngoingGameFragment.getInstance(game, null);
         transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
-        gameChatFragment = ChatFragment.getGameInstance(gid);
+        gameChatFragment = ChatFragment.getGameInstance(game.gid);
         transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT).commitNowAllowingStateLoss();
         navigation.getMenu().clear();
         navigation.inflateMenu(R.menu.navigation_ongoing_game);
         if (!pyx.config().globalChatEnabled) navigation.getMenu().removeItem(R.id.main_globalChat);
         navigation.setSelectedItemId(R.id.main_ongoingGame);
 
-        currentGid = gid;
+        currentGame = game;
     }
 
     @Override
     public void onLeftGame() {
-        currentGid = -1;
+        currentGame = null;
 
         navigation.getMenu().clear();
         navigation.inflateMenu(R.menu.navigation_lobby);

@@ -29,11 +29,15 @@ import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.NetIO.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.SpareActivities.ManageServersActivity;
 import com.gianlu.pretendyourexyzzy.SpareActivities.TutorialActivity;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.security.SecureRandom;
 import java.util.List;
@@ -47,7 +51,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private LinearLayout register;
     private TextInputLayout registerNickname;
     private Button registerSubmit;
-    private int launchGameId = -1;
+    private GamePermalink launchGame = null;
     private String launchGamePassword;
     private Button changeServer;
     private boolean launchGameShouldRequest;
@@ -119,8 +123,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                     for (NameValuePair pair : params) {
                         if (Objects.equals(pair.key(), "game")) {
                             try {
-                                launchGameId = Integer.parseInt(pair.value(""));
-                            } catch (NumberFormatException ex) {
+                                launchGame = new GamePermalink(Integer.parseInt(pair.value("")), new JSONObject()); // A bit hacky
+                            } catch (NumberFormatException | JSONException ex) {
                                 Logging.log(ex);
                             }
                         } else if (Objects.equals(pair.key(), "password")) {
@@ -286,7 +290,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         FirstLoad fl = result.firstLoad();
         if (fl.inProgress && fl.user != null) {
             if (fl.nextOperation == FirstLoad.NextOp.GAME) {
-                launchGameId = fl.gameId;
+                launchGame = fl.game;
                 launchGameShouldRequest = false;
             }
 
@@ -315,7 +319,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private void goTo(Class goTo) {
         Intent intent = new Intent(LoadingActivity.this, goTo).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("shouldRequest", launchGameShouldRequest);
-        if (launchGameId != -1) intent.putExtra("gid", launchGameId);
+        if (launchGame != null) intent.putExtra("game", launchGame);
         if (launchGamePassword != null) intent.putExtra("password", launchGamePassword);
         if (finished) startActivity(intent);
         else this.goTo = intent;

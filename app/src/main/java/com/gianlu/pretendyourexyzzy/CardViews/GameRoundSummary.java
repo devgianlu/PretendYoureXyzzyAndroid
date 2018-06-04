@@ -32,7 +32,7 @@ public class GameRoundSummary {
     private final static int SHADOW_COLOR = 0x80B2B2B2;
     private final static int BACKGROUND_COLOR = 0xFFE5E5E5;
     private final static int WINNER_COLOR = 0xFF4CC7FF;
-    private static final int MAX_ROTATION = 10;
+    private final static int MAX_ROTATION = 10;
     private final static int WATERMARK_TEXT_SIZE = 48;
     private final GameRound round;
     private final boolean rotate;

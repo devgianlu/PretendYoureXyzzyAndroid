@@ -19,14 +19,14 @@ public class FirstLoad implements Serializable {
     public final boolean inProgress;
     public final ArrayList<Deck> decks;
     public final User user;
-    public final int gameId;
+    public final GamePermalink game;
 
     public FirstLoad(JSONObject obj, @Nullable User user) throws JSONException {
         this.nextOperation = NextOp.parse(obj.getString("next"));
         this.inProgress = obj.getBoolean("ip");
-        this.gameId = obj.optInt("gid", -1);
         this.decks = CommonUtils.toTList(obj.getJSONArray("css"), Deck.class);
         this.user = user;
+        this.game = GamePermalink.get(obj);
     }
 
     @NonNull

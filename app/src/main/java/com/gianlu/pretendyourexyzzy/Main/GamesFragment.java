@@ -37,6 +37,7 @@ import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.GamesAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
@@ -55,7 +56,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     private OnParticipateGame handler;
     private SearchView searchView;
     private GamesAdapter adapter;
-    private int launchGameGid = -1;
+    private GamePermalink launchGame = null;
     private String launchGamePassword = null;
     private boolean launchGameShouldRequest;
     private Parcelable recyclerViewSavedInstance;
@@ -155,9 +156,9 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
             @Override
             public void onClick(View v) {
                 DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
-                pyx.request(PyxRequests.createGame(), new Pyx.OnResult<Integer>() {
+                pyx.request(PyxRequests.createGame(), new Pyx.OnResult<GamePermalink>() {
                     @Override
-                    public void onDone(@NonNull Integer result) {
+                    public void onDone(@NonNull GamePermalink result) {
                         DialogUtils.dismissDialog(getActivity());
                         if (handler != null) handler.onParticipatingGame(result);
                     }
@@ -203,8 +204,8 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
         lastResult = result;
         updateActivityTitle();
-        if (launchGameGid != -1) {
-            launchGameInternal(launchGameGid, launchGamePassword, launchGameShouldRequest);
+        if (launchGame != null) {
+            launchGameInternal(launchGame, launchGamePassword, launchGameShouldRequest);
         } else {
             recyclerViewLayout.getList().post(new Runnable() {
                 @Override
@@ -298,10 +299,10 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         if (getContext() == null) return;
 
         DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
-        pyx.request(PyxRequests.spectateGame(gid, password), new Pyx.OnSuccess() {
+        pyx.request(PyxRequests.spectateGame(gid, password), new Pyx.OnResult<GamePermalink>() {
             @Override
-            public void onDone() {
-                if (handler != null) handler.onParticipatingGame(gid);
+            public void onDone(@NonNull GamePermalink game) {
+                if (handler != null) handler.onParticipatingGame(game);
                 DialogUtils.dismissDialog(getActivity());
 
                 AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_SPECTATE_GAME);
@@ -331,10 +332,10 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         if (getContext() == null) return;
 
         DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
-        pyx.request(PyxRequests.joinGame(gid, password), new Pyx.OnSuccess() {
+        pyx.request(PyxRequests.joinGame(gid, password), new Pyx.OnResult<GamePermalink>() {
             @Override
-            public void onDone() {
-                if (handler != null) handler.onParticipatingGame(gid);
+            public void onDone(@NonNull GamePermalink game) {
+                if (handler != null) handler.onParticipatingGame(game);
                 DialogUtils.dismissDialog(getActivity());
 
                 AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_JOIN_GAME);
@@ -394,28 +395,28 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         return true;
     }
 
-    public void launchGame(int gid, @Nullable String password, boolean shouldRequest) {
+    public void launchGame(GamePermalink perm, @Nullable String password, boolean shouldRequest) {
         if (adapter != null) {
-            launchGameInternal(gid, password, shouldRequest);
+            launchGameInternal(perm, password, shouldRequest);
         } else {
             launchGameShouldRequest = shouldRequest;
-            launchGameGid = gid;
+            launchGame = perm;
             launchGamePassword = password;
         }
     }
 
-    private void launchGameInternal(int gid, @Nullable String password, boolean shouldRequest) {
-        Game game = Utils.findGame(adapter.getGames(), gid);
-        launchGameGid = -1;
+    private void launchGameInternal(GamePermalink perm, @Nullable String password, boolean shouldRequest) {
+        Game game = Utils.findGame(adapter.getGames(), perm.gid);
+        launchGame = null;
         if (game != null) {
             if (shouldRequest) {
-                if (password != null) joinGame(gid, password);
+                if (password != null) joinGame(perm.gid, password);
                 else joinGame(game);
             } else {
-                if (handler != null) handler.onParticipatingGame(gid);
+                if (handler != null) handler.onParticipatingGame(perm);
             }
         } else {
-            showToast(Toaster.build().message(R.string.failedJoining).ex(new NullPointerException("Couldn't find game for " + gid)));
+            showToast(Toaster.build().message(R.string.failedJoining).ex(new NullPointerException("Couldn't find game for " + perm.gid)));
         }
     }
 
@@ -446,7 +447,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     }
 
     public interface OnParticipateGame {
-        void onParticipatingGame(@NonNull Integer gid);
+        void onParticipatingGame(@NonNull GamePermalink game);
     }
 
     private interface OnPassword {

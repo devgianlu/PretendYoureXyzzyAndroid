@@ -18,6 +18,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoadAndConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameRound;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.SessionHistory;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.UserHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.PKeys;
 
@@ -186,30 +188,37 @@ public class Pyx implements Closeable {
         return new FirstLoadAndConfig(fl, cahConfig);
     }
 
-    public final void getGameHistory(String gameId, final OnResult<GameHistory> listener) {
-        final HttpUrl url = server.gameHistory(gameId);
+    @NonNull
+    protected final String requestSync(@NonNull HttpUrl url) throws IOException {
+        try (Response resp = client.newBuilder()
+                .connectTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
+                .build().newCall(new Request.Builder()
+                        .url(url).get().build()).execute()) {
+
+            ResponseBody respBody = resp.body();
+            if (respBody != null) {
+                return respBody.string();
+            } else {
+                throw new StatusCodeException(resp);
+            }
+        }
+    }
+
+    public final void getUserHistory(@NonNull String userId, final OnResult<UserHistory> listener) {
+        final HttpUrl url = server.userHistory(userId);
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                try (Response resp = client.newBuilder()
-                        .connectTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
-                        .readTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
-                        .build().newCall(new Request.Builder()
-                                .url(url).get().build()).execute()) {
-
-                    ResponseBody respBody = resp.body();
-                    if (respBody != null) {
-                        final GameHistory history = new GameHistory(new JSONArray(respBody.string()));
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.onDone(history);
-                            }
-                        });
-                    } else {
-                        throw new StatusCodeException(resp);
-                    }
-                } catch (IOException | JSONException ex) {
+                try {
+                    final UserHistory history = new UserHistory(new JSONObject(requestSync(url)));
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(history);
+                        }
+                    });
+                } catch (JSONException | IOException ex) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -221,30 +230,70 @@ public class Pyx implements Closeable {
         });
     }
 
-    public final void getGameRound(String roundId, final OnResult<GameRound> listener) {
+    public final void getSessionHistory(@NonNull String sessionId, final OnResult<SessionHistory> listener) {
+        final HttpUrl url = server.sessionHistory(sessionId);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final SessionHistory history = new SessionHistory(new JSONObject(requestSync(url)));
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(history);
+                        }
+                    });
+                } catch (JSONException | IOException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public final void getGameHistory(@NonNull String gameId, final OnResult<GameHistory> listener) {
+        final HttpUrl url = server.gameHistory(gameId);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final GameHistory history = new GameHistory(new JSONArray(requestSync(url)));
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(history);
+                        }
+                    });
+                } catch (JSONException | IOException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public final void getGameRound(@NonNull String roundId, final OnResult<GameRound> listener) {
         final HttpUrl url = server.gameRound(roundId);
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                try (Response resp = client.newBuilder()
-                        .connectTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
-                        .readTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
-                        .build().newCall(new Request.Builder()
-                                .url(url).get().build()).execute()) {
-
-                    ResponseBody respBody = resp.body();
-                    if (respBody != null) {
-                        final GameRound round = new GameRound(new JSONObject(respBody.string()));
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.onDone(round);
-                            }
-                        });
-                    } else {
-                        throw new StatusCodeException(resp);
-                    }
-                } catch (IOException | JSONException ex) {
+                try {
+                    final GameRound history = new GameRound(new JSONObject(requestSync(url)));
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(history);
+                        }
+                    });
+                } catch (JSONException | IOException ex) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -562,6 +611,17 @@ public class Pyx implements Closeable {
         public HttpUrl gameRound(String id) {
             if (metricsUrl == null) return null;
             return metricsUrl.newBuilder().addPathSegments("round/" + id).build();
+        }
+
+        @Nullable
+        public HttpUrl sessionHistory(String id) {
+            if (metricsUrl == null) return null;
+            return metricsUrl.newBuilder().addPathSegments("session/" + id).build();
+        }
+
+        public HttpUrl userHistory(String id) {
+            if (metricsUrl == null) return null;
+            return metricsUrl.newBuilder().addPathSegments("user/" + id).build();
         }
 
         public boolean canDelete() {
