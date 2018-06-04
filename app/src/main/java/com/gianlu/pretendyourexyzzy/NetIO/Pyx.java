@@ -208,6 +208,11 @@ public class Pyx implements Closeable {
 
     public final void getUserHistory(@NonNull String userId, final OnResult<UserHistory> listener) {
         final HttpUrl url = server.userHistory(userId);
+        if (url == null) {
+            listener.onException(new MetricsNotSupportedException(server));
+            return;
+        }
+
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -233,6 +238,11 @@ public class Pyx implements Closeable {
 
     public final void getSessionHistory(@NonNull String sessionId, final OnResult<SessionHistory> listener) {
         final HttpUrl url = server.sessionHistory(sessionId);
+        if (url == null) {
+            listener.onException(new MetricsNotSupportedException(server));
+            return;
+        }
+
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -258,6 +268,11 @@ public class Pyx implements Closeable {
 
     public final void getSessionStats(@NonNull String sessionId, final OnResult<SessionStats> listener) {
         final HttpUrl url = server.sessionStats(sessionId);
+        if (url == null) {
+            listener.onException(new MetricsNotSupportedException(server));
+            return;
+        }
+
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -283,6 +298,11 @@ public class Pyx implements Closeable {
 
     public final void getGameHistory(@NonNull String gameId, final OnResult<GameHistory> listener) {
         final HttpUrl url = server.gameHistory(gameId);
+        if (url == null) {
+            listener.onException(new MetricsNotSupportedException(server));
+            return;
+        }
+
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -308,6 +328,11 @@ public class Pyx implements Closeable {
 
     public final void getGameRound(@NonNull String roundId, final OnResult<GameRound> listener) {
         final HttpUrl url = server.gameRound(roundId);
+        if (url == null) {
+            listener.onException(new MetricsNotSupportedException(server));
+            return;
+        }
+
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -402,6 +427,7 @@ public class Pyx implements Closeable {
 
     public interface Processor<E> {
         @NonNull
+        @WorkerThread
         E process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException;
     }
 
@@ -427,6 +453,12 @@ public class Pyx implements Closeable {
 
         @UiThread
         void onStoppedPolling();
+    }
+
+    public static class MetricsNotSupportedException extends Exception {
+        MetricsNotSupportedException(Server server) {
+            super(server.name);
+        }
     }
 
     protected static class PyxResponse {
@@ -706,6 +738,7 @@ public class Pyx implements Closeable {
             return name;
         }
 
+        @NonNull
         private JSONObject toJson() throws JSONException {
             return new JSONObject()
                     .put("name", name)

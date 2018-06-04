@@ -36,7 +36,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.SpareActivities.ManageServersActivity;
 import com.gianlu.pretendyourexyzzy.SpareActivities.TutorialActivity;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.security.SecureRandom;
@@ -124,7 +123,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                         if (Objects.equals(pair.key(), "game")) {
                             try {
                                 launchGame = new GamePermalink(Integer.parseInt(pair.value("")), new JSONObject()); // A bit hacky
-                            } catch (NumberFormatException | JSONException ex) {
+                            } catch (NumberFormatException ex) {
                                 Logging.log(ex);
                             }
                         } else if (Objects.equals(pair.key(), "password")) {
