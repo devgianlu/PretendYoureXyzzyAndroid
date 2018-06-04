@@ -19,6 +19,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoadAndConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameRound;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.SessionHistory;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.SessionStats;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.UserHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.PKeys;
@@ -237,6 +238,31 @@ public class Pyx implements Closeable {
             public void run() {
                 try {
                     final SessionHistory history = new SessionHistory(new JSONObject(requestSync(url)));
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(history);
+                        }
+                    });
+                } catch (JSONException | IOException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public final void getSessionStats(@NonNull String sessionId, final OnResult<SessionStats> listener) {
+        final HttpUrl url = server.sessionStats(sessionId);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final SessionStats history = new SessionStats(new JSONObject(requestSync(url)));
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -619,6 +645,13 @@ public class Pyx implements Closeable {
             return metricsUrl.newBuilder().addPathSegments("session/" + id).build();
         }
 
+        @Nullable
+        public HttpUrl sessionStats(String id) {
+            if (metricsUrl == null) return null;
+            return metricsUrl.newBuilder().addPathSegments("session/" + id + "/stats").build();
+        }
+
+        @Nullable
         public HttpUrl userHistory(String id) {
             if (metricsUrl == null) return null;
             return metricsUrl.newBuilder().addPathSegments("user/" + id).build();
