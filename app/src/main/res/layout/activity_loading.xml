@@ -73,7 +73,7 @@
 
             <Button
                 android:id="@+id/loading_generateIdCode"
-                style="?attr/borderlessButtonStyle"
+                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"

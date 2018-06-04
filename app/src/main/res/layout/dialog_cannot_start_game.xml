@@ -139,7 +139,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingEnd="?dialogPreferredPadding"
-        android:paddingStart="?dialogPreferredPadding"
+        android:paddingEnd="24dp"
+        android:paddingStart="24dp"
         android:text="@string/cannotStartGame_solution" />
 </LinearLayout>

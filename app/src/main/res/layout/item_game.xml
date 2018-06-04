@@ -108,7 +108,7 @@
                 android:layout_height="48dp"
                 android:adjustViewBounds="true"
                 android:alpha="0.54"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:padding="6dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_keyboard_arrow_down_black_48dp" />
