@@ -32,48 +32,84 @@ import java.util.Objects;
 
 import okhttp3.Response;
 
-public final class PyxRequests { // FIXME: Should have one instance of each processor
-
-    @NonNull
-    public static PyxRequestWithResult<FirstLoad> firstLoad() {
-        return new PyxRequestWithResult<>(Pyx.Op.FIRST_LOAD, new Pyx.Processor<FirstLoad>() {
-            @NonNull
-            @Override
-            public FirstLoad process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-                User user = null;
-                if (obj.getBoolean("ip") && obj.has("n")) {
-                    String lastSessionId = Prefs.getString(prefs, PKeys.LAST_JSESSIONID, null);
-                    if (lastSessionId != null) user = new User(lastSessionId, obj);
-                }
-
-                return new FirstLoad(obj, user);
+public final class PyxRequests {
+    private static final Pyx.Processor<FirstLoad> FIRST_LOAD_PROCESSOR = new Pyx.Processor<FirstLoad>() {
+        @NonNull
+        @Override
+        public FirstLoad process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            User user = null;
+            if (obj.getBoolean("ip") && obj.has("n")) {
+                String lastSessionId = Prefs.getString(prefs, PKeys.LAST_JSESSIONID, null);
+                if (lastSessionId != null) user = new User(lastSessionId, obj);
             }
-        });
-    }
 
-    @NonNull
-    public static PyxRequest logout() {
-        return new PyxRequest(Pyx.Op.LOGOUT);
-    }
-
-    @NonNull
-    public static PyxRequestWithResult<User> register(@NonNull String nickname, @Nullable String idCode) {
-        return new PyxRequestWithResult<>(Pyx.Op.REGISTER, new Pyx.Processor<User>() {
-            @NonNull
-            @Override
-            public User process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-                String sessionId = findSessionId(response);
-                if (sessionId == null) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1)
-                        throw new JSONException(new NullPointerException("Cannot find cookie JSESSIONID!"));
-                    else
-                        throw new JSONException("Cannot find cookie JSESSIONID!");
-                }
-
-                return new User(sessionId, obj);
+            return new FirstLoad(obj, user);
+        }
+    };
+    private static final Pyx.Processor<User> REGISTER_PROCESSOR = new Pyx.Processor<User>() {
+        @NonNull
+        @Override
+        public User process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            String sessionId = findSessionId(response);
+            if (sessionId == null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1)
+                    throw new JSONException(new NullPointerException("Cannot find cookie JSESSIONID!"));
+                else
+                    throw new JSONException("Cannot find cookie JSESSIONID!");
             }
-        }, new NameValuePair("n", nickname), new NameValuePair("idc", idCode));
-    }
+
+            return new User(sessionId, obj);
+        }
+    };
+    private static final Pyx.Processor<GamePermalink> CREATE_GAME_PROCESSOR = new Pyx.Processor<GamePermalink>() {
+        @NonNull
+        @Override
+        public GamePermalink process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            return new GamePermalink(obj);
+        }
+    };
+    private static final Pyx.Processor<GameInfo> GAME_INFO_PROCESSOR = new Pyx.Processor<GameInfo>() {
+        @NonNull
+        @Override
+        public GameInfo process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            return new GameInfo(obj);
+        }
+    };
+    private static final Pyx.Processor<List<Name>> NAMES_LIST_PROCESSOR = new Pyx.Processor<List<Name>>() {
+        @NonNull
+        @Override
+        public List<Name> process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            JSONArray array = obj.getJSONArray("nl");
+            List<Name> names = new ArrayList<>();
+            for (int i = 0; i < array.length(); i++) names.add(new Name(array.getString(i)));
+            return names;
+        }
+    };
+    private static final Pyx.Processor<GameCards> GAME_CARDS_PROCESSOR = new Pyx.Processor<GameCards>() {
+        @NonNull
+        @Override
+        public GameCards process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            return new GameCards(obj);
+        }
+    };
+    private static final Pyx.Processor<GamesList> GAMES_LIST_PROCESSOR = new Pyx.Processor<GamesList>() {
+        @NonNull
+        @Override
+        public GamesList process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            JSONArray array = obj.getJSONArray("gl");
+            final GamesList games = new GamesList(obj.getInt("mg"));
+            for (int i = 0; i < array.length(); i++)
+                games.add(new Game(array.getJSONObject(i)));
+            return games;
+        }
+    };
+    private static final Pyx.Processor<WhoisResult> WHOIS_RESULT_PROCESSOR = new Pyx.Processor<WhoisResult>() {
+        @NonNull
+        @Override
+        public WhoisResult process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            return new WhoisResult(obj);
+        }
+    };
 
     @Nullable
     private static String findSessionId(@NonNull Response response) {
@@ -85,6 +121,21 @@ public final class PyxRequests { // FIXME: Should have one instance of each proc
         }
 
         return null;
+    }
+
+    @NonNull
+    public static PyxRequestWithResult<FirstLoad> firstLoad() {
+        return new PyxRequestWithResult<>(Pyx.Op.FIRST_LOAD, FIRST_LOAD_PROCESSOR);
+    }
+
+    @NonNull
+    public static PyxRequest logout() {
+        return new PyxRequest(Pyx.Op.LOGOUT);
+    }
+
+    @NonNull
+    public static PyxRequestWithResult<User> register(@NonNull String nickname, @Nullable String idCode) {
+        return new PyxRequestWithResult<>(Pyx.Op.REGISTER, REGISTER_PROCESSOR, new NameValuePair("n", nickname), new NameValuePair("idc", idCode));
     }
 
     @NonNull
@@ -100,13 +151,7 @@ public final class PyxRequests { // FIXME: Should have one instance of each proc
 
     @NonNull
     public static PyxRequestWithResult<GamePermalink> createGame() {
-        return new PyxRequestWithResult<>(Pyx.Op.CREATE_GAME, new Pyx.Processor<GamePermalink>() {
-            @NonNull
-            @Override
-            public GamePermalink process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-                return new GamePermalink(obj);
-            }
-        });
+        return new PyxRequestWithResult<>(Pyx.Op.CREATE_GAME, CREATE_GAME_PROCESSOR);
     }
 
     @NonNull
@@ -114,7 +159,7 @@ public final class PyxRequests { // FIXME: Should have one instance of each proc
         return new PyxRequestWithResult<>(Pyx.Op.JOIN_GAME, new Pyx.Processor<GamePermalink>() {
             @NonNull
             @Override
-            public GamePermalink process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            public GamePermalink process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) {
                 return new GamePermalink(gid, obj);
             }
         }, new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("pw", password));
@@ -125,7 +170,7 @@ public final class PyxRequests { // FIXME: Should have one instance of each proc
         return new PyxRequestWithResult<>(Pyx.Op.SPECTATE_GAME, new Pyx.Processor<GamePermalink>() {
             @NonNull
             @Override
-            public GamePermalink process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            public GamePermalink process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) {
                 return new GamePermalink(gid, obj);
             }
         }, new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("pw", password));
@@ -133,13 +178,7 @@ public final class PyxRequests { // FIXME: Should have one instance of each proc
 
     @NonNull
     public static PyxRequestWithResult<GameInfo> getGameInfo(int gid) {
-        return new PyxRequestWithResult<>(Pyx.Op.GET_GAME_INFO, new Pyx.Processor<GameInfo>() {
-            @NonNull
-            @Override
-            public GameInfo process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-                return new GameInfo(obj);
-            }
-        }, new NameValuePair("gid", String.valueOf(gid)));
+        return new PyxRequestWithResult<>(Pyx.Op.GET_GAME_INFO, GAME_INFO_PROCESSOR, new NameValuePair("gid", String.valueOf(gid)));
     }
 
     @NonNull
@@ -154,16 +193,7 @@ public final class PyxRequests { // FIXME: Should have one instance of each proc
 
     @NonNull
     public static PyxRequestWithResult<List<Name>> getNamesList() {
-        return new PyxRequestWithResult<>(Pyx.Op.GET_NAMES_LIST, new Pyx.Processor<List<Name>>() {
-            @NonNull
-            @Override
-            public List<Name> process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-                JSONArray array = obj.getJSONArray("nl");
-                List<Name> names = new ArrayList<>();
-                for (int i = 0; i < array.length(); i++) names.add(new Name(array.getString(i)));
-                return names;
-            }
-        });
+        return new PyxRequestWithResult<>(Pyx.Op.GET_NAMES_LIST, NAMES_LIST_PROCESSOR);
     }
 
     @NonNull
@@ -175,13 +205,7 @@ public final class PyxRequests { // FIXME: Should have one instance of each proc
 
     @NonNull
     public static PyxRequestWithResult<GameCards> getGameCards(int gid) {
-        return new PyxRequestWithResult<>(Pyx.Op.GET_GAME_CARDS, new Pyx.Processor<GameCards>() {
-            @NonNull
-            @Override
-            public GameCards process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-                return new GameCards(obj);
-            }
-        }, new NameValuePair("gid", String.valueOf(gid)));
+        return new PyxRequestWithResult<>(Pyx.Op.GET_GAME_CARDS, GAME_CARDS_PROCESSOR, new NameValuePair("gid", String.valueOf(gid)));
     }
 
     @NonNull
@@ -237,27 +261,11 @@ public final class PyxRequests { // FIXME: Should have one instance of each proc
 
     @NonNull
     public static PyxRequestWithResult<GamesList> getGamesList() {
-        return new PyxRequestWithResult<>(Pyx.Op.GET_GAMES_LIST, new Pyx.Processor<GamesList>() {
-            @NonNull
-            @Override
-            public GamesList process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-                JSONArray array = obj.getJSONArray("gl");
-                final GamesList games = new GamesList(obj.getInt("mg"));
-                for (int i = 0; i < array.length(); i++)
-                    games.add(new Game(array.getJSONObject(i)));
-                return games;
-            }
-        });
+        return new PyxRequestWithResult<>(Pyx.Op.GET_GAMES_LIST, GAMES_LIST_PROCESSOR);
     }
 
     @NonNull
     public static PyxRequestWithResult<WhoisResult> whois(String name) {
-        return new PyxRequestWithResult<>(Pyx.Op.WHOIS, new Pyx.Processor<WhoisResult>() {
-            @NonNull
-            @Override
-            public WhoisResult process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-                return new WhoisResult(obj);
-            }
-        }, new NameValuePair("n", name));
+        return new PyxRequestWithResult<>(Pyx.Op.WHOIS, WHOIS_RESULT_PROCESSOR, new NameValuePair("n", name));
     }
 }
