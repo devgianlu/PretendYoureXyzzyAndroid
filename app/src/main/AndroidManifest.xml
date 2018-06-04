@@ -2,7 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.gianlu.pretendyourexyzzy">
 
+    <!-- ... -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Save round images -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <!-- Analytics -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -92,6 +95,17 @@
             android:name="com.gianlu.commonutils.LogsActivity"
             android:parentActivityName=".PreferencesActivity"
             android:screenOrientation="portrait" />
+
+        <!-- GameRound images provider -->
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.gianlu.pretendyourexyzzy"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
     </application>
 
 </manifest>

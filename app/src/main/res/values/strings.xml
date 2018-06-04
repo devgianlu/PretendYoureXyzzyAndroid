@@ -236,4 +236,9 @@
     <string name="glide_details">Copyright 2014 Google, Inc. All rights reserved.</string>
     <string name="glide">Glide</string>
     <string name="failedLoadingImage">Failed loading this image! Try to visit the link directly.</string>
+    <string name="rotateRandomly">Rotate randomly</string>
+    <string name="save">Save</string>
+    <string name="failedSavingImage">Failed saving image!</string>
+    <string name="declinedWritePermission">You have declined the write permission!</string>
+    <string name="imageSavedTo">The image has been saved to %s</string>
 </resources>

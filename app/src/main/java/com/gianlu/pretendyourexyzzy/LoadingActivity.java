@@ -14,7 +14,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
@@ -28,11 +27,9 @@ import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.OfflineActivity;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
-import com.gianlu.pretendyourexyzzy.CardViews.GameRoundView;
+import com.gianlu.pretendyourexyzzy.Dialogs.GameRoundDialog;
 import com.gianlu.pretendyourexyzzy.NetIO.FirstLoadedPyx;
-import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameRound;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
@@ -149,28 +146,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         });
 
-        try {
-            // FIXME: Testing
-            Pyx.get().getGameRound("pyx-3_1522947890465_8818329", new Pyx.OnResult<GameRound>() {
-                @Override
-                public void onDone(@NonNull GameRound result) {
-                    GameRoundView view = new GameRoundView(LoadingActivity.this, result, true);
-                    ImageView img = new ImageView(LoadingActivity.this);
-                    img.setImageBitmap(view.getBitmap());
-                    img.setScaleType(ImageView.ScaleType.FIT_CENTER);
-
-                    showDialog(new AlertDialog.Builder(LoadingActivity.this)
-                            .setView(img));
-                }
-
-                @Override
-                public void onException(@NonNull Exception ex) {
-                    ex.printStackTrace();
-                }
-            });
-        } catch (LevelMismatchException e) {
-            e.printStackTrace();
-        }
+        GameRoundDialog.get("pyx-3_1522947890465_8818329").show(getSupportFragmentManager(), null); // FIXME
     }
 
     private void changeServerDialog(boolean dismissible) {

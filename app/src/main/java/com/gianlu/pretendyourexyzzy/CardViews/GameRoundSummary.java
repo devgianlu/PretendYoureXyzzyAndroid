@@ -17,10 +17,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.RoundCard;
 
 import java.util.Random;
 
-
-// TODO: Watermark
 // TODO: Multiple cards
-public class GameRoundView {
+public class GameRoundSummary {
     private final static int PADDING = 48;
     private final static int CARD_HEIGHT = 512;
     private final static int CARD_WIDTH = 348;
@@ -35,6 +33,7 @@ public class GameRoundView {
     private final static int BACKGROUND_COLOR = 0xFFE5E5E5;
     private final static int WINNER_COLOR = 0xFF4CC7FF;
     private static final int MAX_ROTATION = 10;
+    private final static int WATERMARK_TEXT_SIZE = 48;
     private final GameRound round;
     private final boolean rotate;
     private final Bitmap bitmap;
@@ -46,10 +45,11 @@ public class GameRoundView {
     private final TextPaint blackTextPaint;
     private final Paint backgroundPaint;
     private final Random random = new Random();
+    private final TextPaint grayTextPaint;
     private int rows;
     private int cols;
 
-    public GameRoundView(@NonNull Context context, @NonNull GameRound round, boolean rotate) {
+    public GameRoundSummary(@NonNull Context context, @NonNull GameRound round, boolean rotate) {
         this.round = round;
         this.rotate = rotate;
 
@@ -61,7 +61,6 @@ public class GameRoundView {
         blackTextPaint = new TextPaint();
         blackTextPaint.setAntiAlias(true);
         blackTextPaint.setColor(Color.BLACK);
-        blackTextPaint.setTextSize(MAX_TEXT_SIZE);
         blackTextPaint.setTypeface(FontsManager.get().get(context, FontsManager.ROBOTO_MEDIUM));
 
         whitePaint = new Paint();
@@ -71,7 +70,6 @@ public class GameRoundView {
 
         whiteTextPaint = new TextPaint();
         whiteTextPaint.setColor(Color.WHITE);
-        whiteTextPaint.setTextSize(MAX_TEXT_SIZE);
         whiteTextPaint.setAntiAlias(true);
         whiteTextPaint.setTypeface(FontsManager.get().get(context, FontsManager.ROBOTO_MEDIUM));
 
@@ -79,6 +77,11 @@ public class GameRoundView {
         winnerPaint.setColor(WINNER_COLOR);
         winnerPaint.setAntiAlias(true);
         winnerPaint.setShadowLayer(SHADOW_RADIUS, SHADOW_DX, SHADOW_DY, SHADOW_COLOR);
+
+        grayTextPaint = new TextPaint();
+        grayTextPaint.setColor(Color.DKGRAY);
+        grayTextPaint.setAntiAlias(true);
+        grayTextPaint.setTypeface(FontsManager.get().get(context, FontsManager.ROBOTO_MEDIUM));
 
         backgroundPaint = new Paint();
         backgroundPaint.setColor(BACKGROUND_COLOR);
@@ -103,15 +106,20 @@ public class GameRoundView {
     private void drawCard(int x, int y, boolean winner, RoundCard card) {
         Paint paint;
         TextPaint textPaint;
+        TextPaint watermarkPaint;
         if (winner) {
             paint = winnerPaint;
             textPaint = whiteTextPaint;
+            watermarkPaint = whiteTextPaint;
         } else {
             paint = card.black() ? blackPaint : whitePaint;
             textPaint = card.black() ? whiteTextPaint : blackTextPaint;
+            watermarkPaint = card.black() ? whiteTextPaint : grayTextPaint;
         }
 
         RectF rect = new RectF(x, y, x + CARD_WIDTH, y + CARD_HEIGHT);
+        int maxTextHeight = (int) (rect.height() - CARD_INTERNAL_PADDING * 2);
+        int maxTextWidth = (int) (rect.width() - CARD_INTERNAL_PADDING * 2);
 
         canvas.save();
         if (rotate)
@@ -119,12 +127,19 @@ public class GameRoundView {
 
         canvas.drawRoundRect(rect, CARD_RADIUS, CARD_RADIUS, paint);
 
-        int maxTextHeight = (int) (rect.height() - CARD_INTERNAL_PADDING * 2);
+        StaticLayout text;
+
+        canvas.save();
+        watermarkPaint.setTextSize(WATERMARK_TEXT_SIZE);
+        text = new StaticLayout(card.watermark, watermarkPaint, maxTextWidth, Layout.Alignment.ALIGN_OPPOSITE, 1, 0, true);
+        maxTextHeight -= text.getHeight();
+        canvas.translate(rect.left, rect.top + maxTextHeight + CARD_INTERNAL_PADDING);
+        text.draw(canvas);
+        canvas.restore();
 
         textPaint.setTextSize(MAX_TEXT_SIZE);
-        StaticLayout text;
         do {
-            text = new StaticLayout(card.text(), textPaint, (int) rect.width() - CARD_INTERNAL_PADDING * 2, Layout.Alignment.ALIGN_NORMAL, 1f, 0, true);
+            text = new StaticLayout(card.text(), textPaint, maxTextWidth, Layout.Alignment.ALIGN_NORMAL, 1, 0, true);
             textPaint.setTextSize(textPaint.getTextSize() - 1);
         } while (text.getHeight() >= maxTextHeight);
 
@@ -156,5 +171,10 @@ public class GameRoundView {
     @NonNull
     public Bitmap getBitmap() {
         return bitmap;
+    }
+
+    @NonNull
+    public String getName() {
+        return "PYX GameRound - " + round.gameId + " - " + round.timestamp;
     }
 }
