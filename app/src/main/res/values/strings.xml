@@ -239,6 +239,8 @@
     <string name="rotateRandomly">Rotate randomly</string>
     <string name="save">Save</string>
     <string name="failedSavingImage">Failed saving image!</string>
-    <string name="declinedWritePermission">You have declined the write permission!</string>
+    <string name="deniedWritePermission">You have denied the write permission!</string>
     <string name="imageSavedTo">The image has been saved to %s</string>
+    <string name="askWritePermission">Ask write permission</string>
+    <string name="askWritePermission_roundImage">In order to save this image the app needs the permission to write to the storage.</string>
 </resources>

@@ -3,17 +3,15 @@ package com.gianlu.pretendyourexyzzy.Dialogs;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
+import com.gianlu.commonutils.AskPermission;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Toaster;
@@ -121,34 +120,32 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
         return layout;
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == WRITE_EXT_CODE) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                saveToExternalStorage();
-            else
-                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.declinedWritePermission));
-            return;
-        }
-
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
     private void saveToExternalStorage() {
-        if (getActivity() == null || getContext() == null) return;
+        if (getActivity() == null) return;
 
-        File dest = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            File image = save(dest);
-            if (image == null) {
-                Toaster.with(getContext()).message(R.string.failedSavingImage).show();
-            } else {
-                Toaster.with(getContext()).message(R.string.imageSavedTo, image.getAbsolutePath()).extra(image).show();
-                dismiss();
+        AskPermission.ask(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE, new AskPermission.Listener() {
+            @Override
+            public void permissionGranted(@NonNull String permission) {
+                File image = save(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
+                if (image == null) {
+                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSavingImage));
+                } else {
+                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.imageSavedTo, image.getAbsolutePath()).extra(image));
+                    dismiss();
+                }
             }
-        } else {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXT_CODE);
-        }
+
+            @Override
+            public void permissionDenied(@NonNull String permission) {
+                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.deniedWritePermission).error(true));
+            }
+
+            @Override
+            public void askRationale(@NonNull AlertDialog.Builder builder) {
+                builder.setTitle(R.string.askWritePermission)
+                        .setMessage(R.string.askWritePermission_roundImage);
+            }
+        });
     }
 
     @Nullable
