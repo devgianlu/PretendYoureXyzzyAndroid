@@ -134,8 +134,11 @@ public final class PyxRequests {
     }
 
     @NonNull
-    public static PyxRequestWithResult<User> register(@NonNull String nickname, @Nullable String idCode) {
-        return new PyxRequestWithResult<>(Pyx.Op.REGISTER, REGISTER_PROCESSOR, new NameValuePair("n", nickname), new NameValuePair("idc", idCode));
+    public static PyxRequestWithResult<User> register(@NonNull String nickname, @Nullable String idCode, @Nullable String pid) {
+        return new PyxRequestWithResult<>(Pyx.Op.REGISTER, REGISTER_PROCESSOR,
+                new NameValuePair("n", nickname),
+                new NameValuePair("idc", idCode),
+                new NameValuePair("pid", pid));
     }
 
     @NonNull

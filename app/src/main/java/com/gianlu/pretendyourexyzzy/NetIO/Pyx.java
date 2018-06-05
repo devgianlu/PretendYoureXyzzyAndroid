@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
@@ -97,6 +98,7 @@ public class Pyx implements Closeable {
         InstanceHolder.holder().invalidate();
     }
 
+    @CallSuper
     protected void prepareRequest(@NonNull Op operation, @NonNull Request.Builder request) {
         if (operation == Op.FIRST_LOAD) {
             String lastSessionId = Prefs.getString(preferences, PKeys.LAST_JSESSIONID, null);
