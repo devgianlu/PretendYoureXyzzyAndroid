@@ -31,6 +31,7 @@ import java.util.List;
 public class CardsFragment extends Fragment implements Cardcast.OnResult<List<CardcastCard>>, CardsAdapter.Listener {
     private RecyclerViewLayout layout;
 
+    @NonNull
     public static CardsFragment getInstance(Context context, boolean whiteCards, String code) {
         CardsFragment fragment = new CardsFragment();
         Bundle args = new Bundle();

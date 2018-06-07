@@ -26,6 +26,7 @@ public class InfoFragment extends Fragment implements Cardcast.OnResult<Cardcast
     private LinearLayout container;
     private ProgressBar loading;
 
+    @NonNull
     public static InfoFragment getInstance(Context context, String code) {
         InfoFragment fragment = new InfoFragment();
         Bundle args = new Bundle();
