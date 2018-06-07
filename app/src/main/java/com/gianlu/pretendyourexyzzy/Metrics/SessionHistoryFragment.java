@@ -3,7 +3,7 @@ package com.gianlu.pretendyourexyzzy.Metrics;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -22,10 +22,9 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.SessionHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.R;
 
-public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<SessionHistory>, SwipeRefreshLayout.OnRefreshListener {
-    private Pyx pyx;
+public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<SessionHistory> {
     private ProgressBar loading;
-    private SwipeRefreshLayout layout;
+    private NestedScrollView layout;
     private RecyclerView games;
     private RecyclerView playedRounds;
     private RecyclerView judgedRounds;
@@ -43,9 +42,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
-        layout = (SwipeRefreshLayout) inflater.inflate(R.layout.fragment_metrics_session, parent, false);
-        layout.setColorSchemeResources(R.color.colorAccent);
-        layout.setOnRefreshListener(this);
+        layout = (NestedScrollView) inflater.inflate(R.layout.fragment_metrics_session, parent, false);
 
         container = layout.findViewById(R.id.sessionFragment_container);
         games = layout.findViewById(R.id.sessionFragment_games);
@@ -72,6 +69,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
             return layout;
         }
 
+        Pyx pyx;
         try {
             pyx = Pyx.get();
         } catch (LevelMismatchException ex) {
@@ -100,10 +98,5 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         Logging.log(ex);
         loading.setVisibility(View.GONE);
         MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
-    }
-
-    @Override
-    public void onRefresh() {
-        // TODO
     }
 }

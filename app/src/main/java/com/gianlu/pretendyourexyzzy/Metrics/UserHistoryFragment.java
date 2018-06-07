@@ -3,7 +3,6 @@ package com.gianlu.pretendyourexyzzy.Metrics;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
@@ -19,9 +18,9 @@ import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 
-public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<UserHistory>, SwipeRefreshLayout.OnRefreshListener {
-    private RecyclerViewLayout layout;
+public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<UserHistory> {
     private RegisteredPyx pyx;
+    private RecyclerViewLayout layout;
 
     @NonNull
     public static UserHistoryFragment get() {
@@ -34,7 +33,6 @@ public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
         layout = new RecyclerViewLayout(inflater);
         layout.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
         layout.getList().addItemDecoration(new DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL));
-        layout.enableSwipeRefresh(this, R.color.colorAccent);
         layout.startLoading();
 
         try {
@@ -59,10 +57,5 @@ public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
         layout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);
-    }
-
-    @Override
-    public void onRefresh() {
-        // TODO
     }
 }

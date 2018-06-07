@@ -3,7 +3,6 @@ package com.gianlu.pretendyourexyzzy.Metrics;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,9 +18,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 
-public class GameHistoryFragment extends FragmentWithDialog implements SwipeRefreshLayout.OnRefreshListener, Pyx.OnResult<GameHistory> {
+public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<GameHistory> {
     private RecyclerViewLayout layout;
-    private RegisteredPyx pyx;
 
     @NonNull
     public static GameHistoryFragment get(@NonNull String id) {
@@ -38,7 +36,6 @@ public class GameHistoryFragment extends FragmentWithDialog implements SwipeRefr
         layout = new RecyclerViewLayout(inflater);
         layout.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         layout.getList().addOnLayoutChangeListener(new CardsGridLayoutFixer());
-        layout.enableSwipeRefresh(this, R.color.colorAccent);
         layout.startLoading();
 
         Bundle args = getArguments();
@@ -48,6 +45,7 @@ public class GameHistoryFragment extends FragmentWithDialog implements SwipeRefr
             return layout;
         }
 
+        RegisteredPyx pyx;
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
@@ -70,10 +68,5 @@ public class GameHistoryFragment extends FragmentWithDialog implements SwipeRefr
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
         layout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);
-    }
-
-    @Override
-    public void onRefresh() {
-        // TODO
     }
 }
