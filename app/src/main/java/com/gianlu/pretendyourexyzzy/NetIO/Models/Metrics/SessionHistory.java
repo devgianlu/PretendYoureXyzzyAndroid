@@ -18,10 +18,14 @@ public class SessionHistory {
         pid = obj.getString("PersistentId");
         loginTimestamp = obj.getLong("LogInTimestamp");
 
-        JSONArray gamesArray = obj.getJSONArray("Games");
-        games = new ArrayList<>(gamesArray.length());
-        for (int i = 0; i < gamesArray.length(); i++)
-            games.add(new Game(gamesArray.getJSONObject(i)));
+        if (obj.isNull("Games")) {
+            games = new ArrayList<>(0);
+        } else {
+            JSONArray gamesArray = obj.getJSONArray("Games");
+            games = new ArrayList<>(gamesArray.length());
+            for (int i = 0; i < gamesArray.length(); i++)
+                games.add(new Game(gamesArray.getJSONObject(i)));
+        }
 
         JSONArray playedArray = obj.getJSONArray("PlayedRounds");
         playedRounds = new ArrayList<>(playedArray.length());
@@ -40,7 +44,7 @@ public class SessionHistory {
 
         public Game(JSONObject obj) throws JSONException {
             id = obj.getString("GameId");
-            timestamp = obj.getLong("Timestamp");
+            timestamp = obj.getLong("Timestamp") * 1000;
         }
     }
 }

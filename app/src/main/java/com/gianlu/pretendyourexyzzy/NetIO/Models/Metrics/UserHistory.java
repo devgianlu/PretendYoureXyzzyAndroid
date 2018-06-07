@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics;
 
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,10 +17,13 @@ public class UserHistory extends ArrayList<UserHistory.Session> {
     public class Session {
         public final String id;
         public final long loginTimestamp;
+        public final Pyx.Server server;
 
-        public Session(JSONObject obj) throws JSONException {
+        Session(JSONObject obj) throws JSONException {
             id = obj.getString("SessionId");
-            loginTimestamp = obj.getLong("LogInTimestamp");
+            loginTimestamp = obj.getLong("LogInTimestamp") * 1000;
+
+            server = Pyx.Server.fromSessionId(id);
         }
     }
 }

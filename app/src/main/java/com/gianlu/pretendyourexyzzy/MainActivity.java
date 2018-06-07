@@ -27,6 +27,7 @@ import com.gianlu.pretendyourexyzzy.Main.NamesFragment;
 import com.gianlu.pretendyourexyzzy.Main.OnLeftGame;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
+import com.gianlu.pretendyourexyzzy.Metrics.MetricsActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
@@ -217,6 +218,9 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 return true;
             case R.id.main_preferences:
                 startActivity(new Intent(this, PreferencesActivity.class));
+                return true;
+            case R.id.main_metrics:
+                startActivity(new Intent(this, MetricsActivity.class));
                 return true;
         }
 

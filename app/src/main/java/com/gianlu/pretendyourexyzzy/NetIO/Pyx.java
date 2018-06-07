@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
@@ -98,7 +97,6 @@ public class Pyx implements Closeable {
         InstanceHolder.holder().invalidate();
     }
 
-    @CallSuper
     protected void prepareRequest(@NonNull Op operation, @NonNull Request.Builder request) {
         if (operation == Op.FIRST_LOAD) {
             String lastSessionId = Prefs.getString(preferences, PKeys.LAST_JSESSIONID, null);
@@ -506,6 +504,21 @@ public class Pyx implements Closeable {
 
         Server(JSONObject obj) throws JSONException {
             this(parseUrlOrThrow(obj.getString("uri")), null, obj.getString("name"));
+        }
+
+        @Nullable
+        public static Server fromSessionId(String id) {
+            id = id.substring(0, id.indexOf('_'));
+            switch (id.charAt(id.length() - 1)) {
+                case '1':
+                    return pyxServers.get("PYX1");
+                case '2':
+                    return pyxServers.get("PYX2");
+                case '3':
+                    return pyxServers.get("PYX3");
+            }
+
+            return null;
         }
 
         @Nullable

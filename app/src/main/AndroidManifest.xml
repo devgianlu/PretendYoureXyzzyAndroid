@@ -59,6 +59,13 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:launchMode="singleTask" />
 
+        <!-- Metrics activity (sessions, games, rounds) -->
+        <activity
+            android:name=".Metrics.MetricsActivity"
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+
         <!-- Manager servers activity -->
         <activity
             android:name=".SpareActivities.ManageServersActivity"

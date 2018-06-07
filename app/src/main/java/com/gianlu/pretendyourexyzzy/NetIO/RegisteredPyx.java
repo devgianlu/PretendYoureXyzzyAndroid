@@ -12,6 +12,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoadAndConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.UserHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.PKeys;
@@ -55,6 +56,10 @@ public class RegisteredPyx extends FirstLoadedPyx {
     @Override
     protected final void prepareRequest(@NonNull Op operation, @NonNull Request.Builder request) {
         request.addHeader("Cookie", "JSESSIONID=" + user.sessionId);
+    }
+
+    public final void getUserHistory(OnResult<UserHistory> listener) {
+        getUserHistory(user.persistentId, listener);
     }
 
     @NonNull

@@ -9,7 +9,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +17,7 @@ import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
+import com.gianlu.pretendyourexyzzy.Adapters.CardsGridLayoutFixer;
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
 import com.gianlu.pretendyourexyzzy.Dialogs.CardImageZoomDialog;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
@@ -50,17 +50,7 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
         layout.disableSwipeRefresh();
         layout.setLayoutManager(new StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL));
-
-        layout.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                int screenWidth = layout.getList().getMeasuredWidth();
-                int cardWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 156, getResources().getDisplayMetrics());
-                int padding = (screenWidth - cardWidth * 2) / 3;
-                layout.getList().setPaddingRelative(padding, 0, 0, 0);
-                layout.removeOnLayoutChangeListener(this);
-            }
-        });
+        layout.getList().addOnLayoutChangeListener(new CardsGridLayoutFixer());
 
         Bundle args = getArguments();
         String code;

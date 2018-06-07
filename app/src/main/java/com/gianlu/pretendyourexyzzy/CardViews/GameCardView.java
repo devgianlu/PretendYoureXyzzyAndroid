@@ -33,6 +33,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.R;
 
 public class GameCardView extends CardView {
+    public static final int WIDTH_DIP = 156;
     private final CardListener listener;
     private final Action mainAction;
     private final int width;
@@ -59,7 +60,7 @@ public class GameCardView extends CardView {
         this(context, attrs, defStyleAttr, null, null, null);
     }
 
-    public GameCardView(@NonNull Context context, @NonNull BaseCard card, @Nullable Action mainAction, @Nullable CardListener listener) {
+    public GameCardView(@NonNull Context context, @Nullable BaseCard card, @Nullable Action mainAction, @Nullable CardListener listener) {
         this(context, null, 0, card, mainAction, listener);
     }
 
@@ -70,7 +71,7 @@ public class GameCardView extends CardView {
         this.listener = listener;
 
         LayoutInflater.from(getContext()).inflate(R.layout.pyx_card, this, true);
-        width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 156, getResources().getDisplayMetrics());
+        width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, WIDTH_DIP, getResources().getDisplayMetrics());
         setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, getResources().getDisplayMetrics()));
         setForeground(CommonUtils.resolveAttrAsDrawable(getContext(), android.R.attr.selectableItemBackground));
 

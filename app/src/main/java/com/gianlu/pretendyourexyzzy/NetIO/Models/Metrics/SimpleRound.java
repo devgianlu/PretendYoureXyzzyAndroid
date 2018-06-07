@@ -8,7 +8,7 @@ public class SimpleRound {
     public final long timestamp;
     public final RoundCard blackCard;
 
-    public SimpleRound(JSONObject obj) throws JSONException {
+    SimpleRound(JSONObject obj) throws JSONException {
         id = obj.getString("RoundId");
         timestamp = obj.getLong("Timestamp");
         blackCard = new RoundCard(obj.getJSONObject("BlackCard"));
