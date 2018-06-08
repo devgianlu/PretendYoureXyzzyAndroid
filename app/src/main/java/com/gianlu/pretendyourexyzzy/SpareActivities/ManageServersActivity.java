@@ -67,8 +67,10 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
 
     @Override
     public void shouldUpdateItemCount(int count) {
-        if (count == 0) layout.showMessage(R.string.noServers, false);
-        else layout.showList();
+        if (count == 0)
+            layout.showInfo(R.string.noServers);
+        else
+            layout.showList();
     }
 
     @Override

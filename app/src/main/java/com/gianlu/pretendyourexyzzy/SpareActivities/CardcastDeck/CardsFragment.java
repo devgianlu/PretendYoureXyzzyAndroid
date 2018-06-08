@@ -53,7 +53,7 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
         Bundle args = getArguments();
         String code;
         if (args == null || (code = args.getString("code", null)) == null) {
-            layout.showMessage(R.string.failedLoading, true);
+            layout.showError(R.string.failedLoading);
             return layout;
         }
 
@@ -69,7 +69,7 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
         if (!isAdded() || getContext() == null) return;
 
         if (result.isEmpty()) {
-            layout.showMessage(R.string.noCards, false);
+            layout.showInfo(R.string.noCards, false);
             return;
         }
 
@@ -79,8 +79,7 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
     @Override
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
-        if (isAdded())
-            layout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);
+        layout.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 
     @Nullable

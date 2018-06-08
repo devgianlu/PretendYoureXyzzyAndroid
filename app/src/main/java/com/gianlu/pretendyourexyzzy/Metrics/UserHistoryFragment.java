@@ -39,7 +39,7 @@ public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
             Logging.log(ex);
-            layout.showMessage(R.string.failedLoading, true);
+            layout.showError(R.string.failedLoading);
             return layout;
         }
 
@@ -58,6 +58,6 @@ public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
     @Override
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
-        layout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);
+        layout.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 }

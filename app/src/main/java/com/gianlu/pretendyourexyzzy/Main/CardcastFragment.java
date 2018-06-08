@@ -180,18 +180,16 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
     public void onDone(@NonNull Cardcast.Search search, @NonNull CardcastDecks decks) {
         if (!isAdded()) return;
 
-        if (decks.isEmpty()) {
-            layout.showMessage(R.string.searchNoDecks, false);
-        } else {
+        if (decks.isEmpty())
+            layout.showInfo(R.string.searchNoDecks);
+        else
             layout.loadListData(new CardcastDecksAdapter(getContext(), cardcast, search, decks, LIMIT, this));
-        }
     }
 
     @Override
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
-        if (isAdded())
-            layout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);
+        layout.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 
     @Override

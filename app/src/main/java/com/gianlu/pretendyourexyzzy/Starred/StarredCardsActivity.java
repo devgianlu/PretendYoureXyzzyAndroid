@@ -9,11 +9,10 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
-import com.gianlu.commonutils.MessageLayout;
+import com.gianlu.commonutils.MessageView;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
@@ -28,6 +27,7 @@ import java.util.Objects;
 public class StarredCardsActivity extends ActivityWithDialog implements CardsAdapter.Listener {
     private RecyclerView list;
     private LinearLayout cards;
+    private MessageView message;
 
     public static void startActivity(@NonNull Context context) {
         if (StarredCardsManager.hasAnyCard(context))
@@ -51,9 +51,10 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
         list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         list.setAdapter(new CardsAdapter(this, false, StarredCardsManager.loadCards(this), GameCardView.Action.DELETE, this));
 
+        message = findViewById(R.id.starredCards_message);
         cards = findViewById(R.id.starredCards_cards);
 
-        MessageLayout.show((ViewGroup) findViewById(R.id.starredCards_container), R.string.selectAStarredCard, R.drawable.ic_info_outline_black_48dp);
+        message.setInfo(R.string.selectAStarredCard);
     }
 
     @Nullable
@@ -63,7 +64,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
     }
 
     private void showCards(@NonNull StarredCardsManager.StarredCard card) {
-        MessageLayout.hide((ViewGroup) findViewById(R.id.starredCards_container));
+        message.hide();
 
         cards.removeAllViews();
         cards.setTag(card);
@@ -97,7 +98,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
                 case DELETE:
                     deleteCard(starred);
                     if (Objects.equals(cards.getTag(), card)) {
-                        MessageLayout.show((ViewGroup) findViewById(R.id.starredCards_container), R.string.selectAStarredCard, R.drawable.ic_info_outline_black_48dp);
+                        message.setInfo(R.string.selectAStarredCard);
                         cards.removeAllViews();
                     }
                     break;

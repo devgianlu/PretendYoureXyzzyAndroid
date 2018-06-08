@@ -19,7 +19,7 @@ import android.widget.TextView;
 
 import com.gianlu.commonutils.BottomSheet.BaseModalBottomSheet;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
-import com.gianlu.commonutils.MessageLayout;
+import com.gianlu.commonutils.MessageView;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.DecksAdapter;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
@@ -38,7 +38,6 @@ public class CardcastSheet extends BaseModalBottomSheet<Integer, List<Deck>> imp
     private OngoingGameHelper.Listener listener;
     private RegisteredPyx pyx;
     private RecyclerView list;
-    private ViewGroup body;
     private TextView count;
 
     @NonNull
@@ -71,11 +70,13 @@ public class CardcastSheet extends BaseModalBottomSheet<Integer, List<Deck>> imp
         count.setText(Utils.buildDeckCountString(decks.size(), Deck.countBlackCards(decks), Deck.countWhiteCards(decks)));
     }
 
+    private MessageView message;
+
     @Override
     protected void onCreateBody(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, @NonNull Integer gid) {
         inflater.inflate(R.layout.sheet_cardcast, parent, true);
-        body = parent;
 
+        message = parent.findViewById(R.id.cardcastSheet_message);
         list = parent.findViewById(R.id.cardcastSheet_list);
         list.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         list.addItemDecoration(new DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL));
@@ -157,10 +158,10 @@ public class CardcastSheet extends BaseModalBottomSheet<Integer, List<Deck>> imp
     @Override
     public void shouldUpdateItemCount(int count) {
         if (count == 0) {
-            MessageLayout.show(body, R.string.noCardSets, R.drawable.ic_info_outline_black_48dp);
+            message.setInfo(R.string.noCardSets);
             list.setVisibility(View.GONE);
         } else {
-            MessageLayout.hide(body);
+            message.hide();
             list.setVisibility(View.VISIBLE);
         }
     }

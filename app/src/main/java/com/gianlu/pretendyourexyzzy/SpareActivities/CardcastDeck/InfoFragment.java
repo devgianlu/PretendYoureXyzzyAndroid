@@ -14,7 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.MessageLayout;
+import com.gianlu.commonutils.MessageView;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeckInfo;
 import com.gianlu.pretendyourexyzzy.R;
@@ -25,6 +25,7 @@ public class InfoFragment extends Fragment implements Cardcast.OnResult<Cardcast
     private FrameLayout layout;
     private LinearLayout container;
     private ProgressBar loading;
+    private MessageView message;
 
     @NonNull
     public static InfoFragment getInstance(Context context, String code) {
@@ -42,13 +43,14 @@ public class InfoFragment extends Fragment implements Cardcast.OnResult<Cardcast
         layout = (FrameLayout) inflater.inflate(R.layout.fragment_cardcast_deck_info, parent, false);
         container = layout.findViewById(R.id.cardcastDeckInfo_container);
         loading = layout.findViewById(R.id.cardcastDeckInfo_loading);
+        message = layout.findViewById(R.id.cardcastDeckInfo_message);
 
         Bundle args = getArguments();
         String code;
         if (args == null || (code = args.getString("code", null)) == null) {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.GONE);
-            MessageLayout.show(layout, R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
+            message.setError(R.string.failedLoading);
             return layout;
         }
 
@@ -63,7 +65,7 @@ public class InfoFragment extends Fragment implements Cardcast.OnResult<Cardcast
 
         loading.setVisibility(View.GONE);
         container.setVisibility(View.VISIBLE);
-        MessageLayout.hide(layout);
+        message.hide();
 
         TextView code = container.findViewById(R.id.cardcastDeckInfo_code);
         code.setText(result.code);
@@ -85,7 +87,6 @@ public class InfoFragment extends Fragment implements Cardcast.OnResult<Cardcast
         Logging.log(ex);
         loading.setVisibility(View.GONE);
         container.setVisibility(View.GONE);
-        if (isAdded())
-            MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
+        message.setError(R.string.failedLoading_reason, ex.getMessage());
     }
 }

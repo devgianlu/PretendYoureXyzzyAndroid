@@ -30,7 +30,7 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.MessageLayout;
+import com.gianlu.commonutils.MessageView;
 import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
@@ -71,6 +71,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     private RegisteredPyx pyx;
     private Cardcast cardcast;
     private CardcastSheet cardcastSheet;
+    private MessageView message;
 
     @NonNull
     public static OngoingGameFragment getInstance(@NonNull GamePermalink game, @Nullable SavedState savedState) {
@@ -147,7 +148,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
 
         loading.setVisibility(View.GONE);
         container.setVisibility(View.VISIBLE);
-        MessageLayout.hide(layout);
+        message.hide();
 
         if (getActivity() != null && TutorialManager.shouldShowHintFor(getContext(), TutorialManager.Discovery.CREATE_GAME) && isVisible() && Objects.equals(pyx.user().nickname, result.info.game.host)) {
             View options = getActivity().getWindow().getDecorView().findViewById(R.id.ongoingGame_options);
@@ -178,8 +179,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         Logging.log(ex);
         loading.setVisibility(View.GONE);
         container.setVisibility(View.GONE);
-        if (isAdded())
-            MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
+        message.setError(R.string.failedLoading_reason, ex.getMessage());
     }
 
     @Nullable
@@ -188,12 +188,13 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         layout = (FrameLayout) inflater.inflate(R.layout.fragment_ongoing_game, parent, false);
         loading = layout.findViewById(R.id.ongoingGame_loading);
         container = layout.findViewById(R.id.ongoingGame_container);
+        message = layout.findViewById(R.id.ongoingGame_message);
 
         Bundle args = getArguments();
         if (args == null || (perm = (GamePermalink) args.getSerializable("game")) == null) {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.GONE);
-            MessageLayout.show(layout, R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
+            message.setError(R.string.failedLoading);
             return layout;
         }
 
@@ -204,7 +205,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
             Logging.log(ex);
             loading.setVisibility(View.GONE);
             container.setVisibility(View.GONE);
-            MessageLayout.show(layout, R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
+            message.setError(R.string.failedLoading);
             return layout;
         }
 

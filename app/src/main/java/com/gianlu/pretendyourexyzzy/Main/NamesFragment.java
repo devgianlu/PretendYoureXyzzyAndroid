@@ -112,7 +112,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
             Logging.log(ex);
-            layout.showMessage(R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
+            layout.showError(R.string.failedLoading);
             return layout;
         }
 
@@ -165,8 +165,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     @Override
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
-        if (isAdded())
-            layout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);
+        layout.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 
     @Override
@@ -183,7 +182,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
 
     @Override
     public void shouldUpdateItemCount(int count) {
-        if (count == 0) layout.showMessage(R.string.noNames, R.drawable.ic_info_outline_black_48dp);
+        if (count == 0) layout.showInfo(R.string.noNames);
         else layout.showList();
     }
 

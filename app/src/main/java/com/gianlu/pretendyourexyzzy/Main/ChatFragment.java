@@ -71,7 +71,7 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
             Logging.log(ex);
-            recyclerViewLayout.showMessage(R.string.failedLoading, true);
+            recyclerViewLayout.showError(R.string.failedLoading);
             return layout;
         }
 
@@ -130,7 +130,7 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
 
     @Override
     public void onItemCountChanged(int count) {
-        if (count == 0) recyclerViewLayout.showMessage(R.string.noMessages, false);
+        if (count == 0) recyclerViewLayout.showInfo(R.string.noMessages);
         else recyclerViewLayout.showList();
     }
 

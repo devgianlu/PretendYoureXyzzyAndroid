@@ -141,7 +141,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
             Logging.log(ex);
-            recyclerViewLayout.showMessage(R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
+            recyclerViewLayout.showError(R.string.failedLoading);
             return layout;
         }
 
@@ -257,8 +257,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     @Override
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
-        if (isAdded())
-            recyclerViewLayout.showMessage(getString(R.string.failedLoading_reason, ex.getMessage()), true);
+        recyclerViewLayout.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 
     @Nullable

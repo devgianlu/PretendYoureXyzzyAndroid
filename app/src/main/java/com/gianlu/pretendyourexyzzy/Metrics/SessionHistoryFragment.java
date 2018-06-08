@@ -15,7 +15,7 @@ import android.widget.ProgressBar;
 
 import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.MessageLayout;
+import com.gianlu.commonutils.MessageView;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
@@ -33,6 +33,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
     private SuperTextView judgedRoundsLabel;
     private RecyclerView judgedRounds;
     private LinearLayout container;
+    private MessageView message;
 
     @NonNull
     public static SessionHistoryFragment get(@NonNull String id) {
@@ -48,6 +49,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
         layout = (NestedScrollView) inflater.inflate(R.layout.fragment_metrics_session, parent, false);
 
+        message = layout.findViewById(R.id.sessionFragment_message);
         container = layout.findViewById(R.id.sessionFragment_container);
         gamesLabel = container.findViewById(R.id.sessionFragment_gamesLabel);
         games = container.findViewById(R.id.sessionFragment_games);
@@ -72,7 +74,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         String id;
         if (args == null || (id = args.getString("id", null)) == null) {
             loading.setVisibility(View.GONE);
-            MessageLayout.show(layout, R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
+            message.setError(R.string.failedLoading);
             return layout;
         }
 
@@ -82,7 +84,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         } catch (LevelMismatchException ex) {
             Logging.log(ex);
             loading.setVisibility(View.GONE);
-            MessageLayout.show(layout, R.string.failedLoading, R.drawable.ic_error_outline_black_48dp);
+            message.setError(R.string.failedLoading);
             return layout;
         }
 
@@ -98,7 +100,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         if (result.games.isEmpty()) {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.GONE);
-            MessageLayout.show(layout, R.string.noActivity, R.drawable.ic_info_outline_black_48dp);
+            message.setInfo(R.string.noActivity);
         } else {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.VISIBLE);
@@ -116,6 +118,6 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         Logging.log(ex);
         loading.setVisibility(View.GONE);
         container.setVisibility(View.GONE);
-        MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
+        message.setError(R.string.failedLoading_reason, ex.getMessage());
     }
 }
