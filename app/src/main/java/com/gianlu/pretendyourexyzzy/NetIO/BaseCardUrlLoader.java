@@ -21,20 +21,24 @@ public class BaseCardUrlLoader extends BaseGlideUrlLoader<BaseCard> {
         super(new HttpGlideUrlLoader());
     }
 
-    @Override
-    protected String getUrl(BaseCard card, int width, int height, Options options) {
-        String url = card.getImageUrl();
-        if (url == null) throw new NullPointerException();
-
+    @NonNull
+    public static String extractUrl(@NonNull String url) {
         if (url.endsWith(".gifv")) {
-            url = url.substring(0, url.length() - 1);
+            return url.substring(0, url.length() - 1);
         } else if (IS_IMGUR_PATTERN.matcher(url).find()) {
             if (!IMGUR_PATTERN.matcher(url).find()) {
-                url += ".png";
+                return url + ".png";
             }
         }
 
         return url;
+    }
+
+    @Override
+    protected String getUrl(BaseCard card, int width, int height, Options options) {
+        String url = card.getImageUrl();
+        if (url == null) throw new NullPointerException();
+        return extractUrl(url);
     }
 
     @Override

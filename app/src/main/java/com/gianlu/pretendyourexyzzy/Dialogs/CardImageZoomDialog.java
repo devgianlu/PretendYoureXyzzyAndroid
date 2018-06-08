@@ -23,11 +23,11 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.gianlu.pretendyourexyzzy.NetIO.BaseCardUrlLoader;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.R;
 
-public class CardImageZoomDialog extends DialogFragment { // FIXME
-
+public class CardImageZoomDialog extends DialogFragment {
     @NonNull
     public static CardImageZoomDialog get(@NonNull BaseCard card) {
         CardImageZoomDialog dialog = new CardImageZoomDialog();
@@ -66,8 +66,11 @@ public class CardImageZoomDialog extends DialogFragment { // FIXME
         }
 
         final TextView error = layout.findViewById(R.id.imageZoomDialog_error);
+        error.setVisibility(View.GONE);
         final ImageView image = layout.findViewById(R.id.imageZoomDialog_image);
-        Glide.with(this).load(url).listener(new RequestListener<Drawable>() {
+        image.setVisibility(View.GONE);
+
+        Glide.with(this).load(BaseCardUrlLoader.extractUrl(url)).listener(new RequestListener<Drawable>() {
             @Override
             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                 error.setVisibility(View.VISIBLE);
