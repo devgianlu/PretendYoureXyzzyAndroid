@@ -1,13 +1,15 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 
-import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,7 +25,6 @@ public class Card extends BaseCard {
     private final String originalWatermark;
     public boolean winner = false;
 
-    @Keep
     public Card(JSONObject obj) throws JSONException {
         id = obj.getInt("cid");
 
@@ -50,6 +51,13 @@ public class Card extends BaseCard {
         this.numPick = -1;
         this.numDraw = -1;
         this.writeIn = false;
+    }
+
+    @NonNull
+    public static List<Card> list(JSONArray array) throws JSONException {
+        List<Card> list = new ArrayList<>(array.length());
+        for (int i = 0; i < array.length(); i++) list.add(new Card(array.getJSONObject(i)));
+        return list;
     }
 
     @NonNull

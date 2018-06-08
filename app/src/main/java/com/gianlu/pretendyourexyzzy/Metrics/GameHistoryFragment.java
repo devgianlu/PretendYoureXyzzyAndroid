@@ -61,6 +61,8 @@ public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
 
     @Override
     public void onDone(@NonNull GameHistory result) {
+        if (getContext() == null) return;
+
         layout.loadListData(new RoundsAdapter(getContext(), result, (RoundsAdapter.Listener) getContext()));
     }
 

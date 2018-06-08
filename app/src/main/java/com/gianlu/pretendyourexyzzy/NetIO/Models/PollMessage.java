@@ -1,10 +1,13 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import android.support.annotation.Keep;
+import android.support.annotation.NonNull;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class PollMessage {
@@ -15,14 +18,20 @@ public class PollMessage {
     public final JSONObject obj;
     public final Event event;
 
-    @Keep
-    public PollMessage(JSONObject obj) throws JSONException {
+    private PollMessage(JSONObject obj) throws JSONException {
         event = Event.parse(obj.getString("E"));
         sender = obj.optString("f", null);
         message = obj.optString("m", null);
         gid = obj.optInt("gid", -1);
         timestamp = obj.optLong("ts", -1);
         this.obj = obj;
+    }
+
+    @NonNull
+    public static List<PollMessage> list(JSONArray array) throws JSONException {
+        List<PollMessage> list = new ArrayList<>(array.length());
+        for (int i = 0; i < array.length(); i++) list.add(new PollMessage(array.getJSONObject(i)));
+        return list;
     }
 
     public enum Event {

@@ -1,14 +1,16 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
-public class Deck implements Serializable {
+public class Deck {
     public final int weight;
     public final int id;
     public final String description;
@@ -18,6 +20,13 @@ public class Deck implements Serializable {
     public final boolean baseDeck;
     public final String cardcastCode;
     private CardcastDeckInfo cardcastDeck;
+
+    @NonNull
+    public static List<Deck> list(JSONArray array) throws JSONException {
+        List<Deck> list = new ArrayList<>(array.length());
+        for (int i = 0; i < array.length(); i++) list.add(new Deck(array.getJSONObject(i)));
+        return list;
+    }
 
     public Deck(JSONObject obj) throws JSONException {
         weight = obj.getInt("w");

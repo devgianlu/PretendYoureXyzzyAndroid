@@ -1,7 +1,5 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import com.gianlu.commonutils.CommonUtils;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -18,6 +16,6 @@ public class GameCards {
         else blackCard = new Card(obj.getJSONObject("bc"));
         gameId = obj.getInt("gid");
         whiteCards = CardsGroup.list(obj.getJSONArray("wc"));
-        hand = CommonUtils.toTList(obj.getJSONArray("h"), Card.class);
+        hand = Card.list(obj.getJSONArray("h"));
     }
 }

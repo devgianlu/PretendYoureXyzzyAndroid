@@ -38,7 +38,7 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     public static ChatFragment getGameInstance(int gid) {
         ChatFragment fragment = new ChatFragment();
         Bundle args = new Bundle();
-        args.putSerializable("gid", gid);
+        args.putInt("gid", gid);
         fragment.setArguments(args);
         return fragment;
     }

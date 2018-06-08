@@ -50,6 +50,8 @@ public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
 
     @Override
     public void onDone(@NonNull UserHistory result) {
+        if (getContext() == null) return;
+
         layout.loadListData(new UserHistoryAdapter(getContext(), pyx, result, (UserHistoryAdapter.Listener) getContext()));
     }
 

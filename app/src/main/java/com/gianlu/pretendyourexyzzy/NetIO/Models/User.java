@@ -6,9 +6,7 @@ import android.support.annotation.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.Serializable;
-
-public class User extends UserInfo implements Serializable {
+public class User extends UserInfo {
     public final String sessionId;
     public final String persistentId;
     private final String userPermalink;

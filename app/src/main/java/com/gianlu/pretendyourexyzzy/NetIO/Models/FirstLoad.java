@@ -3,28 +3,26 @@ package com.gianlu.pretendyourexyzzy.NetIO.Models;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class FirstLoad implements Serializable {
+public class FirstLoad {
     public final NextOp nextOperation;
     public final boolean inProgress;
-    public final ArrayList<Deck> decks;
+    public final List<Deck> decks;
     public final User user;
     public final GamePermalink game;
 
     public FirstLoad(JSONObject obj, @Nullable User user) throws JSONException {
         this.nextOperation = NextOp.parse(obj.getString("next"));
         this.inProgress = obj.getBoolean("ip");
-        this.decks = CommonUtils.toTList(obj.getJSONArray("css"), Deck.class);
+        this.decks = Deck.list(obj.getJSONArray("css"));
         this.user = user;
         this.game = GamePermalink.get(obj);
     }

@@ -1,14 +1,13 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.gianlu.commonutils.CommonUtils;
-
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -18,7 +17,7 @@ public class GameInfo {
 
     public GameInfo(JSONObject obj) throws JSONException {
         game = new Game(obj.getJSONObject("gi"));
-        players = CommonUtils.toTList(obj.getJSONArray("pi"), Player.class);
+        players = Player.list(obj.getJSONArray("pi"));
     }
 
     @Nullable
@@ -74,7 +73,6 @@ public class GameInfo {
         public final int score;
         public PlayerStatus status;
 
-        @Keep
         public Player(JSONObject obj) throws JSONException {
             name = obj.getString("N");
             score = obj.getInt("sc");
@@ -85,6 +83,13 @@ public class GameInfo {
             this.name = name;
             this.score = score;
             this.status = status;
+        }
+
+        @NonNull
+        public static List<Player> list(JSONArray array) throws JSONException {
+            List<Player> list = new ArrayList<>(array.length());
+            for (int i = 0; i < array.length(); i++) list.add(new Player(array.getJSONObject(i)));
+            return list;
         }
 
         @Override

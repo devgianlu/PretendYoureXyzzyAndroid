@@ -86,6 +86,8 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
 
     @Override
     public void onDone(@NonNull SessionHistory result) {
+        if (getContext() == null) return;
+
         loading.setVisibility(View.GONE);
         container.setVisibility(View.VISIBLE);
         games.setAdapter(new GamesAdapter(getContext(), result.games, (GamesAdapter.Listener) getContext()));

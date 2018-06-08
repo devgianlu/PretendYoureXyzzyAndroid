@@ -45,8 +45,7 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         layout = new RecyclerViewLayout(inflater);
-        if (getContext() == null) return layout;
-        layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
+        layout.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary_background));
         layout.disableSwipeRefresh();
         layout.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         layout.getList().addOnLayoutChangeListener(new CardsGridFixer(requireContext()));

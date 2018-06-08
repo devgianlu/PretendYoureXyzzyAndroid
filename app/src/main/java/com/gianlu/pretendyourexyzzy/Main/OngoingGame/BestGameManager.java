@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
-import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
@@ -80,7 +79,7 @@ public class BestGameManager implements Pyx.OnEventListener {
 
         switch (msg.event) {
             case HAND_DEAL:
-                data.handDeal(CommonUtils.toTList(msg.obj.getJSONArray("h"), Card.class));
+                data.handDeal(Card.list(msg.obj.getJSONArray("h")));
                 break;
             case GAME_STATE_CHANGE:
                 data.gameStateChanged(Game.Status.parse(msg.obj.getString("gs")), msg.obj);

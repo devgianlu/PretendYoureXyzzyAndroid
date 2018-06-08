@@ -4,7 +4,6 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 
-import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
@@ -223,11 +222,9 @@ public class RegisteredPyx extends FirstLoadedPyx {
                         else throw new IOException("Body is empty!");
 
                         if (json.startsWith("{")) {
-                            JSONObject obj = new JSONObject(json);
-                            raiseException(obj);
+                            raiseException(new JSONObject(json));
                         } else if (json.startsWith("[")) {
-                            JSONArray array = new JSONArray(json);
-                            dispatchDone(CommonUtils.toTList(array, PollMessage.class));
+                            dispatchDone(PollMessage.list(new JSONArray(json)));
                         }
                     }
                 } catch (IOException | JSONException | PyxException ex) {

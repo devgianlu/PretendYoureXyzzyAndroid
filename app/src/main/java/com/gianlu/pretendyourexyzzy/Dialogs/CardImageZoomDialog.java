@@ -26,7 +26,7 @@ import com.bumptech.glide.request.target.Target;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.R;
 
-public class CardImageZoomDialog extends DialogFragment {
+public class CardImageZoomDialog extends DialogFragment { // FIXME
 
     @NonNull
     public static CardImageZoomDialog get(@NonNull BaseCard card) {
