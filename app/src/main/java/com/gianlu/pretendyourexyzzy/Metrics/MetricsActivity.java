@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 
 import com.gianlu.commonutils.BreadcrumbsView;
 import com.gianlu.commonutils.CommonUtils;
@@ -89,6 +90,16 @@ public class MetricsActivity extends ActivityWithDialog implements BreadcrumbsVi
     public void onBackPressed() {
         if (breadcrumbs.navigateBack())
             super.onBackPressed();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

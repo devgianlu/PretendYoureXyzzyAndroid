@@ -25,7 +25,7 @@ class UserHistoryAdapter extends RecyclerView.Adapter<UserHistoryAdapter.ViewHol
     private final Listener listener;
     private final Pyx pyx;
 
-    UserHistoryAdapter(Context context, Pyx pyx, @NonNull UserHistory history, Listener listener) {
+    UserHistoryAdapter(@NonNull Context context, @NonNull Pyx pyx, @NonNull UserHistory history, Listener listener) {
         this.inflater = LayoutInflater.from(context);
         this.pyx = pyx;
         this.history = history;

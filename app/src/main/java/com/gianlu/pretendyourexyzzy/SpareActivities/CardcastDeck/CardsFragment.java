@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
@@ -17,7 +16,7 @@ import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
-import com.gianlu.pretendyourexyzzy.Adapters.CardsGridLayoutFixer;
+import com.gianlu.pretendyourexyzzy.Adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
 import com.gianlu.pretendyourexyzzy.Dialogs.CardImageZoomDialog;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
@@ -49,8 +48,8 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
         if (getContext() == null) return layout;
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
         layout.disableSwipeRefresh();
-        layout.setLayoutManager(new StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL));
-        layout.getList().addOnLayoutChangeListener(new CardsGridLayoutFixer());
+        layout.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+        layout.getList().addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
 
         Bundle args = getArguments();
         String code;

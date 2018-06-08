@@ -16,7 +16,7 @@ import android.widget.ProgressBar;
 import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
-import com.gianlu.pretendyourexyzzy.Adapters.CardsGridLayoutFixer;
+import com.gianlu.pretendyourexyzzy.Adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.SessionHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
@@ -51,11 +51,11 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         playedRounds = layout.findViewById(R.id.sessionFragment_playedRounds);
         playedRounds.setNestedScrollingEnabled(false);
         playedRounds.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-        playedRounds.addOnLayoutChangeListener(new CardsGridLayoutFixer());
+        playedRounds.addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
         judgedRounds = layout.findViewById(R.id.sessionFragment_judgedRounds);
         judgedRounds.setNestedScrollingEnabled(false);
         judgedRounds.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-        judgedRounds.addOnLayoutChangeListener(new CardsGridLayoutFixer());
+        judgedRounds.addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
 
         loading = layout.findViewById(R.id.sessionFragment_loading);
         loading.setVisibility(View.VISIBLE);

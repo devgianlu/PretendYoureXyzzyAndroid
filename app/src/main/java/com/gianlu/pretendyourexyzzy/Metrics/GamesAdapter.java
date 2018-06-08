@@ -20,7 +20,7 @@ class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.ViewHolder> {
     private final Listener listener;
     private final List<SessionHistory.Game> games;
 
-    GamesAdapter(Context context, List<SessionHistory.Game> games, Listener listener) {
+    GamesAdapter(@NonNull Context context, List<SessionHistory.Game> games, Listener listener) {
         this.games = games;
         this.inflater = LayoutInflater.from(context);
         this.listener = listener;

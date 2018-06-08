@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.RecyclerViewLayout;
-import com.gianlu.pretendyourexyzzy.Adapters.CardsGridLayoutFixer;
+import com.gianlu.pretendyourexyzzy.Adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
@@ -35,8 +35,8 @@ public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         layout = new RecyclerViewLayout(inflater);
         layout.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-        layout.getList().addOnLayoutChangeListener(new CardsGridLayoutFixer());
         layout.startLoading();
+        layout.getList().addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
 
         Bundle args = getArguments();
         String id;

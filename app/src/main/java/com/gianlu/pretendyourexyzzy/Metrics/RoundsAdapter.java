@@ -18,7 +18,7 @@ class RoundsAdapter extends RecyclerView.Adapter<RoundsAdapter.ViewHolder> {
     private final LayoutInflater inflater;
     private final List<SimpleRound> rounds;
 
-    RoundsAdapter(Context context, List<SimpleRound> rounds, Listener listener) {
+    RoundsAdapter(@NonNull Context context, List<SimpleRound> rounds, Listener listener) {
         this.inflater = LayoutInflater.from(context);
         this.rounds = rounds;
         this.listener = listener;
