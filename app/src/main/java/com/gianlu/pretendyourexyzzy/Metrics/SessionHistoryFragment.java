@@ -16,6 +16,7 @@ import android.widget.ProgressBar;
 import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageLayout;
+import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.SessionHistory;
@@ -25,8 +26,11 @@ import com.gianlu.pretendyourexyzzy.R;
 public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<SessionHistory> {
     private ProgressBar loading;
     private NestedScrollView layout;
+    private SuperTextView gamesLabel;
     private RecyclerView games;
+    private SuperTextView playedRoundsLabel;
     private RecyclerView playedRounds;
+    private SuperTextView judgedRoundsLabel;
     private RecyclerView judgedRounds;
     private LinearLayout container;
 
@@ -45,14 +49,17 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         layout = (NestedScrollView) inflater.inflate(R.layout.fragment_metrics_session, parent, false);
 
         container = layout.findViewById(R.id.sessionFragment_container);
-        games = layout.findViewById(R.id.sessionFragment_games);
+        gamesLabel = container.findViewById(R.id.sessionFragment_gamesLabel);
+        games = container.findViewById(R.id.sessionFragment_games);
         games.setNestedScrollingEnabled(false);
         games.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
-        playedRounds = layout.findViewById(R.id.sessionFragment_playedRounds);
+        playedRoundsLabel = container.findViewById(R.id.sessionFragment_playedRoundsLabel);
+        playedRounds = container.findViewById(R.id.sessionFragment_playedRounds);
         playedRounds.setNestedScrollingEnabled(false);
         playedRounds.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         playedRounds.addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
-        judgedRounds = layout.findViewById(R.id.sessionFragment_judgedRounds);
+        judgedRoundsLabel = container.findViewById(R.id.sessionFragment_judgedRoundsLabel);
+        judgedRounds = container.findViewById(R.id.sessionFragment_judgedRounds);
         judgedRounds.setNestedScrollingEnabled(false);
         judgedRounds.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         judgedRounds.addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
@@ -88,17 +95,27 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
     public void onDone(@NonNull SessionHistory result) {
         if (getContext() == null) return;
 
-        loading.setVisibility(View.GONE);
-        container.setVisibility(View.VISIBLE);
-        games.setAdapter(new GamesAdapter(getContext(), result.games, (GamesAdapter.Listener) getContext()));
-        playedRounds.setAdapter(new RoundsAdapter(getContext(), result.playedRounds, (RoundsAdapter.Listener) getContext()));
-        judgedRounds.setAdapter(new RoundsAdapter(getContext(), result.judgedRounds, (RoundsAdapter.Listener) getContext()));
+        if (result.games.isEmpty()) {
+            loading.setVisibility(View.GONE);
+            container.setVisibility(View.GONE);
+            MessageLayout.show(layout, R.string.noActivity, R.drawable.ic_info_outline_black_48dp);
+        } else {
+            loading.setVisibility(View.GONE);
+            container.setVisibility(View.VISIBLE);
+            gamesLabel.setHtml(R.string.gamesCount, result.games.size());
+            games.setAdapter(new GamesAdapter(getContext(), result.games, (GamesAdapter.Listener) getContext()));
+            playedRoundsLabel.setHtml(R.string.playedRoundsCount, result.playedRounds.size());
+            playedRounds.setAdapter(new RoundsAdapter(getContext(), result.playedRounds, (RoundsAdapter.Listener) getContext()));
+            judgedRoundsLabel.setHtml(R.string.judgedRoundsCount, result.judgedRounds.size());
+            judgedRounds.setAdapter(new RoundsAdapter(getContext(), result.judgedRounds, (RoundsAdapter.Listener) getContext()));
+        }
     }
 
     @Override
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
         loading.setVisibility(View.GONE);
+        container.setVisibility(View.GONE);
         MessageLayout.show(layout, getString(R.string.failedLoading_reason, ex.getMessage()), R.drawable.ic_error_outline_black_48dp);
     }
 }

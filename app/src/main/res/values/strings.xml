@@ -250,4 +250,8 @@
     <string name="gameStartedAt">Game started at %s</string>
     <string name="playedRoundsLabel">Played rounds</string>
     <string name="judgedRoundsLabel">Judged rounds</string>
+    <string name="noActivity">There is no activity here.</string>
+    <string name="gamesCount">Games (%d)</string>
+    <string name="judgedRoundsCount">Judged rounds (%d)</string>
+    <string name="playedRoundsCount">Played rounds (%d)</string>
 </resources>

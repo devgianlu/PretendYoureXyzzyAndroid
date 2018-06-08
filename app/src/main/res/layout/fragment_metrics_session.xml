@@ -27,9 +27,11 @@
             android:layout_marginStart="8dp"
             android:orientation="vertical">
 
-            <TextView
+            <com.gianlu.commonutils.SuperTextView
+                android:id="@+id/sessionFragment_gamesLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:text="@string/games"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -39,7 +41,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <TextView
+            <com.gianlu.commonutils.SuperTextView
+                android:id="@+id/sessionFragment_playedRoundsLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -52,7 +55,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <TextView
+            <com.gianlu.commonutils.SuperTextView
+                android:id="@+id/sessionFragment_judgedRoundsLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
