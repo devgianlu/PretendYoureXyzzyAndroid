@@ -5,31 +5,11 @@
     tools:ignore="AppCompatResource">
 
     <item
-        android:id="@+id/main_starredCards"
-        android:icon="@drawable/ic_star_white_48dp"
-        android:orderInCategory="4"
-        android:title="@string/starredCards"
-        app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/main_metrics"
-        android:icon="@drawable/ic_person_white_48dp"
-        android:orderInCategory="96"
-        android:title="@string/metrics"
-        app:showAsAction="ifRoom" />
-
-    <item
         android:id="@+id/main_keepScreenOn"
         android:checkable="true"
         android:checked="true"
-        android:orderInCategory="97"
-        android:title="@string/keepScreenOn"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/main_starredDecks"
         android:orderInCategory="98"
-        android:title="@string/starredDecks"
+        android:title="@string/keepScreenOn"
         app:showAsAction="never" />
 
     <item
@@ -37,11 +17,5 @@
         android:icon="@drawable/ic_exit_to_app_white_48dp"
         android:orderInCategory="99"
         android:title="@string/logout"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/main_preferences"
-        android:orderInCategory="99999999"
-        android:title="@string/preferences"
         app:showAsAction="never" />
 </menu>

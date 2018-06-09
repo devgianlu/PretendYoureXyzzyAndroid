@@ -4,24 +4,30 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
-import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.Drawer.BaseDrawerItem;
+import com.gianlu.commonutils.Drawer.DrawerManager;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.Main.CardcastFragment;
 import com.gianlu.pretendyourexyzzy.Main.ChatFragment;
+import com.gianlu.pretendyourexyzzy.Main.DrawerConst;
 import com.gianlu.pretendyourexyzzy.Main.GamesFragment;
 import com.gianlu.pretendyourexyzzy.Main.NamesFragment;
 import com.gianlu.pretendyourexyzzy.Main.OnLeftGame;
@@ -31,6 +37,7 @@ import com.gianlu.pretendyourexyzzy.Metrics.MetricsActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
@@ -39,9 +46,10 @@ import com.gianlu.pretendyourexyzzy.Starred.StarredDecksActivity;
 
 import org.json.JSONException;
 
+import java.util.List;
 import java.util.Objects;
 
-public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame {
+public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.ILogout, DrawerManager.IDrawerListener<User> {
     private final static String TAG_GAMES = "games";
     private final static String TAG_GAME_CHAT = "gameChat";
     private static final String TAG_PLAYERS = "players";
@@ -57,10 +65,24 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     private ChatFragment globalChatFragment;
     private GamePermalink currentGame = null;
     private RegisteredPyx pyx;
+    private DrawerManager<User> drawerManager;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (drawerManager != null) drawerManager.syncTogglerState();
+    }
+
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        if (drawerManager != null) drawerManager.syncTogglerState();
+    }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        if (drawerManager != null) drawerManager.onTogglerConfigurationChanged(newConfig);
 
         if (ongoingGameFragment != null && currentGame != null) {
             Fragment.SavedState state = getSupportFragmentManager().saveFragmentInstanceState(ongoingGameFragment);
@@ -82,6 +104,9 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Toolbar toolbar = findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
+
         OngoingGameHelper.setup(this);
 
         try {
@@ -92,6 +117,19 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
             return;
         }
+
+        drawerManager = new DrawerManager.Config<User>(R.drawable.ic_launcher /* FIXME */)
+                .addMenuItem(new BaseDrawerItem(DrawerConst.HOME, R.drawable.ic_home_black_48dp, getString(R.string.home)))
+                .addMenuItem(new BaseDrawerItem(DrawerConst.USER_METRICS, R.drawable.ic_person_black_48dp /* FIXME */, getString(R.string.metrics)))
+                .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_CARDS, R.drawable.common_full_open_on_phone /* FIXME */, getString(R.string.starredCards)))
+                .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_DECKS, R.drawable.common_full_open_on_phone /* FIXME */, getString(R.string.starredDecks)))
+                .addMenuItemSeparator()
+                .addMenuItem(new BaseDrawerItem(DrawerConst.PREFERENCES, R.drawable.ic_settings_black_48dp, getString(R.string.preferences)))
+                .addMenuItem(new BaseDrawerItem(DrawerConst.REPORT, R.drawable.ic_report_problem_black_48dp, getString(R.string.report)))
+                .singleProfile(pyx.user(), this)
+                .build(this, (DrawerLayout) findViewById(R.id.main_drawer), toolbar);
+
+        drawerManager.setDrawerListener(this);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         namesFragment = NamesFragment.getInstance();
@@ -195,32 +233,12 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.main_logout:
-                try {
-                    RegisteredPyx.get().logout();
-                } catch (LevelMismatchException ex) {
-                    Logging.log(ex);
-                }
-
-                startActivity(new Intent(this, LoadingActivity.class)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-                finish();
+                logout();
                 return true;
             case R.id.main_keepScreenOn:
                 item.setChecked(!item.isChecked());
                 Prefs.putBoolean(this, PKeys.KEEP_SCREEN_ON, item.isChecked());
                 setKeepScreenOn(item.isChecked());
-                return true;
-            case R.id.main_starredCards:
-                StarredCardsActivity.startActivity(this);
-                return true;
-            case R.id.main_starredDecks:
-                StarredDecksActivity.startActivity(this);
-                return true;
-            case R.id.main_preferences:
-                startActivity(new Intent(this, PreferencesActivity.class));
-                return true;
-            case R.id.main_metrics:
-                startActivity(new Intent(this, MetricsActivity.class));
                 return true;
         }
 
@@ -368,5 +386,50 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             dismissDialog();
             Toaster.with(this).message(R.string.failedChangingOptions).ex(ex).show();
         }
+    }
+
+    @Override
+    public void logout() {
+        pyx.logout();
+        startActivity(new Intent(this, LoadingActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+        finish();
+    }
+
+    @Override
+    public boolean onMenuItemSelected(BaseDrawerItem which) {
+        switch (which.id) {
+            case DrawerConst.HOME:
+                return true;
+            case DrawerConst.STARRED_CARDS:
+                StarredCardsActivity.startActivity(this);
+                return true;
+            case DrawerConst.STARRED_DECKS:
+                StarredDecksActivity.startActivity(this);
+                return true;
+            case DrawerConst.USER_METRICS:
+                startActivity(new Intent(this, MetricsActivity.class));
+                return true;
+            case DrawerConst.PREFERENCES:
+                startActivity(new Intent(this, PreferencesActivity.class));
+                return true;
+            case DrawerConst.REPORT:
+                CommonUtils.sendEmail(this, getString(R.string.app_name), null);
+                return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public void onProfileSelected(User profile) {
+    }
+
+    @Override
+    public void addProfile() {
+    }
+
+    @Override
+    public void editProfile(List<User> items) {
     }
 }

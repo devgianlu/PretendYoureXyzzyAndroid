@@ -17,7 +17,7 @@ public class UserInfo implements BaseDrawerProfile, Serializable {
     public final String idCode;
     public final Name.Sigil sigil;
 
-    public UserInfo(JSONObject obj) throws JSONException {
+    UserInfo(JSONObject obj) throws JSONException {
         this.nickname = obj.getString("n");
         this.idCode = obj.getString("idc");
 
@@ -46,6 +46,4 @@ public class UserInfo implements BaseDrawerProfile, Serializable {
     public String getInitials(Context context) {
         return nickname.substring(0, 2);
     }
-
-
 }

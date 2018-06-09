@@ -254,4 +254,6 @@
     <string name="gamesCount">Games (%d)</string>
     <string name="judgedRoundsCount">Judged rounds (%d)</string>
     <string name="playedRoundsCount">Played rounds (%d)</string>
+    <string name="home">Home</string>
+    <string name="report">Report problem</string>
 </resources>
