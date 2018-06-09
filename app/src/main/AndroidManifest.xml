@@ -113,6 +113,16 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
-    </application>
 
+        <!-- Logs provider -->
+        <provider
+            android:name="com.gianlu.commonutils.LogsProvider"
+            android:authorities="com.gianlu.pretendyourexyzzy.logs"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/logs_paths" />
+        </provider>
+    </application>
 </manifest>
