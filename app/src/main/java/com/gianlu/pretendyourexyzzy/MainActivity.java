@@ -118,11 +118,11 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             return;
         }
 
-        drawerManager = new DrawerManager.Config<User>(R.drawable.ic_launcher /* FIXME */)
+        drawerManager = new DrawerManager.Config<User>(R.drawable.drawer_background)
                 .addMenuItem(new BaseDrawerItem(DrawerConst.HOME, R.drawable.ic_home_black_48dp, getString(R.string.home)))
-                .addMenuItem(new BaseDrawerItem(DrawerConst.USER_METRICS, R.drawable.ic_person_black_48dp /* FIXME */, getString(R.string.metrics)))
-                .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_CARDS, R.drawable.common_full_open_on_phone /* FIXME */, getString(R.string.starredCards)))
-                .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_DECKS, R.drawable.common_full_open_on_phone /* FIXME */, getString(R.string.starredDecks)))
+                .addMenuItem(new BaseDrawerItem(DrawerConst.USER_METRICS, R.drawable.ic_person_black_48dp, getString(R.string.metrics)))
+                .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_CARDS, R.drawable.ic_star_black_48dp, getString(R.string.starredCards)))
+                .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_DECKS, R.drawable.ic_bookmarks_black_48dp, getString(R.string.starredDecks)))
                 .addMenuItemSeparator()
                 .addMenuItem(new BaseDrawerItem(DrawerConst.PREFERENCES, R.drawable.ic_settings_black_48dp, getString(R.string.preferences)))
                 .addMenuItem(new BaseDrawerItem(DrawerConst.REPORT, R.drawable.ic_report_problem_black_48dp, getString(R.string.report)))
