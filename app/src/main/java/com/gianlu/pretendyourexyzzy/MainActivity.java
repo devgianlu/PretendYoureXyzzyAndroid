@@ -122,7 +122,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 .addMenuItem(new BaseDrawerItem(DrawerConst.HOME, R.drawable.ic_home_black_48dp, getString(R.string.home)))
                 .addMenuItem(new BaseDrawerItem(DrawerConst.USER_METRICS, R.drawable.ic_person_black_48dp, getString(R.string.metrics)))
                 .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_CARDS, R.drawable.ic_star_black_48dp, getString(R.string.starredCards)))
-                .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_DECKS, R.drawable.ic_bookmarks_black_48dp, getString(R.string.starredDecks)))
+                .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_CARDCAST_DECKS, R.drawable.ic_bookmarks_black_48dp, getString(R.string.starredCardcastDecks)))
                 .addMenuItemSeparator()
                 .addMenuItem(new BaseDrawerItem(DrawerConst.PREFERENCES, R.drawable.ic_settings_black_48dp, getString(R.string.preferences)))
                 .addMenuItem(new BaseDrawerItem(DrawerConst.REPORT, R.drawable.ic_report_problem_black_48dp, getString(R.string.report)))
@@ -404,7 +404,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             case DrawerConst.STARRED_CARDS:
                 StarredCardsActivity.startActivity(this);
                 return true;
-            case DrawerConst.STARRED_DECKS:
+            case DrawerConst.STARRED_CARDCAST_DECKS:
                 StarredDecksActivity.startActivity(this);
                 return true;
             case DrawerConst.USER_METRICS:

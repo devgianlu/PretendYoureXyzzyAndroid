@@ -61,7 +61,7 @@ public class StarredDecksActivity extends ActivityWithDialog implements StarredD
         super.onCreate(savedInstanceState);
         layout = new RecyclerViewLayout(this);
         setContentView(layout);
-        setTitle(R.string.starredDecks);
+        setTitle(R.string.starredCardcastDecks);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);

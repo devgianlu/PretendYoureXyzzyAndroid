@@ -176,7 +176,7 @@
     <string name="preferences">Preferences</string>
     <string name="logs">Logs</string>
     <string name="materialRatingBar_details">Copyright 2016 Zhang Hai</string>
-    <string name="starredDecks">Starred decks</string>
+    <string name="starredCardcastDecks">Starred Cardcast decks</string>
     <string name="noStarredDecks">You have no starred decks!</string>
     <string name="toggleStarred">Toggle starred</string>
     <string name="addStarredDecks">Add starred decks</string>
