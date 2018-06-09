@@ -39,6 +39,18 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/ongoingGame_gameMetrics"
+        android:orderInCategory="1"
+        android:title="@string/showGameMetrics"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/ongoingGame_lastRound"
+        android:orderInCategory="1"
+        android:title="@string/showLastRound"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/ongoingGame_cardcast"
         android:icon="@drawable/ic_cast_white_48dp"
         android:title="@string/cardcast"

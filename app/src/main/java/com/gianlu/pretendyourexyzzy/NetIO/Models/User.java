@@ -26,6 +26,13 @@ public class User extends UserInfo {
     }
 
     @Nullable
+    public String extractSessionMetricsId() {
+        if (sessionPermalink == null) return null;
+        String[] split = sessionPermalink.split("/");
+        return split[split.length - 1];
+    }
+
+    @Nullable
     public String sessionPermalink() {
         return sessionPermalink;
     }

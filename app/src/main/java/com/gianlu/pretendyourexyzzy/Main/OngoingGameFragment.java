@@ -37,9 +37,11 @@ import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.Dialogs.EditGameOptionsDialog;
+import com.gianlu.pretendyourexyzzy.Dialogs.GameRoundDialog;
 import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.BestGameManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastSheet;
+import com.gianlu.pretendyourexyzzy.Metrics.MetricsActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
@@ -63,7 +65,6 @@ import okhttp3.HttpUrl;
 
 public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnResult<GameInfoAndCards>, BestGameManager.Listener, OngoingGameHelper.Listener, PlayersAdapter.Listener {
     private OnLeftGame onLeftGame;
-    private FrameLayout layout;
     private ProgressBar loading;
     private LinearLayout container;
     private BestGameManager manager;
@@ -111,6 +112,12 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     }
 
     @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        MenuItem lastRound = menu.findItem(R.id.ongoingGame_lastRound);
+        lastRound.setVisible(manager != null && manager.getLastRoundMetricsId() != null);
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.ongoing_game, menu);
     }
@@ -142,7 +149,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     @Override
     public void onDone(@NonNull GameInfoAndCards result) {
         if (manager == null && isAdded())
-            manager = new BestGameManager(getActivity(), container, pyx, result, perm, this, this);
+            manager = new BestGameManager(getActivity(), container, pyx, result, this, this);
 
         updateActivityTitle();
 
@@ -185,7 +192,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
-        layout = (FrameLayout) inflater.inflate(R.layout.fragment_ongoing_game, parent, false);
+        FrameLayout layout = (FrameLayout) inflater.inflate(R.layout.fragment_ongoing_game, parent, false);
         loading = layout.findViewById(R.id.ongoingGame_loading);
         container = layout.findViewById(R.id.ongoingGame_container);
         message = layout.findViewById(R.id.ongoingGame_message);
@@ -216,6 +223,8 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (getContext() == null) return false;
+
         switch (item.getItemId()) {
             case R.id.ongoingGame_leave:
                 leaveGame();
@@ -223,7 +232,8 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
             case R.id.ongoingGame_options:
                 if (amHost() && manager.gameInfo().game.status == Game.Status.LOBBY)
                     editGameOptions();
-                else showGameOptions();
+                else
+                    showGameOptions();
                 return true;
             case R.id.ongoingGame_spectators:
                 showSpectators();
@@ -233,6 +243,14 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
                 return true;
             case R.id.ongoingGame_share:
                 shareGame();
+                return true;
+            case R.id.ongoingGame_gameMetrics:
+                MetricsActivity.startActivity(getContext(), perm);
+                return true;
+            case R.id.ongoingGame_lastRound:
+                String roundId = manager == null ? null : manager.getLastRoundMetricsId();
+                if (roundId != null && getActivity() != null)
+                    GameRoundDialog.get(roundId).show(getActivity().getSupportFragmentManager(), null);
                 return true;
             case R.id.ongoingGame_cardcast:
                 cardcastSheet = CardcastSheet.get();

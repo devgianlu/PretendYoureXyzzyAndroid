@@ -1,7 +1,11 @@
 package com.gianlu.pretendyourexyzzy.Metrics;
 
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
@@ -9,12 +13,16 @@ import android.view.MenuItem;
 import com.gianlu.commonutils.BreadcrumbsView;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
+import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Dialogs.GameRoundDialog;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.SessionHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.SimpleRound;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.UserHistory;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 
@@ -30,6 +38,15 @@ public class MetricsActivity extends ActivityWithDialog implements BreadcrumbsVi
     private static final String TAG_ROUND = GameRoundDialog.class.getName();
     private RegisteredPyx pyx;
     private BreadcrumbsView breadcrumbs;
+
+    public static void startActivity(Context context) {
+        startActivity(context, null);
+    }
+
+    public static void startActivity(Context context, @Nullable GamePermalink game) {
+        context.startActivity(new Intent(context, MetricsActivity.class)
+                .putExtra("game", game));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,9 +67,15 @@ public class MetricsActivity extends ActivityWithDialog implements BreadcrumbsVi
         }
 
         breadcrumbs = findViewById(R.id.metrics_breadcrumbs);
+        breadcrumbs.clear();
         breadcrumbs.setListener(this);
 
-        loadUserHistory();
+        GamePermalink game = (GamePermalink) getIntent().getSerializableExtra("game");
+        if (game == null) {
+            loadUserHistory();
+        } else {
+            loadGame(game);
+        }
     }
 
     private void loadUserHistory() {
@@ -75,6 +98,38 @@ public class MetricsActivity extends ActivityWithDialog implements BreadcrumbsVi
                 .beginTransaction()
                 .replace(R.id.metrics_container, SessionHistoryFragment.get(session.id), TAG_SESSION)
                 .commit();
+    }
+
+    private void loadGame(@NonNull GamePermalink game) {
+        final String gameId = game.extractGameMetricsId();
+        if (gameId == null) {
+            Toaster.with(MetricsActivity.this).message(R.string.failedLoading).error(true).show();
+            onBackPressed();
+            return;
+        }
+
+        ProgressDialog pd = DialogUtils.progressDialog(this, R.string.loading);
+        showDialog(pd);
+        pyx.getGameHistory(gameId, new Pyx.OnResult<GameHistory>() {
+            @Override
+            public void onDone(@NonNull GameHistory result) {
+                dismissDialog();
+
+                breadcrumbs.addItem(new BreadcrumbsView.Item(getString(R.string.ongoingGame), TYPE_GAME, null));
+
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.metrics_container, GameHistoryFragment.get(result), TAG_GAME)
+                        .commit();
+            }
+
+            @Override
+            public void onException(@NonNull Exception ex) {
+                dismissDialog();
+                Toaster.with(MetricsActivity.this).message(R.string.failedLoading).ex(ex).show();
+                onBackPressed();
+            }
+        });
     }
 
     private void loadGame(@NonNull final SessionHistory.Game game) {

@@ -256,4 +256,6 @@
     <string name="playedRoundsCount">Played rounds (%d)</string>
     <string name="home">Home</string>
     <string name="report">Report problem</string>
+    <string name="showGameMetrics">Show game metrics</string>
+    <string name="showLastRound">Show last round</string>
 </resources>

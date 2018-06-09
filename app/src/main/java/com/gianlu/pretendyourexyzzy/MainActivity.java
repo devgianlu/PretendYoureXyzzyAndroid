@@ -408,7 +408,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 StarredDecksActivity.startActivity(this);
                 return true;
             case DrawerConst.USER_METRICS:
-                startActivity(new Intent(this, MetricsActivity.class));
+                MetricsActivity.startActivity(this);
                 return true;
             case DrawerConst.PREFERENCES:
                 startActivity(new Intent(this, PreferencesActivity.class));

@@ -31,6 +31,13 @@ public class GamePermalink implements Serializable {
     }
 
     @Nullable
+    public String extractGameMetricsId() {
+        if (gamePermalink == null) return null;
+        String[] split = gamePermalink.split("/");
+        return split[split.length - 1];
+    }
+
+    @Nullable
     public String gamePermalink() {
         return gamePermalink;
     }

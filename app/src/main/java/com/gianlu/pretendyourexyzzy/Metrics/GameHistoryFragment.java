@@ -30,6 +30,15 @@ public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
         return fragment;
     }
 
+    @NonNull
+    public static GameHistoryFragment get(@NonNull GameHistory history) {
+        GameHistoryFragment fragment = new GameHistoryFragment();
+        Bundle args = new Bundle();
+        args.putSerializable("history", history);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -40,21 +49,27 @@ public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
 
         Bundle args = getArguments();
         String id;
-        if (args == null || (id = args.getString("id", null)) == null) {
+        GameHistory history = null;
+        if (args == null || ((id = args.getString("id", null)) == null
+                && (history = (GameHistory) args.getSerializable("history")) == null)) {
             layout.showError(R.string.failedLoading);
             return layout;
         }
 
-        RegisteredPyx pyx;
-        try {
-            pyx = RegisteredPyx.get();
-        } catch (LevelMismatchException ex) {
-            Logging.log(ex);
-            layout.showError(R.string.failedLoading);
-            return layout;
-        }
+        if (history == null) {
+            RegisteredPyx pyx;
+            try {
+                pyx = RegisteredPyx.get();
+            } catch (LevelMismatchException ex) {
+                Logging.log(ex);
+                layout.showError(R.string.failedLoading);
+                return layout;
+            }
 
-        pyx.getGameHistory(id, this);
+            pyx.getGameHistory(id, this);
+        } else {
+            onDone(history);
+        }
 
         return layout;
     }
