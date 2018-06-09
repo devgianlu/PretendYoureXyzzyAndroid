@@ -134,6 +134,9 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
                     case PLAYER_LEAVE:
                         if (adapter != null) adapter.removeItem(msg.obj.getString("n"));
                         break;
+                    case GAME_LIST_REFRESH:
+                        pyx.request(PyxRequests.getNamesList(), NamesFragment.this);
+                        break;
                 }
             }
 
