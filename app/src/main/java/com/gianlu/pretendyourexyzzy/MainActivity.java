@@ -46,10 +46,9 @@ import com.gianlu.pretendyourexyzzy.Starred.StarredDecksActivity;
 
 import org.json.JSONException;
 
-import java.util.List;
 import java.util.Objects;
 
-public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.ILogout, DrawerManager.IDrawerListener<User> {
+public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener, DrawerManager.OnAction {
     private final static String TAG_GAMES = "games";
     private final static String TAG_GAME_CHAT = "gameChat";
     private static final String TAG_PLAYERS = "players";
@@ -118,7 +117,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             return;
         }
 
-        drawerManager = new DrawerManager.Config<User>(R.drawable.drawer_background)
+        drawerManager = new DrawerManager.Config<User>(this, R.drawable.drawer_background)
                 .addMenuItem(new BaseDrawerItem(DrawerConst.HOME, R.drawable.ic_home_black_48dp, getString(R.string.home)))
                 .addMenuItem(new BaseDrawerItem(DrawerConst.USER_METRICS, R.drawable.ic_person_black_48dp, getString(R.string.metrics)))
                 .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_CARDS, R.drawable.ic_star_black_48dp, getString(R.string.starredCards)))
@@ -128,8 +127,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 .addMenuItem(new BaseDrawerItem(DrawerConst.REPORT, R.drawable.ic_report_problem_black_48dp, getString(R.string.report)))
                 .singleProfile(pyx.user(), this)
                 .build(this, (DrawerLayout) findViewById(R.id.main_drawer), toolbar);
-
-        drawerManager.setDrawerListener(this);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         namesFragment = NamesFragment.getInstance();
@@ -233,7 +230,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.main_logout:
-                logout();
+                drawerAction();
                 return true;
             case R.id.main_keepScreenOn:
                 item.setChecked(!item.isChecked());
@@ -389,7 +386,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     @Override
-    public void logout() {
+    public void drawerAction() {
         pyx.logout();
         startActivity(new Intent(this, LoadingActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
@@ -397,8 +394,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     @Override
-    public boolean onMenuItemSelected(BaseDrawerItem which) {
-        switch (which.id) {
+    public boolean onDrawerMenuItemSelected(@NonNull BaseDrawerItem item) {
+        switch (item.id) {
             case DrawerConst.HOME:
                 return true;
             case DrawerConst.STARRED_CARDS:
@@ -419,17 +416,5 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         }
 
         return false;
-    }
-
-    @Override
-    public void onProfileSelected(User profile) {
-    }
-
-    @Override
-    public void addProfile() {
-    }
-
-    @Override
-    public void editProfile(List<User> items) {
     }
 }
