@@ -22,7 +22,6 @@ import com.gianlu.pretendyourexyzzy.R;
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 
 public class InfoFragment extends Fragment implements Cardcast.OnResult<CardcastDeckInfo> {
-    private FrameLayout layout;
     private LinearLayout container;
     private ProgressBar loading;
     private MessageView message;
@@ -40,7 +39,7 @@ public class InfoFragment extends Fragment implements Cardcast.OnResult<Cardcast
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
-        layout = (FrameLayout) inflater.inflate(R.layout.fragment_cardcast_deck_info, parent, false);
+        FrameLayout layout = (FrameLayout) inflater.inflate(R.layout.fragment_cardcast_deck_info, parent, false);
         container = layout.findViewById(R.id.cardcastDeckInfo_container);
         loading = layout.findViewById(R.id.cardcastDeckInfo_loading);
         message = layout.findViewById(R.id.cardcastDeckInfo_message);

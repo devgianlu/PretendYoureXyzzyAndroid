@@ -9,9 +9,10 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class RoundCard extends BaseCard {
+public class RoundCard extends BaseCard implements Serializable {
     public final String text;
     public final String watermark;
     public final int numPick;

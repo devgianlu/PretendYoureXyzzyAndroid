@@ -6,7 +6,9 @@ import android.support.annotation.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public abstract class BaseCard {
+import java.io.Serializable;
+
+public abstract class BaseCard implements Serializable {
     private transient String imageUrl = null;
 
     @NonNull

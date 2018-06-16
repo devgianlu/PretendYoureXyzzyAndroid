@@ -25,7 +25,6 @@ import com.gianlu.pretendyourexyzzy.R;
 
 public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<SessionHistory> {
     private ProgressBar loading;
-    private NestedScrollView layout;
     private SuperTextView gamesLabel;
     private RecyclerView games;
     private SuperTextView playedRoundsLabel;
@@ -47,7 +46,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
-        layout = (NestedScrollView) inflater.inflate(R.layout.fragment_metrics_session, parent, false);
+        NestedScrollView layout = (NestedScrollView) inflater.inflate(R.layout.fragment_metrics_session, parent, false);
 
         message = layout.findViewById(R.id.sessionFragment_message);
         container = layout.findViewById(R.id.sessionFragment_container);

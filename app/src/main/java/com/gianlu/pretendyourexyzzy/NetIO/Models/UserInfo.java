@@ -31,19 +31,19 @@ public class UserInfo implements BaseDrawerProfile, Serializable {
 
     @NonNull
     @Override
-    public String getProfileName(Context context) {
+    public String getProfileName(@NonNull Context context) {
         return nickname;
     }
 
     @NonNull
     @Override
-    public String getSecondaryText(Context context) {
+    public String getSecondaryText(@NonNull Context context) {
         return idCode;
     }
 
     @NonNull
     @Override
-    public String getInitials(Context context) {
+    public String getInitials(@NonNull Context context) {
         return nickname.substring(0, 2);
     }
 }

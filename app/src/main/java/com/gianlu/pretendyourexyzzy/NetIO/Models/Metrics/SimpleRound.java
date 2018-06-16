@@ -3,7 +3,9 @@ package com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class SimpleRound {
+import java.io.Serializable;
+
+public class SimpleRound implements Serializable {
     public final String id;
     public final long timestamp;
     public final RoundCard blackCard;
