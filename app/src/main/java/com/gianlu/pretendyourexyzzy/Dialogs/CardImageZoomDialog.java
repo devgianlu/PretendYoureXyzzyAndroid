@@ -61,7 +61,7 @@ public class CardImageZoomDialog extends DialogFragment {
         final String url;
         Bundle args = getArguments();
         if (args == null || (url = args.getString("url", null)) == null) {
-            dismiss();
+            dismissAllowingStateLoss();
             return layout;
         }
 

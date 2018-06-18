@@ -81,7 +81,7 @@ public class EditGameOptionsDialog extends DialogFragment {
             return;
         }
 
-        dismiss();
+        dismissAllowingStateLoss();
         if (listener != null) listener.changeGameOptions(gid, newOptions);
     }
 
@@ -102,7 +102,7 @@ public class EditGameOptionsDialog extends DialogFragment {
         Game.Options options;
         if (args == null || (options = (Game.Options) args.getSerializable("options")) == null
                 || (gid = args.getInt("gid", -1)) == -1 || getContext() == null) {
-            dismiss();
+            dismissAllowingStateLoss();
             return layout;
         }
 
@@ -111,7 +111,7 @@ public class EditGameOptionsDialog extends DialogFragment {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
             DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading).ex(ex));
-            dismiss();
+            dismissAllowingStateLoss();
             return layout;
         }
 
@@ -158,7 +158,7 @@ public class EditGameOptionsDialog extends DialogFragment {
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dismiss();
+                dismissAllowingStateLoss();
             }
         });
 

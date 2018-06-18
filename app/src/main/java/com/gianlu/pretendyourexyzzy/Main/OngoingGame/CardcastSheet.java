@@ -85,7 +85,7 @@ public class CardcastSheet extends BaseModalBottomSheet<Integer, List<Deck>> imp
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
             DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading).ex(ex));
-            dismiss();
+            dismissAllowingStateLoss();
             return;
         }
 
@@ -99,7 +99,7 @@ public class CardcastSheet extends BaseModalBottomSheet<Integer, List<Deck>> imp
             @Override
             public void onException(@NonNull Exception ex) {
                 DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading).ex(ex));
-                dismiss();
+                dismissAllowingStateLoss();
             }
         });
     }

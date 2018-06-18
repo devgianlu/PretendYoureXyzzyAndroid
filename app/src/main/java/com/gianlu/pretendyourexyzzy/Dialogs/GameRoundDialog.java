@@ -88,7 +88,7 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dismiss();
+                dismissAllowingStateLoss();
             }
         });
 
@@ -103,7 +103,7 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
             pyx = Pyx.get();
         } catch (LevelMismatchException ex) {
             DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading).ex(ex));
-            dismiss();
+            dismissAllowingStateLoss();
             return layout;
         }
 
@@ -111,7 +111,7 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
         String id;
         if (args == null || (id = args.getString("id", null)) == null) {
             DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
-            dismiss();
+            dismissAllowingStateLoss();
             return layout;
         }
 
@@ -131,7 +131,7 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
                     DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSavingImage));
                 } else {
                     DialogUtils.showToast(getContext(), Toaster.build().message(R.string.imageSavedTo, image.getAbsolutePath()).extra(image));
-                    dismiss();
+                    dismissAllowingStateLoss();
                 }
             }
 
@@ -180,7 +180,7 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
         intent.putExtra(Intent.EXTRA_STREAM, uri);
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         context.startActivity(Intent.createChooser(intent, "Send to..."));
-        dismiss();
+        dismissAllowingStateLoss();
     }
 
     private void generate() {
@@ -205,6 +205,6 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
     @Override
     public void onException(@NonNull Exception ex) {
         DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading).ex(ex));
-        dismiss();
+        dismissAllowingStateLoss();
     }
 }

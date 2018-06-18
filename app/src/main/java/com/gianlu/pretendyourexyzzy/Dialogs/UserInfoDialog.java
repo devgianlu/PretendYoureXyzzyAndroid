@@ -156,7 +156,7 @@ public class UserInfoDialog extends DialogFragment {
                     public void onClick(View v) {
                         if (listener != null) {
                             listener.viewGame(gameInfo.gid, gameInfo.hasPassword(false));
-                            dismiss();
+                            dismissAllowingStateLoss();
                         }
                     }
                 });
