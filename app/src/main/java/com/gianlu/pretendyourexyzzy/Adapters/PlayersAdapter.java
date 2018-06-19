@@ -14,7 +14,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHolder> {
@@ -24,7 +23,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
 
     public PlayersAdapter(Context context, List<GameInfo.Player> players, Listener listener) {
         this.inflater = LayoutInflater.from(context);
-        this.players = new ArrayList<>(players);
+        this.players = players;
         this.listener = listener;
     }
 
