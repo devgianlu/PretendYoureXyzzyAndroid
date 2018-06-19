@@ -53,6 +53,8 @@
     <string name="tutorial_setupGame_desc">Here you can customize your game options. Don\'t forget you can also add Cardcast decks from the menu up here.</string>
     <string name="tutorial_startGame">Start game</string>
     <string name="tutorial_startGame_desc">Once you\'re done, start the game. To do that you must have at least 3 players and a given number of cards.</string>
+    <string name="tutorial_chooseIdCode">Enter an identification code</string>
+    <string name="tutorial_chooseIdCode_desc">Enter or generate an identification code to make it difficult for someone to impersonate you.</string>
 
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>

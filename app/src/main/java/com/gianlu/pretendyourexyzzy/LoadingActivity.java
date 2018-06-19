@@ -17,7 +17,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
-import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.ConnectivityChecker;
@@ -27,6 +26,8 @@ import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.OfflineActivity;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.commonutils.Tutorial.BaseTutorial;
+import com.gianlu.commonutils.Tutorial.TutorialManager;
 import com.gianlu.pretendyourexyzzy.NetIO.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
@@ -35,6 +36,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.SpareActivities.ManageServersActivity;
 import com.gianlu.pretendyourexyzzy.SpareActivities.TutorialActivity;
+import com.gianlu.pretendyourexyzzy.Tutorial.Discovery;
+import com.gianlu.pretendyourexyzzy.Tutorial.LoginTutorial;
 
 import org.json.JSONObject;
 
@@ -43,7 +46,7 @@ import java.util.List;
 import java.util.Objects;
 
 
-public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx> {
+public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener {
     private Intent goTo;
     private boolean finished = false;
     private ProgressBar loading;
@@ -55,6 +58,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private Button changeServer;
     private boolean launchGameShouldRequest;
     private TextInputLayout registerIdCode;
+    private TutorialManager tutorialManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,11 +85,13 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
         Logging.clearLogs(this);
 
-        if (Prefs.getBoolean(this, PKeys.FIRST_RUN, true)) {
+        if (Prefs.getBoolean(this, PK.FIRST_RUN, true)) {
             startActivity(new Intent(this, TutorialActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
             return;
         }
+
+        tutorialManager = new TutorialManager(this, this, Discovery.LOGIN);
 
         loading = findViewById(R.id.loading_loading);
         loading.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(this, R.color.colorPrimary), PorterDuff.Mode.SRC_IN);
@@ -152,7 +158,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private void changeServerDialog(boolean dismissible) {
         final List<Pyx.Server> availableServers = Pyx.Server.loadAllServers(this);
 
-        int selectedServer = Pyx.Server.indexOf(availableServers, Prefs.getString(LoadingActivity.this, PKeys.LAST_SERVER, "PYX1"));
+        int selectedServer = Pyx.Server.indexOf(availableServers, Prefs.getString(LoadingActivity.this, PK.LAST_SERVER, "PYX1"));
         if (selectedServer < 0) selectedServer = 0;
 
         CharSequence[] availableStrings = new CharSequence[availableServers.size()];
@@ -187,7 +193,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
     private void setServer(@NonNull Pyx.Server server) {
         Pyx.invalidate();
-        Prefs.putString(LoadingActivity.this, PKeys.LAST_SERVER, server.name);
+        Prefs.putString(LoadingActivity.this, PK.LAST_SERVER, server.name);
     }
 
     @Nullable
@@ -202,10 +208,10 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         registerNickname.setErrorEnabled(false);
         registerIdCode.setErrorEnabled(false);
 
-        String lastNickname = Prefs.getString(LoadingActivity.this, PKeys.LAST_NICKNAME, null);
+        String lastNickname = Prefs.getString(LoadingActivity.this, PK.LAST_NICKNAME, null);
         if (lastNickname != null) CommonUtils.setText(registerNickname, lastNickname);
 
-        String lastIdCode = Prefs.getString(LoadingActivity.this, PKeys.LAST_ID_CODE, null);
+        String lastIdCode = Prefs.getString(LoadingActivity.this, PK.LAST_ID_CODE, null);
         if (lastIdCode != null) CommonUtils.setText(registerIdCode, lastIdCode);
 
         registerSubmit.setOnClickListener(new View.OnClickListener() {
@@ -224,8 +230,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 pyx.register(nick, idCode, new Pyx.OnResult<RegisteredPyx>() {
                     @Override
                     public void onDone(@NonNull RegisteredPyx result) {
-                        Prefs.putString(LoadingActivity.this, PKeys.LAST_NICKNAME, result.user().nickname);
-                        Prefs.putString(LoadingActivity.this, PKeys.LAST_ID_CODE, idCode);
+                        Prefs.putString(LoadingActivity.this, PK.LAST_NICKNAME, result.user().nickname);
+                        Prefs.putString(LoadingActivity.this, PK.LAST_ID_CODE, idCode);
                         goTo(MainActivity.class);
                     }
 
@@ -261,27 +267,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 });
             }
         });
-
-        if (TutorialManager.shouldShowHintFor(this, TutorialManager.Discovery.LOGIN)) {
-            new TapTargetSequence(this)
-                    .target(Utils.tapTargetForView(registerNickname, R.string.tutorial_chooseNickname, R.string.tutorial_chooseNickname_desc))
-                    .target(Utils.tapTargetForView(changeServer, R.string.tutorial_changeServer, R.string.tutorial_changeServer_desc))
-                    .target(Utils.tapTargetForView(registerSubmit, R.string.tutorial_joinTheServer, R.string.tutorial_joinTheServer_desc))
-                    .listener(new TapTargetSequence.Listener() {
-                        @Override
-                        public void onSequenceFinish() {
-                            TutorialManager.setHintShown(LoadingActivity.this, TutorialManager.Discovery.LOGIN);
-                        }
-
-                        @Override
-                        public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
-                        }
-
-                        @Override
-                        public void onSequenceCanceled(TapTarget lastTarget) {
-                        }
-                    }).start();
-        }
     }
 
     @Override
@@ -297,6 +282,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             goTo(MainActivity.class);
         } else {
             showRegisterUI(result);
+            tutorialManager.tryShowingTutorials(this);
         }
     }
 
@@ -322,5 +308,19 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         if (launchGamePassword != null) intent.putExtra("password", launchGamePassword);
         if (finished) startActivity(intent);
         else this.goTo = intent;
+    }
+
+    @Override
+    public boolean canShow(@NonNull BaseTutorial tutorial) {
+        return tutorial instanceof LoginTutorial;
+    }
+
+    @Override
+    public boolean buildSequence(@NonNull BaseTutorial tutorial, @NonNull TapTargetSequence sequence) {
+        sequence.target(Utils.tapTargetForView(registerNickname, R.string.tutorial_chooseNickname, R.string.tutorial_chooseNickname_desc))
+                .target(Utils.tapTargetForView(registerIdCode, R.string.tutorial_chooseIdCode, R.string.tutorial_chooseIdCode_desc))
+                .target(Utils.tapTargetForView(changeServer, R.string.tutorial_changeServer, R.string.tutorial_changeServer_desc))
+                .target(Utils.tapTargetForView(registerSubmit, R.string.tutorial_joinTheServer, R.string.tutorial_joinTheServer_desc));
+        return true;
     }
 }

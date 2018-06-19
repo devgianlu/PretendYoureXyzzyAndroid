@@ -18,7 +18,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GamesList;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Name;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.WhoisResult;
-import com.gianlu.pretendyourexyzzy.PKeys;
+import com.gianlu.pretendyourexyzzy.PK;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,7 +39,7 @@ public final class PyxRequests {
         public FirstLoad process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
             User user = null;
             if (obj.getBoolean("ip") && obj.has("n")) {
-                String lastSessionId = Prefs.getString(prefs, PKeys.LAST_JSESSIONID, null);
+                String lastSessionId = Prefs.getString(prefs, PK.LAST_JSESSIONID, null);
                 if (lastSessionId != null) user = new User(lastSessionId, obj);
             }
 

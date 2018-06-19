@@ -22,7 +22,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.SessionHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.SessionStats;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.UserHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
-import com.gianlu.pretendyourexyzzy.PKeys;
+import com.gianlu.pretendyourexyzzy.PK;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -99,7 +99,7 @@ public class Pyx implements Closeable {
 
     protected void prepareRequest(@NonNull Op operation, @NonNull Request.Builder request) {
         if (operation == Op.FIRST_LOAD) {
-            String lastSessionId = Prefs.getString(preferences, PKeys.LAST_JSESSIONID, null);
+            String lastSessionId = Prefs.getString(preferences, PK.LAST_JSESSIONID, null);
             if (lastSessionId != null) request.addHeader("Cookie", "JSESSIONID=" + lastSessionId);
         }
     }
@@ -584,7 +584,7 @@ public class Pyx implements Closeable {
             List<Server> servers = new ArrayList<>();
             JSONArray array;
             try {
-                array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
+                array = Prefs.getJSONArray(context, PK.USER_SERVERS, new JSONArray());
             } catch (JSONException ex) {
                 Logging.log(ex);
                 return new ArrayList<>();
@@ -603,7 +603,7 @@ public class Pyx implements Closeable {
 
         @Nullable
         private static Server getUserServer(Context context, String name) throws JSONException {
-            JSONArray array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
+            JSONArray array = Prefs.getJSONArray(context, PK.USER_SERVERS, new JSONArray());
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
                 if (Objects.equals(obj.optString("name"), name))
@@ -615,7 +615,7 @@ public class Pyx implements Closeable {
 
         @NonNull
         private static Server lastServer(Context context) {
-            String name = Prefs.getString(context, PKeys.LAST_SERVER, "PYX1");
+            String name = Prefs.getString(context, PK.LAST_SERVER, "PYX1");
 
             Server server = null;
             for (Server pyxServer : pyxServers.values())
@@ -636,20 +636,20 @@ public class Pyx implements Closeable {
         }
 
         public static void addServer(Context context, Server server) throws JSONException {
-            JSONArray array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
+            JSONArray array = Prefs.getJSONArray(context, PK.USER_SERVERS, new JSONArray());
             for (int i = array.length() - 1; i >= 0; i--) {
                 if (Objects.equals(array.getJSONObject(i).getString("name"), server.name))
                     array.remove(i);
             }
 
             array.put(server.toJson());
-            Prefs.putJSONArray(context, PKeys.USER_SERVERS, array);
+            Prefs.putJSONArray(context, PK.USER_SERVERS, array);
         }
 
         public static void removeServer(Context context, Server server) {
             if (server.canDelete()) {
                 try {
-                    JSONArray array = Prefs.getJSONArray(context, PKeys.USER_SERVERS, new JSONArray());
+                    JSONArray array = Prefs.getJSONArray(context, PK.USER_SERVERS, new JSONArray());
                     for (int i = 0; i < array.length(); i++) {
                         JSONObject obj = array.getJSONObject(i);
                         if (Objects.equals(obj.optString("name"), server.name)) {
@@ -658,7 +658,7 @@ public class Pyx implements Closeable {
                         }
                     }
 
-                    Prefs.putJSONArray(context, PKeys.USER_SERVERS, array);
+                    Prefs.putJSONArray(context, PK.USER_SERVERS, array);
                 } catch (JSONException ex) {
                     Logging.log(ex);
                 }

@@ -23,7 +23,6 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
-import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
@@ -34,6 +33,8 @@ import com.gianlu.commonutils.MessageView;
 import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.commonutils.Tutorial.BaseTutorial;
+import com.gianlu.commonutils.Tutorial.TutorialManager;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.Dialogs.EditGameOptionsDialog;
@@ -55,7 +56,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Starred.StarredDecksManager;
-import com.gianlu.pretendyourexyzzy.TutorialManager;
+import com.gianlu.pretendyourexyzzy.Tutorial.CreateGameTutorial;
+import com.gianlu.pretendyourexyzzy.Tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.ArrayList;
@@ -64,7 +66,7 @@ import java.util.Objects;
 
 import okhttp3.HttpUrl;
 
-public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnResult<GameInfoAndCards>, BestGameManager.Listener, OngoingGameHelper.Listener, PlayersAdapter.Listener {
+public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnResult<GameInfoAndCards>, BestGameManager.Listener, OngoingGameHelper.Listener, PlayersAdapter.Listener, TutorialManager.Listener {
     private OnLeftGame onLeftGame;
     private ProgressBar loading;
     private LinearLayout container;
@@ -74,6 +76,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     private Cardcast cardcast;
     private CardcastSheet cardcastSheet;
     private MessageView message;
+    private TutorialManager tutorialManager;
 
     @NonNull
     public static OngoingGameFragment getInstance(@NonNull GamePermalink game, @Nullable SavedState savedState) {
@@ -161,28 +164,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         container.setVisibility(View.VISIBLE);
         message.hide();
 
-        if (getActivity() != null && TutorialManager.shouldShowHintFor(getContext(), TutorialManager.Discovery.CREATE_GAME) && isVisible() && Objects.equals(pyx.user().nickname, result.info.game.host)) {
-            View options = getActivity().getWindow().getDecorView().findViewById(R.id.ongoingGame_options);
-            if (options != null) {
-                new TapTargetSequence(getActivity())
-                        .target(Utils.tapTargetForView(options, R.string.tutorial_setupGame, R.string.tutorial_setupGame_desc))
-                        .target(Utils.tapTargetForView(manager.getStartGameButton(), R.string.tutorial_startGame, R.string.tutorial_startGame_desc))
-                        .listener(new TapTargetSequence.Listener() {
-                            @Override
-                            public void onSequenceFinish() {
-                                TutorialManager.setHintShown(getContext(), TutorialManager.Discovery.CREATE_GAME);
-                            }
-
-                            @Override
-                            public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
-                            }
-
-                            @Override
-                            public void onSequenceCanceled(TapTarget lastTarget) {
-                            }
-                        }).start();
-            }
-        }
+        tutorialManager.tryShowingTutorials(getActivity());
     }
 
     @Override
@@ -208,6 +190,8 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
             message.setError(R.string.failedLoading);
             return layout;
         }
+
+        tutorialManager = new TutorialManager(requireContext(), this, Discovery.CREATE_GAME);
 
         try {
             pyx = RegisteredPyx.get();
@@ -422,5 +406,15 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     public void onPlayerSelected(@NonNull GameInfo.Player player) {
         final FragmentActivity activity = getActivity();
         if (activity != null) UserInfoDialog.loadAndShow(pyx, activity, player.name);
+    }
+
+    @Override
+    public boolean canShow(@NonNull BaseTutorial tutorial) {
+        return tutorial instanceof CreateGameTutorial && getActivity() != null && manager != null && CommonUtils.isVisible(this) && manager.amHost();
+    }
+
+    @Override
+    public boolean buildSequence(@NonNull BaseTutorial tutorial, @NonNull TapTargetSequence sequence) {
+        return tutorial instanceof CreateGameTutorial && ((CreateGameTutorial) tutorial).buildSequence(requireActivity(), sequence, manager);
     }
 }

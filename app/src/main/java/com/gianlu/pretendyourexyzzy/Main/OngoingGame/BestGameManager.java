@@ -192,6 +192,10 @@ public class BestGameManager implements Pyx.OnEventListener {
         return gameInfo().game.gid;
     }
 
+    public boolean amHost() {
+        return Objects.equals(host(), me());
+    }
+
     private enum UiEvent {
         YOU_JUDGE(R.string.game_youJudge, Kind.TEXT),
         SELECT_WINNING_CARD(R.string.game_selectWinningCard, Kind.TEXT),

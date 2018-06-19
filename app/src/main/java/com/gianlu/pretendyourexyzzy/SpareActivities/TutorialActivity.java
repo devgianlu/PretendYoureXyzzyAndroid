@@ -16,7 +16,7 @@ import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.FontsManager;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.LoadingActivity;
-import com.gianlu.pretendyourexyzzy.PKeys;
+import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.github.paolorotolo.appintro.AppIntro;
@@ -73,7 +73,7 @@ public class TutorialActivity extends AppIntro {
     }
 
     private void done() {
-        Prefs.putBoolean(this, PKeys.FIRST_RUN, false);
+        Prefs.putBoolean(this, PK.FIRST_RUN, false);
         startActivity(new Intent(this, LoadingActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
     }

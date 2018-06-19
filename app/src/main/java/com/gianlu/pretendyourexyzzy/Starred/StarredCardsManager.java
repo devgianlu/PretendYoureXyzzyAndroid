@@ -9,7 +9,7 @@ import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
-import com.gianlu.pretendyourexyzzy.PKeys;
+import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONArray;
@@ -25,7 +25,7 @@ public class StarredCardsManager {
 
     public static boolean addCard(@NonNull Context context, @NonNull StarredCard card) {
         try {
-            List<StarredCard> cards = StarredCard.asList(new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_CARDS, "[]")));
+            List<StarredCard> cards = StarredCard.asList(new JSONArray(Prefs.getBase64String(context, PK.STARRED_CARDS, "[]")));
 
             boolean a = cards.contains(card);
             if (!a) cards.add(card);
@@ -44,7 +44,7 @@ public class StarredCardsManager {
         try {
             JSONArray array = new JSONArray();
             for (StarredCard card : cards) array.put(card.toJson());
-            Prefs.putBase64String(context, PKeys.STARRED_CARDS, array.toString());
+            Prefs.putBase64String(context, PK.STARRED_CARDS, array.toString());
         } catch (JSONException ex) {
             Logging.log(ex);
         }
@@ -52,7 +52,7 @@ public class StarredCardsManager {
 
     public static void removeCard(@NonNull Context context, @NonNull StarredCard card) {
         try {
-            List<StarredCard> cards = StarredCard.asList(new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_CARDS, "[]")));
+            List<StarredCard> cards = StarredCard.asList(new JSONArray(Prefs.getBase64String(context, PK.STARRED_CARDS, "[]")));
             cards.remove(card);
             saveCards(context, cards);
         } catch (JSONException ex) {
@@ -63,7 +63,7 @@ public class StarredCardsManager {
     @NonNull
     public static List<StarredCard> loadCards(@NonNull Context context) {
         try {
-            List<StarredCard> cards = StarredCard.asList(new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_CARDS, "[]")));
+            List<StarredCard> cards = StarredCard.asList(new JSONArray(Prefs.getBase64String(context, PK.STARRED_CARDS, "[]")));
             Collections.reverse(cards);
             return cards;
         } catch (JSONException ex) {
@@ -74,7 +74,7 @@ public class StarredCardsManager {
 
     public static boolean hasAnyCard(@NonNull Context context) {
         try {
-            return new JSONArray(Prefs.getBase64String(context, PKeys.STARRED_CARDS, "[]")).length() > 0;
+            return new JSONArray(Prefs.getBase64String(context, PK.STARRED_CARDS, "[]")).length() > 0;
         } catch (JSONException ex) {
             Logging.log(ex);
             return false;

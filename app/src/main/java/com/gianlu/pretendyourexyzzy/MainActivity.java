@@ -128,6 +128,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 .singleProfile(pyx.user(), this)
                 .build(this, (DrawerLayout) findViewById(R.id.main_drawer), toolbar);
 
+        drawerManager.setActiveItem(DrawerConst.HOME);
+
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         namesFragment = NamesFragment.getInstance();
         transaction.add(R.id.main_container, namesFragment, TAG_PLAYERS);
@@ -199,7 +201,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         });
 
         navigation.setSelectedItemId(R.id.main_games);
-        setKeepScreenOn(Prefs.getBoolean(this, PKeys.KEEP_SCREEN_ON, true));
+        setKeepScreenOn(Prefs.getBoolean(this, PK.KEEP_SCREEN_ON, true));
 
         GamePermalink perm = (GamePermalink) getIntent().getSerializableExtra("game");
         if (perm != null) {
@@ -222,7 +224,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.main_keepScreenOn).setChecked(Prefs.getBoolean(this, PKeys.KEEP_SCREEN_ON, true));
+        menu.findItem(R.id.main_keepScreenOn).setChecked(Prefs.getBoolean(this, PK.KEEP_SCREEN_ON, true));
         return true;
     }
 
@@ -234,7 +236,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 return true;
             case R.id.main_keepScreenOn:
                 item.setChecked(!item.isChecked());
-                Prefs.putBoolean(this, PKeys.KEEP_SCREEN_ON, item.isChecked());
+                Prefs.putBoolean(this, PK.KEEP_SCREEN_ON, item.isChecked());
                 setKeepScreenOn(item.isChecked());
                 return true;
         }

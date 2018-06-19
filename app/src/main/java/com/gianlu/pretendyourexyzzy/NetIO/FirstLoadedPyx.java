@@ -10,7 +10,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.CahConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoadAndConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
-import com.gianlu.pretendyourexyzzy.PKeys;
+import com.gianlu.pretendyourexyzzy.PK;
 
 import org.json.JSONException;
 
@@ -44,8 +44,8 @@ public class FirstLoadedPyx extends Pyx {
                 @Override
                 public void run() {
                     try {
-                        User user = requestSync(PyxRequests.register(nickname, idCode, Prefs.getString(preferences, PKeys.LAST_PERSISTENT_ID, null)));
-                        Prefs.putString(preferences, PKeys.LAST_PERSISTENT_ID, user.persistentId);
+                        User user = requestSync(PyxRequests.register(nickname, idCode, Prefs.getString(preferences, PK.LAST_PERSISTENT_ID, null)));
+                        Prefs.putString(preferences, PK.LAST_PERSISTENT_ID, user.persistentId);
                         final RegisteredPyx pyx = upgrade(user);
                         handler.post(new Runnable() {
                             @Override

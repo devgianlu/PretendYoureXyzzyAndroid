@@ -14,7 +14,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.UserHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
-import com.gianlu.pretendyourexyzzy.PKeys;
+import com.gianlu.pretendyourexyzzy.PK;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,7 +44,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
         this.pollingThread = new PollingThread();
         this.pollingThread.start();
 
-        Prefs.putString(preferences, PKeys.LAST_JSESSIONID, user.sessionId);
+        Prefs.putString(preferences, PK.LAST_JSESSIONID, user.sessionId);
     }
 
     @NonNull

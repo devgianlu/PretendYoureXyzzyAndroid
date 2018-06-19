@@ -25,15 +25,17 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.SearchView;
 
-import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.commonutils.Tutorial.BaseTutorial;
+import com.gianlu.commonutils.Tutorial.TutorialManager;
 import com.gianlu.pretendyourexyzzy.Adapters.GamesAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -44,12 +46,13 @@ import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
-import com.gianlu.pretendyourexyzzy.PKeys;
+import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.TutorialManager;
+import com.gianlu.pretendyourexyzzy.Tutorial.Discovery;
+import com.gianlu.pretendyourexyzzy.Tutorial.GamesTutorial;
 import com.gianlu.pretendyourexyzzy.Utils;
 
-public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<GamesList>, GamesAdapter.Listener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, Pyx.OnEventListener {
+public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<GamesList>, GamesAdapter.Listener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, Pyx.OnEventListener, TutorialManager.Listener {
     private static final String POLLING = GamesFragment.class.getName();
     private GamesList lastResult;
     private RecyclerViewLayout recyclerViewLayout;
@@ -63,6 +66,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     private FloatingActionButton createGame;
     private boolean isShowingHint = false;
     private RegisteredPyx pyx;
+    private TutorialManager tutorialManager;
 
     @NonNull
     public static GamesFragment getInstance(OnParticipateGame handler) {
@@ -92,7 +96,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.gamesFragment_showLocked).setChecked(!Prefs.getBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, false));
+        menu.findItem(R.id.gamesFragment_showLocked).setChecked(!Prefs.getBoolean(getContext(), PK.FILTER_LOCKED_LOBBIES, false));
     }
 
     @Override
@@ -101,7 +105,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
             case R.id.gamesFragment_showLocked:
                 boolean show = !item.isChecked();
                 item.setChecked(show);
-                Prefs.putBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, !show);
+                Prefs.putBoolean(getContext(), PK.FILTER_LOCKED_LOBBIES, !show);
                 if (adapter != null) adapter.setFilterOutLockedLobbies(!show);
                 return true;
         }
@@ -144,6 +148,8 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
             recyclerViewLayout.showError(R.string.failedLoading);
             return layout;
         }
+
+        tutorialManager = new TutorialManager(requireContext(), this, Discovery.GAMES);
 
         recyclerViewLayout.enableSwipeRefresh(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -197,7 +203,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     @Override
     public void onDone(@NonNull final GamesList result) {
         if (!isAdded()) return;
-        adapter = new GamesAdapter(getContext(), result, pyx, Prefs.getBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, false), this);
+        adapter = new GamesAdapter(getContext(), result, pyx, Prefs.getBoolean(getContext(), PK.FILTER_LOCKED_LOBBIES, false), this);
         recyclerViewLayout.loadListData(adapter);
         recyclerViewLayout.getList().getLayoutManager().onRestoreInstanceState(recyclerViewSavedInstance);
         recyclerViewSavedInstance = null;
@@ -210,41 +216,9 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
             recyclerViewLayout.getList().post(new Runnable() {
                 @Override
                 public void run() {
-                    if (!isShowingHint && TutorialManager.shouldShowHintFor(getContext(), TutorialManager.Discovery.GAMES) && !result.isEmpty() && isVisible())
-                        showHints();
+                    tutorialManager.tryShowingTutorials(getActivity());
                 }
             });
-        }
-    }
-
-    private void showHints() {
-        if (getActivity() == null) return;
-
-        scrollToTop();
-        GamesAdapter.ViewHolder holder = (GamesAdapter.ViewHolder) recyclerViewLayout.getList().findViewHolderForLayoutPosition(0);
-        if (holder != null) {
-            isShowingHint = true;
-            new TapTargetSequence(getActivity())
-                    .target(Utils.tapTargetForView(holder.status, R.string.tutorial_gameStatus, R.string.tutorial_gameStatus_desc))
-                    .target(Utils.tapTargetForView(holder.locked, R.string.tutorial_gameLocked, R.string.tutorial_gameLocked_desc))
-                    .target(Utils.tapTargetForView(holder.spectate, R.string.tutorial_spectateGame, R.string.tutorial_spectateGame_desc))
-                    .target(Utils.tapTargetForView(holder.join, R.string.tutorial_joinGame, R.string.tutorial_joinGame_desc))
-                    .target(Utils.tapTargetForView(createGame, R.string.tutorial_createGame, R.string.tutorial_createGame_desc))
-                    .listener(new TapTargetSequence.Listener() {
-                        @Override
-                        public void onSequenceFinish() {
-                            TutorialManager.setHintShown(getContext(), TutorialManager.Discovery.GAMES);
-                            isShowingHint = false;
-                        }
-
-                        @Override
-                        public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
-                        }
-
-                        @Override
-                        public void onSequenceCanceled(TapTarget lastTarget) {
-                        }
-                    }).start();
         }
     }
 
@@ -394,7 +368,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         return true;
     }
 
-    public void launchGame(GamePermalink perm, @Nullable String password, boolean shouldRequest) {
+    public void launchGame(@NonNull GamePermalink perm, @Nullable String password, boolean shouldRequest) {
         if (adapter != null) {
             launchGameInternal(perm, password, shouldRequest);
         } else {
@@ -421,7 +395,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
     public void viewGame(int gid, boolean locked) {
         if (locked && adapter.doesFilterOutLockedLobbies()) {
-            Prefs.putBoolean(getContext(), PKeys.FILTER_LOCKED_LOBBIES, false);
+            Prefs.putBoolean(getContext(), PK.FILTER_LOCKED_LOBBIES, false);
             adapter.setFilterOutLockedLobbies(false);
         }
 
@@ -445,6 +419,16 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
     @Override
     public void onStoppedPolling() {
+    }
+
+    @Override
+    public boolean canShow(@NonNull BaseTutorial tutorial) {
+        return tutorial instanceof GamesTutorial && getActivity() != null && CommonUtils.isVisible(this);
+    }
+
+    @Override
+    public boolean buildSequence(@NonNull BaseTutorial tutorial, @NonNull TapTargetSequence sequence) {
+        return tutorial instanceof GamesTutorial && ((GamesTutorial) tutorial).buildSequence(sequence, createGame, recyclerViewLayout.getList());
     }
 
     public interface OnParticipateGame {

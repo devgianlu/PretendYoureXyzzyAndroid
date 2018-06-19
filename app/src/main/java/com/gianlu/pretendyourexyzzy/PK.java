@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import com.gianlu.commonutils.Preferences.Prefs;
 
 
-public enum PKeys implements Prefs.PrefKey {
+public enum PK implements Prefs.PrefKey {
     LAST_NICKNAME("lastNickname"),
     FILTER_LOCKED_LOBBIES("filterLockedLobbies"),
     LAST_SERVER("lastServer"),
@@ -16,12 +16,11 @@ public enum PKeys implements Prefs.PrefKey {
     LAST_JSESSIONID("lastJSessionId"),
     LAST_PERSISTENT_ID("lastPid"),
     FIRST_RUN("first_run"),
-    TUTORIAL_DISCOVERIES("tutorialDiscoveries"),
     LAST_ID_CODE("lastIdCode");
 
     private final String key;
 
-    PKeys(String key) {
+    PK(String key) {
         this.key = key;
     }
 
