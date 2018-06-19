@@ -50,6 +50,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
@@ -131,7 +132,10 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
 
             @Override
             public void onException(@NonNull Exception ex) {
-                showToast(Toaster.build().message(R.string.failedLeaving).ex(ex));
+                if (ex instanceof PyxException && ((PyxException) ex).errorCode.equals("nitg"))
+                    onDone();
+                else
+                    showToast(Toaster.build().message(R.string.failedLeaving).ex(ex));
             }
         });
     }
@@ -371,7 +375,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
 
     @Override
     public void shouldLeaveGame() {
-        leaveGame();
+        if (onLeftGame != null) onLeftGame.onLeftGame();
     }
 
     @Override
