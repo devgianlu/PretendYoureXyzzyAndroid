@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.Dialogs;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -15,6 +16,7 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -47,11 +49,19 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
     private Button share;
 
     @NonNull
-    public static GameRoundDialog get(String id) {
+    public static GameRoundDialog get(@NonNull String id) {
         GameRoundDialog dialog = new GameRoundDialog();
         Bundle args = new Bundle();
         args.putString("id", id);
         dialog.setArguments(args);
+        return dialog;
+    }
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         return dialog;
     }
 
