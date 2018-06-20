@@ -68,7 +68,7 @@ public class CardImageZoomDialog extends DialogFragment {
         final TextView error = layout.findViewById(R.id.imageZoomDialog_error);
         error.setVisibility(View.GONE);
         final ImageView image = layout.findViewById(R.id.imageZoomDialog_image);
-        image.setVisibility(View.GONE);
+        image.setVisibility(View.VISIBLE);
 
         Glide.with(this).load(BaseCardUrlLoader.extractUrl(url)).listener(new RequestListener<Drawable>() {
             @Override
