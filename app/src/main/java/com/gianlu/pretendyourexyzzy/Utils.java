@@ -29,6 +29,8 @@ public class Utils {
     public static final String ACTION_PLAY_CUSTOM_CARD = "played_custom_card";
     public static final String ACTION_PLAY_CARD = "played_card";
     public static final String ACTION_STARRED_DECK_ADD = "added_starred_deck";
+    public static final String ACTION_SHOW_ROUND = "show_round";
+    public static final String ACTION_SAVE_SHARE_ROUND = "save_share_round";
     public static final String ACTION_SENT_MSG = "sent_message";
 
     @NonNull

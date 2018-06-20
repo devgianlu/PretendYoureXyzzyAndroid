@@ -14,6 +14,8 @@ import android.text.TextPaint;
 import com.gianlu.commonutils.FontsManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameRound;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.RoundCard;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.List;
 import java.util.Random;
@@ -93,6 +95,8 @@ public class GameRoundSummary {
         bitmap = Bitmap.createBitmap(measureWidth(), measureHeight(), Bitmap.Config.ARGB_8888);
         canvas = new Canvas(bitmap);
         draw();
+
+        ThisApplication.sendAnalytics(context, Utils.ACTION_SHOW_ROUND);
     }
 
     private int measureHeight() {

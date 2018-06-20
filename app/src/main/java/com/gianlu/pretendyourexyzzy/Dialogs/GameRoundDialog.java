@@ -33,6 +33,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameRound;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -172,6 +174,8 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
             Logging.log(ex);
             return null;
         }
+
+        ThisApplication.sendAnalytics(getContext(), Utils.ACTION_SAVE_SHARE_ROUND);
 
         return image;
     }
