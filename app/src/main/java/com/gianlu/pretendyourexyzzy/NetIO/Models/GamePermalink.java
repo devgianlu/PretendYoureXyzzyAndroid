@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 public class GamePermalink implements Serializable {
     public final int gid;
-    private final String gamePermalink;
+    public String gamePermalink;
 
     public GamePermalink(JSONObject obj) throws JSONException {
         this.gid = obj.getInt("gid");
@@ -35,10 +35,5 @@ public class GamePermalink implements Serializable {
         if (gamePermalink == null) return null;
         String[] split = gamePermalink.split("/");
         return split[split.length - 1];
-    }
-
-    @Nullable
-    public String gamePermalink() {
-        return gamePermalink;
     }
 }

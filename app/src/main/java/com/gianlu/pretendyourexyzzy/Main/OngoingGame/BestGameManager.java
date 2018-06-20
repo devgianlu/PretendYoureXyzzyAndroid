@@ -31,6 +31,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
@@ -56,12 +57,12 @@ public class BestGameManager implements Pyx.OnEventListener {
     private final RegisteredPyx pyx;
     private final Context context;
 
-    public BestGameManager(Context context, ViewGroup layout, RegisteredPyx pyx, GameInfoAndCards bundle, Listener listener, PlayersAdapter.Listener playersListener) {
+    public BestGameManager(Context context, ViewGroup layout, RegisteredPyx pyx, GameInfoAndCards bundle, GamePermalink perm, Listener listener, PlayersAdapter.Listener playersListener) {
         this.context = context;
         this.pyx = pyx;
         this.listener = listener;
         this.ui = new Ui(layout);
-        this.data = new Data(bundle, playersListener);
+        this.data = new Data(bundle, perm, playersListener);
 
         this.pyx.polling().addListener(POLLING, this);
         this.data.setup();
@@ -256,10 +257,12 @@ public class BestGameManager implements Pyx.OnEventListener {
         private final CardsAdapter handAdapter;
         private final CardsAdapter tableAdapter;
         private final PlayersAdapter playersAdapter;
+        private final GamePermalink perm;
         private int judgeIndex = 0;
         private String lastRoundPermalink = null;
 
-        Data(GameInfoAndCards bundle, PlayersAdapter.Listener listener) {
+        Data(GameInfoAndCards bundle, GamePermalink perm, PlayersAdapter.Listener listener) {
+            this.perm = perm;
             GameCards cards = bundle.cards;
             info = bundle.info;
 
@@ -342,6 +345,7 @@ public class BestGameManager implements Pyx.OnEventListener {
 
         public void gameStateChanged(@NonNull Game.Status status, @NonNull JSONObject obj) throws JSONException {
             info.game.status = status;
+            if (obj.has("gp")) perm.gamePermalink = obj.getString("gp");
 
             ui.setStartGameVisible(status == Game.Status.LOBBY && Objects.equals(host(), me()));
             switch (status) {

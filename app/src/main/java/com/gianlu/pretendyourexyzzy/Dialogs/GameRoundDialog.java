@@ -39,7 +39,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<GameRound> {
-    private static final int WRITE_EXT_CODE = 67;
     private GameRoundSummary summary;
     private ImageView image;
     private CheckBox rotate;

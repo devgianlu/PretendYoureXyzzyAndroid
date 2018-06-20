@@ -96,7 +96,7 @@ public class GameRoundSummary {
     }
 
     private int measureHeight() {
-        rows = (int) Math.ceil(round.whiteCards() / (float) MAX_COLUMNS);
+        rows = (int) Math.ceil((float) round.whiteCards() / (float) MAX_COLUMNS);
         return PADDING * (rows + 1) + CARD_HEIGHT * rows;
     }
 

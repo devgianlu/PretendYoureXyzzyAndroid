@@ -119,6 +119,9 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     public void onPrepareOptionsMenu(Menu menu) {
         MenuItem lastRound = menu.findItem(R.id.ongoingGame_lastRound);
         lastRound.setVisible(manager != null && manager.getLastRoundMetricsId() != null);
+
+        MenuItem gameMetrics = menu.findItem(R.id.ongoingGame_gameMetrics);
+        gameMetrics.setVisible(perm.gamePermalink != null);
     }
 
     @Override
@@ -156,7 +159,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     @Override
     public void onDone(@NonNull GameInfoAndCards result) {
         if (manager == null && isAdded())
-            manager = new BestGameManager(getActivity(), container, pyx, result, this, this);
+            manager = new BestGameManager(getActivity(), container, pyx, result, perm, this, this);
 
         updateActivityTitle();
 
