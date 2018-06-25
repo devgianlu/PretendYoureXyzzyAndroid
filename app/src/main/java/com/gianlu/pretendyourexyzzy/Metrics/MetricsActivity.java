@@ -143,7 +143,7 @@ public class MetricsActivity extends ActivityWithDialog implements BreadcrumbsVi
 
     @Override
     public void onBackPressed() {
-        if (breadcrumbs.navigateBack())
+        if (breadcrumbs == null || breadcrumbs.navigateBack())
             super.onBackPressed();
     }
 

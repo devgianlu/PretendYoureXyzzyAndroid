@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
-public class Game implements Filterable<Game.Protection> {
+public class Game implements Filterable<Game.Protection>, Serializable {
     public final int gid;
     public final ArrayList<String> players;
     public final ArrayList<String> spectators;
