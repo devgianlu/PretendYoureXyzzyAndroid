@@ -30,7 +30,7 @@ public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        layout = new RecyclerViewLayout(inflater);
+        layout = new RecyclerViewLayout(requireContext());
         layout.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
         layout.getList().addItemDecoration(new DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL));
         layout.startLoading();

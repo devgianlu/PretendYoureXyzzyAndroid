@@ -9,10 +9,12 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.gianlu.commonutils.BottomSheet.ThemedModalBottomSheet;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
+import com.gianlu.commonutils.MessageView;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.DefinitionsAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.UrbanDictionary.Definition;
@@ -22,6 +24,7 @@ import com.gianlu.pretendyourexyzzy.R;
 
 public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> implements DefinitionsAdapter.Listener {
     private RecyclerView list;
+    private MessageView message;
 
     @NonNull
     public static UrbanDictSheet get() {
@@ -32,8 +35,9 @@ public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> 
     protected void onCreateBody(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, @NonNull String payload) {
         inflater.inflate(R.layout.sheet_urban_dict, parent, true);
 
+        message = parent.findViewById(R.id.urbanDictSheet_message);
         list = parent.findViewById(R.id.urbanDictSheet_list);
-        list.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
+        list.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         list.addItemDecoration(new DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL));
 
         UrbanDictApi.get().define(payload, new UrbanDictApi.OnDefine() {
@@ -53,7 +57,14 @@ public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> 
 
     @Override
     protected void onRequestedUpdate(@NonNull Definitions payload) {
-        list.setAdapter(new DefinitionsAdapter(requireContext(), payload, this));
+        if (payload.isEmpty()) {
+            message.setInfo(R.string.noDefinitions);
+            list.setVisibility(View.GONE);
+        } else {
+            message.hide();
+            list.setVisibility(View.VISIBLE);
+            list.setAdapter(new DefinitionsAdapter(requireContext(), payload, this));
+        }
     }
 
     @Override

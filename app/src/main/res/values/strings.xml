@@ -261,4 +261,5 @@
     <string name="showGameMetrics">Show game metrics</string>
     <string name="showLastRound">Show last round</string>
     <string name="definition">Definition</string>
+    <string name="noDefinitions">No definitions found!</string>
 </resources>

@@ -158,7 +158,7 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        layout = new RecyclerViewLayout(inflater);
+        layout = new RecyclerViewLayout(requireContext());
         if (getContext() == null) return null;
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
         layout.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));

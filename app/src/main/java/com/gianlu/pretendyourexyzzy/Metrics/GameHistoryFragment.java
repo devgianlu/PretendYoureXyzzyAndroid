@@ -42,7 +42,7 @@ public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        layout = new RecyclerViewLayout(inflater);
+        layout = new RecyclerViewLayout(requireContext());
         layout.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         layout.startLoading();
         layout.getList().addOnLayoutChangeListener(new CardsGridFixer(requireContext()));

@@ -15,13 +15,22 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 public class UrbanDictApi {
+    private static final HttpUrl DEFINITION_URL;
+    private static final HttpUrl AUTOCOMPLETE_URL;
     private static UrbanDictApi instance;
+
+    static {
+        AUTOCOMPLETE_URL = HttpUrl.parse("https://api.urbandictionary.com/v0/autocomplete-extra");
+        DEFINITION_URL = HttpUrl.parse("https://api.urbandictionary.com/v0/define");
+    }
+
     private final ExecutorService executorService;
     private final OkHttpClient client;
     private final Handler handler;
@@ -42,12 +51,65 @@ public class UrbanDictApi {
         executorService.execute(new DefineRunnable(word, listener));
     }
 
+    public final void autocomplete(@NonNull String word, @NonNull OnAutoComplete listener) {
+        executorService.execute(new AutocompleteRunnable(word, listener));
+    }
+
     public interface OnDefine {
         @UiThread
         void onResult(@NonNull Definitions result);
 
         @UiThread
         void onException(@NonNull Exception ex);
+    }
+
+    public interface OnAutoComplete {
+        @UiThread
+        void onResult(@NonNull AutoCompleteResults result);
+
+        @UiThread
+        void onException(@NonNull Exception ex);
+    }
+
+    private class AutocompleteRunnable implements Runnable {
+        private final String word;
+        private final OnAutoComplete listener;
+
+        AutocompleteRunnable(@NonNull String word, @NonNull OnAutoComplete listener) {
+            this.word = word;
+            this.listener = listener;
+        }
+
+        @Override
+        public void run() {
+            Request req = new Request.Builder().get()
+                    .url(AUTOCOMPLETE_URL.newBuilder().addQueryParameter("term", word).build())
+                    .build();
+
+            try (Response resp = client.newCall(req).execute()) {
+                if (resp.code() == 200) {
+                    ResponseBody body = resp.body();
+                    if (body == null) throw new IOException("Body is null!");
+                    String json = body.string();
+                    final AutoCompleteResults result = new AutoCompleteResults(new JSONObject(json).getJSONArray("results"));
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onResult(result);
+                        }
+                    });
+                } else {
+                    throw new StatusCodeException(resp);
+                }
+            } catch (IOException | JSONException ex) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onException(ex);
+                    }
+                });
+            }
+        }
     }
 
     private class DefineRunnable implements Runnable {
@@ -62,7 +124,7 @@ public class UrbanDictApi {
         @Override
         public void run() {
             Request req = new Request.Builder().get()
-                    .url("http://api.urbandictionary.com/v0/define?term=" + word.replace(' ', '+'))
+                    .url(DEFINITION_URL.newBuilder().addQueryParameter("term", word).build())
                     .build();
 
             try (Response resp = client.newCall(req).execute()) {
@@ -80,7 +142,7 @@ public class UrbanDictApi {
                 } else {
                     throw new StatusCodeException(resp);
                 }
-            } catch (final IOException | JSONException ex) {
+            } catch (IOException | JSONException ex) {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
