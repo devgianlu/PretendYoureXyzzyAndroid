@@ -9,7 +9,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
-import android.view.View;
 import android.widget.LinearLayout;
 
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
@@ -94,13 +93,6 @@ public class PyxCardsGroupView extends LinearLayout {
                 @Override
                 public void onTextSelected(@NonNull String text) {
                     if (listener != null) listener.onTextSelected(text);
-                }
-            });
-            pyxCard.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (listener != null)
-                        listener.onCardAction(GameCardView.Action.SELECT, cards, card);
                 }
             });
 

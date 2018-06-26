@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -68,7 +69,7 @@ public class GameCardView extends CardView {
         this(context, null, 0, card, mainAction, listener);
     }
 
-    private GameCardView(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr, BaseCard card, Action mainAction, final CardListener listener) {
+    private GameCardView(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr, final BaseCard card, Action mainAction, final CardListener listener) {
         super(context, attrs, defStyleAttr);
         this.card = card;
         this.mainAction = mainAction;
@@ -78,6 +79,16 @@ public class GameCardView extends CardView {
         width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, WIDTH_DIP, getResources().getDisplayMetrics());
         setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, getResources().getDisplayMetrics()));
         setForeground(CommonUtils.resolveAttrAsDrawable(getContext(), android.R.attr.selectableItemBackground));
+        setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
+        setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // FIXME: Not clickable with selection enabled
+
+                if (listener != null)
+                    listener.onCardAction(GameCardView.Action.SELECT, card);
+            }
+        });
 
         text = findViewById(R.id.pyxCard_text);
         text.setTypeface(FontsManager.get().get(getContext(), FontsManager.ROBOTO_MEDIUM));
