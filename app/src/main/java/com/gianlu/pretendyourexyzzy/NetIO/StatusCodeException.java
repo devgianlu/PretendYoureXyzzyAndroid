@@ -5,7 +5,7 @@ import java.io.IOException;
 import okhttp3.Response;
 
 public class StatusCodeException extends IOException {
-    StatusCodeException(Response resp) {
+    public StatusCodeException(Response resp) {
         this(resp.code(), resp.message());
     }
 

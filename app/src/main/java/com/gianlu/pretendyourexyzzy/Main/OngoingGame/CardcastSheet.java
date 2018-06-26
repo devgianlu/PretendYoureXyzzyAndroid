@@ -39,6 +39,7 @@ public class CardcastSheet extends BaseModalBottomSheet<Integer, List<Deck>> imp
     private RegisteredPyx pyx;
     private RecyclerView list;
     private TextView count;
+    private MessageView message;
 
     @NonNull
     public static CardcastSheet get() {
@@ -69,8 +70,6 @@ public class CardcastSheet extends BaseModalBottomSheet<Integer, List<Deck>> imp
         count.setVisibility(View.VISIBLE);
         count.setText(Utils.buildDeckCountString(decks.size(), Deck.countBlackCards(decks), Deck.countWhiteCards(decks)));
     }
-
-    private MessageView message;
 
     @Override
     protected void onCreateBody(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, @NonNull Integer gid) {

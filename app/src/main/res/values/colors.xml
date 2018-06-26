@@ -7,4 +7,8 @@
     <color name="colorAccent">#00B0FF</color>
     <color name="colorAccent_light">#4CC7FF</color>
     <color name="white">#FFFFFF</color>
+
+    <color name="urbanPrimary">#134FE6</color>
+    <color name="urbanPrimaryDark">#1D2439</color>
+    <color name="urbanAccent">#EFFF00</color>
 </resources>
