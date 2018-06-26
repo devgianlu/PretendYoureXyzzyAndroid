@@ -18,6 +18,7 @@ import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
 import com.gianlu.pretendyourexyzzy.CardViews.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.Dialogs.CardImageZoomDialog;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGame.UrbanDictSheet;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.R;
@@ -109,5 +110,10 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
                     break;
             }
         }
+    }
+
+    @Override
+    public void onTextSelected(@NonNull String text) {
+        UrbanDictSheet.get().show(this, text);
     }
 }

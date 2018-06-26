@@ -260,4 +260,5 @@
     <string name="report">Report problem</string>
     <string name="showGameMetrics">Show game metrics</string>
     <string name="showLastRound">Show last round</string>
+    <string name="definition">Definition</string>
 </resources>

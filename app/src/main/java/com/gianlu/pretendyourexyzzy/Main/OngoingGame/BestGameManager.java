@@ -242,7 +242,7 @@ public class BestGameManager implements Pyx.OnEventListener {
         }
     }
 
-    public interface Listener {
+    public interface Listener extends GameCardView.TextSelectionListener {
         void shouldLeaveGame();
 
         void showDialog(@NonNull AlertDialog.Builder dialog);
@@ -517,6 +517,11 @@ public class BestGameManager implements Pyx.OnEventListener {
             }
         }
 
+        @Override
+        public void onTextSelected(@NonNull String text) {
+            listener.onTextSelected(text);
+        }
+
         public void gameOptionsChanged(@NonNull Game game) {
             this.info.game.options = game.options;
             this.info.game.host = game.host;
@@ -573,6 +578,8 @@ public class BestGameManager implements Pyx.OnEventListener {
 
         Ui(ViewGroup layout) {
             blackCard = layout.findViewById(R.id.gameLayout_blackCard);
+            blackCard.setTextSelectionListener(listener);
+
             instructions = layout.findViewById(R.id.gameLayout_instructions);
             time = layout.findViewById(R.id.gameLayout_time);
 

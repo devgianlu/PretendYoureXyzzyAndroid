@@ -90,6 +90,11 @@ public class PyxCardsGroupView extends LinearLayout {
                 public void onCardAction(@NonNull GameCardView.Action action, @NonNull BaseCard card) {
                     if (listener != null) listener.onCardAction(action, cards, card);
                 }
+
+                @Override
+                public void onTextSelected(@NonNull String text) {
+                    if (listener != null) listener.onTextSelected(text);
+                }
             });
             pyxCard.setOnClickListener(new OnClickListener() {
                 @Override
@@ -117,5 +122,7 @@ public class PyxCardsGroupView extends LinearLayout {
 
     public interface CardListener {
         void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card);
+
+        void onTextSelected(@NonNull String text);
     }
 }
