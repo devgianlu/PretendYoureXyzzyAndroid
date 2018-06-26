@@ -451,10 +451,11 @@ public class BestGameManager implements Pyx.OnEventListener {
                     }
                     break;
                 case WINNER:
-                    ui.event(UiEvent.YOU_GAME_WINNER);
+                    if (player.name.equals(me())) ui.event(UiEvent.YOU_GAME_WINNER);
+                    else ui.event(UiEvent.GAME_WINNER, player.name);
                     break;
                 case HOST:
-                    ui.event(UiEvent.YOU_GAME_HOST);
+                    if (player.name.equals(me())) ui.event(UiEvent.YOU_GAME_HOST);
                     break;
                 case SPECTATOR:
                     ui.showTableCards();
