@@ -40,7 +40,13 @@ public class DefinitionsAdapter extends RecyclerView.Adapter<DefinitionsAdapter.
         final Definition def = definitions.get(position);
         holder.definition.setText(def.definition);
         holder.word.setText(def.word);
-        holder.example.setText(def.example);
+        if (def.example.isEmpty()) {
+            holder.example.setVisibility(View.GONE);
+        } else {
+            holder.example.setVisibility(View.VISIBLE);
+            holder.example.setText(def.example);
+        }
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
