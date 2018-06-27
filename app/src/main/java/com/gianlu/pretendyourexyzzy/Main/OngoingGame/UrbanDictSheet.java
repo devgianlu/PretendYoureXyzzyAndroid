@@ -21,6 +21,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.UrbanDictionary.Definition;
 import com.gianlu.pretendyourexyzzy.NetIO.UrbanDictionary.Definitions;
 import com.gianlu.pretendyourexyzzy.NetIO.UrbanDictionary.UrbanDictApi;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> implements DefinitionsAdapter.Listener {
     private RecyclerView list;
@@ -45,6 +47,8 @@ public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> 
             public void onResult(@NonNull Definitions result) {
                 update(result);
                 isLoading(false);
+
+                ThisApplication.sendAnalytics(getContext(), Utils.ACTION_OPEN_URBAN_DICT);
             }
 
             @Override
