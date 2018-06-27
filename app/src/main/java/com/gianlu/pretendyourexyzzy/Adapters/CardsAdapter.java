@@ -36,10 +36,11 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     @UiThread
-    public CardsAdapter(@NonNull Context context, boolean forGrid, List<? extends BaseCard> cards, @Nullable GameCardView.Action primary, @Nullable GameCardView.Action secondary, @NonNull Listener listener) {
+    public CardsAdapter(@NonNull Context context, boolean forGrid, List<? extends BaseCard> cards, @Nullable GameCardView.Action primary, @Nullable GameCardView.Action secondary, boolean isSelectable, @NonNull Listener listener) {
         this.context = context;
         this.primary = primary;
         this.secondary = secondary;
+        this.isSelectable = isSelectable;
         this.listener = listener;
         this.cards = new ArrayList<>();
         this.forGrid = forGrid;
@@ -65,8 +66,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
-        holder.cards.setCards(cards.get(position), primary, secondary, forGrid, holder);
-        holder.cards.setSelectable(isSelectable);
+        holder.cards.setCards(cards.get(position), primary, secondary, isSelectable, forGrid, holder);
     }
 
     @Override

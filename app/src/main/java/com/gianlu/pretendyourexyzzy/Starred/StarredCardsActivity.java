@@ -50,7 +50,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
 
         list = findViewById(R.id.starredCards_list);
         list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        list.setAdapter(new CardsAdapter(this, false, StarredCardsManager.loadCards(this), GameCardView.Action.DELETE, null, this));
+        list.setAdapter(new CardsAdapter(this, false, StarredCardsManager.loadCards(this), GameCardView.Action.SELECT, GameCardView.Action.DELETE, true, this));
 
         message = findViewById(R.id.starredCards_message);
         cards = findViewById(R.id.starredCards_cards);
@@ -70,7 +70,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
         cards.removeAllViews();
         cards.setTag(card);
 
-        PyxCardsGroupView group = new PyxCardsGroupView(this, card.whiteCards, null, null, null);
+        PyxCardsGroupView group = new PyxCardsGroupView(this, card.whiteCards, null, null, false, null);
         cards.addView(group);
 
         GameCardView blackCard = new GameCardView(this, card.blackCard, null, null, null);

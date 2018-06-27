@@ -32,6 +32,7 @@ public class Utils {
     public static final String ACTION_SHOW_ROUND = "show_round";
     public static final String ACTION_SAVE_SHARE_ROUND = "save_share_round";
     public static final String ACTION_SENT_MSG = "sent_message";
+    public static final String ACTION_OPEN_URBAN_DICT = "opened_urban_dict_sheet";
 
     @NonNull
     public static String buildDeckCountString(int decks, int black, int white) {

@@ -9,7 +9,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
-import android.view.View;
 import android.widget.LinearLayout;
 
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
@@ -42,21 +41,14 @@ public class PyxCardsGroupView extends LinearLayout {
         mLinePaint.setPathEffect(new DashPathEffect(new float[]{20, 10}, 0));
     }
 
-    public PyxCardsGroupView(Context context, CardsGroup whiteCards, @Nullable GameCardView.Action primary, @Nullable GameCardView.Action secondary, CardListener listener) {
+    public PyxCardsGroupView(Context context, CardsGroup whiteCards, @Nullable GameCardView.Action primary, @Nullable GameCardView.Action secondary, boolean selectable, CardListener listener) {
         this(context, listener);
-        setCards(whiteCards, primary, secondary, false, null);
+        setCards(whiteCards, primary, secondary, selectable, false, null);
     }
 
     public void calcPaddings() {
         mPadding = mPaddingSmall;
         if (cards != null && cards.size() > 1) mPadding = (int) (mPadding * 1.5f);
-    }
-
-    public void setSelectable(boolean selectable) {
-        for (int i = 0; i < getChildCount(); i++) {
-            View v = getChildAt(i);
-            if (v instanceof GameCardView) ((GameCardView) v).setSelectable(selectable);
-        }
     }
 
     public int[] getPaddings(int pos, boolean forGrid, @Nullable RecyclerView.ViewHolder holder) {
@@ -84,7 +76,7 @@ public class PyxCardsGroupView extends LinearLayout {
         return new int[]{paddingStart, mPadding, paddingEnd, mPadding};
     }
 
-    public void setCards(@NonNull final CardsGroup cards, @Nullable GameCardView.Action primary, @Nullable GameCardView.Action secondary, boolean forGrid, @Nullable RecyclerView.ViewHolder holder) {
+    public void setCards(@NonNull final CardsGroup cards, @Nullable GameCardView.Action primary, @Nullable GameCardView.Action secondary, boolean selectable, boolean forGrid, @Nullable RecyclerView.ViewHolder holder) {
         this.cards = cards;
         calcPaddings();
 
@@ -103,6 +95,7 @@ public class PyxCardsGroupView extends LinearLayout {
                     if (listener != null) listener.onTextSelected(text);
                 }
             });
+            pyxCard.setSelectable(selectable);
 
             addView(pyxCard);
 
