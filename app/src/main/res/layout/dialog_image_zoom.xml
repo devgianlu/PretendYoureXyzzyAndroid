@@ -28,7 +28,8 @@
         android:layout_height="32dp"
         android:layout_gravity="end"
         android:layout_margin="16dp"
-        android:alpha="0.54"
+        android:tint="@color/icon_inactive_light"
+        android:tintMode="src_in"
         android:background="?android:attr/selectableItemBackgroundBorderless"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_open_in_new_black_48dp" />

@@ -16,7 +16,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -28,7 +27,6 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.FontsManager;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.SuperTextView;
@@ -39,8 +37,7 @@ import com.gianlu.pretendyourexyzzy.R;
 public class GameCardView extends CardView {
     public static final int WIDTH_DIP = 156;
     private final CardListener listener;
-    private final Action mainAction;
-    private final int width;
+    private final int mWidth;
     private final SuperTextView text;
     private final FrameLayout notText;
     private final ProgressBar loading;
@@ -49,9 +46,13 @@ public class GameCardView extends CardView {
     private final SuperTextView numDraw;
     private final SuperTextView numPick;
     private final TextView watermark;
-    private final ImageButton action;
+    private final ImageButton primaryAction;
+    private final ImageButton secondaryAction;
+    private final Action primary;
+    private final Action secondary;
     private BaseCard card;
     private TextSelectionListener textSelectionListener;
+    private boolean isSelectable = false;
 
     public GameCardView(@NonNull Context context) {
         this(context, null, 0);
@@ -62,33 +63,23 @@ public class GameCardView extends CardView {
     }
 
     public GameCardView(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
-        this(context, attrs, defStyleAttr, null, null, null);
+        this(context, attrs, defStyleAttr, null, null, null, null);
     }
 
-    public GameCardView(@NonNull Context context, @Nullable BaseCard card, @Nullable Action mainAction, @Nullable CardListener listener) {
-        this(context, null, 0, card, mainAction, listener);
+    public GameCardView(@NonNull Context context, @Nullable BaseCard card, @Nullable Action primaryAction, @Nullable Action secondaryAction, @Nullable CardListener listener) {
+        this(context, null, 0, card, primaryAction, secondaryAction, listener);
     }
 
-    private GameCardView(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr, final BaseCard card, Action mainAction, final CardListener listener) {
+    private GameCardView(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr, @Nullable BaseCard card, @Nullable Action primary, @Nullable Action secondary, @Nullable CardListener listener) {
         super(context, attrs, defStyleAttr);
         this.card = card;
-        this.mainAction = mainAction;
+        this.primary = primary;
+        this.secondary = secondary;
         this.listener = listener;
 
         LayoutInflater.from(getContext()).inflate(R.layout.pyx_card, this, true);
-        width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, WIDTH_DIP, getResources().getDisplayMetrics());
+        mWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, WIDTH_DIP, getResources().getDisplayMetrics());
         setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, getResources().getDisplayMetrics()));
-        setForeground(CommonUtils.resolveAttrAsDrawable(getContext(), android.R.attr.selectableItemBackground));
-        setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
-        setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // FIXME: Not clickable with selection enabled
-
-                if (listener != null)
-                    listener.onCardAction(GameCardView.Action.SELECT, card);
-            }
-        });
 
         text = findViewById(R.id.pyxCard_text);
         text.setTypeface(FontsManager.get().get(getContext(), FontsManager.ROBOTO_MEDIUM));
@@ -97,7 +88,8 @@ public class GameCardView extends CardView {
         watermark = findViewById(R.id.pyxCard_watermark);
         numPick = findViewById(R.id.pyxCard_numPick);
         numDraw = findViewById(R.id.pyxCard_numDraw);
-        action = findViewById(R.id.pyxCard_action);
+        primaryAction = findViewById(R.id.pyxCard_primaryAction);
+        secondaryAction = findViewById(R.id.pyxCard_secondaryAction);
 
         notText = findViewById(R.id.pyxCard_notText);
         loading = notText.findViewById(R.id.pyxCard_loading);
@@ -105,6 +97,11 @@ public class GameCardView extends CardView {
         unknown = notText.findViewById(R.id.pyxCard_unknown);
 
         init();
+    }
+
+    public void setSelectable(boolean selectable) {
+        isSelectable = selectable;
+        setupActions();
     }
 
     public void setTextSelectionListener(TextSelectionListener textSelectionListener) {
@@ -120,66 +117,32 @@ public class GameCardView extends CardView {
         unknown.setVisibility(VISIBLE);
         image.setVisibility(GONE);
         loading.setVisibility(GONE);
-        action.setVisibility(GONE);
+        primaryAction.setVisibility(GONE);
+        secondaryAction.setVisibility(GONE);
     }
 
-    private void setupAction() {
-        if (mainAction != null) {
-            switch (mainAction) {
+    private void setupAction(@Nullable Action action, @NonNull ImageButton button) {
+        if (action != null) {
+            button.setVisibility(VISIBLE);
+            button.setOnClickListener(new CallActionListenerOnClick(action));
+
+            switch (action) {
                 case SELECT:
+                    button.setImageResource(R.drawable.ic_check_circle_outline_black_48dp);
                     break;
                 case DELETE:
-                    action.setVisibility(VISIBLE);
-                    action.setImageResource(R.drawable.ic_delete_black_48dp);
-                    action.setOnClickListener(new OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            if (listener != null)
-                                listener.onCardAction(Action.DELETE, card);
-                        }
-                    });
-                    return;
+                    button.setImageResource(R.drawable.ic_delete_black_48dp);
+                    break;
                 case TOGGLE_STAR:
-                    action.setVisibility(VISIBLE);
-                    action.setImageResource(R.drawable.ic_star_black_48dp);
-                    action.setOnClickListener(new OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            if (listener != null)
-                                listener.onCardAction(Action.TOGGLE_STAR, card);
-                        }
-                    });
-                    return;
-            }
-
-            if (card.getImageUrl() != null) {
-                setOnLongClickListener(new OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                        if (listener != null) {
-                            listener.onCardAction(Action.SELECT_IMG, card);
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    }
-                });
-            } else {
-                action.setVisibility(GONE);
+                    button.setImageResource(R.drawable.ic_star_black_48dp);
+                    break;
+                case SELECT_IMG:
+                    if (card.getImageUrl() == null) button.setVisibility(GONE);
+                    else button.setImageResource(R.drawable.ic_zoom_in_black_48dp);
+                    break;
             }
         } else {
-            if (card.getImageUrl() != null) {
-                action.setVisibility(VISIBLE);
-                action.setImageResource(R.drawable.ic_zoom_in_black_48dp);
-                action.setOnClickListener(new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (listener != null) listener.onCardAction(Action.SELECT_IMG, card);
-                    }
-                });
-            } else {
-                action.setVisibility(GONE);
-            }
+            button.setVisibility(GONE);
         }
     }
 
@@ -252,6 +215,19 @@ public class GameCardView extends CardView {
         }
     }
 
+    private void setupActions() {
+        if (!card.unknown()) {
+            if (primary == Action.SELECT && !isSelectable) {
+                setupAction(secondary, primaryAction);
+                setupAction(null, secondaryAction);
+            } else {
+                setupAction(primary, primaryAction);
+                setupAction(secondary, secondaryAction);
+                checkRoomForSelectImage();
+            }
+        }
+    }
+
     private void init() {
         if (card == null) {
             setVisibility(GONE);
@@ -263,7 +239,7 @@ public class GameCardView extends CardView {
         if (card.unknown()) {
             showUnknown();
         } else {
-            setupAction();
+            setupActions();
             setupColors();
 
             watermark.setText(card.watermark());
@@ -273,9 +249,16 @@ public class GameCardView extends CardView {
         }
     }
 
+    private void checkRoomForSelectImage() {
+        if (card != null && card.getImageUrl() != null) {
+            if (primary == null) setupAction(Action.SELECT_IMG, primaryAction);
+            else if (secondary == null) setupAction(Action.SELECT_IMG, secondaryAction);
+        }
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), heightMeasureSpec);
+        super.onMeasure(MeasureSpec.makeMeasureSpec(mWidth, MeasureSpec.EXACTLY), heightMeasureSpec);
     }
 
     @Nullable
@@ -301,6 +284,19 @@ public class GameCardView extends CardView {
 
     public interface TextSelectionListener {
         void onTextSelected(@NonNull String text);
+    }
+
+    private class CallActionListenerOnClick implements View.OnClickListener {
+        private final Action action;
+
+        CallActionListenerOnClick(@NonNull Action action) {
+            this.action = action;
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (listener != null) listener.onCardAction(action, card);
+        }
     }
 
     private class TextSelectionCallback implements ActionMode.Callback {

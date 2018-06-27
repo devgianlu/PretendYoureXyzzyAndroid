@@ -6,6 +6,7 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.annotation.UiThread;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
@@ -263,16 +264,16 @@ public class BestGameManager implements Pyx.OnEventListener {
 
         Data(GameInfoAndCards bundle, GamePermalink perm, PlayersAdapter.Listener listener) {
             this.perm = perm;
+            this.info = bundle.info;
             GameCards cards = bundle.cards;
-            info = bundle.info;
 
             playersAdapter = new PlayersAdapter(context, info.players, listener);
             ui.playersList.setAdapter(playersAdapter);
 
-            handAdapter = new CardsAdapter(context, GameCardView.Action.TOGGLE_STAR, this);
+            handAdapter = new CardsAdapter(context, GameCardView.Action.SELECT, GameCardView.Action.TOGGLE_STAR, this);
             handAdapter.setCards(cards.hand);
 
-            tableAdapter = new CardsAdapter(context, GameCardView.Action.TOGGLE_STAR, this);
+            tableAdapter = new CardsAdapter(context, GameCardView.Action.SELECT, GameCardView.Action.TOGGLE_STAR, this);
             tableAdapter.setCardGroups(cards.whiteCards, cards.blackCard);
 
             ui.blackCard(cards.blackCard);
@@ -296,7 +297,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             }
 
             if (info.game.spectators.contains(me())) {
-                ui.showTableCards();
+                ui.showTableCards(false);
                 ui.event(UiEvent.SPECTATOR_TEXT);
             } else {
                 GameInfo.Player me = info.player(me());
@@ -304,19 +305,19 @@ public class BestGameManager implements Pyx.OnEventListener {
                     switch (me.status) {
                         case JUDGE:
                             ui.event(UiEvent.YOU_JUDGE);
-                            ui.showTableCards();
+                            ui.showTableCards(true);
                             break;
                         case JUDGING:
                             ui.event(UiEvent.SELECT_WINNING_CARD);
-                            ui.showTableCards();
+                            ui.showTableCards(true);
                             break;
                         case PLAYING:
                             BaseCard bc = ui.blackCard();
                             if (bc != null) ui.event(UiEvent.PICK_CARDS, bc.numPick());
-                            ui.showHandCards();
+                            ui.showHandCards(true);
                             break;
                         case IDLE:
-                            ui.showTableCards();
+                            ui.showTableCards(false);
 
                             if (info.game.status == Game.Status.JUDGING) {
                                 GameInfo.Player judge = info.players.get(judgeIndex);
@@ -334,7 +335,8 @@ public class BestGameManager implements Pyx.OnEventListener {
                             ui.event(UiEvent.YOU_GAME_HOST);
                             break;
                         case SPECTATOR:
-                            ui.showTableCards();
+                            ui.showTableCards(false);
+                            tableAdapter.setSelectable(false);
                             break;
                     }
                 }
@@ -360,7 +362,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                     ui.event(UiEvent.WAITING_FOR_START);
                     tableAdapter.clear();
                     handAdapter.clear();
-                    ui.showTableCards();
+                    ui.showTableCards(false);
                     break;
                 case DEALING:
                 case ROUND_OVER:
@@ -383,7 +385,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             tableAdapter.clear();
         }
 
-        public void handDeal(List<Card> cards) { // FIXME: Can be done more reliably (with game status?)
+        public void handDeal(List<Card> cards) { // FIXME: Should be done more reliably (with game status?)
             if (cards.size() == 10) handAdapter.setCards(cards);
             else handAdapter.addCards(cards);
         }
@@ -414,7 +416,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             switch (player.status) {
                 case JUDGING:
                     if (Objects.equals(player.name, me())) {
-                        ui.showTableCards();
+                        ui.showTableCards(true);
                         ui.event(UiEvent.SELECT_WINNING_CARD);
                     } else {
                         ui.event(UiEvent.IS_JUDGING, player.name);
@@ -422,7 +424,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                     break;
                 case JUDGE:
                     if (Objects.equals(player.name, me())) {
-                        ui.showTableCards();
+                        ui.showTableCards(false);
 
                         if (info.game.status != Game.Status.JUDGING) // Called after #gameRoundComplete()
                             ui.event(UiEvent.YOU_JUDGE);
@@ -432,7 +434,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                     break;
                 case IDLE:
                     if (Objects.equals(player.name, me())) {
-                        ui.showTableCards();
+                        ui.showTableCards(false);
 
                         if (info.game.status != Game.Status.JUDGING)
                             ui.event(UiEvent.WAITING_FOR_OTHER_PLAYERS);
@@ -445,7 +447,8 @@ public class BestGameManager implements Pyx.OnEventListener {
                     break;
                 case PLAYING:
                     if (Objects.equals(player.name, me())) {
-                        ui.showHandCards();
+                        ui.showHandCards(true);
+
                         BaseCard bc = ui.blackCard();
                         if (bc != null) ui.event(UiEvent.PICK_CARDS, bc.numPick());
                     }
@@ -458,7 +461,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                     if (player.name.equals(me())) ui.event(UiEvent.YOU_GAME_HOST);
                     break;
                 case SPECTATOR:
-                    ui.showTableCards();
+                    ui.showTableCards(false);
                     break;
             }
         }
@@ -481,6 +484,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                 } else {
                     GameInfo.Player newHost = info.players.get(0);
                     info.game.host = newHost.name;
+                    playersAdapter.playerChanged(newHost);
                     listener.updateActivityTitle();
                 }
             }
@@ -537,7 +541,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             }
 
             tableAdapter.clear();
-            ui.showTableCards();
+            ui.showTableCards(false);
             ui.resetTimer(intermission);
         }
 
@@ -626,14 +630,22 @@ public class BestGameManager implements Pyx.OnEventListener {
             }
         }
 
-        public void showTableCards() {
+        @UiThread
+        public void showTableCards(boolean selectable) {
+            data.tableAdapter.setSelectable(selectable);
             if (whiteCardsList.getAdapter() != data.tableAdapter)
                 whiteCardsList.swapAdapter(data.tableAdapter, true);
+            else
+                data.tableAdapter.notifyDataSetChanged();
         }
 
-        public void showHandCards() {
+        @UiThread
+        public void showHandCards(boolean selectable) {
+            data.handAdapter.setSelectable(selectable);
             if (whiteCardsList.getAdapter() != data.handAdapter)
                 whiteCardsList.swapAdapter(data.handAdapter, true);
+            else
+                data.handAdapter.notifyDataSetChanged();
         }
 
         public void blackCard(@Nullable Card card) {

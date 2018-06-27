@@ -47,34 +47,46 @@
             android:layout_width="156dp"
             android:layout_height="156dp"
             android:layout_gravity="center"
-            android:alpha="0.54"
             android:padding="16dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_question_mark" />
+            android:src="@drawable/ic_question_mark"
+            android:tint="@color/icon_inactive_light"
+            android:tintMode="src_in" />
 
     </FrameLayout>
 
     <LinearLayout
         android:layout_width="156dp"
         android:layout_height="wrap_content"
+        android:gravity="bottom"
         android:orientation="horizontal"
         android:paddingEnd="16dp"
         android:paddingStart="16dp">
 
         <ImageButton
-            android:id="@+id/pyxCard_action"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_gravity="end|bottom"
-            android:alpha="0.54"
+            android:id="@+id/pyxCard_primaryAction"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="4dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:padding="4dp"
-            android:scaleType="fitCenter" />
+            android:padding="2dp"
+            android:scaleType="fitCenter"
+            android:tint="@color/icon_inactive_light"
+            android:tintMode="src_in" />
+
+        <ImageButton
+            android:id="@+id/pyxCard_secondaryAction"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:padding="2dp"
+            android:scaleType="fitCenter"
+            android:tint="@color/icon_inactive_light"
+            android:tintMode="src_in" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
             android:orientation="vertical">
 
             <com.gianlu.commonutils.SuperTextView

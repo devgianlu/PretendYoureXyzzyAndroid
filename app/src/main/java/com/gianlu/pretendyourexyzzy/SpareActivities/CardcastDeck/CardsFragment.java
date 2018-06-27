@@ -74,7 +74,7 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
             return;
         }
 
-        layout.loadListData(new CardsAdapter(getContext(), true, result, null, this));
+        layout.loadListData(new CardsAdapter(getContext(), true, result, null, null, this));
     }
 
     @Override

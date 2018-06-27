@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.Adapters;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
@@ -18,22 +19,27 @@ import java.util.List;
 
 public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> implements PyxCardsGroupView.CardListener {
     private final Context context;
+    private final GameCardView.Action primary;
+    private final GameCardView.Action secondary;
     private final List<CardsGroup> cards;
     private final Listener listener;
-    private final GameCardView.Action action;
     private final boolean forGrid;
+    private boolean isSelectable;
 
-    public CardsAdapter(@NonNull Context context, @Nullable GameCardView.Action action, @NonNull Listener listener) {
+    public CardsAdapter(@NonNull Context context, @Nullable GameCardView.Action primary, @Nullable GameCardView.Action secondary, @NonNull Listener listener) {
         this.context = context;
-        this.action = action;
+        this.primary = primary;
+        this.secondary = secondary;
         this.listener = listener;
         this.cards = new ArrayList<>();
         this.forGrid = false;
     }
 
-    public CardsAdapter(@NonNull Context context, boolean forGrid, List<? extends BaseCard> cards, @Nullable GameCardView.Action action, @NonNull Listener listener) {
+    @UiThread
+    public CardsAdapter(@NonNull Context context, boolean forGrid, List<? extends BaseCard> cards, @Nullable GameCardView.Action primary, @Nullable GameCardView.Action secondary, @NonNull Listener listener) {
         this.context = context;
-        this.action = action;
+        this.primary = primary;
+        this.secondary = secondary;
         this.listener = listener;
         this.cards = new ArrayList<>();
         this.forGrid = forGrid;
@@ -59,7 +65,8 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
-        ((PyxCardsGroupView) holder.itemView).setCards(cards.get(position), action, forGrid, holder);
+        holder.cards.setCards(cards.get(position), primary, secondary, forGrid, holder);
+        holder.cards.setSelectable(isSelectable);
     }
 
     @Override
@@ -67,12 +74,18 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         return cards.size();
     }
 
+    @UiThread
     private void groupAndNotifyDataSetChanged(List<? extends BaseCard> cards) {
         this.cards.clear();
         for (BaseCard card : cards) this.cards.add(CardsGroup.singleton(card));
         notifyDataSetChanged();
     }
 
+    public void setSelectable(boolean selectable) {
+        isSelectable = selectable;
+    }
+
+    @UiThread
     public void notifyWinningCard(int winnerCardId) {
         for (int i = 0; i < cards.size(); i++) {
             CardsGroup group = cards.get(i);
@@ -93,6 +106,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         }
     }
 
+    @UiThread
     public void addBlankCards(@NonNull BaseCard bc) {
         cards.add(CardsGroup.unknown(bc.numPick()));
         notifyItemInserted(cards.size() - 1);
@@ -118,11 +132,13 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         if (listener != null) listener.onTextSelected(text);
     }
 
+    @UiThread
     public void addCards(List<Card> cards) {
         for (Card card : cards) this.cards.add(CardsGroup.singleton(card));
         notifyItemRangeInserted(this.cards.size() - cards.size(), cards.size());
     }
 
+    @UiThread
     public void setCardGroups(List<CardsGroup> cards, @Nullable BaseCard blackCard) {
         if (blackCard != null) {
             for (CardsGroup group : cards) {
@@ -138,11 +154,13 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         notifyDataSetChanged();
     }
 
+    @UiThread
     public void clear() {
         this.cards.clear();
         notifyDataSetChanged();
     }
 
+    @UiThread
     public void removeCard(@NonNull BaseCard card) {
         for (int i = cards.size() - 1; i >= 0; i--) {
             CardsGroup group = cards.get(i);
@@ -164,8 +182,11 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
+        final PyxCardsGroupView cards;
+
         ViewHolder() {
             super(new PyxCardsGroupView(context, CardsAdapter.this));
+            cards = (PyxCardsGroupView) itemView;
         }
     }
 }
