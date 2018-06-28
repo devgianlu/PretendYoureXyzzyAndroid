@@ -8,7 +8,8 @@ import com.gianlu.commonutils.Tutorial.TutorialManager;
 public enum Discovery implements TutorialManager.Discovery {
     LOGIN(LoginTutorial.class),
     GAMES(GamesTutorial.class),
-    CREATE_GAME(CreateGameTutorial.class);
+    CREATE_GAME(CreateGameTutorial.class),
+    HOW_TO_PLAY(HowToPlayTutorial.class);
 
     private final Class<? extends BaseTutorial> tutorialClass;
 

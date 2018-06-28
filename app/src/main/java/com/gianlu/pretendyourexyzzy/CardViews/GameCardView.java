@@ -36,9 +36,10 @@ import com.gianlu.pretendyourexyzzy.R;
 
 public class GameCardView extends CardView {
     public static final int WIDTH_DIP = 156;
+    public final ImageButton primaryAction;
+    public final SuperTextView text;
     private final CardListener listener;
     private final int mWidth;
-    private final SuperTextView text;
     private final FrameLayout notText;
     private final ProgressBar loading;
     private final View unknown;
@@ -46,7 +47,6 @@ public class GameCardView extends CardView {
     private final SuperTextView numDraw;
     private final SuperTextView numPick;
     private final TextView watermark;
-    private final ImageButton primaryAction;
     private final ImageButton secondaryAction;
     private final Action primary;
     private final Action secondary;
@@ -128,7 +128,7 @@ public class GameCardView extends CardView {
 
             switch (action) {
                 case SELECT:
-                    button.setImageResource(R.drawable.ic_check_circle_outline_black_48dp);
+                    button.setImageResource(R.drawable.ic_done_black_48dp);
                     break;
                 case DELETE:
                     button.setImageResource(R.drawable.ic_delete_black_48dp);

@@ -9,6 +9,8 @@ import android.support.annotation.StringRes;
 import android.support.annotation.UiThread;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,9 +19,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.commonutils.Tutorial.BaseTutorial;
+import com.gianlu.commonutils.Tutorial.TutorialManager;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
@@ -40,6 +46,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Starred.StarredCardsManager;
+import com.gianlu.pretendyourexyzzy.Tutorial.Discovery;
+import com.gianlu.pretendyourexyzzy.Tutorial.HowToPlayTutorial;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONException;
@@ -58,11 +66,11 @@ public class BestGameManager implements Pyx.OnEventListener {
     private final RegisteredPyx pyx;
     private final Context context;
 
-    public BestGameManager(Context context, ViewGroup layout, RegisteredPyx pyx, GameInfoAndCards bundle, GamePermalink perm, Listener listener, PlayersAdapter.Listener playersListener) {
+    public BestGameManager(Context context, Fragment fragment, ViewGroup layout, RegisteredPyx pyx, GameInfoAndCards bundle, GamePermalink perm, Listener listener, PlayersAdapter.Listener playersListener) {
         this.context = context;
         this.pyx = pyx;
         this.listener = listener;
-        this.ui = new Ui(layout);
+        this.ui = new Ui(fragment, layout);
         this.data = new Data(bundle, perm, playersListener);
 
         this.pyx.polling().addListener(POLLING, this);
@@ -198,6 +206,15 @@ public class BestGameManager implements Pyx.OnEventListener {
         return Objects.equals(host(), me());
     }
 
+    private boolean amSpectator() {
+        return gameInfo().game.spectators.contains(me());
+    }
+
+    private boolean amPlaying() {
+        GameInfo.Player me = gameInfo().player(me());
+        return me != null && me.status == GameInfo.PlayerStatus.PLAYING;
+    }
+
     private enum UiEvent {
         YOU_JUDGE(R.string.game_youJudge, Kind.TEXT),
         SELECT_WINNING_CARD(R.string.game_selectWinningCard, Kind.TEXT),
@@ -251,6 +268,9 @@ public class BestGameManager implements Pyx.OnEventListener {
         void updateActivityTitle();
 
         void showDialog(@NonNull DialogFragment dialog);
+
+        @Nullable
+        FragmentActivity getActivity();
     }
 
     private class Data implements CardsAdapter.Listener {
@@ -296,7 +316,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                 }
             }
 
-            if (info.game.spectators.contains(me())) {
+            if (amSpectator()) {
                 ui.showTableCards(false);
                 ui.event(UiEvent.SPECTATOR_TEXT);
             } else {
@@ -451,6 +471,8 @@ public class BestGameManager implements Pyx.OnEventListener {
 
                         BaseCard bc = ui.blackCard();
                         if (bc != null) ui.event(UiEvent.PICK_CARDS, bc.numPick());
+
+                        ui.tryShowingTutorials();
                     }
                     break;
                 case WINNER:
@@ -506,11 +528,8 @@ public class BestGameManager implements Pyx.OnEventListener {
                     } else if ((me.status == GameInfo.PlayerStatus.JUDGE || me.status == GameInfo.PlayerStatus.JUDGING) && info.game.status == Game.Status.JUDGING) {
                         ui.judgeSelectCard(card);
                     } else {
-                        if (info.game.spectators.contains(me())) {
-                            ui.event(UiEvent.SPECTATOR_TOAST);
-                        } else {
-                            ui.event(UiEvent.NOT_YOUR_TURN);
-                        }
+                        if (amSpectator()) ui.event(UiEvent.SPECTATOR_TOAST);
+                        else ui.event(UiEvent.NOT_YOUR_TURN);
                     }
                 }
             } else if (action == GameCardView.Action.TOGGLE_STAR) {
@@ -570,7 +589,7 @@ public class BestGameManager implements Pyx.OnEventListener {
         }
     }
 
-    private class Ui {
+    private class Ui implements TutorialManager.Listener {
         private final FloatingActionButton startGame;
         private final GameCardView blackCard;
         private final TextView instructions;
@@ -579,9 +598,14 @@ public class BestGameManager implements Pyx.OnEventListener {
         private final TextView time;
         private final Timer timer = new Timer();
         private final Handler handler = new Handler(Looper.getMainLooper());
+        private final Fragment fragment;
+        private final TutorialManager tutorialManager;
         private TimeTask currentTask;
 
-        Ui(ViewGroup layout) {
+        Ui(Fragment fragment, ViewGroup layout) {
+            this.fragment = fragment;
+            tutorialManager = new TutorialManager(context, this, Discovery.HOW_TO_PLAY);
+
             blackCard = layout.findViewById(R.id.gameLayout_blackCard);
             blackCard.setTextSelectionListener(listener);
 
@@ -656,14 +680,14 @@ public class BestGameManager implements Pyx.OnEventListener {
             switch (ev.kind) {
                 case BOTH:
                     uiToast(ev.toast, args);
-                    if (ev == UiEvent.SPECTATOR_TEXT || !gameInfo().game.spectators.contains(me()))
+                    if (ev == UiEvent.SPECTATOR_TEXT || !amSpectator())
                         uiText(ev.text, args);
                     break;
                 case TOAST:
                     uiToast(ev.text, args);
                     break;
                 case TEXT:
-                    if (ev == UiEvent.SPECTATOR_TEXT || !gameInfo().game.spectators.contains(me()))
+                    if (ev == UiEvent.SPECTATOR_TEXT || !amSpectator())
                         uiText(ev.text, args);
                     break;
             }
@@ -748,6 +772,26 @@ public class BestGameManager implements Pyx.OnEventListener {
 
         public void setStartGameVisible(boolean set) {
             startGame.setVisibility(set ? View.VISIBLE : View.GONE);
+        }
+
+        @Override
+        public boolean canShow(@NonNull BaseTutorial tutorial) {
+            return tutorial instanceof HowToPlayTutorial && CommonUtils.isVisible(fragment)
+                    && amPlaying() && gameInfo().game.status == Game.Status.PLAYING;
+        }
+
+        @Override
+        public boolean buildSequence(@NonNull BaseTutorial tutorial, @NonNull TapTargetSequence sequence) {
+            return ((HowToPlayTutorial) tutorial).buildSequence(sequence, blackCard, whiteCardsList, playersList);
+        }
+
+        public void tryShowingTutorials() {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    tutorialManager.tryShowingTutorials(listener.getActivity());
+                }
+            });
         }
 
         private class TimeTask extends TimerTask {

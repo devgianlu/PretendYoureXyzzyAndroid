@@ -165,7 +165,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     @Override
     public void onDone(@NonNull GameInfoAndCards result) {
         if (manager == null && isAdded())
-            manager = new BestGameManager(getActivity(), container, pyx, result, perm, this, this);
+            manager = new BestGameManager(getActivity(), this, container, pyx, result, perm, this, this);
 
         updateActivityTitle();
 

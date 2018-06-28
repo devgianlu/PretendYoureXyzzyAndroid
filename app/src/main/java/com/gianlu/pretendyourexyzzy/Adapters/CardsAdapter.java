@@ -182,7 +182,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        final PyxCardsGroupView cards;
+        public final PyxCardsGroupView cards;
 
         ViewHolder() {
             super(new PyxCardsGroupView(context, CardsAdapter.this));
