@@ -782,7 +782,7 @@ public class BestGameManager implements Pyx.OnEventListener {
 
         @Override
         public boolean buildSequence(@NonNull BaseTutorial tutorial, @NonNull TapTargetSequence sequence) {
-            return ((HowToPlayTutorial) tutorial).buildSequence(sequence, blackCard, whiteCardsList, playersList);
+            return ((HowToPlayTutorial) tutorial).buildSequence(context, sequence, blackCard, whiteCardsList, playersList);
         }
 
         public void tryShowingTutorials() {

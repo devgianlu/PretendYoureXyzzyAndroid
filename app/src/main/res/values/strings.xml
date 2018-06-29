@@ -55,6 +55,14 @@
     <string name="tutorial_startGame_desc">Once you\'re done, start the game. To do that you must have at least 3 players and a given number of cards.</string>
     <string name="tutorial_chooseIdCode">Enter an identification code</string>
     <string name="tutorial_chooseIdCode_desc">Enter or generate an identification code to make it difficult for someone to impersonate you.</string>
+    <string name="tutorial_blackCard">This is the black card</string>
+    <string name="tutorial_blackCard_desc">You have to complete the sentence with the white cards below.</string>
+    <string name="tutorial_whiteCard">This is a white card</string>
+    <string name="tutorial_whiteCard_desc">Play one or multiple cards to complete the sentence. If you don\'t know the meaning of a word, select it (usually press and hold) and then view its definition; this can also be done with the black cards.</string>
+    <string name="tutorial_playCard">Play a card</string>
+    <string name="tutorial_playCard_desc">To play a card just tap on this icon: a confirmation dialog will appear.</string>
+    <string name="tutorial_player">This is a player</string>
+    <string name="tutorial_player_desc">Once a player reaches the score goal, it wins. You can tap on players to reveal additional information.</string>
 
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>

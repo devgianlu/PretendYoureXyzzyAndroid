@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy.Tutorial;
 
+import android.content.Context;
+import android.graphics.Rect;
 import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,6 +14,7 @@ import com.gianlu.commonutils.Tutorial.BaseTutorial;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
+import com.gianlu.pretendyourexyzzy.R;
 
 public class HowToPlayTutorial extends BaseTutorial {
 
@@ -25,26 +28,27 @@ public class HowToPlayTutorial extends BaseTutorial {
         LinearLayoutManager llm = (LinearLayoutManager) list.getLayoutManager();
         int pos = llm.findFirstCompletelyVisibleItemPosition();
         if (pos == -1) return null;
-        else return list.findViewHolderForLayoutPosition(pos);
+        else return list.findViewHolderForAdapterPosition(pos);
     }
 
-    // TODO: Use resources
-    public boolean buildSequence(@NonNull TapTargetSequence sequence, @NonNull GameCardView blackCard, @NonNull RecyclerView whiteCardsList, @NonNull RecyclerView playersList) {
-        // FIXME: Something is wrong with this, try with the Aria2App solution
-        sequence.target(TapTarget.forView(blackCard, "This is the black card", "You have to complete the sentence with the cards below."));
+    public boolean buildSequence(@NonNull Context context, @NonNull TapTargetSequence sequence, @NonNull GameCardView blackCard, @NonNull RecyclerView whiteCardsList, @NonNull RecyclerView playersList) {
+        Rect rect = new Rect();
+        blackCard.getGlobalVisibleRect(rect);
+        sequence.target(TapTarget.forBounds(rect, context.getString(R.string.tutorial_blackCard), context.getString(R.string.tutorial_blackCard_desc))
+                .transparentTarget(true));
 
         CardsAdapter.ViewHolder cardHolder = (CardsAdapter.ViewHolder) getFirstVisibleViewHolder(whiteCardsList);
         if (cardHolder != null) {
             GameCardView whiteCard = ((GameCardView) cardHolder.cards.getChildAt(0));
-            sequence.target(TapTarget.forView(whiteCard.primaryAction, "Play a card", "You can play a card by tapping this icon."));
-            sequence.target(TapTarget.forView(whiteCard.text, "Words definition", "If you don't know the meaning of a word you can select it (usually by pressing and holding) and view its definition."));
+            sequence.target(TapTarget.forView(whiteCard.text, context.getString(R.string.tutorial_whiteCard), context.getString(R.string.tutorial_whiteCard_desc)));
+            sequence.target(TapTarget.forView(whiteCard.primaryAction, context.getString(R.string.tutorial_playCard), context.getString(R.string.tutorial_playCard_desc)));
         } else {
             return false;
         }
 
         PlayersAdapter.ViewHolder playerHolder = (PlayersAdapter.ViewHolder) getFirstVisibleViewHolder(playersList);
         if (playerHolder != null) {
-            sequence.target(TapTarget.forView(playerHolder.itemView, "This is a player", "Once a player reaches the score goal, it wins the match. You can click on players to view some information."));
+            sequence.target(TapTarget.forView(playerHolder.itemView, context.getString(R.string.tutorial_player), context.getString(R.string.tutorial_player_desc)));
         } else {
             return false;
         }
