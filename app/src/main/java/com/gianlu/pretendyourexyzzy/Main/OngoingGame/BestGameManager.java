@@ -291,7 +291,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             ui.playersList.setAdapter(playersAdapter);
 
             handAdapter = new CardsAdapter(context, GameCardView.Action.SELECT, GameCardView.Action.TOGGLE_STAR, this);
-            handAdapter.setCards(cards.hand);
+            handAdapter.addCards(cards.hand);
 
             tableAdapter = new CardsAdapter(context, GameCardView.Action.SELECT, GameCardView.Action.TOGGLE_STAR, this);
             tableAdapter.setCardGroups(cards.whiteCards, cards.blackCard);
@@ -405,9 +405,8 @@ public class BestGameManager implements Pyx.OnEventListener {
             tableAdapter.clear();
         }
 
-        public void handDeal(List<Card> cards) { // FIXME: Should be done more reliably (with game status?)
-            if (cards.size() == 10) handAdapter.setCards(cards);
-            else handAdapter.addCards(cards);
+        public void handDeal(List<Card> cards) {
+            handAdapter.addCards(cards);
         }
 
         private void playingState(@NonNull Card blackCard, int playTime) {

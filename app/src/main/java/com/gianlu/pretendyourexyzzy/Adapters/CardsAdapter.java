@@ -52,12 +52,6 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         return cards;
     }
 
-    public void setCards(List<Card> cards) {
-        this.cards.clear();
-        for (Card card : cards) this.cards.add(CardsGroup.singleton(card));
-        notifyDataSetChanged();
-    }
-
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
