@@ -82,7 +82,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         }
     }
 
-    public void removePlayer(String nick) {
+    public void removePlayer(@NonNull String nick) {
         int pos = Utils.indexOf(players, nick);
         if (pos != -1) {
             players.remove(pos);
@@ -90,7 +90,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         }
     }
 
-    public void newPlayer(GameInfo.Player player) {
+    public void newPlayer(@NonNull GameInfo.Player player) {
         players.add(player);
         notifyItemInserted(players.size() - 1);
     }

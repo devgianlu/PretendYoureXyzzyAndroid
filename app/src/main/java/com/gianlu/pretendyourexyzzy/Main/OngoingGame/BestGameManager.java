@@ -88,7 +88,7 @@ public class BestGameManager implements Pyx.OnEventListener {
     }
 
     @Override
-    public void onPollMessage(PollMessage msg) throws JSONException {
+    public void onPollMessage(@NonNull PollMessage msg) throws JSONException {
         if (msg.event != PollMessage.Event.CHAT && CommonUtils.isDebug())
             System.out.println(BestGameManager.class.getSimpleName() + ": " + msg.event.name() + " -> " + msg.obj);
 

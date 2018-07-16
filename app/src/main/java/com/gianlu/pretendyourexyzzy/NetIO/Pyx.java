@@ -449,7 +449,7 @@ public class Pyx implements Closeable {
 
     public interface OnEventListener {
         @UiThread
-        void onPollMessage(PollMessage message) throws JSONException;
+        void onPollMessage(@NonNull PollMessage message) throws JSONException;
 
         @UiThread
         void onStoppedPolling();

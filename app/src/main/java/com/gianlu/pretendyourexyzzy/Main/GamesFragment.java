@@ -402,7 +402,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     }
 
     @Override
-    public void onPollMessage(PollMessage message) {
+    public void onPollMessage(@NonNull PollMessage message) {
         if (message.event == PollMessage.Event.GAME_LIST_REFRESH) {
             recyclerViewSavedInstance = recyclerViewLayout.getList().getLayoutManager().onSaveInstanceState();
             pyx.request(PyxRequests.getGamesList(), GamesFragment.this);

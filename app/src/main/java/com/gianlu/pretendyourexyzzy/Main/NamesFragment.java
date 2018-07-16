@@ -124,7 +124,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
 
         pyx.polling().addListener(POLLING, new Pyx.OnEventListener() {
             @Override
-            public void onPollMessage(PollMessage msg) throws JSONException {
+            public void onPollMessage(@NonNull PollMessage msg) throws JSONException {
                 switch (msg.event) {
                     case NEW_PLAYER:
                         if (adapter != null)
