@@ -89,8 +89,8 @@ public class BestGameManager implements Pyx.OnEventListener {
 
     @Override
     public void onPollMessage(PollMessage msg) throws JSONException {
-        if (msg.event != PollMessage.Event.CHAT)
-            System.out.println(msg.event.name() + " -> " + msg.obj);
+        if (msg.event != PollMessage.Event.CHAT && CommonUtils.isDebug())
+            System.out.println(BestGameManager.class.getSimpleName() + ": " + msg.event.name() + " -> " + msg.obj);
 
         switch (msg.event) {
             case HAND_DEAL:
@@ -379,6 +379,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                     break;
                 case LOBBY:
                     ui.event(UiEvent.WAITING_FOR_START);
+                    ui.blackCard(null);
                     tableAdapter.clear();
                     handAdapter.clear();
                     ui.showTableCards(false);
