@@ -9,7 +9,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginEnd="16dp"
-        android:src="@drawable/ic_cast_white_48dp" />
+        android:src="@drawable/baseline_cast_24" />
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -3,26 +3,26 @@
 
     <item
         android:id="@+id/main_players"
-        android:icon="@drawable/ic_supervisor_account_black_48dp"
+        android:icon="@drawable/baseline_people_24"
         android:title="@string/playersLabel" />
 
     <item
         android:id="@+id/main_globalChat"
-        android:icon="@drawable/ic_chat_black_48dp"
+        android:icon="@drawable/baseline_chat_24"
         android:title="@string/globalChat" />
 
     <item
         android:id="@+id/main_cardcast"
-        android:icon="@drawable/ic_cast_black_48dp"
+        android:icon="@drawable/baseline_cast_24"
         android:title="@string/cardcast" />
 
     <item
         android:id="@+id/main_ongoingGame"
-        android:icon="@drawable/ic_casino_black_48dp"
+        android:icon="@drawable/baseline_casino_24"
         android:title="@string/ongoingGame" />
 
     <item
         android:id="@+id/main_gameChat"
-        android:icon="@drawable/ic_chat_bubble_outline_black_48dp"
+        android:icon="@drawable/baseline_chat_bubble_outline_24"
         android:title="@string/gameChat" />
 </menu>

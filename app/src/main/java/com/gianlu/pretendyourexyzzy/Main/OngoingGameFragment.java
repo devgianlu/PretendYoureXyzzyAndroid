@@ -23,7 +23,6 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
-import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
@@ -423,7 +422,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     }
 
     @Override
-    public boolean buildSequence(@NonNull BaseTutorial tutorial, @NonNull TapTargetSequence sequence) {
-        return tutorial instanceof CreateGameTutorial && ((CreateGameTutorial) tutorial).buildSequence(requireActivity(), sequence, manager);
+    public boolean buildSequence(@NonNull BaseTutorial tutorial) {
+        return tutorial instanceof CreateGameTutorial && ((CreateGameTutorial) tutorial).buildSequence(requireActivity(), manager);
     }
 }

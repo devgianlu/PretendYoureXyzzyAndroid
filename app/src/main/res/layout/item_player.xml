@@ -11,8 +11,7 @@
         android:id="@+id/playerItem_status"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:tint="@color/icon_inactive_light"
-        android:tintMode="src_in"
+
         android:padding="4dp"
         android:scaleType="fitCenter" />
 
@@ -28,7 +27,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:lines="1"
-            android:textColor="@android:color/primary_text_light"
+            android:textColor="?android:textColorPrimary"
             android:textSize="14sp" />
 
         <com.gianlu.commonutils.SuperTextView

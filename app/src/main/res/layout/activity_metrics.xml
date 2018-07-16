@@ -27,7 +27,7 @@
                 android:id="@+id/metrics_breadcrumbs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:arrowRes="@drawable/ic_keyboard_arrow_right_white_48dp" />
+                app:arrowRes="@drawable/baseline_keyboard_arrow_right_24" />
         </HorizontalScrollView>
     </android.support.design.widget.AppBarLayout>
 

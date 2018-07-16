@@ -49,9 +49,7 @@
             android:layout_gravity="center"
             android:padding="16dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_question_mark"
-            android:tint="@color/icon_inactive_light"
-            android:tintMode="src_in" />
+            android:src="@drawable/baseline_question_mark_192" />
 
     </FrameLayout>
 
@@ -70,9 +68,7 @@
             android:layout_marginEnd="4dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:padding="2dp"
-            android:scaleType="fitCenter"
-            android:tint="@color/icon_inactive_light"
-            android:tintMode="src_in" />
+            android:scaleType="fitCenter" />
 
         <ImageButton
             android:id="@+id/pyxCard_secondaryAction"
@@ -80,9 +76,7 @@
             android:layout_height="32dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:padding="2dp"
-            android:scaleType="fitCenter"
-            android:tint="@color/icon_inactive_light"
-            android:tintMode="src_in" />
+            android:scaleType="fitCenter" />
 
         <LinearLayout
             android:layout_width="match_parent"

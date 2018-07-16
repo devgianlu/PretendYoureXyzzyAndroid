@@ -54,12 +54,6 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         return objs.get(position).gid;
     }
 
-    @Nullable
-    @Override
-    protected RecyclerView getRecyclerView() {
-        return handler != null ? handler.getRecyclerView() : null;
-    }
-
     @Override
     protected boolean matchQuery(@NonNull Game item, @Nullable String query) {
         return query == null || item.host.toLowerCase().contains(query.toLowerCase());
@@ -95,8 +89,8 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         holder.players.setHtml(R.string.players, game.players.size(), game.options.playersLimit);
         holder.spectators.setHtml(R.string.spectators, game.spectators.size(), game.options.spectatorsLimit);
         holder.goal.setHtml(R.string.goal, game.options.scoreLimit);
-        holder.locked.setImageResource(game.hasPassword(false) ? R.drawable.ic_lock_outline_black_48dp : R.drawable.ic_lock_open_black_48dp);
-        holder.status.setImageResource(game.status == Game.Status.LOBBY ? R.drawable.ic_hourglass_empty_black_48dp : R.drawable.ic_casino_black_48dp);
+        holder.locked.setImageResource(game.hasPassword(false) ? R.drawable.outline_lock_24 : R.drawable.baseline_lock_open_24);
+        holder.status.setImageResource(game.status == Game.Status.LOBBY ? R.drawable.baseline_hourglass_empty_24 : R.drawable.baseline_casino_24);
         holder.timerMultiplier.setHtml(R.string.timerMultiplier, game.options.timerMultiplier);
         holder.blankCards.setHtml(R.string.blankCards, game.options.blanksLimit);
         holder.cardsets.setHtml(R.string.cardSets, game.options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(pyx.firstLoad().createCardSetNamesList(game.options.cardSets), ", "));
@@ -146,9 +140,6 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
     }
 
     public interface Listener {
-        @Nullable
-        RecyclerView getRecyclerView();
-
         void spectateGame(@NonNull Game game);
 
         void joinGame(@NonNull Game game);

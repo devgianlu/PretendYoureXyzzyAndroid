@@ -118,13 +118,13 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         }
 
         drawerManager = new DrawerManager.Config<User>(this, R.drawable.drawer_background)
-                .addMenuItem(new BaseDrawerItem(DrawerConst.HOME, R.drawable.ic_home_black_48dp, getString(R.string.home)))
-                .addMenuItem(new BaseDrawerItem(DrawerConst.USER_METRICS, R.drawable.ic_person_black_48dp, getString(R.string.metrics)))
-                .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_CARDS, R.drawable.ic_star_black_48dp, getString(R.string.starredCards)))
-                .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_CARDCAST_DECKS, R.drawable.ic_bookmarks_black_48dp, getString(R.string.starredCardcastDecks)))
+                .addMenuItem(new BaseDrawerItem(DrawerConst.HOME, R.drawable.baseline_home_24, getString(R.string.home)))
+                .addMenuItem(new BaseDrawerItem(DrawerConst.USER_METRICS, R.drawable.baseline_person_24, getString(R.string.metrics)))
+                .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_CARDS, R.drawable.baseline_star_24, getString(R.string.starredCards)))
+                .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_CARDCAST_DECKS, R.drawable.baseline_bookmarks_24, getString(R.string.starredCardcastDecks)))
                 .addMenuItemSeparator()
-                .addMenuItem(new BaseDrawerItem(DrawerConst.PREFERENCES, R.drawable.ic_settings_black_48dp, getString(R.string.preferences)))
-                .addMenuItem(new BaseDrawerItem(DrawerConst.REPORT, R.drawable.ic_report_problem_black_48dp, getString(R.string.report)))
+                .addMenuItem(new BaseDrawerItem(DrawerConst.PREFERENCES, R.drawable.baseline_settings_24, getString(R.string.preferences)))
+                .addMenuItem(new BaseDrawerItem(DrawerConst.REPORT, R.drawable.baseline_report_problem_24, getString(R.string.report)))
                 .singleProfile(pyx.user(), this)
                 .build(this, (DrawerLayout) findViewById(R.id.main_drawer), toolbar);
 

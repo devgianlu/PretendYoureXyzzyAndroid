@@ -128,17 +128,17 @@ public class GameCardView extends CardView {
 
             switch (action) {
                 case SELECT:
-                    button.setImageResource(R.drawable.ic_done_black_48dp);
+                    button.setImageResource(R.drawable.baseline_done_24);
                     break;
                 case DELETE:
-                    button.setImageResource(R.drawable.ic_delete_black_48dp);
+                    button.setImageResource(R.drawable.baseline_delete_24);
                     break;
                 case TOGGLE_STAR:
-                    button.setImageResource(R.drawable.ic_star_black_48dp);
+                    button.setImageResource(R.drawable.baseline_star_24);
                     break;
                 case SELECT_IMG:
                     if (card.getImageUrl() == null) button.setVisibility(GONE);
-                    else button.setImageResource(R.drawable.ic_zoom_in_black_48dp);
+                    else button.setImageResource(R.drawable.baseline_zoom_in_24);
                     break;
             }
         } else {

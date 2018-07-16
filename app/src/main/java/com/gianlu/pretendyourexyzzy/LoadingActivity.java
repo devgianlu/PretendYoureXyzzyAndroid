@@ -17,7 +17,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
-import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.ConnectivityChecker;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
@@ -316,11 +315,11 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     @Override
-    public boolean buildSequence(@NonNull BaseTutorial tutorial, @NonNull TapTargetSequence sequence) {
-        sequence.target(Utils.tapTargetForView(registerNickname, R.string.tutorial_chooseNickname, R.string.tutorial_chooseNickname_desc))
-                .target(Utils.tapTargetForView(registerIdCode, R.string.tutorial_chooseIdCode, R.string.tutorial_chooseIdCode_desc))
-                .target(Utils.tapTargetForView(changeServer, R.string.tutorial_changeServer, R.string.tutorial_changeServer_desc))
-                .target(Utils.tapTargetForView(registerSubmit, R.string.tutorial_joinTheServer, R.string.tutorial_joinTheServer_desc));
+    public boolean buildSequence(@NonNull BaseTutorial tutorial) {
+        tutorial.forView(registerNickname, R.string.tutorial_chooseNickname, R.string.tutorial_chooseNickname_desc);
+        tutorial.forView(registerIdCode, R.string.tutorial_chooseIdCode, R.string.tutorial_chooseIdCode_desc);
+        tutorial.forView(changeServer, R.string.tutorial_changeServer, R.string.tutorial_changeServer_desc);
+        tutorial.forView(registerSubmit, R.string.tutorial_joinTheServer, R.string.tutorial_joinTheServer_desc);
         return true;
     }
 }

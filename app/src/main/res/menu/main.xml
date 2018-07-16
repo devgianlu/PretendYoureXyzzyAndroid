@@ -14,7 +14,7 @@
 
     <item
         android:id="@+id/main_logout"
-        android:icon="@drawable/ic_exit_to_app_white_48dp"
+        android:icon="@drawable/outline_exit_to_app_24"
         android:orderInCategory="99"
         android:title="@string/logout"
         app:showAsAction="never" />

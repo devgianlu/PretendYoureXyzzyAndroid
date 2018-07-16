@@ -41,23 +41,23 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
 
         switch (player.status) {
             case HOST:
-                holder.status.setImageResource(R.drawable.ic_person_black_48dp);
+                holder.status.setImageResource(R.drawable.baseline_person_24);
                 break;
             case IDLE:
-                holder.status.setImageResource(R.drawable.ic_access_time_black_48dp);
+                holder.status.setImageResource(R.drawable.baseline_access_time_24);
                 break;
             case JUDGING:
             case JUDGE:
-                holder.status.setImageResource(R.drawable.ic_gavel_black_48dp);
+                holder.status.setImageResource(R.drawable.baseline_gavel_24);
                 break;
             case PLAYING:
-                holder.status.setImageResource(R.drawable.ic_hourglass_empty_black_48dp);
+                holder.status.setImageResource(R.drawable.baseline_hourglass_empty_24);
                 break;
             case WINNER:
-                holder.status.setImageResource(R.drawable.ic_star_black_48dp);
+                holder.status.setImageResource(R.drawable.baseline_star_24);
                 break;
             case SPECTATOR:
-                holder.status.setImageResource(R.drawable.ic_remove_red_eye_black_48dp);
+                holder.status.setImageResource(R.drawable.baseline_remove_red_eye_24);
                 break;
         }
 

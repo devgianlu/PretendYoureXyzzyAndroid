@@ -143,7 +143,7 @@ public class CardcastSheet extends BaseModalBottomSheet<Integer, List<Deck>> imp
         if (listener == null || !listener.canModifyCardcastDecks())
             return false;
 
-        action.setImageResource(R.drawable.ic_add_white_48dp);
+        action.setImageResource(R.drawable.baseline_add_24);
         action.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

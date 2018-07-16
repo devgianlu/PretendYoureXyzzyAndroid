@@ -5,35 +5,35 @@
     tools:ignore="AppCompatResource">
     <item
         android:id="@+id/ongoingGame_leave"
-        android:icon="@drawable/ic_clear_white_48dp"
+        android:icon="@drawable/baseline_clear_24"
         android:orderInCategory="0"
         android:title="@string/leaveGame"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/ongoingGame_options"
-        android:icon="@drawable/ic_info_outline_white_48dp"
+        android:icon="@drawable/outline_info_24"
         android:orderInCategory="1"
         android:title="@string/gameOptions"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/ongoingGame_players"
-        android:icon="@drawable/ic_people_white_48dp"
+        android:icon="@drawable/baseline_people_24"
         android:orderInCategory="1"
         android:title="@string/playersLabel"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/ongoingGame_spectators"
-        android:icon="@drawable/ic_remove_red_eye_white_48dp"
+        android:icon="@drawable/baseline_remove_red_eye_24"
         android:orderInCategory="2"
         android:title="@string/spectatorsLabel"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/ongoingGame_share"
-        android:icon="@drawable/ic_share_white_48dp"
+        android:icon="@drawable/baseline_share_24"
         android:orderInCategory="1"
         android:title="@string/share"
         app:showAsAction="ifRoom" />
@@ -52,7 +52,7 @@
 
     <item
         android:id="@+id/ongoingGame_cardcast"
-        android:icon="@drawable/ic_cast_white_48dp"
+        android:icon="@drawable/baseline_cast_24"
         android:title="@string/cardcast"
         app:showAsAction="ifRoom" />
 </menu>

@@ -4,13 +4,13 @@
 
     <item
         android:id="@+id/cardcastDeckInfo_toggleStar"
-        android:icon="@drawable/ic_star_border_white_48dp"
+        android:icon="@drawable/baseline_star_border_24"
         android:title="@string/toggleStarred"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/cardcastDeckInfo_add"
-        android:icon="@drawable/ic_add_white_48dp"
+        android:icon="@drawable/baseline_add_24"
         android:title="@string/addToOngoingGame"
         app:showAsAction="ifRoom" />
 </menu>

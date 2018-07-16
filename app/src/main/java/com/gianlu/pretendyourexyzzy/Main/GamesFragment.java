@@ -25,7 +25,6 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.SearchView;
 
-import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
@@ -64,7 +63,6 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     private boolean launchGameShouldRequest;
     private Parcelable recyclerViewSavedInstance;
     private FloatingActionButton createGame;
-    private boolean isShowingHint = false;
     private RegisteredPyx pyx;
     private TutorialManager tutorialManager;
 
@@ -232,12 +230,6 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
         recyclerViewLayout.showError(R.string.failedLoading_reason, ex.getMessage());
-    }
-
-    @Nullable
-    @Override
-    public RecyclerView getRecyclerView() {
-        return recyclerViewLayout.getList();
     }
 
     @Override
@@ -427,8 +419,8 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     }
 
     @Override
-    public boolean buildSequence(@NonNull BaseTutorial tutorial, @NonNull TapTargetSequence sequence) {
-        return tutorial instanceof GamesTutorial && ((GamesTutorial) tutorial).buildSequence(sequence, createGame, recyclerViewLayout.getList());
+    public boolean buildSequence(@NonNull BaseTutorial tutorial) {
+        return tutorial instanceof GamesTutorial && ((GamesTutorial) tutorial).buildSequence(createGame, recyclerViewLayout.getList());
     }
 
     public interface OnParticipateGame {

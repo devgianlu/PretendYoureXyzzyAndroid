@@ -58,7 +58,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:text="@string/timerMultiplierLabel"
-                android:textColor="@android:color/tertiary_text_light"
+                android:textColor="?android:textColorTertiary"
                 android:textSize="12sp" />
 
             <Spinner
@@ -96,7 +96,7 @@
                 android:layout_marginStart="4dp"
                 android:id="@+id/editGameOptions_decksTitle"
                 android:text="@string/cardSetsLabel"
-                android:textColor="@android:color/tertiary_text_light"
+                android:textColor="?android:textColorTertiary"
                 android:textSize="12sp" />
 
             <LinearLayout

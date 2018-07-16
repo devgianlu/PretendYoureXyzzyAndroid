@@ -71,7 +71,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
             holder.status.setVisibility(View.VISIBLE);
             switch (server.status.status) {
                 case ONLINE:
-                    holder.statusIcon.setImageResource(R.drawable.ic_done_black_48dp);
+                    holder.statusIcon.setImageResource(R.drawable.baseline_done_24);
                     holder.latency.setVisibility(View.VISIBLE);
                     holder.latency.setText(String.format(Locale.getDefault(), "%dms", server.status.latency));
                     holder.error.setVisibility(View.GONE);
@@ -81,7 +81,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
                     holder.details.setHtml(R.string.usersAndGames, stats.users, stats.maxUsers, stats.games, stats.maxGames);
                     break;
                 case ERROR:
-                    holder.statusIcon.setImageResource(R.drawable.ic_error_outline_black_48dp);
+                    holder.statusIcon.setImageResource(R.drawable.baseline_error_outline_24);
                     holder.latency.setVisibility(View.GONE);
                     holder.details.setVisibility(View.GONE);
 
@@ -89,7 +89,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
                     holder.error.setText(server.status.ex.getLocalizedMessage());
                     break;
                 case OFFLINE:
-                    holder.statusIcon.setImageResource(R.drawable.ic_clear_black_48dp);
+                    holder.statusIcon.setImageResource(R.drawable.baseline_clear_24);
                     holder.latency.setVisibility(View.GONE);
                     holder.details.setVisibility(View.GONE);
 

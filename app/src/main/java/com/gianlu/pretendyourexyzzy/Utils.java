@@ -1,13 +1,8 @@
 package com.gianlu.pretendyourexyzzy;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
-import android.support.design.widget.FloatingActionButton;
-import android.view.View;
 
-import com.getkeepsafe.taptargetview.TapTarget;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -77,12 +72,6 @@ public class Utils {
                 return set;
 
         return null;
-    }
-
-    @NonNull
-    public static TapTarget tapTargetForView(View view, @StringRes int title, @StringRes int desc) {
-        Context ctx = view.getContext();
-        return TapTarget.forView(view, ctx.getString(title), ctx.getString(desc)).transparentTarget(view instanceof FloatingActionButton);
     }
 
     public static int indexOf(List<GameInfo.Player> players, String nick) {

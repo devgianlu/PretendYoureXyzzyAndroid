@@ -4,4 +4,4 @@
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     android:background="?android:attr/selectableItemBackground"
-    android:textColor="@android:color/secondary_text_light" />
+    android:textColor="?android:textColorSecondary" />

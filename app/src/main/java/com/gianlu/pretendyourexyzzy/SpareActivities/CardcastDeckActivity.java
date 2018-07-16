@@ -45,7 +45,7 @@ public class CardcastDeckActivity extends ActivityWithDialog {
     public boolean onPrepareOptionsMenu(Menu menu) {
         OngoingGameHelper.Listener listener = OngoingGameHelper.get();
         menu.findItem(R.id.cardcastDeckInfo_add).setVisible(listener != null && listener.canModifyCardcastDecks());
-        menu.findItem(R.id.cardcastDeckInfo_toggleStar).setIcon(StarredDecksManager.hasDeck(this, code) ? R.drawable.ic_star_white_48dp : R.drawable.ic_star_border_white_48dp);
+        menu.findItem(R.id.cardcastDeckInfo_toggleStar).setIcon(StarredDecksManager.hasDeck(this, code) ? R.drawable.baseline_star_24 : R.drawable.baseline_star_border_24);
         return true;
     }
 

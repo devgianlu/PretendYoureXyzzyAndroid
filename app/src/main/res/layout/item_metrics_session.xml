@@ -16,14 +16,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginEnd="4dp"
-            android:textColor="@android:color/secondary_text_light" />
+            android:textColor="?android:textColorSecondary" />
 
         <com.gianlu.commonutils.SuperTextView
             android:id="@+id/itemSession_playedAndJudged"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:textColor="@android:color/tertiary_text_light"
+            android:textColor="?android:textColorTertiary"
             android:textSize="12sp" />
 
     </LinearLayout>
@@ -32,6 +32,6 @@
         android:id="@+id/itemSession_login"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@android:color/tertiary_text_light" />
+        android:textColor="?android:textColorTertiary" />
 
 </LinearLayout>

@@ -10,7 +10,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -175,12 +174,6 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     public void onNameSelected(@NonNull String name) {
         final FragmentActivity activity = getActivity();
         if (activity != null) UserInfoDialog.loadAndShow(pyx, activity, name);
-    }
-
-    @Nullable
-    @Override
-    public RecyclerView getRecyclerView() {
-        return layout.getList();
     }
 
     @Override

@@ -19,7 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
@@ -780,8 +779,8 @@ public class BestGameManager implements Pyx.OnEventListener {
         }
 
         @Override
-        public boolean buildSequence(@NonNull BaseTutorial tutorial, @NonNull TapTargetSequence sequence) {
-            return ((HowToPlayTutorial) tutorial).buildSequence(context, sequence, blackCard, whiteCardsList, playersList);
+        public boolean buildSequence(@NonNull BaseTutorial tutorial) {
+            return ((HowToPlayTutorial) tutorial).buildSequence(blackCard, whiteCardsList, playersList);
         }
 
         public void tryShowingTutorials() {

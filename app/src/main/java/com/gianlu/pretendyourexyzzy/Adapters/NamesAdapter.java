@@ -32,12 +32,6 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
         return new ViewHolder(parent);
     }
 
-    @Nullable
-    @Override
-    protected RecyclerView getRecyclerView() {
-        return listener == null ? null : listener.getRecyclerView();
-    }
-
     @Override
     protected boolean matchQuery(@NonNull Name item, @Nullable String query) {
         return query == null || item.withSigil().toLowerCase().contains(query.toLowerCase());
@@ -92,9 +86,6 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
 
     public interface Listener {
         void onNameSelected(@NonNull String name);
-
-        @Nullable
-        RecyclerView getRecyclerView();
 
         void shouldUpdateItemCount(int count);
     }
