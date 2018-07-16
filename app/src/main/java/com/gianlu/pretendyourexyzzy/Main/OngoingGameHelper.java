@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.Main;
 
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 public final class OngoingGameHelper {
@@ -18,7 +19,7 @@ public final class OngoingGameHelper {
     public interface Listener {
         boolean canModifyCardcastDecks();
 
-        void addCardcastDeck(String code);
+        void addCardcastDeck(@NonNull String code);
 
         void addCardcastStarredDecks();
     }

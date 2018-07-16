@@ -21,6 +21,7 @@ import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Drawer.BaseDrawerItem;
 import com.gianlu.commonutils.Drawer.DrawerManager;
+import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Dialogs.EditGameOptionsDialog;
@@ -250,7 +251,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     @Override
-    public void addCardcastDeck(String code) {
+    public void addCardcastDeck(@NonNull String code) {
         if (!canModifyCardcastDecks()) return;
         ongoingGameFragment.addCardcastDeck(code);
     }
@@ -329,8 +330,19 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     public void onLeftGame() {
         currentGame = null;
 
-        navigation.getMenu().clear();
-        navigation.inflateMenu(R.menu.navigation_lobby);
+        try {
+            navigation.getMenu().clear();
+            navigation.inflateMenu(R.menu.navigation_lobby);
+        } catch (IllegalStateException ex) {
+            Logging.log(ex);
+            navigation.post(new Runnable() {
+                @Override
+                public void run() {
+                    navigation.inflateMenu(R.menu.navigation_lobby);
+                }
+            });
+        }
+
         if (!pyx.config().globalChatEnabled) navigation.getMenu().removeItem(R.id.main_globalChat);
         navigation.setSelectedItemId(R.id.main_games);
 

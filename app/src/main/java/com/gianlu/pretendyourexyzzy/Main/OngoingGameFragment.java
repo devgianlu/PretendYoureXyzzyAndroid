@@ -321,8 +321,8 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     }
 
     @Override
-    public void addCardcastDeck(String code) {
-        if (code == null || code.length() != 5) {
+    public void addCardcastDeck(@NonNull String code) {
+        if (code.length() != 5) {
             showToast(Toaster.build().message(R.string.invalidCardcastCode).extra(code));
             return;
         }
