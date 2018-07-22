@@ -395,6 +395,10 @@ public class Pyx implements Closeable {
         client.dispatcher().executorService().shutdown();
     }
 
+    public boolean hasMetrics() {
+        return server.metricsUrl != null;
+    }
+
     public enum Op {
         REGISTER("r"),
         FIRST_LOAD("fl"),
@@ -457,7 +461,7 @@ public class Pyx implements Closeable {
 
     public static class MetricsNotSupportedException extends Exception {
         MetricsNotSupportedException(Server server) {
-            super(server.name);
+            super("Metrics aren't supported on this server: " + server.name);
         }
     }
 
@@ -482,6 +486,7 @@ public class Pyx implements Closeable {
                 pyxServers.put("PYX1", new Server(parseUrlOrThrow("https://pyx-1.pretendyoure.xyz/zy/"), pyxMetrics, "The Biggest, Blackest Dick"));
                 pyxServers.put("PYX2", new Server(parseUrlOrThrow("https://pyx-2.pretendyoure.xyz/zy/"), pyxMetrics, "A Falcon with a Box on its Head"));
                 pyxServers.put("PYX3", new Server(parseUrlOrThrow("https://pyx-3.pretendyoure.xyz/zy/"), pyxMetrics, "Dickfingers"));
+                pyxServers.put("BACKUP1", new Server(parseUrlOrThrow("http://pyx.gianlu.xyz"), null, "Backup server by devgianlu"));
             } catch (JSONException ex) {
                 Logging.log(ex);
             }
