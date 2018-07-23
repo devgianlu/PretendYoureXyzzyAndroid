@@ -201,23 +201,29 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     @Override
     public void onDone(@NonNull final GamesList result) {
         if (!isAdded()) return;
-        adapter = new GamesAdapter(getContext(), result, pyx, Prefs.getBoolean(getContext(), PK.FILTER_LOCKED_LOBBIES, false), this);
-        recyclerViewLayout.loadListData(adapter);
-        recyclerViewLayout.getList().getLayoutManager().onRestoreInstanceState(recyclerViewSavedInstance);
-        recyclerViewSavedInstance = null;
 
-        lastResult = result;
-        updateActivityTitle();
-        if (launchGame != null) {
-            launchGameInternal(launchGame, launchGamePassword, launchGameShouldRequest);
+        if (result.isEmpty()) {
+            recyclerViewLayout.showInfo(R.string.noGames);
         } else {
-            recyclerViewLayout.getList().post(new Runnable() {
-                @Override
-                public void run() {
-                    tutorialManager.tryShowingTutorials(getActivity());
-                }
-            });
+            adapter = new GamesAdapter(getContext(), result, pyx, Prefs.getBoolean(getContext(), PK.FILTER_LOCKED_LOBBIES, false), this);
+            recyclerViewLayout.loadListData(adapter);
+            recyclerViewLayout.getList().getLayoutManager().onRestoreInstanceState(recyclerViewSavedInstance);
+
+            lastResult = result;
+            updateActivityTitle();
+            if (launchGame != null) {
+                launchGameInternal(launchGame, launchGamePassword, launchGameShouldRequest);
+            } else {
+                recyclerViewLayout.getList().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        tutorialManager.tryShowingTutorials(getActivity());
+                    }
+                });
+            }
         }
+
+        recyclerViewSavedInstance = null;
     }
 
     private void updateActivityTitle() {

@@ -25,15 +25,15 @@ import java.util.List;
 
 public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHolder, Game, GamesAdapter.SortBy, Game.Protection> {
     private final Context context;
-    private final Listener handler;
+    private final Listener listener;
     private final LayoutInflater inflater;
     private final FirstLoadedPyx pyx;
 
-    public GamesAdapter(Context context, List<Game> objs, FirstLoadedPyx pyx, boolean filterOutLockedLobbies, Listener handler) {
+    public GamesAdapter(Context context, List<Game> objs, FirstLoadedPyx pyx, boolean filterOutLockedLobbies, Listener listener) {
         super(objs, SortBy.NUM_PLAYERS);
         this.context = context;
         this.pyx = pyx;
-        this.handler = handler;
+        this.listener = listener;
         this.inflater = LayoutInflater.from(context);
 
         setHasStableIds(true);
@@ -98,14 +98,14 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         holder.spectate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (handler != null) handler.spectateGame(game);
+                if (listener != null) listener.spectateGame(game);
             }
         });
 
         holder.join.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (handler != null) handler.joinGame(game);
+                if (listener != null) listener.joinGame(game);
             }
         });
 
