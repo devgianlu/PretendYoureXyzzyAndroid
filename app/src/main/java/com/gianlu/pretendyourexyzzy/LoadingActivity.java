@@ -18,11 +18,9 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.ConnectivityChecker;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
-import com.gianlu.commonutils.OfflineActivity;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.commonutils.Tutorial.BaseTutorial;
@@ -141,17 +139,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         }
 
-        ConnectivityChecker.checkAsync(new ConnectivityChecker.OnCheck() {
-            @Override
-            public void goodToGo() {
-                Pyx.get(LoadingActivity.this).firstLoad(LoadingActivity.this);
-            }
-
-            @Override
-            public void offline() {
-                OfflineActivity.startActivity(LoadingActivity.this, R.string.app_name, LoadingActivity.class);
-            }
-        });
+        Pyx.get(LoadingActivity.this).firstLoad(LoadingActivity.this);
     }
 
     private void changeServerDialog(boolean dismissible) {
