@@ -368,7 +368,6 @@ public class BestGameManager implements Pyx.OnEventListener {
             info.game.status = status;
             if (obj.has("gp")) perm.gamePermalink = obj.getString("gp");
 
-            ui.setStartGameVisible(status == Game.Status.LOBBY && Objects.equals(host(), me()));
             switch (status) {
                 case PLAYING:
                     playingState(new Card(obj.getJSONObject("bc")), obj.getInt("Pt"));
@@ -378,6 +377,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                     judgingState(CardsGroup.list(obj.getJSONArray("wc")), obj.getInt("Pt"));
                     break;
                 case LOBBY:
+                    playersAdapter.resetPlayers();
                     ui.event(UiEvent.WAITING_FOR_START);
                     ui.blackCard(null);
                     tableAdapter.clear();
@@ -389,6 +389,8 @@ public class BestGameManager implements Pyx.OnEventListener {
                     // Never called
                     break;
             }
+
+            ui.setStartGameVisible(status == Game.Status.LOBBY && Objects.equals(host(), me()));
         }
 
         public void nextRound() {
@@ -479,7 +481,11 @@ public class BestGameManager implements Pyx.OnEventListener {
                     else ui.event(UiEvent.GAME_WINNER, player.name);
                     break;
                 case HOST:
-                    if (player.name.equals(me())) ui.event(UiEvent.YOU_GAME_HOST);
+                    gameInfo().game.host = player.name;
+                    if (player.name.equals(me())) {
+                        ui.event(UiEvent.YOU_GAME_HOST);
+                        ui.setStartGameVisible(gameInfo().game.status == Game.Status.LOBBY);
+                    }
                     break;
                 case SPECTATOR:
                     ui.showTableCards(false);
@@ -493,11 +499,11 @@ public class BestGameManager implements Pyx.OnEventListener {
         }
 
         public void gamePlayerLeave(@NonNull String nick) {
+            int pos = Utils.indexOf(info.players, nick);
+            if (pos != -1 && pos < judgeIndex) judgeIndex--;
+
             info.removePlayer(nick);
             playersAdapter.removePlayer(nick);
-
-            int pos = Utils.indexOf(info.players, nick);
-            if (pos < judgeIndex) judgeIndex--;
 
             if (Objects.equals(host(), nick)) {
                 if (info.players.isEmpty()) {

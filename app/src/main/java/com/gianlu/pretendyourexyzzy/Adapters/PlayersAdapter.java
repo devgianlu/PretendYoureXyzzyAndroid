@@ -95,6 +95,12 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         notifyItemInserted(players.size() - 1);
     }
 
+    public void resetPlayers() {
+        for (int i = 0; i < players.size(); i++)
+            players.set(i, new GameInfo.Player(players.get(0).name, 0, GameInfo.PlayerStatus.IDLE));
+        notifyDataSetChanged();
+    }
+
     public interface Listener {
         void onPlayerSelected(@NonNull GameInfo.Player player);
     }
