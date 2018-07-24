@@ -630,6 +630,7 @@ public class BestGameManager implements Pyx.OnEventListener {
 
             playersList = layout.findViewById(R.id.gameLayout_players);
             playersList.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
+            Utils.removeAllDecorations(playersList);
             playersList.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
         }
 

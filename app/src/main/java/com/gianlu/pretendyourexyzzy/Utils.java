@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.RecyclerView;
 
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
@@ -28,6 +29,11 @@ public class Utils {
     public static final String ACTION_SAVE_SHARE_ROUND = "save_share_round";
     public static final String ACTION_SENT_MSG = "sent_message";
     public static final String ACTION_OPEN_URBAN_DICT = "opened_urban_dict_sheet";
+
+    public static void removeAllDecorations(@NonNull RecyclerView recyclerView) {
+        for (int i = 0; i < recyclerView.getItemDecorationCount(); i++)
+            recyclerView.removeItemDecorationAt(i);
+    }
 
     @NonNull
     public static String buildDeckCountString(int decks, int black, int white) {

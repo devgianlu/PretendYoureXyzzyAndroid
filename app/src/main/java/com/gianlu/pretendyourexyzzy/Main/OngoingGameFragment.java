@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -77,6 +78,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     private CardcastSheet cardcastSheet;
     private MessageView message;
     private TutorialManager tutorialManager;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @NonNull
     public static OngoingGameFragment getInstance(@NonNull GamePermalink game, @Nullable SavedState savedState) {
@@ -171,6 +173,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         loading.setVisibility(View.GONE);
         container.setVisibility(View.VISIBLE);
         message.hide();
+        swipeRefreshLayout.setRefreshing(false);
 
         tutorialManager.tryShowingTutorials(getActivity());
     }
@@ -190,6 +193,8 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         loading = layout.findViewById(R.id.ongoingGame_loading);
         container = layout.findViewById(R.id.ongoingGame_container);
         message = layout.findViewById(R.id.ongoingGame_message);
+        swipeRefreshLayout = layout.findViewById(R.id.ongoingGame_swipeRefresh);
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
 
         Bundle args = getArguments();
         if (args == null || (perm = (GamePermalink) args.getSerializable("game")) == null) {
@@ -211,6 +216,14 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
             message.setError(R.string.failedLoading);
             return layout;
         }
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                manager = null;
+                pyx.getGameInfoAndCards(perm.gid, OngoingGameFragment.this);
+            }
+        });
 
         pyx.getGameInfoAndCards(perm.gid, this);
 
