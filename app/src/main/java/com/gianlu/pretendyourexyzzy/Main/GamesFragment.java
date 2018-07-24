@@ -202,25 +202,21 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     public void onDone(@NonNull final GamesList result) {
         if (!isAdded()) return;
 
-        if (result.isEmpty()) {
-            recyclerViewLayout.showInfo(R.string.noGames);
-        } else {
-            adapter = new GamesAdapter(getContext(), result, pyx, Prefs.getBoolean(getContext(), PK.FILTER_LOCKED_LOBBIES, false), this);
-            recyclerViewLayout.loadListData(adapter);
-            recyclerViewLayout.getList().getLayoutManager().onRestoreInstanceState(recyclerViewSavedInstance);
+        adapter = new GamesAdapter(getContext(), result, pyx, Prefs.getBoolean(getContext(), PK.FILTER_LOCKED_LOBBIES, false), this);
+        recyclerViewLayout.loadListData(adapter, false);
+        recyclerViewLayout.getList().getLayoutManager().onRestoreInstanceState(recyclerViewSavedInstance);
 
-            lastResult = result;
-            updateActivityTitle();
-            if (launchGame != null) {
-                launchGameInternal(launchGame, launchGamePassword, launchGameShouldRequest);
-            } else {
-                recyclerViewLayout.getList().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        tutorialManager.tryShowingTutorials(getActivity());
-                    }
-                });
-            }
+        lastResult = result;
+        updateActivityTitle();
+        if (launchGame != null) {
+            launchGameInternal(launchGame, launchGamePassword, launchGameShouldRequest);
+        } else {
+            recyclerViewLayout.getList().post(new Runnable() {
+                @Override
+                public void run() {
+                    tutorialManager.tryShowingTutorials(getActivity());
+                }
+            });
         }
 
         recyclerViewSavedInstance = null;
@@ -264,6 +260,12 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         } else {
             joinGame(game.gid, null);
         }
+    }
+
+    @Override
+    public void onItemCountUpdated(int count) {
+        if (count == 0) recyclerViewLayout.showInfo(R.string.noGames);
+        else recyclerViewLayout.showList();
     }
 
     private void spectateGame(final int gid, @Nullable String password) {

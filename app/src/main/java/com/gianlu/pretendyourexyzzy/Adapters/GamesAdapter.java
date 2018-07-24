@@ -61,6 +61,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
 
     @Override
     protected void shouldUpdateItemCount(int count) {
+        if (listener != null) listener.onItemCountUpdated(count);
     }
 
     @NonNull
@@ -143,6 +144,8 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         void spectateGame(@NonNull Game game);
 
         void joinGame(@NonNull Game game);
+
+        void onItemCountUpdated(int count);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
