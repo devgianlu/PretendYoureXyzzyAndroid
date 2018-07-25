@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.annotation.MenuRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
@@ -79,6 +80,21 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         if (drawerManager != null) drawerManager.syncTogglerState();
     }
 
+    private void safeInflateNavigationMenu(@MenuRes final int res) {
+        try {
+            navigation.getMenu().clear();
+            navigation.inflateMenu(res);
+        } catch (IllegalStateException ex) {
+            Logging.log(ex);
+            navigation.post(new Runnable() {
+                @Override
+                public void run() {
+                    navigation.inflateMenu(res);
+                }
+            });
+        }
+    }
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -91,8 +107,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             ongoingGameFragment = OngoingGameFragment.getInstance(currentGame, state);
             transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
 
-            navigation.getMenu().clear();
-            navigation.inflateMenu(R.menu.navigation_ongoing_game);
+            safeInflateNavigationMenu(R.menu.navigation_ongoing_game);
 
             transaction.commitNowAllowingStateLoss();
             navigation.setSelectedItemId(R.id.main_ongoingGame);
@@ -324,8 +339,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
         gameChatFragment = ChatFragment.getGameInstance(game.gid);
         transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT).commitNowAllowingStateLoss();
-        navigation.getMenu().clear();
-        navigation.inflateMenu(R.menu.navigation_ongoing_game);
+        safeInflateNavigationMenu(R.menu.navigation_ongoing_game);
         if (!pyx.config().globalChatEnabled) navigation.getMenu().removeItem(R.id.main_globalChat);
         navigation.setSelectedItemId(R.id.main_ongoingGame);
 
@@ -336,18 +350,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     public void onLeftGame() {
         currentGame = null;
 
-        try {
-            navigation.getMenu().clear();
-            navigation.inflateMenu(R.menu.navigation_lobby);
-        } catch (IllegalStateException ex) {
-            Logging.log(ex);
-            navigation.post(new Runnable() {
-                @Override
-                public void run() {
-                    navigation.inflateMenu(R.menu.navigation_lobby);
-                }
-            });
-        }
+        safeInflateNavigationMenu(R.menu.navigation_lobby);
 
         if (!pyx.config().globalChatEnabled) navigation.getMenu().removeItem(R.id.main_globalChat);
         navigation.setSelectedItemId(R.id.main_games);
