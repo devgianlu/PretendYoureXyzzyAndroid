@@ -15,7 +15,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -164,7 +163,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
         RecyclerViewLayout layout = new RecyclerViewLayout(this);
         builder.setView(layout);
-        layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
 
         layout.disableSwipeRefresh();
         layout.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));

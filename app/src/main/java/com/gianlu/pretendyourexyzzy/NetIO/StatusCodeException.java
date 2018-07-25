@@ -9,7 +9,7 @@ public class StatusCodeException extends IOException {
         this(resp.code(), resp.message());
     }
 
-    StatusCodeException(int code, String message) {
+    private StatusCodeException(int code, String message) {
         super(code + ": " + message);
     }
 }
