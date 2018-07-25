@@ -55,6 +55,7 @@ import okhttp3.ResponseBody;
 public class Pyx implements Closeable {
     protected final static int AJAX_TIMEOUT = 5;
     protected final static int POLLING_TIMEOUT = 30;
+    private static final HttpUrl WELCOME_MSG_URL = HttpUrl.parse("https://script.google.com/macros/s/AKfycbyvgCI8vdDr9MsVzq-EoACVpIhAoiE5cy8BiDwVH0SZ_V_xRkmA/exec");
     public final Server server;
     protected final Handler handler;
     protected final OkHttpClient client;
@@ -187,6 +188,40 @@ public class Pyx implements Closeable {
         }
 
         return new FirstLoadAndConfig(fl, cahConfig);
+    }
+
+    public final void getWelcomeMessage(final OnResult<String> listener) {
+        String cached = Prefs.getString(preferences, PK.WELCOME_MSG_CACHE, null);
+        if (cached != null) {
+            long age = Prefs.getLong(preferences, PK.WELCOME_MSG_CACHE_AGE, 0);
+            if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(12))
+                listener.onDone(cached);
+        }
+
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject obj = new JSONObject(requestSync(WELCOME_MSG_URL));
+                    final String msg = obj.getString("msg");
+                    Prefs.putString(preferences, PK.WELCOME_MSG_CACHE, msg);
+                    Prefs.putLong(preferences, PK.WELCOME_MSG_CACHE_AGE, System.currentTimeMillis());
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(msg);
+                        }
+                    });
+                } catch (JSONException | IOException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
     }
 
     @NonNull

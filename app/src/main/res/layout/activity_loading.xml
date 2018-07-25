@@ -104,6 +104,16 @@
         </LinearLayout>
     </LinearLayout>
 
+    <com.gianlu.commonutils.SuperTextView
+        android:id="@+id/loading_welcomeMsg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autoLink="web"
+        android:paddingEnd="24dp"
+        android:paddingStart="24dp"
+        android:paddingTop="24dp"
+        android:textAlignment="center" />
+
     <View
         android:layout_width="match_parent"
         android:layout_height="0dp"

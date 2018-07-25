@@ -16,7 +16,9 @@ public enum PK implements Prefs.PrefKey {
     LAST_JSESSIONID("lastJSessionId"),
     LAST_PERSISTENT_ID("lastPid"),
     FIRST_RUN("first_run"),
-    LAST_ID_CODE("lastIdCode");
+    LAST_ID_CODE("lastIdCode"),
+    WELCOME_MSG_CACHE("welcomeMsgCache"),
+    WELCOME_MSG_CACHE_AGE("welcomeMsgCacheAge");
 
     private final String key;
 

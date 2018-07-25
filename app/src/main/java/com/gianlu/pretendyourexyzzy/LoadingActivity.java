@@ -25,6 +25,7 @@ import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.RecyclerViewLayout;
+import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.commonutils.Tutorial.BaseTutorial;
 import com.gianlu.commonutils.Tutorial.TutorialManager;
@@ -60,6 +61,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private boolean launchGameShouldRequest;
     private TextInputLayout registerIdCode;
     private TutorialManager tutorialManager;
+    private SuperTextView welcomeMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +100,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         registerNickname = findViewById(R.id.loading_registerNickname);
         registerSubmit = findViewById(R.id.loading_registerSubmit);
         registerIdCode = findViewById(R.id.loading_registerIdCode);
+        welcomeMessage = findViewById(R.id.loading_welcomeMsg);
 
         changeServer = findViewById(R.id.loading_changeServer);
         changeServer.setOnClickListener(new View.OnClickListener() {
@@ -141,7 +144,21 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         }
 
-        Pyx.get(LoadingActivity.this).firstLoad(this);
+        Pyx pyx = Pyx.get(this);
+        pyx.getWelcomeMessage(new Pyx.OnResult<String>() {
+            @Override
+            public void onDone(@NonNull String result) {
+                welcomeMessage.setVisibility(View.VISIBLE);
+                welcomeMessage.setHtml(result);
+            }
+
+            @Override
+            public void onException(@NonNull Exception ex) {
+                Logging.log(ex);
+                welcomeMessage.setVisibility(View.GONE);
+            }
+        });
+        pyx.firstLoad(this);
     }
 
     private void changeServerDialog(boolean dismissible) {
