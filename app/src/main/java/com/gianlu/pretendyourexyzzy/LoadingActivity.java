@@ -12,7 +12,10 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -22,9 +25,11 @@ import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.Preferences.Prefs;
+import com.gianlu.commonutils.RecyclerViewLayout;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.commonutils.Tutorial.BaseTutorial;
 import com.gianlu.commonutils.Tutorial.TutorialManager;
+import com.gianlu.pretendyourexyzzy.Adapters.ServersAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
@@ -143,37 +148,38 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     private void changeServerDialog(boolean dismissible) {
-        final List<Pyx.Server> availableServers = Pyx.Server.loadAllServers(this);
-
-        int selectedServer = Pyx.Server.indexOf(availableServers, Prefs.getString(LoadingActivity.this, PK.LAST_SERVER, "PYX1"));
-        if (selectedServer < 0) selectedServer = 0;
-
-        CharSequence[] availableStrings = new CharSequence[availableServers.size()];
-        for (int i = 0; i < availableStrings.length; i++)
-            availableStrings[i] = availableServers.get(i).name;
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(LoadingActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.changeServer)
                 .setCancelable(dismissible)
-                .setSingleChoiceItems(availableStrings, selectedServer, new DialogInterface.OnClickListener() {
+                .setNeutralButton(R.string.manage, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        startActivity(new Intent(LoadingActivity.this, ManageServersActivity.class));
                         dialog.dismiss();
-                        setServer(availableServers.get(which));
-                        recreate();
                     }
                 });
 
-        builder.setNeutralButton(R.string.manage, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                startActivity(new Intent(LoadingActivity.this, ManageServersActivity.class));
-                dialog.dismiss();
-            }
-        });
-
         if (dismissible)
             builder.setNegativeButton(android.R.string.cancel, null);
+
+        RecyclerViewLayout layout = new RecyclerViewLayout(this);
+        builder.setView(layout);
+        layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+
+        layout.disableSwipeRefresh();
+        layout.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        layout.getList().addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        layout.loadListData(new ServersAdapter(this, Pyx.Server.loadAllServers(this), new ServersAdapter.Listener() {
+            @Override
+            public void shouldUpdateItemCount(int count) {
+            }
+
+            @Override
+            public void serverSelected(@NonNull Pyx.Server server) {
+                setServer(server);
+                recreate(); // FIXME: This is a bit rude
+            }
+        }));
 
         showDialog(builder);
     }
