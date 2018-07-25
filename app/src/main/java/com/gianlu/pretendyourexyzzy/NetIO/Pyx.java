@@ -478,6 +478,7 @@ public class Pyx implements Closeable {
     public static class Server {
         private final static Map<String, Server> pyxServers = new HashMap<>();
         private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
+        private static final String DEFAULT_FALLBACK_SERVER = "BACKUP1";
 
         static {
             try {
@@ -541,14 +542,6 @@ public class Pyx implements Closeable {
             }
 
             return null;
-        }
-
-        public static int indexOf(List<Server> servers, String name) {
-            for (int i = 0; i < servers.size(); i++)
-                if (Objects.equals(servers.get(i).name, name))
-                    return i;
-
-            return -1;
         }
 
         @NonNull
@@ -620,7 +613,7 @@ public class Pyx implements Closeable {
 
         @NonNull
         private static Server lastServer(Context context) {
-            String name = Prefs.getString(context, PK.LAST_SERVER, "PYX1");
+            String name = Prefs.getString(context, PK.LAST_SERVER, DEFAULT_FALLBACK_SERVER);
 
             Server server = null;
             for (Server pyxServer : pyxServers.values())
@@ -635,7 +628,7 @@ public class Pyx implements Closeable {
                 }
             }
 
-            if (server == null) server = pyxServers.get("PYX1");
+            if (server == null) server = pyxServers.get(DEFAULT_FALLBACK_SERVER);
 
             return server;
         }

@@ -84,8 +84,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         }, 1000);
 
-        Logging.clearLogs(this);
-
         if (Prefs.getBoolean(this, PK.FIRST_RUN, true)) {
             startActivity(new Intent(this, TutorialActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
@@ -143,11 +141,11 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         }
 
-        Pyx.get(LoadingActivity.this).firstLoad(LoadingActivity.this);
+        Pyx.get(LoadingActivity.this).firstLoad(this);
     }
 
     private void changeServerDialog(boolean dismissible) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.changeServer)
                 .setCancelable(dismissible)
                 .setNeutralButton(R.string.manage, new DialogInterface.OnClickListener() {
@@ -175,7 +173,10 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             @Override
             public void serverSelected(@NonNull Pyx.Server server) {
                 setServer(server);
-                recreate(); // FIXME: This is a bit rude
+                loading.setVisibility(View.VISIBLE);
+                register.setVisibility(View.GONE);
+                Pyx.get(LoadingActivity.this).firstLoad(LoadingActivity.this);
+                dismissDialog();
             }
         }));
 
