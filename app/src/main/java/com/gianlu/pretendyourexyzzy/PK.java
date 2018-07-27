@@ -10,6 +10,8 @@ public enum PK implements Prefs.PrefKey {
     FILTER_LOCKED_LOBBIES("filterLockedLobbies"),
     LAST_SERVER("lastServer"),
     USER_SERVERS("userServers"),
+    API_SERVERS("apiServers"),
+    API_SERVERS_CACHE_AGE("apiServersCacheAge"),
     STARRED_CARDS("starredCards"),
     KEEP_SCREEN_ON("keepScreenOn"),
     STARRED_DECKS("starredDecks"),

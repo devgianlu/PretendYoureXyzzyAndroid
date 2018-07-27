@@ -34,10 +34,13 @@ import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -56,6 +59,7 @@ public class Pyx implements Closeable {
     protected final static int AJAX_TIMEOUT = 5;
     protected final static int POLLING_TIMEOUT = 30;
     private static final HttpUrl WELCOME_MSG_URL = HttpUrl.parse("https://script.google.com/macros/s/AKfycbyvgCI8vdDr9MsVzq-EoACVpIhAoiE5cy8BiDwVH0SZ_V_xRkmA/exec");
+    private static final HttpUrl DISCOVERY_API_LIST = HttpUrl.parse("https://script.google.com/macros/s/AKfycbxaWVr4sEiivlmw_0WqNaYXyMwkZGoarBXcQ7HfZ3tJ53WFqogG/exec?op=list");
     public final Server server;
     protected final Handler handler;
     protected final OkHttpClient client;
@@ -194,8 +198,10 @@ public class Pyx implements Closeable {
         String cached = Prefs.getString(preferences, PK.WELCOME_MSG_CACHE, null);
         if (cached != null) {
             long age = Prefs.getLong(preferences, PK.WELCOME_MSG_CACHE_AGE, 0);
-            if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(12))
+            if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(12)) {
                 listener.onDone(cached);
+                return;
+            }
         }
 
         executor.execute(new Runnable() {
@@ -219,6 +225,44 @@ public class Pyx implements Closeable {
                             listener.onException(ex);
                         }
                     });
+                }
+            }
+        });
+    }
+
+    public final void getDiscoveryApiServers(@Nullable final OnResult<Collection<Server>> listener) {
+        if (Prefs.has(preferences, PK.API_SERVERS)) {
+            long age = Prefs.getLong(preferences, PK.API_SERVERS_CACHE_AGE, 0);
+            if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(6)) {
+                if (listener != null)
+                    listener.onDone(Server.loadServers(preferences, PK.API_SERVERS));
+                return;
+            }
+        }
+
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONArray array = new JSONArray(requestSync(DISCOVERY_API_LIST));
+                    final List<Server> servers = Server.parseAndSave(preferences, array);
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (listener != null) listener.onDone(servers);
+                        }
+                    });
+                } catch (JSONException | IOException ex) {
+                    if (listener != null) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onException(ex);
+                            }
+                        });
+                    } else {
+                        Logging.log(ex);
+                    }
                 }
             }
         });
@@ -434,6 +478,7 @@ public class Pyx implements Closeable {
         return server.metricsUrl != null;
     }
 
+
     public enum Op {
         REGISTER("r"),
         FIRST_LOAD("fl"),
@@ -530,7 +575,7 @@ public class Pyx implements Closeable {
 
         public final HttpUrl url;
         public final String name;
-        public final HttpUrl metricsUrl;
+        private final HttpUrl metricsUrl;
         public transient volatile ServersChecker.CheckResult status = null;
         private transient HttpUrl ajaxUrl;
         private transient HttpUrl pollingUrl;
@@ -545,6 +590,21 @@ public class Pyx implements Closeable {
 
         Server(JSONObject obj) throws JSONException {
             this(parseUrlOrThrow(obj.getString("uri")), null, obj.getString("name"));
+        }
+
+        @NonNull
+        public static List<Server> parseAndSave(SharedPreferences preferences, JSONArray array) throws JSONException {
+            List<Server> servers = new ArrayList<>(array.length());
+            for (int i = 0; i < array.length(); i++) {
+                HttpUrl url = HttpUrl.parse("http://" + array.getJSONObject(i).getString("ip"));
+                if (url == null) continue;
+                servers.add(new Server(url, null, url.host() + " server"));
+            }
+
+            saveTo(preferences, PK.API_SERVERS, servers);
+            Prefs.putLong(preferences, PK.API_SERVERS_CACHE_AGE, System.currentTimeMillis());
+
+            return servers;
         }
 
         @Nullable
@@ -606,18 +666,20 @@ public class Pyx implements Closeable {
         }
 
         @NonNull
-        public static List<Server> loadAllServers(Context context) {
-            List<Server> servers = loadUserServers(context);
-            servers.addAll(0, pyxServers.values());
-            return servers;
+        public static Collection<Server> loadAllServers(Context context) {
+            Set<Server> all = new HashSet<>();
+            all.addAll(pyxServers.values());
+            all.addAll(loadServers(context, PK.USER_SERVERS));
+            all.addAll(loadServers(context, PK.API_SERVERS));
+            return all;
         }
 
         @NonNull
-        private static List<Server> loadUserServers(Context context) {
-            List<Server> servers = new ArrayList<>();
+        private static Collection<Server> loadServers(SharedPreferences preferences, Prefs.PrefKey key) {
+            Set<Server> servers = new HashSet<>();
             JSONArray array;
             try {
-                array = Prefs.getJSONArray(context, PK.USER_SERVERS, new JSONArray());
+                array = Prefs.getJSONArray(preferences, key, new JSONArray());
             } catch (JSONException ex) {
                 Logging.log(ex);
                 return new ArrayList<>();
@@ -634,9 +696,14 @@ public class Pyx implements Closeable {
             return servers;
         }
 
+        @NonNull
+        private static Collection<Server> loadServers(Context context, Prefs.PrefKey key) {
+            return loadServers(PreferenceManager.getDefaultSharedPreferences(context), key);
+        }
+
         @Nullable
-        private static Server getUserServer(Context context, String name) throws JSONException {
-            JSONArray array = Prefs.getJSONArray(context, PK.USER_SERVERS, new JSONArray());
+        private static Server getServer(Context context, Prefs.PrefKey key, String name) throws JSONException {
+            JSONArray array = Prefs.getJSONArray(context, key, new JSONArray());
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
                 if (Objects.equals(obj.optString("name"), name))
@@ -657,7 +724,15 @@ public class Pyx implements Closeable {
 
             if (server == null) {
                 try {
-                    server = getUserServer(context, name);
+                    server = getServer(context, PK.USER_SERVERS, name);
+                } catch (JSONException ex) {
+                    Logging.log(ex);
+                }
+            }
+
+            if (server == null) {
+                try {
+                    server = getServer(context, PK.API_SERVERS, name);
                 } catch (JSONException ex) {
                     Logging.log(ex);
                 }
@@ -668,7 +743,7 @@ public class Pyx implements Closeable {
             return server;
         }
 
-        public static void addServer(Context context, Server server) throws JSONException {
+        public static void addUserServer(Context context, Server server) throws JSONException {
             JSONArray array = Prefs.getJSONArray(context, PK.USER_SERVERS, new JSONArray());
             for (int i = array.length() - 1; i >= 0; i--) {
                 if (Objects.equals(array.getJSONObject(i).getString("name"), server.name))
@@ -679,7 +754,7 @@ public class Pyx implements Closeable {
             Prefs.putJSONArray(context, PK.USER_SERVERS, array);
         }
 
-        public static void removeServer(Context context, Server server) {
+        public static void removeUserServer(Context context, Server server) {
             if (server.canDelete()) {
                 try {
                     JSONArray array = Prefs.getJSONArray(context, PK.USER_SERVERS, new JSONArray());
@@ -700,11 +775,39 @@ public class Pyx implements Closeable {
 
         public static boolean hasServer(Context context, String name) {
             try {
-                return getUserServer(context, name) != null;
+                return getServer(context, PK.USER_SERVERS, name) != null || getServer(context, PK.API_SERVERS, name) != null;
             } catch (JSONException ex) {
                 Logging.log(ex);
                 return true;
             }
+        }
+
+        private static void saveTo(SharedPreferences preferences, Prefs.PrefKey key, List<Server> servers) throws JSONException {
+            JSONArray array = new JSONArray();
+            for (Server server : servers)
+                array.put(server.toJson());
+
+            Prefs.putJSONArray(preferences, key, array);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Server server = (Server) o;
+            return url.equals(server.url) && name.equals(server.name);
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+
+        @NonNull
+        private JSONObject toJson() throws JSONException {
+            return new JSONObject()
+                    .put("name", name)
+                    .put("uri", url.toString());
         }
 
         @Nullable
@@ -771,26 +874,6 @@ public class Pyx implements Closeable {
                 pollingUrl = url.newBuilder().addPathSegment("LongPollServlet").build();
 
             return pollingUrl;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Server server = (Server) o;
-            return url.equals(server.url) && name.equals(server.name);
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-
-        @NonNull
-        private JSONObject toJson() throws JSONException {
-            return new JSONObject()
-                    .put("name", name)
-                    .put("uri", url.toString());
         }
     }
 
