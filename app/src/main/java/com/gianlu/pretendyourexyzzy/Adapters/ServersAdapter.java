@@ -16,8 +16,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.ServersChecker;
 import com.gianlu.pretendyourexyzzy.R;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -27,9 +25,9 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
     private final ServersChecker checker;
     private final Listener listener;
 
-    public ServersAdapter(Context context, Collection<Pyx.Server> servers, Listener listener) {
+    public ServersAdapter(Context context, List<Pyx.Server> servers, Listener listener) {
         this.inflater = LayoutInflater.from(context);
-        this.servers = new ArrayList<>(servers);
+        this.servers = servers;
         this.listener = listener;
         this.checker = new ServersChecker();
 

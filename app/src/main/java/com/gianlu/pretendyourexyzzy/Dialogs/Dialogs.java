@@ -107,7 +107,7 @@ public final class Dialogs {
                             return;
                         }
 
-                        Pyx.Server server = new Pyx.Server(url, null, nameStr);
+                        Pyx.Server server = new Pyx.Server(url, null, nameStr, true);
                         try {
                             Pyx.Server.addUserServer(context, server);
                             listener.loadServers();

@@ -67,14 +67,12 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
 
     @Override
     public void shouldUpdateItemCount(int count) {
-        if (count == 0)
-            layout.showInfo(R.string.noServers);
-        else
-            layout.showList();
+        if (count == 0) layout.showInfo(R.string.noServers);
+        else layout.showList();
     }
 
     @Override
     public void serverSelected(@NonNull Pyx.Server server) {
-        if (server.canDelete()) showDialog(Dialogs.addServer(this, server, this));
+        if (server.isEditable()) showDialog(Dialogs.addServer(this, server, this));
     }
 }

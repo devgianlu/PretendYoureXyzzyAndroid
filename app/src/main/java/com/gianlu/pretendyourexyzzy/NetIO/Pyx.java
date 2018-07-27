@@ -34,13 +34,10 @@ import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -230,7 +227,7 @@ public class Pyx implements Closeable {
         });
     }
 
-    public final void getDiscoveryApiServers(@Nullable final OnResult<Collection<Server>> listener) {
+    public final void getDiscoveryApiServers(@Nullable final OnResult<List<Server>> listener) {
         if (Prefs.has(preferences, PK.API_SERVERS)) {
             long age = Prefs.getLong(preferences, PK.API_SERVERS_CACHE_AGE, 0);
             if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(6)) {
@@ -269,7 +266,7 @@ public class Pyx implements Closeable {
     }
 
     @NonNull
-    protected final String requestSync(@NonNull HttpUrl url) throws IOException {
+    private String requestSync(@NonNull HttpUrl url) throws IOException {
         try (Response resp = client.newBuilder()
                 .connectTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
                 .readTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
@@ -558,23 +555,25 @@ public class Pyx implements Closeable {
     public static class Server {
         private final static Map<String, Server> pyxServers = new HashMap<>();
         private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
-        private static final String DEFAULT_FALLBACK_SERVER = "BACKUP1";
+        private static final Server DEFAULT_SERVER;
 
         static {
             try {
                 HttpUrl pyxMetrics = parseUrlOrThrow("https://pretendyoure.xyz/zy/metrics/");
 
-                pyxServers.put("PYX1", new Server(parseUrlOrThrow("https://pyx-1.pretendyoure.xyz/zy/"), pyxMetrics, "The Biggest, Blackest Dick"));
-                pyxServers.put("PYX2", new Server(parseUrlOrThrow("https://pyx-2.pretendyoure.xyz/zy/"), pyxMetrics, "A Falcon with a Box on its Head"));
-                pyxServers.put("PYX3", new Server(parseUrlOrThrow("https://pyx-3.pretendyoure.xyz/zy/"), pyxMetrics, "Dickfingers"));
-                pyxServers.put("BACKUP1", new Server(parseUrlOrThrow("http://pyx.gianlu.xyz"), null, "Backup server by devgianlu"));
+                pyxServers.put("PYX1", new Server(parseUrlOrThrow("https://pyx-1.pretendyoure.xyz/zy/"), pyxMetrics, "The Biggest, Blackest Dick", false));
+                pyxServers.put("PYX2", new Server(parseUrlOrThrow("https://pyx-2.pretendyoure.xyz/zy/"), pyxMetrics, "A Falcon with a Box on its Head", false));
+                pyxServers.put("PYX3", new Server(parseUrlOrThrow("https://pyx-3.pretendyoure.xyz/zy/"), pyxMetrics, "Dickfingers", false));
+                DEFAULT_SERVER = new Server(parseUrlOrThrow("http://pyx.gianlu.xyz"), null, "Backup server by devgianlu", false);
             } catch (JSONException ex) {
                 Logging.log(ex);
+                throw new RuntimeException(ex);
             }
         }
 
         public final HttpUrl url;
         public final String name;
+        private final boolean editable;
         private final HttpUrl metricsUrl;
         public transient volatile ServersChecker.CheckResult status = null;
         private transient HttpUrl ajaxUrl;
@@ -582,14 +581,15 @@ public class Pyx implements Closeable {
         private transient HttpUrl configUrl;
         private transient HttpUrl statsUrl;
 
-        public Server(@NonNull HttpUrl url, @Nullable HttpUrl metricsUrl, @NonNull String name) {
+        public Server(@NonNull HttpUrl url, @Nullable HttpUrl metricsUrl, @NonNull String name, boolean editable) {
             this.url = url;
             this.metricsUrl = metricsUrl;
             this.name = name;
+            this.editable = editable;
         }
 
         Server(JSONObject obj) throws JSONException {
-            this(parseUrlOrThrow(obj.getString("uri")), null, obj.getString("name"));
+            this(parseUrlOrThrow(obj.getString("uri")), null, obj.getString("name"), true);
         }
 
         @NonNull
@@ -598,7 +598,7 @@ public class Pyx implements Closeable {
             for (int i = 0; i < array.length(); i++) {
                 HttpUrl url = HttpUrl.parse("http://" + array.getJSONObject(i).getString("ip"));
                 if (url == null) continue;
-                servers.add(new Server(url, null, url.host() + " server"));
+                servers.add(new Server(url, null, url.host() + " server", false));
             }
 
             saveTo(preferences, PK.API_SERVERS, servers);
@@ -666,8 +666,8 @@ public class Pyx implements Closeable {
         }
 
         @NonNull
-        public static Collection<Server> loadAllServers(Context context) {
-            Set<Server> all = new HashSet<>();
+        public static List<Server> loadAllServers(Context context) {
+            List<Server> all = new ArrayList<>(10);
             all.addAll(pyxServers.values());
             all.addAll(loadServers(context, PK.USER_SERVERS));
             all.addAll(loadServers(context, PK.API_SERVERS));
@@ -675,8 +675,8 @@ public class Pyx implements Closeable {
         }
 
         @NonNull
-        private static Collection<Server> loadServers(SharedPreferences preferences, Prefs.PrefKey key) {
-            Set<Server> servers = new HashSet<>();
+        private static List<Server> loadServers(SharedPreferences preferences, Prefs.PrefKey key) {
+            List<Server> servers = new ArrayList<>();
             JSONArray array;
             try {
                 array = Prefs.getJSONArray(preferences, key, new JSONArray());
@@ -693,11 +693,13 @@ public class Pyx implements Closeable {
                 }
             }
 
+            if (servers.isEmpty()) servers.add(DEFAULT_SERVER);
+
             return servers;
         }
 
         @NonNull
-        private static Collection<Server> loadServers(Context context, Prefs.PrefKey key) {
+        private static List<Server> loadServers(Context context, Prefs.PrefKey key) {
             return loadServers(PreferenceManager.getDefaultSharedPreferences(context), key);
         }
 
@@ -715,7 +717,8 @@ public class Pyx implements Closeable {
 
         @NonNull
         private static Server lastServer(Context context) {
-            String name = Prefs.getString(context, PK.LAST_SERVER, DEFAULT_FALLBACK_SERVER);
+            String name = Prefs.getString(context, PK.LAST_SERVER, null);
+            if (name == null) return DEFAULT_SERVER;
 
             Server server = null;
             for (Server pyxServer : pyxServers.values())
@@ -738,12 +741,14 @@ public class Pyx implements Closeable {
                 }
             }
 
-            if (server == null) server = pyxServers.get(DEFAULT_FALLBACK_SERVER);
+            if (server == null) server = DEFAULT_SERVER;
 
             return server;
         }
 
         public static void addUserServer(Context context, Server server) throws JSONException {
+            if (!server.isEditable()) return;
+
             JSONArray array = Prefs.getJSONArray(context, PK.USER_SERVERS, new JSONArray());
             for (int i = array.length() - 1; i >= 0; i--) {
                 if (Objects.equals(array.getJSONObject(i).getString("name"), server.name))
@@ -755,21 +760,21 @@ public class Pyx implements Closeable {
         }
 
         public static void removeUserServer(Context context, Server server) {
-            if (server.canDelete()) {
-                try {
-                    JSONArray array = Prefs.getJSONArray(context, PK.USER_SERVERS, new JSONArray());
-                    for (int i = 0; i < array.length(); i++) {
-                        JSONObject obj = array.getJSONObject(i);
-                        if (Objects.equals(obj.optString("name"), server.name)) {
-                            array.remove(i);
-                            break;
-                        }
-                    }
+            if (!server.isEditable()) return;
 
-                    Prefs.putJSONArray(context, PK.USER_SERVERS, array);
-                } catch (JSONException ex) {
-                    Logging.log(ex);
+            try {
+                JSONArray array = Prefs.getJSONArray(context, PK.USER_SERVERS, new JSONArray());
+                for (int i = 0; i < array.length(); i++) {
+                    JSONObject obj = array.getJSONObject(i);
+                    if (Objects.equals(obj.optString("name"), server.name)) {
+                        array.remove(i);
+                        break;
+                    }
                 }
+
+                Prefs.putJSONArray(context, PK.USER_SERVERS, array);
+            } catch (JSONException ex) {
+                Logging.log(ex);
             }
         }
 
@@ -791,16 +796,18 @@ public class Pyx implements Closeable {
         }
 
         @Override
+        public int hashCode() {
+            int result = url.hashCode();
+            result = 31 * result + name.hashCode();
+            return result;
+        }
+
+        @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Server server = (Server) o;
             return url.equals(server.url) && name.equals(server.name);
-        }
-
-        @Override
-        public String toString() {
-            return name;
         }
 
         @NonNull
@@ -811,41 +818,41 @@ public class Pyx implements Closeable {
         }
 
         @Nullable
-        public HttpUrl gameHistory(String id) {
+        HttpUrl gameHistory(String id) {
             if (metricsUrl == null) return null;
             return metricsUrl.newBuilder().addPathSegments("game/" + id).build();
         }
 
         @Nullable
-        public HttpUrl gameRound(String id) {
+        HttpUrl gameRound(String id) {
             if (metricsUrl == null) return null;
             return metricsUrl.newBuilder().addPathSegments("round/" + id).build();
         }
 
         @Nullable
-        public HttpUrl sessionHistory(String id) {
+        HttpUrl sessionHistory(String id) {
             if (metricsUrl == null) return null;
             return metricsUrl.newBuilder().addPathSegments("session/" + id).build();
         }
 
         @Nullable
-        public HttpUrl sessionStats(String id) {
+        HttpUrl sessionStats(String id) {
             if (metricsUrl == null) return null;
             return metricsUrl.newBuilder().addPathSegments("session/" + id + "/stats").build();
         }
 
         @Nullable
-        public HttpUrl userHistory(String id) {
+        HttpUrl userHistory(String id) {
             if (metricsUrl == null) return null;
             return metricsUrl.newBuilder().addPathSegments("user/" + id).build();
         }
 
-        public boolean canDelete() {
-            return !pyxServers.values().contains(this);
+        public boolean isEditable() {
+            return editable;
         }
 
         @NonNull
-        public HttpUrl stats() {
+        HttpUrl stats() {
             if (statsUrl == null)
                 statsUrl = url.newBuilder().addPathSegment("stats.jsp").build();
 
@@ -853,7 +860,7 @@ public class Pyx implements Closeable {
         }
 
         @NonNull
-        public HttpUrl ajax() {
+        HttpUrl ajax() {
             if (ajaxUrl == null)
                 ajaxUrl = url.newBuilder().addPathSegment("AjaxServlet").build();
 
@@ -861,7 +868,7 @@ public class Pyx implements Closeable {
         }
 
         @NonNull
-        public HttpUrl config() {
+        HttpUrl config() {
             if (configUrl == null)
                 configUrl = url.newBuilder().addPathSegments("js/cah.config.js").build();
 
