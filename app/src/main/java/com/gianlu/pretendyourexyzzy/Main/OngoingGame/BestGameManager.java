@@ -617,6 +617,10 @@ public class BestGameManager implements Pyx.OnEventListener {
             instructions = layout.findViewById(R.id.gameLayout_instructions);
             time = layout.findViewById(R.id.gameLayout_time);
 
+            Timer oldTimer = (Timer) time.getTag();
+            if (oldTimer != null) oldTimer.cancel();
+            time.setTag(timer);
+
             startGame = layout.findViewById(R.id.gameLayout_startGame);
             startGame.setOnClickListener(new View.OnClickListener() {
                 @Override
