@@ -171,6 +171,8 @@ public class Pyx implements Closeable {
     @WorkerThread
     @NonNull
     private FirstLoadAndConfig firstLoadSync() throws PyxException, IOException, JSONException {
+        loadDiscoveryApiServersSync();
+
         FirstLoad fl = requestSync(PyxRequests.firstLoad());
 
         CahConfig cahConfig;
@@ -189,6 +191,17 @@ public class Pyx implements Closeable {
         }
 
         return new FirstLoadAndConfig(fl, cahConfig);
+    }
+
+    private void loadDiscoveryApiServersSync() throws IOException, JSONException {
+        if (Prefs.has(preferences, PK.API_SERVERS)) {
+            long age = Prefs.getLong(preferences, PK.API_SERVERS_CACHE_AGE, 0);
+            if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(6))
+                return;
+        }
+
+        JSONArray array = new JSONArray(requestSync(DISCOVERY_API_LIST));
+        Server.parseAndSave(preferences, array);
     }
 
     public final void getWelcomeMessage(final OnResult<String> listener) {
@@ -222,44 +235,6 @@ public class Pyx implements Closeable {
                             listener.onException(ex);
                         }
                     });
-                }
-            }
-        });
-    }
-
-    public final void getDiscoveryApiServers(@Nullable final OnResult<List<Server>> listener) {
-        if (Prefs.has(preferences, PK.API_SERVERS)) {
-            long age = Prefs.getLong(preferences, PK.API_SERVERS_CACHE_AGE, 0);
-            if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(6)) {
-                if (listener != null)
-                    listener.onDone(Server.loadServers(preferences, PK.API_SERVERS));
-                return;
-            }
-        }
-
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    JSONArray array = new JSONArray(requestSync(DISCOVERY_API_LIST));
-                    final List<Server> servers = Server.parseAndSave(preferences, array);
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (listener != null) listener.onDone(servers);
-                        }
-                    });
-                } catch (JSONException | IOException ex) {
-                    if (listener != null) {
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.onException(ex);
-                            }
-                        });
-                    } else {
-                        Logging.log(ex);
-                    }
                 }
             }
         });
@@ -592,8 +567,7 @@ public class Pyx implements Closeable {
             this(parseUrlOrThrow(obj.getString("uri")), null, obj.getString("name"), true);
         }
 
-        @NonNull
-        public static List<Server> parseAndSave(SharedPreferences preferences, JSONArray array) throws JSONException {
+        private static void parseAndSave(SharedPreferences preferences, JSONArray array) throws JSONException {
             List<Server> servers = new ArrayList<>(array.length());
             for (int i = 0; i < array.length(); i++) {
                 HttpUrl url = HttpUrl.parse("http://" + array.getJSONObject(i).getString("ip"));
@@ -603,8 +577,6 @@ public class Pyx implements Closeable {
 
             saveTo(preferences, PK.API_SERVERS, servers);
             Prefs.putLong(preferences, PK.API_SERVERS_CACHE_AGE, System.currentTimeMillis());
-
-            return servers;
         }
 
         @Nullable

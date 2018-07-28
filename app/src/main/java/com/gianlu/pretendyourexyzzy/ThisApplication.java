@@ -21,8 +21,6 @@ public class ThisApplication extends AnalyticsApplication {
         super.onCreate();
 
         Pyx.instantiate(this);
-        Pyx.get(this).getDiscoveryApiServers(null);
-
         Glide.get(this).getRegistry().prepend(BaseCard.class, InputStream.class, new BaseCardUrlLoader.Factory());
     }
 }
