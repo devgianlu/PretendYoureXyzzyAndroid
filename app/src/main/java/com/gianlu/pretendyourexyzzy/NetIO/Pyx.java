@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.Preferences.Prefs;
@@ -194,7 +195,7 @@ public class Pyx implements Closeable {
     }
 
     private void loadDiscoveryApiServersSync() throws IOException, JSONException {
-        if (Prefs.has(preferences, PK.API_SERVERS)) {
+        if (Prefs.has(preferences, PK.API_SERVERS) && !CommonUtils.isDebug()) {
             long age = Prefs.getLong(preferences, PK.API_SERVERS_CACHE_AGE, 0);
             if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(6))
                 return;
@@ -206,7 +207,7 @@ public class Pyx implements Closeable {
 
     public final void getWelcomeMessage(final OnResult<String> listener) {
         String cached = Prefs.getString(preferences, PK.WELCOME_MSG_CACHE, null);
-        if (cached != null) {
+        if (cached != null && !CommonUtils.isDebug()) {
             long age = Prefs.getLong(preferences, PK.WELCOME_MSG_CACHE_AGE, 0);
             if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(12)) {
                 listener.onDone(cached);
@@ -450,7 +451,6 @@ public class Pyx implements Closeable {
         return server.metricsUrl != null;
     }
 
-
     public enum Op {
         REGISTER("r"),
         FIRST_LOAD("fl"),
@@ -568,9 +568,12 @@ public class Pyx implements Closeable {
         private static void parseAndSave(SharedPreferences preferences, JSONArray array) throws JSONException {
             List<Server> servers = new ArrayList<>(array.length());
             for (int i = 0; i < array.length(); i++) {
-                HttpUrl url = HttpUrl.parse("http://" + array.getJSONObject(i).getString("ip"));
+                JSONObject obj = array.getJSONObject(i);
+                HttpUrl url = HttpUrl.parse("http://" + obj.getString("ip"));
                 if (url == null) continue;
-                servers.add(new Server(url, null, url.host() + " server", false));
+
+                String metrics = obj.optString("metrics");
+                servers.add(new Server(url, metrics == null ? null : HttpUrl.parse(metrics), url.host() + " server", false));
             }
 
             saveTo(preferences, PK.API_SERVERS, servers);
