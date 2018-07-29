@@ -530,7 +530,6 @@ public class Pyx implements Closeable {
     public static class Server {
         private final static Map<String, Server> pyxServers = new HashMap<>();
         private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
-        private static final Server DEFAULT_SERVER;
 
         static {
             try {
@@ -539,7 +538,6 @@ public class Pyx implements Closeable {
                 pyxServers.put("PYX1", new Server(parseUrlOrThrow("https://pyx-1.pretendyoure.xyz/zy/"), pyxMetrics, "The Biggest, Blackest Dick", false));
                 pyxServers.put("PYX2", new Server(parseUrlOrThrow("https://pyx-2.pretendyoure.xyz/zy/"), pyxMetrics, "A Falcon with a Box on its Head", false));
                 pyxServers.put("PYX3", new Server(parseUrlOrThrow("https://pyx-3.pretendyoure.xyz/zy/"), pyxMetrics, "Dickfingers", false));
-                DEFAULT_SERVER = new Server(parseUrlOrThrow("http://pyx.gianlu.xyz"), null, "Backup server by devgianlu", false);
             } catch (JSONException ex) {
                 Logging.log(ex);
                 throw new RuntimeException(ex);
@@ -616,10 +614,8 @@ public class Pyx implements Closeable {
             if (str == null) throw new JSONException("str is null");
 
             try {
-                HttpUrl url = HttpUrl.parse(str);
-                if (url == null) throw new JSONException("Invalid url: " + str);
-                return url;
-            } catch (IllegalStateException ex) {
+                return HttpUrl.get(str);
+            } catch (IllegalArgumentException ex) {
                 if (Build.VERSION.SDK_INT >= 27) throw new JSONException(ex);
                 else throw new JSONException(ex.getMessage());
             }
@@ -665,8 +661,6 @@ public class Pyx implements Closeable {
                 }
             }
 
-            if (servers.isEmpty()) servers.add(DEFAULT_SERVER);
-
             return servers;
         }
 
@@ -690,7 +684,9 @@ public class Pyx implements Closeable {
         @NonNull
         private static Server lastServer(Context context) {
             String name = Prefs.getString(context, PK.LAST_SERVER, null);
-            if (name == null) return DEFAULT_SERVER;
+
+            List<Server> apiServers = loadServers(context, PK.API_SERVERS);
+            if (name == null && !apiServers.isEmpty()) return apiServers.get(0);
 
             Server server = null;
             for (Server pyxServer : pyxServers.values())
@@ -713,7 +709,9 @@ public class Pyx implements Closeable {
                 }
             }
 
-            if (server == null) server = DEFAULT_SERVER;
+            if (server == null && !apiServers.isEmpty()) server = apiServers.get(0);
+
+            if (server == null) server = pyxServers.get("PYX1");
 
             return server;
         }
