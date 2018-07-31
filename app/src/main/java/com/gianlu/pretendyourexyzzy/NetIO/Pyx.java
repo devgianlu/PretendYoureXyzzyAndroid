@@ -56,8 +56,8 @@ import okhttp3.ResponseBody;
 public class Pyx implements Closeable {
     protected final static int AJAX_TIMEOUT = 5;
     protected final static int POLLING_TIMEOUT = 30;
-    private static final HttpUrl WELCOME_MSG_URL = HttpUrl.parse("https://script.google.com/macros/s/AKfycbyvgCI8vdDr9MsVzq-EoACVpIhAoiE5cy8BiDwVH0SZ_V_xRkmA/exec");
-    private static final HttpUrl DISCOVERY_API_LIST = HttpUrl.parse("https://script.google.com/macros/s/AKfycbxaWVr4sEiivlmw_0WqNaYXyMwkZGoarBXcQ7HfZ3tJ53WFqogG/exec?op=list");
+    private static final HttpUrl WELCOME_MSG_URL = HttpUrl.parse("http://discovery.pyx.gianlu.xyz/WelcomeMessage");
+    private static final HttpUrl DISCOVERY_API_LIST = HttpUrl.parse("http://discovery.pyx.gianlu.xyz/ListAll");
     public final Server server;
     protected final Handler handler;
     protected final OkHttpClient client;
@@ -569,8 +569,11 @@ public class Pyx implements Closeable {
             List<Server> servers = new ArrayList<>(array.length());
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
-                HttpUrl url = HttpUrl.parse("http://" + obj.getString("ip"));
-                if (url == null) continue;
+                HttpUrl url = new HttpUrl.Builder()
+                        .host(obj.getString("host"))
+                        .scheme(obj.getBoolean("secure") ? "https" : "http")
+                        .port(obj.getInt("port"))
+                        .build();
 
                 String metrics = obj.optString("metrics");
                 servers.add(new Server(url, metrics == null ? null : HttpUrl.parse(metrics), url.host() + " server", false));
