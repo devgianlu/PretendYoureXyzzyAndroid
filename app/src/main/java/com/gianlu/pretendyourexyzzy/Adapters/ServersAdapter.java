@@ -61,6 +61,8 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
         holder.name.setText(server.name);
         holder.url.setText(server.url.toString());
 
+        holder.hasMetrics.setVisibility(server.hasMetrics() ? View.VISIBLE : View.GONE);
+
         if (server.status == null) {
             holder.checking.setVisibility(View.VISIBLE);
             holder.status.setVisibility(View.GONE);
@@ -133,6 +135,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
         final TextView latency;
         final TextView error;
         final SuperTextView details;
+        final ImageView hasMetrics;
 
         public ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.item_server, parent, false));
@@ -145,6 +148,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
             latency = status.findViewById(R.id.serverItem_latency);
             error = itemView.findViewById(R.id.serverItem_error);
             details = itemView.findViewById(R.id.serverItem_details);
+            hasMetrics = itemView.findViewById(R.id.serverItem_hasMetrics);
         }
     }
 }

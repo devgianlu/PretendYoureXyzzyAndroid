@@ -562,7 +562,13 @@ public class Pyx implements Closeable {
         }
 
         Server(JSONObject obj) throws JSONException {
-            this(parseUrlOrThrow(obj.getString("uri")), null, obj.getString("name"), true);
+            this(parseUrlOrThrow(obj.getString("uri")), parseNullableUrl(obj.optString("metrics")), obj.getString("name"), true);
+        }
+
+        @Nullable
+        private static HttpUrl parseNullableUrl(@Nullable String url) {
+            if (url == null || url.isEmpty()) return null;
+            else return HttpUrl.parse(url);
         }
 
         private static void parseAndSave(SharedPreferences preferences, JSONArray array) throws JSONException {
@@ -790,6 +796,7 @@ public class Pyx implements Closeable {
         private JSONObject toJson() throws JSONException {
             return new JSONObject()
                     .put("name", name)
+                    .put("metrics", metricsUrl)
                     .put("uri", url.toString());
         }
 
@@ -857,6 +864,10 @@ public class Pyx implements Closeable {
                 pollingUrl = url.newBuilder().addPathSegment("LongPollServlet").build();
 
             return pollingUrl;
+        }
+
+        public boolean hasMetrics() {
+            return metricsUrl != null;
         }
     }
 
