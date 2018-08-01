@@ -53,7 +53,7 @@ class UserHistoryAdapter extends RecyclerView.Adapter<UserHistoryAdapter.ViewHol
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
         final UserHistory.Session item = history.get(position);
-        holder.server.setText(item.server.name);
+        holder.server.setText(item.name());
         holder.login.setText(CommonUtils.getFullVerbalDateFormatter().format(new Date(item.loginTimestamp)));
         holder.playedAndJudged.setText(null);
         holder.itemView.setOnClickListener(new View.OnClickListener() {

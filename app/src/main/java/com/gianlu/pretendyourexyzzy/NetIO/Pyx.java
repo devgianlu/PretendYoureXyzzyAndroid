@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -42,8 +43,6 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
@@ -529,7 +528,6 @@ public class Pyx implements Closeable {
 
     public static class Server {
         private final static Map<String, Server> pyxServers = new HashMap<>();
-        private static final Pattern URL_PATTERN = Pattern.compile("pyx-(\\d)\\.pretendyoure\\.xyz");
 
         static {
             try {
@@ -590,32 +588,12 @@ public class Pyx implements Closeable {
         }
 
         @Nullable
-        public static Server fromSessionId(String id) {
-            id = id.substring(0, id.indexOf('_'));
-            switch (id.charAt(id.length() - 1)) {
-                case '1':
-                    return pyxServers.get("PYX1");
-                case '2':
-                    return pyxServers.get("PYX2");
-                case '3':
-                    return pyxServers.get("PYX3");
-            }
-
-            return null;
-        }
-
-        @Nullable
-        public static Server fromPyxUrl(String url) {
-            Matcher matcher = URL_PATTERN.matcher(url);
-            if (matcher.find()) {
-                switch (matcher.group(1)) {
-                    case "1":
-                        return pyxServers.get("PYX1");
-                    case "2":
-                        return pyxServers.get("PYX2");
-                    case "3":
-                        return pyxServers.get("PYX3");
-                }
+        public static Server fromUrl(Context context, Uri url) {
+            List<Server> servers = loadAllServers(context);
+            for (Server server : servers) {
+                if (server.url.host().equals(url.getHost())
+                        && server.url.port() == url.getPort())
+                    return server;
             }
 
             return null;

@@ -89,10 +89,7 @@ public class MetricsActivity extends ActivityWithDialog implements BreadcrumbsVi
     }
 
     private void loadSession(@NonNull UserHistory.Session session) {
-        String text;
-        if (session.server == null) text = session.id;
-        else text = session.server.name;
-        breadcrumbs.addItem(new BreadcrumbsView.Item(text, TYPE_SESSION, session));
+        breadcrumbs.addItem(new BreadcrumbsView.Item(session.name(), TYPE_SESSION, session));
 
         getSupportFragmentManager()
                 .beginTransaction()

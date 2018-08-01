@@ -121,7 +121,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         if (Objects.equals(getIntent().getAction(), Intent.ACTION_VIEW) || Objects.equals(getIntent().getAction(), Intent.ACTION_SEND)) {
             Uri url = getIntent().getData();
             if (url != null) {
-                Pyx.Server server = Pyx.Server.fromPyxUrl(url.toString());
+                Pyx.Server server = Pyx.Server.fromUrl(this, url);
                 if (server != null) setServer(server);
 
                 String fragment = url.getFragment();
