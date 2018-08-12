@@ -431,10 +431,10 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 MetricsActivity.startActivity(this);
                 return true;
             case DrawerConst.PREFERENCES:
-                startActivity(new Intent(this, PreferencesActivity.class));
+                startActivity(new Intent(this, PreferenceActivity.class));
                 return true;
             case DrawerConst.REPORT:
-                CommonUtils.sendEmail(this, getString(R.string.app_name), null);
+                CommonUtils.sendEmail(this, null);
                 return true;
         }
 

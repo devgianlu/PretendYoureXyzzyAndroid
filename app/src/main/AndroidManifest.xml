@@ -94,14 +94,7 @@
 
         <!-- Preferences activity -->
         <activity
-            android:name=".PreferencesActivity"
-            android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait" />
-
-        <!-- Logs activity -->
-        <activity
-            android:name="com.gianlu.commonutils.LogsActivity"
-            android:parentActivityName=".PreferencesActivity"
+            android:name=".PreferenceActivity"
             android:screenOrientation="portrait" />
 
         <!-- GameRound images provider -->
