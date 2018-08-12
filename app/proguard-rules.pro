@@ -15,3 +15,6 @@
   **[] $VALUES;
   public *;
 }
+
+-dontwarn com.mikepenz.aboutlibraries.ui.item.HeaderItem
+-dontwarn com.pavelsikun.vintagechroma.ChromaPreferenceCompat
