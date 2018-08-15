@@ -37,7 +37,6 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
 
     public void startTests() {
         for (Pyx.Server server : servers) checker.check(server, this);
-        notifyDataSetChanged();
     }
 
     public void removeItem(Pyx.Server server) {
