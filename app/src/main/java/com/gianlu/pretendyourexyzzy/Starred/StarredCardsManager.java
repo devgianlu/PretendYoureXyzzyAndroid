@@ -28,8 +28,6 @@ public class StarredCardsManager {
             if (!a) cards.add(card);
             saveCards(cards);
 
-            // TODO: AnalyticsApplication.sendAnalytics( Utils.ACTION_STARRED_CARD_ADD);
-
             return !a;
         } catch (JSONException ex) {
             Logging.log(ex);

@@ -40,8 +40,6 @@ public class StarredDecksManager {
         } catch (JSONException ex) {
             Logging.log(ex);
         }
-
-        // TODO: AnalyticsApplication.sendAnalytics( Utils.ACTION_STARRED_DECK_ADD);
     }
 
     private static void saveDecks(List<StarredDeck> decks) {

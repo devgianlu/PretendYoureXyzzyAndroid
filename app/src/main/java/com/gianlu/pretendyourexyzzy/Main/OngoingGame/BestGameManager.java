@@ -539,6 +539,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                 }
             } else if (action == GameCardView.Action.TOGGLE_STAR) {
                 BaseCard bc = ui.blackCard();
+                AnalyticsApplication.sendAnalytics(context, Utils.ACTION_STARRED_CARD_ADD);
                 if (bc != null && StarredCardsManager.addCard(new StarredCardsManager.StarredCard(bc, group)))
                     Toaster.with(context).message(R.string.addedCardToStarred).show();
             } else if (action == GameCardView.Action.SELECT_IMG) {

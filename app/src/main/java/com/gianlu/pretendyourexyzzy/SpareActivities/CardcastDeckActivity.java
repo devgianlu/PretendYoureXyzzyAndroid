@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.PagerAdapter;
@@ -20,6 +21,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeck.CardsFragment;
 import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeck.InfoFragment;
 import com.gianlu.pretendyourexyzzy.Starred.StarredDecksManager;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 public class CardcastDeckActivity extends ActivityWithDialog {
     private String code;
@@ -60,10 +62,12 @@ public class CardcastDeckActivity extends ActivityWithDialog {
                 if (listener != null && code != null) listener.addCardcastDeck(code);
                 return true;
             case R.id.cardcastDeckInfo_toggleStar:
-                if (StarredDecksManager.hasDeck(code))
+                if (StarredDecksManager.hasDeck(code)) {
                     StarredDecksManager.removeDeck(code);
-                else
+                } else {
                     StarredDecksManager.addDeck(new StarredDecksManager.StarredDeck(code, name));
+                    AnalyticsApplication.sendAnalytics(this, Utils.ACTION_STARRED_DECK_ADD);
+                }
 
                 invalidateOptionsMenu();
                 return true;
