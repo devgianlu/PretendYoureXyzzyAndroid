@@ -97,7 +97,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
 
     public void resetPlayers() {
         for (int i = 0; i < players.size(); i++)
-            players.set(i, new GameInfo.Player(players.get(0).name, 0, GameInfo.PlayerStatus.IDLE));
+            players.set(i, new GameInfo.Player(players.get(i).name, 0, GameInfo.PlayerStatus.IDLE));
         notifyDataSetChanged();
     }
 
