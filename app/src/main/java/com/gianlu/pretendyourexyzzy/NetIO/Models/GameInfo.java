@@ -22,10 +22,12 @@ public class GameInfo {
 
     @Nullable
     public Player player(@NonNull String nick) {
-        for (Player player : players)
-            if (Objects.equals(player.name, nick)) return player;
+        synchronized (players) {
+            for (Player player : players)
+                if (Objects.equals(player.name, nick)) return player;
 
-        return null;
+            return null;
+        }
     }
 
     public void removePlayer(@NonNull String nick) {
@@ -88,7 +90,8 @@ public class GameInfo {
         @NonNull
         public static List<Player> list(JSONArray array) throws JSONException {
             List<Player> list = new ArrayList<>(array.length());
-            for (int i = 0; i < array.length(); i++) list.add(new Player(array.getJSONObject(i)));
+            for (int i = 0; i < array.length(); i++)
+                list.add(new Player(array.getJSONObject(i)));
             return list;
         }
 

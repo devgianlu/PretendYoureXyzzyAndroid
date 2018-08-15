@@ -75,30 +75,38 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
     }
 
     public void playerChanged(@NonNull GameInfo.Player player) {
-        int pos = Utils.indexOf(players, player.name);
-        if (pos != -1) {
-            players.set(pos, player);
-            notifyItemChanged(pos);
+        synchronized (players) {
+            int pos = Utils.indexOf(players, player.name);
+            if (pos != -1) {
+                players.set(pos, player);
+                notifyItemChanged(pos);
+            }
         }
     }
 
     public void removePlayer(@NonNull String nick) {
-        int pos = Utils.indexOf(players, nick);
-        if (pos != -1) {
-            players.remove(pos);
-            notifyItemRemoved(pos);
+        synchronized (players) {
+            int pos = Utils.indexOf(players, nick);
+            if (pos != -1) {
+                players.remove(pos);
+                notifyItemRemoved(pos);
+            }
         }
     }
 
     public void newPlayer(@NonNull GameInfo.Player player) {
-        players.add(player);
-        notifyItemInserted(players.size() - 1);
+        synchronized (players) {
+            players.add(player);
+            notifyItemInserted(players.size() - 1);
+        }
     }
 
     public void resetPlayers() {
-        for (int i = 0; i < players.size(); i++)
-            players.set(i, new GameInfo.Player(players.get(i).name, 0, GameInfo.PlayerStatus.IDLE));
-        notifyDataSetChanged();
+        synchronized (players) {
+            for (int i = 0; i < players.size(); i++)
+                players.set(i, new GameInfo.Player(players.get(i).name, 0, GameInfo.PlayerStatus.IDLE));
+            notifyDataSetChanged();
+        }
     }
 
     public interface Listener {
