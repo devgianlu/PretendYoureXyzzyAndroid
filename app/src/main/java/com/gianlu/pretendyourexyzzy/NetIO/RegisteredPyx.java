@@ -1,6 +1,5 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 
@@ -38,13 +37,13 @@ public class RegisteredPyx extends FirstLoadedPyx {
     private final User user;
     private final PollingThread pollingThread;
 
-    RegisteredPyx(Server server, Handler handler, OkHttpClient client, SharedPreferences preferences, FirstLoadAndConfig firstLoad, User user) {
-        super(server, handler, client, preferences, firstLoad);
+    RegisteredPyx(Server server, Handler handler, OkHttpClient client, FirstLoadAndConfig firstLoad, User user) {
+        super(server, handler, client, firstLoad);
         this.user = user;
         this.pollingThread = new PollingThread();
         this.pollingThread.start();
 
-        Prefs.putString(preferences, PK.LAST_JSESSIONID, user.sessionId);
+        Prefs.putString(PK.LAST_JSESSIONID, user.sessionId);
     }
 
     @NonNull

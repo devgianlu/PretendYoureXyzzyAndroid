@@ -1,6 +1,5 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -36,10 +35,10 @@ public final class PyxRequests {
     private static final Pyx.Processor<FirstLoad> FIRST_LOAD_PROCESSOR = new Pyx.Processor<FirstLoad>() {
         @NonNull
         @Override
-        public FirstLoad process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+        public FirstLoad process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
             User user = null;
             if (obj.getBoolean("ip") && obj.has("n")) {
-                String lastSessionId = Prefs.getString(prefs, PK.LAST_JSESSIONID, null);
+                String lastSessionId = Prefs.getString(PK.LAST_JSESSIONID, null);
                 if (lastSessionId != null) user = new User(lastSessionId, obj);
             }
 
@@ -49,7 +48,7 @@ public final class PyxRequests {
     private static final Pyx.Processor<User> REGISTER_PROCESSOR = new Pyx.Processor<User>() {
         @NonNull
         @Override
-        public User process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+        public User process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
             String sessionId = findSessionId(response);
             if (sessionId == null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1)
@@ -64,21 +63,21 @@ public final class PyxRequests {
     private static final Pyx.Processor<GamePermalink> CREATE_GAME_PROCESSOR = new Pyx.Processor<GamePermalink>() {
         @NonNull
         @Override
-        public GamePermalink process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+        public GamePermalink process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
             return new GamePermalink(obj);
         }
     };
     private static final Pyx.Processor<GameInfo> GAME_INFO_PROCESSOR = new Pyx.Processor<GameInfo>() {
         @NonNull
         @Override
-        public GameInfo process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+        public GameInfo process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
             return new GameInfo(obj);
         }
     };
     private static final Pyx.Processor<List<Name>> NAMES_LIST_PROCESSOR = new Pyx.Processor<List<Name>>() {
         @NonNull
         @Override
-        public List<Name> process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+        public List<Name> process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
             JSONArray array = obj.getJSONArray("nl");
             List<Name> names = new ArrayList<>();
             for (int i = 0; i < array.length(); i++) names.add(new Name(array.getString(i)));
@@ -88,14 +87,14 @@ public final class PyxRequests {
     private static final Pyx.Processor<GameCards> GAME_CARDS_PROCESSOR = new Pyx.Processor<GameCards>() {
         @NonNull
         @Override
-        public GameCards process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+        public GameCards process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
             return new GameCards(obj);
         }
     };
     private static final Pyx.Processor<GamesList> GAMES_LIST_PROCESSOR = new Pyx.Processor<GamesList>() {
         @NonNull
         @Override
-        public GamesList process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+        public GamesList process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
             JSONArray array = obj.getJSONArray("gl");
             final GamesList games = new GamesList(obj.getInt("mg"));
             for (int i = 0; i < array.length(); i++)
@@ -106,7 +105,7 @@ public final class PyxRequests {
     private static final Pyx.Processor<WhoisResult> WHOIS_RESULT_PROCESSOR = new Pyx.Processor<WhoisResult>() {
         @NonNull
         @Override
-        public WhoisResult process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+        public WhoisResult process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
             return new WhoisResult(obj);
         }
     };
@@ -162,7 +161,7 @@ public final class PyxRequests {
         return new PyxRequestWithResult<>(Pyx.Op.JOIN_GAME, new Pyx.Processor<GamePermalink>() {
             @NonNull
             @Override
-            public GamePermalink process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) {
+            public GamePermalink process(@NonNull Response response, @NonNull JSONObject obj) {
                 return new GamePermalink(gid, obj);
             }
         }, new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("pw", password));
@@ -173,7 +172,7 @@ public final class PyxRequests {
         return new PyxRequestWithResult<>(Pyx.Op.SPECTATE_GAME, new Pyx.Processor<GamePermalink>() {
             @NonNull
             @Override
-            public GamePermalink process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) {
+            public GamePermalink process(@NonNull Response response, @NonNull JSONObject obj) {
                 return new GamePermalink(gid, obj);
             }
         }, new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("pw", password));
@@ -236,7 +235,7 @@ public final class PyxRequests {
         return new PyxRequestWithResult<>(Pyx.Op.LIST_CARDCAST_CARD_SETS, new Pyx.Processor<List<Deck>>() {
             @NonNull
             @Override
-            public List<Deck> process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException {
+            public List<Deck> process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
                 List<Deck> cards = new ArrayList<>();
                 JSONArray array = obj.getJSONArray("css");
                 for (int i = 0; i < array.length(); i++) {

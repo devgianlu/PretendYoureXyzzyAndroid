@@ -539,7 +539,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                 }
             } else if (action == GameCardView.Action.TOGGLE_STAR) {
                 BaseCard bc = ui.blackCard();
-                if (bc != null && StarredCardsManager.addCard(context, new StarredCardsManager.StarredCard(bc, group)))
+                if (bc != null && StarredCardsManager.addCard(new StarredCardsManager.StarredCard(bc, group)))
                     Toaster.with(context).message(R.string.addedCardToStarred).show();
             } else if (action == GameCardView.Action.SELECT_IMG) {
                 listener.showDialog(CardImageZoomDialog.get(card));
@@ -609,7 +609,7 @@ public class BestGameManager implements Pyx.OnEventListener {
 
         Ui(Fragment fragment, ViewGroup layout) {
             this.fragment = fragment;
-            tutorialManager = new TutorialManager(context, this, Discovery.HOW_TO_PLAY);
+            tutorialManager = new TutorialManager(this, Discovery.HOW_TO_PLAY);
 
             blackCard = layout.findViewById(R.id.gameLayout_blackCard);
             blackCard.setTextSelectionListener(listener);

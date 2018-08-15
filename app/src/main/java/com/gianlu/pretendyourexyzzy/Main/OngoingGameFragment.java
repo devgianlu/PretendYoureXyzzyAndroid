@@ -206,7 +206,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
             return layout;
         }
 
-        tutorialManager = new TutorialManager(requireContext(), this, Discovery.CREATE_GAME);
+        tutorialManager = new TutorialManager(this, Discovery.CREATE_GAME);
 
         try {
             pyx = RegisteredPyx.get();
@@ -394,7 +394,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     public void addCardcastStarredDecks() {
         if (getContext() == null) return;
 
-        List<StarredDecksManager.StarredDeck> starredDecks = StarredDecksManager.loadDecks(getContext());
+        List<StarredDecksManager.StarredDeck> starredDecks = StarredDecksManager.loadDecks();
         if (starredDecks.isEmpty()) {
             showToast(Toaster.build().message(R.string.noStarredDecks));
             return;

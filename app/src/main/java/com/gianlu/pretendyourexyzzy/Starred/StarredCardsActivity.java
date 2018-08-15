@@ -31,7 +31,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
     private MessageView message;
 
     public static void startActivity(@NonNull Context context) {
-        if (StarredCardsManager.hasAnyCard(context))
+        if (StarredCardsManager.hasAnyCard())
             context.startActivity(new Intent(context, StarredCardsActivity.class));
         else
             Toaster.with(context).message(R.string.noStarredCards).show();
@@ -50,7 +50,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
 
         list = findViewById(R.id.starredCards_list);
         list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        list.setAdapter(new CardsAdapter(this, false, StarredCardsManager.loadCards(this), GameCardView.Action.SELECT, GameCardView.Action.DELETE, true, this));
+        list.setAdapter(new CardsAdapter(this, false, StarredCardsManager.loadCards(), GameCardView.Action.SELECT, GameCardView.Action.DELETE, true, this));
 
         message = findViewById(R.id.starredCards_message);
         cards = findViewById(R.id.starredCards_cards);
@@ -84,7 +84,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
     }
 
     private void deleteCard(@NonNull StarredCardsManager.StarredCard card) {
-        StarredCardsManager.removeCard(this, card);
+        StarredCardsManager.removeCard(card);
         if (list.getAdapter().getItemCount() == 0) onBackPressed();
     }
 

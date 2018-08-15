@@ -86,13 +86,13 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         }, 1000);
 
-        if (Prefs.getBoolean(this, PK.FIRST_RUN, true)) {
+        if (Prefs.getBoolean(PK.FIRST_RUN, true)) {
             startActivity(new Intent(this, TutorialActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
             return;
         }
 
-        tutorialManager = new TutorialManager(this, this, Discovery.LOGIN);
+        tutorialManager = new TutorialManager(this, Discovery.LOGIN);
 
         loading = findViewById(R.id.loading_loading);
         loading.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(this, R.color.colorPrimary), PorterDuff.Mode.SRC_IN);
@@ -121,7 +121,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         if (Objects.equals(getIntent().getAction(), Intent.ACTION_VIEW) || Objects.equals(getIntent().getAction(), Intent.ACTION_SEND)) {
             Uri url = getIntent().getData();
             if (url != null) {
-                Pyx.Server server = Pyx.Server.fromUrl(this, url);
+                Pyx.Server server = Pyx.Server.fromUrl(url);
                 if (server != null) setServer(server);
 
                 String fragment = url.getFragment();
@@ -144,7 +144,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         }
 
-        Pyx pyx = Pyx.get(this);
+        Pyx pyx = Pyx.getStandard();
         pyx.getWelcomeMessage(new Pyx.OnResult<String>() {
             @Override
             public void onDone(@NonNull String result) {
@@ -182,7 +182,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         layout.disableSwipeRefresh();
         layout.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         layout.getList().addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-        layout.loadListData(new ServersAdapter(this, Pyx.Server.loadAllServers(this), new ServersAdapter.Listener() {
+        layout.loadListData(new ServersAdapter(this, Pyx.Server.loadAllServers(), new ServersAdapter.Listener() {
             @Override
             public void shouldUpdateItemCount(int count) {
             }
@@ -192,7 +192,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 setServer(server);
                 loading.setVisibility(View.VISIBLE);
                 register.setVisibility(View.GONE);
-                Pyx.get(LoadingActivity.this).firstLoad(LoadingActivity.this);
+                Pyx.getStandard().firstLoad(LoadingActivity.this);
                 dismissDialog();
             }
         }));
@@ -202,7 +202,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
     private void setServer(@NonNull Pyx.Server server) {
         Pyx.invalidate();
-        Prefs.putString(LoadingActivity.this, PK.LAST_SERVER, server.name);
+        Prefs.putString(PK.LAST_SERVER, server.name);
     }
 
     @Nullable
@@ -217,10 +217,10 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         registerNickname.setErrorEnabled(false);
         registerIdCode.setErrorEnabled(false);
 
-        String lastNickname = Prefs.getString(LoadingActivity.this, PK.LAST_NICKNAME, null);
+        String lastNickname = Prefs.getString(PK.LAST_NICKNAME, null);
         if (lastNickname != null) CommonUtils.setText(registerNickname, lastNickname);
 
-        String lastIdCode = Prefs.getString(LoadingActivity.this, PK.LAST_ID_CODE, null);
+        String lastIdCode = Prefs.getString(PK.LAST_ID_CODE, null);
         if (lastIdCode != null) CommonUtils.setText(registerIdCode, lastIdCode);
 
         registerSubmit.setOnClickListener(new View.OnClickListener() {
@@ -239,8 +239,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 pyx.register(nick, idCode, new Pyx.OnResult<RegisteredPyx>() {
                     @Override
                     public void onDone(@NonNull RegisteredPyx result) {
-                        Prefs.putString(LoadingActivity.this, PK.LAST_NICKNAME, result.user().nickname);
-                        Prefs.putString(LoadingActivity.this, PK.LAST_ID_CODE, idCode);
+                        Prefs.putString(PK.LAST_NICKNAME, result.user().nickname);
+                        Prefs.putString(PK.LAST_ID_CODE, idCode);
                         goTo(MainActivity.class);
                     }
 

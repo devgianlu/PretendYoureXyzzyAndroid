@@ -1,6 +1,5 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 
 class InstanceHolder {
@@ -17,8 +16,8 @@ class InstanceHolder {
     }
 
     @NonNull
-    public synchronized Pyx instantiateStandard(@NonNull Context context) {
-        if (pyx == null) pyx = new Pyx(context);
+    public synchronized Pyx instantiateStandard() {
+        if (pyx == null) pyx = new Pyx();
         return pyx;
     }
 

@@ -22,7 +22,7 @@ public class StarredDecksActivity extends ActivityWithDialog implements StarredD
     private RecyclerViewLayout layout;
 
     public static void startActivity(Context context) {
-        if (StarredDecksManager.hasAnyDeck(context))
+        if (StarredDecksManager.hasAnyDeck())
             context.startActivity(new Intent(context, StarredDecksActivity.class));
         else
             Toaster.with(context).message(R.string.noStarredDecks).show();
@@ -69,14 +69,14 @@ public class StarredDecksActivity extends ActivityWithDialog implements StarredD
         layout.disableSwipeRefresh();
         layout.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary_background));
         layout.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-        layout.loadListData(new StarredDecksAdapter(this, StarredDecksManager.loadDecks(this), this));
+        layout.loadListData(new StarredDecksAdapter(this, StarredDecksManager.loadDecks(), this));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        layout.loadListData(new StarredDecksAdapter(this, StarredDecksManager.loadDecks(this), this));
+        layout.loadListData(new StarredDecksAdapter(this, StarredDecksManager.loadDecks(), this));
     }
 
     @Override

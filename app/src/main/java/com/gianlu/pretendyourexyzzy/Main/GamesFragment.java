@@ -94,7 +94,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.gamesFragment_showLocked).setChecked(!Prefs.getBoolean(getContext(), PK.FILTER_LOCKED_LOBBIES, false));
+        menu.findItem(R.id.gamesFragment_showLocked).setChecked(!Prefs.getBoolean(PK.FILTER_LOCKED_LOBBIES));
     }
 
     @Override
@@ -103,7 +103,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
             case R.id.gamesFragment_showLocked:
                 boolean show = !item.isChecked();
                 item.setChecked(show);
-                Prefs.putBoolean(getContext(), PK.FILTER_LOCKED_LOBBIES, !show);
+                Prefs.putBoolean(PK.FILTER_LOCKED_LOBBIES, !show);
                 if (adapter != null) adapter.setFilterOutLockedLobbies(!show);
                 return true;
         }
@@ -147,7 +147,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
             return layout;
         }
 
-        tutorialManager = new TutorialManager(requireContext(), this, Discovery.GAMES);
+        tutorialManager = new TutorialManager(this, Discovery.GAMES);
 
         recyclerViewLayout.enableSwipeRefresh(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -202,7 +202,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     public void onDone(@NonNull final GamesList result) {
         if (!isAdded()) return;
 
-        adapter = new GamesAdapter(getContext(), result, pyx, Prefs.getBoolean(getContext(), PK.FILTER_LOCKED_LOBBIES, false), this);
+        adapter = new GamesAdapter(getContext(), result, pyx, Prefs.getBoolean(PK.FILTER_LOCKED_LOBBIES), this);
         recyclerViewLayout.loadListData(adapter, false);
         recyclerViewLayout.getList().getLayoutManager().onRestoreInstanceState(recyclerViewSavedInstance);
 
@@ -395,7 +395,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
     public void viewGame(int gid, boolean locked) {
         if (locked && adapter.doesFilterOutLockedLobbies()) {
-            Prefs.putBoolean(getContext(), PK.FILTER_LOCKED_LOBBIES, false);
+            Prefs.putBoolean(PK.FILTER_LOCKED_LOBBIES, false);
             adapter.setFilterOutLockedLobbies(false);
         }
 

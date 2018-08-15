@@ -73,7 +73,7 @@ public class TutorialActivity extends AppIntro {
     }
 
     private void done() {
-        Prefs.putBoolean(this, PK.FIRST_RUN, false);
+        Prefs.putBoolean(PK.FIRST_RUN, false);
         startActivity(new Intent(this, LoadingActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
     }

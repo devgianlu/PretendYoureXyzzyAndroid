@@ -45,7 +45,7 @@ public class CardcastDeckActivity extends ActivityWithDialog {
     public boolean onPrepareOptionsMenu(Menu menu) {
         OngoingGameHelper.Listener listener = OngoingGameHelper.get();
         menu.findItem(R.id.cardcastDeckInfo_add).setVisible(listener != null && listener.canModifyCardcastDecks());
-        menu.findItem(R.id.cardcastDeckInfo_toggleStar).setIcon(StarredDecksManager.hasDeck(this, code) ? R.drawable.baseline_star_24 : R.drawable.baseline_star_border_24);
+        menu.findItem(R.id.cardcastDeckInfo_toggleStar).setIcon(StarredDecksManager.hasDeck(code) ? R.drawable.baseline_star_24 : R.drawable.baseline_star_border_24);
         return true;
     }
 
@@ -60,10 +60,10 @@ public class CardcastDeckActivity extends ActivityWithDialog {
                 if (listener != null && code != null) listener.addCardcastDeck(code);
                 return true;
             case R.id.cardcastDeckInfo_toggleStar:
-                if (StarredDecksManager.hasDeck(this, code))
-                    StarredDecksManager.removeDeck(this, code);
+                if (StarredDecksManager.hasDeck(code))
+                    StarredDecksManager.removeDeck(code);
                 else
-                    StarredDecksManager.addDeck(this, new StarredDecksManager.StarredDeck(code, name));
+                    StarredDecksManager.addDeck(new StarredDecksManager.StarredDeck(code, name));
 
                 invalidateOptionsMenu();
                 return true;

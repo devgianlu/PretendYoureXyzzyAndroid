@@ -1,11 +1,9 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
-import android.preference.PreferenceManager;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
@@ -60,21 +58,18 @@ public class Pyx implements Closeable {
     public final Server server;
     protected final Handler handler;
     protected final OkHttpClient client;
-    protected final SharedPreferences preferences;
     protected final ExecutorService executor = Executors.newFixedThreadPool(5);
 
-    Pyx(@NonNull Context context) {
-        this.handler = new Handler(context.getMainLooper());
-        this.server = Server.lastServer(context);
-        this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
+    Pyx() {
+        this.handler = new Handler(Looper.getMainLooper());
+        this.server = Server.lastServer();
         this.client = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
     }
 
-    protected Pyx(Server server, Handler handler, OkHttpClient client, SharedPreferences preferences) {
+    protected Pyx(Server server, Handler handler, OkHttpClient client) {
         this.server = server;
         this.handler = handler;
         this.client = client;
-        this.preferences = preferences;
     }
 
     @NonNull
@@ -83,12 +78,12 @@ public class Pyx implements Closeable {
     }
 
     @NonNull
-    public static Pyx get(@NonNull Context context) {
-        return InstanceHolder.holder().instantiateStandard(context);
+    public static Pyx getStandard() {
+        return InstanceHolder.holder().instantiateStandard();
     }
 
-    public static void instantiate(@NonNull Context context) {
-        InstanceHolder.holder().instantiateStandard(context);
+    public static void instantiate() {
+        InstanceHolder.holder().instantiateStandard();
     }
 
     static void raiseException(@NonNull JSONObject obj) throws PyxException {
@@ -101,7 +96,7 @@ public class Pyx implements Closeable {
 
     protected void prepareRequest(@NonNull Op operation, @NonNull Request.Builder request) {
         if (operation == Op.FIRST_LOAD) {
-            String lastSessionId = Prefs.getString(preferences, PK.LAST_JSESSIONID, null);
+            String lastSessionId = Prefs.getString(PK.LAST_JSESSIONID, null);
             if (lastSessionId != null) request.addHeader("Cookie", "JSESSIONID=" + lastSessionId);
         }
     }
@@ -165,7 +160,7 @@ public class Pyx implements Closeable {
     @WorkerThread
     public final <E> E requestSync(PyxRequestWithResult<E> request) throws JSONException, PyxException, IOException {
         PyxResponse resp = request(request.op, request.params);
-        return request.processor.process(preferences, resp.resp, resp.obj);
+        return request.processor.process(resp.resp, resp.obj);
     }
 
     @WorkerThread
@@ -194,20 +189,20 @@ public class Pyx implements Closeable {
     }
 
     private void loadDiscoveryApiServersSync() throws IOException, JSONException {
-        if (Prefs.has(preferences, PK.API_SERVERS) && !CommonUtils.isDebug()) {
-            long age = Prefs.getLong(preferences, PK.API_SERVERS_CACHE_AGE, 0);
+        if (Prefs.has(PK.API_SERVERS) && !CommonUtils.isDebug()) {
+            long age = Prefs.getLong(PK.API_SERVERS_CACHE_AGE, 0);
             if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(6))
                 return;
         }
 
         JSONArray array = new JSONArray(requestSync(DISCOVERY_API_LIST));
-        Server.parseAndSave(preferences, array);
+        Server.parseAndSave(array);
     }
 
     public final void getWelcomeMessage(final OnResult<String> listener) {
-        String cached = Prefs.getString(preferences, PK.WELCOME_MSG_CACHE, null);
+        String cached = Prefs.getString(PK.WELCOME_MSG_CACHE, null);
         if (cached != null && !CommonUtils.isDebug()) {
-            long age = Prefs.getLong(preferences, PK.WELCOME_MSG_CACHE_AGE, 0);
+            long age = Prefs.getLong(PK.WELCOME_MSG_CACHE_AGE, 0);
             if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(12)) {
                 listener.onDone(cached);
                 return;
@@ -220,8 +215,8 @@ public class Pyx implements Closeable {
                 try {
                     JSONObject obj = new JSONObject(requestSync(WELCOME_MSG_URL));
                     final String msg = obj.getString("msg");
-                    Prefs.putString(preferences, PK.WELCOME_MSG_CACHE, msg);
-                    Prefs.putLong(preferences, PK.WELCOME_MSG_CACHE_AGE, System.currentTimeMillis());
+                    Prefs.putString(PK.WELCOME_MSG_CACHE, msg);
+                    Prefs.putLong(PK.WELCOME_MSG_CACHE_AGE, System.currentTimeMillis());
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -419,7 +414,7 @@ public class Pyx implements Closeable {
                     try {
                         FirstLoadAndConfig result = firstLoadSync();
 
-                        final FirstLoadedPyx pyx = new FirstLoadedPyx(server, handler, client, preferences, result);
+                        final FirstLoadedPyx pyx = new FirstLoadedPyx(server, handler, client, result);
                         holder.set(pyx);
 
                         handler.post(new Runnable() {
@@ -483,7 +478,7 @@ public class Pyx implements Closeable {
     public interface Processor<E> {
         @NonNull
         @WorkerThread
-        E process(@NonNull SharedPreferences prefs, @NonNull Response response, @NonNull JSONObject obj) throws JSONException;
+        E process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException;
     }
 
     public interface OnSuccess {
@@ -569,27 +564,33 @@ public class Pyx implements Closeable {
             else return HttpUrl.parse(url);
         }
 
-        private static void parseAndSave(SharedPreferences preferences, JSONArray array) throws JSONException {
+        private static void parseAndSave(JSONArray array) throws JSONException {
             List<Server> servers = new ArrayList<>(array.length());
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
+                String name = CommonUtils.getStupidString(obj, "name");
+
                 HttpUrl url = new HttpUrl.Builder()
                         .host(obj.getString("host"))
                         .scheme(obj.getBoolean("secure") ? "https" : "http")
                         .port(obj.getInt("port"))
+                        .encodedPath(obj.getString("path"))
                         .build();
 
-                String metrics = obj.optString("metrics");
-                servers.add(new Server(url, metrics == null ? null : HttpUrl.parse(metrics), url.host() + " server", false));
+                String metrics = CommonUtils.getStupidString(obj, "metrics");
+                servers.add(new Server(url,
+                        metrics == null ? null : HttpUrl.parse(metrics),
+                        name == null ? (url.host() + " server") : name,
+                        false));
             }
 
-            saveTo(preferences, PK.API_SERVERS, servers);
-            Prefs.putLong(preferences, PK.API_SERVERS_CACHE_AGE, System.currentTimeMillis());
+            saveTo(PK.API_SERVERS, servers);
+            Prefs.putLong(PK.API_SERVERS_CACHE_AGE, System.currentTimeMillis());
         }
 
         @Nullable
-        public static Server fromUrl(Context context, Uri url) {
-            List<Server> servers = loadAllServers(context);
+        public static Server fromUrl(Uri url) {
+            List<Server> servers = loadAllServers();
             for (Server server : servers) {
                 if (server.url.host().equals(url.getHost())
                         && server.url.port() == url.getPort())
@@ -624,20 +625,20 @@ public class Pyx implements Closeable {
         }
 
         @NonNull
-        public static List<Server> loadAllServers(Context context) {
+        public static List<Server> loadAllServers() {
             List<Server> all = new ArrayList<>(10);
             all.addAll(pyxServers.values());
-            all.addAll(loadServers(context, PK.USER_SERVERS));
-            all.addAll(loadServers(context, PK.API_SERVERS));
+            all.addAll(loadServers(PK.USER_SERVERS));
+            all.addAll(loadServers(PK.API_SERVERS));
             return all;
         }
 
         @NonNull
-        private static List<Server> loadServers(SharedPreferences preferences, Prefs.PrefKey key) {
+        private static List<Server> loadServers(Prefs.Key key) {
             List<Server> servers = new ArrayList<>();
             JSONArray array;
             try {
-                array = Prefs.getJSONArray(preferences, key, new JSONArray());
+                array = Prefs.getJSONArray(key, new JSONArray());
             } catch (JSONException ex) {
                 Logging.log(ex);
                 return new ArrayList<>();
@@ -654,14 +655,9 @@ public class Pyx implements Closeable {
             return servers;
         }
 
-        @NonNull
-        private static List<Server> loadServers(Context context, Prefs.PrefKey key) {
-            return loadServers(PreferenceManager.getDefaultSharedPreferences(context), key);
-        }
-
         @Nullable
-        private static Server getServer(Context context, Prefs.PrefKey key, String name) throws JSONException {
-            JSONArray array = Prefs.getJSONArray(context, key, new JSONArray());
+        private static Server getServer(Prefs.Key key, String name) throws JSONException {
+            JSONArray array = Prefs.getJSONArray(key, new JSONArray());
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
                 if (Objects.equals(obj.optString("name"), name))
@@ -672,10 +668,10 @@ public class Pyx implements Closeable {
         }
 
         @NonNull
-        private static Server lastServer(Context context) {
-            String name = Prefs.getString(context, PK.LAST_SERVER, null);
+        private static Server lastServer() {
+            String name = Prefs.getString(PK.LAST_SERVER, null);
 
-            List<Server> apiServers = loadServers(context, PK.API_SERVERS);
+            List<Server> apiServers = loadServers(PK.API_SERVERS);
             if (name == null && !apiServers.isEmpty()) return apiServers.get(0);
 
             Server server = null;
@@ -685,7 +681,7 @@ public class Pyx implements Closeable {
 
             if (server == null) {
                 try {
-                    server = getServer(context, PK.USER_SERVERS, name);
+                    server = getServer(PK.USER_SERVERS, name);
                 } catch (JSONException ex) {
                     Logging.log(ex);
                 }
@@ -693,7 +689,7 @@ public class Pyx implements Closeable {
 
             if (server == null) {
                 try {
-                    server = getServer(context, PK.API_SERVERS, name);
+                    server = getServer(PK.API_SERVERS, name);
                 } catch (JSONException ex) {
                     Logging.log(ex);
                 }
@@ -706,24 +702,24 @@ public class Pyx implements Closeable {
             return server;
         }
 
-        public static void addUserServer(Context context, Server server) throws JSONException {
+        public static void addUserServer(Server server) throws JSONException {
             if (!server.isEditable()) return;
 
-            JSONArray array = Prefs.getJSONArray(context, PK.USER_SERVERS, new JSONArray());
+            JSONArray array = Prefs.getJSONArray(PK.USER_SERVERS, new JSONArray());
             for (int i = array.length() - 1; i >= 0; i--) {
                 if (Objects.equals(array.getJSONObject(i).getString("name"), server.name))
                     array.remove(i);
             }
 
             array.put(server.toJson());
-            Prefs.putJSONArray(context, PK.USER_SERVERS, array);
+            Prefs.putJSONArray(PK.USER_SERVERS, array);
         }
 
-        public static void removeUserServer(Context context, Server server) {
+        public static void removeUserServer(Server server) {
             if (!server.isEditable()) return;
 
             try {
-                JSONArray array = Prefs.getJSONArray(context, PK.USER_SERVERS, new JSONArray());
+                JSONArray array = Prefs.getJSONArray(PK.USER_SERVERS, new JSONArray());
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject obj = array.getJSONObject(i);
                     if (Objects.equals(obj.optString("name"), server.name)) {
@@ -732,27 +728,27 @@ public class Pyx implements Closeable {
                     }
                 }
 
-                Prefs.putJSONArray(context, PK.USER_SERVERS, array);
+                Prefs.putJSONArray(PK.USER_SERVERS, array);
             } catch (JSONException ex) {
                 Logging.log(ex);
             }
         }
 
-        public static boolean hasServer(Context context, String name) {
+        public static boolean hasServer(String name) {
             try {
-                return getServer(context, PK.USER_SERVERS, name) != null || getServer(context, PK.API_SERVERS, name) != null;
+                return getServer(PK.USER_SERVERS, name) != null || getServer(PK.API_SERVERS, name) != null;
             } catch (JSONException ex) {
                 Logging.log(ex);
                 return true;
             }
         }
 
-        private static void saveTo(SharedPreferences preferences, Prefs.PrefKey key, List<Server> servers) throws JSONException {
+        private static void saveTo(Prefs.Key key, List<Server> servers) throws JSONException {
             JSONArray array = new JSONArray();
             for (Server server : servers)
                 array.put(server.toJson());
 
-            Prefs.putJSONArray(preferences, key, array);
+            Prefs.putJSONArray(key, array);
         }
 
         @Override
@@ -898,7 +894,7 @@ public class Pyx implements Closeable {
         public void run() {
             try {
                 PyxResponse resp = request(request.op, request.params);
-                final E result = request.processor.process(preferences, resp.resp, resp.obj);
+                final E result = request.processor.process(resp.resp, resp.obj);
                 if (listener != null) {
                     handler.post(new Runnable() {
                         @Override

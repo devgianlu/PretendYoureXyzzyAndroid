@@ -1,16 +1,13 @@
 package com.gianlu.pretendyourexyzzy.Starred;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.PK;
-import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,15 +20,15 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class StarredCardsManager {
 
-    public static boolean addCard(@NonNull Context context, @NonNull StarredCard card) {
+    public static boolean addCard(@NonNull StarredCard card) {
         try {
-            List<StarredCard> cards = StarredCard.asList(new JSONArray(Prefs.getBase64String(context, PK.STARRED_CARDS, "[]")));
+            List<StarredCard> cards = StarredCard.asList(new JSONArray(Prefs.getBase64String(PK.STARRED_CARDS, "[]")));
 
             boolean a = cards.contains(card);
             if (!a) cards.add(card);
-            saveCards(context, cards);
+            saveCards(cards);
 
-            AnalyticsApplication.sendAnalytics(context, Utils.ACTION_STARRED_CARD_ADD);
+            // TODO: AnalyticsApplication.sendAnalytics( Utils.ACTION_STARRED_CARD_ADD);
 
             return !a;
         } catch (JSONException ex) {
@@ -40,30 +37,30 @@ public class StarredCardsManager {
         }
     }
 
-    private static void saveCards(@NonNull Context context, List<StarredCard> cards) {
+    private static void saveCards(List<StarredCard> cards) {
         try {
             JSONArray array = new JSONArray();
             for (StarredCard card : cards) array.put(card.toJson());
-            Prefs.putBase64String(context, PK.STARRED_CARDS, array.toString());
+            Prefs.putBase64String(PK.STARRED_CARDS, array.toString());
         } catch (JSONException ex) {
             Logging.log(ex);
         }
     }
 
-    public static void removeCard(@NonNull Context context, @NonNull StarredCard card) {
+    public static void removeCard(@NonNull StarredCard card) {
         try {
-            List<StarredCard> cards = StarredCard.asList(new JSONArray(Prefs.getBase64String(context, PK.STARRED_CARDS, "[]")));
+            List<StarredCard> cards = StarredCard.asList(new JSONArray(Prefs.getBase64String(PK.STARRED_CARDS, "[]")));
             cards.remove(card);
-            saveCards(context, cards);
+            saveCards(cards);
         } catch (JSONException ex) {
             Logging.log(ex);
         }
     }
 
     @NonNull
-    public static List<StarredCard> loadCards(@NonNull Context context) {
+    public static List<StarredCard> loadCards() {
         try {
-            List<StarredCard> cards = StarredCard.asList(new JSONArray(Prefs.getBase64String(context, PK.STARRED_CARDS, "[]")));
+            List<StarredCard> cards = StarredCard.asList(new JSONArray(Prefs.getBase64String(PK.STARRED_CARDS, "[]")));
             Collections.reverse(cards);
             return cards;
         } catch (JSONException ex) {
@@ -72,9 +69,9 @@ public class StarredCardsManager {
         }
     }
 
-    public static boolean hasAnyCard(@NonNull Context context) {
+    public static boolean hasAnyCard() {
         try {
-            return new JSONArray(Prefs.getBase64String(context, PK.STARRED_CARDS, "[]")).length() > 0;
+            return new JSONArray(Prefs.getBase64String(PK.STARRED_CARDS, "[]")).length() > 0;
         } catch (JSONException ex) {
             Logging.log(ex);
             return false;

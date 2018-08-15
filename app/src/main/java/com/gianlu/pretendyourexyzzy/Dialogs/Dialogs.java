@@ -81,7 +81,7 @@ public final class Dialogs {
             builder.setNeutralButton(R.string.remove, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    Pyx.Server.removeUserServer(context, server);
+                    Pyx.Server.removeUserServer(server);
                     listener.removeItem(server);
                 }
             });
@@ -95,7 +95,7 @@ public final class Dialogs {
                     @Override
                     public void onClick(View v) {
                         String nameStr = CommonUtils.getText(nameField);
-                        if (nameStr.isEmpty() || (server != null && !Objects.equals(server.name, nameStr) && Pyx.Server.hasServer(context, nameStr))) {
+                        if (nameStr.isEmpty() || (server != null && !Objects.equals(server.name, nameStr) && Pyx.Server.hasServer(nameStr))) {
                             nameField.setError(context.getString(R.string.invalidServerName));
                             return;
                         }
@@ -109,7 +109,7 @@ public final class Dialogs {
 
                         Pyx.Server server = new Pyx.Server(url, null, nameStr, true);
                         try {
-                            Pyx.Server.addUserServer(context, server);
+                            Pyx.Server.addUserServer(server);
                             listener.loadServers();
                         } catch (JSONException ex) {
                             Toaster.with(context).message(R.string.failedAddingServer).ex(ex).show();

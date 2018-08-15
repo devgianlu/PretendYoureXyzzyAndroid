@@ -1,6 +1,5 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -21,8 +20,8 @@ import okhttp3.OkHttpClient;
 public class FirstLoadedPyx extends Pyx {
     private final FirstLoadAndConfig firstLoadAndConfig;
 
-    FirstLoadedPyx(Server server, Handler handler, OkHttpClient client, SharedPreferences preferences, FirstLoadAndConfig firstLoadAndConfig) {
-        super(server, handler, client, preferences);
+    FirstLoadedPyx(Server server, Handler handler, OkHttpClient client, FirstLoadAndConfig firstLoadAndConfig) {
+        super(server, handler, client);
         this.firstLoadAndConfig = firstLoadAndConfig;
     }
 
@@ -44,8 +43,8 @@ public class FirstLoadedPyx extends Pyx {
                 @Override
                 public void run() {
                     try {
-                        User user = requestSync(PyxRequests.register(nickname, idCode, Prefs.getString(preferences, PK.LAST_PERSISTENT_ID, null)));
-                        Prefs.putString(preferences, PK.LAST_PERSISTENT_ID, user.persistentId);
+                        User user = requestSync(PyxRequests.register(nickname, idCode, Prefs.getString(PK.LAST_PERSISTENT_ID, null)));
+                        Prefs.putString(PK.LAST_PERSISTENT_ID, user.persistentId);
                         final RegisteredPyx pyx = upgrade(user);
                         handler.post(new Runnable() {
                             @Override
@@ -68,7 +67,7 @@ public class FirstLoadedPyx extends Pyx {
 
     @NonNull
     public RegisteredPyx upgrade(@NonNull User user) {
-        RegisteredPyx pyx = new RegisteredPyx(server, handler, client, preferences, firstLoadAndConfig, user);
+        RegisteredPyx pyx = new RegisteredPyx(server, handler, client, firstLoadAndConfig, user);
         InstanceHolder.holder().set(pyx);
         return pyx;
     }

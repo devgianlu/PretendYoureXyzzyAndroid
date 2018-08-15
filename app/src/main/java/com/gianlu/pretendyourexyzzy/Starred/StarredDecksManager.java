@@ -1,13 +1,10 @@
 package com.gianlu.pretendyourexyzzy.Starred;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
-import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,9 +18,9 @@ import java.util.Objects;
 
 public class StarredDecksManager {
 
-    public static boolean hasDeck(@NonNull Context context, @NonNull String code) {
+    public static boolean hasDeck(@NonNull String code) {
         try {
-            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(context, PK.STARRED_DECKS, "[]")));
+            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(PK.STARRED_DECKS, "[]")));
             for (StarredDeck deck : decks)
                 if (Objects.equals(deck.code, code))
                     return true;
@@ -35,45 +32,45 @@ public class StarredDecksManager {
         }
     }
 
-    public static void addDeck(@NonNull Context context, @NonNull StarredDeck deck) {
+    public static void addDeck(@NonNull StarredDeck deck) {
         try {
-            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(context, PK.STARRED_DECKS, "[]")));
+            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(PK.STARRED_DECKS, "[]")));
             if (!decks.contains(deck)) decks.add(deck);
-            saveDecks(context, decks);
+            saveDecks(decks);
         } catch (JSONException ex) {
             Logging.log(ex);
         }
 
-        AnalyticsApplication.sendAnalytics(context, Utils.ACTION_STARRED_DECK_ADD);
+        // TODO: AnalyticsApplication.sendAnalytics( Utils.ACTION_STARRED_DECK_ADD);
     }
 
-    private static void saveDecks(@NonNull Context context, List<StarredDeck> decks) {
+    private static void saveDecks(List<StarredDeck> decks) {
         try {
             JSONArray array = new JSONArray();
             for (StarredDeck deck : decks) array.put(deck.toJson());
-            Prefs.putBase64String(context, PK.STARRED_DECKS, array.toString());
+            Prefs.putBase64String(PK.STARRED_DECKS, array.toString());
         } catch (JSONException ex) {
             Logging.log(ex);
         }
     }
 
-    public static void removeDeck(@NonNull Context context, @NonNull String code) {
+    public static void removeDeck(@NonNull String code) {
         try {
-            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(context, PK.STARRED_DECKS, "[]")));
+            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(PK.STARRED_DECKS, "[]")));
             Iterator<StarredDeck> iterator = decks.iterator();
             while (iterator.hasNext())
                 if (Objects.equals(iterator.next().code, code))
                     iterator.remove();
 
-            saveDecks(context, decks);
+            saveDecks(decks);
         } catch (JSONException ex) {
             Logging.log(ex);
         }
     }
 
-    public static List<StarredDeck> loadDecks(@NonNull Context context) {
+    public static List<StarredDeck> loadDecks() {
         try {
-            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(context, PK.STARRED_DECKS, "[]")));
+            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(PK.STARRED_DECKS, "[]")));
             Collections.reverse(decks);
             return decks;
         } catch (JSONException ex) {
@@ -82,9 +79,9 @@ public class StarredDecksManager {
         }
     }
 
-    public static boolean hasAnyDeck(@NonNull Context context) {
+    public static boolean hasAnyDeck() {
         try {
-            return new JSONArray(Prefs.getBase64String(context, PK.STARRED_DECKS, "[]")).length() > 0;
+            return new JSONArray(Prefs.getBase64String(PK.STARRED_DECKS, "[]")).length() > 0;
         } catch (JSONException ex) {
             Logging.log(ex);
             return false;
