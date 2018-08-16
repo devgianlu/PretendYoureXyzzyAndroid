@@ -84,6 +84,8 @@ public class RegisteredPyx extends FirstLoadedPyx {
                 InstanceHolder.holder().invalidate();
             }
         });
+
+        Prefs.remove(PK.LAST_JSESSIONID);
     }
 
     public final void getGameInfoAndCards(final int gid, final OnResult<GameInfoAndCards> listener) {
