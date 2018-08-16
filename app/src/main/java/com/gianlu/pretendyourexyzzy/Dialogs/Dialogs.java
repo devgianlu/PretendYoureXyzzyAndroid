@@ -219,6 +219,21 @@ public final class Dialogs {
                 }).setNegativeButton(android.R.string.no, null);
     }
 
+    @NonNull
+    public static AlertDialog.Builder askDefinitionWord(@NonNull Context context, @NonNull final OnText listener) {
+        final EditText text = new EditText(context);
+
+        return new AlertDialog.Builder(context)
+                .setTitle(R.string.definition)
+                .setView(text)
+                .setPositiveButton(R.string.search, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        listener.onText(text.getText().toString());
+                    }
+                }).setNegativeButton(android.R.string.cancel, null);
+    }
+
     public interface OnAddServer {
         void loadServers();
 

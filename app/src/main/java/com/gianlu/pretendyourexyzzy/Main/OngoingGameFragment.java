@@ -42,6 +42,7 @@ import com.gianlu.pretendyourexyzzy.Dialogs.GameRoundDialog;
 import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.BestGameManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastSheet;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGame.UrbanDictSheet;
 import com.gianlu.pretendyourexyzzy.Metrics.MetricsActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
@@ -260,6 +261,14 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
             case R.id.ongoingGame_cardcast:
                 cardcastSheet = CardcastSheet.get();
                 cardcastSheet.show(getActivity(), perm.gid);
+                return true;
+            case R.id.ongoingGame_definition:
+                showDialog(Dialogs.askDefinitionWord(getContext(), new Dialogs.OnText() {
+                    @Override
+                    public void onText(@NonNull String text) {
+                        UrbanDictSheet.get().show(getActivity(), text);
+                    }
+                }));
                 return true;
         }
 

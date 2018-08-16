@@ -51,6 +51,12 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/ongoingGame_definition"
+        android:orderInCategory="1"
+        android:title="@string/definition"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/ongoingGame_cardcast"
         android:icon="@drawable/baseline_cast_24"
         android:title="@string/cardcast"
