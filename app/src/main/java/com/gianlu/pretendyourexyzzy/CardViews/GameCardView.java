@@ -11,10 +11,7 @@ import android.support.v4.widget.TextViewCompat;
 import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import android.view.ActionMode;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -51,8 +48,6 @@ public class GameCardView extends CardView {
     private final Action primary;
     private final Action secondary;
     private BaseCard card;
-    private TextSelectionListener textSelectionListener;
-    private boolean isSelectable = false;
 
     public GameCardView(@NonNull Context context) {
         this(context, null, 0);
@@ -83,7 +78,6 @@ public class GameCardView extends CardView {
 
         text = findViewById(R.id.pyxCard_text);
         text.setTypeface(FontsManager.get().get(getContext(), FontsManager.ROBOTO_MEDIUM));
-        text.setCustomSelectionActionModeCallback(new TextSelectionCallback());
 
         watermark = findViewById(R.id.pyxCard_watermark);
         numPick = findViewById(R.id.pyxCard_numPick);
@@ -100,12 +94,9 @@ public class GameCardView extends CardView {
     }
 
     public void setSelectable(boolean selectable) {
-        isSelectable = selectable;
         setupActions();
-    }
-
-    public void setTextSelectionListener(TextSelectionListener textSelectionListener) {
-        this.textSelectionListener = textSelectionListener;
+        setClickable(selectable);
+        setFocusable(selectable);
     }
 
     private void showUnknown() {
@@ -128,7 +119,7 @@ public class GameCardView extends CardView {
 
             switch (action) {
                 case SELECT:
-                    button.setImageResource(R.drawable.baseline_done_24);
+                    // Shouldn't be called
                     break;
                 case DELETE:
                     button.setImageResource(R.drawable.baseline_delete_24);
@@ -217,7 +208,9 @@ public class GameCardView extends CardView {
 
     private void setupActions() {
         if (!card.unknown()) {
-            if (primary == Action.SELECT && !isSelectable) {
+            if (primary == Action.SELECT) {
+                setOnClickListener(new CallActionListenerOnClick(Action.SELECT));
+
                 setupAction(secondary, primaryAction);
                 setupAction(null, secondaryAction);
             } else {
@@ -278,12 +271,8 @@ public class GameCardView extends CardView {
         SELECT_IMG
     }
 
-    interface CardListener extends TextSelectionListener {
+    interface CardListener {
         void onCardAction(@NonNull Action action, @NonNull BaseCard card);
-    }
-
-    public interface TextSelectionListener {
-        void onTextSelected(@NonNull String text);
     }
 
     private class CallActionListenerOnClick implements View.OnClickListener {
@@ -296,42 +285,6 @@ public class GameCardView extends CardView {
         @Override
         public void onClick(View v) {
             if (listener != null) listener.onCardAction(action, card);
-        }
-    }
-
-    private class TextSelectionCallback implements ActionMode.Callback {
-        @Override
-        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            mode.getMenuInflater().inflate(R.menu.card_selection, menu);
-            return true;
-        }
-
-        @Override
-        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-            return false;
-        }
-
-        @Override
-        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.cardSelection_definition:
-                    String selection = text.getText().toString().substring(text.getSelectionStart(), text.getSelectionEnd());
-                    if (textSelectionListener != null) {
-                        textSelectionListener.onTextSelected(selection);
-                        return true;
-                    } else if (listener != null) {
-                        listener.onTextSelected(selection);
-                        return true;
-                    } else {
-                        return false;
-                    }
-            }
-
-            return false;
-        }
-
-        @Override
-        public void onDestroyActionMode(ActionMode mode) {
         }
     }
 }

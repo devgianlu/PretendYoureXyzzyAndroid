@@ -42,7 +42,6 @@ import com.gianlu.pretendyourexyzzy.Dialogs.GameRoundDialog;
 import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.BestGameManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastSheet;
-import com.gianlu.pretendyourexyzzy.Main.OngoingGame.UrbanDictSheet;
 import com.gianlu.pretendyourexyzzy.Metrics.MetricsActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
@@ -115,11 +114,6 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         Activity activity = getActivity();
         if (manager != null && activity != null && isVisible())
             activity.setTitle(manager.gameInfo().game.host + " - " + getString(R.string.app_name));
-    }
-
-    @Override
-    public void onTextSelected(@NonNull String text) {
-        UrbanDictSheet.get().show(getActivity(), text);
     }
 
     @Override

@@ -121,11 +121,6 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         if (listener != null) listener.onCardAction(action, group, card);
     }
 
-    @Override
-    public void onTextSelected(@NonNull String text) {
-        if (listener != null) listener.onTextSelected(text);
-    }
-
     @UiThread
     public void addCards(List<Card> cards) {
         for (Card card : cards) this.cards.add(CardsGroup.singleton(card));
@@ -171,8 +166,6 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         RecyclerView getCardsRecyclerView();
 
         void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card);
-
-        void onTextSelected(@NonNull String text);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

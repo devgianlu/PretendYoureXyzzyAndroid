@@ -17,8 +17,6 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:paddingTop="16dp"
-        android:textColorHighlight="@color/urbanHighlight"
-        android:textIsSelectable="true"
         android:textSize="18sp" />
 
     <FrameLayout

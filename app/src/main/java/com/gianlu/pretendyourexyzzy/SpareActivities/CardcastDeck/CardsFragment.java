@@ -19,7 +19,6 @@ import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
 import com.gianlu.pretendyourexyzzy.Dialogs.CardImageZoomDialog;
-import com.gianlu.pretendyourexyzzy.Main.OngoingGame.UrbanDictSheet;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
@@ -93,10 +92,5 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
     public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
         if (action == GameCardView.Action.SELECT_IMG)
             DialogUtils.showDialog(getActivity(), CardImageZoomDialog.get(card));
-    }
-
-    @Override
-    public void onTextSelected(@NonNull String text) {
-        UrbanDictSheet.get().show(getActivity(), text);
     }
 }
