@@ -20,7 +20,12 @@ public class ThisApplication extends AnalyticsApplication {
     public void onCreate() {
         super.onCreate();
 
-        Pyx.instantiate();
         Glide.get(this).getRegistry().prepend(BaseCard.class, InputStream.class, new BaseCardUrlLoader.Factory());
+
+        try {
+            Pyx.instantiate();
+        } catch (Pyx.NoServersException ex) {
+            ex.solve(this);
+        }
     }
 }
