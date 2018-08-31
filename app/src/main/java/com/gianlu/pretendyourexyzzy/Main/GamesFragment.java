@@ -394,6 +394,8 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     }
 
     public void viewGame(int gid, boolean locked) {
+        if (adapter == null) return;
+
         if (locked && adapter.doesFilterOutLockedLobbies()) {
             Prefs.putBoolean(PK.FILTER_LOCKED_LOBBIES, false);
             adapter.setFilterOutLockedLobbies(false);

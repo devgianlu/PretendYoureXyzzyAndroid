@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -12,7 +13,9 @@ import android.support.annotation.WorkerThread;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
+import com.gianlu.commonutils.OfflineActivity;
 import com.gianlu.commonutils.Preferences.Prefs;
+import com.gianlu.pretendyourexyzzy.LoadingActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CahConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoadAndConfig;
@@ -34,9 +37,7 @@ import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -60,10 +61,15 @@ public class Pyx implements Closeable {
     protected final OkHttpClient client;
     protected final ExecutorService executor = Executors.newFixedThreadPool(5);
 
-    Pyx() {
+    Pyx() throws NoServersException {
         this.handler = new Handler(Looper.getMainLooper());
         this.server = Server.lastServer();
         this.client = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
+    }
+
+    @NonNull
+    public static Pyx getStandard() throws NoServersException {
+        return InstanceHolder.holder().instantiateStandard();
     }
 
     protected Pyx(Server server, Handler handler, OkHttpClient client) {
@@ -77,13 +83,15 @@ public class Pyx implements Closeable {
         return InstanceHolder.holder().get(InstanceHolder.Level.STANDARD);
     }
 
-    @NonNull
-    public static Pyx getStandard() {
-        return InstanceHolder.holder().instantiateStandard();
+    public static void instantiate() throws NoServersException {
+        InstanceHolder.holder().instantiateStandard();
     }
 
-    public static void instantiate() {
-        InstanceHolder.holder().instantiateStandard();
+    public static class NoServersException extends Exception {
+
+        public void solve(@NonNull Context context) {
+            OfflineActivity.startActivity(context, LoadingActivity.class);
+        }
     }
 
     static void raiseException(@NonNull JSONObject obj) throws PyxException {
@@ -522,21 +530,6 @@ public class Pyx implements Closeable {
     }
 
     public static class Server {
-        private final static Map<String, Server> pyxServers = new HashMap<>();
-
-        static {
-            try {
-                HttpUrl pyxMetrics = parseUrlOrThrow("https://pretendyoure.xyz/zy/metrics/");
-
-                pyxServers.put("PYX1", new Server(parseUrlOrThrow("https://pyx-1.pretendyoure.xyz/zy/"), pyxMetrics, "The Biggest, Blackest Dick", false));
-                pyxServers.put("PYX2", new Server(parseUrlOrThrow("https://pyx-2.pretendyoure.xyz/zy/"), pyxMetrics, "A Falcon with a Box on its Head", false));
-                pyxServers.put("PYX3", new Server(parseUrlOrThrow("https://pyx-3.pretendyoure.xyz/zy/"), pyxMetrics, "Dickfingers", false));
-            } catch (JSONException ex) {
-                Logging.log(ex);
-                throw new RuntimeException(ex);
-            }
-        }
-
         public final HttpUrl url;
         public final String name;
         private final boolean editable;
@@ -627,7 +620,6 @@ public class Pyx implements Closeable {
         @NonNull
         public static List<Server> loadAllServers() {
             List<Server> all = new ArrayList<>(10);
-            all.addAll(pyxServers.values());
             all.addAll(loadServers(PK.USER_SERVERS));
             all.addAll(loadServers(PK.API_SERVERS));
             return all;
@@ -668,23 +660,17 @@ public class Pyx implements Closeable {
         }
 
         @NonNull
-        private static Server lastServer() {
+        private static Server lastServer() throws NoServersException {
             String name = Prefs.getString(PK.LAST_SERVER, null);
 
             List<Server> apiServers = loadServers(PK.API_SERVERS);
             if (name == null && !apiServers.isEmpty()) return apiServers.get(0);
 
             Server server = null;
-            for (Server pyxServer : pyxServers.values())
-                if (Objects.equals(pyxServer.name, name))
-                    server = pyxServer;
-
-            if (server == null) {
-                try {
-                    server = getServer(PK.USER_SERVERS, name);
-                } catch (JSONException ex) {
-                    Logging.log(ex);
-                }
+            try {
+                server = getServer(PK.USER_SERVERS, name);
+            } catch (JSONException ex) {
+                Logging.log(ex);
             }
 
             if (server == null) {
@@ -696,9 +682,7 @@ public class Pyx implements Closeable {
             }
 
             if (server == null && !apiServers.isEmpty()) server = apiServers.get(0);
-
-            if (server == null) server = pyxServers.get("PYX1");
-
+            if (server == null) throw new NoServersException();
             return server;
         }
 

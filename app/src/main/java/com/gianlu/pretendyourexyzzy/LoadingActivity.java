@@ -144,7 +144,14 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         }
 
-        Pyx pyx = Pyx.getStandard();
+        Pyx pyx;
+        try {
+            pyx = Pyx.getStandard();
+        } catch (Pyx.NoServersException ex) {
+            ex.solve(this);
+            return;
+        }
+
         pyx.getWelcomeMessage(new Pyx.OnResult<String>() {
             @Override
             public void onDone(@NonNull String result) {
@@ -192,8 +199,13 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 setServer(server);
                 loading.setVisibility(View.VISIBLE);
                 register.setVisibility(View.GONE);
-                Pyx.getStandard().firstLoad(LoadingActivity.this);
                 dismissDialog();
+
+                try {
+                    Pyx.getStandard().firstLoad(LoadingActivity.this);
+                } catch (Pyx.NoServersException ex) {
+                    ex.solve(LoadingActivity.this);
+                }
             }
         }));
 

@@ -16,7 +16,7 @@ class InstanceHolder {
     }
 
     @NonNull
-    public synchronized Pyx instantiateStandard() {
+    public synchronized Pyx instantiateStandard() throws Pyx.NoServersException {
         if (pyx == null) pyx = new Pyx();
         return pyx;
     }
