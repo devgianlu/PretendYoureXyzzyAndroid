@@ -54,8 +54,6 @@ import okhttp3.ResponseBody;
 public class Pyx implements Closeable {
     protected final static int AJAX_TIMEOUT = 5;
     protected final static int POLLING_TIMEOUT = 30;
-    private static final HttpUrl WELCOME_MSG_URL = HttpUrl.parse("http://discovery.pyx.gianlu.xyz/WelcomeMessage");
-    private static final HttpUrl DISCOVERY_API_LIST = HttpUrl.parse("http://discovery.pyx.gianlu.xyz/ListAll");
     public final Server server;
     protected final Handler handler;
     protected final OkHttpClient client;
@@ -67,11 +65,6 @@ public class Pyx implements Closeable {
         this.client = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
     }
 
-    @NonNull
-    public static Pyx getStandard() throws NoServersException {
-        return InstanceHolder.holder().instantiateStandard();
-    }
-
     protected Pyx(Server server, Handler handler, OkHttpClient client) {
         this.server = server;
         this.handler = handler;
@@ -79,19 +72,13 @@ public class Pyx implements Closeable {
     }
 
     @NonNull
+    static Pyx getStandard() throws NoServersException {
+        return InstanceHolder.holder().instantiateStandard();
+    }
+
+    @NonNull
     public static Pyx get() throws LevelMismatchException {
         return InstanceHolder.holder().get(InstanceHolder.Level.STANDARD);
-    }
-
-    public static void instantiate() throws NoServersException {
-        InstanceHolder.holder().instantiateStandard();
-    }
-
-    public static class NoServersException extends Exception {
-
-        public void solve(@NonNull Context context) {
-            OfflineActivity.startActivity(context, LoadingActivity.class);
-        }
     }
 
     static void raiseException(@NonNull JSONObject obj) throws PyxException {
@@ -174,8 +161,6 @@ public class Pyx implements Closeable {
     @WorkerThread
     @NonNull
     private FirstLoadAndConfig firstLoadSync() throws PyxException, IOException, JSONException {
-        loadDiscoveryApiServersSync();
-
         FirstLoad fl = requestSync(PyxRequests.firstLoad());
 
         CahConfig cahConfig;
@@ -194,53 +179,6 @@ public class Pyx implements Closeable {
         }
 
         return new FirstLoadAndConfig(fl, cahConfig);
-    }
-
-    private void loadDiscoveryApiServersSync() throws IOException, JSONException {
-        if (Prefs.has(PK.API_SERVERS) && !CommonUtils.isDebug()) {
-            long age = Prefs.getLong(PK.API_SERVERS_CACHE_AGE, 0);
-            if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(6))
-                return;
-        }
-
-        JSONArray array = new JSONArray(requestSync(DISCOVERY_API_LIST));
-        Server.parseAndSave(array);
-    }
-
-    public final void getWelcomeMessage(final OnResult<String> listener) {
-        String cached = Prefs.getString(PK.WELCOME_MSG_CACHE, null);
-        if (cached != null && !CommonUtils.isDebug()) {
-            long age = Prefs.getLong(PK.WELCOME_MSG_CACHE_AGE, 0);
-            if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(12)) {
-                listener.onDone(cached);
-                return;
-            }
-        }
-
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    JSONObject obj = new JSONObject(requestSync(WELCOME_MSG_URL));
-                    final String msg = obj.getString("msg");
-                    Prefs.putString(PK.WELCOME_MSG_CACHE, msg);
-                    Prefs.putLong(PK.WELCOME_MSG_CACHE_AGE, System.currentTimeMillis());
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(msg);
-                        }
-                    });
-                } catch (JSONException | IOException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            }
-        });
     }
 
     @NonNull
@@ -513,6 +451,13 @@ public class Pyx implements Closeable {
         void onStoppedPolling();
     }
 
+    public static class NoServersException extends Exception {
+
+        public void solve(@NonNull Context context) {
+            OfflineActivity.startActivity(context, LoadingActivity.class);
+        }
+    }
+
     public static class MetricsNotSupportedException extends Exception {
         MetricsNotSupportedException(Server server) {
             super("Metrics aren't supported on this server: " + server.name);
@@ -557,7 +502,7 @@ public class Pyx implements Closeable {
             else return HttpUrl.parse(url);
         }
 
-        private static void parseAndSave(JSONArray array) throws JSONException {
+        static void parseAndSave(JSONArray array) throws JSONException {
             List<Server> servers = new ArrayList<>(array.length());
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);

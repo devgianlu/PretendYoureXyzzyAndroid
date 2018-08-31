@@ -4,7 +4,6 @@ import com.bumptech.glide.Glide;
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.pretendyourexyzzy.NetIO.BaseCardUrlLoader;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
-import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 
 import java.io.InputStream;
 
@@ -21,11 +20,5 @@ public class ThisApplication extends AnalyticsApplication {
         super.onCreate();
 
         Glide.get(this).getRegistry().prepend(BaseCard.class, InputStream.class, new BaseCardUrlLoader.Factory());
-
-        try {
-            Pyx.instantiate();
-        } catch (Pyx.NoServersException ex) {
-            ex.solve(this);
-        }
     }
 }

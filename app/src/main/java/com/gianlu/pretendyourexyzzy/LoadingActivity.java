@@ -34,6 +34,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.NetIO.PyxDiscoveryApi;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.SpareActivities.ManageServersActivity;
@@ -62,6 +63,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private TextInputLayout registerIdCode;
     private TutorialManager tutorialManager;
     private SuperTextView welcomeMessage;
+    private PyxDiscoveryApi discoveryApi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,15 +146,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         }
 
-        Pyx pyx;
-        try {
-            pyx = Pyx.getStandard();
-        } catch (Pyx.NoServersException ex) {
-            ex.solve(this);
-            return;
-        }
-
-        pyx.getWelcomeMessage(new Pyx.OnResult<String>() {
+        discoveryApi = PyxDiscoveryApi.get();
+        discoveryApi.getWelcomeMessage(new Pyx.OnResult<String>() {
             @Override
             public void onDone(@NonNull String result) {
                 welcomeMessage.setVisibility(View.VISIBLE);
@@ -165,7 +160,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 welcomeMessage.setVisibility(View.GONE);
             }
         });
-        pyx.firstLoad(this);
+        discoveryApi.firstLoad(this);
     }
 
     private void changeServerDialog(boolean dismissible) {
@@ -201,11 +196,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 register.setVisibility(View.GONE);
                 dismissDialog();
 
-                try {
-                    Pyx.getStandard().firstLoad(LoadingActivity.this);
-                } catch (Pyx.NoServersException ex) {
-                    ex.solve(LoadingActivity.this);
-                }
+                discoveryApi.firstLoad(LoadingActivity.this);
             }
         }));
 
