@@ -352,7 +352,13 @@ public class Pyx implements Closeable {
         final InstanceHolder holder = InstanceHolder.holder();
 
         try {
-            listener.onDone((FirstLoadedPyx) holder.get(InstanceHolder.Level.FIRST_LOADED));
+            final FirstLoadedPyx pyx = holder.get(InstanceHolder.Level.FIRST_LOADED);
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    listener.onDone(pyx);
+                }
+            });
         } catch (LevelMismatchException exx) {
             executor.execute(new Runnable() {
                 @Override
