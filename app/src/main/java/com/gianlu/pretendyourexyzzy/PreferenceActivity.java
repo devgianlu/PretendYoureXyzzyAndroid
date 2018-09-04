@@ -47,4 +47,9 @@ public class PreferenceActivity extends BasePreferenceActivity {
     protected String getOpenSourceUrl() {
         return null;
     }
+
+    @Override
+    protected boolean disablePayPalOnGooglePlay() {
+        return true;
+    }
 }
