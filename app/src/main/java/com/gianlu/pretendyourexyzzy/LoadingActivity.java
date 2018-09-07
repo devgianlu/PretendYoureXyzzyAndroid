@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
@@ -64,6 +65,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private TutorialManager tutorialManager;
     private SuperTextView welcomeMessage;
     private PyxDiscoveryApi discoveryApi;
+    private TextView currentServer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +100,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
         loading = findViewById(R.id.loading_loading);
         loading.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(this, R.color.colorPrimary), PorterDuff.Mode.SRC_IN);
+        currentServer = findViewById(R.id.loading_currentServer);
         register = findViewById(R.id.loading_register);
         registerNickname = findViewById(R.id.loading_registerNickname);
         registerSubmit = findViewById(R.id.loading_registerSubmit);
@@ -164,7 +167,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     private void changeServerDialog(boolean dismissible) {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.changeServer)
                 .setCancelable(dismissible)
                 .setNeutralButton(R.string.manage, new DialogInterface.OnClickListener() {
@@ -206,6 +209,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private void setServer(@NonNull Pyx.Server server) {
         Pyx.invalidate();
         Prefs.putString(PK.LAST_SERVER, server.name);
+
+        currentServer.setText(server.name);
     }
 
     @Nullable
@@ -293,6 +298,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             result.upgrade(fl.user);
             goTo(MainActivity.class);
         } else {
+            currentServer.setText(result.server.name);
             showRegisterUI(result);
             tutorialManager.tryShowingTutorials(this);
         }

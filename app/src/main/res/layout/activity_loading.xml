@@ -39,6 +39,15 @@
         android:paddingStart="16dp"
         android:visibility="gone">
 
+        <TextView
+            android:id="@+id/loading_currentServer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:textAlignment="center"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
         <android.support.design.widget.TextInputLayout
             android:id="@+id/loading_registerNickname"
             android:layout_width="match_parent"
