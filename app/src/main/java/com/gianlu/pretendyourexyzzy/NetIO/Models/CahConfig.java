@@ -1,37 +1,36 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CahConfig {
     private static final Pattern PATTERN = Pattern.compile("cah\\.(.+?)\\s=\\s(.+?);");
-    public final boolean globalChatEnabled;
-    public final boolean insecureIdAllowed;
+    private final Map<String, String> map = new HashMap<>();
 
-    public CahConfig(String str) throws ParseException {
+    public CahConfig(String str) {
         Matcher matcher = PATTERN.matcher(str);
 
-        Boolean globalChatEnabledTmp = null;
-        Boolean insecureIdAllowedTmp = null;
         while (matcher.find()) {
-            String name = matcher.group(1);
-            String val = matcher.group(2);
-
-            switch (name) {
-                case "GLOBAL_CHAT_ENABLED":
-                    globalChatEnabledTmp = Boolean.parseBoolean(val);
-                    break;
-                case "INSECURE_ID_ALLOWED":
-                    insecureIdAllowedTmp = Boolean.parseBoolean(val);
-                    break;
-            }
+            map.put(matcher.group(1), matcher.group(2));
         }
+    }
 
-        if (globalChatEnabledTmp == null) throw new ParseException(str, 0);
-        else globalChatEnabled = globalChatEnabledTmp;
+    private boolean getOrDefault(String key, boolean def) {
+        String val = map.get(key);
+        return val == null ? def : Boolean.parseBoolean(val);
+    }
 
-        if (insecureIdAllowedTmp == null) throw new ParseException(str, 0);
-        else insecureIdAllowed = insecureIdAllowedTmp;
+    public boolean gameChatEnabled() {
+        return getOrDefault("GAME_CHAT_ENABLED", false);
+    }
+
+    public boolean globalChatEnabled() {
+        return getOrDefault("GLOBAL_CHAT_ENABLED", false);
+    }
+
+    public boolean insecureIdAllowed() {
+        return getOrDefault("INSECURE_ID_ALLOWED", false);
     }
 }

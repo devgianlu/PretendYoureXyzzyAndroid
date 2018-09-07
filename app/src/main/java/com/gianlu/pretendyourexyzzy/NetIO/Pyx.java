@@ -34,7 +34,6 @@ import org.json.JSONObject;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -173,9 +172,6 @@ public class Pyx implements Closeable {
             ResponseBody respBody = resp.body();
             if (respBody != null) cahConfig = new CahConfig(respBody.string());
             else throw new StatusCodeException(resp);
-        } catch (ParseException ex) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) throw new JSONException(ex);
-            else throw new JSONException(ex.getMessage());
         }
 
         return new FirstLoadAndConfig(fl, cahConfig);

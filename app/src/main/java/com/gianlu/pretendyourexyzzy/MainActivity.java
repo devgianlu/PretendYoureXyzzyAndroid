@@ -160,7 +160,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         cardcastFragment = CardcastFragment.getInstance();
         transaction.add(R.id.main_container, cardcastFragment, TAG_CARDCAST);
 
-        if (pyx.config().globalChatEnabled) {
+        if (pyx.config().globalChatEnabled()) {
             globalChatFragment = ChatFragment.getGlobalInstance();
             transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
         }
@@ -168,7 +168,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         transaction.commitNow();
 
         navigation = findViewById(R.id.main_navigation);
-        if (!pyx.config().globalChatEnabled) navigation.getMenu().removeItem(R.id.main_globalChat);
+        if (!pyx.config().globalChatEnabled())
+            navigation.getMenu().removeItem(R.id.main_globalChat);
         navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -337,10 +338,18 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         ongoingGameFragment = OngoingGameFragment.getInstance(game, null);
         transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
-        gameChatFragment = ChatFragment.getGameInstance(game.gid);
-        transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT).commitNowAllowingStateLoss();
+
+        if (pyx.config().gameChatEnabled()) {
+            gameChatFragment = ChatFragment.getGameInstance(game.gid);
+            transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT);
+        }
+
+        transaction.commitNowAllowingStateLoss();
+
         safeInflateNavigationMenu(R.menu.navigation_ongoing_game);
-        if (!pyx.config().globalChatEnabled) navigation.getMenu().removeItem(R.id.main_globalChat);
+        if (!pyx.config().globalChatEnabled())
+            navigation.getMenu().removeItem(R.id.main_globalChat);
+        if (!pyx.config().gameChatEnabled()) navigation.getMenu().removeItem(R.id.main_gameChat);
         navigation.setSelectedItemId(R.id.main_ongoingGame);
 
         currentGame = game;
@@ -352,7 +361,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         safeInflateNavigationMenu(R.menu.navigation_lobby);
 
-        if (!pyx.config().globalChatEnabled) navigation.getMenu().removeItem(R.id.main_globalChat);
+        if (!pyx.config().globalChatEnabled())
+            navigation.getMenu().removeItem(R.id.main_globalChat);
         navigation.setSelectedItemId(R.id.main_games);
 
         FragmentManager manager = getSupportFragmentManager();

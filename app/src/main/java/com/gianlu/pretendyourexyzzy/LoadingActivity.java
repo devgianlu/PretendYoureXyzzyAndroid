@@ -160,7 +160,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 welcomeMessage.setVisibility(View.GONE);
             }
         });
-        discoveryApi.firstLoad(this);
+        discoveryApi.firstLoad(this, this);
     }
 
     private void changeServerDialog(boolean dismissible) {
@@ -196,7 +196,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 register.setVisibility(View.GONE);
                 dismissDialog();
 
-                discoveryApi.firstLoad(LoadingActivity.this);
+                discoveryApi.firstLoad(LoadingActivity.this, LoadingActivity.this);
             }
         }));
 
@@ -233,7 +233,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 register.setVisibility(View.GONE);
 
                 final String idCode = getIdCode();
-                if (idCode == null && !pyx.config().insecureIdAllowed) {
+                if (idCode == null && !pyx.config().insecureIdAllowed()) {
                     registerIdCode.setError(getString(R.string.mustProvideIdCode));
                     return;
                 }

@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -103,14 +104,22 @@ public class PyxDiscoveryApi {
         });
     }
 
-    public void firstLoad(@NonNull final Pyx.OnResult<FirstLoadedPyx> listener) {
+    public void firstLoad(@NonNull final Context context, @NonNull final Pyx.OnResult<FirstLoadedPyx> listener) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
                     loadDiscoveryApiServersSync();
                     Pyx.getStandard().firstLoad(listener);
-                } catch (IOException | JSONException | Pyx.NoServersException ex) {
+                } catch (IOException | JSONException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                } catch (final Pyx.NoServersException ex) {
+                    ex.solve(context);
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
