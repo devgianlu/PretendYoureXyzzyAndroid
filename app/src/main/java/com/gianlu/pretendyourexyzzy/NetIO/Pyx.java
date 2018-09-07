@@ -104,7 +104,10 @@ public class Pyx implements Closeable {
     @WorkerThread
     private PyxResponse request(@NonNull Op operation, boolean retried, NameValuePair... params) throws IOException, JSONException, PyxException {
         FormBody.Builder reqBody = new FormBody.Builder(Charset.forName("UTF-8")).add("o", operation.val);
-        for (NameValuePair pair : params) reqBody.add(pair.key(), pair.value(""));
+        for (NameValuePair pair : params) {
+            if (pair.value() != null)
+                reqBody.add(pair.key(), pair.value(""));
+        }
 
         Request.Builder builder = new Request.Builder()
                 .url(server.ajax())
