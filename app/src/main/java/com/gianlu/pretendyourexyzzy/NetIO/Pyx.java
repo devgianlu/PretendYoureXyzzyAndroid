@@ -610,7 +610,7 @@ public class Pyx implements Closeable {
         }
 
         @NonNull
-        private static Server lastServer() throws NoServersException {
+        public static Server lastServer() throws NoServersException {
             String name = Prefs.getString(PK.LAST_SERVER, null);
 
             List<Server> apiServers = loadServers(PK.API_SERVERS);

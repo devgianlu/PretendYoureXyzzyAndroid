@@ -5,6 +5,8 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 
 import com.gianlu.commonutils.Drawer.BaseDrawerProfile;
+import com.gianlu.commonutils.Logging;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,7 +40,12 @@ public class UserInfo implements BaseDrawerProfile, Serializable {
     @NonNull
     @Override
     public String getSecondaryText(@NonNull Context context) {
-        return idCode;
+        try {
+            return Pyx.Server.lastServer().name;
+        } catch (Pyx.NoServersException ex) {
+            Logging.log(ex);
+            return idCode;
+        }
     }
 
     @NonNull
