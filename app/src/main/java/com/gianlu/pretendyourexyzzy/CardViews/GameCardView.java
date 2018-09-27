@@ -77,7 +77,7 @@ public class GameCardView extends CardView {
         setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, getResources().getDisplayMetrics()));
 
         text = findViewById(R.id.pyxCard_text);
-        text.setTypeface(FontsManager.get().get(getContext(), FontsManager.ROBOTO_MEDIUM));
+        FontsManager.set(text, FontsManager.ROBOTO_MEDIUM);
 
         watermark = findViewById(R.id.pyxCard_watermark);
         numPick = findViewById(R.id.pyxCard_numPick);

@@ -2,12 +2,12 @@ apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
 
     defaultConfig {
         applicationId "com.gianlu.pretendyourexyzzy"
         minSdkVersion 21
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 60
         versionName "2.6.7"
     }
@@ -30,7 +30,9 @@ android {
 
 dependencies {
     api project(':CommonUtils')
-    api 'com.android.support:cardview-v7:27.1.1'
+    api 'com.android.support:cardview-v7:28.0.0'
+    api 'com.android.support:support-v4:28.0.0'
+    api 'com.android.support:support-media-compat:28.0.0'
     api 'me.zhanghai.android.materialratingbar:library:1.3.1'
     api 'com.squareup.okhttp3:okhttp:3.11.0'
     api 'com.github.apl-devs:appintro:v4.2.3'

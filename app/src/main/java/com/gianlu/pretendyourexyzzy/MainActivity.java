@@ -249,7 +249,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
     @Override
     public void onBackPressed() {
-        if (ongoingGameFragment != null) ongoingGameFragment.onBackPressed();
+        if (ongoingGameFragment != null) ongoingGameFragment.goBack();
         else super.onBackPressed();
     }
 

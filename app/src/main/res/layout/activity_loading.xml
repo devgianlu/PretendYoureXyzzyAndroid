@@ -114,6 +114,11 @@
         </LinearLayout>
     </LinearLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.05" />
+
     <com.gianlu.commonutils.SuperTextView
         android:id="@+id/loading_welcomeMsg"
         android:layout_width="match_parent"

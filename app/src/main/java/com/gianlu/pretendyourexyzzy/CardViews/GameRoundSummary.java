@@ -64,7 +64,7 @@ public class GameRoundSummary {
         blackTextPaint = new TextPaint();
         blackTextPaint.setAntiAlias(true);
         blackTextPaint.setColor(Color.BLACK);
-        blackTextPaint.setTypeface(FontsManager.get().get(context, FontsManager.ROBOTO_MEDIUM));
+        FontsManager.set(context, blackTextPaint, FontsManager.ROBOTO_MEDIUM);
 
         whitePaint = new Paint();
         whitePaint.setColor(Color.WHITE);
@@ -74,7 +74,7 @@ public class GameRoundSummary {
         whiteTextPaint = new TextPaint();
         whiteTextPaint.setColor(Color.WHITE);
         whiteTextPaint.setAntiAlias(true);
-        whiteTextPaint.setTypeface(FontsManager.get().get(context, FontsManager.ROBOTO_MEDIUM));
+        FontsManager.set(context, whiteTextPaint, FontsManager.ROBOTO_MEDIUM);
 
         winnerPaint = new Paint();
         winnerPaint.setColor(WINNER_COLOR);
@@ -84,7 +84,7 @@ public class GameRoundSummary {
         grayTextPaint = new TextPaint();
         grayTextPaint.setColor(Color.DKGRAY);
         grayTextPaint.setAntiAlias(true);
-        grayTextPaint.setTypeface(FontsManager.get().get(context, FontsManager.ROBOTO_MEDIUM));
+        FontsManager.set(context, grayTextPaint, FontsManager.ROBOTO_MEDIUM);
 
         backgroundPaint = new Paint();
         backgroundPaint.setColor(BACKGROUND_COLOR);

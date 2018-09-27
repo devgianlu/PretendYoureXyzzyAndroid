@@ -361,7 +361,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         });
     }
 
-    public void onBackPressed() {
+    public void goBack() {
         if (isVisible() && DialogUtils.hasVisibleDialog(getActivity())) {
             DialogUtils.dismissDialog(getActivity());
             return;
