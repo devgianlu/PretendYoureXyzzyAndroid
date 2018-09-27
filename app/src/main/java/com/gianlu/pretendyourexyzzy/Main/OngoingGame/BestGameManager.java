@@ -88,7 +88,7 @@ public class BestGameManager implements Pyx.OnEventListener {
     }
 
     @Override
-    public void onPollMessage(@NonNull PollMessage msg) throws JSONException {
+    public synchronized void onPollMessage(@NonNull PollMessage msg) throws JSONException {
         if (msg.event != PollMessage.Event.CHAT && CommonUtils.isDebug())
             System.out.println(BestGameManager.class.getSimpleName() + ": " + msg.event.name() + " -> " + msg.obj);
 
@@ -298,7 +298,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             ui.blackCard(cards.blackCard);
         }
 
-        public void setup() { // Called ONLY from constructor
+        public synchronized void setup() { // Called ONLY from constructor
             for (int i = 0; i < info.players.size(); i++) {
                 GameInfo.Player player = info.players.get(i);
                 switch (player.status) {
@@ -364,7 +364,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             ui.setStartGameVisible(info.game.status == Game.Status.LOBBY && Objects.equals(host(), me()));
         }
 
-        public void gameStateChanged(@NonNull Game.Status status, @NonNull JSONObject obj) throws JSONException {
+        public synchronized void gameStateChanged(@NonNull Game.Status status, @NonNull JSONObject obj) throws JSONException {
             info.game.status = status;
             if (obj.has("gp")) perm.gamePermalink = obj.getString("gp");
 
@@ -393,7 +393,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             ui.setStartGameVisible(status == Game.Status.LOBBY && Objects.equals(host(), me()));
         }
 
-        public void nextRound() {
+        public synchronized void nextRound() {
             judgeIndex++;
             if (judgeIndex >= info.players.size()) judgeIndex = 0;
 
@@ -407,21 +407,21 @@ public class BestGameManager implements Pyx.OnEventListener {
             tableAdapter.clear();
         }
 
-        public void handDeal(List<Card> cards) {
+        public synchronized void handDeal(List<Card> cards) {
             handAdapter.addCards(cards);
         }
 
-        private void playingState(@NonNull Card blackCard, int playTime) {
+        private synchronized void playingState(@NonNull Card blackCard, int playTime) {
             ui.blackCard(blackCard);
             ui.resetTimer(playTime);
         }
 
-        private void judgingState(List<CardsGroup> cards, int playTime) {
+        private synchronized void judgingState(List<CardsGroup> cards, int playTime) {
             tableAdapter.setCardGroups(cards, null);
             ui.resetTimer(playTime);
         }
 
-        public void gameRoundComplete(String roundWinner, int winningCard, @Nullable String roundPermalink, int intermission) {
+        public synchronized void gameRoundComplete(String roundWinner, int winningCard, @Nullable String roundPermalink, int intermission) {
             if (Objects.equals(roundWinner, me())) ui.event(UiEvent.YOU_ROUND_WINNER);
             else ui.event(UiEvent.ROUND_WINNER, roundWinner);
 
@@ -431,7 +431,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             ui.resetTimer(intermission);
         }
 
-        public void gamePlayerInfoChanged(@NonNull GameInfo.Player player) {
+        public synchronized void gamePlayerInfoChanged(@NonNull GameInfo.Player player) {
             playersAdapter.playerChanged(player);
 
             switch (player.status) {
@@ -493,12 +493,12 @@ public class BestGameManager implements Pyx.OnEventListener {
             }
         }
 
-        public void gamePlayerJoin(@NonNull GameInfo.Player player) {
+        public synchronized void gamePlayerJoin(@NonNull GameInfo.Player player) {
             info.newPlayer(player);
             playersAdapter.newPlayer(player);
         }
 
-        public void gamePlayerLeave(@NonNull String nick) {
+        public synchronized void gamePlayerLeave(@NonNull String nick) {
             int pos = Utils.indexOf(info.players, nick);
             if (pos != -1 && pos < judgeIndex) judgeIndex--;
 
@@ -524,7 +524,7 @@ public class BestGameManager implements Pyx.OnEventListener {
         }
 
         @Override
-        public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
+        public synchronized void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
             if (action == GameCardView.Action.SELECT) {
                 GameInfo.Player me = info.player(me());
                 if (me != null) {
@@ -547,13 +547,13 @@ public class BestGameManager implements Pyx.OnEventListener {
             }
         }
 
-        public void gameOptionsChanged(@NonNull Game game) {
+        public synchronized void gameOptionsChanged(@NonNull Game game) {
             this.info.game.options = game.options;
             this.info.game.host = game.host;
             listener.updateActivityTitle();
         }
 
-        public void gameJudgeLeft(int intermission) {
+        public synchronized void gameJudgeLeft(int intermission) {
             if (judgeIndex != -1) {
                 GameInfo.Player judge = info.players.get(judgeIndex);
                 ui.event(UiEvent.JUDGE_LEFT, judge.name);
@@ -565,26 +565,26 @@ public class BestGameManager implements Pyx.OnEventListener {
             ui.resetTimer(intermission);
         }
 
-        public void gameJudgeSkipped() {
+        public synchronized void gameJudgeSkipped() {
             if (judgeIndex != -1) {
                 GameInfo.Player judge = info.players.get(judgeIndex);
                 ui.event(UiEvent.JUDGE_SKIPPED, judge.name);
             }
         }
 
-        public void removeFromHand(@NonNull BaseCard card) {
+        public synchronized void removeFromHand(@NonNull BaseCard card) {
             handAdapter.removeCard(card);
         }
 
-        public void gameSpectatorJoin(String nick) {
+        public synchronized void gameSpectatorJoin(String nick) {
             info.newSpectator(nick);
         }
 
-        public void gameSpectatorLeave(String nick) {
+        public synchronized void gameSpectatorLeave(String nick) {
             info.removeSpectator(nick);
         }
 
-        public void gamePlayerKickedIdle(String nick) {
+        public synchronized void gamePlayerKickedIdle(String nick) {
             ui.event(UiEvent.PLAYER_KICKED, nick);
             if (Objects.equals(nick, me())) listener.shouldLeaveGame();
         }
