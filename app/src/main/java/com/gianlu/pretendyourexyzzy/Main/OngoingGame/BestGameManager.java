@@ -775,7 +775,8 @@ public class BestGameManager implements Pyx.OnEventListener {
         }
 
         public void setStartGameVisible(boolean set) {
-            startGame.setVisibility(set ? View.VISIBLE : View.GONE);
+            if (set) startGame.show();
+            else startGame.hide();
         }
 
         @Override
