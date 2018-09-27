@@ -81,8 +81,9 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
         CommonUtils.setRecyclerViewTopMargin(getContext(), holder);
     }
 
+    @NonNull
     @Override
-    protected RecyclerView.ViewHolder createViewHolder(ViewGroup parent) {
+    protected RecyclerView.ViewHolder createViewHolder(@NonNull ViewGroup parent) {
         return new ViewHolder(parent);
     }
 
