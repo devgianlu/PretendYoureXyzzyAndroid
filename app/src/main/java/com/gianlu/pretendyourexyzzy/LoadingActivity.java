@@ -153,8 +153,12 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         discoveryApi.getWelcomeMessage(new Pyx.OnResult<String>() {
             @Override
             public void onDone(@NonNull String result) {
-                welcomeMessage.setVisibility(View.VISIBLE);
-                welcomeMessage.setHtml(result);
+                if (result.isEmpty()) {
+                    welcomeMessage.setVisibility(View.GONE);
+                } else {
+                    welcomeMessage.setVisibility(View.VISIBLE);
+                    welcomeMessage.setHtml(result);
+                }
             }
 
             @Override
