@@ -1,0 +1,11 @@
+This app let's you play Pretend You're Xyzzy, an online card game, on your device wherever you are.
+
+----- ATTENTION! -----
+This app content may disappoint some people. If you don't agree with the content of this app, don't complain with me. I'm not the creator of this game, just a player who is also a developer.
+--------------------------------
+
+The game is simple. Each round, one player asks a question from a black card, and everyone else answers with their funniest white card.
+
+------------------------------
+Words definition is powered by Urban Dictionary (https://www.urbandictionary.com/).
+Cardcast is powered by https://www.cardcastgame.com
