@@ -39,7 +39,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         holder.name.setText(player.name);
         holder.score.setHtml(R.string.score, player.score);
 
-        switch (player.status) {
+        switch (player.getStatus()) {
             case HOST:
                 holder.status.setImageResource(R.drawable.baseline_person_24);
                 break;

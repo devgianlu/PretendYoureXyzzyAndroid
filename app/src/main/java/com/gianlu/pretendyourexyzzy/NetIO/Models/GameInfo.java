@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -17,7 +18,7 @@ public class GameInfo {
 
     public GameInfo(JSONObject obj) throws JSONException {
         game = new Game(obj.getJSONObject("gi"));
-        players = Player.list(obj.getJSONArray("pi"));
+        players = Collections.synchronizedList(Player.list(obj.getJSONArray("pi")));
     }
 
     @Nullable
@@ -31,19 +32,27 @@ public class GameInfo {
     }
 
     public void removePlayer(@NonNull String nick) {
-        game.players.remove(nick);
+        synchronized (game) {
+            game.players.remove(nick);
+        }
     }
 
     public void newPlayer(@NonNull Player player) {
-        game.players.add(player.name);
+        synchronized (game) {
+            game.players.add(player.name);
+        }
     }
 
     public void newSpectator(@NonNull String nick) {
-        game.spectators.add(nick);
+        synchronized (game) {
+            game.spectators.add(nick);
+        }
     }
 
     public void removeSpectator(@NonNull String nick) {
-        game.spectators.remove(nick);
+        synchronized (game) {
+            game.spectators.remove(nick);
+        }
     }
 
     public enum PlayerStatus {
@@ -73,7 +82,7 @@ public class GameInfo {
     public static class Player {
         public final String name;
         public final int score;
-        public PlayerStatus status;
+        private PlayerStatus status;
 
         public Player(JSONObject obj) throws JSONException {
             name = obj.getString("N");
@@ -93,6 +102,18 @@ public class GameInfo {
             for (int i = 0; i < array.length(); i++)
                 list.add(new Player(array.getJSONObject(i)));
             return list;
+        }
+
+        public synchronized PlayerStatus getStatus() {
+            return status;
+        }
+
+        public synchronized void setStatus(PlayerStatus status) {
+            this.status = status;
+        }
+
+        public synchronized boolean isStatus(PlayerStatus status) {
+            return this.status == status;
         }
 
         @Override

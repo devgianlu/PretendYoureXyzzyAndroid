@@ -22,12 +22,12 @@ import java.util.Objects;
 
 public class Game implements Filterable<Game.Protection>, Serializable {
     public final int gid;
-    public final ArrayList<String> players;
-    public final ArrayList<String> spectators;
+    final ArrayList<String> players;
+    final ArrayList<String> spectators;
     private final boolean hasPassword;
-    public String host;
-    public Options options;
-    public Status status;
+    private String host;
+    private Options options;
+    private Status status;
 
     public Game(JSONObject obj) throws JSONException {
         host = obj.getString("H");
@@ -49,6 +49,38 @@ public class Game implements Filterable<Game.Protection>, Serializable {
         }
     }
 
+    public synchronized int playersSize() {
+        return players.size();
+    }
+
+    public synchronized boolean hasSpectator(String name) {
+        return spectators.contains(name);
+    }
+
+    public synchronized String getHost() {
+        return host;
+    }
+
+    public synchronized void setHost(String host) {
+        this.host = host;
+    }
+
+    public synchronized boolean isStatus(Game.Status status) {
+        return this.status == status;
+    }
+
+    public synchronized Options getOptions() {
+        return options;
+    }
+
+    public synchronized void setOptions(Options options) {
+        this.options = options;
+    }
+
+    public synchronized Status getStatus() {
+        return status;
+    }
+
     public void setStatus(Status status) {
         this.status = status;
     }
@@ -61,6 +93,14 @@ public class Game implements Filterable<Game.Protection>, Serializable {
     public boolean hasPassword(boolean knowsPassword) {
         if (knowsPassword) return options.password != null && !options.password.isEmpty();
         else return hasPassword;
+    }
+
+    public synchronized int spectatorsSize() {
+        return spectators.size();
+    }
+
+    public synchronized String getSpectatorsStringList() {
+        return CommonUtils.join(spectators, ", ");
     }
 
     public enum Protection {

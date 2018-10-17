@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.NetIO.Models;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Collections;
 import java.util.List;
 
 public class GameCards {
@@ -15,7 +16,7 @@ public class GameCards {
         if (obj.isNull("bc")) blackCard = null;
         else blackCard = new Card(obj.getJSONObject("bc"));
         gameId = obj.getInt("gid");
-        whiteCards = CardsGroup.list(obj.getJSONArray("wc"));
-        hand = Card.list(obj.getJSONArray("h"));
+        whiteCards = Collections.synchronizedList(CardsGroup.list(obj.getJSONArray("wc")));
+        hand = Collections.synchronizedList(Card.list(obj.getJSONArray("h")));
     }
 }

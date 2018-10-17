@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BestGameManager implements Pyx.OnEventListener {
     private final static String POLLING = BestGameManager.class.getName();
@@ -194,7 +195,7 @@ public class BestGameManager implements Pyx.OnEventListener {
 
     @NonNull
     public String host() {
-        return gameInfo().game.host;
+        return gameInfo().game.getHost();
     }
 
     public int gid() {
@@ -206,12 +207,12 @@ public class BestGameManager implements Pyx.OnEventListener {
     }
 
     private boolean amSpectator() {
-        return gameInfo().game.spectators.contains(me());
+        return gameInfo().game.hasSpectator(me());
     }
 
     private boolean amPlaying() {
         GameInfo.Player me = gameInfo().player(me());
-        return me != null && me.status == GameInfo.PlayerStatus.PLAYING;
+        return me != null && me.isStatus(GameInfo.PlayerStatus.PLAYING);
     }
 
     private enum UiEvent {
@@ -278,7 +279,7 @@ public class BestGameManager implements Pyx.OnEventListener {
         private final CardsAdapter tableAdapter;
         private final PlayersAdapter playersAdapter;
         private final GamePermalink perm;
-        private int judgeIndex = 0;
+        private final AtomicInteger judgeIndex = new AtomicInteger(0);
         private String lastRoundPermalink = null;
 
         Data(GameInfoAndCards bundle, GamePermalink perm, PlayersAdapter.Listener listener) {
@@ -301,17 +302,10 @@ public class BestGameManager implements Pyx.OnEventListener {
         public synchronized void setup() { // Called ONLY from constructor
             for (int i = 0; i < info.players.size(); i++) {
                 GameInfo.Player player = info.players.get(i);
-                switch (player.status) {
-                    case JUDGE:
-                    case JUDGING:
-                        judgeIndex = i;
-                        break;
-                    case HOST:
-                    case IDLE:
-                    case PLAYING:
-                    case WINNER:
-                    case SPECTATOR:
-                        break;
+                if (player.isStatus(GameInfo.PlayerStatus.JUDGING)) {
+                    synchronized (judgeIndex) {
+                        judgeIndex.set(i);
+                    }
                 }
             }
 
@@ -321,7 +315,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             } else {
                 GameInfo.Player me = info.player(me());
                 if (me != null) {
-                    switch (me.status) {
+                    switch (me.getStatus()) {
                         case JUDGE:
                             ui.event(UiEvent.YOU_JUDGE);
                             ui.showTableCards(true);
@@ -338,10 +332,12 @@ public class BestGameManager implements Pyx.OnEventListener {
                         case IDLE:
                             ui.showTableCards(false);
 
-                            if (info.game.status == Game.Status.JUDGING) {
-                                GameInfo.Player judge = info.players.get(judgeIndex);
-                                ui.event(UiEvent.IS_JUDGING, judge.name);
-                            } else if (info.game.status == Game.Status.LOBBY) {
+                            if (info.game.isStatus(Game.Status.JUDGING)) {
+                                synchronized (judgeIndex) {
+                                    GameInfo.Player judge = info.players.get(judgeIndex.get());
+                                    ui.event(UiEvent.IS_JUDGING, judge.name);
+                                }
+                            } else if (info.game.isStatus(Game.Status.LOBBY)) {
                                 ui.event(UiEvent.WAITING_FOR_START);
                             } else {
                                 ui.event(UiEvent.WAITING_FOR_ROUND_TO_END);
@@ -361,11 +357,11 @@ public class BestGameManager implements Pyx.OnEventListener {
                 }
             }
 
-            ui.setStartGameVisible(info.game.status == Game.Status.LOBBY && Objects.equals(host(), me()));
+            ui.setStartGameVisible(info.game.isStatus(Game.Status.LOBBY) && Objects.equals(host(), me()));
         }
 
         public synchronized void gameStateChanged(@NonNull Game.Status status, @NonNull JSONObject obj) throws JSONException {
-            info.game.status = status;
+            info.game.setStatus(status);
             if (obj.has("gp")) perm.gamePermalink = obj.getString("gp");
 
             switch (status) {
@@ -394,13 +390,18 @@ public class BestGameManager implements Pyx.OnEventListener {
         }
 
         public synchronized void nextRound() {
-            judgeIndex++;
-            if (judgeIndex >= info.players.size()) judgeIndex = 0;
+            int j;
+            synchronized (judgeIndex) {
+                j = judgeIndex.get();
+                j++;
+                if (j >= info.players.size()) j = 0;
+                judgeIndex.set(j);
+            }
 
             for (int i = 0; i < info.players.size(); i++) {
                 GameInfo.Player player = info.players.get(i);
-                if (i == judgeIndex) player.status = GameInfo.PlayerStatus.JUDGE;
-                else player.status = GameInfo.PlayerStatus.PLAYING;
+                if (i == j) player.setStatus(GameInfo.PlayerStatus.JUDGE);
+                else player.setStatus(GameInfo.PlayerStatus.PLAYING);
                 gamePlayerInfoChanged(player); // Allowed, not notified by server
             }
 
@@ -434,7 +435,7 @@ public class BestGameManager implements Pyx.OnEventListener {
         public synchronized void gamePlayerInfoChanged(@NonNull GameInfo.Player player) {
             playersAdapter.playerChanged(player);
 
-            switch (player.status) {
+            switch (player.getStatus()) {
                 case JUDGING:
                     if (Objects.equals(player.name, me())) {
                         ui.showTableCards(true);
@@ -447,21 +448,23 @@ public class BestGameManager implements Pyx.OnEventListener {
                     if (Objects.equals(player.name, me())) {
                         ui.showTableCards(false);
 
-                        if (info.game.status != Game.Status.JUDGING) // Called after #gameRoundComplete()
+                        if (!info.game.isStatus(Game.Status.JUDGING)) // Called after #gameRoundComplete()
                             ui.event(UiEvent.YOU_JUDGE);
                     }
 
-                    judgeIndex = Utils.indexOf(info.players, player.name); // Redundant, but for safety...
+                    synchronized (judgeIndex) {
+                        judgeIndex.set(Utils.indexOf(info.players, player.name)); // Redundant, but for safety...
+                    }
                     break;
                 case IDLE:
                     if (Objects.equals(player.name, me())) {
                         ui.showTableCards(false);
 
-                        if (info.game.status != Game.Status.JUDGING)
+                        if (!info.game.isStatus(Game.Status.JUDGING))
                             ui.event(UiEvent.WAITING_FOR_OTHER_PLAYERS);
                     }
 
-                    if (info.game.status == Game.Status.PLAYING) {
+                    if (info.game.isStatus(Game.Status.PLAYING)) {
                         BaseCard bc = ui.blackCard();
                         if (bc != null) tableAdapter.addBlankCards(bc);
                     }
@@ -481,10 +484,10 @@ public class BestGameManager implements Pyx.OnEventListener {
                     else ui.event(UiEvent.GAME_WINNER, player.name);
                     break;
                 case HOST:
-                    gameInfo().game.host = player.name;
+                    gameInfo().game.setHost(player.name);
                     if (player.name.equals(me())) {
                         ui.event(UiEvent.YOU_GAME_HOST);
-                        ui.setStartGameVisible(gameInfo().game.status == Game.Status.LOBBY);
+                        ui.setStartGameVisible(gameInfo().game.isStatus(Game.Status.LOBBY));
                     }
                     break;
                 case SPECTATOR:
@@ -500,7 +503,9 @@ public class BestGameManager implements Pyx.OnEventListener {
 
         public synchronized void gamePlayerLeave(@NonNull String nick) {
             int pos = Utils.indexOf(info.players, nick);
-            if (pos != -1 && pos < judgeIndex) judgeIndex--;
+            synchronized (judgeIndex) {
+                if (pos != -1 && pos < judgeIndex.get()) judgeIndex.decrementAndGet();
+            }
 
             info.removePlayer(nick);
             playersAdapter.removePlayer(nick);
@@ -510,7 +515,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                     listener.shouldLeaveGame();
                 } else {
                     GameInfo.Player newHost = info.players.get(0);
-                    info.game.host = newHost.name;
+                    info.game.setHost(newHost.name);
                     playersAdapter.playerChanged(newHost);
                     listener.updateActivityTitle();
                 }
@@ -528,12 +533,12 @@ public class BestGameManager implements Pyx.OnEventListener {
             if (action == GameCardView.Action.SELECT) {
                 GameInfo.Player me = info.player(me());
                 if (me != null) {
-                    if (me.status == GameInfo.PlayerStatus.PLAYING && info.game.status == Game.Status.PLAYING) {
+                    if (me.isStatus(GameInfo.PlayerStatus.PLAYING) && info.game.isStatus(Game.Status.PLAYING)) {
                         ui.playCard(card);
-                    } else if ((me.status == GameInfo.PlayerStatus.JUDGE || me.status == GameInfo.PlayerStatus.JUDGING) && info.game.status == Game.Status.JUDGING) {
+                    } else if ((me.isStatus(GameInfo.PlayerStatus.JUDGE) || me.isStatus(GameInfo.PlayerStatus.JUDGING)) && info.game.isStatus(Game.Status.JUDGING)) {
                         ui.judgeSelectCard(card);
                     } else {
-                        Logging.log(String.format("Not your turn debug, me.status: %s, info.game.status: %s", me.status.name(), info.game.status.name()), false);
+                        Logging.log(String.format("Not your turn debug, me.status: %s, info.game.status: %s", me.getStatus().name(), info.game.getStatus().name()), false);
 
                         if (amSpectator()) ui.event(UiEvent.SPECTATOR_TOAST);
                         else ui.event(UiEvent.NOT_YOUR_TURN);
@@ -550,16 +555,20 @@ public class BestGameManager implements Pyx.OnEventListener {
         }
 
         public synchronized void gameOptionsChanged(@NonNull Game game) {
-            this.info.game.options = game.options;
-            this.info.game.host = game.host;
+            this.info.game.setOptions(game.getOptions());
+            this.info.game.setHost(game.getHost());
             listener.updateActivityTitle();
         }
 
         public synchronized void gameJudgeLeft(int intermission) {
-            if (judgeIndex != -1) {
-                GameInfo.Player judge = info.players.get(judgeIndex);
-                ui.event(UiEvent.JUDGE_LEFT, judge.name);
-                judgeIndex--; // Will be incremented by #nextRound()
+            synchronized (judgeIndex) {
+                int j = judgeIndex.get();
+                if (j != -1) {
+                    GameInfo.Player judge = info.players.get(j);
+                    ui.event(UiEvent.JUDGE_LEFT, judge.name);
+                    j--; // Will be incremented by #nextRound()
+                    judgeIndex.set(j);
+                }
             }
 
             tableAdapter.clear();
@@ -568,9 +577,12 @@ public class BestGameManager implements Pyx.OnEventListener {
         }
 
         public synchronized void gameJudgeSkipped() {
-            if (judgeIndex != -1) {
-                GameInfo.Player judge = info.players.get(judgeIndex);
-                ui.event(UiEvent.JUDGE_SKIPPED, judge.name);
+            synchronized (judgeIndex) {
+                int j = judgeIndex.get();
+                if (j != -1) {
+                    GameInfo.Player judge = info.players.get(j);
+                    ui.event(UiEvent.JUDGE_SKIPPED, judge.name);
+                }
             }
         }
 
@@ -784,7 +796,7 @@ public class BestGameManager implements Pyx.OnEventListener {
         @Override
         public boolean canShow(@NonNull BaseTutorial tutorial) {
             return tutorial instanceof HowToPlayTutorial && CommonUtils.isVisible(fragment)
-                    && amPlaying() && gameInfo().game.status == Game.Status.PLAYING;
+                    && amPlaying() && gameInfo().game.isStatus(Game.Status.PLAYING);
         }
 
         @Override

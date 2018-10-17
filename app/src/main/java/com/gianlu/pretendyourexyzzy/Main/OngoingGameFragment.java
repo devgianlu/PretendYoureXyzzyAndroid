@@ -114,7 +114,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     public void updateActivityTitle() {
         Activity activity = getActivity();
         if (manager != null && activity != null && isVisible())
-            activity.setTitle(manager.gameInfo().game.host + " - " + getString(R.string.app_name));
+            activity.setTitle(manager.gameInfo().game.getHost() + " - " + getString(R.string.app_name));
     }
 
     @Override
@@ -151,7 +151,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     }
 
     private boolean amHost() {
-        return pyx != null && getGame() != null && Objects.equals(getGame().host, pyx.user().nickname);
+        return pyx != null && getGame() != null && Objects.equals(getGame().getHost(), pyx.user().nickname);
     }
 
     @Override
@@ -236,7 +236,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
                 leaveGame();
                 return true;
             case R.id.ongoingGame_options:
-                if (amHost() && manager.gameInfo().game.status == Game.Status.LOBBY)
+                if (amHost() && manager.gameInfo().game.isStatus(Game.Status.LOBBY))
                     editGameOptions();
                 else
                     showGameOptions();
@@ -298,7 +298,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         List<NameValuePair> params = new ArrayList<>();
         params.add(new NameValuePair("game", String.valueOf(perm.gid)));
         if (getGame().hasPassword(true))
-            params.add(new NameValuePair("password", getGame().options.password));
+            params.add(new NameValuePair("password", getGame().getOptions().password));
 
         builder.fragment(CommonUtils.formQuery(params));
 
@@ -310,7 +310,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
 
     private void showSpectators() {
         if (getGame() == null || getContext() == null) return;
-        SuperTextView spectators = new SuperTextView(getContext(), R.string.spectatorsList, getGame().spectators.isEmpty() ? "none" : CommonUtils.join(getGame().spectators, ", "));
+        SuperTextView spectators = new SuperTextView(getContext(), R.string.spectatorsList, getGame().spectatorsSize() == 0 ? "none" : getGame().getSpectatorsStringList());
         int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
         spectators.setPadding(padding, padding, padding, padding);
 
@@ -325,12 +325,12 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     private void editGameOptions() {
         Game game = getGame();
         if (game != null)
-            DialogUtils.showDialog(getActivity(), EditGameOptionsDialog.get(perm.gid, game.options));
+            DialogUtils.showDialog(getActivity(), EditGameOptionsDialog.get(perm.gid, game.getOptions()));
     }
 
     private void showGameOptions() {
         if (getContext() != null && getGame() != null)
-            DialogUtils.showDialog(getActivity(), Dialogs.gameOptions(getContext(), getGame().options, pyx.firstLoad()));
+            DialogUtils.showDialog(getActivity(), Dialogs.gameOptions(getContext(), getGame().getOptions(), pyx.firstLoad()));
     }
 
     @Nullable
@@ -390,7 +390,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
 
     @Override
     public boolean canModifyCardcastDecks() {
-        return amHost() && getGame() != null && getGame().status == Game.Status.LOBBY;
+        return amHost() && getGame() != null && getGame().isStatus(Game.Status.LOBBY);
     }
 
     @Override
