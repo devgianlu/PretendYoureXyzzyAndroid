@@ -533,6 +533,8 @@ public class BestGameManager implements Pyx.OnEventListener {
                     } else if ((me.status == GameInfo.PlayerStatus.JUDGE || me.status == GameInfo.PlayerStatus.JUDGING) && info.game.status == Game.Status.JUDGING) {
                         ui.judgeSelectCard(card);
                     } else {
+                        Logging.log(String.format("Not your turn debug, me.status: %s, info.game.status: %s", me.status.name(), info.game.status.name()), false);
+
                         if (amSpectator()) ui.event(UiEvent.SPECTATOR_TOAST);
                         else ui.event(UiEvent.NOT_YOUR_TURN);
                     }
