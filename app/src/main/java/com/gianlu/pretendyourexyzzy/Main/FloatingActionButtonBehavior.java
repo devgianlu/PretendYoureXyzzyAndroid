@@ -20,11 +20,13 @@ public class FloatingActionButtonBehavior extends CoordinatorLayout.Behavior<Flo
     private static void hide(FloatingActionButton fab) {
         fab.setTag(false);
         fab.animate().scaleX(0).scaleY(0).setDuration(DURATION).start();
+        fab.setClickable(false);
     }
 
     private static void show(FloatingActionButton fab) {
         fab.setTag(true);
         fab.animate().scaleX(1).scaleY(1).setDuration(DURATION).start();
+        fab.setClickable(true);
     }
 
     @Override
