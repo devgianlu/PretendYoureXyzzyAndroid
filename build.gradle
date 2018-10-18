@@ -13,7 +13,7 @@ buildscript {
 
         if (getGradle().getStartParameter().getTaskRequests().toString().contains("standard")) {
             classpath 'io.fabric.tools:gradle:1.25.4'
-            classpath 'com.google.gms:google-services:4.0.1'
+            classpath 'com.google.gms:google-services:4.1.0'
         }
     }
 }
