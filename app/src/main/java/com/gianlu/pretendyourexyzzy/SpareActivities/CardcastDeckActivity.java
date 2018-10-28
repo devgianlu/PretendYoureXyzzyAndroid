@@ -66,7 +66,7 @@ public class CardcastDeckActivity extends ActivityWithDialog {
                     StarredDecksManager.removeDeck(code);
                 } else {
                     StarredDecksManager.addDeck(new StarredDecksManager.StarredDeck(code, name));
-                    AnalyticsApplication.sendAnalytics(this, Utils.ACTION_STARRED_DECK_ADD);
+                    AnalyticsApplication.sendAnalytics(Utils.ACTION_STARRED_DECK_ADD);
                 }
 
                 invalidateOptionsMenu();

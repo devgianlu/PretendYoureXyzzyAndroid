@@ -96,7 +96,7 @@ public class GameRoundSummary {
         canvas = new Canvas(bitmap);
         draw();
 
-        ThisApplication.sendAnalytics(context, Utils.ACTION_SHOW_ROUND);
+        ThisApplication.sendAnalytics(Utils.ACTION_SHOW_ROUND);
     }
 
     private int measureHeight() {

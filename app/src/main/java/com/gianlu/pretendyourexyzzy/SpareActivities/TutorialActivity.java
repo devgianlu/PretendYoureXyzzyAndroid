@@ -62,13 +62,13 @@ public class TutorialActivity extends AppIntro {
 
     @Override
     public void onSkipPressed(Fragment currentFragment) {
-        AnalyticsApplication.sendAnalytics(this, Utils.ACTION_SKIP_TUTORIAL);
+        AnalyticsApplication.sendAnalytics(Utils.ACTION_SKIP_TUTORIAL);
         done();
     }
 
     @Override
     public void onDonePressed(Fragment currentFragment) {
-        AnalyticsApplication.sendAnalytics(this, Utils.ACTION_DONE_TUTORIAL);
+        AnalyticsApplication.sendAnalytics(Utils.ACTION_DONE_TUTORIAL);
         done();
     }
 

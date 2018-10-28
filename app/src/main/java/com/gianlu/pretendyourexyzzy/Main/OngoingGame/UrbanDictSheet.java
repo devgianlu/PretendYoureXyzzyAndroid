@@ -48,7 +48,7 @@ public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> 
                 update(result);
                 isLoading(false);
 
-                ThisApplication.sendAnalytics(getContext(), Utils.ACTION_OPEN_URBAN_DICT);
+                ThisApplication.sendAnalytics(Utils.ACTION_OPEN_URBAN_DICT);
             }
 
             @Override

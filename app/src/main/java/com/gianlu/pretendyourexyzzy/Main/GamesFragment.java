@@ -278,7 +278,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
                 if (handler != null) handler.onParticipatingGame(game);
                 DialogUtils.dismissDialog(getActivity());
 
-                AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_SPECTATE_GAME);
+                AnalyticsApplication.sendAnalytics(Utils.ACTION_SPECTATE_GAME);
             }
 
             @Override
@@ -311,7 +311,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
                 if (handler != null) handler.onParticipatingGame(game);
                 DialogUtils.dismissDialog(getActivity());
 
-                AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_JOIN_GAME);
+                AnalyticsApplication.sendAnalytics(Utils.ACTION_JOIN_GAME);
             }
 
             @Override

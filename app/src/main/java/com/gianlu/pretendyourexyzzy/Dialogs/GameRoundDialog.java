@@ -175,7 +175,7 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
             return null;
         }
 
-        ThisApplication.sendAnalytics(getContext(), Utils.ACTION_SAVE_SHARE_ROUND);
+        ThisApplication.sendAnalytics(Utils.ACTION_SAVE_SHARE_ROUND);
 
         return image;
     }

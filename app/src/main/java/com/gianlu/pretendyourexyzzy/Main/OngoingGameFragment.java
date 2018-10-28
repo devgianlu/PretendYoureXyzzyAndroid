@@ -349,7 +349,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
             @Override
             public void onDone(@NonNull List<Deck> result) {
                 showToast(Toaster.build().message(R.string.cardcastAdded));
-                AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_ADDED_CARDCAST);
+                AnalyticsApplication.sendAnalytics(Utils.ACTION_ADDED_CARDCAST);
 
                 if (cardcastSheet != null) cardcastSheet.update(result);
             }
@@ -411,7 +411,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
             @Override
             public void onDone(@NonNull List<Deck> result) {
                 showToast(Toaster.build().message(R.string.starredDecksAdded));
-                AnalyticsApplication.sendAnalytics(getContext(), Utils.ACTION_ADDED_CARDCAST);
+                AnalyticsApplication.sendAnalytics(Utils.ACTION_ADDED_CARDCAST);
 
                 if (cardcastSheet != null) cardcastSheet.update(result);
             }

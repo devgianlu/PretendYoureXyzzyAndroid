@@ -391,7 +391,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         ongoingGameFragment = null;
         gameChatFragment = null;
 
-        AnalyticsApplication.sendAnalytics(this, Utils.ACTION_LEFT_GAME);
+        AnalyticsApplication.sendAnalytics(Utils.ACTION_LEFT_GAME);
     }
 
     @Override

@@ -546,7 +546,7 @@ public class BestGameManager implements Pyx.OnEventListener {
                 }
             } else if (action == GameCardView.Action.TOGGLE_STAR) {
                 BaseCard bc = ui.blackCard();
-                AnalyticsApplication.sendAnalytics(context, Utils.ACTION_STARRED_CARD_ADD);
+                AnalyticsApplication.sendAnalytics(Utils.ACTION_STARRED_CARD_ADD);
                 if (bc != null && StarredCardsManager.addCard(new StarredCardsManager.StarredCard(bc, group)))
                     Toaster.with(context).message(R.string.addedCardToStarred).show();
             } else if (action == GameCardView.Action.SELECT_IMG) {
@@ -746,7 +746,7 @@ public class BestGameManager implements Pyx.OnEventListener {
             pyx.request(PyxRequests.judgeCard(gid(), card.id()), new Pyx.OnSuccess() {
                 @Override
                 public void onDone() {
-                    AnalyticsApplication.sendAnalytics(context, Utils.ACTION_JUDGE_CARD);
+                    AnalyticsApplication.sendAnalytics(Utils.ACTION_JUDGE_CARD);
                 }
 
                 @Override
@@ -763,9 +763,9 @@ public class BestGameManager implements Pyx.OnEventListener {
                     data.removeFromHand(card);
 
                     if (customText == null)
-                        AnalyticsApplication.sendAnalytics(context, Utils.ACTION_PLAY_CARD);
+                        AnalyticsApplication.sendAnalytics(Utils.ACTION_PLAY_CARD);
                     else
-                        AnalyticsApplication.sendAnalytics(context, Utils.ACTION_PLAY_CUSTOM_CARD);
+                        AnalyticsApplication.sendAnalytics(Utils.ACTION_PLAY_CUSTOM_CARD);
                 }
 
                 @Override
