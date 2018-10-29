@@ -1,13 +1,15 @@
 package com.gianlu.pretendyourexyzzy.Main;
 
 import android.content.Context;
-import android.support.annotation.Keep;
-import android.support.annotation.NonNull;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.recyclerview.widget.RecyclerView;
 
 @Keep
 public class FloatingActionButtonBehavior extends CoordinatorLayout.Behavior<FloatingActionButton> {

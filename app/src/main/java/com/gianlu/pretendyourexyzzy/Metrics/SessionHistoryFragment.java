@@ -1,12 +1,6 @@
 package com.gianlu.pretendyourexyzzy.Metrics;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.widget.NestedScrollView;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +16,13 @@ import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.SessionHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.R;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.widget.NestedScrollView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<SessionHistory> {
     private ProgressBar loading;
@@ -53,7 +54,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         gamesLabel = container.findViewById(R.id.sessionFragment_gamesLabel);
         games = container.findViewById(R.id.sessionFragment_games);
         games.setNestedScrollingEnabled(false);
-        games.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
+        games.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
         playedRoundsLabel = container.findViewById(R.id.sessionFragment_playedRoundsLabel);
         playedRounds = container.findViewById(R.id.sessionFragment_playedRounds);
         playedRounds.setNestedScrollingEnabled(false);

@@ -1,13 +1,13 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import android.support.annotation.Nullable;
-
 import com.gianlu.commonutils.CommonUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+
+import androidx.annotation.Nullable;
 
 public class WhoisResult extends UserInfo implements Serializable {
     public final long connectedAt;

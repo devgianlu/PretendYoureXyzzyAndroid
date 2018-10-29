@@ -6,14 +6,6 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.TextInputLayout;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -42,12 +34,22 @@ import com.gianlu.pretendyourexyzzy.SpareActivities.ManageServersActivity;
 import com.gianlu.pretendyourexyzzy.SpareActivities.TutorialActivity;
 import com.gianlu.pretendyourexyzzy.Tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.Tutorial.LoginTutorial;
+import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONObject;
 
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Objects;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 
 public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener {
@@ -189,7 +191,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         builder.setView(layout);
 
         layout.disableSwipeRefresh();
-        layout.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        layout.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
         layout.getList().addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         layout.loadListData(new ServersAdapter(this, Pyx.Server.loadAllServers(), new ServersAdapter.Listener() {
             @Override

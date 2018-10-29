@@ -1,14 +1,15 @@
 package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 public class CardsGridFixer implements View.OnLayoutChangeListener {
     private final int mCardWidth;

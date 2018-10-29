@@ -1,8 +1,5 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 
 import org.json.JSONArray;
@@ -12,6 +9,9 @@ import org.json.JSONObject;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class CardcastCard extends BaseCard {
     public final String id;

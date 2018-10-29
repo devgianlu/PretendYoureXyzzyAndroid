@@ -4,13 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.view.LayoutInflater;
@@ -33,8 +26,16 @@ import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> implements DecksAdapter.Listener {
     private OngoingGameHelper.Listener listener;
@@ -79,7 +80,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
 
         message = parent.findViewById(R.id.cardcastSheet_message);
         list = parent.findViewById(R.id.cardcastSheet_list);
-        list.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        list.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         list.addItemDecoration(new DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL));
 
         try {

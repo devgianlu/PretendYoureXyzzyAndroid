@@ -1,12 +1,12 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public abstract class BaseCard implements Serializable {
     private transient String imageUrl = null;

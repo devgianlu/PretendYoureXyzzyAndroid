@@ -1,7 +1,5 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
-import android.support.annotation.NonNull;
-
 import com.bumptech.glide.load.Options;
 import com.bumptech.glide.load.model.ModelLoader;
 import com.bumptech.glide.load.model.ModelLoaderFactory;
@@ -12,6 +10,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 
 import java.io.InputStream;
 import java.util.regex.Pattern;
+
+import androidx.annotation.NonNull;
 
 public class BaseCardUrlLoader extends BaseGlideUrlLoader<BaseCard> {
     private static final Pattern IMGUR_PATTERN = Pattern.compile("^http(?:s|)://imgur\\.com/(.*)\\.(.+)$");

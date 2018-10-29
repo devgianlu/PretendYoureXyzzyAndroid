@@ -1,6 +1,6 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 class InstanceHolder {
     private static InstanceHolder holder;

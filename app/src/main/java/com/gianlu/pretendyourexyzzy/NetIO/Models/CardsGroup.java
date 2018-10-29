@@ -1,12 +1,12 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import android.support.annotation.NonNull;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
 
 public class CardsGroup extends ArrayList<BaseCard> {
 

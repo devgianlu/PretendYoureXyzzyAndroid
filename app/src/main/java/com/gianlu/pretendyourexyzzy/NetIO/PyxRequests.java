@@ -1,8 +1,6 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
@@ -29,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import okhttp3.Response;
 
 public final class PyxRequests {

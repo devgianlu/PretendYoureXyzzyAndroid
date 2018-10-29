@@ -1,7 +1,5 @@
 package com.gianlu.pretendyourexyzzy.Starred;
 
-import android.support.annotation.NonNull;
-
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
@@ -15,6 +13,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+
+import androidx.annotation.NonNull;
 
 public class StarredDecksManager {
 

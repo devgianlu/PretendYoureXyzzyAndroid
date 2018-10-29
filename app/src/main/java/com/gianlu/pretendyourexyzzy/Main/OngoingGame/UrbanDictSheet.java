@@ -2,12 +2,6 @@ package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +17,13 @@ import com.gianlu.pretendyourexyzzy.NetIO.UrbanDictionary.UrbanDictApi;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> implements DefinitionsAdapter.Listener {
     private RecyclerView list;
@@ -39,7 +40,7 @@ public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> 
 
         message = parent.findViewById(R.id.urbanDictSheet_message);
         list = parent.findViewById(R.id.urbanDictSheet_list);
-        list.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        list.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         list.addItemDecoration(new DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL));
 
         UrbanDictApi.get().define(payload, new UrbanDictApi.OnDefine() {

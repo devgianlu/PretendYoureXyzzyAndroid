@@ -1,9 +1,6 @@
 package com.gianlu.pretendyourexyzzy.Metrics;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +14,10 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<GameHistory> {
     private RecyclerViewLayout layout;

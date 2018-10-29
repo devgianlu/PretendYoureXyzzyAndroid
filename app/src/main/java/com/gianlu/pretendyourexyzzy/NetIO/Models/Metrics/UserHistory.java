@@ -1,12 +1,12 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics;
 
-import android.support.annotation.NonNull;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+
+import androidx.annotation.NonNull;
 
 public class UserHistory extends ArrayList<UserHistory.Session> {
 

@@ -1,9 +1,5 @@
 package com.gianlu.pretendyourexyzzy;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
-
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -11,6 +7,10 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 
 import java.util.List;
 import java.util.Objects;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class Utils {
     public static final String ACTION_STARRED_CARD_ADD = "added_starred_card";

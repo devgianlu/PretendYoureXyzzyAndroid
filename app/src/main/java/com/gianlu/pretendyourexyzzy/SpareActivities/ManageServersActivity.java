@@ -1,9 +1,6 @@
 package com.gianlu.pretendyourexyzzy.SpareActivities;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -13,6 +10,10 @@ import com.gianlu.pretendyourexyzzy.Adapters.ServersAdapter;
 import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.R;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 public class ManageServersActivity extends ActivityWithDialog implements ServersAdapter.Listener, Dialogs.OnAddServer {
     private RecyclerViewLayout layout;

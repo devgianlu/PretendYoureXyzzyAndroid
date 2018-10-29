@@ -1,8 +1,6 @@
 package com.gianlu.pretendyourexyzzy;
 
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.danielstone.materialaboutlibrary.items.MaterialAboutActionItem;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutItem;
@@ -13,6 +11,9 @@ import com.gianlu.pretendyourexyzzy.SpareActivities.TutorialActivity;
 
 import java.util.Collections;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class PreferenceActivity extends BasePreferenceActivity {
     @NonNull

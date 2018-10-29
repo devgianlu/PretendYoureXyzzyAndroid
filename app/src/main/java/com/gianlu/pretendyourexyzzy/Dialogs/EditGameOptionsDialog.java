@@ -3,10 +3,6 @@ package com.gianlu.pretendyourexyzzy.Dialogs;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.TextInputLayout;
-import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +23,11 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
+import com.google.android.material.textfield.TextInputLayout;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 
 public class EditGameOptionsDialog extends DialogFragment {
     private TextInputLayout scoreLimit;
@@ -71,7 +72,7 @@ public class EditGameOptionsDialog extends DialogFragment {
             newOptions = Game.Options.validateAndCreate(timerMultiplier.getSelectedItem().toString(), CommonUtils.getText(spectatorLimit), CommonUtils.getText(playerLimit), CommonUtils.getText(scoreLimit), CommonUtils.getText(blankCards), decks, CommonUtils.getText(password));
         } catch (Game.Options.InvalidFieldException ex) {
             View view = layout.findViewById(ex.fieldId);
-            if (view != null && view instanceof TextInputLayout) {
+            if (view instanceof TextInputLayout) {
                 if (ex.throwMessage == R.string.outOfRange)
                     ((TextInputLayout) view).setError(getString(R.string.outOfRange, ex.min, ex.max));
                 else

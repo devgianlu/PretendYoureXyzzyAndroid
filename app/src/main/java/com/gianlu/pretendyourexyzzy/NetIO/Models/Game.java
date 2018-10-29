@@ -1,8 +1,5 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import android.support.annotation.IdRes;
-import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
@@ -19,6 +16,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
+
+import androidx.annotation.IdRes;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 
 public class Game implements Filterable<Game.Protection>, Serializable {
     public final int gid;

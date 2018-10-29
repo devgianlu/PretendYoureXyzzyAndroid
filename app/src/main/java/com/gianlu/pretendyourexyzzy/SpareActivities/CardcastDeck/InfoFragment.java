@@ -2,9 +2,6 @@ package com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeck;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +16,9 @@ import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeckInfo;
 import com.gianlu.pretendyourexyzzy.R;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 
 public class InfoFragment extends Fragment implements Cardcast.OnResult<CardcastDeckInfo> {

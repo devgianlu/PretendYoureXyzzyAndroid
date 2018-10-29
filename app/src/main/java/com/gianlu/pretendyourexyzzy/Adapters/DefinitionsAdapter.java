@@ -1,8 +1,6 @@
 package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +9,9 @@ import android.widget.TextView;
 import com.gianlu.pretendyourexyzzy.NetIO.UrbanDictionary.Definition;
 import com.gianlu.pretendyourexyzzy.NetIO.UrbanDictionary.Definitions;
 import com.gianlu.pretendyourexyzzy.R;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class DefinitionsAdapter extends RecyclerView.Adapter<DefinitionsAdapter.ViewHolder> {
     private final LayoutInflater inflater;

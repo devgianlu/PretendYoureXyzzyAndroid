@@ -1,8 +1,8 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
-import android.support.annotation.NonNull;
-
 import com.gianlu.commonutils.NameValuePair;
+
+import androidx.annotation.NonNull;
 
 public class PyxRequestWithResult<E> extends PyxRequest {
     public final Pyx.Processor<E> processor;

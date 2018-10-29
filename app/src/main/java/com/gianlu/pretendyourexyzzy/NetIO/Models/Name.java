@@ -1,13 +1,14 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 
 import com.gianlu.commonutils.Adapters.Filterable;
 import com.gianlu.pretendyourexyzzy.R;
 
 import java.text.ParseException;
 import java.util.Comparator;
+
+import androidx.annotation.NonNull;
 
 public class Name implements Filterable<String> {
     private final String name;

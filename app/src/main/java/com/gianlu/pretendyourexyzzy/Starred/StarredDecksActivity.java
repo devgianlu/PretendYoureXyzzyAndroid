@@ -3,10 +3,6 @@ package com.gianlu.pretendyourexyzzy.Starred;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.LinearLayoutManager;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -17,6 +13,11 @@ import com.gianlu.pretendyourexyzzy.Adapters.StarredDecksAdapter;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeckActivity;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 public class StarredDecksActivity extends ActivityWithDialog implements StarredDecksAdapter.Listener {
     private RecyclerViewLayout layout;

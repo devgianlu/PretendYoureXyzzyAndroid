@@ -6,15 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -50,6 +41,16 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.Tutorial.GamesTutorial;
 import com.gianlu.pretendyourexyzzy.Utils;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<GamesList>, GamesAdapter.Listener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, Pyx.OnEventListener, TutorialManager.Listener {
     private static final String POLLING = GamesFragment.class.getName();
@@ -136,7 +137,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         if (getContext() == null) return layout;
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
         recyclerViewLayout = layout.findViewById(R.id.gamesFragment_recyclerViewLayout);
-        recyclerViewLayout.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        recyclerViewLayout.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         createGame = layout.findViewById(R.id.gamesFragment_createGame);
 
         try {

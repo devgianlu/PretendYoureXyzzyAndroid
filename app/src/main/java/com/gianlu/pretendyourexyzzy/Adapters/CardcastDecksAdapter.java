@@ -1,9 +1,6 @@
 package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +20,9 @@ import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 
 public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<CardcastDecksAdapter.ViewHolder, CardcastDeck> {

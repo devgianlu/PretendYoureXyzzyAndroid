@@ -1,8 +1,5 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONException;
@@ -11,6 +8,9 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class FirstLoad {
     public final NextOp nextOperation;

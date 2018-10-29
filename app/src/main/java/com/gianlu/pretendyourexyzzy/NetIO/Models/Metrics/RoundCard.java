@@ -1,7 +1,5 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.Html;
 
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
@@ -11,6 +9,9 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.Objects;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class RoundCard extends BaseCard implements Serializable {
     public final String text;

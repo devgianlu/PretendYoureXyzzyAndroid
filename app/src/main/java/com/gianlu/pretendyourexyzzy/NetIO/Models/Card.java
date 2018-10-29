@@ -1,9 +1,6 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class Card extends BaseCard {
     private static final Pattern CARD_NUM_PATTERN = Pattern.compile("<span class=\"cardnum\">(\\d*)\\s?(?:\\\\|/)\\s?(\\d*)</span>");

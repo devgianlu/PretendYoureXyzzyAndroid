@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.support.annotation.NonNull;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
@@ -19,6 +18,8 @@ import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.List;
 import java.util.Random;
+
+import androidx.annotation.NonNull;
 
 public class GameRoundSummary {
     private final static int PADDING = 48;

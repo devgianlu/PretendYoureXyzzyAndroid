@@ -2,8 +2,6 @@ package com.gianlu.pretendyourexyzzy.NetIO.UrbanDictionary;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.UiThread;
 
 import com.gianlu.pretendyourexyzzy.NetIO.StatusCodeException;
 import com.gianlu.pretendyourexyzzy.NetIO.UserAgentInterceptor;
@@ -15,6 +13,8 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.UiThread;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

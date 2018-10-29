@@ -4,13 +4,6 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -33,6 +26,15 @@ import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeckActivity;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class CardcastFragment extends Fragment implements Cardcast.OnDecks, CardcastDecksAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
     private final static int LIMIT = 12;
@@ -161,7 +163,7 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
         layout = new RecyclerViewLayout(requireContext());
         if (getContext() == null) return null;
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
-        layout.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        layout.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
 
         cardcast = Cardcast.get();
         layout.enableSwipeRefresh(new SwipeRefreshLayout.OnRefreshListener() {

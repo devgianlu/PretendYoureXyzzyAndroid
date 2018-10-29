@@ -1,11 +1,11 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import android.support.annotation.Nullable;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+
+import androidx.annotation.Nullable;
 
 public class GamePermalink implements Serializable {
     public final int gid;

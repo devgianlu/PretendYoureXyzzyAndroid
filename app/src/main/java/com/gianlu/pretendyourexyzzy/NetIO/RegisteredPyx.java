@@ -1,7 +1,6 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.os.Handler;
-import android.support.annotation.NonNull;
 
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Prefs;
@@ -27,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import androidx.annotation.NonNull;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;

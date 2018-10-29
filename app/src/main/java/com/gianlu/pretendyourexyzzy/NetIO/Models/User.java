@@ -1,10 +1,10 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class User extends UserInfo {
     public final String sessionId;

@@ -1,7 +1,5 @@
 package com.gianlu.pretendyourexyzzy.Starred;
 
-import android.support.annotation.NonNull;
-
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
@@ -17,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+
+import androidx.annotation.NonNull;
 
 public class StarredCardsManager {
 

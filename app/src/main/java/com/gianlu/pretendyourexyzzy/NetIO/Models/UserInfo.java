@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.NonNull;
 
 import com.gianlu.commonutils.Drawer.BaseDrawerProfile;
 import com.gianlu.commonutils.Logging;
@@ -13,6 +12,8 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.text.ParseException;
+
+import androidx.annotation.NonNull;
 
 public class UserInfo implements BaseDrawerProfile, Serializable {
     public final String nickname;

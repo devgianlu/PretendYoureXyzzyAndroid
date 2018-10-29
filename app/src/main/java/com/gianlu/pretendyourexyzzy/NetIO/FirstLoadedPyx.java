@@ -1,8 +1,6 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CahConfig;
@@ -15,6 +13,8 @@ import org.json.JSONException;
 
 import java.io.IOException;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import okhttp3.OkHttpClient;
 
 public class FirstLoadedPyx extends Pyx {

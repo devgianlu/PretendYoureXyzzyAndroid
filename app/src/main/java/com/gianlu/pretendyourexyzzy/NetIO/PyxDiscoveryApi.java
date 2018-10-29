@@ -3,7 +3,6 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Preferences.Prefs;
@@ -18,6 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import androidx.annotation.NonNull;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

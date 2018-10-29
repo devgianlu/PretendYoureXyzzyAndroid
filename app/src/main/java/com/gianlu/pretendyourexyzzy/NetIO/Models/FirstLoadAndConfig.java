@@ -1,6 +1,6 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class FirstLoadAndConfig {
     public final FirstLoad firstLoad;

@@ -1,8 +1,8 @@
 package com.gianlu.pretendyourexyzzy.Tutorial;
 
-import android.support.annotation.Keep;
-
 import com.gianlu.commonutils.Tutorial.BaseTutorial;
+
+import androidx.annotation.Keep;
 
 public class LoginTutorial extends BaseTutorial {
 
