@@ -2,6 +2,8 @@ package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
@@ -17,7 +19,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.gianlu.commonutils.BottomSheet.BaseModalBottomSheet;
+import com.gianlu.commonutils.BottomSheet.ThemedModalBottomSheet;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.MessageView;
 import com.gianlu.commonutils.Toaster;
@@ -34,7 +36,7 @@ import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.List;
 
-public class CardcastSheet extends BaseModalBottomSheet<Integer, List<Deck>> implements DecksAdapter.Listener {
+public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> implements DecksAdapter.Listener {
     private OngoingGameHelper.Listener listener;
     private RegisteredPyx pyx;
     private RecyclerView list;
@@ -150,6 +152,7 @@ public class CardcastSheet extends BaseModalBottomSheet<Integer, List<Deck>> imp
                 showAddCardcastDeckDialog();
             }
         });
+        action.setSupportImageTintList(ColorStateList.valueOf(Color.WHITE));
 
         return true;
     }
@@ -180,5 +183,10 @@ public class CardcastSheet extends BaseModalBottomSheet<Integer, List<Deck>> imp
                 DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedRemovingCardcastDeck).ex(ex));
             }
         });
+    }
+
+    @Override
+    protected int getCustomTheme(@NonNull Integer payload) {
+        return R.style.AppTheme;
     }
 }
