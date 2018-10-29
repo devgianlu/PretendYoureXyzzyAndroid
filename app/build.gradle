@@ -1,7 +1,5 @@
 apply plugin: 'com.android.application'
-if (getGradle().getStartParameter().getTaskRequests().toString().contains("standard")) {
-    apply plugin: 'io.fabric'
-}
+apply plugin: 'io.fabric'
 
 android {
     compileSdkVersion 28
@@ -27,7 +25,6 @@ android {
         standard {
             dimension 'main'
         }
-
         foss {
             dimension 'main'
         }
