@@ -107,7 +107,7 @@ public class TutorialActivity extends AppIntro {
 
         @Override
         protected int getLayoutId() {
-            return com.github.paolorotolo.appintro.R.layout.fragment_intro;
+            return com.github.paolorotolo.appintro.R.layout.appintro_fragment_intro;
         }
     }
 }
