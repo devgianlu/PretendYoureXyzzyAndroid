@@ -46,6 +46,8 @@ public class ServersChecker {
     private CheckResult validateResponse(@NonNull Response response, long latency) throws IOException {
         if (response.code() == 404)
             return CheckResult.offline(new IOException("404! Server is down."));
+        else if (response.code() == 520)
+            return CheckResult.offline(new IOException("Unknown server error, try again later."));
 
         ResponseBody body = response.body();
         if (body == null) return CheckResult.error(new NullPointerException("body is null!"));

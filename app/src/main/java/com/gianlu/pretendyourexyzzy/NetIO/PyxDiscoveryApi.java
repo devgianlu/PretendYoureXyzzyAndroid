@@ -25,8 +25,8 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 public class PyxDiscoveryApi {
-    private static final HttpUrl WELCOME_MSG_URL = HttpUrl.parse("https://discovery-pyx.gianlu.xyz/WelcomeMessage");
-    private static final HttpUrl DISCOVERY_API_LIST = HttpUrl.parse("https://discovery-pyx.gianlu.xyz/ListAll");
+    private static final HttpUrl WELCOME_MSG_URL = HttpUrl.parse("https://pyx-discovery.gianlu.xyz/WelcomeMessage");
+    private static final HttpUrl DISCOVERY_API_LIST = HttpUrl.parse("https://pyx-discovery.gianlu.xyz/ListAll");
     private static PyxDiscoveryApi instance;
     private final OkHttpClient client;
     private final ExecutorService executor = Executors.newCachedThreadPool();

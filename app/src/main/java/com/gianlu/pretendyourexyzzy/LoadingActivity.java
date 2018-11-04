@@ -255,7 +255,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                     public void onDone(@NonNull RegisteredPyx result) {
                         Prefs.putString(PK.LAST_NICKNAME, result.user().nickname);
                         Prefs.putString(PK.LAST_ID_CODE, idCode);
-                        goTo(MainActivity.class);
+                        goToMain();
                     }
 
                     @Override
@@ -302,7 +302,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
 
             result.upgrade(fl.user);
-            goTo(MainActivity.class);
+            goToMain();
         } else {
             currentServer.setText(result.server.name);
             showRegisterUI(result);
@@ -321,12 +321,12 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         }
 
-        Toaster.with(LoadingActivity.this).message(R.string.failedLoading).ex(ex).show();
+        Toaster.with(this).message(R.string.failedLoading).ex(ex).show();
         changeServerDialog(false);
     }
 
-    private void goTo(Class goTo) {
-        Intent intent = new Intent(LoadingActivity.this, goTo).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+    private void goToMain() {
+        Intent intent = new Intent(LoadingActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("shouldRequest", launchGameShouldRequest);
         if (launchGame != null) intent.putExtra("game", launchGame);
         if (launchGamePassword != null) intent.putExtra("password", launchGamePassword);
