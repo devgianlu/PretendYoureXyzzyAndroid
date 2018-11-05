@@ -95,7 +95,8 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.gamesFragment_showLocked).setChecked(!Prefs.getBoolean(PK.FILTER_LOCKED_LOBBIES));
+        MenuItem showLocked = menu.findItem(R.id.gamesFragment_showLocked);
+        if (showLocked != null) showLocked.setChecked(!Prefs.getBoolean(PK.FILTER_LOCKED_LOBBIES));
     }
 
     @Override
