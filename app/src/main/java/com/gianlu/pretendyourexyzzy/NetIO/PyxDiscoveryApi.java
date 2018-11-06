@@ -44,7 +44,7 @@ public class PyxDiscoveryApi {
     }
 
     private void loadDiscoveryApiServersSync() throws IOException, JSONException {
-        if (Prefs.has(PK.API_SERVERS) && !CommonUtils.isDebug()) {
+        if (!CommonUtils.isDebug() && Prefs.has(PK.API_SERVERS) && !Prefs.isJSONArrayEmpty(PK.API_SERVERS)) {
             long age = Prefs.getLong(PK.API_SERVERS_CACHE_AGE, 0);
             if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(6))
                 return;
