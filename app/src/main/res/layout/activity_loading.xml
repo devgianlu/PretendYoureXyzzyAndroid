@@ -6,6 +6,17 @@
     android:gravity="center_horizontal"
     android:orientation="vertical">
 
+    <Button
+        android:id="@+id/loading_preferences"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|top"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="end|top"
+        android:text="@string/preferences" />
+
     <View
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -35,17 +46,17 @@
         android:layout_marginTop="8dp"
         android:layout_weight="1"
         android:orientation="vertical"
-        android:paddingEnd="16dp"
         android:paddingStart="16dp"
+        android:paddingEnd="16dp"
         android:visibility="gone">
 
         <TextView
             android:id="@+id/loading_currentServer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/colorPrimaryDark"
             android:layout_marginBottom="8dp"
             android:textAlignment="center"
+            android:textColor="@color/colorPrimaryDark"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -124,9 +135,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:autoLink="web"
-        android:paddingEnd="24dp"
         android:paddingStart="24dp"
         android:paddingTop="24dp"
+        android:paddingEnd="24dp"
         android:textAlignment="center" />
 
     <View

@@ -98,6 +98,14 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             return;
         }
 
+        Button preferences = findViewById(R.id.loading_preferences);
+        preferences.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(LoadingActivity.this, PreferenceActivity.class));
+            }
+        });
+
         tutorialManager = new TutorialManager(this, Discovery.LOGIN);
 
         loading = findViewById(R.id.loading_loading);
