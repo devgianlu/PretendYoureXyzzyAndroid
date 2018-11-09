@@ -51,7 +51,7 @@ public class PyxDiscoveryApi {
         }
 
         JSONArray array = new JSONArray(requestSync(DISCOVERY_API_LIST));
-        Pyx.Server.parseAndSave(array);
+        if (array.length() > 0) Pyx.Server.parseAndSave(array);
     }
 
     @NonNull
