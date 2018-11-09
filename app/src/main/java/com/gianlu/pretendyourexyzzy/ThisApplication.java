@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy;
 
 import com.bumptech.glide.Glide;
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
+import com.gianlu.commonutils.Logging;
 import com.gianlu.pretendyourexyzzy.NetIO.BaseCardUrlLoader;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 
@@ -18,6 +19,8 @@ public class ThisApplication extends AnalyticsApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        Logging.clearLogs(this, 3); // Due to enforced logging
 
         Glide.get(this).getRegistry().prepend(BaseCard.class, InputStream.class, new BaseCardUrlLoader.Factory());
     }
