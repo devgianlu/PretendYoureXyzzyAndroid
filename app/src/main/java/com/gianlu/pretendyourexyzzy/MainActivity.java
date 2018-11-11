@@ -8,7 +8,6 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
-import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Drawer.BaseDrawerItem;
@@ -457,7 +456,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 startActivity(new Intent(this, PreferenceActivity.class));
                 return true;
             case DrawerConst.REPORT:
-                CommonUtils.sendEmail(this, null);
+                Logging.sendEmail(this, null);
                 return true;
         }
 
