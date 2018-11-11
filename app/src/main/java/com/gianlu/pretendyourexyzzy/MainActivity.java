@@ -81,33 +81,45 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         if (drawerManager != null) drawerManager.syncTogglerState();
     }
 
-    private void safeInflateNavigationMenu(@MenuRes final int res) {
+    private void safeInflateNavigationMenu(@MenuRes int res) {
+        safeInflateNavigationMenu(res, false);
+    }
+
+    private void safeInflateNavigationMenu(@MenuRes final int res, boolean retried) {
         try {
             navigation.getMenu().clear();
             navigation.inflateMenu(res);
         } catch (IllegalStateException ex) {
             Logging.log(ex);
-            navigation.post(new Runnable() {
-                @Override
-                public void run() {
-                    navigation.inflateMenu(res);
-                }
-            });
+            if (!retried) {
+                navigation.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        safeInflateNavigationMenu(res, true);
+                    }
+                });
+            }
         }
     }
 
-    private void safeRemoveMenuItem(@IdRes final int id) {
+    private void safeRemoveMenuItem(@IdRes final int id, boolean retried) {
         try {
             navigation.getMenu().removeItem(id);
         } catch (IllegalStateException ex) {
             Logging.log(ex);
-            navigation.post(new Runnable() {
-                @Override
-                public void run() {
-                    navigation.getMenu().removeItem(id);
-                }
-            });
+            if (!retried) {
+                navigation.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        safeRemoveMenuItem(id, true);
+                    }
+                });
+            }
         }
+    }
+
+    private void safeRemoveMenuItem(@IdRes int id) {
+        safeRemoveMenuItem(id, false);
     }
 
     @Override
