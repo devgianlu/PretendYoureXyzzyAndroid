@@ -1,7 +1,6 @@
 package com.gianlu.pretendyourexyzzy;
 
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -123,14 +122,28 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        if (drawerManager != null) drawerManager.onTogglerConfigurationChanged(newConfig);
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
 
         if (ongoingGameFragment != null && currentGame != null) {
             Fragment.SavedState state = getSupportFragmentManager().saveFragmentInstanceState(ongoingGameFragment);
+            outState.putBoolean("wasPlaying", true);
+            outState.putParcelable("ongoingGameState", state);
+            outState.putSerializable("currentGame", currentGame);
+        } else {
+            outState.putBoolean("wasPlaying", false);
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        if (savedInstanceState.getBoolean("wasPlaying", false)) {
+            Fragment.SavedState state = savedInstanceState.getParcelable("ongoingGameState");
+            currentGame = (GamePermalink) savedInstanceState.getSerializable("currentGame");
+
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.remove(ongoingGameFragment);
             ongoingGameFragment = OngoingGameFragment.getInstance(currentGame, state);
             transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
 

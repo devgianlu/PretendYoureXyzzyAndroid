@@ -3,6 +3,7 @@
 /build/
 /**/build/
 /**/release/
+/**/debug/
 
 local.properties
 google-services.json
