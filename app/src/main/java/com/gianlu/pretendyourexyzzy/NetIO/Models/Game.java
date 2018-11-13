@@ -82,7 +82,7 @@ public class Game implements Filterable<Game.Protection>, Serializable {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public synchronized void setStatus(Status status) {
         this.status = status;
     }
 
