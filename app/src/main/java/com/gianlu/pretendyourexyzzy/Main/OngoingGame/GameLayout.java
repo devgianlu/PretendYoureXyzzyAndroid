@@ -1,6 +1,8 @@
 package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -17,6 +19,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -34,10 +38,13 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
     private final RecyclerView whiteCardsList;
     private final RecyclerView playersList;
     private final TextView time;
+    private final Timer timer = new Timer();
+    private final Handler handler = new Handler(Looper.getMainLooper());
     private PlayersAdapter.Listener playersListener;
     private CardsAdapter tableAdapter;
     private CardsAdapter handAdapter;
     private Listener listener;
+    private CountdownTask currentTask;
 
     public GameLayout(@NonNull Context context) {
         this(context, null, 0);
@@ -64,6 +71,12 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
         playersList.setLayoutManager(new LinearLayoutManager(context, RecyclerView.VERTICAL, false));
         //  Utils.removeAllDecorations(playersList);
         playersList.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
+    }
+
+    public void countFrom(int ms) {
+        if (currentTask != null) currentTask.cancel();
+        currentTask = new CountdownTask(ms / 1000);
+        timer.scheduleAtFixedRate(currentTask, 0, 1000);
     }
 
     public void attach(@NonNull PlayersAdapter.Listener listener) {
@@ -157,7 +170,28 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
         return blackCard.getCard();
     }
 
+    public void resetTimer() {
+        if (currentTask != null) currentTask.cancel();
+        time.setText("0");
+    }
+
     public interface Listener {
         void onCardSelected(@NonNull BaseCard card);
+    }
+
+    private class CountdownTask extends TimerTask {
+        private int count;
+
+        CountdownTask(int sec) {
+            this.count = sec;
+        }
+
+        @Override
+        public void run() {
+            handler.post(() -> time.setText(String.valueOf(count)));
+
+            if (count <= 0) cancel();
+            else count--;
+        }
     }
 }

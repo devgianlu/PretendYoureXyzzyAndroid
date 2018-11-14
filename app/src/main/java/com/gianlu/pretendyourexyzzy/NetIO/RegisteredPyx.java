@@ -87,120 +87,51 @@ public class RegisteredPyx extends FirstLoadedPyx {
     }
 
     public final void getGameInfoAndCards(final int gid, final OnResult<GameInfoAndCards> listener) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    GameInfo info = requestSync(PyxRequests.getGameInfo(gid));
-                    GameCards cards = requestSync(PyxRequests.getGameCards(gid));
-                    final GameInfoAndCards result = new GameInfoAndCards(info, cards);
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(result);
-                        }
-                    });
-                } catch (JSONException | PyxException | IOException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
+        executor.execute(() -> {
+            try {
+                GameInfo info = requestSync(PyxRequests.getGameInfo(gid));
+                GameCards cards = requestSync(PyxRequests.getGameCards(gid));
+                final GameInfoAndCards result = new GameInfoAndCards(info, cards);
+                handler.post(() -> listener.onDone(result));
+            } catch (JSONException | PyxException | IOException ex) {
+                handler.post(() -> listener.onException(ex));
             }
         });
     }
 
     public final void addCardcastDecksAndList(final int gid, final List<String> codes, @NonNull final Cardcast cardcast, final OnResult<List<Deck>> listener) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final List<String> failed = new ArrayList<>();
-
-                    for (String code : codes) {
-                        try {
-                            requestSync(PyxRequests.addCardcastDeck(gid, code));
-                        } catch (JSONException | PyxException | IOException ex) {
-                            Logging.log(ex);
-                            failed.add(code);
-                        }
+        executor.execute(() -> {
+            try {
+                final List<String> failed = new ArrayList<>();
+                for (String code : codes) {
+                    try {
+                        requestSync(PyxRequests.addCardcastDeck(gid, code));
+                    } catch (JSONException | PyxException | IOException ex) {
+                        Logging.log(ex);
+                        failed.add(code);
                     }
-
-                    if (!failed.isEmpty()) {
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.onException(new PartialCardcastAddFail(failed));
-                            }
-                        });
-                    }
-
-                    final List<Deck> sets = requestSync(PyxRequests.listCardcastDecks(gid, cardcast));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(sets);
-                        }
-                    });
-                } catch (JSONException | PyxException | IOException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
                 }
+
+                if (!failed.isEmpty()) {
+                    handler.post(() -> listener.onException(new PartialCardcastAddFail(failed)));
+                }
+
+                final List<Deck> sets = requestSync(PyxRequests.listCardcastDecks(gid, cardcast));
+                handler.post(() -> listener.onDone(sets));
+            } catch (JSONException | PyxException | IOException ex) {
+                handler.post(() -> listener.onException(ex));
             }
         });
     }
 
     public final void addCardcastDeckAndList(final int gid, @NonNull final String code, @NonNull final Cardcast cardcast, final OnResult<List<Deck>> listener) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    requestSync(PyxRequests.addCardcastDeck(gid, code));
-                    final List<Deck> sets = requestSync(PyxRequests.listCardcastDecks(gid, cardcast));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(sets);
-                        }
-                    });
-                } catch (JSONException | PyxException | IOException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-    public final void getGameInfo(final int gid, final OnResult<GameInfo> listener) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final GameInfo info = requestSync(PyxRequests.getGameInfo(gid));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(info);
-                        }
-                    });
-                } catch (JSONException | PyxException | IOException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
+        executor.execute(() -> {
+            try {
+                requestSync(PyxRequests.addCardcastDeck(gid, code));
+                final List<Deck> sets = requestSync(PyxRequests.listCardcastDecks(gid, cardcast));
+                handler.post(() -> listener.onDone(sets));
+            } catch (JSONException | PyxException | IOException ex) {
+                handler.post(() -> listener.onException(ex));
             }
         });
     }

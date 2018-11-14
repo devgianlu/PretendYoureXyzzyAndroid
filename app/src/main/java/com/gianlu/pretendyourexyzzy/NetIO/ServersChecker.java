@@ -96,17 +96,17 @@ public class ServersChecker {
         }
 
         @NonNull
-        public static CheckResult offline(@NonNull Throwable ex) {
+        static CheckResult offline(@NonNull Throwable ex) {
             return new CheckResult(ServerStatus.OFFLINE, ex, null, -1);
         }
 
         @NonNull
-        public static CheckResult error(@NonNull Throwable ex) {
+        static CheckResult error(@NonNull Throwable ex) {
             return new CheckResult(ServerStatus.ERROR, ex, null, -1);
         }
 
         @NonNull
-        public static CheckResult online(@NonNull Stats stats, long latency) {
+        static CheckResult online(@NonNull Stats stats, long latency) {
             return new CheckResult(ServerStatus.ONLINE, null, stats, latency);
         }
 
@@ -179,12 +179,7 @@ public class ServersChecker {
                 server.status = handleException(ex);
             }
 
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.serverChecked(server);
-                }
-            });
+            handler.post(() -> listener.serverChecked(server));
         }
     }
 }

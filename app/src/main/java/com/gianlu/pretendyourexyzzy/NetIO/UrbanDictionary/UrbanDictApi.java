@@ -92,22 +92,12 @@ public class UrbanDictApi {
                     if (body == null) throw new IOException("Body is null!");
                     String json = body.string();
                     final AutoCompleteResults result = new AutoCompleteResults(new JSONObject(json).getJSONArray("results"));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onResult(result);
-                        }
-                    });
+                    handler.post(() -> listener.onResult(result));
                 } else {
                     throw new StatusCodeException(resp);
                 }
             } catch (IOException | JSONException ex) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.onException(ex);
-                    }
-                });
+                handler.post(() -> listener.onException(ex));
             }
         }
     }
@@ -133,22 +123,12 @@ public class UrbanDictApi {
                     if (body == null) throw new IOException("Body is null!");
                     String json = body.string();
                     final Definitions result = new Definitions(new JSONObject(json));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onResult(result);
-                        }
-                    });
+                    handler.post(() -> listener.onResult(result));
                 } else {
                     throw new StatusCodeException(resp);
                 }
             } catch (IOException | JSONException ex) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.onException(ex);
-                    }
-                });
+                handler.post(() -> listener.onException(ex));
             }
         }
     }

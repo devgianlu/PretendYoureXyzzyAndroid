@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.Main;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -193,12 +192,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
             return layout;
         }
 
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                manager.refresh();
-            }
-        });
+        swipeRefreshLayout.setOnRefreshListener(() -> manager.refresh());
 
         manager.begin();
 
@@ -239,12 +233,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
                 cardcastSheet.show(getActivity(), perm.gid);
                 return true;
             case R.id.ongoingGame_definition:
-                showDialog(Dialogs.askDefinitionWord(getContext(), new Dialogs.OnText() {
-                    @Override
-                    public void onText(@NonNull String text) {
-                        UrbanDictSheet.get().show(getActivity(), text);
-                    }
-                }));
+                showDialog(Dialogs.askDefinitionWord(getContext(), text -> UrbanDictSheet.get().show(getActivity(), text)));
                 return true;
         }
 
@@ -348,12 +337,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.leaveGame)
                 .setMessage(R.string.leaveGame_confirm)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        leaveGame();
-                    }
-                })
+                .setPositiveButton(android.R.string.yes, (dialog, which) -> leaveGame())
                 .setNegativeButton(android.R.string.no, null);
 
         DialogUtils.showDialog(getActivity(), builder);

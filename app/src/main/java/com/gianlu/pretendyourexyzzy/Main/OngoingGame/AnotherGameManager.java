@@ -56,7 +56,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
 
         switch (msg.event) {
             case GAME_JUDGE_LEFT:
-                judgeLeft();
+                judgeLeft(msg.obj.getInt("i"));
                 break;
             case GAME_JUDGE_SKIPPED:
                 judgeSkipped();
@@ -80,7 +80,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 event(UiEvent.PLAYER_SKIPPED, msg.obj.getString("n"));
                 break;
             case GAME_ROUND_COMPLETE:
-                roundComplete(msg.obj.getInt("WC"), msg.obj.getString("rw"), msg.obj.optString("rP", null));
+                roundComplete(msg.obj.getInt("WC"), msg.obj.getString("rw"), msg.obj.getInt("i"), msg.obj.optString("rP", null));
                 break;
             case GAME_STATE_CHANGE:
                 gameStateChange(msg);
@@ -120,13 +120,15 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             event(UiEvent.JUDGE_SKIPPED, gameData.judge);
     }
 
-    private void judgeLeft() {
+    private void judgeLeft(int intermission) {
         if (gameData.judge != null)
             event(UiEvent.JUDGE_LEFT, gameData.judge);
 
         gameLayout.clearTable();
         gameLayout.showTable(false);
         gameLayout.setBlackCard(null);
+
+        gameLayout.countFrom(intermission);
     }
 
     @Nullable
@@ -136,8 +138,9 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         return split[split.length - 1];
     }
 
-    private void roundComplete(int winnerCard, @NonNull String roundWinner, @Nullable String lastRoundPermalink) {
+    private void roundComplete(int winnerCard, @NonNull String roundWinner, int intermission, @Nullable String lastRoundPermalink) {
         gameLayout.notifyWinnerCard(winnerCard);
+        gameLayout.countFrom(intermission);
 
         if (roundWinner.equals(gameData.me)) event(UiEvent.YOU_ROUND_WINNER);
         else event(UiEvent.ROUND_WINNER, roundWinner);
@@ -154,10 +157,12 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         gameData.update(status);
         switch (status) {
             case JUDGING:
+                gameLayout.countFrom(msg.obj.getInt("Pt"));
                 gameLayout.setTable(CardsGroup.list(msg.obj.getJSONArray("wc")));
                 gameLayout.showTable(gameData.amJudge());
                 break;
             case PLAYING:
+                gameLayout.countFrom(msg.obj.getInt("Pt"));
                 gameLayout.clearTable();
                 gameLayout.setBlackCard(new Card(msg.obj.getJSONObject("bc")));
                 updateGameInfo();
@@ -168,6 +173,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 gameLayout.clearTable();
                 gameLayout.showTable(false);
                 gameData.resetToIdleAndHost();
+                gameLayout.resetTimer();
                 break;
             case DEALING:
             case ROUND_OVER:
@@ -243,6 +249,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
 
     public void destroy() {
         pyx.polling().removeListener(this);
+        gameLayout.resetTimer();
         listener.justLeaveGame();
     }
 
@@ -288,27 +295,12 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     @Override
     public void onCardSelected(@NonNull final BaseCard card) {
         if (gameData.amJudge()) {
-            listener.showDialog(Dialogs.confirmation(context, new Dialogs.OnConfirmed() {
-                @Override
-                public void onConfirmed() {
-                    judgeCardInternal(card);
-                }
-            }));
+            listener.showDialog(Dialogs.confirmation(context, () -> judgeCardInternal(card)));
         } else {
             if (card.writeIn()) {
-                listener.showDialog(Dialogs.askText(context, new Dialogs.OnText() {
-                    @Override
-                    public void onText(@NonNull String text) {
-                        playCardInternal(card, text);
-                    }
-                }));
+                listener.showDialog(Dialogs.askText(context, text -> playCardInternal(card, text)));
             } else {
-                listener.showDialog(Dialogs.confirmation(context, new Dialogs.OnConfirmed() {
-                    @Override
-                    public void onConfirmed() {
-                        playCardInternal(card, null);
-                    }
-                }));
+                listener.showDialog(Dialogs.confirmation(context, () -> playCardInternal(card, null)));
             }
         }
     }

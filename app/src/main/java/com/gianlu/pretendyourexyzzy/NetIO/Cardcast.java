@@ -103,91 +103,46 @@ public class Cardcast {
         params.add(new NameValuePair("offset", String.valueOf(offset)));
         params.add(new NameValuePair("nsfw", String.valueOf(search.nsfw)));
 
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final CardcastDecks decks = new CardcastDecks((JSONObject) basicRequest("decks", params));
-                    if (decks.isEmpty() && offset == 0 && Pattern.matches("(?:[a-zA-Z]|\\d){5}", search.query)) {
-                        try {
-                            final CardcastDeckInfo info = new CardcastDeckInfo((JSONObject) basicRequest("decks/" + search.query));
-                            cachedDecks.put(info.code, info);
+        executor.execute(() -> {
+            try {
+                final CardcastDecks decks = new CardcastDecks((JSONObject) basicRequest("decks", params));
+                if (decks.isEmpty() && offset == 0 && Pattern.matches("(?:[a-zA-Z]|\\d){5}", search.query)) {
+                    try {
+                        final CardcastDeckInfo info = new CardcastDeckInfo((JSONObject) basicRequest("decks/" + search.query));
+                        cachedDecks.put(info.code, info);
 
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    listener.onDone(search, CardcastDecks.singleton(info));
-                                }
-                            });
-
-                            return;
-                        } catch (IOException | JSONException ex) {
-                            Logging.log(ex);
-                        }
+                        handler.post(() -> listener.onDone(search, CardcastDecks.singleton(info)));
+                        return;
+                    } catch (IOException | JSONException ex) {
+                        Logging.log(ex);
                     }
-
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(search, decks);
-                        }
-                    });
-                } catch (JSONException | ParseException | IOException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
                 }
+
+                handler.post(() -> listener.onDone(search, decks));
+            } catch (JSONException | ParseException | IOException ex) {
+                handler.post(() -> listener.onException(ex));
             }
         });
     }
 
     public void getResponses(final String code, final OnResult<List<CardcastCard>> listener) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final List<CardcastCard> cards = CardcastCard.toCardsList(code, (JSONArray) basicRequest("decks/" + code + "/responses"));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(cards);
-                        }
-                    });
-                } catch (IOException | JSONException | ParseException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
+        executor.execute(() -> {
+            try {
+                final List<CardcastCard> cards = CardcastCard.toCardsList(code, (JSONArray) basicRequest("decks/" + code + "/responses"));
+                handler.post(() -> listener.onDone(cards));
+            } catch (IOException | JSONException | ParseException ex) {
+                handler.post(() -> listener.onException(ex));
             }
         });
     }
 
     public void getCalls(final String code, final OnResult<List<CardcastCard>> listener) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final List<CardcastCard> cards = CardcastCard.toCardsList(code, (JSONArray) basicRequest("decks/" + code + "/calls"));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(cards);
-                        }
-                    });
-                } catch (IOException | JSONException | ParseException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
+        executor.execute(() -> {
+            try {
+                final List<CardcastCard> cards = CardcastCard.toCardsList(code, (JSONArray) basicRequest("decks/" + code + "/calls"));
+                handler.post(() -> listener.onDone(cards));
+            } catch (IOException | JSONException | ParseException ex) {
+                handler.post(() -> listener.onException(ex));
             }
         });
     }
@@ -200,50 +155,24 @@ public class Cardcast {
     }
 
     public void getDeckInfo(final String code, final OnResult<CardcastDeckInfo> listener) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final CardcastDeckInfo info = new CardcastDeckInfo((JSONObject) basicRequest("decks/" + code));
-                    cachedDecks.put(info.code, info);
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(info);
-                        }
-                    });
-                } catch (IOException | ParseException | JSONException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
+        executor.execute(() -> {
+            try {
+                final CardcastDeckInfo info = new CardcastDeckInfo((JSONObject) basicRequest("decks/" + code));
+                cachedDecks.put(info.code, info);
+                handler.post(() -> listener.onDone(info));
+            } catch (IOException | ParseException | JSONException ex) {
+                handler.post(() -> listener.onException(ex));
             }
         });
     }
 
     public void getCost(final String code, final OnResult<CardcastCost> listener) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final CardcastCost cost = new CardcastCost((JSONObject) basicRequest("decks/" + code + "/cost"));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(cost);
-                        }
-                    });
-                } catch (IOException | JSONException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
+        executor.execute(() -> {
+            try {
+                final CardcastCost cost = new CardcastCost((JSONObject) basicRequest("decks/" + code + "/cost"));
+                handler.post(() -> listener.onDone(cost));
+            } catch (IOException | JSONException ex) {
+                handler.post(() -> listener.onException(ex));
             }
         });
     }
@@ -307,6 +236,7 @@ public class Cardcast {
             }
         }
 
+        @NonNull
         @Override
         public String toString() {
             return val;

@@ -189,11 +189,8 @@ public class Pyx implements Closeable {
                         .url(url).get().build()).execute()) {
 
             ResponseBody respBody = resp.body();
-            if (respBody != null) {
-                return respBody.string();
-            } else {
-                throw new StatusCodeException(resp);
-            }
+            if (respBody != null) return respBody.string();
+            else throw new StatusCodeException(resp);
         }
     }
 
@@ -204,25 +201,12 @@ public class Pyx implements Closeable {
             return;
         }
 
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final UserHistory history = new UserHistory(new JSONObject(requestSync(url)));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(history);
-                        }
-                    });
-                } catch (JSONException | IOException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
+        executor.execute(() -> {
+            try {
+                final UserHistory history = new UserHistory(new JSONObject(requestSync(url)));
+                handler.post(() -> listener.onDone(history));
+            } catch (JSONException | IOException ex) {
+                handler.post(() -> listener.onException(ex));
             }
         });
     }
@@ -234,25 +218,12 @@ public class Pyx implements Closeable {
             return;
         }
 
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final SessionHistory history = new SessionHistory(new JSONObject(requestSync(url)));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(history);
-                        }
-                    });
-                } catch (JSONException | IOException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
+        executor.execute(() -> {
+            try {
+                final SessionHistory history = new SessionHistory(new JSONObject(requestSync(url)));
+                handler.post(() -> listener.onDone(history));
+            } catch (JSONException | IOException ex) {
+                handler.post(() -> listener.onException(ex));
             }
         });
     }
@@ -264,25 +235,12 @@ public class Pyx implements Closeable {
             return;
         }
 
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final SessionStats history = new SessionStats(new JSONObject(requestSync(url)));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(history);
-                        }
-                    });
-                } catch (JSONException | IOException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
+        executor.execute(() -> {
+            try {
+                final SessionStats history = new SessionStats(new JSONObject(requestSync(url)));
+                handler.post(() -> listener.onDone(history));
+            } catch (JSONException | IOException ex) {
+                handler.post(() -> listener.onException(ex));
             }
         });
     }
@@ -294,25 +252,12 @@ public class Pyx implements Closeable {
             return;
         }
 
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final GameHistory history = new GameHistory(new JSONArray(requestSync(url)));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(history);
-                        }
-                    });
-                } catch (JSONException | IOException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
+        executor.execute(() -> {
+            try {
+                final GameHistory history = new GameHistory(new JSONArray(requestSync(url)));
+                handler.post(() -> listener.onDone(history));
+            } catch (JSONException | IOException ex) {
+                handler.post(() -> listener.onException(ex));
             }
         });
     }
@@ -324,25 +269,12 @@ public class Pyx implements Closeable {
             return;
         }
 
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final GameRound history = new GameRound(new JSONObject(requestSync(url)));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(history);
-                        }
-                    });
-                } catch (JSONException | IOException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
+        executor.execute(() -> {
+            try {
+                final GameRound history = new GameRound(new JSONObject(requestSync(url)));
+                handler.post(() -> listener.onDone(history));
+            } catch (JSONException | IOException ex) {
+                handler.post(() -> listener.onException(ex));
             }
         });
     }
@@ -352,36 +284,18 @@ public class Pyx implements Closeable {
 
         try {
             final FirstLoadedPyx pyx = holder.get(InstanceHolder.Level.FIRST_LOADED);
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onDone(pyx);
-                }
-            });
+            handler.post(() -> listener.onDone(pyx));
         } catch (LevelMismatchException exx) {
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        FirstLoadAndConfig result = firstLoadSync();
+            executor.execute(() -> {
+                try {
+                    FirstLoadAndConfig result = firstLoadSync();
 
-                        final FirstLoadedPyx pyx = new FirstLoadedPyx(server, handler, client, result);
-                        holder.set(pyx);
+                    final FirstLoadedPyx pyx = new FirstLoadedPyx(server, handler, client, result);
+                    holder.set(pyx);
 
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.onDone(pyx);
-                            }
-                        });
-                    } catch (PyxException | IOException | JSONException ex) {
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.onException(ex);
-                            }
-                        });
-                    }
+                    handler.post(() -> listener.onDone(pyx));
+                } catch (PyxException | IOException | JSONException ex) {
+                    handler.post(() -> listener.onException(ex));
                 }
             });
         }
@@ -790,21 +704,11 @@ public class Pyx implements Closeable {
             try {
                 request(request.op, request.params);
                 if (listener != null) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone();
-                        }
-                    });
+                    handler.post(listener::onDone);
                 }
             } catch (IOException | JSONException | PyxException ex) {
                 if (listener != null) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
+                    handler.post(() -> listener.onException(ex));
                 } else {
                     Logging.log(ex);
                 }
@@ -827,21 +731,11 @@ public class Pyx implements Closeable {
                 PyxResponse resp = request(request.op, request.params);
                 final E result = request.processor.process(resp.resp, resp.obj);
                 if (listener != null) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(result);
-                        }
-                    });
+                    handler.post(() -> listener.onDone(result));
                 }
             } catch (IOException | JSONException | PyxException ex) {
                 if (listener != null) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
+                    handler.post(() -> listener.onException(ex));
                 } else {
                     Logging.log(ex);
                 }
