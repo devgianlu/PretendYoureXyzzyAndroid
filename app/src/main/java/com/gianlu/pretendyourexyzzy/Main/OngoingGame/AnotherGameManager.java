@@ -11,6 +11,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
@@ -30,6 +31,7 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
 public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Listener, SensitiveGameData.Listener {
+    private final GamePermalink permalink;
     private final RegisteredPyx pyx;
     private final GameLayout gameLayout;
     private final SensitiveGameData gameData;
@@ -37,9 +39,10 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     private final int gid;
     private final Context context;
 
-    public AnotherGameManager(int gid, @NonNull RegisteredPyx pyx, @NonNull GameLayout layout, @NonNull Listener listener) {
+    public AnotherGameManager(@NonNull GamePermalink permalink, @NonNull RegisteredPyx pyx, @NonNull GameLayout layout, @NonNull Listener listener) {
+        this.permalink = permalink;
         this.pyx = pyx;
-        this.gid = gid;
+        this.gid = permalink.gid;
         this.context = layout.getContext();
         this.gameLayout = layout;
         this.gameLayout.attach(this);
@@ -77,7 +80,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 event(UiEvent.PLAYER_SKIPPED, msg.obj.getString("n"));
                 break;
             case GAME_ROUND_COMPLETE:
-                roundComplete(msg.obj.getInt("WC"), msg.obj.getString("rw"));
+                roundComplete(msg.obj.getInt("WC"), msg.obj.getString("rw"), msg.obj.optString("rP", null));
                 break;
             case GAME_STATE_CHANGE:
                 gameStateChange(msg);
@@ -126,11 +129,20 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         gameLayout.setBlackCard(null);
     }
 
-    private void roundComplete(int winnerCard, String roundWinner) {
+    @Nullable
+    public String getLastRoundMetricsId() {
+        if (gameData.lastRoundPermalink == null) return null;
+        String[] split = gameData.lastRoundPermalink.split("/");
+        return split[split.length - 1];
+    }
+
+    private void roundComplete(int winnerCard, @NonNull String roundWinner, @Nullable String lastRoundPermalink) {
         gameLayout.notifyWinnerCard(winnerCard);
 
         if (roundWinner.equals(gameData.me)) event(UiEvent.YOU_ROUND_WINNER);
         else event(UiEvent.ROUND_WINNER, roundWinner);
+
+        gameData.lastRoundPermalink = lastRoundPermalink;
     }
 
     private void dealCards(List<Card> cards) {
@@ -161,6 +173,8 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             case ROUND_OVER:
                 break;
         }
+
+        permalink.gamePermalink = msg.obj.optString("gp", null);
     }
 
     @Override
@@ -356,7 +370,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         return gameData.host;
     }
 
-    public void event(@NonNull UiEvent ev, Object... args) {
+    private void event(@NonNull UiEvent ev, Object... args) {
         switch (ev.kind) {
             case BOTH:
                 listener.showToast(Toaster.build().message(ev.toast, args).error(false));
@@ -371,6 +385,12 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                     gameLayout.setInstructions(ev.text, args);
                 break;
         }
+    }
+
+    public boolean hasPassword(boolean knowsPassword) {
+        if (knowsPassword)
+            return gameData.options.password != null && !gameData.options.password.isEmpty();
+        else return gameData.hasPassword;
     }
 
     private enum UiEvent {

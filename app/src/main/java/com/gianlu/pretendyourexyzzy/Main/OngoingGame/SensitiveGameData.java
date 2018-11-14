@@ -20,13 +20,15 @@ public class SensitiveGameData {
     final Set<String> spectators = new HashSet<>();
     final String me;
     private final Listener listener;
+    volatile boolean hasPassword;
     volatile AdapterInterface playersInterface;
     volatile String host;
     volatile Game.Status status;
     volatile Game.Options options;
     volatile String judge;
+    volatile String lastRoundPermalink;
 
-    SensitiveGameData(RegisteredPyx pyx, Listener listener) {
+    SensitiveGameData(@NonNull RegisteredPyx pyx, @NonNull Listener listener) {
         this.me = pyx.user().nickname;
         this.listener = listener;
     }
@@ -62,27 +64,30 @@ public class SensitiveGameData {
     }
 
     void update(@NonNull Game game) {
-        spectators.clear();
-        spectators.addAll(game.spectators);
+        synchronized (spectators) {
+            spectators.clear();
+            spectators.addAll(game.spectators);
+        }
 
         host = game.host;
+        hasPassword = game.hasPassword;
         status = game.status;
         options = game.options;
     }
 
-    void spectatorJoin(String name) {
+    void spectatorJoin(@NonNull String name) {
         synchronized (spectators) {
             spectators.add(name);
         }
     }
 
-    void spectatorLeave(String name) {
+    void spectatorLeave(@NonNull String name) {
         synchronized (spectators) {
             spectators.remove(name);
         }
     }
 
-    void update(Game.Status status) {
+    void update(@NonNull Game.Status status) {
         this.status = status;
     }
 
@@ -100,7 +105,7 @@ public class SensitiveGameData {
         }
     }
 
-    private void playerChange(@NonNull GameInfo.Player player, List<GameInfo.Player> oldPlayers) {
+    private void playerChange(@NonNull GameInfo.Player player, @NonNull List<GameInfo.Player> oldPlayers) {
         GameInfo.PlayerStatus oldStatus = null;
         for (GameInfo.Player oldPlayer : oldPlayers) {
             if (oldPlayer.name.equals(player.name)) {
@@ -126,7 +131,9 @@ public class SensitiveGameData {
     }
 
     boolean amSpectator() {
-        return spectators.contains(me);
+        synchronized (spectators) {
+            return spectators.contains(me);
+        }
     }
 
     void resetToIdleAndHost() {

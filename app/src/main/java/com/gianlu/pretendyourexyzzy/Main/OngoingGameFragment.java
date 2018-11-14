@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.Main;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -20,6 +21,7 @@ import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageView;
+import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.commonutils.Tutorial.BaseTutorial;
@@ -27,6 +29,7 @@ import com.gianlu.commonutils.Tutorial.TutorialManager;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.Dialogs.EditGameOptionsDialog;
+import com.gianlu.pretendyourexyzzy.Dialogs.GameRoundDialog;
 import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.AnotherGameManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastSheet;
@@ -61,6 +64,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import okhttp3.HttpUrl;
 
 public class OngoingGameFragment extends FragmentWithDialog implements OngoingGameHelper.Listener, PlayersAdapter.Listener, TutorialManager.Listener, AnotherGameManager.Listener {
     private OnLeftGame onLeftGame;
@@ -119,7 +123,9 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        // TODO: Last round metrics
+        MenuItem lastRound = menu.findItem(R.id.ongoingGame_lastRound);
+        if (lastRound != null)
+            lastRound.setVisible(manager != null && manager.getLastRoundMetricsId() != null);
 
         MenuItem gameMetrics = menu.findItem(R.id.ongoingGame_gameMetrics);
         if (gameMetrics != null)
@@ -178,7 +184,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         try {
             pyx = RegisteredPyx.get();
             cardcast = Cardcast.get();
-            manager = new AnotherGameManager(perm.gid, pyx, gameLayout, this);
+            manager = new AnotherGameManager(perm, pyx, gameLayout, this);
         } catch (LevelMismatchException ex) {
             Logging.log(ex);
             loading.setVisibility(View.GONE);
@@ -224,7 +230,9 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
                 MetricsActivity.startActivity(getContext(), perm);
                 return true;
             case R.id.ongoingGame_lastRound:
-                // TODO
+                String roundId = manager == null ? null : manager.getLastRoundMetricsId();
+                if (roundId != null && getActivity() != null)
+                    GameRoundDialog.get(roundId).show(getActivity().getSupportFragmentManager(), null);
                 return true;
             case R.id.ongoingGame_cardcast:
                 cardcastSheet = CardcastSheet.get();
@@ -260,7 +268,22 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     }
 
     private void shareGame() {
-        // TODO
+        if (manager == null) return;
+
+        HttpUrl.Builder builder = pyx.server.url.newBuilder();
+        builder.addPathSegment("game.jsp");
+
+        List<NameValuePair> params = new ArrayList<>();
+        params.add(new NameValuePair("game", String.valueOf(perm.gid)));
+        if (manager.hasPassword(true))
+            params.add(new NameValuePair("password", manager.gameOptions().password));
+
+        builder.fragment(CommonUtils.formQuery(params));
+
+        Intent i = new Intent(Intent.ACTION_SEND);
+        i.setType("text/plain");
+        i.putExtra(Intent.EXTRA_TEXT, builder.toString());
+        startActivity(Intent.createChooser(i, "Share game..."));
     }
 
     private void showSpectators() {
