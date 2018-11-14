@@ -180,7 +180,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
         pyx.request(PyxRequests.getGamesList(), this);
 
-        pyx.polling().addListener(POLLING, this);
+        pyx.polling().addListener(this);
 
         return layout;
     }
@@ -416,7 +416,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     @Override
     public void onPollMessage(@NonNull PollMessage message) {
         if (message.event == PollMessage.Event.GAME_LIST_REFRESH) {
-            recyclerViewSavedInstance = recyclerViewLayout.getList().getLayoutManager().onSaveInstanceState();
+            recyclerViewSavedInstance = recyclerViewLayout.getList().getLayoutManager().onSaveInstanceState(); // FIXME
             pyx.request(PyxRequests.getGamesList(), GamesFragment.this);
         }
     }

@@ -37,7 +37,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>, NamesAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener {
-    private static final String POLLING = NamesFragment.class.getName();
     private RecyclerViewLayout layout;
     private int names = -1;
     private RegisteredPyx pyx;
@@ -124,9 +123,9 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
             }
         }, R.color.colorAccent);
 
-        pyx.polling().addListener(POLLING, new Pyx.OnEventListener() {
+        pyx.polling().addListener(new Pyx.OnEventListener() {
             @Override
-            public void onPollMessage(@NonNull PollMessage msg) throws JSONException {
+            public void onPollMessage(@NonNull PollMessage msg) throws JSONException { // FIXME
                 switch (msg.event) {
                     case NEW_PLAYER:
                         if (adapter != null)

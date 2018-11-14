@@ -23,12 +23,12 @@ import androidx.annotation.StringRes;
 
 public class Game implements Filterable<Game.Protection>, Serializable {
     public final int gid;
-    final ArrayList<String> players;
-    final ArrayList<String> spectators;
-    private final boolean hasPassword;
-    private String host;
-    private Options options;
-    private Status status;
+    public final ArrayList<String> players;
+    public final ArrayList<String> spectators;
+    public final boolean hasPassword;
+    public final String host;
+    public final Options options;
+    public final Status status;
 
     public Game(JSONObject obj) throws JSONException {
         host = obj.getString("H");
@@ -50,42 +50,6 @@ public class Game implements Filterable<Game.Protection>, Serializable {
         }
     }
 
-    public synchronized int playersSize() {
-        return players.size();
-    }
-
-    public synchronized boolean hasSpectator(String name) {
-        return spectators.contains(name);
-    }
-
-    public synchronized String getHost() {
-        return host;
-    }
-
-    public synchronized void setHost(String host) {
-        this.host = host;
-    }
-
-    public synchronized boolean isStatus(Game.Status status) {
-        return this.status == status;
-    }
-
-    public synchronized Options getOptions() {
-        return options;
-    }
-
-    public synchronized void setOptions(Options options) {
-        this.options = options;
-    }
-
-    public synchronized Status getStatus() {
-        return status;
-    }
-
-    public synchronized void setStatus(Status status) {
-        this.status = status;
-    }
-
     @Override
     public Protection getFilterable() {
         return hasPassword(false) ? Protection.LOCKED : Protection.OPEN;
@@ -94,10 +58,6 @@ public class Game implements Filterable<Game.Protection>, Serializable {
     public boolean hasPassword(boolean knowsPassword) {
         if (knowsPassword) return options.password != null && !options.password.isEmpty();
         else return hasPassword;
-    }
-
-    public synchronized int spectatorsSize() {
-        return spectators.size();
     }
 
     public synchronized String getSpectatorsStringList() {

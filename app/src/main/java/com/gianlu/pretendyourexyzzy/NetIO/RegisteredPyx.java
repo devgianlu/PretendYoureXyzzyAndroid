@@ -20,9 +20,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -183,6 +181,30 @@ public class RegisteredPyx extends FirstLoadedPyx {
         });
     }
 
+    public final void getGameInfo(final int gid, final OnResult<GameInfo> listener) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final GameInfo info = requestSync(PyxRequests.getGameInfo(gid));
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onDone(info);
+                        }
+                    });
+                } catch (JSONException | PyxException | IOException ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     public static class PartialCardcastAddFail extends Exception {
         private final List<String> codes;
 
@@ -197,7 +219,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
     }
 
     public class PollingThread extends Thread {
-        private final Map<String, OnEventListener> listeners = new HashMap<>();
+        private final List<OnEventListener> listeners = new ArrayList<>();
         private final AtomicInteger exCount = new AtomicInteger(0);
         private volatile boolean shouldStop = false;
 
@@ -239,7 +261,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
             handler.post(new NotifyMessage(messages));
         }
 
-        private void dispatchEx(Exception ex) {
+        private void dispatchEx(@NonNull Exception ex) { // TODO: Is this really necessary?
             exCount.getAndIncrement();
             if (exCount.get() > 5) {
                 safeStop();
@@ -249,23 +271,23 @@ public class RegisteredPyx extends FirstLoadedPyx {
             Logging.log(ex);
         }
 
-        public void addListener(String tag, OnEventListener listener) {
-            this.listeners.put(tag, listener);
+        public void addListener(OnEventListener listener) {
+            this.listeners.add(listener);
         }
 
         void safeStop() {
             shouldStop = true;
         }
 
-        public void removeListener(String tag) {
-            this.listeners.remove(tag);
+        public void removeListener(OnEventListener listener) {
+            this.listeners.remove(listener);
         }
 
         private class NotifyException implements Runnable {
 
             @Override
             public void run() {
-                for (OnEventListener listener : listeners.values())
+                for (OnEventListener listener : listeners)
                     listener.onStoppedPolling();
             }
         }
@@ -279,7 +301,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
 
             @Override
             public void run() {
-                for (OnEventListener listener : listeners.values()) {
+                for (OnEventListener listener : listeners) {
                     for (PollMessage message : messages) {
                         try {
                             listener.onPollMessage(message);

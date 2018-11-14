@@ -432,27 +432,24 @@ public class Pyx implements Closeable {
         E process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException;
     }
 
+    @UiThread
     public interface OnSuccess {
-        @UiThread
         void onDone();
 
-        @UiThread
         void onException(@NonNull Exception ex);
     }
 
+    @UiThread
     public interface OnResult<E> {
-        @UiThread
         void onDone(@NonNull E result);
 
-        @UiThread
         void onException(@NonNull Exception ex);
     }
 
+    @UiThread
     public interface OnEventListener {
-        @UiThread
         void onPollMessage(@NonNull PollMessage message) throws JSONException;
 
-        @UiThread
         void onStoppedPolling();
     }
 

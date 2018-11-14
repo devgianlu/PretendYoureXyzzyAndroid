@@ -8,16 +8,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.gianlu.commonutils.SuperTextView;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGame.SensitiveGameData;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHolder> {
+public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHolder> implements SensitiveGameData.AdapterInterface {
     private final List<GameInfo.Player> players;
     private final Listener listener;
     private final LayoutInflater inflater;
@@ -40,7 +41,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         holder.name.setText(player.name);
         holder.score.setHtml(R.string.score, player.score);
 
-        switch (player.getStatus()) {
+        switch (player.status) {
             case HOST:
                 holder.status.setImageResource(R.drawable.baseline_person_24);
                 break;
@@ -75,39 +76,9 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         return players.size();
     }
 
-    public void playerChanged(@NonNull GameInfo.Player player) {
-        synchronized (players) {
-            int pos = Utils.indexOf(players, player.name);
-            if (pos != -1) {
-                players.set(pos, player);
-                notifyItemChanged(pos);
-            }
-        }
-    }
-
-    public void removePlayer(@NonNull String nick) {
-        synchronized (players) {
-            int pos = Utils.indexOf(players, nick);
-            if (pos != -1) {
-                players.remove(pos);
-                notifyItemRemoved(pos);
-            }
-        }
-    }
-
-    public void newPlayer(@NonNull GameInfo.Player player) {
-        synchronized (players) {
-            players.add(player);
-            notifyItemInserted(players.size() - 1);
-        }
-    }
-
-    public void resetPlayers() {
-        synchronized (players) {
-            for (int i = 0; i < players.size(); i++)
-                players.set(i, new GameInfo.Player(players.get(i).name, 0, GameInfo.PlayerStatus.IDLE));
-            notifyDataSetChanged();
-        }
+    @Override
+    public void dispatchUpdate(@NonNull DiffUtil.DiffResult result) {
+        result.dispatchUpdatesTo(this);
     }
 
     public interface Listener {

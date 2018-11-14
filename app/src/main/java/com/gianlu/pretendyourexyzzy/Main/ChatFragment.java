@@ -104,14 +104,14 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
             }
         });
 
-        pyx.polling().addListener(ChatFragment.class.getName() + gid, this);
+        pyx.polling().addListener(this);
 
         return layout;
     }
 
     @Override
     public void onDestroy() {
-        if (pyx != null) pyx.polling().removeListener(ChatFragment.class.getName() + gid);
+        if (pyx != null) pyx.polling().removeListener(this);
         super.onDestroy();
     }
 
@@ -147,7 +147,7 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     public void onPollMessage(@NonNull PollMessage message) {
         if (!isAdded()) return;
         adapter.newMessage(message, gid);
-        recyclerViewLayout.getList().scrollToPosition(adapter.getItemCount() - 1);
+        recyclerViewLayout.getList().scrollToPosition(adapter.getItemCount() - 1); // FIXME
     }
 
     @Override

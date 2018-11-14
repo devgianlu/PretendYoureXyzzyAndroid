@@ -15,15 +15,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
-            android:id="@+id/ongoingGame_container"
+        <com.gianlu.pretendyourexyzzy.Main.OngoingGame.GameLayout
+            android:id="@+id/ongoingGame_gameLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <include layout="@layout/game_layout" />
-        </LinearLayout>
+            android:layout_height="wrap_content" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
