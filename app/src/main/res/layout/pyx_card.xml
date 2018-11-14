@@ -14,9 +14,9 @@
         android:layout_weight="1"
         android:autoLink="web"
         android:ellipsize="end"
-        android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:paddingTop="16dp"
+        android:paddingEnd="16dp"
         android:textSize="18sp" />
 
     <FrameLayout
@@ -56,8 +56,8 @@
         android:layout_height="wrap_content"
         android:gravity="bottom"
         android:orientation="horizontal"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
 
         <ImageButton
             android:id="@+id/pyxCard_primaryAction"
