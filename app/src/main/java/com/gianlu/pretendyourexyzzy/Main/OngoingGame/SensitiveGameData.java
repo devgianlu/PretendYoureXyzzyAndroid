@@ -16,14 +16,14 @@ import androidx.recyclerview.widget.DiffUtil;
 
 public class SensitiveGameData {
     final List<GameInfo.Player> players = new ArrayList<>();
+    final Set<String> spectators = new HashSet<>();
     private final int gid;
     private final String me;
     private final Listener listener;
-    private final Set<String> spectators = new HashSet<>();
     AdapterInterface playersInterface;
-    private String host;
-    private Game.Status status;
-    private Game.Options options;
+    String host;
+    Game.Status status;
+    Game.Options options;
     private String judge;
 
     SensitiveGameData(int gid, RegisteredPyx pyx, Listener listener) {
@@ -108,6 +108,9 @@ public class SensitiveGameData {
 
         if (player.status == GameInfo.PlayerStatus.JUDGE || player.status == GameInfo.PlayerStatus.JUDGING)
             judge = player.name;
+
+        if (player.status == GameInfo.PlayerStatus.HOST)
+            host = player.name;
 
         if (oldStatus == GameInfo.PlayerStatus.PLAYING && player.status == GameInfo.PlayerStatus.IDLE
                 && !player.name.equals(me) && status == Game.Status.PLAYING)

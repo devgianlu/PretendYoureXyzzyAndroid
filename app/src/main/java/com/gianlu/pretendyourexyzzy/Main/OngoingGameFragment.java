@@ -1,8 +1,10 @@
 package com.gianlu.pretendyourexyzzy.Main;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,11 +20,13 @@ import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.MessageView;
+import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.commonutils.Tutorial.BaseTutorial;
 import com.gianlu.commonutils.Tutorial.TutorialManager;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
+import com.gianlu.pretendyourexyzzy.Dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.AnotherGameManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastSheet;
@@ -32,6 +36,7 @@ import com.gianlu.pretendyourexyzzy.Metrics.MetricsActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
@@ -45,12 +50,16 @@ import com.gianlu.pretendyourexyzzy.Tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class OngoingGameFragment extends FragmentWithDialog implements OngoingGameHelper.Listener, PlayersAdapter.Listener, TutorialManager.Listener, AnotherGameManager.Listener {
@@ -96,8 +105,11 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         updateActivityTitle();
     }
 
+    @Override
     public void updateActivityTitle() {
-        // TODO
+        Activity activity = getActivity();
+        if (manager != null && activity != null && isVisible())
+            activity.setTitle(manager.host() + " - " + getString(R.string.app_name));
     }
 
     @Override
@@ -191,7 +203,8 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
                 leaveGame();
                 return true;
             case R.id.ongoingGame_options:
-                // TODO
+                if (manager.amHost() && manager.isStatus(Game.Status.LOBBY)) editGameOptions();
+                else showGameOptions();
                 return true;
             case R.id.ongoingGame_spectators:
                 showSpectators();
@@ -226,7 +239,19 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     }
 
     private void showPlayers() {
-        // TODO
+        if (manager == null || getContext() == null) return;
+
+        RecyclerView recyclerView = new RecyclerView(getContext());
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
+        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
+        recyclerView.setAdapter(new PlayersAdapter(getContext(), manager.players(), this));
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.playersLabel)
+                .setView(recyclerView)
+                .setPositiveButton(android.R.string.ok, null);
+
+        DialogUtils.showDialog(getActivity(), builder);
     }
 
     private void shareGame() {
@@ -234,15 +259,31 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     }
 
     private void showSpectators() {
-        // TODO
+        if (manager == null || getContext() == null) return;
+
+        Collection<String> spectators = manager.spectators();
+        SuperTextView text = new SuperTextView(getContext(), R.string.spectatorsList, spectators.isEmpty() ? "none" : CommonUtils.join(spectators, ", "));
+        int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
+        text.setPadding(padding, padding, padding, padding);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.spectatorsLabel)
+                .setView(text)
+                .setPositiveButton(android.R.string.ok, null);
+
+        DialogUtils.showDialog(getActivity(), builder);
     }
 
     private void editGameOptions() {
-        // TODO
+        if (manager == null || getContext() == null) return;
+
+        DialogUtils.showDialog(getActivity(), EditGameOptionsDialog.get(perm.gid, manager.gameOptions()));
     }
 
     private void showGameOptions() {
-        // TODO
+        if (manager == null || getContext() == null) return;
+
+        DialogUtils.showDialog(getActivity(), Dialogs.gameOptions(getContext(), manager.gameOptions(), pyx.firstLoad()));
     }
 
     @Override
@@ -292,7 +333,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
 
     @Override
     public boolean canModifyCardcastDecks() {
-        return false; // TODO
+        return manager != null && manager.amHost() && manager.isStatus(Game.Status.LOBBY);
     }
 
     @Override

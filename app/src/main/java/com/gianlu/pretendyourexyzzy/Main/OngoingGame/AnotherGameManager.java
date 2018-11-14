@@ -15,6 +15,8 @@ import com.gianlu.pretendyourexyzzy.R;
 
 import org.json.JSONException;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -240,6 +242,30 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         }
     }
 
+    public boolean isStatus(@NonNull Game.Status status) {
+        return gameData.status == status;
+    }
+
+    @NonNull
+    public List<GameInfo.Player> players() {
+        return Collections.unmodifiableList(gameData.players);
+    }
+
+    @NonNull
+    public Collection<String> spectators() {
+        return Collections.unmodifiableCollection(gameData.spectators);
+    }
+
+    @NonNull
+    public Game.Options gameOptions() {
+        return gameData.options;
+    }
+
+    @NonNull
+    public String host() {
+        return gameData.host;
+    }
+
     private enum UiEvent {
         YOU_JUDGE(R.string.game_youJudge, Kind.TEXT),
         SELECT_WINNING_CARD(R.string.game_selectWinningCard, Kind.TEXT),
@@ -289,5 +315,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         void onGameLoaded();
 
         void onFailedLoadingGame(@NonNull Exception ex);
+
+        void updateActivityTitle();
     }
 }
