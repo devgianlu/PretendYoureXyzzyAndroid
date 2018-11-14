@@ -243,6 +243,12 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     }
 
     @Override
+    public void playerIsSpectator() {
+        gameLayout.showTable(false);
+        event(UiEvent.SPECTATOR_TEXT);
+    }
+
+    @Override
     public void onStoppedPolling() {
         destroy();
         listener.justLeaveGame();
@@ -450,8 +456,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         YOU_GAME_WINNER(R.string.game_youGameWinner_long, R.string.game_youGameWinner_short),
         NOT_YOUR_TURN(R.string.game_notYourTurn, Kind.TOAST),
         HURRY_UP(R.string.hurryUp, Kind.TOAST),
-        PLAYER_KICKED(R.string.game_playerKickedIdle, Kind.TOAST),
-        SPECTATOR_TOAST(R.string.game_spectator, Kind.TOAST); // TODO: Test spectator mode
+        PLAYER_KICKED(R.string.game_playerKickedIdle, Kind.TOAST);
 
         private final int toast;
         private final int text;

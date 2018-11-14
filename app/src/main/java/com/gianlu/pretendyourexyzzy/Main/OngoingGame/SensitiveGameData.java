@@ -71,7 +71,10 @@ public class SensitiveGameData {
     void update(@NonNull Game game) {
         synchronized (spectators) {
             spectators.clear();
-            spectators.addAll(game.spectators);
+            for (String spectator : game.spectators) {
+                spectators.add(spectator);
+                if (spectator.equals(me)) listener.playerIsSpectator();
+            }
         }
 
         host = game.host;
@@ -162,6 +165,8 @@ public class SensitiveGameData {
         void anyPlayerChanged(@NonNull GameInfo.Player player, @Nullable GameInfo.PlayerStatus oldStatus);
 
         void notOutPlayerChanged(@NonNull GameInfo.Player player, @Nullable GameInfo.PlayerStatus oldStatus);
+
+        void playerIsSpectator();
     }
 
     @UiThread
