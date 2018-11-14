@@ -69,8 +69,11 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
 
         playersList = findViewById(R.id.gameLayout_players);
         playersList.setLayoutManager(new LinearLayoutManager(context, RecyclerView.VERTICAL, false));
-        //  Utils.removeAllDecorations(playersList);
         playersList.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
+
+        startGame.setOnClickListener(v -> {
+            if (listener != null) listener.startGame();
+        });
     }
 
     public void countFrom(int ms) {
@@ -158,7 +161,7 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
     @Override
     public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
         if (action == GameCardView.Action.SELECT)
-            listener.onCardSelected(card);
+            if (listener != null) listener.onCardSelected(card);
     }
 
     public void setInstructions(@StringRes int text, Object... args) {
@@ -177,6 +180,8 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
 
     public interface Listener {
         void onCardSelected(@NonNull BaseCard card);
+
+        void startGame();
     }
 
     private class CountdownTask extends TimerTask {

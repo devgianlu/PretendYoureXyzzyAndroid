@@ -24,6 +24,7 @@ import org.json.JSONException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -302,6 +303,42 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             } else {
                 listener.showDialog(Dialogs.confirmation(context, () -> playCardInternal(card, null)));
             }
+        }
+    }
+
+    @Override
+    public void startGame() {
+        pyx.request(PyxRequests.startGame(gid), new Pyx.OnSuccess() {
+            @Override
+            public void onDone() {
+                Toaster.with(context).message(R.string.gameStarted).show();
+            }
+
+            @Override
+            public void onException(@NonNull Exception ex) {
+                if (!(ex instanceof PyxException) || !handleStartGameException((PyxException) ex))
+                    Toaster.with(context).message(R.string.failedStartGame).ex(ex).show();
+            }
+        });
+    }
+
+    /**
+     * @return Whether the exception has been handled
+     */
+    public boolean handleStartGameException(@NonNull PyxException ex) {
+        if (Objects.equals(ex.errorCode, "nep")) {
+            Toaster.with(context).message(R.string.notEnoughPlayers).show();
+            return true;
+        } else if (Objects.equals(ex.errorCode, "nec")) {
+            try {
+                listener.showDialog(Dialogs.notEnoughCards(context, ex));
+                return true;
+            } catch (JSONException exx) {
+                Logging.log(exx);
+                return false;
+            }
+        } else {
+            return false;
         }
     }
 
