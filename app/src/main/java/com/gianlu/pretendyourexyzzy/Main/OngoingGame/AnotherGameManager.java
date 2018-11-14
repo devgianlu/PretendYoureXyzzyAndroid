@@ -378,7 +378,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                     gameLayout.setInstructions(ev.text, args);
                 break;
             case TOAST:
-                listener.showToast(Toaster.build().message(ev.toast, args).error(false));
+                listener.showToast(Toaster.build().message(ev.text, args).error(false));
                 break;
             case TEXT:
                 if (ev == UiEvent.SPECTATOR_TEXT || !gameData.amSpectator())
