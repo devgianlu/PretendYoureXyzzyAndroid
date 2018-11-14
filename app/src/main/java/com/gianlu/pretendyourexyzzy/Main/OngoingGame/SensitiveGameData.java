@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 
@@ -17,14 +18,14 @@ import androidx.recyclerview.widget.DiffUtil;
 public class SensitiveGameData {
     final List<GameInfo.Player> players = new ArrayList<>();
     final Set<String> spectators = new HashSet<>();
+    final String me;
     private final int gid;
-    private final String me;
     private final Listener listener;
-    AdapterInterface playersInterface;
-    String host;
-    Game.Status status;
-    Game.Options options;
-    private String judge;
+    volatile AdapterInterface playersInterface;
+    volatile String host;
+    volatile Game.Status status;
+    volatile Game.Options options;
+    private volatile String judge;
 
     SensitiveGameData(int gid, RegisteredPyx pyx, Listener listener) {
         this.gid = gid;
@@ -36,19 +37,30 @@ public class SensitiveGameData {
         return host.equals(me);
     }
 
-    void update(@NonNull GameInfo info, @Nullable GameLayout layout) {
+    void update(@NonNull GameInfo info) {
+        update(info, null, null);
+    }
+
+    void update(@NonNull GameInfo info, @Nullable GameCards cards, @Nullable GameLayout layout) {
+        update(info.game);
+
         List<GameInfo.Player> oldPlayers = new ArrayList<>(players);
         players.clear();
         players.addAll(info.players);
-        if (layout != null) layout.setup(this);
+        if (layout != null) {
+            layout.setup(this);
+            if (cards != null) {
+                layout.addHand(cards.hand);
+                layout.setBlackCard(cards.blackCard);
+                layout.setTable(cards.whiteCards);
+            }
+        }
 
         for (GameInfo.Player player : players)
             playerChange(player, oldPlayers);
 
         if (playersInterface != null)
             playersInterface.dispatchUpdate(DiffUtil.calculateDiff(new PlayersDiff(oldPlayers, players), false));
-
-        update(info.game);
     }
 
     void update(@NonNull Game game) {
@@ -103,24 +115,28 @@ public class SensitiveGameData {
     }
 
     private void playerChangeInternal(@NonNull GameInfo.Player player, @Nullable GameInfo.PlayerStatus oldStatus) {
-        if (player.name.equals(me))
-            listener.ourPlayerChanged(player);
-
         if (player.status == GameInfo.PlayerStatus.JUDGE || player.status == GameInfo.PlayerStatus.JUDGING)
             judge = player.name;
 
         if (player.status == GameInfo.PlayerStatus.HOST)
             host = player.name;
 
-        if (oldStatus == GameInfo.PlayerStatus.PLAYING && player.status == GameInfo.PlayerStatus.IDLE
-                && !player.name.equals(me) && status == Game.Status.PLAYING)
-            listener.anotherPlayerPlayed();
+        if (player.name.equals(me)) listener.ourPlayerChanged(player, oldStatus);
+        else listener.notOutPlayerChanged(player, oldStatus);
+
+        listener.anyPlayerChanged(player, oldStatus);
+    }
+
+    boolean amSpectator() {
+        return spectators.contains(me);
     }
 
     public interface Listener {
-        void ourPlayerChanged(@NonNull GameInfo.Player player);
+        void ourPlayerChanged(@NonNull GameInfo.Player player, @Nullable GameInfo.PlayerStatus oldStatus);
 
-        void anotherPlayerPlayed();
+        void anyPlayerChanged(@NonNull GameInfo.Player player, @Nullable GameInfo.PlayerStatus oldStatus);
+
+        void notOutPlayerChanged(@NonNull GameInfo.Player player, @Nullable GameInfo.PlayerStatus oldStatus);
     }
 
     @UiThread

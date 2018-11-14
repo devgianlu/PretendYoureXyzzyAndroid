@@ -1,6 +1,10 @@
 package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 
+import android.content.Context;
+
 import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.Toaster;
+import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
@@ -9,6 +13,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
@@ -20,7 +25,9 @@ import java.util.Collections;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.appcompat.app.AlertDialog;
 
 public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Listener, SensitiveGameData.Listener {
     private final RegisteredPyx pyx;
@@ -28,10 +35,12 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     private final SensitiveGameData gameData;
     private final Listener listener;
     private final int gid;
+    private final Context context;
 
     public AnotherGameManager(int gid, @NonNull RegisteredPyx pyx, @NonNull GameLayout layout, @NonNull Listener listener) {
         this.pyx = pyx;
         this.gid = gid;
+        this.context = layout.getContext();
         this.gameLayout = layout;
         this.gameLayout.attach(this);
         this.gameData = new SensitiveGameData(gid, pyx, this);
@@ -40,7 +49,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
 
     @Override
     public void onPollMessage(@NonNull PollMessage msg) throws JSONException {
-        Logging.log(msg.event + " -> " + msg.obj.toString(), false);
+        Logging.log("AnotherGameManager: " + msg.event + " -> " + msg.obj.toString(), false);
 
         switch (msg.event) {
             case GAME_JUDGE_LEFT:
@@ -54,14 +63,16 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 gameData.playerChange(new GameInfo.Player(msg.obj.getJSONObject("pi")));
                 break;
             case GAME_PLAYER_KICKED_IDLE:
+                event(UiEvent.PLAYER_KICKED, msg.obj.getString("n"));
                 break;
             case GAME_PLAYER_JOIN:
-                updateGameInfo();
+                if (!msg.obj.getString("n").equals(gameData.me)) updateGameInfo();
                 break;
             case GAME_PLAYER_LEAVE:
-                updateGameInfo();
+                if (!msg.obj.getString("n").equals(gameData.me)) updateGameInfo();
                 break;
             case GAME_PLAYER_SKIPPED:
+                event(UiEvent.PLAYER_SKIPPED, msg.obj.getString("n"));
                 break;
             case GAME_ROUND_COMPLETE:
                 roundComplete(msg.obj.getInt("WC"), msg.obj.getString("rw"));
@@ -75,6 +86,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             case KICKED_FROM_GAME_IDLE:
                 break;
             case HURRY_UP:
+                event(UiEvent.HURRY_UP);
                 break;
             case GAME_SPECTATOR_JOIN:
                 gameData.spectatorJoin(msg.obj.getString("n"));
@@ -99,6 +111,9 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
 
     private void roundComplete(int winnerCard, String roundWinner) {
         gameLayout.notifyWinnerCard(winnerCard);
+
+        if (roundWinner.equals(gameData.me)) event(UiEvent.YOU_ROUND_WINNER);
+        else event(UiEvent.ROUND_WINNER, roundWinner);
     }
 
     private void dealCards(List<Card> cards) {
@@ -130,23 +145,39 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     }
 
     @Override
-    public void ourPlayerChanged(@NonNull GameInfo.Player player) {
+    public void ourPlayerChanged(@NonNull GameInfo.Player player, @Nullable GameInfo.PlayerStatus oldStatus) {
         gameLayout.startGameVisible(player.status == GameInfo.PlayerStatus.HOST);
 
         switch (player.status) {
             case HOST:
+                event(UiEvent.YOU_GAME_HOST);
                 break;
             case IDLE:
+                if (oldStatus == GameInfo.PlayerStatus.PLAYING) {
+                    if (gameData.status != Game.Status.JUDGING)
+                        event(UiEvent.WAITING_FOR_OTHER_PLAYERS);
+                } else if (oldStatus == null) {
+                    if (gameData.status == Game.Status.LOBBY) event(UiEvent.WAITING_FOR_START);
+                    else event(UiEvent.WAITING_FOR_ROUND_TO_END);
+                }
+
                 gameLayout.showTable(false);
                 break;
             case JUDGE:
+                if (oldStatus != GameInfo.PlayerStatus.JUDGING) event(UiEvent.YOU_JUDGE);
+                gameLayout.showTable(true);
+                break;
             case JUDGING:
+                event(UiEvent.SELECT_WINNING_CARD);
                 gameLayout.showTable(true);
                 break;
             case PLAYING:
+                BaseCard bc = gameLayout.blackCard();
+                if (bc != null) event(UiEvent.PICK_CARDS, bc.numPick());
                 gameLayout.showHand(true);
                 break;
             case WINNER:
+                event(UiEvent.YOU_GAME_WINNER);
                 break;
             case SPECTATOR:
                 break;
@@ -154,8 +185,19 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     }
 
     @Override
-    public void anotherPlayerPlayed() {
-        gameLayout.addBlankCardTable();
+    public void anyPlayerChanged(@NonNull GameInfo.Player player, @Nullable GameInfo.PlayerStatus oldStatus) {
+    }
+
+    @Override
+    public void notOutPlayerChanged(@NonNull GameInfo.Player player, @Nullable GameInfo.PlayerStatus oldStatus) {
+        if (player.status == GameInfo.PlayerStatus.WINNER)
+            event(UiEvent.GAME_WINNER, player.name);
+
+        if (player.status == GameInfo.PlayerStatus.JUDGING && gameData.status == Game.Status.JUDGING)
+            event(UiEvent.IS_JUDGING, player.name);
+
+        if (oldStatus == GameInfo.PlayerStatus.PLAYING && player.status == GameInfo.PlayerStatus.IDLE && gameData.status == Game.Status.PLAYING)
+            gameLayout.addBlankCardTable();
     }
 
     @Override
@@ -181,12 +223,12 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         pyx.request(PyxRequests.getGameInfo(gid), new Pyx.OnResult<GameInfo>() {
             @Override
             public void onDone(@NonNull GameInfo result) {
-                gameData.update(result, null);
+                gameData.update(result);
             }
 
             @Override
             public void onException(@NonNull Exception ex) {
-                ex.printStackTrace(); // TODO
+                listener.showToast(Toaster.build().message(R.string.failedLoading).ex(ex));
             }
         });
     }
@@ -197,13 +239,8 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         pyx.getGameInfoAndCards(gid, new Pyx.OnResult<GameInfoAndCards>() {
             @Override
             public void onDone(@NonNull GameInfoAndCards result) {
+                gameData.update(result.info, result.cards, gameLayout);
                 listener.onGameLoaded();
-
-                gameData.update(result.info, gameLayout);
-
-                gameLayout.addHand(result.cards.hand);
-                gameLayout.setBlackCard(result.cards.blackCard);
-                gameLayout.setTable(result.cards.whiteCards);
             }
 
             @Override
@@ -223,23 +260,55 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
 
                 @Override
                 public void onException(@NonNull Exception ex) {
-                    ex.printStackTrace(); // TODO
+                    if (ex instanceof PyxException) {
+                        if (((PyxException) ex).errorCode.equals("nj")) {
+                            event(UiEvent.NOT_YOUR_TURN);
+                            return;
+                        }
+                    }
+
+                    listener.showToast(Toaster.build().message(R.string.failedJudging).ex(ex));
                 }
             });
         } else {
-            pyx.request(PyxRequests.playCard(gid, card.id(), null /* FIXME */), new Pyx.OnSuccess() {
-                @Override
-                public void onDone() {
-                    gameLayout.removeHand(card);
-                    gameLayout.addTable(card);
+            if (card.writeIn()) {
+                listener.showDialog(Dialogs.askText(context, new Dialogs.OnText() {
+                    @Override
+                    public void onText(@NonNull String text) {
+                        playCardInternal(card, text);
+                    }
+                }));
+            } else {
+                listener.showDialog(Dialogs.confirmation(context, new Dialogs.OnConfirmed() {
+                    @Override
+                    public void onConfirmed() {
+                        playCardInternal(card, null);
+                    }
+                }));
+            }
+        }
+    }
+
+    private void playCardInternal(@NonNull final BaseCard card, @Nullable String text) {
+        pyx.request(PyxRequests.playCard(gid, card.id(), text), new Pyx.OnSuccess() {
+            @Override
+            public void onDone() {
+                gameLayout.removeHand(card);
+                gameLayout.addTable(card); // FIXME: Doesn't work if pick >= 2
+            }
+
+            @Override
+            public void onException(@NonNull Exception ex) {
+                if (ex instanceof PyxException) {
+                    if (((PyxException) ex).errorCode.equals("nyt")) {
+                        event(UiEvent.NOT_YOUR_TURN);
+                        return;
+                    }
                 }
 
-                @Override
-                public void onException(@NonNull Exception ex) {
-                    ex.printStackTrace(); // TODO
-                }
-            });
-        }
+                listener.showToast(Toaster.build().message(R.string.failedPlayingCard).ex(ex));
+            }
+        });
     }
 
     public boolean isStatus(@NonNull Game.Status status) {
@@ -264,6 +333,23 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     @NonNull
     public String host() {
         return gameData.host;
+    }
+
+    public void event(@NonNull UiEvent ev, Object... args) {
+        switch (ev.kind) {
+            case BOTH:
+                listener.showToast(Toaster.build().message(ev.toast, args).error(false));
+                if (ev == UiEvent.SPECTATOR_TEXT || !gameData.amSpectator())
+                    gameLayout.setInstructions(ev.text, args);
+                break;
+            case TOAST:
+                listener.showToast(Toaster.build().message(ev.toast, args).error(false));
+                break;
+            case TEXT:
+                if (ev == UiEvent.SPECTATOR_TEXT || !gameData.amSpectator())
+                    gameLayout.setInstructions(ev.text, args);
+                break;
+        }
     }
 
     private enum UiEvent {
@@ -317,5 +403,9 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         void onFailedLoadingGame(@NonNull Exception ex);
 
         void updateActivityTitle();
+
+        void showToast(@NonNull Toaster toaster);
+
+        void showDialog(@NonNull AlertDialog.Builder dialog);
     }
 }

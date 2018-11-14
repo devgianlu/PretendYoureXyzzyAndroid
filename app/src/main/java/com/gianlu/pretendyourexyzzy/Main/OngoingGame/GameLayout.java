@@ -20,6 +20,7 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.annotation.UiThread;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -33,7 +34,6 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
     private final RecyclerView whiteCardsList;
     private final RecyclerView playersList;
     private final TextView time;
-    private PlayersAdapter playersAdapter;
     private PlayersAdapter.Listener playersListener;
     private CardsAdapter tableAdapter;
     private CardsAdapter handAdapter;
@@ -75,12 +75,11 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
     }
 
     public void setup(@NonNull SensitiveGameData gameData) {
-        playersAdapter = new PlayersAdapter(getContext(), gameData.players, playersListener);
+        PlayersAdapter playersAdapter = new PlayersAdapter(getContext(), gameData.players, playersListener);
         gameData.playersInterface = playersAdapter;
         playersList.setAdapter(playersAdapter);
 
         tableAdapter = new CardsAdapter(getContext(), GameCardView.Action.SELECT, GameCardView.Action.TOGGLE_STAR, this);
-
         handAdapter = new CardsAdapter(getContext(), GameCardView.Action.SELECT, GameCardView.Action.TOGGLE_STAR, this);
     }
 
@@ -147,6 +146,15 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
     public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
         if (action == GameCardView.Action.SELECT)
             listener.onCardSelected(card);
+    }
+
+    public void setInstructions(@StringRes int text, Object... args) {
+        instructions.setText(getContext().getString(text, args));
+    }
+
+    @Nullable
+    public BaseCard blackCard() {
+        return blackCard.getCard();
     }
 
     public interface Listener {
