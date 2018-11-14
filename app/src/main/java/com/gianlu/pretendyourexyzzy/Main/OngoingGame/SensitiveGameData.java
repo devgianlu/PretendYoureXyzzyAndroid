@@ -45,8 +45,11 @@ public class SensitiveGameData {
         update(info.game);
 
         List<GameInfo.Player> oldPlayers = new ArrayList<>(players);
-        players.clear();
-        players.addAll(info.players);
+        synchronized (players) {
+            players.clear();
+            players.addAll(info.players);
+        }
+
         if (layout != null) {
             layout.setup(this);
             if (cards != null) {
@@ -56,8 +59,10 @@ public class SensitiveGameData {
             }
         }
 
-        for (GameInfo.Player player : players)
-            playerChange(player, oldPlayers);
+        synchronized (players) {
+            for (GameInfo.Player player : players)
+                playerChange(player, oldPlayers);
+        }
 
         if (playersInterface != null)
             playersInterface.dispatchUpdate(DiffUtil.calculateDiff(new PlayersDiff(oldPlayers, players), false));
@@ -99,8 +104,12 @@ public class SensitiveGameData {
         playerChange(player, players);
         for (int i = 0; i < players.size(); i++) {
             if (players.get(i).name.equals(player.name)) {
-                players.set(i, player);
+                synchronized (players) {
+                    players.set(i, player);
+                }
+
                 if (playersInterface != null) playersInterface.notifyItemChanged(i);
+                return;
             }
         }
     }
@@ -137,9 +146,11 @@ public class SensitiveGameData {
     }
 
     void resetToIdleAndHost() {
-        for (GameInfo.Player player : players) {
-            if (player.name.equals(host)) player.status = GameInfo.PlayerStatus.HOST;
-            else player.status = GameInfo.PlayerStatus.IDLE;
+        synchronized (players) {
+            for (GameInfo.Player player : players) {
+                if (player.name.equals(host)) player.status = GameInfo.PlayerStatus.HOST;
+                else player.status = GameInfo.PlayerStatus.IDLE;
+            }
         }
 
         playersInterface.notifyDataSetChanged();
