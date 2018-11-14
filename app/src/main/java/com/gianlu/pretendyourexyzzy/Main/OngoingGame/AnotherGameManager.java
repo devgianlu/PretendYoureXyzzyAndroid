@@ -86,7 +86,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 dealCards(Card.list(msg.obj.getJSONArray("h")));
                 break;
             case KICKED_FROM_GAME_IDLE:
-                // TODO: Leave game
+                destroy();
                 break;
             case HURRY_UP:
                 event(UiEvent.HURRY_UP);
@@ -224,12 +224,12 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     @Override
     public void onStoppedPolling() {
         destroy();
-        // TODO: Leave application
+        listener.justLeaveGame();
     }
 
     public void destroy() {
         pyx.polling().removeListener(this);
-        // TODO
+        listener.justLeaveGame();
     }
 
     public boolean amHost() {
@@ -237,7 +237,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     }
 
     public void refresh() {
-        // TODO
+        // TODO: Refresh
     }
 
     private void updateGameInfo() {
@@ -428,5 +428,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         void showToast(@NonNull Toaster toaster);
 
         void showDialog(@NonNull AlertDialog.Builder dialog);
+
+        void justLeaveGame();
     }
 }

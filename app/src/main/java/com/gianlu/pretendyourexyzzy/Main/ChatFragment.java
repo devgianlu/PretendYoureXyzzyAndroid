@@ -147,7 +147,7 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     public void onPollMessage(@NonNull PollMessage message) {
         if (!isAdded()) return;
         adapter.newMessage(message, gid);
-        recyclerViewLayout.getList().scrollToPosition(adapter.getItemCount() - 1); // FIXME
+        recyclerViewLayout.getList().scrollToPosition(adapter.getItemCount() - 1);
     }
 
     @Override

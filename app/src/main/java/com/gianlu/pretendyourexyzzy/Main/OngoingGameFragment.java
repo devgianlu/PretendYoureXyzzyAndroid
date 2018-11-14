@@ -113,6 +113,11 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     }
 
     @Override
+    public void justLeaveGame() {
+        if (onLeftGame != null) onLeftGame.onLeftGame();
+    }
+
+    @Override
     public void onPrepareOptionsMenu(Menu menu) {
         // TODO: Last round metrics
 

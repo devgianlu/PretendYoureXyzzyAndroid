@@ -261,7 +261,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
             handler.post(new NotifyMessage(messages));
         }
 
-        private void dispatchEx(@NonNull Exception ex) { // TODO: Is this really necessary?
+        private void dispatchEx(@NonNull Exception ex) {
             exCount.getAndIncrement();
             if (exCount.get() > 5) {
                 safeStop();
