@@ -84,55 +84,29 @@ public class PyxDiscoveryApi {
             }
         }
 
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    JSONObject obj = new JSONObject(requestSync(WELCOME_MSG_URL));
-                    final String msg = obj.getString("msg");
-                    Prefs.putString(PK.WELCOME_MSG_CACHE, msg);
-                    Prefs.putLong(PK.WELCOME_MSG_CACHE_AGE, System.currentTimeMillis());
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onDone(msg);
-                        }
-                    });
-                } catch (JSONException | IOException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
+        executor.execute(() -> {
+            try {
+                JSONObject obj = new JSONObject(requestSync(WELCOME_MSG_URL));
+                final String msg = obj.getString("msg");
+                Prefs.putString(PK.WELCOME_MSG_CACHE, msg);
+                Prefs.putLong(PK.WELCOME_MSG_CACHE_AGE, System.currentTimeMillis());
+                handler.post(() -> listener.onDone(msg));
+            } catch (JSONException | IOException ex) {
+                handler.post(() -> listener.onException(ex));
             }
         });
     }
 
     public void firstLoad(@NonNull final Context context, @NonNull final Pyx.OnResult<FirstLoadedPyx> listener) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    loadDiscoveryApiServersSync();
-                    Pyx.getStandard().firstLoad(listener);
-                } catch (IOException | JSONException ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                } catch (final Pyx.NoServersException ex) {
-                    ex.solve(context);
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
+        executor.execute(() -> {
+            try {
+                loadDiscoveryApiServersSync();
+                Pyx.getStandard().firstLoad(listener);
+            } catch (IOException | JSONException ex) {
+                handler.post(() -> listener.onException(ex));
+            } catch (final Pyx.NoServersException ex) {
+                ex.solve(context);
+                handler.post(() -> listener.onException(ex));
             }
         });
     }

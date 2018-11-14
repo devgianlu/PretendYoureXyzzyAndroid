@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.Main;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -13,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
@@ -32,8 +30,9 @@ import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.Dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.Dialogs.GameRoundDialog;
 import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
-import com.gianlu.pretendyourexyzzy.Main.OngoingGame.BestGameManager;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGame.AnotherGameManager;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.CardcastSheet;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGame.GameLayout;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGame.UrbanDictSheet;
 import com.gianlu.pretendyourexyzzy.Metrics.MetricsActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
@@ -41,7 +40,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfoAndCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
@@ -54,8 +52,8 @@ import com.gianlu.pretendyourexyzzy.Tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -67,11 +65,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import okhttp3.HttpUrl;
 
-public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnResult<GameInfoAndCards>, BestGameManager.Listener, OngoingGameHelper.Listener, PlayersAdapter.Listener, TutorialManager.Listener {
+public class OngoingGameFragment extends FragmentWithDialog implements OngoingGameHelper.Listener, PlayersAdapter.Listener, TutorialManager.Listener, AnotherGameManager.Listener {
     private OnLeftGame onLeftGame;
     private ProgressBar loading;
-    private LinearLayout container;
-    private BestGameManager manager;
+    private GameLayout gameLayout;
     private GamePermalink perm;
     private RegisteredPyx pyx;
     private Cardcast cardcast;
@@ -79,6 +76,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     private MessageView message;
     private TutorialManager tutorialManager;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private AnotherGameManager manager;
 
     @NonNull
     public static OngoingGameFragment getInstance(@NonNull GamePermalink game, @Nullable SavedState savedState) {
@@ -114,7 +112,12 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     public void updateActivityTitle() {
         Activity activity = getActivity();
         if (manager != null && activity != null && isVisible())
-            activity.setTitle(manager.gameInfo().game.getHost() + " - " + getString(R.string.app_name));
+            activity.setTitle(manager.host() + " - " + getString(R.string.app_name));
+    }
+
+    @Override
+    public void justLeaveGame() {
+        if (onLeftGame != null) onLeftGame.onLeftGame();
     }
 
     @Override
@@ -150,37 +153,10 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         });
     }
 
-    private boolean amHost() {
-        return pyx != null && getGame() != null && Objects.equals(getGame().getHost(), pyx.user().nickname);
-    }
-
     @Override
     public void onDestroy() {
-        if (manager != null) manager.onDestroy();
+        if (manager != null) manager.destroy();
         super.onDestroy();
-    }
-
-    @Override
-    public void onDone(@NonNull GameInfoAndCards result) {
-        if (manager == null && isAdded())
-            manager = new BestGameManager(getActivity(), this, container, pyx, result, perm, this, this);
-
-        updateActivityTitle();
-
-        loading.setVisibility(View.GONE);
-        container.setVisibility(View.VISIBLE);
-        message.hide();
-        swipeRefreshLayout.setRefreshing(false);
-
-        tutorialManager.tryShowingTutorials(getActivity());
-    }
-
-    @Override
-    public void onException(@NonNull Exception ex) {
-        Logging.log(ex);
-        loading.setVisibility(View.GONE);
-        container.setVisibility(View.GONE);
-        message.setError(R.string.failedLoading_reason, ex.getMessage());
     }
 
     @Nullable
@@ -188,7 +164,8 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
         FrameLayout layout = (FrameLayout) inflater.inflate(R.layout.fragment_ongoing_game, parent, false);
         loading = layout.findViewById(R.id.ongoingGame_loading);
-        container = layout.findViewById(R.id.ongoingGame_container);
+        gameLayout = layout.findViewById(R.id.ongoingGame_gameLayout);
+        gameLayout.attach(this);
         message = layout.findViewById(R.id.ongoingGame_message);
         swipeRefreshLayout = layout.findViewById(R.id.ongoingGame_swipeRefresh);
         swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
@@ -196,7 +173,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         Bundle args = getArguments();
         if (args == null || (perm = (GamePermalink) args.getSerializable("game")) == null) {
             loading.setVisibility(View.GONE);
-            container.setVisibility(View.GONE);
+            gameLayout.setVisibility(View.GONE);
             message.setError(R.string.failedLoading);
             return layout;
         }
@@ -206,23 +183,18 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         try {
             pyx = RegisteredPyx.get();
             cardcast = Cardcast.get();
+            manager = new AnotherGameManager(perm, pyx, gameLayout, this);
         } catch (LevelMismatchException ex) {
             Logging.log(ex);
             loading.setVisibility(View.GONE);
-            container.setVisibility(View.GONE);
+            gameLayout.setVisibility(View.GONE);
             message.setError(R.string.failedLoading);
             return layout;
         }
 
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                manager = null;
-                pyx.getGameInfoAndCards(perm.gid, OngoingGameFragment.this);
-            }
-        });
+        swipeRefreshLayout.setOnRefreshListener(() -> manager.refresh());
 
-        pyx.getGameInfoAndCards(perm.gid, this);
+        manager.begin();
 
         return layout;
     }
@@ -236,10 +208,8 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
                 leaveGame();
                 return true;
             case R.id.ongoingGame_options:
-                if (amHost() && manager.gameInfo().game.isStatus(Game.Status.LOBBY))
-                    editGameOptions();
-                else
-                    showGameOptions();
+                if (manager.amHost() && manager.isStatus(Game.Status.LOBBY)) editGameOptions();
+                else showGameOptions();
                 return true;
             case R.id.ongoingGame_spectators:
                 showSpectators();
@@ -263,12 +233,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
                 cardcastSheet.show(getActivity(), perm.gid);
                 return true;
             case R.id.ongoingGame_definition:
-                showDialog(Dialogs.askDefinitionWord(getContext(), new Dialogs.OnText() {
-                    @Override
-                    public void onText(@NonNull String text) {
-                        UrbanDictSheet.get().show(getActivity(), text);
-                    }
-                }));
+                showDialog(Dialogs.askDefinitionWord(getContext(), text -> UrbanDictSheet.get().show(getActivity(), text)));
                 return true;
         }
 
@@ -277,10 +242,11 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
 
     private void showPlayers() {
         if (manager == null || getContext() == null) return;
+
         RecyclerView recyclerView = new RecyclerView(getContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
-        recyclerView.setAdapter(new PlayersAdapter(getContext(), manager.gameInfo().players, this));
+        recyclerView.setAdapter(new PlayersAdapter(getContext(), manager.players(), this));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.playersLabel)
@@ -291,14 +257,15 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     }
 
     private void shareGame() {
-        if (getGame() == null) return;
+        if (manager == null) return;
+
         HttpUrl.Builder builder = pyx.server.url.newBuilder();
         builder.addPathSegment("game.jsp");
 
         List<NameValuePair> params = new ArrayList<>();
         params.add(new NameValuePair("game", String.valueOf(perm.gid)));
-        if (getGame().hasPassword(true))
-            params.add(new NameValuePair("password", getGame().getOptions().password));
+        if (manager.hasPassword(true))
+            params.add(new NameValuePair("password", manager.gameOptions().password));
 
         builder.fragment(CommonUtils.formQuery(params));
 
@@ -309,33 +276,31 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
     }
 
     private void showSpectators() {
-        if (getGame() == null || getContext() == null) return;
-        SuperTextView spectators = new SuperTextView(getContext(), R.string.spectatorsList, getGame().spectatorsSize() == 0 ? "none" : getGame().getSpectatorsStringList());
+        if (manager == null || getContext() == null) return;
+
+        Collection<String> spectators = manager.spectators();
+        SuperTextView text = new SuperTextView(getContext(), R.string.spectatorsList, spectators.isEmpty() ? "none" : CommonUtils.join(spectators, ", "));
         int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
-        spectators.setPadding(padding, padding, padding, padding);
+        text.setPadding(padding, padding, padding, padding);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.spectatorsLabel)
-                .setView(spectators)
+                .setView(text)
                 .setPositiveButton(android.R.string.ok, null);
 
         DialogUtils.showDialog(getActivity(), builder);
     }
 
     private void editGameOptions() {
-        Game game = getGame();
-        if (game != null)
-            DialogUtils.showDialog(getActivity(), EditGameOptionsDialog.get(perm.gid, game.getOptions()));
+        if (manager == null || getContext() == null) return;
+
+        DialogUtils.showDialog(getActivity(), EditGameOptionsDialog.get(perm.gid, manager.gameOptions()));
     }
 
     private void showGameOptions() {
-        if (getContext() != null && getGame() != null)
-            DialogUtils.showDialog(getActivity(), Dialogs.gameOptions(getContext(), getGame().getOptions(), pyx.firstLoad()));
-    }
+        if (manager == null || getContext() == null) return;
 
-    @Nullable
-    private Game getGame() {
-        return manager == null ? null : manager.gameInfo().game;
+        DialogUtils.showDialog(getActivity(), Dialogs.gameOptions(getContext(), manager.gameOptions(), pyx.firstLoad()));
     }
 
     @Override
@@ -372,25 +337,15 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.leaveGame)
                 .setMessage(R.string.leaveGame_confirm)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        leaveGame();
-                    }
-                })
+                .setPositiveButton(android.R.string.yes, (dialog, which) -> leaveGame())
                 .setNegativeButton(android.R.string.no, null);
 
         DialogUtils.showDialog(getActivity(), builder);
     }
 
     @Override
-    public void shouldLeaveGame() {
-        if (onLeftGame != null) onLeftGame.onLeftGame();
-    }
-
-    @Override
     public boolean canModifyCardcastDecks() {
-        return amHost() && getGame() != null && getGame().isStatus(Game.Status.LOBBY);
+        return manager != null && manager.amHost() && manager.isStatus(Game.Status.LOBBY);
     }
 
     @Override
@@ -441,6 +396,26 @@ public class OngoingGameFragment extends FragmentWithDialog implements Pyx.OnRes
 
     @Override
     public boolean buildSequence(@NonNull BaseTutorial tutorial) {
-        return tutorial instanceof CreateGameTutorial && ((CreateGameTutorial) tutorial).buildSequence(requireActivity(), manager);
+        return tutorial instanceof CreateGameTutorial && ((CreateGameTutorial) tutorial).buildSequence(requireActivity(), gameLayout);
+    }
+
+    @Override
+    public void onGameLoaded() {
+        updateActivityTitle();
+
+        loading.setVisibility(View.GONE);
+        gameLayout.setVisibility(View.VISIBLE);
+        message.hide();
+        swipeRefreshLayout.setRefreshing(false);
+
+        tutorialManager.tryShowingTutorials(getActivity());
+    }
+
+    @Override
+    public void onFailedLoadingGame(@NonNull Exception ex) {
+        Logging.log(ex);
+        loading.setVisibility(View.GONE);
+        gameLayout.setVisibility(View.GONE);
+        message.setError(R.string.failedLoading_reason, ex.getMessage());
     }
 }

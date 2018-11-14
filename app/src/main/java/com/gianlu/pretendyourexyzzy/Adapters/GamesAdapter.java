@@ -57,7 +57,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
 
     @Override
     protected boolean matchQuery(@NonNull Game item, @Nullable String query) {
-        return query == null || item.getHost().toLowerCase().contains(query.toLowerCase());
+        return query == null || item.host.toLowerCase().contains(query.toLowerCase());
     }
 
     @Override
@@ -87,15 +87,15 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
 
     @Override
     public void onSetupViewHolder(@NonNull final ViewHolder holder, int position, @NonNull final Game game) {
-        holder.name.setText(game.getHost());
-        holder.players.setHtml(R.string.players, game.playersSize(), game.getOptions().playersLimit);
-        holder.spectators.setHtml(R.string.spectators, game.spectatorsSize(), game.getOptions().spectatorsLimit);
-        holder.goal.setHtml(R.string.goal, game.getOptions().scoreLimit);
+        holder.name.setText(game.host);
+        holder.players.setHtml(R.string.players, game.players.size(), game.options.playersLimit);
+        holder.spectators.setHtml(R.string.spectators, game.spectators.size(), game.options.spectatorsLimit);
+        holder.goal.setHtml(R.string.goal, game.options.scoreLimit);
         holder.locked.setImageResource(game.hasPassword(false) ? R.drawable.outline_lock_24 : R.drawable.baseline_lock_open_24);
-        holder.status.setImageResource(game.isStatus(Game.Status.LOBBY) ? R.drawable.baseline_hourglass_empty_24 : R.drawable.baseline_casino_24);
-        holder.timerMultiplier.setHtml(R.string.timerMultiplier, game.getOptions().timerMultiplier);
-        holder.blankCards.setHtml(R.string.blankCards, game.getOptions().blanksLimit);
-        holder.cardsets.setHtml(R.string.cardSets, game.getOptions().cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(pyx.firstLoad().createCardSetNamesList(game.getOptions().cardSets), ", "));
+        holder.status.setImageResource(game.status == Game.Status.LOBBY ? R.drawable.baseline_hourglass_empty_24 : R.drawable.baseline_casino_24);
+        holder.timerMultiplier.setHtml(R.string.timerMultiplier, game.options.timerMultiplier);
+        holder.blankCards.setHtml(R.string.blankCards, game.options.blanksLimit);
+        holder.cardsets.setHtml(R.string.cardSets, game.options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(pyx.firstLoad().createCardSetNamesList(game.options.cardSets), ", "));
 
         holder.spectate.setOnClickListener(new View.OnClickListener() {
             @Override

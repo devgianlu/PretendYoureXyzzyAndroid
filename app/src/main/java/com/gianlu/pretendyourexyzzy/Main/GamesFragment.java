@@ -53,7 +53,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<GamesList>, GamesAdapter.Listener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, Pyx.OnEventListener, TutorialManager.Listener {
-    private static final String POLLING = GamesFragment.class.getName();
     private GamesList lastResult;
     private RecyclerViewLayout recyclerViewLayout;
     private OnParticipateGame handler;
@@ -180,7 +179,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
         pyx.request(PyxRequests.getGamesList(), this);
 
-        pyx.polling().addListener(POLLING, this);
+        pyx.polling().addListener(this);
 
         return layout;
     }
@@ -206,7 +205,8 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
         adapter = new GamesAdapter(getContext(), result, pyx, Prefs.getBoolean(PK.FILTER_LOCKED_LOBBIES), this);
         recyclerViewLayout.loadListData(adapter, false);
-        recyclerViewLayout.getList().getLayoutManager().onRestoreInstanceState(recyclerViewSavedInstance);
+        RecyclerView.LayoutManager lm = recyclerViewLayout.getList().getLayoutManager();
+        if (lm != null) lm.onRestoreInstanceState(recyclerViewSavedInstance);
 
         lastResult = result;
         updateActivityTitle();
@@ -416,7 +416,8 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     @Override
     public void onPollMessage(@NonNull PollMessage message) {
         if (message.event == PollMessage.Event.GAME_LIST_REFRESH) {
-            recyclerViewSavedInstance = recyclerViewLayout.getList().getLayoutManager().onSaveInstanceState();
+            RecyclerView.LayoutManager lm = recyclerViewLayout.getList().getLayoutManager();
+            if (lm != null) recyclerViewSavedInstance = lm.onSaveInstanceState();
             pyx.request(PyxRequests.getGamesList(), GamesFragment.this);
         }
     }

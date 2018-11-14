@@ -37,29 +37,16 @@ public class FirstLoadedPyx extends Pyx {
 
     public final void register(@NonNull final String nickname, @Nullable final String idCode, final OnResult<RegisteredPyx> listener) {
         try {
-            listener.onDone((RegisteredPyx) InstanceHolder.holder().get(InstanceHolder.Level.REGISTERED));
+            listener.onDone(InstanceHolder.holder().get(InstanceHolder.Level.REGISTERED));
         } catch (LevelMismatchException exx) {
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        User user = requestSync(PyxRequests.register(nickname, idCode, Prefs.getString(PK.LAST_PERSISTENT_ID, null)));
-                        Prefs.putString(PK.LAST_PERSISTENT_ID, user.persistentId);
-                        final RegisteredPyx pyx = upgrade(user);
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.onDone(pyx);
-                            }
-                        });
-                    } catch (JSONException | PyxException | IOException ex) {
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.onException(ex);
-                            }
-                        });
-                    }
+            executor.execute(() -> {
+                try {
+                    User user = requestSync(PyxRequests.register(nickname, idCode, Prefs.getString(PK.LAST_PERSISTENT_ID, null)));
+                    Prefs.putString(PK.LAST_PERSISTENT_ID, user.persistentId);
+                    final RegisteredPyx pyx = upgrade(user);
+                    handler.post(() -> listener.onDone(pyx));
+                } catch (JSONException | PyxException | IOException ex) {
+                    handler.post(() -> listener.onException(ex));
                 }
             });
         }

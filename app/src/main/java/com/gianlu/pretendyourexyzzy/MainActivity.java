@@ -40,12 +40,9 @@ import org.json.JSONException;
 
 import java.util.Objects;
 
-import androidx.annotation.IdRes;
-import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
-import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -80,47 +77,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         if (drawerManager != null) drawerManager.syncTogglerState();
     }
 
-    private void safeInflateNavigationMenu(@MenuRes int res) {
-        safeInflateNavigationMenu(res, false);
-    }
-
-    private void safeInflateNavigationMenu(@MenuRes final int res, boolean retried) {
-        try {
-            navigation.getMenu().clear();
-            navigation.inflateMenu(res);
-        } catch (IllegalStateException ex) {
-            Logging.log(ex);
-            if (!retried) {
-                navigation.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        safeInflateNavigationMenu(res, true);
-                    }
-                });
-            }
-        }
-    }
-
-    private void safeRemoveMenuItem(@IdRes final int id, boolean retried) {
-        try {
-            navigation.getMenu().removeItem(id);
-        } catch (IllegalStateException ex) {
-            Logging.log(ex);
-            if (!retried) {
-                navigation.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        safeRemoveMenuItem(id, true);
-                    }
-                });
-            }
-        }
-    }
-
-    private void safeRemoveMenuItem(@IdRes int id) {
-        safeRemoveMenuItem(id, false);
-    }
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -147,7 +103,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             ongoingGameFragment = OngoingGameFragment.getInstance(currentGame, state);
             transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
 
-            safeInflateNavigationMenu(R.menu.navigation_ongoing_game);
+            navigation.getMenu().clear();
+            navigation.inflateMenu(R.menu.navigation_ongoing_game);
 
             transaction.commitNowAllowingStateLoss();
             navigation.setSelectedItemId(R.id.main_ongoingGame);
@@ -188,7 +145,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
 
         drawerManager = drawerConfig
-                .build(this, (DrawerLayout) findViewById(R.id.main_drawer), toolbar);
+                .build(this, findViewById(R.id.main_drawer), toolbar);
 
         drawerManager.setActiveItem(DrawerConst.HOME);
 
@@ -208,57 +165,52 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         transaction.commitNow();
 
         navigation = findViewById(R.id.main_navigation);
-        if (!pyx.config().globalChatEnabled()) safeRemoveMenuItem(R.id.main_globalChat);
-        navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.main_players:
-                        setTitle(getString(R.string.playersLabel) + " - " + getString(R.string.app_name));
-                        switchTo(TAG_PLAYERS);
-                        break;
-                    case R.id.main_games:
-                        setTitle(getString(R.string.games) + " - " + getString(R.string.app_name));
-                        switchTo(TAG_GAMES);
-                        break;
-                    case R.id.main_cardcast:
-                        setTitle(getString(R.string.cardcast) + " - " + getString(R.string.app_name));
-                        switchTo(TAG_CARDCAST);
-                        break;
-                    case R.id.main_ongoingGame:
-                        setTitle(getString(R.string.gameLabel) + " - " + getString(R.string.app_name));
-                        switchTo(TAG_ONGOING_GAME);
-                        break;
-                    case R.id.main_gameChat:
-                        setTitle(getString(R.string.gameChat) + " - " + getString(R.string.app_name));
-                        switchTo(TAG_GAME_CHAT);
-                        break;
-                    case R.id.main_globalChat:
-                        setTitle(getString(R.string.globalChat) + " - " + getString(R.string.app_name));
-                        switchTo(TAG_GLOBAL_CHAT);
-                        break;
-                }
-
-                return true;
+        if (!pyx.config().globalChatEnabled())
+            navigation.getMenu().removeItem(R.id.main_globalChat);
+        navigation.setOnNavigationItemSelectedListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.main_players:
+                    setTitle(getString(R.string.playersLabel) + " - " + getString(R.string.app_name));
+                    switchTo(TAG_PLAYERS);
+                    break;
+                case R.id.main_games:
+                    setTitle(getString(R.string.games) + " - " + getString(R.string.app_name));
+                    switchTo(TAG_GAMES);
+                    break;
+                case R.id.main_cardcast:
+                    setTitle(getString(R.string.cardcast) + " - " + getString(R.string.app_name));
+                    switchTo(TAG_CARDCAST);
+                    break;
+                case R.id.main_ongoingGame:
+                    setTitle(getString(R.string.gameLabel) + " - " + getString(R.string.app_name));
+                    switchTo(TAG_ONGOING_GAME);
+                    break;
+                case R.id.main_gameChat:
+                    setTitle(getString(R.string.gameChat) + " - " + getString(R.string.app_name));
+                    switchTo(TAG_GAME_CHAT);
+                    break;
+                case R.id.main_globalChat:
+                    setTitle(getString(R.string.globalChat) + " - " + getString(R.string.app_name));
+                    switchTo(TAG_GLOBAL_CHAT);
+                    break;
             }
+
+            return true;
         });
-        navigation.setOnNavigationItemReselectedListener(new BottomNavigationView.OnNavigationItemReselectedListener() {
-            @Override
-            public void onNavigationItemReselected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.main_players:
-                        if (namesFragment != null) namesFragment.scrollToTop();
-                        break;
-                    case R.id.main_games:
-                        if (gamesFragment != null) gamesFragment.scrollToTop();
-                        break;
-                    case R.id.main_gameChat:
-                        if (gameChatFragment != null) gameChatFragment.scrollToTop();
-                        break;
-                    case R.id.main_globalChat:
-                        if (globalChatFragment != null) globalChatFragment.scrollToTop();
-                        break;
-                }
+        navigation.setOnNavigationItemReselectedListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.main_players:
+                    if (namesFragment != null) namesFragment.scrollToTop();
+                    break;
+                case R.id.main_games:
+                    if (gamesFragment != null) gamesFragment.scrollToTop();
+                    break;
+                case R.id.main_gameChat:
+                    if (gameChatFragment != null) gameChatFragment.scrollToTop();
+                    break;
+                case R.id.main_globalChat:
+                    if (globalChatFragment != null) globalChatFragment.scrollToTop();
+                    break;
             }
         });
 
@@ -385,9 +337,12 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         transaction.commitNowAllowingStateLoss();
 
-        safeInflateNavigationMenu(R.menu.navigation_ongoing_game);
-        if (!pyx.config().globalChatEnabled()) safeRemoveMenuItem(R.id.main_globalChat);
-        if (!pyx.config().gameChatEnabled()) safeRemoveMenuItem(R.id.main_gameChat);
+        navigation.getMenu().clear();
+        navigation.inflateMenu(R.menu.navigation_ongoing_game);
+
+        if (!pyx.config().globalChatEnabled())
+            navigation.getMenu().removeItem(R.id.main_globalChat);
+        if (!pyx.config().gameChatEnabled()) navigation.getMenu().removeItem(R.id.main_gameChat);
         navigation.setSelectedItemId(R.id.main_ongoingGame);
 
         currentGame = game;
@@ -396,10 +351,15 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     @Override
     public void onLeftGame() {
         currentGame = null;
+        ongoingGameFragment = null;
+        gameChatFragment = null;
+        AnalyticsApplication.sendAnalytics(Utils.ACTION_LEFT_GAME);
 
-        safeInflateNavigationMenu(R.menu.navigation_lobby);
+        navigation.getMenu().clear();
+        navigation.inflateMenu(R.menu.navigation_lobby);
 
-        if (!pyx.config().globalChatEnabled()) safeRemoveMenuItem(R.id.main_globalChat);
+        if (!pyx.config().globalChatEnabled())
+            navigation.getMenu().removeItem(R.id.main_globalChat);
         navigation.setSelectedItemId(R.id.main_games);
 
         FragmentManager manager = getSupportFragmentManager();
@@ -412,11 +372,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         if (gameChat != null) transaction.remove(gameChat);
 
         transaction.commitAllowingStateLoss();
-
-        ongoingGameFragment = null;
-        gameChatFragment = null;
-
-        AnalyticsApplication.sendAnalytics(Utils.ACTION_LEFT_GAME);
     }
 
     @Override

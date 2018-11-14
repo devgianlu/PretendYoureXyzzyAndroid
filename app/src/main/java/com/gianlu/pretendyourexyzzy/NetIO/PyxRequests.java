@@ -19,7 +19,6 @@ import com.gianlu.pretendyourexyzzy.PK;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -32,83 +31,43 @@ import androidx.annotation.Nullable;
 import okhttp3.Response;
 
 public final class PyxRequests {
-    private static final Pyx.Processor<FirstLoad> FIRST_LOAD_PROCESSOR = new Pyx.Processor<FirstLoad>() {
-        @NonNull
-        @Override
-        public FirstLoad process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-            User user = null;
-            if (obj.getBoolean("ip") && obj.has("n")) {
-                String lastSessionId = Prefs.getString(PK.LAST_JSESSIONID, null);
-                if (lastSessionId != null) user = new User(lastSessionId, obj);
-            }
+    private static final Pyx.Processor<FirstLoad> FIRST_LOAD_PROCESSOR = (response, obj) -> {
+        User user = null;
+        if (obj.getBoolean("ip") && obj.has("n")) {
+            String lastSessionId = Prefs.getString(PK.LAST_JSESSIONID, null);
+            if (lastSessionId != null) user = new User(lastSessionId, obj);
+        }
 
-            return new FirstLoad(obj, user);
-        }
+        return new FirstLoad(obj, user);
     };
-    private static final Pyx.Processor<User> REGISTER_PROCESSOR = new Pyx.Processor<User>() {
-        @NonNull
-        @Override
-        public User process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-            String sessionId = findSessionId(response);
-            if (sessionId == null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1)
-                    throw new JSONException(new NullPointerException("Cannot find cookie JSESSIONID!"));
-                else
-                    throw new JSONException("Cannot find cookie JSESSIONID!");
-            }
+    private static final Pyx.Processor<User> REGISTER_PROCESSOR = (response, obj) -> {
+        String sessionId = findSessionId(response);
+        if (sessionId == null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1)
+                throw new JSONException(new NullPointerException("Cannot find cookie JSESSIONID!"));
+            else
+                throw new JSONException("Cannot find cookie JSESSIONID!");
+        }
 
-            return new User(sessionId, obj);
-        }
+        return new User(sessionId, obj);
     };
-    private static final Pyx.Processor<GamePermalink> CREATE_GAME_PROCESSOR = new Pyx.Processor<GamePermalink>() {
-        @NonNull
-        @Override
-        public GamePermalink process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-            return new GamePermalink(obj);
-        }
+    private static final Pyx.Processor<GamePermalink> CREATE_GAME_PROCESSOR = (response, obj) -> new GamePermalink(obj);
+    private static final Pyx.Processor<GameInfo> GAME_INFO_PROCESSOR = (response, obj) -> new GameInfo(obj);
+    private static final Pyx.Processor<List<Name>> NAMES_LIST_PROCESSOR = (response, obj) -> {
+        JSONArray array = obj.getJSONArray("nl");
+        List<Name> names = new ArrayList<>();
+        for (int i = 0; i < array.length(); i++) names.add(new Name(array.getString(i)));
+        return names;
     };
-    private static final Pyx.Processor<GameInfo> GAME_INFO_PROCESSOR = new Pyx.Processor<GameInfo>() {
-        @NonNull
-        @Override
-        public GameInfo process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-            return new GameInfo(obj);
-        }
+    private static final Pyx.Processor<GameCards> GAME_CARDS_PROCESSOR = (response, obj) -> new GameCards(obj);
+    private static final Pyx.Processor<GamesList> GAMES_LIST_PROCESSOR = (response, obj) -> {
+        JSONArray array = obj.getJSONArray("gl");
+        final GamesList games = new GamesList(obj.getInt("mg"));
+        for (int i = 0; i < array.length(); i++)
+            games.add(new Game(array.getJSONObject(i)));
+        return games;
     };
-    private static final Pyx.Processor<List<Name>> NAMES_LIST_PROCESSOR = new Pyx.Processor<List<Name>>() {
-        @NonNull
-        @Override
-        public List<Name> process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-            JSONArray array = obj.getJSONArray("nl");
-            List<Name> names = new ArrayList<>();
-            for (int i = 0; i < array.length(); i++) names.add(new Name(array.getString(i)));
-            return names;
-        }
-    };
-    private static final Pyx.Processor<GameCards> GAME_CARDS_PROCESSOR = new Pyx.Processor<GameCards>() {
-        @NonNull
-        @Override
-        public GameCards process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-            return new GameCards(obj);
-        }
-    };
-    private static final Pyx.Processor<GamesList> GAMES_LIST_PROCESSOR = new Pyx.Processor<GamesList>() {
-        @NonNull
-        @Override
-        public GamesList process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-            JSONArray array = obj.getJSONArray("gl");
-            final GamesList games = new GamesList(obj.getInt("mg"));
-            for (int i = 0; i < array.length(); i++)
-                games.add(new Game(array.getJSONObject(i)));
-            return games;
-        }
-    };
-    private static final Pyx.Processor<WhoisResult> WHOIS_RESULT_PROCESSOR = new Pyx.Processor<WhoisResult>() {
-        @NonNull
-        @Override
-        public WhoisResult process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-            return new WhoisResult(obj);
-        }
-    };
+    private static final Pyx.Processor<WhoisResult> WHOIS_RESULT_PROCESSOR = (response, obj) -> new WhoisResult(obj);
 
     @Nullable
     private static String findSessionId(@NonNull Response response) {
@@ -158,24 +117,12 @@ public final class PyxRequests {
 
     @NonNull
     public static PyxRequestWithResult<GamePermalink> joinGame(final int gid, @Nullable String password) {
-        return new PyxRequestWithResult<>(Pyx.Op.JOIN_GAME, new Pyx.Processor<GamePermalink>() {
-            @NonNull
-            @Override
-            public GamePermalink process(@NonNull Response response, @NonNull JSONObject obj) {
-                return new GamePermalink(gid, obj);
-            }
-        }, new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("pw", password));
+        return new PyxRequestWithResult<>(Pyx.Op.JOIN_GAME, (response, obj) -> new GamePermalink(gid, obj), new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("pw", password));
     }
 
     @NonNull
     public static PyxRequestWithResult<GamePermalink> spectateGame(final int gid, @Nullable String password) {
-        return new PyxRequestWithResult<>(Pyx.Op.SPECTATE_GAME, new Pyx.Processor<GamePermalink>() {
-            @NonNull
-            @Override
-            public GamePermalink process(@NonNull Response response, @NonNull JSONObject obj) {
-                return new GamePermalink(gid, obj);
-            }
-        }, new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("pw", password));
+        return new PyxRequestWithResult<>(Pyx.Op.SPECTATE_GAME, (response, obj) -> new GamePermalink(gid, obj), new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("pw", password));
     }
 
     @NonNull
@@ -232,25 +179,21 @@ public final class PyxRequests {
 
     @NonNull
     public static PyxRequestWithResult<List<Deck>> listCardcastDecks(int gid, @NonNull final Cardcast cardcast) {
-        return new PyxRequestWithResult<>(Pyx.Op.LIST_CARDCAST_CARD_SETS, new Pyx.Processor<List<Deck>>() {
-            @NonNull
-            @Override
-            public List<Deck> process(@NonNull Response response, @NonNull JSONObject obj) throws JSONException {
-                List<Deck> cards = new ArrayList<>();
-                JSONArray array = obj.getJSONArray("css");
-                for (int i = 0; i < array.length(); i++) {
-                    Deck set = new Deck(array.getJSONObject(i));
-                    cards.add(set);
+        return new PyxRequestWithResult<>(Pyx.Op.LIST_CARDCAST_CARD_SETS, (response, obj) -> {
+            List<Deck> cards = new ArrayList<>();
+            JSONArray array = obj.getJSONArray("css");
+            for (int i = 0; i < array.length(); i++) {
+                Deck set = new Deck(array.getJSONObject(i));
+                cards.add(set);
 
-                    try {
-                        set.cardcastDeck(cardcast.getDeckInfoHitCache(set.cardcastCode));
-                    } catch (IOException | ParseException | JSONException ex) {
-                        Logging.log(ex);
-                    }
+                try {
+                    set.cardcastDeck(cardcast.getDeckInfoHitCache(set.cardcastCode));
+                } catch (IOException | ParseException | JSONException ex) {
+                    Logging.log(ex);
                 }
-
-                return cards;
             }
+
+            return cards;
         }, new NameValuePair("gid", String.valueOf(gid)));
     }
 

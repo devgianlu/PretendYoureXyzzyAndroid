@@ -134,17 +134,17 @@ public class UserInfoDialog extends DialogFragment {
             game.setVisibility(View.VISIBLE);
 
             Object[] args = new Object[3];
-            args[0] = gameInfo.getHost();
-            args[1] = gameInfo.playersSize();
-            args[2] = gameInfo.getOptions().playersLimit;
+            args[0] = gameInfo.host;
+            args[1] = gameInfo.players.size();
+            args[2] = gameInfo.options.playersLimit;
 
             if (gameInfo.hasPassword(false)) {
-                if (gameInfo.getStatus().isStarted())
+                if (gameInfo.status.isStarted())
                     game.setHtml(R.string.gameStartedLockedDetails, args);
                 else
                     game.setHtml(R.string.gameLobbyLockedDetails, args);
             } else {
-                if (gameInfo.getStatus().isStarted())
+                if (gameInfo.status.isStarted())
                     game.setHtml(R.string.gameStartedOpenDetails, args);
                 else
                     game.setHtml(R.string.gameLobbyOpenDetails, args);
