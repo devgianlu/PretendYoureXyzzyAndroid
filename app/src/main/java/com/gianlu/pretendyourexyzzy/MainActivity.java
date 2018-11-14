@@ -40,8 +40,6 @@ import org.json.JSONException;
 
 import java.util.Objects;
 
-import androidx.annotation.IdRes;
-import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
@@ -79,37 +77,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         if (drawerManager != null) drawerManager.syncTogglerState();
     }
 
-    private void safeInflateNavigationMenu(@MenuRes int res) {
-        safeInflateNavigationMenu(res, false);
-    }
-
-    private void safeInflateNavigationMenu(@MenuRes final int res, boolean retried) {
-        try {
-            navigation.getMenu().clear();
-            navigation.inflateMenu(res);
-        } catch (IllegalStateException ex) {
-            Logging.log(ex);
-            if (!retried) {
-                navigation.post(() -> safeInflateNavigationMenu(res, true));
-            }
-        }
-    }
-
-    private void safeRemoveMenuItem(@IdRes final int id, boolean retried) {
-        try {
-            navigation.getMenu().removeItem(id);
-        } catch (IllegalStateException ex) {
-            Logging.log(ex);
-            if (!retried) {
-                navigation.post(() -> safeRemoveMenuItem(id, true));
-            }
-        }
-    }
-
-    private void safeRemoveMenuItem(@IdRes int id) {
-        safeRemoveMenuItem(id, false);
-    }
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -136,7 +103,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             ongoingGameFragment = OngoingGameFragment.getInstance(currentGame, state);
             transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
 
-            safeInflateNavigationMenu(R.menu.navigation_ongoing_game);
+            navigation.getMenu().clear();
+            navigation.inflateMenu(R.menu.navigation_ongoing_game);
 
             transaction.commitNowAllowingStateLoss();
             navigation.setSelectedItemId(R.id.main_ongoingGame);
@@ -197,7 +165,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         transaction.commitNow();
 
         navigation = findViewById(R.id.main_navigation);
-        if (!pyx.config().globalChatEnabled()) safeRemoveMenuItem(R.id.main_globalChat);
+        if (!pyx.config().globalChatEnabled())
+            navigation.getMenu().removeItem(R.id.main_globalChat);
         navigation.setOnNavigationItemSelectedListener(item -> {
             switch (item.getItemId()) {
                 case R.id.main_players:
@@ -368,9 +337,12 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         transaction.commitNowAllowingStateLoss();
 
-        safeInflateNavigationMenu(R.menu.navigation_ongoing_game);
-        if (!pyx.config().globalChatEnabled()) safeRemoveMenuItem(R.id.main_globalChat);
-        if (!pyx.config().gameChatEnabled()) safeRemoveMenuItem(R.id.main_gameChat);
+        navigation.getMenu().clear();
+        navigation.inflateMenu(R.menu.navigation_ongoing_game);
+
+        if (!pyx.config().globalChatEnabled())
+            navigation.getMenu().removeItem(R.id.main_globalChat);
+        if (!pyx.config().gameChatEnabled()) navigation.getMenu().removeItem(R.id.main_gameChat);
         navigation.setSelectedItemId(R.id.main_ongoingGame);
 
         currentGame = game;
@@ -383,9 +355,11 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         gameChatFragment = null;
         AnalyticsApplication.sendAnalytics(Utils.ACTION_LEFT_GAME);
 
-        safeInflateNavigationMenu(R.menu.navigation_lobby);
+        navigation.getMenu().clear();
+        navigation.inflateMenu(R.menu.navigation_lobby);
 
-        if (!pyx.config().globalChatEnabled()) safeRemoveMenuItem(R.id.main_globalChat);
+        if (!pyx.config().globalChatEnabled())
+            navigation.getMenu().removeItem(R.id.main_globalChat);
         navigation.setSelectedItemId(R.id.main_games);
 
         FragmentManager manager = getSupportFragmentManager();
