@@ -60,10 +60,6 @@ public class Game implements Filterable<Game.Protection>, Serializable {
         else return hasPassword;
     }
 
-    public synchronized String getSpectatorsStringList() {
-        return CommonUtils.join(spectators, ", ");
-    }
-
     public enum Protection {
         LOCKED,
         OPEN

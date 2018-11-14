@@ -19,16 +19,14 @@ public class SensitiveGameData {
     final List<GameInfo.Player> players = new ArrayList<>();
     final Set<String> spectators = new HashSet<>();
     final String me;
-    private final int gid;
     private final Listener listener;
     volatile AdapterInterface playersInterface;
     volatile String host;
     volatile Game.Status status;
     volatile Game.Options options;
-    private volatile String judge;
+    volatile String judge;
 
-    SensitiveGameData(int gid, RegisteredPyx pyx, Listener listener) {
-        this.gid = gid;
+    SensitiveGameData(RegisteredPyx pyx, Listener listener) {
         this.me = pyx.user().nickname;
         this.listener = listener;
     }
@@ -131,6 +129,15 @@ public class SensitiveGameData {
         return spectators.contains(me);
     }
 
+    void resetToIdleAndHost() {
+        for (GameInfo.Player player : players) {
+            if (player.name.equals(host)) player.status = GameInfo.PlayerStatus.HOST;
+            else player.status = GameInfo.PlayerStatus.IDLE;
+        }
+
+        playersInterface.notifyDataSetChanged();
+    }
+
     public interface Listener {
         void ourPlayerChanged(@NonNull GameInfo.Player player, @Nullable GameInfo.PlayerStatus oldStatus);
 
@@ -141,9 +148,7 @@ public class SensitiveGameData {
 
     @UiThread
     public interface AdapterInterface {
-        void notifyItemInserted(int pos);
-
-        void notifyItemRemoved(int pos);
+        void notifyDataSetChanged();
 
         void dispatchUpdate(@NonNull DiffUtil.DiffResult result);
 

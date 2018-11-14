@@ -43,7 +43,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         this.context = layout.getContext();
         this.gameLayout = layout;
         this.gameLayout.attach(this);
-        this.gameData = new SensitiveGameData(gid, pyx, this);
+        this.gameData = new SensitiveGameData(pyx, this);
         this.listener = listener;
     }
 
@@ -53,8 +53,10 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
 
         switch (msg.event) {
             case GAME_JUDGE_LEFT:
+                judgeLeft();
                 break;
             case GAME_JUDGE_SKIPPED:
+                judgeSkipped();
                 break;
             case GAME_OPTIONS_CHANGED:
                 gameData.update(new Game(msg.obj.getJSONObject("gi")));
@@ -84,6 +86,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 dealCards(Card.list(msg.obj.getJSONArray("h")));
                 break;
             case KICKED_FROM_GAME_IDLE:
+                // TODO: Leave game
                 break;
             case HURRY_UP:
                 event(UiEvent.HURRY_UP);
@@ -107,6 +110,20 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             case NOOP:
                 break;
         }
+    }
+
+    private void judgeSkipped() {
+        if (gameData.judge != null)
+            event(UiEvent.JUDGE_SKIPPED, gameData.judge);
+    }
+
+    private void judgeLeft() {
+        if (gameData.judge != null)
+            event(UiEvent.JUDGE_LEFT, gameData.judge);
+
+        gameLayout.clearTable();
+        gameLayout.showTable(false);
+        gameLayout.setBlackCard(null);
     }
 
     private void roundComplete(int winnerCard, String roundWinner) {
@@ -134,9 +151,11 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 updateGameInfo();
                 break;
             case LOBBY:
+                event(UiEvent.WAITING_FOR_START);
                 gameLayout.setBlackCard(null);
                 gameLayout.clearTable();
                 gameLayout.showTable(false);
+                gameData.resetToIdleAndHost();
                 break;
             case DEALING:
             case ROUND_OVER:
@@ -186,6 +205,8 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
 
     @Override
     public void anyPlayerChanged(@NonNull GameInfo.Player player, @Nullable GameInfo.PlayerStatus oldStatus) {
+        if (player.status == GameInfo.PlayerStatus.HOST)
+            listener.updateActivityTitle();
     }
 
     @Override
@@ -372,7 +393,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         NOT_YOUR_TURN(R.string.game_notYourTurn, Kind.TOAST),
         HURRY_UP(R.string.hurryUp, Kind.TOAST),
         PLAYER_KICKED(R.string.game_playerKickedIdle, Kind.TOAST),
-        SPECTATOR_TOAST(R.string.game_spectator, Kind.TOAST);
+        SPECTATOR_TOAST(R.string.game_spectator, Kind.TOAST); // TODO: Test spectator mode
 
         private final int toast;
         private final int text;
