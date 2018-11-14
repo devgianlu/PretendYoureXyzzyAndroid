@@ -288,23 +288,12 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     @Override
     public void onCardSelected(@NonNull final BaseCard card) {
         if (gameData.amJudge()) {
-            pyx.request(PyxRequests.judgeCard(gid, card.id()), new Pyx.OnSuccess() {
+            listener.showDialog(Dialogs.confirmation(context, new Dialogs.OnConfirmed() {
                 @Override
-                public void onDone() {
+                public void onConfirmed() {
+                    judgeCardInternal(card);
                 }
-
-                @Override
-                public void onException(@NonNull Exception ex) {
-                    if (ex instanceof PyxException) {
-                        if (((PyxException) ex).errorCode.equals("nj")) {
-                            event(UiEvent.NOT_YOUR_TURN);
-                            return;
-                        }
-                    }
-
-                    listener.showToast(Toaster.build().message(R.string.failedJudging).ex(ex));
-                }
-            });
+            }));
         } else {
             if (card.writeIn()) {
                 listener.showDialog(Dialogs.askText(context, new Dialogs.OnText() {
@@ -322,6 +311,26 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 }));
             }
         }
+    }
+
+    private void judgeCardInternal(@NonNull BaseCard card) {
+        pyx.request(PyxRequests.judgeCard(gid, card.id()), new Pyx.OnSuccess() {
+            @Override
+            public void onDone() {
+            }
+
+            @Override
+            public void onException(@NonNull Exception ex) {
+                if (ex instanceof PyxException) {
+                    if (((PyxException) ex).errorCode.equals("nj")) {
+                        event(UiEvent.NOT_YOUR_TURN);
+                        return;
+                    }
+                }
+
+                listener.showToast(Toaster.build().message(R.string.failedJudging).ex(ex));
+            }
+        });
     }
 
     private void playCardInternal(@NonNull final BaseCard card, @Nullable String text) {
