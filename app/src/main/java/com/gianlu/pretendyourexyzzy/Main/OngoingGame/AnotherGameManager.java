@@ -30,6 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
 
 public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Listener, SensitiveGameData.Listener {
     private final GamePermalink permalink;
@@ -313,6 +314,11 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     }
 
     @Override
+    public void showDialog(@NonNull DialogFragment dialog) {
+        listener.showDialog(dialog);
+    }
+
+    @Override
     public void startGame() {
         pyx.request(PyxRequests.startGame(gid), new Pyx.OnSuccess() {
             @Override
@@ -493,5 +499,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         void showDialog(@NonNull AlertDialog.Builder dialog);
 
         void justLeaveGame();
+
+        void showDialog(@NonNull DialogFragment dialog);
     }
 }

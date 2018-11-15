@@ -32,7 +32,7 @@ import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.TextViewCompat;
 
-public class GameCardView extends CardView {
+public class GameCardView extends CardView { // TODO: Make sure buttons are always visible
     public static final int WIDTH_DIP = 156;
     public final ImageButton primaryAction;
     public final SuperTextView text;

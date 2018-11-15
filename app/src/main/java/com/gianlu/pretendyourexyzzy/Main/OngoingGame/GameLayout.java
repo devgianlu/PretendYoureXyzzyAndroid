@@ -8,13 +8,18 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.gianlu.commonutils.Analytics.AnalyticsApplication;
+import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
+import com.gianlu.pretendyourexyzzy.Dialogs.CardImageZoomDialog;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Starred.StarredCardsManager;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Collections;
@@ -26,6 +31,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.UiThread;
+import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -160,8 +166,17 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
 
     @Override
     public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
-        if (action == GameCardView.Action.SELECT)
+        if (action == GameCardView.Action.SELECT) {
             if (listener != null) listener.onCardSelected(card);
+        } else if (action == GameCardView.Action.TOGGLE_STAR) {
+            AnalyticsApplication.sendAnalytics(Utils.ACTION_STARRED_CARD_ADD);
+
+            BaseCard bc = blackCard();
+            if (bc != null && StarredCardsManager.addCard(new StarredCardsManager.StarredCard(bc, group)))
+                Toaster.with(getContext()).message(R.string.addedCardToStarred).show();
+        } else if (action == GameCardView.Action.SELECT_IMG) {
+            listener.showDialog(CardImageZoomDialog.get(card));
+        }
     }
 
     public void setInstructions(@StringRes int text, Object... args) {
@@ -180,6 +195,8 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
 
     public interface Listener {
         void onCardSelected(@NonNull BaseCard card);
+
+        void showDialog(@NonNull DialogFragment dialog);
 
         void startGame();
     }
