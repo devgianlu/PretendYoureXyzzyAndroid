@@ -59,6 +59,13 @@ public class SensitiveGameData {
             }
         }
 
+        synchronized (spectators) {
+            for (String spectator : spectators) {
+                if (spectator.equals(me))
+                    listener.playerIsSpectator();
+            }
+        }
+
         synchronized (players) {
             for (GameInfo.Player player : players)
                 playerChange(player, oldPlayers);
@@ -71,10 +78,7 @@ public class SensitiveGameData {
     void update(@NonNull Game game) {
         synchronized (spectators) {
             spectators.clear();
-            for (String spectator : game.spectators) {
-                spectators.add(spectator);
-                if (spectator.equals(me)) listener.playerIsSpectator();
-            }
+            spectators.addAll(game.spectators);
         }
 
         host = game.host;

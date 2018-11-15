@@ -3,7 +3,6 @@ package com.gianlu.pretendyourexyzzy.Main;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.text.InputType;
@@ -50,7 +49,6 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<GamesList>, GamesAdapter.Listener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, Pyx.OnEventListener, TutorialManager.Listener {
     private GamesList lastResult;
@@ -150,31 +148,23 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
         tutorialManager = new TutorialManager(this, Discovery.GAMES);
 
-        recyclerViewLayout.enableSwipeRefresh(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                pyx.request(PyxRequests.getGamesList(), GamesFragment.this);
-            }
-        }, R.color.colorAccent);
+        recyclerViewLayout.enableSwipeRefresh(() -> pyx.request(PyxRequests.getGamesList(), GamesFragment.this), R.color.colorAccent);
 
-        createGame.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
-                pyx.request(PyxRequests.createGame(), new Pyx.OnResult<GamePermalink>() {
-                    @Override
-                    public void onDone(@NonNull GamePermalink result) {
-                        DialogUtils.dismissDialog(getActivity());
-                        if (handler != null) handler.onParticipatingGame(result);
-                    }
+        createGame.setOnClickListener(v -> {
+            DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
+            pyx.request(PyxRequests.createGame(), new Pyx.OnResult<GamePermalink>() {
+                @Override
+                public void onDone(@NonNull GamePermalink result) {
+                    DialogUtils.dismissDialog(getActivity());
+                    if (handler != null) handler.onParticipatingGame(result);
+                }
 
-                    @Override
-                    public void onException(@NonNull Exception ex) {
-                        DialogUtils.dismissDialog(getActivity());
-                        showToast(Toaster.build().message(R.string.failedCreatingGame).ex(ex));
-                    }
-                });
-            }
+                @Override
+                public void onException(@NonNull Exception ex) {
+                    DialogUtils.dismissDialog(getActivity());
+                    showToast(Toaster.build().message(R.string.failedCreatingGame).ex(ex));
+                }
+            });
         });
 
         pyx.request(PyxRequests.getGamesList(), this);
@@ -213,12 +203,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         if (launchGame != null) {
             launchGameInternal(launchGame, launchGamePassword, launchGameShouldRequest);
         } else {
-            recyclerViewLayout.getList().post(new Runnable() {
-                @Override
-                public void run() {
-                    tutorialManager.tryShowingTutorials(getActivity());
-                }
-            });
+            recyclerViewLayout.getList().post(() -> tutorialManager.tryShowingTutorials(getActivity()));
         }
 
         recyclerViewSavedInstance = null;
@@ -239,12 +224,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     @Override
     public void spectateGame(@NonNull final Game game) {
         if (game.hasPassword(false)) {
-            askForPassword(new OnPassword() {
-                @Override
-                public void onPassword(@Nullable String password) {
-                    spectateGame(game.gid, password);
-                }
-            });
+            askForPassword(password -> spectateGame(game.gid, password));
         } else {
             spectateGame(game.gid, null);
         }
@@ -253,12 +233,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     @Override
     public void joinGame(@NonNull final Game game) {
         if (game.hasPassword(false)) {
-            askForPassword(new OnPassword() {
-                @Override
-                public void onPassword(@Nullable String password) {
-                    joinGame(game.gid, password);
-                }
-            });
+            askForPassword(password -> joinGame(game.gid, password));
         } else {
             joinGame(game.gid, null);
         }
@@ -349,12 +324,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         builder.setTitle(R.string.gamePassword)
                 .setView(password)
                 .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(R.string.submit, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        listener.onPassword(password.getText().toString());
-                    }
-                });
+                .setPositiveButton(R.string.submit, (dialog, which) -> listener.onPassword(password.getText().toString()));
 
         DialogUtils.showDialog(getActivity(), builder);
     }
