@@ -152,13 +152,10 @@ public class UserInfoDialog extends DialogFragment {
 
             if (listener != null && listener.canViewGame()) {
                 viewGame.setVisibility(View.VISIBLE);
-                viewGame.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (listener != null) {
-                            listener.viewGame(gameInfo.gid, gameInfo.hasPassword(false));
-                            dismissAllowingStateLoss();
-                        }
+                viewGame.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.viewGame(gameInfo.gid, gameInfo.hasPassword(false));
+                        dismissAllowingStateLoss();
                     }
                 });
             } else {

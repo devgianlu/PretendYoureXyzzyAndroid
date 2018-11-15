@@ -40,7 +40,7 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
     }
 
     @Override
-    public void removeItem(Pyx.Server server) {
+    public void removeItem(@NonNull Pyx.Server server) {
         if (adapter != null) adapter.removeItem(server);
     }
 

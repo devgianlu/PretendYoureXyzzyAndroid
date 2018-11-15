@@ -1,7 +1,6 @@
 package com.gianlu.pretendyourexyzzy.Dialogs;
 
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -41,15 +40,12 @@ public class CardImageZoomDialog extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final Dialog dialog = super.onCreateDialog(savedInstanceState);
+        final Dialog dialog = new Dialog(requireActivity(), R.style.DialogFix);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialogInterface) {
-                Window window = dialog.getWindow();
-                if (window != null)
-                    window.setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            }
+        dialog.setOnShowListener(dialogInterface -> {
+            Window window = dialog.getWindow();
+            if (window != null)
+                window.setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         });
         return dialog;
     }
@@ -88,12 +84,7 @@ public class CardImageZoomDialog extends DialogFragment {
         }).into(image);
 
         ImageButton open = layout.findViewById(R.id.imageZoomDialog_open);
-        open.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-            }
-        });
+        open.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))));
 
         return layout;
     }

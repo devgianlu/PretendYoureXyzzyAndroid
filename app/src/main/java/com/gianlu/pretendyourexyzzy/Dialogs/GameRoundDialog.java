@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -74,35 +73,17 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
         image = layout.findViewById(R.id.gameRoundDialog_image);
         loading = layout.findViewById(R.id.gameRoundDialog_loading);
         rotate = layout.findViewById(R.id.gameRoundDialog_rotate);
-        rotate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                generate();
-            }
-        });
+        rotate.setOnCheckedChangeListener((buttonView, isChecked) -> generate());
         save = layout.findViewById(R.id.gameRoundDialog_save);
-        save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveToExternalStorage();
-            }
-        });
+        save.setOnClickListener(v -> saveToExternalStorage());
         share = layout.findViewById(R.id.gameRoundDialog_share);
-        share.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (getContext() != null)
-                    share(getContext());
-            }
+        share.setOnClickListener(v -> {
+            if (getContext() != null)
+                share(getContext());
         });
 
         Button cancel = layout.findViewById(R.id.gameRoundDialog_cancel);
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismissAllowingStateLoss();
-            }
-        });
+        cancel.setOnClickListener(v -> dismissAllowingStateLoss());
 
         image.setVisibility(View.GONE);
         loading.setVisibility(View.VISIBLE);

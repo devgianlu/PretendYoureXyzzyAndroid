@@ -3,8 +3,6 @@ package com.gianlu.pretendyourexyzzy.Dialogs;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -38,36 +36,10 @@ public final class Dialogs {
     public static AlertDialog addServer(@NonNull final Context context, @Nullable final Pyx.Server server, @NonNull final OnAddServer listener) {
         LinearLayout layout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.dialog_add_server, null, false);
 
-        final TextInputLayout nameField = layout.findViewById(R.id.addServer_name);
-        CommonUtils.getEditText(nameField).addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                nameField.setErrorEnabled(false);
-            }
-        });
-        final TextInputLayout urlField = layout.findViewById(R.id.addServer_url);
-        CommonUtils.getEditText(urlField).addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                urlField.setErrorEnabled(false);
-            }
-        });
+        TextInputLayout nameField = layout.findViewById(R.id.addServer_name);
+        CommonUtils.clearTextOnEdit(nameField);
+        TextInputLayout urlField = layout.findViewById(R.id.addServer_url);
+        CommonUtils.clearTextOnEdit(urlField);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.addServer)
@@ -78,55 +50,39 @@ public final class Dialogs {
         if (server != null) {
             CommonUtils.setText(nameField, server.name);
             CommonUtils.setText(urlField, server.url.toString());
-            builder.setNeutralButton(R.string.remove, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Pyx.Server.removeUserServer(server);
-                    listener.removeItem(server);
-                }
+            builder.setNeutralButton(R.string.remove, (dialog, which) -> {
+                Pyx.Server.removeUserServer(server);
+                listener.removeItem(server);
             });
         }
 
         final AlertDialog dialog = builder.create();
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(final DialogInterface dialogInterface) {
-                dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        String nameStr = CommonUtils.getText(nameField);
-                        if (nameStr.isEmpty() || (server != null && !Objects.equals(server.name, nameStr) && Pyx.Server.hasServer(nameStr))) {
-                            nameField.setError(context.getString(R.string.invalidServerName));
-                            return;
-                        }
-
-                        String urlStr = CommonUtils.getText(urlField);
-                        HttpUrl url = Pyx.Server.parseUrl(urlStr);
-                        if (url == null) {
-                            urlField.setError(context.getString(R.string.invalidServerUrl));
-                            return;
-                        }
-
-                        Pyx.Server server = new Pyx.Server(url, null, nameStr, true);
-                        try {
-                            Pyx.Server.addUserServer(server);
-                            listener.loadServers();
-                        } catch (JSONException ex) {
-                            Toaster.with(context).message(R.string.failedAddingServer).ex(ex).show();
-                        }
-
-                        dialogInterface.dismiss();
-                    }
-                });
+        dialog.setOnShowListener(dialogInterface -> dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String nameStr = CommonUtils.getText(nameField);
+            if (nameStr.isEmpty() || (server != null && !Objects.equals(server.name, nameStr) && Pyx.Server.hasServer(nameStr))) {
+                nameField.setError(context.getString(R.string.invalidServerName));
+                return;
             }
-        });
 
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                listener.startTests();
+            String urlStr = CommonUtils.getText(urlField);
+            HttpUrl url = Pyx.Server.parseUrl(urlStr);
+            if (url == null) {
+                urlField.setError(context.getString(R.string.invalidServerUrl));
+                return;
             }
-        });
+
+            Pyx.Server server1 = new Pyx.Server(url, null, nameStr, true);
+            try {
+                Pyx.Server.addUserServer(server1);
+                listener.loadServers();
+            } catch (JSONException ex) {
+                Toaster.with(context).message(R.string.failedAddingServer).ex(ex).show();
+            }
+
+            dialogInterface.dismiss();
+        }));
+
+        dialog.setOnDismissListener(dialog1 -> listener.startTests());
         return dialog;
     }
 
@@ -199,24 +155,14 @@ public final class Dialogs {
         return new AlertDialog.Builder(context)
                 .setTitle(R.string.setBlankCardText)
                 .setView(text)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        listener.onText(text.getText().toString());
-                    }
-                }).setNegativeButton(android.R.string.cancel, null);
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> listener.onText(text.getText().toString())).setNegativeButton(android.R.string.cancel, null);
     }
 
     @NonNull
     public static AlertDialog.Builder confirmation(@NonNull Context context, @NonNull final OnConfirmed listener) {
         return new AlertDialog.Builder(context)
                 .setTitle(R.string.areYouSurePlayCard)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        listener.onConfirmed();
-                    }
-                }).setNegativeButton(android.R.string.no, null);
+                .setPositiveButton(android.R.string.yes, (dialog, which) -> listener.onConfirmed()).setNegativeButton(android.R.string.no, null);
     }
 
     @NonNull
@@ -226,18 +172,13 @@ public final class Dialogs {
         return new AlertDialog.Builder(context)
                 .setTitle(R.string.definition)
                 .setView(text)
-                .setPositiveButton(R.string.search, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        listener.onText(text.getText().toString());
-                    }
-                }).setNegativeButton(android.R.string.cancel, null);
+                .setPositiveButton(R.string.search, (dialog, which) -> listener.onText(text.getText().toString())).setNegativeButton(android.R.string.cancel, null);
     }
 
     public interface OnAddServer {
         void loadServers();
 
-        void removeItem(Pyx.Server server);
+        void removeItem(@NonNull Pyx.Server server);
 
         void startTests();
     }

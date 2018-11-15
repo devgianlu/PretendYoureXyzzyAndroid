@@ -2,7 +2,7 @@
 
     <style name="AppTheme" parent="BaseAppTheme" />
 
-    <style name="TitledDialog" parent="Theme.AppCompat.Light.Dialog">
+    <style name="TitledDialog" parent="DialogFix">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
