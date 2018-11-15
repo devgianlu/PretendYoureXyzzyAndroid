@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -144,32 +143,17 @@ public class EditGameOptionsDialog extends DialogFragment {
             item.setTag(set);
             item.setText(set.name);
             item.setChecked(options.cardSets.contains(set.id));
-            item.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    updateDecksCount();
-                }
-            });
+            item.setOnCheckedChangeListener((buttonView, isChecked) -> updateDecksCount());
             decks.addView(item);
         }
 
         updateDecksCount();
 
         Button cancel = layout.findViewById(R.id.editGameOptions_cancel);
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismissAllowingStateLoss();
-            }
-        });
+        cancel.setOnClickListener(v -> dismissAllowingStateLoss());
 
         Button apply = layout.findViewById(R.id.editGameOptions_apply);
-        apply.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                done();
-            }
-        });
+        apply.setOnClickListener(v -> done());
 
         return layout;
     }

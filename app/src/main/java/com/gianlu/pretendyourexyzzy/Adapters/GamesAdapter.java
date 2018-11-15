@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -97,26 +96,15 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         holder.blankCards.setHtml(R.string.blankCards, game.options.blanksLimit);
         holder.cardsets.setHtml(R.string.cardSets, game.options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(pyx.firstLoad().createCardSetNamesList(game.options.cardSets), ", "));
 
-        holder.spectate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null) listener.spectateGame(game);
-            }
+        holder.spectate.setOnClickListener(v -> {
+            if (listener != null) listener.spectateGame(game);
         });
 
-        holder.join.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null) listener.joinGame(game);
-            }
+        holder.join.setOnClickListener(v -> {
+            if (listener != null) listener.joinGame(game);
         });
 
-        holder.expand.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                CommonUtils.handleCollapseClick(holder.expand, holder.details);
-            }
-        });
+        holder.expand.setOnClickListener(v -> CommonUtils.handleCollapseClick(holder.expand, holder.details));
 
         CommonUtils.setRecyclerViewTopMargin(context, holder);
     }

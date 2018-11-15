@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import com.gianlu.commonutils.Adapters.OrderedRecyclerViewAdapter;
@@ -41,12 +40,7 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
     @Override
     protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull final Name name) {
         ((SuperTextView) holder.itemView).setHtml(name.sigil() == Name.Sigil.NORMAL_USER ? name.withSigil() : (SuperTextView.makeBold(name.sigil().symbol()) + name.noSigil()));
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                listener.onNameSelected(name.noSigil());
-            }
-        });
+        holder.itemView.setOnClickListener(v -> listener.onNameSelected(name.noSigil()));
     }
 
     @Override

@@ -60,21 +60,13 @@ public class DecksAdapter extends RecyclerView.Adapter<DecksAdapter.ViewHolder> 
         if (deck != null) {
             holder.author.setHtml(R.string.byLowercase, deck.author.username);
             holder.code.setText(deck.code);
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    CardcastDeckActivity.startActivity(context, deck);
-                }
-            });
+            holder.itemView.setOnClickListener(v -> CardcastDeckActivity.startActivity(context, deck));
 
             if (ongoingGameListener != null && ongoingGameListener.canModifyCardcastDecks()) {
                 holder.remove.setVisibility(View.VISIBLE);
-                holder.remove.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (listener != null) listener.removeDeck(item);
-                        remove(holder.getAdapterPosition());
-                    }
+                holder.remove.setOnClickListener(v -> {
+                    if (listener != null) listener.removeDeck(item);
+                    remove(holder.getAdapterPosition());
                 });
             } else {
                 holder.remove.setVisibility(View.GONE);

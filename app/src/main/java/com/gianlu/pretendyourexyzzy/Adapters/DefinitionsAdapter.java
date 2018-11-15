@@ -48,11 +48,8 @@ public class DefinitionsAdapter extends RecyclerView.Adapter<DefinitionsAdapter.
             holder.example.setText(def.example);
         }
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null) listener.onDefinitionSelected(def);
-            }
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onDefinitionSelected(def);
         });
     }
 

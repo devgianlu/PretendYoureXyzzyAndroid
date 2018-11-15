@@ -46,12 +46,9 @@ public class CardsGridFixer implements View.OnLayoutChangeListener {
         if (params != null) {
             final int padding = (v.getMeasuredWidth() - mCardWidth * spanCount) / (spanCount + 1);
 
-            target.post(new Runnable() {
-                @Override
-                public void run() {
-                    params.setMarginStart(padding);
-                    target.setLayoutParams(params);
-                }
+            target.post(() -> {
+                params.setMarginStart(padding);
+                target.setLayoutParams(params);
             });
 
             v.removeOnLayoutChangeListener(this);

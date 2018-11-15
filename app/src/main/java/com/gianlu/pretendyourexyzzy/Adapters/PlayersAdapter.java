@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -63,11 +62,8 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
                 break;
         }
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null) listener.onPlayerSelected(player);
-            }
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onPlayerSelected(player);
         });
     }
 

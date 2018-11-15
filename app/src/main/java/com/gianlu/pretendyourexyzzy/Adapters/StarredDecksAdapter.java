@@ -3,7 +3,6 @@ package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -41,11 +40,8 @@ public class StarredDecksAdapter extends RecyclerView.Adapter<StarredDecksAdapte
 
         holder.name.setText(deck.name);
         holder.code.setText(deck.code);
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (listener != null) listener.onDeckSelected(deck);
-            }
+        holder.itemView.setOnClickListener(view -> {
+            if (listener != null) listener.onDeckSelected(deck);
         });
 
         CommonUtils.setRecyclerViewTopMargin(context, holder);

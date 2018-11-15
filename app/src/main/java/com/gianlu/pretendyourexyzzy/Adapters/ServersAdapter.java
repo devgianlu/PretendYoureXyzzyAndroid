@@ -101,11 +101,8 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
             }
         }
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null) listener.serverSelected(server);
-            }
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.serverSelected(server);
         });
     }
 

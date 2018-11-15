@@ -71,11 +71,8 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
         holder.blackCards.setText(String.valueOf(deck.calls));
         holder.whiteCards.setText(String.valueOf(deck.responses));
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (listener != null) listener.onDeckSelected(deck);
-            }
+        holder.itemView.setOnClickListener(view -> {
+            if (listener != null) listener.onDeckSelected(deck);
         });
 
         CommonUtils.setRecyclerViewTopMargin(getContext(), holder);

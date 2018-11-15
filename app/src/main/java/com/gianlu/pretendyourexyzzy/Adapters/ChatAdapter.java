@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import com.gianlu.commonutils.SuperTextView;
@@ -42,11 +41,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final PollMessage message = messages.get(position);
         holder.text.setHtml(SuperTextView.makeBold(message.sender) + ": " + message.message);
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null) listener.onChatItemSelected(message.sender);
-            }
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onChatItemSelected(message.sender);
         });
     }
 

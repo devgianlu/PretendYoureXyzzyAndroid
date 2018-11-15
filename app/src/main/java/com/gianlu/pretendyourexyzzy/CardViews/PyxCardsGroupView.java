@@ -85,11 +85,8 @@ public class PyxCardsGroupView extends LinearLayout {
 
         for (int i = 0; i < cards.size(); i++) {
             final BaseCard card = cards.get(i);
-            GameCardView pyxCard = new GameCardView(getContext(), card, primary, secondary, new GameCardView.CardListener() {
-                @Override
-                public void onCardAction(@NonNull GameCardView.Action action, @NonNull BaseCard card) {
-                    if (listener != null) listener.onCardAction(action, cards, card);
-                }
+            GameCardView pyxCard = new GameCardView(getContext(), card, primary, secondary, (action, card1) -> {
+                if (listener != null) listener.onCardAction(action, cards, card1);
             });
             pyxCard.setSelectable(selectable);
 
@@ -106,7 +103,7 @@ public class PyxCardsGroupView extends LinearLayout {
         super.onDraw(canvas);
 
         if (cards != null && cards.size() > 1)
-            canvas.drawRoundRect(mPadding / 2, mPadding / 2 + mLineWidth / 2, canvas.getWidth() - mPadding / 2, canvas.getHeight() - mPadding / 2, mCornerRadius, mCornerRadius, mLinePaint);
+            canvas.drawRoundRect(mPadding / 2f, mPadding / 2f + mLineWidth / 2f, canvas.getWidth() - mPadding / 2f, canvas.getHeight() - mPadding / 2f, mCornerRadius, mCornerRadius, mLinePaint);
     }
 
     public interface CardListener {
