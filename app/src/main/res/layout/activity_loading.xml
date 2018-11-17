@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="?android:colorBackground"
     android:gravity="center_horizontal"
     android:orientation="vertical">
 
@@ -34,10 +34,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="8dp"
-        android:foregroundTint="@color/colorPrimary"
-        android:indeterminateOnly="true"
-        android:indeterminateTint="@color/colorPrimary"
-        android:progressTint="@color/colorPrimary" />
+        android:indeterminateOnly="true" />
 
     <LinearLayout
         android:id="@+id/loading_register"
@@ -53,9 +50,9 @@
             android:id="@+id/loading_currentServer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="12dp"
             android:textAlignment="center"
-            android:textColor="@color/colorPrimaryDark"
+            android:textColor="?android:textColorPrimary"
             android:textSize="20sp"
             android:textStyle="bold" />
 

@@ -1,6 +1,5 @@
 package com.gianlu.pretendyourexyzzy;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.net.Uri;
@@ -46,7 +45,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -84,12 +82,9 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                finished = true;
-                if (goTo != null) startActivity(goTo);
-            }
+        new Handler().postDelayed(() -> {
+            finished = true;
+            if (goTo != null) startActivity(goTo);
         }, 1000);
 
         if (Prefs.getBoolean(PK.FIRST_RUN, true)) {
@@ -99,17 +94,12 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         }
 
         Button preferences = findViewById(R.id.loading_preferences);
-        preferences.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(LoadingActivity.this, PreferenceActivity.class));
-            }
-        });
+        preferences.setOnClickListener(v -> startActivity(new Intent(LoadingActivity.this, PreferenceActivity.class)));
 
         tutorialManager = new TutorialManager(this, Discovery.LOGIN);
 
         loading = findViewById(R.id.loading_loading);
-        loading.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(this, R.color.colorPrimary), PorterDuff.Mode.SRC_IN);
+        loading.getIndeterminateDrawable().setColorFilter(CommonUtils.resolveAttrAsColor(this, android.R.attr.textColorPrimary), PorterDuff.Mode.SRC_IN);
         currentServer = findViewById(R.id.loading_currentServer);
         register = findViewById(R.id.loading_register);
         registerNickname = findViewById(R.id.loading_registerNickname);
@@ -118,20 +108,10 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         welcomeMessage = findViewById(R.id.loading_welcomeMsg);
 
         changeServer = findViewById(R.id.loading_changeServer);
-        changeServer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                changeServerDialog(true);
-            }
-        });
+        changeServer.setOnClickListener(v -> changeServerDialog(true));
 
         Button generateIdCode = findViewById(R.id.loading_generateIdCode);
-        generateIdCode.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                CommonUtils.setText(registerIdCode, CommonUtils.randomString(100, new SecureRandom()));
-            }
-        });
+        generateIdCode.setOnClickListener(v -> CommonUtils.setText(registerIdCode, CommonUtils.randomString(100, new SecureRandom())));
 
         if (Objects.equals(getIntent().getAction(), Intent.ACTION_VIEW) || Objects.equals(getIntent().getAction(), Intent.ACTION_SEND)) {
             Uri url = getIntent().getData();
@@ -184,12 +164,9 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.changeServer)
                 .setCancelable(dismissible)
-                .setNeutralButton(R.string.manage, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        startActivity(new Intent(LoadingActivity.this, ManageServersActivity.class));
-                        dialog.dismiss();
-                    }
+                .setNeutralButton(R.string.manage, (dialog, which) -> {
+                    startActivity(new Intent(LoadingActivity.this, ManageServersActivity.class));
+                    dialog.dismiss();
                 });
 
         if (dismissible)
@@ -245,58 +222,55 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         String lastIdCode = Prefs.getString(PK.LAST_ID_CODE, null);
         if (lastIdCode != null) CommonUtils.setText(registerIdCode, lastIdCode);
 
-        registerSubmit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loading.setVisibility(View.VISIBLE);
-                register.setVisibility(View.GONE);
+        registerSubmit.setOnClickListener(v -> {
+            loading.setVisibility(View.VISIBLE);
+            register.setVisibility(View.GONE);
 
-                final String idCode = getIdCode();
-                if (idCode == null && !pyx.config().insecureIdAllowed()) {
-                    registerIdCode.setError(getString(R.string.mustProvideIdCode));
-                    return;
+            final String idCode = getIdCode();
+            if (idCode == null && !pyx.config().insecureIdAllowed()) {
+                registerIdCode.setError(getString(R.string.mustProvideIdCode));
+                return;
+            }
+
+            String nick = CommonUtils.getText(registerNickname);
+            pyx.register(nick, idCode, new Pyx.OnResult<RegisteredPyx>() {
+                @Override
+                public void onDone(@NonNull RegisteredPyx result) {
+                    Prefs.putString(PK.LAST_NICKNAME, result.user().nickname);
+                    Prefs.putString(PK.LAST_ID_CODE, idCode);
+                    goToMain();
                 }
 
-                String nick = CommonUtils.getText(registerNickname);
-                pyx.register(nick, idCode, new Pyx.OnResult<RegisteredPyx>() {
-                    @Override
-                    public void onDone(@NonNull RegisteredPyx result) {
-                        Prefs.putString(PK.LAST_NICKNAME, result.user().nickname);
-                        Prefs.putString(PK.LAST_ID_CODE, idCode);
-                        goToMain();
-                    }
+                @Override
+                public void onException(@NonNull Exception ex) {
+                    Logging.log(ex);
 
-                    @Override
-                    public void onException(@NonNull Exception ex) {
-                        Logging.log(ex);
+                    loading.setVisibility(View.GONE);
+                    register.setVisibility(View.VISIBLE);
 
-                        loading.setVisibility(View.GONE);
-                        register.setVisibility(View.VISIBLE);
-
-                        if (ex instanceof PyxException) {
-                            switch (((PyxException) ex).errorCode) {
-                                case "rn":
-                                    registerNickname.setError(getString(R.string.reservedNickname));
-                                    return;
-                                case "in":
-                                    registerNickname.setError(getString(R.string.invalidNickname));
-                                    return;
-                                case "niu":
-                                    registerNickname.setError(getString(R.string.alreadyUsedNickname));
-                                    return;
-                                case "tmu":
-                                    registerNickname.setError(getString(R.string.tooManyUsers));
-                                    return;
-                                case "iid":
-                                    registerIdCode.setError(getString(R.string.invalidIdCode));
-                                    return;
-                            }
+                    if (ex instanceof PyxException) {
+                        switch (((PyxException) ex).errorCode) {
+                            case "rn":
+                                registerNickname.setError(getString(R.string.reservedNickname));
+                                return;
+                            case "in":
+                                registerNickname.setError(getString(R.string.invalidNickname));
+                                return;
+                            case "niu":
+                                registerNickname.setError(getString(R.string.alreadyUsedNickname));
+                                return;
+                            case "tmu":
+                                registerNickname.setError(getString(R.string.tooManyUsers));
+                                return;
+                            case "iid":
+                                registerIdCode.setError(getString(R.string.invalidIdCode));
+                                return;
                         }
-
-                        Toaster.with(LoadingActivity.this).message(R.string.failedLoading).ex(ex).show();
                     }
-                });
-            }
+
+                    Toaster.with(LoadingActivity.this).message(R.string.failedLoading).ex(ex).show();
+                }
+            });
         });
     }
 
