@@ -84,8 +84,12 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
 
     public void countFrom(int ms) {
         if (currentTask != null) currentTask.cancel();
-        currentTask = new CountdownTask(ms / 1000);
-        timer.scheduleAtFixedRate(currentTask, 0, 1000);
+        if (ms < 2147000) {
+            currentTask = new CountdownTask(ms / 1000);
+            timer.scheduleAtFixedRate(currentTask, 0, 1000);
+        } else {
+            time.setText("∞");
+        }
     }
 
     public void attach(@NonNull PlayersAdapter.Listener listener) {
