@@ -73,16 +73,15 @@ public class RegisteredPyx extends FirstLoadedPyx {
             @Override
             public void onDone() {
                 if (pollingThread != null) pollingThread.safeStop();
-                InstanceHolder.holder().invalidate();
             }
 
             @Override
             public void onException(@NonNull Exception ex) {
                 Logging.log(ex);
-                InstanceHolder.holder().invalidate();
             }
         });
 
+        InstanceHolder.holder().invalidate();
         Prefs.remove(PK.LAST_JSESSIONID);
     }
 
