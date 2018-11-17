@@ -265,10 +265,6 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         return gameData.amHost();
     }
 
-    public void refresh() {
-        // TODO: Refresh
-    }
-
     private void updateGameInfo() {
         pyx.request(PyxRequests.getGameInfo(gid), new Pyx.OnResult<GameInfo>() {
             @Override

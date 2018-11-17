@@ -13,7 +13,7 @@
     <string name="game_playerSkipped">%s has been skipped.</string>
     <string name="game_pickCards">Select %d card(s) to play. Your hand:</string>
     <string name="game_judgeSkipped">Judge %s has been skipped.</string>
-    <string name="game_notYourTurn">Not your turn! If you think that\'s wrong, swipe down to refresh.</string>
+    <string name="game_notYourTurn">Not your turn! If you think that\'s wrong, refresh from the menu.</string>
     <string name="game_playerKickedIdle">%s has been kicked for being idle.</string>
     <string name="game_judgeLeft_long">Judge %s left. A new round will begin shortly.</string>
     <string name="game_judgeLeft_short">Judge %s left.</string>
@@ -271,4 +271,5 @@
     <string name="definition">Definition</string>
     <string name="noDefinitions">No definitions found!</string>
     <string name="noGames">There are no games.</string>
+    <string name="refresh">Refresh</string>
 </resources>

@@ -10,17 +10,10 @@
         android:layout_gravity="center"
         android:indeterminate="true" />
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/ongoingGame_swipeRefresh"
+    <com.gianlu.pretendyourexyzzy.Main.OngoingGame.GameLayout
+        android:id="@+id/ongoingGame_gameLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <com.gianlu.pretendyourexyzzy.Main.OngoingGame.GameLayout
-            android:id="@+id/ongoingGame_gameLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        android:layout_height="match_parent" />
 
     <com.gianlu.commonutils.MessageView
         android:id="@+id/ongoingGame_message"

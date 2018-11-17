@@ -62,7 +62,6 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import okhttp3.HttpUrl;
 
 public class OngoingGameFragment extends FragmentWithDialog implements OngoingGameHelper.Listener, PlayersAdapter.Listener, TutorialManager.Listener, AnotherGameManager.Listener {
@@ -75,7 +74,6 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     private CardcastSheet cardcastSheet;
     private MessageView message;
     private TutorialManager tutorialManager;
-    private SwipeRefreshLayout swipeRefreshLayout;
     private AnotherGameManager manager;
 
     @NonNull
@@ -167,8 +165,6 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         gameLayout = layout.findViewById(R.id.ongoingGame_gameLayout);
         gameLayout.attach(this);
         message = layout.findViewById(R.id.ongoingGame_message);
-        swipeRefreshLayout = layout.findViewById(R.id.ongoingGame_swipeRefresh);
-        swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
 
         Bundle args = getArguments();
         if (args == null || (perm = (GamePermalink) args.getSerializable("game")) == null) {
@@ -192,11 +188,13 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
             return layout;
         }
 
-        swipeRefreshLayout.setOnRefreshListener(() -> manager.refresh());
-
         manager.begin();
 
         return layout;
+    }
+
+    private void refresh() {
+        // TODO
     }
 
     @Override
@@ -204,6 +202,9 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         if (getContext() == null) return false;
 
         switch (item.getItemId()) {
+            case R.id.ongoingGame_refresh:
+                refresh();
+                return true;
             case R.id.ongoingGame_leave:
                 leaveGame();
                 return true;
@@ -406,7 +407,6 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         loading.setVisibility(View.GONE);
         gameLayout.setVisibility(View.VISIBLE);
         message.hide();
-        swipeRefreshLayout.setRefreshing(false);
 
         tutorialManager.tryShowingTutorials(getActivity());
     }
