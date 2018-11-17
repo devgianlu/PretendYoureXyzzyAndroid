@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.CardViews;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -30,9 +31,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.ImageViewCompat;
 import androidx.core.widget.TextViewCompat;
 
-public class GameCardView extends CardView { // TODO: Make sure buttons are always visible
+public class GameCardView extends CardView {
     public static final int WIDTH_DIP = 156;
     public final ImageButton primaryAction;
     public final SuperTextView text;
@@ -40,7 +42,7 @@ public class GameCardView extends CardView { // TODO: Make sure buttons are alwa
     private final int mWidth;
     private final FrameLayout notText;
     private final ProgressBar loading;
-    private final View unknown;
+    private final ImageView unknown;
     private final ImageView image;
     private final SuperTextView numDraw;
     private final SuperTextView numPick;
@@ -65,7 +67,6 @@ public class GameCardView extends CardView { // TODO: Make sure buttons are alwa
     public GameCardView(@NonNull Context context, @Nullable BaseCard card, @Nullable Action primaryAction, @Nullable Action secondaryAction, @Nullable CardListener listener) {
         this(context, null, 0, card, primaryAction, secondaryAction, listener);
     }
-
     private GameCardView(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr, @Nullable BaseCard card, @Nullable Action primary, @Nullable Action secondary, @Nullable CardListener listener) {
         super(context, attrs, defStyleAttr);
         this.card = card;
@@ -111,6 +112,8 @@ public class GameCardView extends CardView { // TODO: Make sure buttons are alwa
         loading.setVisibility(GONE);
         primaryAction.setVisibility(GONE);
         secondaryAction.setVisibility(GONE);
+
+        setCardBackgroundColor(Color.WHITE);
     }
 
     private void setupAction(@Nullable Action action, @NonNull ImageButton button) {
@@ -139,15 +142,21 @@ public class GameCardView extends CardView { // TODO: Make sure buttons are alwa
     }
 
     private void setupColors() {
+        int foreground = card.black() ? Color.WHITE : Color.BLACK;
+        int background = card.black() ? Color.BLACK : Color.WHITE;
+
         if (card instanceof Card && ((Card) card).isWinner())
             setCardBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorAccent));
         else
-            setCardBackgroundColor(card.black() ? Color.BLACK : Color.WHITE);
+            setCardBackgroundColor(background);
 
-        text.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
-        watermark.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
-        numPick.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
-        numDraw.setTextColor(card.black() ? Color.WHITE : Color.BLACK);
+        text.setTextColor(foreground);
+        watermark.setTextColor(foreground);
+        numPick.setTextColor(foreground);
+        numDraw.setTextColor(foreground);
+        ImageViewCompat.setImageTintList(unknown, ColorStateList.valueOf(foreground));
+        ImageViewCompat.setImageTintList(primaryAction, ColorStateList.valueOf(foreground));
+        ImageViewCompat.setImageTintList(secondaryAction, ColorStateList.valueOf(foreground));
     }
 
     private void setupImageCard() {
@@ -229,12 +238,12 @@ public class GameCardView extends CardView { // TODO: Make sure buttons are alwa
         }
 
         setVisibility(VISIBLE);
+        setupColors();
 
         if (card.unknown()) {
             showUnknown();
         } else {
             setupActions();
-            setupColors();
 
             watermark.setText(card.watermark());
 

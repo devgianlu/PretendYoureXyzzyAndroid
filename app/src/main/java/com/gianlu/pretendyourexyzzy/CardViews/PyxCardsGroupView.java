@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.util.TypedValue;
 import android.widget.LinearLayout;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
 
@@ -36,7 +37,7 @@ public class PyxCardsGroupView extends LinearLayout {
         mLineWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1.6f, getResources().getDisplayMetrics());
 
         mLinePaint = new Paint();
-        mLinePaint.setARGB(100, 0, 0, 0);
+        mLinePaint.setColor(CommonUtils.resolveAttrAsColor(context, android.R.attr.textColorSecondary));
         mLinePaint.setStrokeWidth(mLineWidth);
         mLinePaint.setStyle(Paint.Style.STROKE);
         mLinePaint.setPathEffect(new DashPathEffect(new float[]{20, 10}, 0));
