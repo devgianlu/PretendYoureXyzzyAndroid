@@ -43,6 +43,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     private NamesAdapter adapter;
     private SearchView searchView;
 
+    @NonNull
     public static NamesFragment getInstance() {
         NamesFragment fragment = new NamesFragment();
         fragment.setHasOptionsMenu(true);
@@ -151,7 +152,13 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     }
 
     public void scrollToTop() {
-        layout.getList().scrollToPosition(0);
+        if (layout != null) layout.getList().scrollToPosition(0);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
     }
 
     @Override

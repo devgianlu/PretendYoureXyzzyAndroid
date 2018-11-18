@@ -30,7 +30,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 public class ChatFragment extends FragmentWithDialog implements ChatAdapter.Listener, Pyx.OnEventListener {
-    private RecyclerViewLayout recyclerViewLayout;
+    private RecyclerViewLayout layout;
     private ChatAdapter adapter;
     private int gid;
     private RegisteredPyx pyx;
@@ -54,25 +54,25 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.fragment_chat, container, false);
         if (getContext() == null) return layout;
-        recyclerViewLayout = layout.findViewById(R.id.chatFragment_recyclerViewLayout);
-        recyclerViewLayout.disableSwipeRefresh();
+        this.layout = layout.findViewById(R.id.chatFragment_recyclerViewLayout);
+        this.layout.disableSwipeRefresh();
         LinearLayoutManager llm = new SuppressingLinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         llm.setStackFromEnd(true);
-        recyclerViewLayout.setLayoutManager(llm);
+        this.layout.setLayoutManager(llm);
 
         Bundle args = getArguments();
         if (args == null) gid = -1;
         else gid = args.getInt("gid", -1);
 
         adapter = new ChatAdapter(getContext(), this);
-        recyclerViewLayout.loadListData(adapter);
+        this.layout.loadListData(adapter);
         onItemCountChanged(0);
 
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
             Logging.log(ex);
-            recyclerViewLayout.showError(R.string.failedLoading);
+            this.layout.showError(R.string.failedLoading);
             return layout;
         }
 
@@ -110,6 +110,12 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
+    @Override
     public void onDestroy() {
         if (pyx != null) pyx.polling().removeListener(this);
         super.onDestroy();
@@ -126,13 +132,13 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     }
 
     public void scrollToTop() {
-        recyclerViewLayout.getList().scrollToPosition(0);
+        if (layout != null) layout.getList().scrollToPosition(0);
     }
 
     @Override
     public void onItemCountChanged(int count) {
-        if (count == 0) recyclerViewLayout.showInfo(R.string.noMessages);
-        else recyclerViewLayout.showList();
+        if (count == 0) layout.showInfo(R.string.noMessages);
+        else layout.showList();
     }
 
     @Override
@@ -147,7 +153,7 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     public void onPollMessage(@NonNull PollMessage message) {
         if (!isAdded()) return;
         adapter.newMessage(message, gid);
-        recyclerViewLayout.getList().scrollToPosition(adapter.getItemCount() - 1);
+        layout.getList().scrollToPosition(adapter.getItemCount() - 1);
     }
 
     @Override

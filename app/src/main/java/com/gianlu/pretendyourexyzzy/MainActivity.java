@@ -44,6 +44,7 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.annotation.UiThread;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -59,6 +60,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     private ChatFragment globalChatFragment;
     private RegisteredPyx pyx;
     private DrawerManager<User> drawerManager;
+    private volatile GamePermalink currentGame;
 
     @Override
     protected void onResume() {
@@ -109,23 +111,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         drawerManager.setActiveItem(DrawerConst.HOME);
 
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        namesFragment = NamesFragment.getInstance();
-        addOrReplace(transaction, namesFragment, Item.PLAYERS);
-        gamesFragment = GamesFragment.getInstance(this);
-        addOrReplace(transaction, gamesFragment, Item.GAMES);
-        cardcastFragment = CardcastFragment.getInstance();
-        addOrReplace(transaction, cardcastFragment, Item.CARDCAST);
-
-        if (pyx.config().globalChatEnabled()) {
-            globalChatFragment = ChatFragment.getGlobalInstance();
-            addOrReplace(transaction, globalChatFragment, Item.GLOBAL_CHAT);
-        }
-
-        transaction.commitNowAllowingStateLoss();
-
         navigation = new BottomNavigationManager(findViewById(R.id.main_navigation));
-        inflateNavigation(Layout.LOBBY);
         navigation.setOnNavigationItemSelectedListener(item -> {
             switch (item) {
                 case PLAYERS:
@@ -148,7 +134,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                     break;
             }
 
-            switchTo(item, true);
+            switchTo(item);
 
             return true;
         });
@@ -169,14 +155,60 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             }
         });
 
-        switchTo(Item.GAMES, false);
         setKeepScreenOn(Prefs.getBoolean(PK.KEEP_SCREEN_ON));
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        namesFragment = (NamesFragment) getOrAdd(transaction, Item.PLAYERS, NamesFragment::getInstance);
+        gamesFragment = (GamesFragment) getOrAdd(transaction, Item.GAMES, () -> GamesFragment.getInstance(this));
+        cardcastFragment = (CardcastFragment) getOrAdd(transaction, Item.CARDCAST, CardcastFragment::getInstance);
+
+        if (pyx.config().globalChatEnabled())
+            globalChatFragment = (ChatFragment) getOrAdd(transaction, Item.GLOBAL_CHAT, ChatFragment::getGlobalInstance);
+
+        transaction.commitNowAllowingStateLoss();
+
+        Item selectedItem = null;
+        if (savedInstanceState != null) {
+            currentGame = (GamePermalink) savedInstanceState.getSerializable("currentGame");
+            selectedItem = savedInstanceState.containsKey("selectedItem") ? Item.lookup(savedInstanceState.getInt("selectedItem")) : null;
+        }
+
+        if (currentGame == null) {
+            inflateNavigation(Layout.LOBBY);
+            if (selectedItem == null) navigation.setSelectedItemId(Item.GAMES);
+        } else {
+            ongoingGameFragment = (OngoingGameFragment) getSupportFragmentManager().findFragmentByTag(Item.ONGOING_GAME.tag);
+            gameChatFragment = (ChatFragment) getSupportFragmentManager().findFragmentByTag(Item.GAME_CHAT.tag);
+
+            inflateNavigation(Layout.ONGOING);
+            if (selectedItem == null) navigation.setSelectedItemId(Item.ONGOING_GAME);
+        }
+
+        if (selectedItem != null) navigation.setSelectedItemId(selectedItem);
 
         GamePermalink perm = (GamePermalink) getIntent().getSerializableExtra("game");
         if (perm != null) {
             gamesFragment.launchGame(perm, getIntent().getStringExtra("password"), getIntent().getBooleanExtra("shouldRequest", true));
             getIntent().removeExtra("gid");
         }
+    }
+
+    @NonNull
+    private Fragment getOrAdd(@NonNull FragmentTransaction transaction, @NonNull Item item, @NonNull CreateFragment provider) {
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(item.tag);
+        if (fragment != null) return fragment;
+
+        fragment = provider.create();
+        transaction.add(R.id.main_container, fragment, item.tag);
+        return fragment;
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putSerializable("currentGame", currentGame);
+        outState.putInt("selectedItem", navigation.getSelectedItemId());
     }
 
     @Override
@@ -235,7 +267,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
-    private void addOrReplace(FragmentTransaction transaction, Fragment newFragment, Item item) {
+    private void addOrReplace(@NonNull FragmentTransaction transaction, @NonNull Fragment newFragment, @NonNull Item item) {
         FragmentManager manager = getSupportFragmentManager();
         Fragment fragment = manager.findFragmentByTag(item.tag);
         if (fragment != null) transaction.remove(fragment);
@@ -243,15 +275,11 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         transaction.add(R.id.main_container, newFragment, item.tag);
     }
 
-    private void switchTo(@NonNull Item item, boolean fromListener) {
-        if (!fromListener) navigation.setSelectedItemId(item);
-
+    private void switchTo(@NonNull Item item) {
         FragmentManager manager = getSupportFragmentManager();
         Fragment fragment = manager.findFragmentByTag(item.tag);
-        FragmentTransaction transaction = manager.beginTransaction();
-
-        if (fromListener)
-            transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
+        FragmentTransaction transaction = manager.beginTransaction()
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
 
         if (fragment != null) {
             for (Fragment hideFragment : manager.getFragments())
@@ -293,6 +321,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
     @Override
     public void onParticipatingGame(@NonNull GamePermalink game) {
+        currentGame = game;
+
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         ongoingGameFragment = OngoingGameFragment.getInstance(game);
         addOrReplace(transaction, ongoingGameFragment, Item.ONGOING_GAME);
@@ -305,17 +335,18 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         transaction.commitNowAllowingStateLoss();
 
         inflateNavigation(Layout.ONGOING);
-        switchTo(Item.ONGOING_GAME, false);
+        navigation.setSelectedItemId(Item.ONGOING_GAME);
     }
 
     @Override
     public void onLeftGame() {
+        currentGame = null;
         ongoingGameFragment = null;
         gameChatFragment = null;
         AnalyticsApplication.sendAnalytics(Utils.ACTION_LEFT_GAME);
 
         inflateNavigation(Layout.LOBBY);
-        switchTo(Item.GAMES, false);
+        navigation.setSelectedItemId(Item.GAMES);
 
         FragmentManager manager = getSupportFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
@@ -332,7 +363,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     @Override
     public void viewGame(int gid, boolean locked) {
         if (gamesFragment != null) {
-            switchTo(Item.GAMES, false);
+            navigation.setSelectedItemId(Item.GAMES);
             gamesFragment.viewGame(gid, locked);
         }
     }
@@ -450,6 +481,12 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         }
     }
 
+    private interface CreateFragment {
+        @NonNull
+        Fragment create();
+    }
+
+    @UiThread
     private static class BottomNavigationManager {
         private final BottomNavigationView view;
 
@@ -471,6 +508,10 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         void setOnNavigationItemReselectedListener(@NonNull OnNavigationItemReselectedListener listener) {
             view.setOnNavigationItemReselectedListener(menuItem -> listener.onNavigationItemReselected(Item.lookup(menuItem.getItemId())));
+        }
+
+        int getSelectedItemId() {
+            return view.getSelectedItemId();
         }
 
         void setSelectedItemId(@NonNull Item item) {

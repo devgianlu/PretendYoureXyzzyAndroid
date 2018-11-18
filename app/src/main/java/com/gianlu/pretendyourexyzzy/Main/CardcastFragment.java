@@ -43,10 +43,17 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
     private SearchView searchView;
     private Cardcast.Search search = new Cardcast.Search(null, null, Cardcast.Direction.DESCENDANT, Cardcast.Sort.RATING, true);
 
+    @NonNull
     public static CardcastFragment getInstance() {
         CardcastFragment fragment = new CardcastFragment();
         fragment.setHasOptionsMenu(true);
         return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
     }
 
     @Override
