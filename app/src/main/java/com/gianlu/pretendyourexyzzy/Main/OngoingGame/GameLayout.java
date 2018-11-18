@@ -22,7 +22,6 @@ import com.gianlu.pretendyourexyzzy.Starred.StarredCardsManager;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -133,8 +132,8 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
         tableAdapter.setCardGroups(cards, null);
     }
 
-    public void addHand(List<Card> cards) {
-        handAdapter.addCards(cards);
+    public void addHand(List<? extends BaseCard> cards) {
+        handAdapter.addCardsAsSingleton(cards);
     }
 
     public void setBlackCard(@Nullable Card card) {
@@ -145,8 +144,14 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
         handAdapter.removeCard(card);
     }
 
-    public void addTable(BaseCard card) {
-        tableAdapter.addCards(Collections.singletonList((Card) card));
+    public void addTable(@NonNull BaseCard card, @Nullable BaseCard blackCard) {
+        if (blackCard != null && blackCard.numPick() > 1) {
+            List<BaseCard> cards = tableAdapter.findAndRemoveFaceUpCards();
+            cards.add(card);
+            tableAdapter.addCardsAsGroup(cards);
+        } else {
+            tableAdapter.addCard(card);
+        }
     }
 
     public void notifyWinnerCard(int winnerCard) {

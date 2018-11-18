@@ -375,7 +375,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             @Override
             public void onDone() {
                 gameLayout.removeHand(card);
-                gameLayout.addTable(card); // FIXME: Doesn't work if pick >= 2
+                gameLayout.addTable(card, gameLayout.blackCard());
             }
 
             @Override

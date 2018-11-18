@@ -39,6 +39,13 @@ public class CardsGroup extends ArrayList<BaseCard> {
         return list;
     }
 
+    @NonNull
+    public static CardsGroup from(List<BaseCard> cards) {
+        CardsGroup group = new CardsGroup();
+        group.addAll(cards);
+        return group;
+    }
+
     public boolean isUnknwon() {
         return !isEmpty() && get(0).unknown(); // Assuming that if one cards is unknown, also the others are
     }

@@ -45,7 +45,9 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         this.listener = listener;
         this.cards = new ArrayList<>();
         this.forGrid = forGrid;
-        groupAndNotifyDataSetChanged(cards);
+
+        addCardsAsSingleton(cards);
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -67,13 +69,6 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     @Override
     public int getItemCount() {
         return cards.size();
-    }
-
-    @UiThread
-    private void groupAndNotifyDataSetChanged(List<? extends BaseCard> cards) {
-        this.cards.clear();
-        for (BaseCard card : cards) this.cards.add(CardsGroup.singleton(card));
-        notifyDataSetChanged();
     }
 
     public void setSelectable(boolean selectable) {
@@ -123,9 +118,21 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     @UiThread
-    public void addCards(List<Card> cards) {
-        for (Card card : cards) this.cards.add(CardsGroup.singleton(card));
+    public void addCardsAsSingleton(@NonNull List<? extends BaseCard> cards) {
+        for (BaseCard card : cards) this.cards.add(CardsGroup.singleton(card));
         notifyItemRangeInserted(this.cards.size() - cards.size(), cards.size());
+    }
+
+    @UiThread
+    public void addCard(@NonNull BaseCard card) {
+        this.cards.add(CardsGroup.singleton(card));
+        notifyItemInserted(this.cards.size() - 1);
+    }
+
+    @UiThread
+    public void addCardsAsGroup(@NonNull List<BaseCard> cards) {
+        this.cards.add(CardsGroup.from(cards));
+        notifyItemInserted(this.cards.size() - 1);
     }
 
     @UiThread
@@ -160,6 +167,24 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
                 break;
             }
         }
+    }
+
+    @NonNull
+    @UiThread
+    public List<BaseCard> findAndRemoveFaceUpCards() {
+        List<BaseCard> faceUp = new ArrayList<>();
+
+        for (int i = 0; i < cards.size(); i++) {
+            CardsGroup group = cards.get(i);
+            if (!group.isUnknwon()) {
+                faceUp.addAll(group);
+                cards.remove(i);
+                notifyItemRemoved(i);
+                break;
+            }
+        }
+
+        return faceUp;
     }
 
     public interface Listener {
