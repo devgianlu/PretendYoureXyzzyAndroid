@@ -40,8 +40,10 @@ import org.json.JSONException;
 
 import java.util.Objects;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -54,7 +56,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     private static final String TAG_ONGOING_GAME = "ongoingGame";
     private static final String TAG_CARDCAST = "cardcast";
     private static final String TAG_GLOBAL_CHAT = "globalChat";
-    private BottomNavigationView navigation;
+    private BottomNavigationManager navigation;
     private NamesFragment namesFragment;
     private GamesFragment gamesFragment;
     private CardcastFragment cardcastFragment;
@@ -103,11 +105,10 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             ongoingGameFragment = OngoingGameFragment.getInstance(currentGame, state);
             transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
 
-            navigation.getMenu().clear();
-            navigation.inflateMenu(R.menu.navigation_ongoing_game);
+            inflateNavigation(Layout.ONGOING);
 
             transaction.commitNowAllowingStateLoss();
-            navigation.setSelectedItemId(R.id.main_ongoingGame);
+            navigation.setSelectedItemId(Item.ONGOING_GAME);
         }
     }
 
@@ -164,32 +165,31 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         transaction.commitNow();
 
-        navigation = findViewById(R.id.main_navigation);
-        if (!pyx.config().globalChatEnabled())
-            navigation.getMenu().removeItem(R.id.main_globalChat);
+        navigation = new BottomNavigationManager(findViewById(R.id.main_navigation));
+        inflateNavigation(Layout.LOBBY);
         navigation.setOnNavigationItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.main_players:
+            switch (item) {
+                case PLAYERS:
                     setTitle(getString(R.string.playersLabel) + " - " + getString(R.string.app_name));
                     switchTo(TAG_PLAYERS);
                     break;
-                case R.id.main_games:
+                case GAMES:
                     setTitle(getString(R.string.games) + " - " + getString(R.string.app_name));
                     switchTo(TAG_GAMES);
                     break;
-                case R.id.main_cardcast:
+                case CARDCAST:
                     setTitle(getString(R.string.cardcast) + " - " + getString(R.string.app_name));
                     switchTo(TAG_CARDCAST);
                     break;
-                case R.id.main_ongoingGame:
+                case ONGOING_GAME:
                     setTitle(getString(R.string.gameLabel) + " - " + getString(R.string.app_name));
                     switchTo(TAG_ONGOING_GAME);
                     break;
-                case R.id.main_gameChat:
+                case GAME_CHAT:
                     setTitle(getString(R.string.gameChat) + " - " + getString(R.string.app_name));
                     switchTo(TAG_GAME_CHAT);
                     break;
-                case R.id.main_globalChat:
+                case GLOBAL_CHAT:
                     setTitle(getString(R.string.globalChat) + " - " + getString(R.string.app_name));
                     switchTo(TAG_GLOBAL_CHAT);
                     break;
@@ -198,23 +198,23 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             return true;
         });
         navigation.setOnNavigationItemReselectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.main_players:
+            switch (item) {
+                case PLAYERS:
                     if (namesFragment != null) namesFragment.scrollToTop();
                     break;
-                case R.id.main_games:
+                case GAMES:
                     if (gamesFragment != null) gamesFragment.scrollToTop();
                     break;
-                case R.id.main_gameChat:
+                case GAME_CHAT:
                     if (gameChatFragment != null) gameChatFragment.scrollToTop();
                     break;
-                case R.id.main_globalChat:
+                case GLOBAL_CHAT:
                     if (globalChatFragment != null) globalChatFragment.scrollToTop();
                     break;
             }
         });
 
-        navigation.setSelectedItemId(R.id.main_games);
+        navigation.setSelectedItemId(Item.GAMES);
         setKeepScreenOn(Prefs.getBoolean(PK.KEEP_SCREEN_ON));
 
         GamePermalink perm = (GamePermalink) getIntent().getSerializableExtra("game");
@@ -337,13 +337,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         transaction.commitNowAllowingStateLoss();
 
-        navigation.getMenu().clear();
-        navigation.inflateMenu(R.menu.navigation_ongoing_game);
-
-        if (!pyx.config().globalChatEnabled())
-            navigation.getMenu().removeItem(R.id.main_globalChat);
-        if (!pyx.config().gameChatEnabled()) navigation.getMenu().removeItem(R.id.main_gameChat);
-        navigation.setSelectedItemId(R.id.main_ongoingGame);
+        inflateNavigation(Layout.ONGOING);
+        navigation.setSelectedItemId(Item.ONGOING_GAME);
 
         currentGame = game;
     }
@@ -355,12 +350,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         gameChatFragment = null;
         AnalyticsApplication.sendAnalytics(Utils.ACTION_LEFT_GAME);
 
-        navigation.getMenu().clear();
-        navigation.inflateMenu(R.menu.navigation_lobby);
-
-        if (!pyx.config().globalChatEnabled())
-            navigation.getMenu().removeItem(R.id.main_globalChat);
-        navigation.setSelectedItemId(R.id.main_games);
+        inflateNavigation(Layout.LOBBY);
+        navigation.setSelectedItemId(Item.GAMES);
 
         FragmentManager manager = getSupportFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
@@ -377,7 +368,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     @Override
     public void viewGame(int gid, boolean locked) {
         if (gamesFragment != null) {
-            navigation.setSelectedItemId(R.id.main_games);
+            navigation.setSelectedItemId(Item.GAMES);
             gamesFragment.viewGame(gid, locked);
         }
     }
@@ -441,5 +432,91 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         }
 
         return false;
+    }
+
+    private void inflateNavigation(@NonNull Layout layout) {
+        navigation.clear();
+
+        for (int i = 0; i < layout.items.length; i++) {
+            Item item = layout.items[i];
+            if (item == Item.GAME_CHAT && !pyx.config().gameChatEnabled())
+                continue;
+            else if (item == Item.GLOBAL_CHAT && !pyx.config().globalChatEnabled())
+                continue;
+
+            navigation.add(item);
+        }
+    }
+
+    private enum Item {
+        GLOBAL_CHAT(R.string.globalChat, R.drawable.baseline_chat_24), GAME_CHAT(R.string.gameChat, R.drawable.baseline_chat_bubble_outline_24),
+        CARDCAST(R.string.cardcast, R.drawable.baseline_cast_24), GAMES(R.string.games, R.drawable.baseline_games_24),
+        PLAYERS(R.string.playersLabel, R.drawable.baseline_people_24), ONGOING_GAME(R.string.ongoingGame, R.drawable.baseline_casino_24);
+
+        private final int text;
+        private final int icon;
+        private final int id;
+
+        Item(@StringRes int text, @DrawableRes int icon) {
+            this.text = text;
+            this.icon = icon;
+            this.id = ordinal();
+        }
+
+        @NonNull
+        static Item lookup(int id) {
+            for (Item item : values())
+                if (item.id == id)
+                    return item;
+
+            throw new IllegalArgumentException();
+        }
+    }
+
+    private enum Layout {
+        LOBBY(Item.PLAYERS, Item.GLOBAL_CHAT, Item.GAMES, Item.CARDCAST),
+        ONGOING(Item.PLAYERS, Item.GLOBAL_CHAT, Item.CARDCAST, Item.ONGOING_GAME, Item.GAME_CHAT);
+
+        private final Item[] items;
+
+        Layout(Item... items) {
+            this.items = items;
+        }
+    }
+
+    private static class BottomNavigationManager {
+        private final BottomNavigationView view;
+
+        BottomNavigationManager(@NonNull BottomNavigationView view) {
+            this.view = view;
+        }
+
+        void add(@NonNull Item item) {
+            view.getMenu().add(Menu.NONE, item.id, Menu.NONE, item.text).setIcon(item.icon);
+        }
+
+        void clear() {
+            view.getMenu().clear();
+        }
+
+        void setSelectedItemId(@NonNull Item item) {
+            view.setSelectedItemId(item.id);
+        }
+
+        void setOnNavigationItemSelectedListener(@NonNull OnNavigationItemSelectedListener listener) {
+            view.setOnNavigationItemSelectedListener(menuItem -> listener.onNavigationItemSelected(Item.lookup(menuItem.getItemId())));
+        }
+
+        void setOnNavigationItemReselectedListener(@NonNull OnNavigationItemReselectedListener listener) {
+            view.setOnNavigationItemReselectedListener(menuItem -> listener.onNavigationItemReselected(Item.lookup(menuItem.getItemId())));
+        }
+
+        interface OnNavigationItemSelectedListener {
+            boolean onNavigationItemSelected(@NonNull Item item);
+        }
+
+        interface OnNavigationItemReselectedListener {
+            void onNavigationItemReselected(@NonNull Item item);
+        }
     }
 }

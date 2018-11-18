@@ -41,8 +41,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             app:itemIconTint="@color/bottom_navigation_color"
-            app:itemTextColor="@color/bottom_navigation_color"
-            app:menu="@menu/navigation_lobby" />
+            app:itemTextColor="@color/bottom_navigation_color" />
     </LinearLayout>
 
     <include layout="@layout/drawer_layout" />
