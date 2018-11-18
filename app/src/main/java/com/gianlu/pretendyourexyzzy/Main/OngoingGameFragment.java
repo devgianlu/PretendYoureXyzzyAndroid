@@ -77,10 +77,9 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     private AnotherGameManager manager;
 
     @NonNull
-    public static OngoingGameFragment getInstance(@NonNull GamePermalink game, @Nullable SavedState savedState) {
+    public static OngoingGameFragment getInstance(@NonNull GamePermalink game) {
         OngoingGameFragment fragment = new OngoingGameFragment();
         fragment.setHasOptionsMenu(true);
-        fragment.setInitialSavedState(savedState);
         Bundle args = new Bundle();
         args.putSerializable("game", game);
         fragment.setArguments(args);

@@ -385,7 +385,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
                 @Override
                 public void onDone(@NonNull GamesList result) {
                     if (adapter == null)
-                        onDone(result);
+                        GamesFragment.this.onDone(result);
                     else
                         DiffUtil.calculateDiff(new GamesList.DiffCallback(result, adapter.getGames())).dispatchUpdatesTo(adapter);
                 }

@@ -50,12 +50,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener, DrawerManager.OnAction {
-    private final static String TAG_GAMES = "games";
-    private final static String TAG_GAME_CHAT = "gameChat";
-    private static final String TAG_PLAYERS = "players";
-    private static final String TAG_ONGOING_GAME = "ongoingGame";
-    private static final String TAG_CARDCAST = "cardcast";
-    private static final String TAG_GLOBAL_CHAT = "globalChat";
     private BottomNavigationManager navigation;
     private NamesFragment namesFragment;
     private GamesFragment gamesFragment;
@@ -63,7 +57,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     private ChatFragment gameChatFragment;
     private OngoingGameFragment ongoingGameFragment;
     private ChatFragment globalChatFragment;
-    private GamePermalink currentGame = null;
     private RegisteredPyx pyx;
     private DrawerManager<User> drawerManager;
 
@@ -77,39 +70,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         if (drawerManager != null) drawerManager.syncTogglerState();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        if (ongoingGameFragment != null && currentGame != null) {
-            Fragment.SavedState state = getSupportFragmentManager().saveFragmentInstanceState(ongoingGameFragment);
-            outState.putBoolean("wasPlaying", true);
-            outState.putParcelable("ongoingGameState", state);
-            outState.putSerializable("currentGame", currentGame);
-        } else {
-            outState.putBoolean("wasPlaying", false);
-        }
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-
-        if (savedInstanceState.getBoolean("wasPlaying", false)) {
-            Fragment.SavedState state = savedInstanceState.getParcelable("ongoingGameState");
-            currentGame = (GamePermalink) savedInstanceState.getSerializable("currentGame");
-
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            ongoingGameFragment = OngoingGameFragment.getInstance(currentGame, state);
-            transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
-
-            inflateNavigation(Layout.ONGOING);
-
-            transaction.commitNowAllowingStateLoss();
-            navigation.setSelectedItemId(Item.ONGOING_GAME);
-        }
     }
 
     @Override
@@ -134,8 +94,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         DrawerManager.Config<User> drawerConfig = new DrawerManager.Config<User>(this, R.drawable.drawer_background)
                 .addMenuItem(new BaseDrawerItem(DrawerConst.HOME, R.drawable.baseline_home_24, getString(R.string.home)));
 
-        if (pyx.hasMetrics()) drawerConfig
-                .addMenuItem(new BaseDrawerItem(DrawerConst.USER_METRICS, R.drawable.baseline_person_24, getString(R.string.metrics)));
+        if (pyx.hasMetrics())
+            drawerConfig.addMenuItem(new BaseDrawerItem(DrawerConst.USER_METRICS, R.drawable.baseline_person_24, getString(R.string.metrics)));
 
         drawerConfig.addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_CARDS, R.drawable.baseline_star_24, getString(R.string.starredCards)))
                 .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_CARDCAST_DECKS, R.drawable.baseline_bookmarks_24, getString(R.string.starredCardcastDecks)))
@@ -144,7 +104,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 .addMenuItem(new BaseDrawerItem(DrawerConst.REPORT, R.drawable.baseline_report_problem_24, getString(R.string.report)))
                 .singleProfile(pyx.user(), this);
 
-
         drawerManager = drawerConfig
                 .build(this, findViewById(R.id.main_drawer), toolbar);
 
@@ -152,18 +111,18 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         namesFragment = NamesFragment.getInstance();
-        transaction.add(R.id.main_container, namesFragment, TAG_PLAYERS);
+        addOrReplace(transaction, namesFragment, Item.PLAYERS);
         gamesFragment = GamesFragment.getInstance(this);
-        transaction.add(R.id.main_container, gamesFragment, TAG_GAMES);
+        addOrReplace(transaction, gamesFragment, Item.GAMES);
         cardcastFragment = CardcastFragment.getInstance();
-        transaction.add(R.id.main_container, cardcastFragment, TAG_CARDCAST);
+        addOrReplace(transaction, cardcastFragment, Item.CARDCAST);
 
         if (pyx.config().globalChatEnabled()) {
             globalChatFragment = ChatFragment.getGlobalInstance();
-            transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
+            addOrReplace(transaction, globalChatFragment, Item.GLOBAL_CHAT);
         }
 
-        transaction.commitNow();
+        transaction.commitNowAllowingStateLoss();
 
         navigation = new BottomNavigationManager(findViewById(R.id.main_navigation));
         inflateNavigation(Layout.LOBBY);
@@ -171,29 +130,25 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             switch (item) {
                 case PLAYERS:
                     setTitle(getString(R.string.playersLabel) + " - " + getString(R.string.app_name));
-                    switchTo(TAG_PLAYERS);
                     break;
                 case GAMES:
                     setTitle(getString(R.string.games) + " - " + getString(R.string.app_name));
-                    switchTo(TAG_GAMES);
                     break;
                 case CARDCAST:
                     setTitle(getString(R.string.cardcast) + " - " + getString(R.string.app_name));
-                    switchTo(TAG_CARDCAST);
                     break;
                 case ONGOING_GAME:
                     setTitle(getString(R.string.gameLabel) + " - " + getString(R.string.app_name));
-                    switchTo(TAG_ONGOING_GAME);
                     break;
                 case GAME_CHAT:
                     setTitle(getString(R.string.gameChat) + " - " + getString(R.string.app_name));
-                    switchTo(TAG_GAME_CHAT);
                     break;
                 case GLOBAL_CHAT:
                     setTitle(getString(R.string.globalChat) + " - " + getString(R.string.app_name));
-                    switchTo(TAG_GLOBAL_CHAT);
                     break;
             }
+
+            switchTo(item, true);
 
             return true;
         });
@@ -214,7 +169,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             }
         });
 
-        navigation.setSelectedItemId(Item.GAMES);
+        switchTo(Item.GAMES, false);
         setKeepScreenOn(Prefs.getBoolean(PK.KEEP_SCREEN_ON));
 
         GamePermalink perm = (GamePermalink) getIntent().getSerializableExtra("game");
@@ -280,11 +235,23 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
-    private void switchTo(@NonNull String tag) {
+    private void addOrReplace(FragmentTransaction transaction, Fragment newFragment, Item item) {
         FragmentManager manager = getSupportFragmentManager();
-        Fragment fragment = manager.findFragmentByTag(tag);
-        FragmentTransaction transaction = manager.beginTransaction()
-                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
+        Fragment fragment = manager.findFragmentByTag(item.tag);
+        if (fragment != null) transaction.remove(fragment);
+
+        transaction.add(R.id.main_container, newFragment, item.tag);
+    }
+
+    private void switchTo(@NonNull Item item, boolean fromListener) {
+        if (!fromListener) navigation.setSelectedItemId(item);
+
+        FragmentManager manager = getSupportFragmentManager();
+        Fragment fragment = manager.findFragmentByTag(item.tag);
+        FragmentTransaction transaction = manager.beginTransaction();
+
+        if (fromListener)
+            transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
 
         if (fragment != null) {
             for (Fragment hideFragment : manager.getFragments())
@@ -296,27 +263,27 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             for (Fragment hideFragment : manager.getFragments())
                 transaction.hide(hideFragment);
 
-            switch (tag) {
-                case TAG_PLAYERS:
-                    transaction.add(R.id.main_container, namesFragment, TAG_PLAYERS);
+            switch (item) {
+                case PLAYERS:
+                    transaction.add(R.id.main_container, namesFragment, item.tag);
                     break;
-                case TAG_GAMES:
-                    transaction.add(R.id.main_container, gamesFragment, TAG_GAMES);
+                case GAMES:
+                    transaction.add(R.id.main_container, gamesFragment, item.tag);
                     break;
-                case TAG_CARDCAST:
-                    transaction.add(R.id.main_container, cardcastFragment, TAG_CARDCAST);
+                case CARDCAST:
+                    transaction.add(R.id.main_container, cardcastFragment, item.tag);
                     break;
-                case TAG_ONGOING_GAME:
+                case ONGOING_GAME:
                     if (ongoingGameFragment != null)
-                        transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
+                        transaction.add(R.id.main_container, ongoingGameFragment, item.tag);
                     break;
-                case TAG_GAME_CHAT:
+                case GAME_CHAT:
                     if (gameChatFragment != null)
-                        transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT);
+                        transaction.add(R.id.main_container, gameChatFragment, item.tag);
                     break;
-                case TAG_GLOBAL_CHAT:
+                case GLOBAL_CHAT:
                     if (globalChatFragment != null)
-                        transaction.add(R.id.main_container, globalChatFragment, TAG_GLOBAL_CHAT);
+                        transaction.add(R.id.main_container, globalChatFragment, item.tag);
                     break;
             }
         }
@@ -327,39 +294,36 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     @Override
     public void onParticipatingGame(@NonNull GamePermalink game) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        ongoingGameFragment = OngoingGameFragment.getInstance(game, null);
-        transaction.add(R.id.main_container, ongoingGameFragment, TAG_ONGOING_GAME);
+        ongoingGameFragment = OngoingGameFragment.getInstance(game);
+        addOrReplace(transaction, ongoingGameFragment, Item.ONGOING_GAME);
 
         if (pyx.config().gameChatEnabled()) {
             gameChatFragment = ChatFragment.getGameInstance(game.gid);
-            transaction.add(R.id.main_container, gameChatFragment, TAG_GAME_CHAT);
+            addOrReplace(transaction, gameChatFragment, Item.GAME_CHAT);
         }
 
         transaction.commitNowAllowingStateLoss();
 
         inflateNavigation(Layout.ONGOING);
-        navigation.setSelectedItemId(Item.ONGOING_GAME);
-
-        currentGame = game;
+        switchTo(Item.ONGOING_GAME, false);
     }
 
     @Override
     public void onLeftGame() {
-        currentGame = null;
         ongoingGameFragment = null;
         gameChatFragment = null;
         AnalyticsApplication.sendAnalytics(Utils.ACTION_LEFT_GAME);
 
         inflateNavigation(Layout.LOBBY);
-        navigation.setSelectedItemId(Item.GAMES);
+        switchTo(Item.GAMES, false);
 
         FragmentManager manager = getSupportFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
 
-        Fragment ongoingGame = manager.findFragmentByTag(TAG_ONGOING_GAME);
+        Fragment ongoingGame = manager.findFragmentByTag(Item.ONGOING_GAME.tag);
         if (ongoingGame != null) transaction.remove(ongoingGame);
 
-        Fragment gameChat = manager.findFragmentByTag(TAG_GAME_CHAT);
+        Fragment gameChat = manager.findFragmentByTag(Item.GAME_CHAT.tag);
         if (gameChat != null) transaction.remove(gameChat);
 
         transaction.commitAllowingStateLoss();
@@ -368,7 +332,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     @Override
     public void viewGame(int gid, boolean locked) {
         if (gamesFragment != null) {
-            navigation.setSelectedItemId(Item.GAMES);
+            switchTo(Item.GAMES, false);
             gamesFragment.viewGame(gid, locked);
         }
     }
@@ -456,11 +420,13 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         private final int text;
         private final int icon;
         private final int id;
+        private final String tag;
 
         Item(@StringRes int text, @DrawableRes int icon) {
             this.text = text;
             this.icon = icon;
             this.id = ordinal();
+            this.tag = name();
         }
 
         @NonNull
@@ -499,16 +465,16 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             view.getMenu().clear();
         }
 
-        void setSelectedItemId(@NonNull Item item) {
-            view.setSelectedItemId(item.id);
-        }
-
         void setOnNavigationItemSelectedListener(@NonNull OnNavigationItemSelectedListener listener) {
             view.setOnNavigationItemSelectedListener(menuItem -> listener.onNavigationItemSelected(Item.lookup(menuItem.getItemId())));
         }
 
         void setOnNavigationItemReselectedListener(@NonNull OnNavigationItemReselectedListener listener) {
             view.setOnNavigationItemReselectedListener(menuItem -> listener.onNavigationItemReselected(Item.lookup(menuItem.getItemId())));
+        }
+
+        void setSelectedItemId(@NonNull Item item) {
+            view.setSelectedItemId(item.id);
         }
 
         interface OnNavigationItemSelectedListener {
