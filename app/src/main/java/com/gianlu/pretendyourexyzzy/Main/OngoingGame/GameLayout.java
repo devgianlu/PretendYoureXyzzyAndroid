@@ -199,7 +199,7 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
 
     public void resetTimer() {
         if (currentTask != null) currentTask.cancel();
-        time.setText("0");
+        time.setText("");
     }
 
     public interface Listener {
