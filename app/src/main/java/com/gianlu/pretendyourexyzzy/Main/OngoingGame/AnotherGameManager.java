@@ -160,7 +160,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         switch (status) {
             case JUDGING:
                 gameLayout.countFrom(msg.obj.getInt("Pt"));
-                gameLayout.setTable(CardsGroup.list(msg.obj.getJSONArray("wc")));
+                gameLayout.setTable(CardsGroup.list(msg.obj.getJSONArray("wc")), gameLayout.blackCard());
                 gameLayout.showTable(gameData.amJudge());
                 break;
             case PLAYING:

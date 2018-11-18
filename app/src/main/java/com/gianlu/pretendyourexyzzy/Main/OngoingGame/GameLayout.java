@@ -128,8 +128,8 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
         whiteCardsList.swapAdapter(handAdapter, true);
     }
 
-    public void setTable(List<CardsGroup> cards) {
-        tableAdapter.setCardGroups(cards, null);
+    public void setTable(List<CardsGroup> cards, @Nullable BaseCard blackCard) {
+        tableAdapter.setCardGroups(cards, blackCard);
     }
 
     public void addHand(List<? extends BaseCard> cards) {
