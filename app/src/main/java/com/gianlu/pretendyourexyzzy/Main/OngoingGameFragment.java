@@ -194,7 +194,13 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     }
 
     private void refresh() {
-        // TODO
+        if (manager != null) {
+            manager.reset();
+            manager = null;
+        }
+
+        manager = new AnotherGameManager(perm, pyx, gameLayout, this);
+        manager.begin();
     }
 
     @Override

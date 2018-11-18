@@ -255,9 +255,13 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         listener.justLeaveGame();
     }
 
-    public void destroy() {
+    public void reset() {
         pyx.polling().removeListener(this);
         gameLayout.resetTimer();
+    }
+
+    public void destroy() {
+        reset();
         listener.justLeaveGame();
     }
 
@@ -280,13 +284,13 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     }
 
     public void begin() {
-        pyx.polling().addListener(this);
-
         pyx.getGameInfoAndCards(gid, new Pyx.OnResult<GameInfoAndCards>() {
             @Override
             public void onDone(@NonNull GameInfoAndCards result) {
                 gameData.update(result.info, result.cards, gameLayout);
                 listener.onGameLoaded();
+
+                pyx.polling().addListener(AnotherGameManager.this);
             }
 
             @Override
