@@ -64,10 +64,9 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     private TutorialManager tutorialManager;
 
     @NonNull
-    public static GamesFragment getInstance(@NonNull OnParticipateGame handler) {
+    public static GamesFragment getInstance() {
         GamesFragment fragment = new GamesFragment();
         fragment.setHasOptionsMenu(true);
-        fragment.handler = handler;
         return fragment;
     }
 
@@ -75,6 +74,14 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        if (context instanceof OnParticipateGame)
+            handler = (OnParticipateGame) context;
     }
 
     @Override
@@ -279,7 +286,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         });
     }
 
-    private void joinGame(final int gid, @Nullable String password) {
+    private void joinGame(int gid, @Nullable String password) {
         if (getContext() == null) return;
 
         DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
@@ -312,7 +319,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         });
     }
 
-    private void askForPassword(final OnPassword listener) {
+    private void askForPassword(@NonNull OnPassword listener) {
         if (getContext() == null) {
             listener.onPassword(null);
             return;

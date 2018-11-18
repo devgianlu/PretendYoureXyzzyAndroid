@@ -159,7 +159,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         namesFragment = (NamesFragment) getOrAdd(transaction, Item.PLAYERS, NamesFragment::getInstance);
-        gamesFragment = (GamesFragment) getOrAdd(transaction, Item.GAMES, () -> GamesFragment.getInstance(this));
+        gamesFragment = (GamesFragment) getOrAdd(transaction, Item.GAMES, GamesFragment::getInstance);
         cardcastFragment = (CardcastFragment) getOrAdd(transaction, Item.CARDCAST, CardcastFragment::getInstance);
 
         if (pyx.config().globalChatEnabled())
