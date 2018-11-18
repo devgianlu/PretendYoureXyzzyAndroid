@@ -47,6 +47,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -388,7 +389,20 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         if (message.event == PollMessage.Event.GAME_LIST_REFRESH) {
             RecyclerView.LayoutManager lm = recyclerViewLayout.getList().getLayoutManager();
             if (lm != null) recyclerViewSavedInstance = lm.onSaveInstanceState();
-            pyx.request(PyxRequests.getGamesList(), GamesFragment.this);
+            pyx.request(PyxRequests.getGamesList(), new Pyx.OnResult<GamesList>() {
+                @Override
+                public void onDone(@NonNull GamesList result) {
+                    if (adapter == null)
+                        onDone(result);
+                    else
+                        DiffUtil.calculateDiff(new GamesList.DiffCallback(result, adapter.getGames())).dispatchUpdatesTo(adapter);
+                }
+
+                @Override
+                public void onException(@NonNull Exception ex) {
+                    showToast(Toaster.build().message(R.string.failedLoading).ex(ex));
+                }
+            });
         }
     }
 

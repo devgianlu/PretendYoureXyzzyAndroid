@@ -18,6 +18,7 @@ import java.util.Comparator;
 import java.util.Objects;
 
 import androidx.annotation.IdRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
@@ -48,6 +49,33 @@ public class Game implements Filterable<Game.Protection>, Serializable {
             String name = spectatorsArray.getString(i);
             if (!spectators.contains(name)) spectators.add(name);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Game game = (Game) o;
+        if (gid != game.gid) return false;
+        if (hasPassword != game.hasPassword) return false;
+        if (!players.equals(game.players)) return false;
+        if (!spectators.equals(game.spectators)) return false;
+        if (!host.equals(game.host)) return false;
+        if (!options.equals(game.options)) return false;
+        return status == game.status;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = gid;
+        result = 31 * result + players.hashCode();
+        result = 31 * result + spectators.hashCode();
+        result = 31 * result + (hasPassword ? 1 : 0);
+        result = 31 * result + host.hashCode();
+        result = 31 * result + options.hashCode();
+        result = 31 * result + status.hashCode();
+        return result;
     }
 
     @Override
@@ -132,7 +160,7 @@ public class Game implements Filterable<Game.Protection>, Serializable {
         public final ArrayList<Integer> cardSets;
         public final String password;
 
-        public Options(JSONObject obj) throws JSONException {
+        Options(@NonNull JSONObject obj) throws JSONException {
             timerMultiplier = obj.getString("tm");
             spectatorsLimit = obj.getInt("vL");
             playersLimit = obj.getInt("pL");
@@ -201,6 +229,34 @@ public class Game implements Filterable<Game.Protection>, Serializable {
             return new Game.Options(timerMultiplier, vL, pL, sl, bl, cardSetIds, password);
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Options options = (Options) o;
+            if (spectatorsLimit != options.spectatorsLimit) return false;
+            if (playersLimit != options.playersLimit) return false;
+            if (scoreLimit != options.scoreLimit) return false;
+            if (blanksLimit != options.blanksLimit) return false;
+            if (!timerMultiplier.equals(options.timerMultiplier)) return false;
+            if (!cardSets.equals(options.cardSets)) return false;
+            return password != null ? password.equals(options.password) : options.password == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = timerMultiplier.hashCode();
+            result = 31 * result + spectatorsLimit;
+            result = 31 * result + playersLimit;
+            result = 31 * result + scoreLimit;
+            result = 31 * result + blanksLimit;
+            result = 31 * result + cardSets.hashCode();
+            result = 31 * result + (password != null ? password.hashCode() : 0);
+            return result;
+        }
+
+        @NonNull
         public JSONObject toJson() throws JSONException {
             return new JSONObject()
                     .put("css", CommonUtils.join(cardSets, ","))
