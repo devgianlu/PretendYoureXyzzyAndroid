@@ -8,7 +8,8 @@ import com.gianlu.commonutils.Logging;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -52,11 +53,7 @@ public class ServersChecker {
         ResponseBody body = response.body();
         if (body == null) return CheckResult.error(new NullPointerException("body is null!"));
 
-        try {
-            return CheckResult.online(new CheckResult.Stats(body.string()), latency);
-        } catch (ParseException ex) {
-            throw new IOException(ex);
-        }
+        return CheckResult.online(new CheckResult.Stats(body.string()), latency);
     }
 
     @NonNull
@@ -79,7 +76,7 @@ public class ServersChecker {
     }
 
     public interface OnResult {
-        void serverChecked(Pyx.Server server);
+        void serverChecked(@NonNull Pyx.Server server);
     }
 
     public static class CheckResult {
@@ -112,49 +109,52 @@ public class ServersChecker {
 
         public static class Stats {
             private static final Pattern PATTERN = Pattern.compile("(.+?)\\s(.+)");
-            public final int maxUsers;
-            public final int users;
-            public final int maxGames;
-            public final int games;
+            private final Map<String, String> map = new HashMap<>();
 
-            Stats(String str) throws ParseException {
+            Stats(@NonNull String str) {
                 Matcher matcher = PATTERN.matcher(str);
 
-                Integer maxUsersTmp = null;
-                Integer usersTmp = null;
-                Integer gamesTmp = null;
-                Integer maxGamesTmp = null;
                 while (matcher.find()) {
-                    String name = matcher.group(1);
-                    String val = matcher.group(2);
-
-                    switch (name) {
-                        case "USERS":
-                            usersTmp = Integer.parseInt(val);
-                            break;
-                        case "GAMES":
-                            gamesTmp = Integer.parseInt(val);
-                            break;
-                        case "MAX_USERS":
-                            maxUsersTmp = Integer.parseInt(val);
-                            break;
-                        case "MAX_GAMES":
-                            maxGamesTmp = Integer.parseInt(val);
-                            break;
-                    }
+                    map.put(matcher.group(1), matcher.group(2));
                 }
+            }
 
-                if (maxUsersTmp == null) throw new ParseException("MAX_USERS", 0);
-                else maxUsers = maxUsersTmp;
+            private boolean getOrDefault(String key, boolean def) {
+                String val = map.get(key);
+                return val == null ? def : Boolean.parseBoolean(val);
+            }
 
-                if (usersTmp == null) throw new ParseException("USERS", 0);
-                else users = usersTmp;
+            private int getOrDefault(String key, int def) {
+                String val = map.get(key);
+                return val == null ? def : Integer.parseInt(val);
+            }
 
-                if (maxGamesTmp == null) throw new ParseException("MAX_GAMES", 0);
-                else maxGames = maxGamesTmp;
+            public int users() {
+                return getOrDefault("USERS", 0);
+            }
 
-                if (gamesTmp == null) throw new ParseException("GAMES", 0);
-                else games = gamesTmp;
+            public int maxUsers() {
+                return getOrDefault("MAX_USERS", 0);
+            }
+
+            public int games() {
+                return getOrDefault("GAMES", 0);
+            }
+
+            public int maxGames() {
+                return getOrDefault("MAX_GAMES", 0);
+            }
+
+            public boolean globalChatEnabled() {
+                return getOrDefault("GLOBAL_CHAT_ENABLED", false);
+            }
+
+            public boolean gameChatEnabled() {
+                return getOrDefault("GAME_CHAT_ENABLED", false);
+            }
+
+            public boolean blankCardsEnabled() {
+                return getOrDefault("BLANK_CARDS_ENABLED", false);
             }
         }
     }

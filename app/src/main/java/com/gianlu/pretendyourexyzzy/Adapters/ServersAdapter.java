@@ -80,7 +80,11 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
 
                     ServersChecker.CheckResult.Stats stats = server.status.stats;
                     holder.details.setVisibility(View.VISIBLE);
-                    holder.details.setHtml(R.string.usersAndGames, stats.users, stats.maxUsers, stats.games, stats.maxGames);
+                    holder.details.setHtml(R.string.usersAndGames, stats.users(), stats.maxUsers(), stats.games(), stats.maxGames());
+
+                    holder.hasGameChat.setVisibility(stats.gameChatEnabled() ? View.VISIBLE : View.GONE);
+                    holder.hasChat.setVisibility(stats.globalChatEnabled() ? View.VISIBLE : View.GONE);
+                    holder.hasBlankCards.setVisibility(stats.blankCardsEnabled() ? View.VISIBLE : View.GONE);
                     break;
                 case ERROR:
                     holder.statusIcon.setImageResource(R.drawable.baseline_error_outline_24);
@@ -112,7 +116,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
     }
 
     @Override
-    public void serverChecked(Pyx.Server server) {
+    public void serverChecked(@NonNull Pyx.Server server) {
         int index = servers.indexOf(server);
         if (index != -1) notifyItemChanged(index);
     }
@@ -133,6 +137,9 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
         final TextView error;
         final SuperTextView details;
         final ImageView hasMetrics;
+        final ImageView hasChat;
+        final ImageView hasGameChat;
+        final ImageView hasBlankCards;
 
         public ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.item_server, parent, false));
@@ -145,7 +152,10 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
             latency = status.findViewById(R.id.serverItem_latency);
             error = itemView.findViewById(R.id.serverItem_error);
             details = itemView.findViewById(R.id.serverItem_details);
+            hasChat = itemView.findViewById(R.id.serverItem_hasChat);
+            hasGameChat = itemView.findViewById(R.id.serverItem_hasGameChat);
             hasMetrics = itemView.findViewById(R.id.serverItem_hasMetrics);
+            hasBlankCards = itemView.findViewById(R.id.serverItem_hasBlankCards);
         }
     }
 }
