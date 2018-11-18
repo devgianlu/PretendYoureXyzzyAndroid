@@ -409,7 +409,7 @@ public class Pyx implements Closeable {
         }
 
         Server(JSONObject obj) throws JSONException {
-            this(parseUrlOrThrow(obj.getString("uri")), parseNullableUrl(obj.optString("metrics")), obj.getString("name"), true);
+            this(parseUrlOrThrow(obj.getString("uri")), parseNullableUrl(obj.optString("metrics")), obj.getString("name"), obj.optBoolean("editable", true));
         }
 
         @Nullable
@@ -418,7 +418,7 @@ public class Pyx implements Closeable {
             else return HttpUrl.parse(url);
         }
 
-        static void parseAndSave(JSONArray array) throws JSONException {
+        static void parseAndSave(@NonNull JSONArray array) throws JSONException {
             List<Server> servers = new ArrayList<>(array.length());
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
@@ -438,7 +438,11 @@ public class Pyx implements Closeable {
                         false));
             }
 
-            saveTo(PK.API_SERVERS, servers);
+            JSONArray json = new JSONArray();
+            for (Server server : servers)
+                json.put(server.toJson());
+
+            Prefs.putJSONArray(PK.API_SERVERS, json);
             Prefs.putLong(PK.API_SERVERS_CACHE_AGE, System.currentTimeMillis());
         }
 
@@ -588,14 +592,6 @@ public class Pyx implements Closeable {
             }
         }
 
-        private static void saveTo(Prefs.Key key, List<Server> servers) throws JSONException {
-            JSONArray array = new JSONArray();
-            for (Server server : servers)
-                array.put(server.toJson());
-
-            Prefs.putJSONArray(key, array);
-        }
-
         @Override
         public int hashCode() {
             int result = url.hashCode();
@@ -616,6 +612,7 @@ public class Pyx implements Closeable {
             return new JSONObject()
                     .put("name", name)
                     .put("metrics", metricsUrl)
+                    .put("editable", editable)
                     .put("uri", url.toString());
         }
 

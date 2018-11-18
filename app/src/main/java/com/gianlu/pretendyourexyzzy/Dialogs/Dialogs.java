@@ -71,9 +71,8 @@ public final class Dialogs {
                 return;
             }
 
-            Pyx.Server server1 = new Pyx.Server(url, null, nameStr, true);
             try {
-                Pyx.Server.addUserServer(server1);
+                Pyx.Server.addUserServer(new Pyx.Server(url, null, nameStr, true));
                 listener.loadServers();
             } catch (JSONException ex) {
                 Toaster.with(context).message(R.string.failedAddingServer).ex(ex).show();
@@ -82,7 +81,7 @@ public final class Dialogs {
             dialogInterface.dismiss();
         }));
 
-        dialog.setOnDismissListener(dialog1 -> listener.startTests());
+        dialog.setOnDismissListener(d -> listener.startTests());
         return dialog;
     }
 
