@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -60,7 +59,6 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     private GamePermalink launchGame = null;
     private String launchGamePassword = null;
     private boolean launchGameShouldRequest;
-    private Parcelable recyclerViewSavedInstance;
     private FloatingActionButton createGame;
     private RegisteredPyx pyx;
     private TutorialManager tutorialManager;
@@ -191,13 +189,11 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     }
 
     @Override
-    public void onDone(@NonNull final GamesList result) {
+    public void onDone(@NonNull GamesList result) {
         if (!isAdded()) return;
 
         adapter = new GamesAdapter(getContext(), result, pyx, Prefs.getBoolean(PK.FILTER_LOCKED_LOBBIES), this);
         recyclerViewLayout.loadListData(adapter, false);
-        RecyclerView.LayoutManager lm = recyclerViewLayout.getList().getLayoutManager();
-        if (lm != null) lm.onRestoreInstanceState(recyclerViewSavedInstance);
 
         lastResult = result;
         updateActivityTitle();
@@ -206,8 +202,6 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         } else {
             recyclerViewLayout.getList().post(() -> tutorialManager.tryShowingTutorials(getActivity()));
         }
-
-        recyclerViewSavedInstance = null;
     }
 
     private void updateActivityTitle() {
@@ -387,8 +381,6 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     @Override
     public void onPollMessage(@NonNull PollMessage message) {
         if (message.event == PollMessage.Event.GAME_LIST_REFRESH) {
-            RecyclerView.LayoutManager lm = recyclerViewLayout.getList().getLayoutManager();
-            if (lm != null) recyclerViewSavedInstance = lm.onSaveInstanceState();
             pyx.request(PyxRequests.getGamesList(), new Pyx.OnResult<GamesList>() {
                 @Override
                 public void onDone(@NonNull GamesList result) {
