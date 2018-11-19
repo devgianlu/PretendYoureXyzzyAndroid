@@ -34,7 +34,7 @@ public class UserInfo implements BaseDrawerProfile, Serializable {
 
     @NonNull
     @Override
-    public String getProfileName(@NonNull Context context) {
+    public String getPrimaryText(@NonNull Context context) {
         return nickname;
     }
 
@@ -47,11 +47,5 @@ public class UserInfo implements BaseDrawerProfile, Serializable {
             Logging.log(ex);
             return idCode;
         }
-    }
-
-    @NonNull
-    @Override
-    public String getInitials(@NonNull Context context) {
-        return nickname.substring(0, 2);
     }
 }

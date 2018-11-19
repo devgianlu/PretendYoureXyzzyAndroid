@@ -18,7 +18,7 @@ import com.gianlu.pretendyourexyzzy.Dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.Main.CardcastFragment;
 import com.gianlu.pretendyourexyzzy.Main.ChatFragment;
-import com.gianlu.pretendyourexyzzy.Main.DrawerConst;
+import com.gianlu.pretendyourexyzzy.Main.DrawerItem;
 import com.gianlu.pretendyourexyzzy.Main.GamesFragment;
 import com.gianlu.pretendyourexyzzy.Main.NamesFragment;
 import com.gianlu.pretendyourexyzzy.Main.OnLeftGame;
@@ -50,7 +50,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener, DrawerManager.OnAction {
+public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction {
     private BottomNavigationManager navigation;
     private NamesFragment namesFragment;
     private GamesFragment gamesFragment;
@@ -59,7 +59,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     private OngoingGameFragment ongoingGameFragment;
     private ChatFragment globalChatFragment;
     private RegisteredPyx pyx;
-    private DrawerManager<User> drawerManager;
+    private DrawerManager<User, DrawerItem> drawerManager;
     private volatile GamePermalink currentGame;
 
     @Override
@@ -93,23 +93,23 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             return;
         }
 
-        DrawerManager.Config<User> drawerConfig = new DrawerManager.Config<User>(this, R.drawable.drawer_background)
-                .addMenuItem(new BaseDrawerItem(DrawerConst.HOME, R.drawable.baseline_home_24, getString(R.string.home)));
+        DrawerManager.Config<User, DrawerItem> drawerConfig = new DrawerManager.Config<User, DrawerItem>(this)
+                .addMenuItem(new BaseDrawerItem<>(DrawerItem.HOME, R.drawable.baseline_home_24, getString(R.string.home)));
 
         if (pyx.hasMetrics())
-            drawerConfig.addMenuItem(new BaseDrawerItem(DrawerConst.USER_METRICS, R.drawable.baseline_person_24, getString(R.string.metrics)));
+            drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.USER_METRICS, R.drawable.baseline_person_24, getString(R.string.metrics)));
 
-        drawerConfig.addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_CARDS, R.drawable.baseline_star_24, getString(R.string.starredCards)))
-                .addMenuItem(new BaseDrawerItem(DrawerConst.STARRED_CARDCAST_DECKS, R.drawable.baseline_bookmarks_24, getString(R.string.starredCardcastDecks)))
+        drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.STARRED_CARDS, R.drawable.baseline_star_24, getString(R.string.starredCards)))
+                .addMenuItem(new BaseDrawerItem<>(DrawerItem.STARRED_CARDCAST_DECKS, R.drawable.baseline_bookmarks_24, getString(R.string.starredCardcastDecks)))
                 .addMenuItemSeparator()
-                .addMenuItem(new BaseDrawerItem(DrawerConst.PREFERENCES, R.drawable.baseline_settings_24, getString(R.string.preferences)))
-                .addMenuItem(new BaseDrawerItem(DrawerConst.REPORT, R.drawable.baseline_report_problem_24, getString(R.string.report)))
+                .addMenuItem(new BaseDrawerItem<>(DrawerItem.PREFERENCES, R.drawable.baseline_settings_24, getString(R.string.preferences)))
+                .addMenuItem(new BaseDrawerItem<>(DrawerItem.REPORT, R.drawable.baseline_report_problem_24, getString(R.string.report)))
                 .singleProfile(pyx.user(), this);
 
         drawerManager = drawerConfig
                 .build(this, findViewById(R.id.main_drawer), toolbar);
 
-        drawerManager.setActiveItem(DrawerConst.HOME);
+        drawerManager.setActiveItem(DrawerItem.HOME);
 
         navigation = new BottomNavigationManager(findViewById(R.id.main_navigation));
         navigation.setOnNavigationItemSelectedListener(item -> {
@@ -405,23 +405,23 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     @Override
-    public boolean onDrawerMenuItemSelected(@NonNull BaseDrawerItem item) {
+    public boolean onDrawerMenuItemSelected(@NonNull BaseDrawerItem<DrawerItem> item) {
         switch (item.id) {
-            case DrawerConst.HOME:
+            case HOME:
                 return true;
-            case DrawerConst.STARRED_CARDS:
+            case STARRED_CARDS:
                 StarredCardsActivity.startActivity(this);
                 return true;
-            case DrawerConst.STARRED_CARDCAST_DECKS:
+            case STARRED_CARDCAST_DECKS:
                 StarredDecksActivity.startActivity(this);
                 return true;
-            case DrawerConst.USER_METRICS:
+            case USER_METRICS:
                 MetricsActivity.startActivity(this);
                 return true;
-            case DrawerConst.PREFERENCES:
+            case PREFERENCES:
                 startActivity(new Intent(this, PreferenceActivity.class));
                 return true;
-            case DrawerConst.REPORT:
+            case REPORT:
                 Logging.sendEmail(this, null);
                 return true;
         }
