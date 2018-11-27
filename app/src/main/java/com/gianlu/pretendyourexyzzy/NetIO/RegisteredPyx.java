@@ -202,7 +202,9 @@ public class RegisteredPyx extends FirstLoadedPyx {
         }
 
         public void addListener(OnEventListener listener) {
-            this.listeners.add(listener);
+            synchronized (listeners) {
+                listeners.add(listener);
+            }
         }
 
         void safeStop() {
@@ -210,15 +212,19 @@ public class RegisteredPyx extends FirstLoadedPyx {
         }
 
         public void removeListener(OnEventListener listener) {
-            this.listeners.remove(listener);
+            synchronized (listeners) {
+                listeners.remove(listener);
+            }
         }
 
         private class NotifyException implements Runnable {
 
             @Override
             public void run() {
-                for (OnEventListener listener : listeners)
-                    listener.onStoppedPolling();
+                synchronized (listeners) {
+                    for (OnEventListener listener : listeners)
+                        listener.onStoppedPolling();
+                }
             }
         }
 
@@ -231,12 +237,14 @@ public class RegisteredPyx extends FirstLoadedPyx {
 
             @Override
             public void run() {
-                for (OnEventListener listener : listeners) {
-                    for (PollMessage message : messages) {
-                        try {
-                            listener.onPollMessage(message);
-                        } catch (JSONException ex) {
-                            dispatchEx(ex);
+                synchronized (listeners) {
+                    for (OnEventListener listener : listeners) {
+                        for (PollMessage message : messages) {
+                            try {
+                                listener.onPollMessage(message);
+                            } catch (JSONException ex) {
+                                dispatchEx(ex);
+                            }
                         }
                     }
                 }
