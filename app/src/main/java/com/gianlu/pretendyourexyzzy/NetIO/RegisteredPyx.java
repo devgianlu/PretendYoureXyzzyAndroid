@@ -237,14 +237,17 @@ public class RegisteredPyx extends FirstLoadedPyx {
 
             @Override
             public void run() {
+                List<OnEventListener> copy;
                 synchronized (listeners) {
-                    for (OnEventListener listener : listeners) {
-                        for (PollMessage message : messages) {
-                            try {
-                                listener.onPollMessage(message);
-                            } catch (JSONException ex) {
-                                dispatchEx(ex);
-                            }
+                    copy = new ArrayList<>(listeners);
+                }
+
+                for (OnEventListener listener : copy) {
+                    for (PollMessage message : messages) {
+                        try {
+                            listener.onPollMessage(message);
+                        } catch (JSONException ex) {
+                            dispatchEx(ex);
                         }
                     }
                 }
