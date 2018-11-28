@@ -56,7 +56,7 @@ public class Deck {
         if (id < 0) {
             String codeTmp = "00000";
             codeTmp += Integer.toString(-id, 36);
-            return codeTmp.substring(codeTmp.length() - 5, codeTmp.length());
+            return codeTmp.substring(codeTmp.length() - 5);
         }
 
         return null;

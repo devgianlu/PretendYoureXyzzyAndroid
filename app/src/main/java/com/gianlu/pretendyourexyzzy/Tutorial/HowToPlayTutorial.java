@@ -24,6 +24,8 @@ public class HowToPlayTutorial extends BaseTutorial {
     @Nullable
     private static RecyclerView.ViewHolder getFirstVisibleViewHolder(@NonNull RecyclerView list) {
         LinearLayoutManager llm = (LinearLayoutManager) list.getLayoutManager();
+        if (llm == null) return null;
+
         int pos = llm.findFirstCompletelyVisibleItemPosition();
         if (pos == -1) return null;
         else return list.findViewHolderForAdapterPosition(pos);

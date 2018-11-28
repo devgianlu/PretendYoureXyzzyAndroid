@@ -34,7 +34,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>, NamesAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener {
     private RecyclerViewLayout layout;
@@ -117,12 +116,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
             return layout;
         }
 
-        layout.enableSwipeRefresh(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                pyx.request(PyxRequests.getNamesList(), NamesFragment.this);
-            }
-        }, R.color.colorAccent);
+        layout.enableSwipeRefresh(() -> pyx.request(PyxRequests.getNamesList(), NamesFragment.this), R.color.colorAccent);
 
         pyx.polling().addListener(new Pyx.OnEventListener() {
             @Override

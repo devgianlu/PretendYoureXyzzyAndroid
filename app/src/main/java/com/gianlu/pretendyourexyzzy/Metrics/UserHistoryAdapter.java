@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.Metrics;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -57,11 +56,8 @@ class UserHistoryAdapter extends RecyclerView.Adapter<UserHistoryAdapter.ViewHol
         holder.server.setText(item.name());
         holder.login.setText(CommonUtils.getFullVerbalDateFormatter().format(new Date(item.loginTimestamp)));
         holder.playedAndJudged.setText(null);
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null) listener.onSessionSelected(item);
-            }
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onSessionSelected(item);
         });
 
         pyx.getSessionStats(item.id, new Pyx.OnResult<SessionStats>() {

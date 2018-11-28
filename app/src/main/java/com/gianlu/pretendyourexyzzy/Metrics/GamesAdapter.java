@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.Metrics;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import com.gianlu.commonutils.CommonUtils;
@@ -37,11 +36,8 @@ class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final SessionHistory.Game game = games.get(position);
         ((SuperTextView) holder.itemView).setHtml(R.string.gameStartedAt, CommonUtils.getFullVerbalDateFormatter().format(new Date(game.timestamp)));
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null) listener.onGameSelected(game);
-            }
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onGameSelected(game);
         });
     }
 

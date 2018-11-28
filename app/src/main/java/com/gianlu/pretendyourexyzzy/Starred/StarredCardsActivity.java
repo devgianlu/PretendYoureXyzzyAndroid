@@ -21,7 +21,6 @@ import java.util.Objects;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -43,7 +42,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
         setContentView(R.layout.activity_starred_cards);
         setTitle(R.string.starredCards);
 
-        setSupportActionBar((Toolbar) findViewById(R.id.starredCards_toolbar));
+        setSupportActionBar(findViewById(R.id.starredCards_toolbar));
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
@@ -85,7 +84,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
 
     private void deleteCard(@NonNull StarredCardsManager.StarredCard card) {
         StarredCardsManager.removeCard(card);
-        if (list.getAdapter().getItemCount() == 0) onBackPressed();
+        if (list.getAdapter() != null && list.getAdapter().getItemCount() == 0) onBackPressed();
     }
 
     @Override

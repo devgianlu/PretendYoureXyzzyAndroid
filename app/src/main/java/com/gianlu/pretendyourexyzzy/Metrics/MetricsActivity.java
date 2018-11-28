@@ -27,7 +27,6 @@ import java.util.Date;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.widget.Toolbar;
 
 public class MetricsActivity extends ActivityWithDialog implements BreadcrumbsView.Listener, UserHistoryAdapter.Listener, GamesAdapter.Listener, RoundsAdapter.Listener {
     private static final int TYPE_USER = 0;
@@ -53,7 +52,7 @@ public class MetricsActivity extends ActivityWithDialog implements BreadcrumbsVi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_metrics);
-        setSupportActionBar((Toolbar) findViewById(R.id.metrics_toolbar));
+        setSupportActionBar(findViewById(R.id.metrics_toolbar));
         setTitle(R.string.metrics);
 
         ActionBar bar = getSupportActionBar();

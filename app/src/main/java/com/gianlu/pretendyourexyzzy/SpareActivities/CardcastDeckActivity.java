@@ -21,7 +21,6 @@ import com.google.android.material.tabs.TabLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager.widget.ViewPager;
 
 public class CardcastDeckActivity extends ActivityWithDialog {
@@ -83,7 +82,7 @@ public class CardcastDeckActivity extends ActivityWithDialog {
         setContentView(R.layout.activity_cardcast_deck);
         setTitle(getIntent().getStringExtra("title"));
 
-        setSupportActionBar((Toolbar) findViewById(R.id.cardcastDeck_toolbar));
+        setSupportActionBar(findViewById(R.id.cardcastDeck_toolbar));
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
 

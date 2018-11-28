@@ -20,6 +20,8 @@ public class GamesTutorial extends BaseTutorial {
 
     public final boolean buildSequence(@NonNull View createGame, @NonNull RecyclerView list) {
         LinearLayoutManager llm = (LinearLayoutManager) list.getLayoutManager();
+        if (llm == null) return false;
+
         int pos = llm.findFirstVisibleItemPosition();
         if (pos == -1) return false;
 

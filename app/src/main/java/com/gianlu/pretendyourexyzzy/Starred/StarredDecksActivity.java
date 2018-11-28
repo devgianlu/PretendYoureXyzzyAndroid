@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class StarredDecksActivity extends ActivityWithDialog implements StarredDecksAdapter.Listener {
     private RecyclerViewLayout layout;
@@ -69,7 +70,7 @@ public class StarredDecksActivity extends ActivityWithDialog implements StarredD
 
         layout.disableSwipeRefresh();
         layout.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary_background));
-        layout.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        layout.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
         layout.loadListData(new StarredDecksAdapter(this, StarredDecksManager.loadDecks(), this));
     }
 

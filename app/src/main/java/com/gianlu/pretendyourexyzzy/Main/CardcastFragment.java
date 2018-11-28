@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.Main;
 
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -34,7 +33,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class CardcastFragment extends Fragment implements Cardcast.OnDecks, CardcastDecksAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
     private final static int LIMIT = 12;
@@ -95,29 +93,18 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.categories)
-                .setMultiChoiceItems(stringFilters, checkedFilters, new DialogInterface.OnMultiChoiceClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                        checkedFilters[which] = isChecked;
-                    }
+                .setMultiChoiceItems(stringFilters, checkedFilters, (dialog, which, isChecked) -> checkedFilters[which] = isChecked)
+                .setNeutralButton(R.string.clearAll, (dialogInterface, i) -> {
+                    search = new Cardcast.Search(search.query, null, search.direction, search.sort, search.nsfw);
+                    refreshAdapter();
                 })
-                .setNeutralButton(R.string.clearAll, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        search = new Cardcast.Search(search.query, null, search.direction, search.sort, search.nsfw);
-                        refreshAdapter();
-                    }
-                })
-                .setPositiveButton(R.string.apply, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        List<Cardcast.Category> toApplyFilters = new ArrayList<>();
-                        for (int i = 0; i < checkedFilters.length; i++)
-                            if (checkedFilters[i]) toApplyFilters.add(filters[i]);
+                .setPositiveButton(R.string.apply, (dialog, which) -> {
+                    List<Cardcast.Category> toApplyFilters = new ArrayList<>();
+                    for (int i = 0; i < checkedFilters.length; i++)
+                        if (checkedFilters[i]) toApplyFilters.add(filters[i]);
 
-                        search = new Cardcast.Search(search.query, toApplyFilters.isEmpty() ? null : toApplyFilters, search.direction, search.sort, search.nsfw);
-                        refreshAdapter();
-                    }
+                    search = new Cardcast.Search(search.query, toApplyFilters.isEmpty() ? null : toApplyFilters, search.direction, search.sort, search.nsfw);
+                    refreshAdapter();
                 })
                 .setNegativeButton(android.R.string.cancel, null);
 
@@ -173,12 +160,7 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
         layout.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
 
         cardcast = Cardcast.get();
-        layout.enableSwipeRefresh(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                cardcast.getDecks(search, LIMIT, 0, CardcastFragment.this);
-            }
-        }, R.color.colorAccent);
+        layout.enableSwipeRefresh(() -> cardcast.getDecks(search, LIMIT, 0, CardcastFragment.this), R.color.colorAccent);
 
         cardcast.getDecks(search, LIMIT, 0, this);
 

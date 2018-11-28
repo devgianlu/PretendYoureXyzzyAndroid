@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.Metrics;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
@@ -35,11 +34,8 @@ class RoundsAdapter extends RecyclerView.Adapter<RoundsAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final SimpleRound round = rounds.get(position);
         ((GameCardView) holder.itemView).setCard(round.blackCard);
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null) listener.onRoundSelected(round);
-            }
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onRoundSelected(round);
         });
     }
 

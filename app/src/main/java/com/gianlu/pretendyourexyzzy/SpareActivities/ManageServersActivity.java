@@ -14,6 +14,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class ManageServersActivity extends ActivityWithDialog implements ServersAdapter.Listener, Dialogs.OnAddServer {
     private RecyclerViewLayout layout;
@@ -28,7 +29,7 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
         setTitle(R.string.manageServers);
 
         layout.disableSwipeRefresh();
-        layout.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        layout.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
         layout.getList().addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         loadServers();
     }

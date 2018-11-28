@@ -99,7 +99,7 @@ public class TutorialActivity extends AppIntro {
         @Nullable
         @Override
         @SuppressWarnings("ConstantConditions")
-        public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
             View v = super.onCreateView(inflater, container, savedInstanceState);
             ((ViewGroup) v).getChildAt(1).setVisibility(View.GONE);
             return v;

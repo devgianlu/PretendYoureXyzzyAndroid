@@ -1,7 +1,6 @@
 package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.text.InputFilter;
@@ -124,17 +123,11 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.addCardcast)
                 .setView(code)
-                .setNeutralButton(R.string.addStarred, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (listener != null) listener.addCardcastStarredDecks();
-                    }
+                .setNeutralButton(R.string.addStarred, (dialog, which) -> {
+                    if (listener != null) listener.addCardcastStarredDecks();
                 })
-                .setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        if (listener != null) listener.addCardcastDeck(code.getText().toString());
-                    }
+                .setPositiveButton(R.string.add, (dialogInterface, i) -> {
+                    if (listener != null) listener.addCardcastDeck(code.getText().toString());
                 })
                 .setNegativeButton(android.R.string.cancel, null);
 
@@ -147,12 +140,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
             return false;
 
         action.setImageResource(R.drawable.baseline_add_24);
-        action.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAddCardcastDeckDialog();
-            }
-        });
+        action.setOnClickListener(v -> showAddCardcastDeckDialog());
         action.setSupportImageTintList(ColorStateList.valueOf(Color.WHITE));
 
         return true;

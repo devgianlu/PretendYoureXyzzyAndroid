@@ -78,30 +78,27 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
 
         final EditText message = layout.findViewById(R.id.chatFragment_message);
         final ImageButton send = layout.findViewById(R.id.chatFragment_send);
-        send.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String msg = message.getText().toString();
-                if (msg.isEmpty()) return;
+        send.setOnClickListener(v -> {
+            String msg = message.getText().toString();
+            if (msg.isEmpty()) return;
 
-                message.setEnabled(false);
-                send.setEnabled(false);
-                send(msg, new Pyx.OnSuccess() {
-                    @Override
-                    public void onDone() {
-                        message.setText(null);
-                        message.setEnabled(true);
-                        send.setEnabled(true);
-                    }
+            message.setEnabled(false);
+            send.setEnabled(false);
+            send(msg, new Pyx.OnSuccess() {
+                @Override
+                public void onDone() {
+                    message.setText(null);
+                    message.setEnabled(true);
+                    send.setEnabled(true);
+                }
 
-                    @Override
-                    public void onException(@NonNull Exception ex) {
-                        showToast(Toaster.build().message(R.string.failedSendMessage).ex(ex));
-                        message.setEnabled(true);
-                        send.setEnabled(true);
-                    }
-                });
-            }
+                @Override
+                public void onException(@NonNull Exception ex) {
+                    showToast(Toaster.build().message(R.string.failedSendMessage).ex(ex));
+                    message.setEnabled(true);
+                    send.setEnabled(true);
+                }
+            });
         });
 
         pyx.polling().addListener(this);

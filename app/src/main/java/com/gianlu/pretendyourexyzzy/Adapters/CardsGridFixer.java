@@ -28,6 +28,7 @@ public class CardsGridFixer implements View.OnLayoutChangeListener {
             throw new IllegalStateException("Must be using a StaggeredGridLayoutManager!");
 
         lm = (StaggeredGridLayoutManager) ((RecyclerView) v).getLayoutManager();
+        if (lm == null) return;
         int spanCount = lm.getSpanCount();
 
         final View target;
