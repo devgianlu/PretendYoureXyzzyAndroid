@@ -19,6 +19,7 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.FontsManager;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.SuperTextView;
@@ -27,6 +28,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.R;
 
 import androidx.annotation.AttrRes;
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
@@ -67,6 +69,7 @@ public class GameCardView extends CardView {
     public GameCardView(@NonNull Context context, @Nullable BaseCard card, @Nullable Action primaryAction, @Nullable Action secondaryAction, @Nullable CardListener listener) {
         this(context, null, 0, card, primaryAction, secondaryAction, listener);
     }
+
     private GameCardView(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr, @Nullable BaseCard card, @Nullable Action primary, @Nullable Action secondary, @Nullable CardListener listener) {
         super(context, attrs, defStyleAttr);
         this.card = card;
@@ -113,7 +116,7 @@ public class GameCardView extends CardView {
         primaryAction.setVisibility(GONE);
         secondaryAction.setVisibility(GONE);
 
-        setCardBackgroundColor(Color.WHITE);
+        setCardBackgroundColor(getWhiteBackground());
     }
 
     private void setupAction(@Nullable Action action, @NonNull ImageButton button) {
@@ -141,9 +144,15 @@ public class GameCardView extends CardView {
         }
     }
 
+    @ColorInt
+    private int getWhiteBackground() {
+        if (CommonUtils.isNightModeOn(getContext(), false)) return Color.LTGRAY;
+        else return Color.WHITE;
+    }
+
     private void setupColors() {
         int foreground = card.black() ? Color.WHITE : Color.BLACK;
-        int background = card.black() ? Color.BLACK : Color.WHITE;
+        int background = card.black() ? Color.BLACK : getWhiteBackground();
 
         if (card instanceof Card && ((Card) card).isWinner())
             setCardBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorAccent));
