@@ -270,6 +270,8 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
 
     private void shareGame() {
         if (manager == null) return;
+        Game.Options options = manager.gameOptions();
+        if (options == null) return;
 
         HttpUrl.Builder builder = pyx.server.url.newBuilder();
         builder.addPathSegment("game.jsp");
@@ -277,7 +279,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         List<NameValuePair> params = new ArrayList<>();
         params.add(new NameValuePair("game", String.valueOf(perm.gid)));
         if (manager.hasPassword(true))
-            params.add(new NameValuePair("password", manager.gameOptions().password));
+            params.add(new NameValuePair("password", options.password));
 
         builder.fragment(CommonUtils.formQuery(params));
 
@@ -311,8 +313,10 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
 
     private void showGameOptions() {
         if (manager == null || getContext() == null) return;
+        Game.Options options = manager.gameOptions();
+        if (options == null) return;
 
-        DialogUtils.showDialog(getActivity(), Dialogs.gameOptions(getContext(), manager.gameOptions(), pyx.firstLoad()));
+        DialogUtils.showDialog(getActivity(), Dialogs.gameOptions(getContext(), options, pyx.firstLoad()));
     }
 
     @Override

@@ -410,7 +410,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         return Collections.unmodifiableCollection(gameData.spectators);
     }
 
-    @NonNull
+    @Nullable
     public Game.Options gameOptions() {
         return gameData.options;
     }
