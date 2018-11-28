@@ -38,9 +38,6 @@ android {
 
 dependencies {
     api project(':CommonUtils')
-    api 'androidx.cardview:cardview:1.0.0'
-    api 'androidx.legacy:legacy-support-v4:1.0.0'
-    api 'androidx.media:media:1.0.0'
     api 'me.zhanghai.android.materialratingbar:library:1.3.1'
     api 'com.squareup.okhttp3:okhttp:3.12.0'
     api 'com.github.paolorotolo:appintro:v5.1.0'
