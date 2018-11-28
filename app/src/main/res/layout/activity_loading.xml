@@ -59,12 +59,12 @@
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/loading_registerNickname"
             android:layout_width="match_parent"
+            android:hint="@string/nickname"
             android:layout_height="wrap_content">
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/nickname"
                 android:inputType="textNoSuggestions"
                 android:maxLines="1" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -77,13 +77,13 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/loading_registerIdCode"
                 android:layout_width="0dp"
+                android:hint="@string/idCodeLabel"
                 android:layout_height="wrap_content"
                 android:layout_weight="1">
 
                 <androidx.appcompat.widget.AppCompatEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/idCodeLabel"
                     android:inputType="textVisiblePassword"
                     android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>

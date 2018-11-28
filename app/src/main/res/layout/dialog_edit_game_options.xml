@@ -3,8 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingBottom="8dp"
-    android:paddingTop="8dp">
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -20,36 +20,36 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/editGameOptions_scoreLimit"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:hint="@string/scoreLimitLabel">
 
                 <androidx.appcompat.widget.AppCompatEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/scoreLimitLabel"
                     android:inputType="number" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/editGameOptions_playerLimit"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:hint="@string/playersLimitLabel">
 
                 <androidx.appcompat.widget.AppCompatEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/playersLimitLabel"
                     android:inputType="number" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/editGameOptions_spectatorLimit"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:hint="@string/spectatorsLimitLabel">
 
                 <androidx.appcompat.widget.AppCompatEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/spectatorsLimitLabel"
                     android:inputType="number" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -69,32 +69,32 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/editGameOptions_blankCards"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:hint="@string/blankCardsLabel">
 
                 <androidx.appcompat.widget.AppCompatEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/blankCardsLabel"
                     android:inputType="number" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/editGameOptions_password"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:hint="@string/passwordLabel">
 
                 <androidx.appcompat.widget.AppCompatEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/passwordLabel"
                     android:inputType="textVisiblePassword" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
+                android:id="@+id/editGameOptions_decksTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:id="@+id/editGameOptions_decksTitle"
                 android:text="@string/cardSetsLabel"
                 android:textColor="?android:textColorTertiary"
                 android:textSize="12sp" />
