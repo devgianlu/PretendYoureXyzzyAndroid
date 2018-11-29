@@ -123,6 +123,11 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         return objs;
     }
 
+    public void setAll(@NonNull List<Game> games) {
+        this.objs.clear();
+        this.objs.addAll(games);
+    }
+
     public enum SortBy {
         NAME,
         NUM_PLAYERS,
