@@ -221,10 +221,13 @@ public class RegisteredPyx extends FirstLoadedPyx {
 
             @Override
             public void run() {
+                List<OnEventListener> copy;
                 synchronized (listeners) {
-                    for (OnEventListener listener : listeners)
-                        listener.onStoppedPolling();
+                    copy = new ArrayList<>(listeners);
                 }
+
+                for (OnEventListener listener : copy)
+                    listener.onStoppedPolling();
             }
         }
 
