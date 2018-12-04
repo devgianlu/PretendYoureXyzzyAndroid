@@ -46,7 +46,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -397,13 +396,8 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
             pyx.request(PyxRequests.getGamesList(), new Pyx.OnResult<GamesList>() {
                 @Override
                 public void onDone(@NonNull GamesList result) {
-                    if (adapter == null) {
-                        GamesFragment.this.onDone(result);
-                    } else {
-                        DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new GamesList.DiffCallback(result, adapter.getGames()));
-                        adapter.setAll(result);
-                        diff.dispatchUpdatesTo(adapter);
-                    }
+                    if (adapter == null) GamesFragment.this.onDone(result);
+                    else adapter.itemsChanged(result);
                 }
 
                 @Override
