@@ -10,7 +10,6 @@ import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 
 public class Utils {
     public static final String ACTION_STARRED_CARD_ADD = "added_starred_card";
@@ -29,11 +28,6 @@ public class Utils {
     public static final String ACTION_SAVE_SHARE_ROUND = "save_share_round";
     public static final String ACTION_SENT_MSG = "sent_message";
     public static final String ACTION_OPEN_URBAN_DICT = "opened_urban_dict_sheet";
-
-    public static void removeAllDecorations(@NonNull RecyclerView recyclerView) {
-        for (int i = 0; i < recyclerView.getItemDecorationCount(); i++)
-            recyclerView.removeItemDecorationAt(i);
-    }
 
     @NonNull
     public static String buildDeckCountString(int decks, int black, int white) {

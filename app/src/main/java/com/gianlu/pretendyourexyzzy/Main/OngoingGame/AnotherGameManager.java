@@ -18,6 +18,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONException;
 
@@ -358,6 +360,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         pyx.request(PyxRequests.judgeCard(gid, card.id()), new Pyx.OnSuccess() {
             @Override
             public void onDone() {
+                ThisApplication.sendAnalytics(Utils.ACTION_JUDGE_CARD);
             }
 
             @Override
@@ -380,6 +383,8 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             public void onDone() {
                 gameLayout.removeHand(card);
                 gameLayout.addTable(card, gameLayout.blackCard());
+
+                ThisApplication.sendAnalytics(text == null ? Utils.ACTION_PLAY_CARD : Utils.ACTION_PLAY_CUSTOM_CARD);
             }
 
             @Override
