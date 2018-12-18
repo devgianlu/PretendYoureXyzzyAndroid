@@ -214,7 +214,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         super.onSaveInstanceState(outState);
 
         outState.putSerializable("currentGame", currentGame);
-        outState.putInt("selectedItem", navigation.getSelectedItemId());
+        if (navigation != null) outState.putInt("selectedItem", navigation.getSelectedItemId());
     }
 
     @Override
