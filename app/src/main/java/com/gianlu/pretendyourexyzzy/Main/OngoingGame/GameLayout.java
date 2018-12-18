@@ -136,12 +136,21 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
         handAdapter.addCardsAsSingleton(cards);
     }
 
+    public void setHand(List<? extends BaseCard> cards) {
+        clearHand();
+        addHand(cards);
+    }
+
     public void setBlackCard(@Nullable Card card) {
         blackCard.setCard(card);
     }
 
     public void removeHand(@NonNull BaseCard card) {
         handAdapter.removeCard(card);
+    }
+
+    public void clearHand() {
+        handAdapter.clear();
     }
 
     public void addTable(@NonNull BaseCard card, @Nullable BaseCard blackCard) {

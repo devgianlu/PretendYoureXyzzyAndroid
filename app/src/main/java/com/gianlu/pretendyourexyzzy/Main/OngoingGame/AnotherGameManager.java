@@ -175,6 +175,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 event(UiEvent.WAITING_FOR_START);
                 gameLayout.setBlackCard(null);
                 gameLayout.clearTable();
+                gameLayout.clearHand();
                 gameLayout.showTable(false);
                 gameData.resetToIdleAndHost();
                 gameLayout.resetTimer();

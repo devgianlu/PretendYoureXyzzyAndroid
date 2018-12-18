@@ -54,7 +54,7 @@ public class SensitiveGameData {
         if (layout != null) {
             layout.setup(this);
             if (cards != null) {
-                layout.addHand(cards.hand);
+                layout.setHand(cards.hand);
                 layout.setBlackCard(cards.blackCard);
                 layout.setTable(cards.whiteCards, cards.blackCard);
             }
