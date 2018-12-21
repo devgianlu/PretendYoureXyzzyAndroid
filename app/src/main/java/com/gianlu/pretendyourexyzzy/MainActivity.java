@@ -68,12 +68,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         if (drawerManager != null) drawerManager.syncTogglerState();
     }
 
-    @Nullable
-    @Override
-    public Object getLastNonConfigurationInstance() {
-        return null;
-    }
-
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
