@@ -1,7 +1,7 @@
 package com.gianlu.pretendyourexyzzy.Starred;
 
 import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.Preferences.Prefs;
+import com.gianlu.commonutils.Preferences.Json.JsonStoring;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
@@ -13,66 +13,77 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class StarredCardsManager {
+    private static StarredCardsManager instance;
+    private final JsonStoring storing;
+    private final List<StarredCard> list;
 
-    public static boolean addCard(@NonNull StarredCard card) {
-        try {
-            List<StarredCard> cards = StarredCard.asList(new JSONArray(Prefs.getBase64String(PK.STARRED_CARDS, "[]")));
-
-            boolean a = cards.contains(card);
-            if (!a) cards.add(card);
-            saveCards(cards);
-
-            return !a;
-        } catch (JSONException ex) {
-            Logging.log(ex);
-            return false;
-        }
-    }
-
-    private static void saveCards(List<StarredCard> cards) {
-        try {
-            JSONArray array = new JSONArray();
-            for (StarredCard card : cards) array.put(card.toJson());
-            Prefs.putBase64String(PK.STARRED_CARDS, array.toString());
-        } catch (JSONException ex) {
-            Logging.log(ex);
-        }
-    }
-
-    public static void removeCard(@NonNull StarredCard card) {
-        try {
-            List<StarredCard> cards = StarredCard.asList(new JSONArray(Prefs.getBase64String(PK.STARRED_CARDS, "[]")));
-            cards.remove(card);
-            saveCards(cards);
-        } catch (JSONException ex) {
-            Logging.log(ex);
-        }
+    private StarredCardsManager() {
+        storing = JsonStoring.intoPrefs();
+        list = new ArrayList<>();
+        loadCards();
     }
 
     @NonNull
-    public static List<StarredCard> loadCards() {
+    public static StarredCardsManager get() {
+        if (instance == null) instance = new StarredCardsManager();
+        return instance;
+    }
+
+    public boolean addCard(@NonNull StarredCard card) {
+        boolean a = list.contains(card);
+        if (!a) list.add(card);
+        saveCards();
+        return !a;
+    }
+
+    private void saveCards() {
         try {
-            List<StarredCard> cards = StarredCard.asList(new JSONArray(Prefs.getBase64String(PK.STARRED_CARDS, "[]")));
-            Collections.reverse(cards);
-            return cards;
+            JSONArray array = new JSONArray();
+            for (StarredCard card : list) array.put(card.toJson());
+            storing.putJsonArray(PK.STARRED_CARDS, array);
         } catch (JSONException ex) {
             Logging.log(ex);
-            return new ArrayList<>();
         }
     }
 
-    public static boolean hasAnyCard() {
+    public void removeCard(@NonNull StarredCard card) {
+        list.remove(card);
+        saveCards();
+    }
+
+    @NonNull
+    public List<StarredCard> getCards() {
+        return list;
+    }
+
+    private void loadCards() {
         try {
-            return new JSONArray(Prefs.getBase64String(PK.STARRED_CARDS, "[]")).length() > 0;
+            list.clear();
+            list.addAll(StarredCard.asList(storing.getJsonArray(PK.STARRED_CARDS)));
+            Collections.sort(list, new AddedAtComparator());
         } catch (JSONException ex) {
             Logging.log(ex);
-            return false;
+        }
+    }
+
+    public boolean hasAnyCard() {
+        return !list.isEmpty();
+    }
+
+    private static class AddedAtComparator implements Comparator<StarredCard> {
+
+        @Override
+        public int compare(StarredCard o1, StarredCard o2) {
+            if (o1.addedAt == o2.addedAt) return 0;
+            else return o1.addedAt > o2.addedAt ? -1 : 1;
         }
     }
 
@@ -80,22 +91,27 @@ public class StarredCardsManager {
         public final BaseCard blackCard;
         public final CardsGroup whiteCards;
         public final int id;
+        private final long addedAt;
         private String cachedSentence;
 
         public StarredCard(@NonNull BaseCard blackCard, @NonNull CardsGroup whiteCards) {
             this.blackCard = blackCard;
             this.whiteCards = whiteCards;
             this.id = ThreadLocalRandom.current().nextInt();
+            this.addedAt = System.currentTimeMillis();
         }
 
         private StarredCard(JSONObject obj) throws JSONException {
             blackCard = new Card(obj.getJSONObject("bc"));
             id = obj.getInt("id");
             whiteCards = new CardsGroup(obj.getJSONArray("wc"));
+            addedAt = obj.optLong("addedAt", System.currentTimeMillis());
         }
 
         @NonNull
-        private static List<StarredCard> asList(JSONArray array) throws JSONException {
+        private static List<StarredCard> asList(@Nullable JSONArray array) throws JSONException {
+            if (array == null) return new ArrayList<>();
+
             List<StarredCard> cards = new ArrayList<>();
             for (int i = 0; i < array.length(); i++)
                 cards.add(new StarredCard(array.getJSONObject(i)));

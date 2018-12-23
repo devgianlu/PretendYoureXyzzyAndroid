@@ -26,6 +26,7 @@ import androidx.viewpager.widget.ViewPager;
 public class CardcastDeckActivity extends ActivityWithDialog {
     private String code;
     private String name;
+    private StarredDecksManager starredDecks;
 
     public static void startActivity(Context context, @NonNull CardcastDeck deck) {
         startActivity(context, deck.code, deck.name);
@@ -47,7 +48,7 @@ public class CardcastDeckActivity extends ActivityWithDialog {
     public boolean onPrepareOptionsMenu(Menu menu) {
         OngoingGameHelper.Listener listener = OngoingGameHelper.get();
         menu.findItem(R.id.cardcastDeckInfo_add).setVisible(listener != null && listener.canModifyCardcastDecks());
-        menu.findItem(R.id.cardcastDeckInfo_toggleStar).setIcon(StarredDecksManager.hasDeck(code) ? R.drawable.baseline_star_24 : R.drawable.baseline_star_border_24);
+        menu.findItem(R.id.cardcastDeckInfo_toggleStar).setIcon(starredDecks.hasDeck(code) ? R.drawable.baseline_star_24 : R.drawable.baseline_star_border_24);
         return true;
     }
 
@@ -62,10 +63,10 @@ public class CardcastDeckActivity extends ActivityWithDialog {
                 if (listener != null && code != null) listener.addCardcastDeck(code);
                 return true;
             case R.id.cardcastDeckInfo_toggleStar:
-                if (StarredDecksManager.hasDeck(code)) {
-                    StarredDecksManager.removeDeck(code);
+                if (starredDecks.hasDeck(code)) {
+                    starredDecks.removeDeck(code);
                 } else {
-                    StarredDecksManager.addDeck(new StarredDecksManager.StarredDeck(code, name));
+                    starredDecks.addDeck(new StarredDecksManager.StarredDeck(code, name));
                     AnalyticsApplication.sendAnalytics(Utils.ACTION_STARRED_DECK_ADD);
                 }
 
@@ -85,6 +86,8 @@ public class CardcastDeckActivity extends ActivityWithDialog {
         setSupportActionBar(findViewById(R.id.cardcastDeck_toolbar));
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
+
+        starredDecks = StarredDecksManager.get();
 
         code = getIntent().getStringExtra("code");
         name = getIntent().getStringExtra("title");

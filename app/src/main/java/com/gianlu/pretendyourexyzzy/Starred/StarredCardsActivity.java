@@ -28,9 +28,10 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
     private RecyclerView list;
     private LinearLayout cards;
     private MessageView message;
+    private StarredCardsManager starredCards;
 
     public static void startActivity(@NonNull Context context) {
-        if (StarredCardsManager.hasAnyCard())
+        if (StarredCardsManager.get().hasAnyCard())
             context.startActivity(new Intent(context, StarredCardsActivity.class));
         else
             Toaster.with(context).message(R.string.noStarredCards).show();
@@ -47,9 +48,11 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
 
+        starredCards = StarredCardsManager.get();
+
         list = findViewById(R.id.starredCards_list);
         list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        list.setAdapter(new CardsAdapter(this, false, StarredCardsManager.loadCards(), GameCardView.Action.SELECT, GameCardView.Action.DELETE, true, this));
+        list.setAdapter(new CardsAdapter(this, false, starredCards.getCards(), GameCardView.Action.SELECT, GameCardView.Action.DELETE, true, this));
 
         message = findViewById(R.id.starredCards_message);
         cards = findViewById(R.id.starredCards_cards);
@@ -83,7 +86,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
     }
 
     private void deleteCard(@NonNull StarredCardsManager.StarredCard card) {
-        StarredCardsManager.removeCard(card);
+        starredCards.removeCard(card);
         if (list.getAdapter() != null && list.getAdapter().getItemCount() == 0) onBackPressed();
     }
 

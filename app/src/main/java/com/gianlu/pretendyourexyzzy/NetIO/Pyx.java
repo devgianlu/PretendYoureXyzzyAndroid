@@ -10,6 +10,7 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.OfflineActivity;
+import com.gianlu.commonutils.Preferences.Json.JsonStoring;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.LoadingActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CahConfig;
@@ -442,7 +443,7 @@ public class Pyx implements Closeable {
             for (Server server : servers)
                 json.put(server.toJson());
 
-            Prefs.putJSONArray(PK.API_SERVERS, json);
+            JsonStoring.intoPrefs().putJsonArray(PK.API_SERVERS, json);
             Prefs.putLong(PK.API_SERVERS_CACHE_AGE, System.currentTimeMillis());
         }
 
@@ -495,7 +496,8 @@ public class Pyx implements Closeable {
             List<Server> servers = new ArrayList<>();
             JSONArray array;
             try {
-                array = Prefs.getJSONArray(key, new JSONArray());
+                array = JsonStoring.intoPrefs().getJsonArray(key);
+                if (array == null) array = new JSONArray();
             } catch (JSONException ex) {
                 Logging.log(ex);
                 return new ArrayList<>();
@@ -513,8 +515,9 @@ public class Pyx implements Closeable {
         }
 
         @Nullable
-        private static Server getServer(Prefs.Key key, String name) throws JSONException {
-            JSONArray array = Prefs.getJSONArray(key, new JSONArray());
+        private static Server getServer(@NonNull Prefs.Key key, @NonNull String name) throws JSONException {
+            JSONArray array = JsonStoring.intoPrefs().getJsonArray(key);
+            if (array == null) array = new JSONArray();
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
                 if (Objects.equals(obj.optString("name"), name))
@@ -554,21 +557,23 @@ public class Pyx implements Closeable {
         public static void addUserServer(Server server) throws JSONException {
             if (!server.isEditable()) return;
 
-            JSONArray array = Prefs.getJSONArray(PK.USER_SERVERS, new JSONArray());
+            JSONArray array = JsonStoring.intoPrefs().getJsonArray(PK.USER_SERVERS);
+            if (array == null) array = new JSONArray();
             for (int i = array.length() - 1; i >= 0; i--) {
                 if (Objects.equals(array.getJSONObject(i).getString("name"), server.name))
                     array.remove(i);
             }
 
             array.put(server.toJson());
-            Prefs.putJSONArray(PK.USER_SERVERS, array);
+            JsonStoring.intoPrefs().putJsonArray(PK.USER_SERVERS, array);
         }
 
         public static void removeUserServer(Server server) {
             if (!server.isEditable()) return;
 
             try {
-                JSONArray array = Prefs.getJSONArray(PK.USER_SERVERS, new JSONArray());
+                JSONArray array = JsonStoring.intoPrefs().getJsonArray(PK.USER_SERVERS);
+                if (array == null) array = new JSONArray();
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject obj = array.getJSONObject(i);
                     if (Objects.equals(obj.optString("name"), server.name)) {
@@ -577,7 +582,7 @@ public class Pyx implements Closeable {
                     }
                 }
 
-                Prefs.putJSONArray(PK.USER_SERVERS, array);
+                JsonStoring.intoPrefs().putJsonArray(PK.USER_SERVERS, array);
             } catch (JSONException ex) {
                 Logging.log(ex);
             }

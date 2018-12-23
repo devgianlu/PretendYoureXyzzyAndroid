@@ -367,8 +367,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     @Override
     public void addCardcastStarredDecks() {
         if (getContext() == null) return;
-
-        List<StarredDecksManager.StarredDeck> starredDecks = StarredDecksManager.loadDecks();
+        List<StarredDecksManager.StarredDeck> starredDecks = StarredDecksManager.get().getDecks();
         if (starredDecks.isEmpty()) {
             showToast(Toaster.build().message(R.string.noStarredDecks));
             return;

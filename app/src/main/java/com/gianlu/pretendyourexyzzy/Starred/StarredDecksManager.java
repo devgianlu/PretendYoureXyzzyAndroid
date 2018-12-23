@@ -1,7 +1,7 @@
 package com.gianlu.pretendyourexyzzy.Starred;
 
 import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.Preferences.Prefs;
+import com.gianlu.commonutils.Preferences.Json.JsonStoring;
 import com.gianlu.pretendyourexyzzy.PK;
 
 import org.json.JSONArray;
@@ -10,98 +10,112 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class StarredDecksManager {
+    private static StarredDecksManager instance;
+    private final JsonStoring storing;
+    private final List<StarredDeck> list;
 
-    public static boolean hasDeck(@NonNull String code) {
-        try {
-            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(PK.STARRED_DECKS, "[]")));
-            for (StarredDeck deck : decks)
-                if (Objects.equals(deck.code, code))
-                    return true;
-
-            return false;
-        } catch (JSONException ex) {
-            Logging.log(ex);
-            return false;
-        }
+    private StarredDecksManager() {
+        storing = JsonStoring.intoPrefs();
+        list = new ArrayList<>();
+        loadDecks();
     }
 
-    public static void addDeck(@NonNull StarredDeck deck) {
-        try {
-            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(PK.STARRED_DECKS, "[]")));
-            if (!decks.contains(deck)) decks.add(deck);
-            saveDecks(decks);
-        } catch (JSONException ex) {
-            Logging.log(ex);
-        }
+    @NonNull
+    public static StarredDecksManager get() {
+        if (instance == null) instance = new StarredDecksManager();
+        return instance;
     }
 
-    private static void saveDecks(List<StarredDeck> decks) {
+    public boolean hasDeck(@NonNull String code) {
+        for (StarredDeck deck : list)
+            if (Objects.equals(deck.code, code))
+                return true;
+
+        return false;
+    }
+
+    public void addDeck(@NonNull StarredDeck deck) {
+        if (!list.contains(deck)) list.add(deck);
+        saveDecks();
+    }
+
+    private void saveDecks() {
         try {
             JSONArray array = new JSONArray();
-            for (StarredDeck deck : decks) array.put(deck.toJson());
-            Prefs.putBase64String(PK.STARRED_DECKS, array.toString());
+            for (StarredDeck deck : list) array.put(deck.toJson());
+            storing.putJsonArray(PK.STARRED_DECKS, array);
         } catch (JSONException ex) {
             Logging.log(ex);
         }
     }
 
-    public static void removeDeck(@NonNull String code) {
-        try {
-            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(PK.STARRED_DECKS, "[]")));
-            Iterator<StarredDeck> iterator = decks.iterator();
-            while (iterator.hasNext())
-                if (Objects.equals(iterator.next().code, code))
-                    iterator.remove();
+    public void removeDeck(@NonNull String code) {
+        Iterator<StarredDeck> iterator = list.iterator();
+        while (iterator.hasNext())
+            if (Objects.equals(iterator.next().code, code))
+                iterator.remove();
 
-            saveDecks(decks);
+        saveDecks();
+    }
+
+    private void loadDecks() {
+        try {
+            list.clear();
+            list.addAll(StarredDeck.asList(storing.getJsonArray(PK.STARRED_DECKS)));
+            Collections.sort(list, new AddedAtComparator());
         } catch (JSONException ex) {
             Logging.log(ex);
         }
     }
 
-    public static List<StarredDeck> loadDecks() {
-        try {
-            List<StarredDeck> decks = StarredDeck.asList(new JSONArray(Prefs.getBase64String(PK.STARRED_DECKS, "[]")));
-            Collections.reverse(decks);
-            return decks;
-        } catch (JSONException ex) {
-            Logging.log(ex);
-            return new ArrayList<>();
-        }
+    public boolean hasAnyDeck() {
+        return !list.isEmpty();
     }
 
-    public static boolean hasAnyDeck() {
-        try {
-            return new JSONArray(Prefs.getBase64String(PK.STARRED_DECKS, "[]")).length() > 0;
-        } catch (JSONException ex) {
-            Logging.log(ex);
-            return false;
+    @NonNull
+    public List<StarredDeck> getDecks() {
+        return list;
+    }
+
+    private static class AddedAtComparator implements Comparator<StarredDeck> {
+
+        @Override
+        public int compare(StarredDeck o1, StarredDeck o2) {
+            if (o1.addedAt == o2.addedAt) return 0;
+            else return o1.addedAt > o2.addedAt ? -1 : 1;
         }
     }
 
     public static class StarredDeck {
         public final String code;
         public final String name;
+        private final long addedAt;
 
-        public StarredDeck(String code, String name) {
+        public StarredDeck(@NonNull String code, @NonNull String name) {
             this.code = code;
             this.name = name;
+            this.addedAt = System.currentTimeMillis();
         }
 
         private StarredDeck(JSONObject obj) throws JSONException {
             code = obj.getString("code");
             name = obj.getString("name");
+            addedAt = obj.optLong("addedAt", System.currentTimeMillis());
         }
 
         @NonNull
-        private static List<StarredDeck> asList(JSONArray array) throws JSONException {
+        private static List<StarredDeck> asList(@Nullable JSONArray array) throws JSONException {
+            if (array == null) return new ArrayList<>();
+
             List<StarredDeck> decks = new ArrayList<>();
             for (int i = 0; i < array.length(); i++)
                 decks.add(new StarredDeck(array.getJSONObject(i)));

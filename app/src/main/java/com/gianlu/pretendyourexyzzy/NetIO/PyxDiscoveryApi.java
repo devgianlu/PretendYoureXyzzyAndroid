@@ -6,6 +6,7 @@ import android.os.Looper;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.Preferences.Json.JsonStoring;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
 
@@ -46,7 +47,7 @@ public class PyxDiscoveryApi {
 
     private void loadDiscoveryApiServersSync() throws IOException, JSONException {
         try {
-            if (!CommonUtils.isDebug() && Prefs.has(PK.API_SERVERS) && !Prefs.isJSONArrayEmpty(PK.API_SERVERS)) {
+            if (!CommonUtils.isDebug() && Prefs.has(PK.API_SERVERS) && !JsonStoring.intoPrefs().isJsonArrayEmpty(PK.API_SERVERS)) {
                 long age = Prefs.getLong(PK.API_SERVERS_CACHE_AGE, 0);
                 if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(6))
                     return;
@@ -55,7 +56,7 @@ public class PyxDiscoveryApi {
             JSONArray array = new JSONArray(requestSync(DISCOVERY_API_LIST));
             if (array.length() > 0) Pyx.Server.parseAndSave(array);
         } catch (IOException | JSONException ex) {
-            if (Prefs.isJSONArrayEmpty(PK.API_SERVERS)) throw ex;
+            if (JsonStoring.intoPrefs().isJsonArrayEmpty(PK.API_SERVERS)) throw ex;
             else Logging.log("Failed loading servers, but list isn't empty.", ex);
         }
     }

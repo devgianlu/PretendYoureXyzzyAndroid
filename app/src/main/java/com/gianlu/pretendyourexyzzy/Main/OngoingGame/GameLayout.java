@@ -45,6 +45,7 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
     private final TextView time;
     private final Timer timer = new Timer();
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private final StarredCardsManager starredCards;
     private PlayersAdapter.Listener playersListener;
     private CardsAdapter tableAdapter;
     private CardsAdapter handAdapter;
@@ -63,6 +64,8 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
         super(context, attrs, defStyleAttr);
 
         View.inflate(context, R.layout.game_layout, this);
+
+        starredCards = StarredCardsManager.get();
 
         blackCard = findViewById(R.id.gameLayout_blackCard);
         instructions = findViewById(R.id.gameLayout_instructions);
@@ -190,7 +193,7 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
             AnalyticsApplication.sendAnalytics(Utils.ACTION_STARRED_CARD_ADD);
 
             BaseCard bc = blackCard();
-            if (bc != null && StarredCardsManager.addCard(new StarredCardsManager.StarredCard(bc, group)))
+            if (bc != null && starredCards.addCard(new StarredCardsManager.StarredCard(bc, group)))
                 Toaster.with(getContext()).message(R.string.addedCardToStarred).show();
         } else if (action == GameCardView.Action.SELECT_IMG) {
             listener.showDialog(CardImageZoomDialog.get(card));
