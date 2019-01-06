@@ -37,9 +37,9 @@ public final class Dialogs {
         LinearLayout layout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.dialog_add_server, null, false);
 
         TextInputLayout nameField = layout.findViewById(R.id.addServer_name);
-        CommonUtils.clearTextOnEdit(nameField);
+        CommonUtils.clearErrorOnEdit(nameField);
         TextInputLayout urlField = layout.findViewById(R.id.addServer_url);
-        CommonUtils.clearTextOnEdit(urlField);
+        CommonUtils.clearErrorOnEdit(urlField);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.addServer)
