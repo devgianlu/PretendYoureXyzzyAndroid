@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- Game messages -->
     <string name="game_spectator">You\'re a spectator. Just watch!</string>
     <string name="game_youJudge">You\'re the Card Czar! Waiting for other players…</string>
@@ -185,7 +185,6 @@
     <string name="addToOngoingGame">Add to the ongoing game</string>
     <string name="preferences">Preferences</string>
     <string name="logs">Logs</string>
-    <string name="materialRatingBar_details">Copyright 2016 Zhang Hai</string>
     <string name="starredCardcastDecks">Starred Cardcast decks</string>
     <string name="noStarredDecks">You have no starred decks!</string>
     <string name="toggleStarred">Toggle starred</string>
@@ -208,8 +207,6 @@
     <string name="restartInAppTutorial">Restart features tutorial</string>
     <string name="showBeginnerTutorial_summary">Show the intro tutorial for the app</string>
     <string name="restartInAppTutorial_summary">Features tutorial will be shown again while using the app</string>
-    <string name="tapTargetView_details">Copyright 2016 Keepsafe Software Inc.</string>
-    <string name="appIntro_details">Copyright 2015 Paolo Rotolo\nCopyright 2016 Maximilian Narr</string>
     <string name="tutorial">Tutorial</string>
     <string name="manage">Manage</string>
     <string name="manageServers">Manage servers</string>
@@ -243,8 +240,6 @@
     <string name="cancel">Cancel</string>
     <string name="mustProvideIdCode">An ID code is strictly necessary to join this server.</string>
     <string name="usersAndGames"><![CDATA[<b>Users:</b>]]> %1$d/%2$d    <![CDATA[<b>Games:</b>]]> %3$d/%4$d</string>
-    <string name="glide_details">Copyright 2014 Google, Inc. All rights reserved.</string>
-    <string name="glide">Glide</string>
     <string name="failedLoadingImage">Failed loading this image! Try to visit the link directly.</string>
     <string name="rotateRandomly">Rotate randomly</string>
     <string name="save">Save</string>
