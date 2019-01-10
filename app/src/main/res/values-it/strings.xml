@@ -19,9 +19,7 @@
     <string name="game_judgeLeft_short">Il giudice %s ha abbandonato.</string>
     <string name="game_roundWinner_long">%s ha vinto questo giro! Un nuovo giro inizierà a breve…</string>
     <string name="game_roundWinner_short">%s ha vinto!</string>
-    <string name="game_gameWinner_long">
-%s ha vinto questo gioco! Attendi che il creatore ne avvii un altro…
-</string>
+    <string name="game_gameWinner_long">%s ha vinto questo gioco! Attendi che il creatore ne avvii un altro…</string>
     <string name="game_gameWinner_short">%s ha vinto il gioco!</string>
     <string name="game_youGameWinner_long">Hai vinto questo gioco! Attendi che il creatore ne avvii un altro…</string>
     <string name="game_youGameWinner_short">Hai vinto il gioco!</string>
