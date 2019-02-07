@@ -10,6 +10,6 @@ public class StatusCodeException extends IOException {
     }
 
     private StatusCodeException(int code, String message) {
-        super(code + ": " + message);
+        super(code + ((message == null || message.isEmpty()) ? "" : (": " + message)));
     }
 }

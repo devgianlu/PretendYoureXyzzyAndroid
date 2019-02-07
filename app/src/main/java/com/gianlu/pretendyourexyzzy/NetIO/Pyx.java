@@ -193,6 +193,9 @@ public class Pyx implements Closeable {
                 .build().newCall(new Request.Builder()
                         .url(url).get().build()).execute()) {
 
+            if (resp.code() < 200 || resp.code() >= 300)
+                throw new StatusCodeException(resp);
+
             ResponseBody respBody = resp.body();
             if (respBody != null) return respBody.string();
             else throw new StatusCodeException(resp);
