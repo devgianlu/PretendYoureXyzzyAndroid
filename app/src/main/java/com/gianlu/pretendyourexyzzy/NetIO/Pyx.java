@@ -30,6 +30,7 @@ import org.json.JSONObject;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -138,6 +139,9 @@ public class Pyx implements Closeable {
             } else {
                 throw new StatusCodeException(resp);
             }
+        } catch (SocketTimeoutException ex) {
+            if (!retried) return request(operation, true, params);
+            else throw ex;
         }
     }
 
