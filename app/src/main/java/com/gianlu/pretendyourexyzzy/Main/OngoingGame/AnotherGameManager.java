@@ -394,6 +394,8 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                     if (((PyxException) ex).errorCode.equals("nyt")) {
                         event(UiEvent.NOT_YOUR_TURN);
                         return;
+                    } else if (((PyxException) ex).errorCode.equals("dnhc")) {
+                        gameLayout.removeHand(card);
                     }
                 }
 
