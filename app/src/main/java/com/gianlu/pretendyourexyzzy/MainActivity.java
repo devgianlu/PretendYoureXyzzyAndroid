@@ -165,7 +165,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         if (pyx.config().globalChatEnabled())
             globalChatFragment = (ChatFragment) getOrAdd(transaction, Item.GLOBAL_CHAT, ChatFragment::getGlobalInstance);
 
-        transaction.commitNowAllowingStateLoss();
+        transaction.commitNow();
 
         Item selectedItem = null;
         if (savedInstanceState != null) {
@@ -316,7 +316,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             }
         }
 
-        transaction.commitAllowingStateLoss();
+        transaction.commit();
     }
 
     @Override
@@ -332,7 +332,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             addOrReplace(transaction, gameChatFragment, Item.GAME_CHAT);
         }
 
-        transaction.commitNowAllowingStateLoss();
+        transaction.commitNow();
 
         inflateNavigation(Layout.ONGOING);
         navigation.setSelectedItemId(Item.ONGOING_GAME);
@@ -357,7 +357,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         Fragment gameChat = manager.findFragmentByTag(Item.GAME_CHAT.tag);
         if (gameChat != null) transaction.remove(gameChat);
 
-        transaction.commitAllowingStateLoss();
+        transaction.commit();
     }
 
     @Override
