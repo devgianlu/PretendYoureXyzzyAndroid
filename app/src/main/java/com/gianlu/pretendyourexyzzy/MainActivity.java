@@ -174,12 +174,32 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             currentFragment = (Item) savedInstanceState.getSerializable("currentFragment");
         }
 
+        ongoingGameFragment = (OngoingGameFragment) getSupportFragmentManager().findFragmentByTag(Item.ONGOING_GAME.tag);
+        gameChatFragment = (ChatFragment) getSupportFragmentManager().findFragmentByTag(Item.GAME_CHAT.tag);
+
         if (currentGame == null) {
             inflateNavigation(Layout.LOBBY);
             if (currentFragment == null) navigation.setSelectedItem(Item.GAMES);
+
+            if (gameChatFragment != null || ongoingGameFragment != null) {
+                transaction = getSupportFragmentManager().beginTransaction();
+                if (gameChatFragment != null) transaction.remove(gameChatFragment);
+                if (ongoingGameFragment != null) transaction.remove(ongoingGameFragment);
+                transaction.commitNow();
+            }
         } else {
-            ongoingGameFragment = (OngoingGameFragment) getSupportFragmentManager().findFragmentByTag(Item.ONGOING_GAME.tag);
-            gameChatFragment = (ChatFragment) getSupportFragmentManager().findFragmentByTag(Item.GAME_CHAT.tag);
+            if (ongoingGameFragment == null) {
+                transaction = getSupportFragmentManager().beginTransaction();
+                ongoingGameFragment = OngoingGameFragment.getInstance(currentGame);
+                addOrReplace(transaction, ongoingGameFragment, Item.ONGOING_GAME);
+
+                if (pyx.config().gameChatEnabled()) {
+                    gameChatFragment = ChatFragment.getGameInstance(currentGame.gid);
+                    addOrReplace(transaction, gameChatFragment, Item.GAME_CHAT);
+                }
+
+                transaction.commitNow();
+            }
 
             inflateNavigation(Layout.ONGOING);
             if (currentFragment == null) navigation.setSelectedItem(Item.ONGOING_GAME);
@@ -332,6 +352,9 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     public void onParticipatingGame(@NonNull GamePermalink game) {
         currentGame = game;
 
+        if (isFinishing() || isDestroyed()) return;
+        inflateNavigation(Layout.ONGOING);
+
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         ongoingGameFragment = OngoingGameFragment.getInstance(game);
         addOrReplace(transaction, ongoingGameFragment, Item.ONGOING_GAME);
@@ -341,10 +364,12 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             addOrReplace(transaction, gameChatFragment, Item.GAME_CHAT);
         }
 
-        transaction.commitNow();
-
-        inflateNavigation(Layout.ONGOING);
-        navigation.setSelectedItem(Item.ONGOING_GAME);
+        try {
+            transaction.commitNow();
+            navigation.setSelectedItem(Item.ONGOING_GAME);
+        } catch (IllegalStateException ex) {
+            AnalyticsApplication.crashlyticsLog(ex.getMessage() + " at #onParticipatingGame(GamePermalink)");
+        }
     }
 
     @Override
@@ -366,7 +391,11 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         Fragment gameChat = manager.findFragmentByTag(Item.GAME_CHAT.tag);
         if (gameChat != null) transaction.remove(gameChat);
 
-        transaction.commit();
+        try {
+            transaction.commit();
+        } catch (IllegalStateException ex) {
+            AnalyticsApplication.crashlyticsLog(ex.getMessage() + " at #onLeftGame()");
+        }
     }
 
     @Override
@@ -517,10 +546,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         void setOnNavigationItemReselectedListener(@NonNull OnNavigationItemReselectedListener listener) {
             view.setOnNavigationItemReselectedListener(menuItem -> listener.onNavigationItemReselected(Item.lookup(menuItem.getItemId())));
-        }
-
-        int getSelectedItem() {
-            return view.getSelectedItemId();
         }
 
         void setSelectedItem(@NonNull Item item) {
