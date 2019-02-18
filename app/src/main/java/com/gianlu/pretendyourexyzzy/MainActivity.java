@@ -61,6 +61,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     private RegisteredPyx pyx;
     private DrawerManager<User, DrawerItem> drawerManager;
     private volatile GamePermalink currentGame;
+    private Item currentFragment = null;
 
     @Override
     protected void onResume() {
@@ -167,24 +168,24 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         transaction.commitNow();
 
-        Item selectedItem = null;
+        Item currentFragment = null;
         if (savedInstanceState != null) {
             currentGame = (GamePermalink) savedInstanceState.getSerializable("currentGame");
-            selectedItem = savedInstanceState.containsKey("selectedItem") ? Item.lookup(savedInstanceState.getInt("selectedItem")) : null;
+            currentFragment = (Item) savedInstanceState.getSerializable("currentFragment");
         }
 
         if (currentGame == null) {
             inflateNavigation(Layout.LOBBY);
-            if (selectedItem == null) navigation.setSelectedItemId(Item.GAMES);
+            if (currentFragment == null) navigation.setSelectedItem(Item.GAMES);
         } else {
             ongoingGameFragment = (OngoingGameFragment) getSupportFragmentManager().findFragmentByTag(Item.ONGOING_GAME.tag);
             gameChatFragment = (ChatFragment) getSupportFragmentManager().findFragmentByTag(Item.GAME_CHAT.tag);
 
             inflateNavigation(Layout.ONGOING);
-            if (selectedItem == null) navigation.setSelectedItemId(Item.ONGOING_GAME);
+            if (currentFragment == null) navigation.setSelectedItem(Item.ONGOING_GAME);
         }
 
-        if (selectedItem != null) navigation.setSelectedItemId(selectedItem);
+        if (currentFragment != null) navigation.setSelectedItem(currentFragment);
 
         GamePermalink perm = (GamePermalink) getIntent().getSerializableExtra("game");
         if (perm != null) {
@@ -208,7 +209,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         super.onSaveInstanceState(outState);
 
         outState.putSerializable("currentGame", currentGame);
-        if (navigation != null) outState.putInt("selectedItem", navigation.getSelectedItemId());
+        outState.putSerializable("currentFragment", currentFragment);
     }
 
     @Override
@@ -276,6 +277,10 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     private void switchTo(@NonNull Item item) {
+        currentFragment = item;
+
+        if (isFinishing() || isDestroyed()) return;
+
         FragmentManager manager = getSupportFragmentManager();
         Fragment fragment = manager.findFragmentByTag(item.tag);
         FragmentTransaction transaction = manager.beginTransaction()
@@ -316,7 +321,11 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             }
         }
 
-        transaction.commit();
+        try {
+            transaction.commit();
+        } catch (IllegalStateException ex) {
+            AnalyticsApplication.crashlyticsLog(ex.getMessage() + " at #switchTo(Item)");
+        }
     }
 
     @Override
@@ -335,7 +344,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         transaction.commitNow();
 
         inflateNavigation(Layout.ONGOING);
-        navigation.setSelectedItemId(Item.ONGOING_GAME);
+        navigation.setSelectedItem(Item.ONGOING_GAME);
     }
 
     @Override
@@ -346,7 +355,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         AnalyticsApplication.sendAnalytics(Utils.ACTION_LEFT_GAME);
 
         inflateNavigation(Layout.LOBBY);
-        navigation.setSelectedItemId(Item.GAMES);
+        navigation.setSelectedItem(Item.GAMES);
 
         FragmentManager manager = getSupportFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
@@ -363,7 +372,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     @Override
     public void viewGame(int gid, boolean locked) {
         if (gamesFragment != null) {
-            navigation.setSelectedItemId(Item.GAMES);
+            navigation.setSelectedItem(Item.GAMES);
             gamesFragment.viewGame(gid, locked);
         }
     }
@@ -510,11 +519,11 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             view.setOnNavigationItemReselectedListener(menuItem -> listener.onNavigationItemReselected(Item.lookup(menuItem.getItemId())));
         }
 
-        int getSelectedItemId() {
+        int getSelectedItem() {
             return view.getSelectedItemId();
         }
 
-        void setSelectedItemId(@NonNull Item item) {
+        void setSelectedItem(@NonNull Item item) {
             view.setSelectedItemId(item.id);
         }
 
