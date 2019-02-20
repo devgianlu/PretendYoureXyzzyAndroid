@@ -4,11 +4,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public abstract class BaseCard implements Serializable {
+    private static final Pattern HTML_IMAGE_PATTERN = Pattern.compile("^<img.+src='(.*?)'.+/>$");
     private transient String imageUrl = null;
 
     @NonNull
@@ -37,11 +40,19 @@ public abstract class BaseCard implements Serializable {
 
         if (imageUrl == null) {
             String text = text();
-            if (text.startsWith("[img]") && text.endsWith("[/img]"))
-                imageUrl = text.substring(5, text.length() - 6);
-        }
+            if (text.startsWith("[img]") && text.endsWith("[/img]")) {
+                return imageUrl = text.substring(5, text.length() - 6);
+            } else {
+                Matcher matcher = HTML_IMAGE_PATTERN.matcher(text);
+                if (matcher.find()) {
+                    return imageUrl = matcher.group(1);
+                }
+            }
 
-        return imageUrl;
+            return null;
+        } else {
+            return imageUrl;
+        }
     }
 
     @Nullable
