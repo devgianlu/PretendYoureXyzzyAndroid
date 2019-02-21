@@ -178,7 +178,7 @@ public class GameCardView extends CardView {
         loading.setVisibility(VISIBLE);
 
         image.setVisibility(VISIBLE); // Must be so or Glide won't load
-        Glide.with(this).load(card).listener(new RequestListener<Drawable>() {
+        Glide.with(getContext().getApplicationContext()).load(card).listener(new RequestListener<Drawable>() {
             @Override
             public boolean onLoadFailed(@Nullable GlideException ex, Object model, Target<Drawable> target, boolean isFirstResource) {
                 notText.setVisibility(GONE);
