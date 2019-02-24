@@ -45,7 +45,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
                 holder.status.setImageResource(R.drawable.baseline_person_24);
                 break;
             case IDLE:
-                holder.status.setImageResource(R.drawable.baseline_access_time_24);
+                holder.status.setImageResource(R.drawable.baseline_done_all_24);
                 break;
             case JUDGING:
             case JUDGE:
