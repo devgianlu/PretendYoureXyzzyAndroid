@@ -163,7 +163,7 @@ public class ServersChecker {
         private final Pyx.Server server;
         private final OnResult listener;
 
-        Runner(Pyx.Server server, OnResult listener) {
+        Runner(@NonNull Pyx.Server server, @NonNull OnResult listener) {
             this.server = server;
             this.listener = listener;
         }

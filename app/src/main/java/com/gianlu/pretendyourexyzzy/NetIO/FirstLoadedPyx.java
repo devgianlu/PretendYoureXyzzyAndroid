@@ -1,7 +1,9 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
-import android.os.Handler;
+import android.app.Activity;
 
+import com.gianlu.commonutils.Lifecycle.LifecycleAwareHandler;
+import com.gianlu.commonutils.Lifecycle.LifecycleAwareRunnable;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CahConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
@@ -20,7 +22,7 @@ import okhttp3.OkHttpClient;
 public class FirstLoadedPyx extends Pyx {
     private final FirstLoadAndConfig firstLoadAndConfig;
 
-    FirstLoadedPyx(Server server, Handler handler, OkHttpClient client, FirstLoadAndConfig firstLoadAndConfig) {
+    FirstLoadedPyx(Server server, LifecycleAwareHandler handler, OkHttpClient client, FirstLoadAndConfig firstLoadAndConfig) {
         super(server, handler, client);
         this.firstLoadAndConfig = firstLoadAndConfig;
     }
@@ -35,18 +37,21 @@ public class FirstLoadedPyx extends Pyx {
         return firstLoadAndConfig.cahConfig;
     }
 
-    public final void register(@NonNull final String nickname, @Nullable final String idCode, final OnResult<RegisteredPyx> listener) {
+    public final void register(@NonNull String nickname, @Nullable String idCode, @Nullable Activity activity, @NonNull OnResult<RegisteredPyx> listener) {
         try {
             listener.onDone(InstanceHolder.holder().get(InstanceHolder.Level.REGISTERED));
         } catch (LevelMismatchException exx) {
-            executor.execute(() -> {
-                try {
-                    User user = requestSync(PyxRequests.register(nickname, idCode, Prefs.getString(PK.LAST_PERSISTENT_ID, null)));
-                    Prefs.putString(PK.LAST_PERSISTENT_ID, user.persistentId);
-                    final RegisteredPyx pyx = upgrade(user);
-                    handler.post(() -> listener.onDone(pyx));
-                } catch (JSONException | PyxException | IOException ex) {
-                    handler.post(() -> listener.onException(ex));
+            executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
+                @Override
+                public void run() {
+                    try {
+                        User user = requestSync(PyxRequests.register(nickname, idCode, Prefs.getString(PK.LAST_PERSISTENT_ID, null)));
+                        Prefs.putString(PK.LAST_PERSISTENT_ID, user.persistentId);
+                        RegisteredPyx pyx = upgrade(user);
+                        post(() -> listener.onDone(pyx));
+                    } catch (JSONException | PyxException | IOException ex) {
+                        post(() -> listener.onException(ex));
+                    }
                 }
             });
         }

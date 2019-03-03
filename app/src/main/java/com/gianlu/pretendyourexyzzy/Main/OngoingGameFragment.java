@@ -134,7 +134,8 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     }
 
     private void leaveGame() {
-        if (pyx != null) pyx.request(PyxRequests.leaveGame(perm.gid), new Pyx.OnSuccess() {
+        if (pyx != null)
+            pyx.request(PyxRequests.leaveGame(perm.gid), getActivity(), new Pyx.OnSuccess() {
             @Override
             public void onDone() {
                 if (onLeftGame != null) onLeftGame.onLeftGame();
@@ -326,7 +327,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
             return;
         }
 
-        pyx.addCardcastDeckAndList(perm.gid, code, cardcast, new Pyx.OnResult<List<Deck>>() {
+        pyx.addCardcastDeckAndList(perm.gid, code, cardcast, getActivity(), new Pyx.OnResult<List<Deck>>() {
             @Override
             public void onDone(@NonNull List<Deck> result) {
                 showToast(Toaster.build().message(R.string.cardcastAdded));
@@ -377,7 +378,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         for (StarredDecksManager.StarredDeck deck : starredDecks)
             codes.add(deck.code);
 
-        pyx.addCardcastDecksAndList(perm.gid, codes, cardcast, new Pyx.OnResult<List<Deck>>() {
+        pyx.addCardcastDecksAndList(perm.gid, codes, cardcast, getActivity(), new Pyx.OnResult<List<Deck>>() {
             @Override
             public void onDone(@NonNull List<Deck> result) {
                 showToast(Toaster.build().message(R.string.starredDecksAdded));

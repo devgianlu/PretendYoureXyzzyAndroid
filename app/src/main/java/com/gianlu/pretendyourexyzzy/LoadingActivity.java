@@ -140,7 +140,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         }
 
         discoveryApi = PyxDiscoveryApi.get();
-        discoveryApi.getWelcomeMessage(new Pyx.OnResult<String>() {
+        discoveryApi.getWelcomeMessage(this, new Pyx.OnResult<String>() {
             @Override
             public void onDone(@NonNull String result) {
                 if (result.isEmpty()) {
@@ -157,7 +157,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 welcomeMessage.setVisibility(View.GONE);
             }
         });
-        discoveryApi.firstLoad(this, this);
+        discoveryApi.firstLoad(this, null, this);
     }
 
     private void changeServerDialog(boolean dismissible) {
@@ -190,7 +190,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 register.setVisibility(View.GONE);
                 dismissDialog();
 
-                discoveryApi.firstLoad(LoadingActivity.this, LoadingActivity.this);
+                discoveryApi.firstLoad(LoadingActivity.this, null, LoadingActivity.this);
             }
         }));
 
@@ -233,7 +233,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
 
             String nick = CommonUtils.getText(registerNickname);
-            pyx.register(nick, idCode, new Pyx.OnResult<RegisteredPyx>() {
+            pyx.register(nick, idCode, this, new Pyx.OnResult<RegisteredPyx>() {
                 @Override
                 public void onDone(@NonNull RegisteredPyx result) {
                     Prefs.putString(PK.LAST_NICKNAME, result.user().nickname);

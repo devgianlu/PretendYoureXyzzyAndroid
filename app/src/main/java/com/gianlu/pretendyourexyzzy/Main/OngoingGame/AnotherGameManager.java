@@ -273,7 +273,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     }
 
     private void updateGameInfo() {
-        pyx.request(PyxRequests.getGameInfo(gid), new Pyx.OnResult<GameInfo>() {
+        pyx.request(PyxRequests.getGameInfo(gid), null, new Pyx.OnResult<GameInfo>() {
             @Override
             public void onDone(@NonNull GameInfo result) {
                 gameData.update(result);
@@ -287,7 +287,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     }
 
     public void begin() {
-        pyx.getGameInfoAndCards(gid, new Pyx.OnResult<GameInfoAndCards>() {
+        pyx.getGameInfoAndCards(gid, null, new Pyx.OnResult<GameInfoAndCards>() {
             @Override
             public void onDone(@NonNull GameInfoAndCards result) {
                 gameData.update(result.info, result.cards, gameLayout);
@@ -323,7 +323,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
 
     @Override
     public void startGame() {
-        pyx.request(PyxRequests.startGame(gid), new Pyx.OnSuccess() {
+        pyx.request(PyxRequests.startGame(gid), null, new Pyx.OnSuccess() {
             @Override
             public void onDone() {
                 Toaster.with(context).message(R.string.gameStarted).show();
@@ -358,7 +358,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     }
 
     private void judgeCardInternal(@NonNull BaseCard card) {
-        pyx.request(PyxRequests.judgeCard(gid, card.id()), new Pyx.OnSuccess() {
+        pyx.request(PyxRequests.judgeCard(gid, card.id()), null, new Pyx.OnSuccess() {
             @Override
             public void onDone() {
                 ThisApplication.sendAnalytics(Utils.ACTION_JUDGE_CARD);
@@ -378,8 +378,8 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         });
     }
 
-    private void playCardInternal(@NonNull final BaseCard card, @Nullable String text) {
-        pyx.request(PyxRequests.playCard(gid, card.id(), text), new Pyx.OnSuccess() {
+    private void playCardInternal(@NonNull BaseCard card, @Nullable String text) {
+        pyx.request(PyxRequests.playCard(gid, card.id(), text), null, new Pyx.OnSuccess() {
             @Override
             public void onDone() {
                 gameLayout.removeHand(card);

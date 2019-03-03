@@ -108,7 +108,7 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
             return layout;
         }
 
-        pyx.getGameRound(id, this);
+        pyx.getGameRound(id, getActivity(), this);
 
         return layout;
     }

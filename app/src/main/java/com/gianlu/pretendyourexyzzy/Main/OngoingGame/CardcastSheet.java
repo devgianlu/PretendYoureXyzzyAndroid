@@ -67,7 +67,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
 
     @Override
     protected void onRequestedUpdate(@NonNull List<Deck> decks) {
-        list.setAdapter(new DecksAdapter(getContext(), decks, CardcastSheet.this, listener));
+        list.setAdapter(new DecksAdapter(requireContext(), decks, CardcastSheet.this, listener));
 
         count.setVisibility(View.VISIBLE);
         count.setText(Utils.buildDeckCountString(decks.size(), Deck.countBlackCards(decks), Deck.countWhiteCards(decks)));
@@ -90,7 +90,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
             return;
         }
 
-        pyx.request(PyxRequests.listCardcastDecks(gid, Cardcast.get()), new Pyx.OnResult<List<Deck>>() {
+        pyx.request(PyxRequests.listCardcastDecks(gid, Cardcast.get()), getActivity(), new Pyx.OnResult<List<Deck>>() {
             @Override
             public void onDone(@NonNull List<Deck> result) {
                 update(result);
@@ -161,7 +161,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
     public void removeDeck(@NonNull Deck deck) {
         if (getSetupPayload() == null || deck.cardcastCode == null) return;
 
-        pyx.request(PyxRequests.removeCardcastDeck(getSetupPayload(), deck.cardcastCode), new Pyx.OnSuccess() {
+        pyx.request(PyxRequests.removeCardcastDeck(getSetupPayload(), deck.cardcastCode), getActivity(), new Pyx.OnSuccess() {
             @Override
             public void onDone() {
                 DialogUtils.showToast(getContext(), Toaster.build().message(R.string.cardcastDeckRemoved));

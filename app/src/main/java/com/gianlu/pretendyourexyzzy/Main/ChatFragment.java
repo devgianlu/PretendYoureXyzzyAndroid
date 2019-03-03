@@ -120,10 +120,10 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
 
     private void send(String msg, Pyx.OnSuccess listener) {
         if (gid == -1) {
-            pyx.request(PyxRequests.sendMessage(msg), listener);
+            pyx.request(PyxRequests.sendMessage(msg), getActivity(), listener);
             AnalyticsApplication.sendAnalytics(Utils.ACTION_SENT_MSG);
         } else {
-            pyx.request(PyxRequests.sendGameMessage(gid, msg), listener);
+            pyx.request(PyxRequests.sendGameMessage(gid, msg), getActivity(), listener);
             AnalyticsApplication.sendAnalytics(Utils.ACTION_SENT_GAME_MSG);
         }
     }

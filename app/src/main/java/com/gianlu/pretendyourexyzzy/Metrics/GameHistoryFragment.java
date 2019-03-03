@@ -67,7 +67,7 @@ public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
                 return layout;
             }
 
-            pyx.getGameHistory(id, this);
+            pyx.getGameHistory(id, null, this);
         } else {
             onDone(history);
         }

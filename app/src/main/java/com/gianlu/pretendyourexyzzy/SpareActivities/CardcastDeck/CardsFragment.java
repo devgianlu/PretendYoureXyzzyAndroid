@@ -59,16 +59,14 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
         }
 
         Cardcast cardcast = Cardcast.get();
-        if (args.getBoolean("whiteCards", true)) cardcast.getResponses(code, this);
-        else cardcast.getCalls(code, this);
+        if (args.getBoolean("whiteCards", true)) cardcast.getResponses(code, null, this);
+        else cardcast.getCalls(code, null, this);
 
         return layout;
     }
 
     @Override
     public void onDone(@NonNull List<CardcastCard> result) {
-        if (!isAdded() || getContext() == null) return;
-
         if (result.isEmpty()) {
             layout.showInfo(R.string.noCards, false);
             return;

@@ -88,7 +88,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
             return layout;
         }
 
-        pyx.getSessionHistory(id, this);
+        pyx.getSessionHistory(id, null, this);
 
         return layout;
     }

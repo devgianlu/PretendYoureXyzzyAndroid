@@ -113,7 +113,7 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
 
     private void refreshAdapter() {
         layout.startLoading();
-        cardcast.getDecks(search, LIMIT, 0, this);
+        cardcast.getDecks(search, LIMIT, 0, null, this);
     }
 
     @Override
@@ -160,17 +160,15 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
         layout.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
 
         cardcast = Cardcast.get();
-        layout.enableSwipeRefresh(() -> cardcast.getDecks(search, LIMIT, 0, CardcastFragment.this), R.color.colorAccent);
+        layout.enableSwipeRefresh(() -> cardcast.getDecks(search, LIMIT, 0, null, this), R.color.colorAccent);
 
-        cardcast.getDecks(search, LIMIT, 0, this);
+        cardcast.getDecks(search, LIMIT, 0, null, this);
 
         return layout;
     }
 
     @Override
     public void onDone(@NonNull Cardcast.Search search, @NonNull CardcastDecks decks) {
-        if (!isAdded()) return;
-
         if (decks.isEmpty())
             layout.showInfo(R.string.searchNoDecks);
         else

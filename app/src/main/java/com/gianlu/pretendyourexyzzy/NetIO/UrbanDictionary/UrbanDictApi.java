@@ -1,8 +1,11 @@
 package com.gianlu.pretendyourexyzzy.NetIO.UrbanDictionary;
 
+import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.gianlu.commonutils.Lifecycle.LifecycleAwareHandler;
+import com.gianlu.commonutils.Lifecycle.LifecycleAwareRunnable;
 import com.gianlu.pretendyourexyzzy.NetIO.StatusCodeException;
 import com.gianlu.pretendyourexyzzy.NetIO.UserAgentInterceptor;
 
@@ -14,6 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -33,12 +37,12 @@ public class UrbanDictApi {
 
     private final ExecutorService executorService;
     private final OkHttpClient client;
-    private final Handler handler;
+    private final LifecycleAwareHandler handler;
 
     private UrbanDictApi() {
         executorService = Executors.newSingleThreadExecutor();
         client = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
-        handler = new Handler(Looper.getMainLooper());
+        handler = new LifecycleAwareHandler(new Handler(Looper.getMainLooper()));
     }
 
     @NonNull
@@ -47,12 +51,12 @@ public class UrbanDictApi {
         return instance;
     }
 
-    public final void define(@NonNull String word, @NonNull OnDefine listener) {
-        executorService.execute(new DefineRunnable(word, listener));
+    public final void define(@NonNull String word, @Nullable Activity activity, @NonNull OnDefine listener) {
+        executorService.execute(new DefineRunnable(word, activity, listener));
     }
 
-    public final void autocomplete(@NonNull String word, @NonNull OnAutoComplete listener) {
-        executorService.execute(new AutocompleteRunnable(word, listener));
+    public final void autocomplete(@NonNull String word, @Nullable Activity activity, @NonNull OnAutoComplete listener) {
+        executorService.execute(new AutocompleteRunnable(word, activity, listener));
     }
 
     public interface OnDefine {
@@ -71,11 +75,12 @@ public class UrbanDictApi {
         void onException(@NonNull Exception ex);
     }
 
-    private class AutocompleteRunnable implements Runnable {
+    private class AutocompleteRunnable extends LifecycleAwareRunnable {
         private final String word;
         private final OnAutoComplete listener;
 
-        AutocompleteRunnable(@NonNull String word, @NonNull OnAutoComplete listener) {
+        AutocompleteRunnable(@NonNull String word, @Nullable Activity activity, @NonNull OnAutoComplete listener) {
+            super(handler, activity == null ? listener : activity);
             this.word = word;
             this.listener = listener;
         }
@@ -91,22 +96,24 @@ public class UrbanDictApi {
                     ResponseBody body = resp.body();
                     if (body == null) throw new IOException("Body is null!");
                     String json = body.string();
-                    final AutoCompleteResults result = new AutoCompleteResults(new JSONObject(json).getJSONArray("results"));
-                    handler.post(() -> listener.onResult(result));
+
+                    AutoCompleteResults result = new AutoCompleteResults(new JSONObject(json).getJSONArray("results"));
+                    post(() -> listener.onResult(result));
                 } else {
                     throw new StatusCodeException(resp);
                 }
             } catch (IOException | JSONException ex) {
-                handler.post(() -> listener.onException(ex));
+                post(() -> listener.onException(ex));
             }
         }
     }
 
-    private class DefineRunnable implements Runnable {
+    private class DefineRunnable extends LifecycleAwareRunnable {
         private final String word;
         private final OnDefine listener;
 
-        DefineRunnable(@NonNull String word, @NonNull OnDefine listener) {
+        DefineRunnable(@NonNull String word, @Nullable Activity activity, @NonNull OnDefine listener) {
+            super(handler, activity == null ? listener : activity);
             this.word = word;
             this.listener = listener;
         }
@@ -122,13 +129,14 @@ public class UrbanDictApi {
                     ResponseBody body = resp.body();
                     if (body == null) throw new IOException("Body is null!");
                     String json = body.string();
-                    final Definitions result = new Definitions(new JSONObject(json));
-                    handler.post(() -> listener.onResult(result));
+
+                    Definitions result = new Definitions(new JSONObject(json));
+                    post(() -> listener.onResult(result));
                 } else {
                     throw new StatusCodeException(resp);
                 }
             } catch (IOException | JSONException ex) {
-                handler.post(() -> listener.onException(ex));
+                post(() -> listener.onException(ex));
             }
         }
     }

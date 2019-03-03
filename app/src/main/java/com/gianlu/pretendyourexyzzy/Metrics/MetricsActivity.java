@@ -107,7 +107,7 @@ public class MetricsActivity extends ActivityWithDialog implements BreadcrumbsVi
 
         ProgressDialog pd = DialogUtils.progressDialog(this, R.string.loading);
         showDialog(pd);
-        pyx.getGameHistory(gameId, new Pyx.OnResult<GameHistory>() {
+        pyx.getGameHistory(gameId, this, new Pyx.OnResult<GameHistory>() {
             @Override
             public void onDone(@NonNull GameHistory result) {
                 dismissDialog();

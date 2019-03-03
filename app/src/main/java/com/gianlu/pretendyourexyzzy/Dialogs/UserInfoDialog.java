@@ -30,9 +30,9 @@ import androidx.fragment.app.FragmentActivity;
 public class UserInfoDialog extends DialogFragment {
     private OnViewGame listener;
 
-    public static void loadAndShow(@NonNull RegisteredPyx pyx, @NonNull final FragmentActivity activity, @NonNull String name) {
+    public static void loadAndShow(@NonNull RegisteredPyx pyx, @NonNull FragmentActivity activity, @NonNull String name) {
         DialogUtils.showDialog(activity, DialogUtils.progressDialog(activity, R.string.loading));
-        pyx.request(PyxRequests.whois(name), new Pyx.OnResult<WhoisResult>() {
+        pyx.request(PyxRequests.whois(name), activity, new Pyx.OnResult<WhoisResult>() {
             @Override
             public void onDone(@NonNull WhoisResult result) {
                 DialogUtils.dismissDialog(activity);

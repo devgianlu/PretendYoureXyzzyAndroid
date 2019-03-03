@@ -1,10 +1,13 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.Lifecycle.LifecycleAwareHandler;
+import com.gianlu.commonutils.Lifecycle.LifecycleAwareRunnable;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.Preferences.Json.JsonStoring;
 import com.gianlu.commonutils.Preferences.Prefs;
@@ -20,6 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -32,11 +36,11 @@ public class PyxDiscoveryApi {
     private static PyxDiscoveryApi instance;
     private final OkHttpClient client;
     private final ExecutorService executor = Executors.newCachedThreadPool();
-    private final Handler handler;
+    private final LifecycleAwareHandler handler;
 
     private PyxDiscoveryApi() {
         this.client = new OkHttpClient();
-        this.handler = new Handler(Looper.getMainLooper());
+        this.handler = new LifecycleAwareHandler(new Handler(Looper.getMainLooper()));
     }
 
     @NonNull
@@ -75,7 +79,7 @@ public class PyxDiscoveryApi {
         }
     }
 
-    public final void getWelcomeMessage(final Pyx.OnResult<String> listener) {
+    public final void getWelcomeMessage(@Nullable Activity activity, @NonNull Pyx.OnResult<String> listener) {
         String cached = Prefs.getString(PK.WELCOME_MSG_CACHE, null);
         if (cached != null && !CommonUtils.isDebug()) {
             long age = Prefs.getLong(PK.WELCOME_MSG_CACHE_AGE, 0);
@@ -85,29 +89,35 @@ public class PyxDiscoveryApi {
             }
         }
 
-        executor.execute(() -> {
-            try {
-                JSONObject obj = new JSONObject(requestSync(WELCOME_MSG_URL));
-                final String msg = obj.getString("msg");
-                Prefs.putString(PK.WELCOME_MSG_CACHE, msg);
-                Prefs.putLong(PK.WELCOME_MSG_CACHE_AGE, System.currentTimeMillis());
-                handler.post(() -> listener.onDone(msg));
-            } catch (JSONException | IOException ex) {
-                handler.post(() -> listener.onException(ex));
+        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
+            @Override
+            public void run() {
+                try {
+                    JSONObject obj = new JSONObject(requestSync(WELCOME_MSG_URL));
+                    final String msg = obj.getString("msg");
+                    Prefs.putString(PK.WELCOME_MSG_CACHE, msg);
+                    Prefs.putLong(PK.WELCOME_MSG_CACHE_AGE, System.currentTimeMillis());
+                    post(() -> listener.onDone(msg));
+                } catch (JSONException | IOException ex) {
+                    post(() -> listener.onException(ex));
+                }
             }
         });
     }
 
-    public void firstLoad(@NonNull final Context context, @NonNull final Pyx.OnResult<FirstLoadedPyx> listener) {
-        executor.execute(() -> {
-            try {
-                loadDiscoveryApiServersSync();
-                Pyx.getStandard().firstLoad(listener);
-            } catch (IOException | JSONException ex) {
-                handler.post(() -> listener.onException(ex));
-            } catch (final Pyx.NoServersException ex) {
-                ex.solve(context);
-                handler.post(() -> listener.onException(ex));
+    public void firstLoad(@NonNull Context context, @Nullable Activity activity, @NonNull Pyx.OnResult<FirstLoadedPyx> listener) {
+        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
+            @Override
+            public void run() {
+                try {
+                    loadDiscoveryApiServersSync();
+                    Pyx.getStandard().firstLoad(activity, listener);
+                } catch (IOException | JSONException ex) {
+                    post(() -> listener.onException(ex));
+                } catch (final Pyx.NoServersException ex) {
+                    ex.solve(context);
+                    post(() -> listener.onException(ex));
+                }
             }
         });
     }

@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
@@ -8,6 +9,8 @@ import android.os.Looper;
 import android.util.LruCache;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.Lifecycle.LifecycleAwareHandler;
+import com.gianlu.commonutils.Lifecycle.LifecycleAwareRunnable;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
@@ -45,12 +48,12 @@ public class Cardcast {
     private static Cardcast instance;
     private final OkHttpClient client;
     private final ExecutorService executor;
-    private final Handler handler;
+    private final LifecycleAwareHandler handler;
     private final LruCache<String, CardcastDeckInfo> cachedDecks;
 
     private Cardcast() {
         this.client = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
-        this.handler = new Handler(Looper.getMainLooper());
+        this.handler = new LifecycleAwareHandler(new Handler(Looper.getMainLooper()));
         this.executor = Executors.newSingleThreadExecutor();
         this.cachedDecks = new LruCache<>(20);
     }
@@ -93,7 +96,7 @@ public class Cardcast {
         return basicRequest(endpoint, Arrays.asList(params));
     }
 
-    public void getDecks(final Search search, final int limit, final int offset, final OnDecks listener) {
+    public void getDecks(@NonNull Search search, int limit, int offset, @Nullable Activity activity, @NonNull OnDecks listener) {
         final List<NameValuePair> params = new ArrayList<>();
         if (search.query != null) params.add(new NameValuePair("search", search.query));
         params.add(new NameValuePair("category", search.categories == null ? "" : CommonUtils.join(search.categories, ",")));
@@ -103,76 +106,91 @@ public class Cardcast {
         params.add(new NameValuePair("offset", String.valueOf(offset)));
         params.add(new NameValuePair("nsfw", String.valueOf(search.nsfw)));
 
-        executor.execute(() -> {
-            try {
-                final CardcastDecks decks = new CardcastDecks((JSONObject) basicRequest("decks", params));
-                if (decks.isEmpty() && offset == 0 && Pattern.matches("(?:[a-zA-Z]|\\d){5}", search.query)) {
-                    try {
-                        final CardcastDeckInfo info = new CardcastDeckInfo((JSONObject) basicRequest("decks/" + search.query));
-                        cachedDecks.put(info.code, info);
+        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
+            @Override
+            public void run() {
+                try {
+                    final CardcastDecks decks = new CardcastDecks((JSONObject) basicRequest("decks", params));
+                    if (decks.isEmpty() && offset == 0 && Pattern.matches("(?:[a-zA-Z]|\\d){5}", search.query)) {
+                        try {
+                            CardcastDeckInfo info = new CardcastDeckInfo((JSONObject) basicRequest("decks/" + search.query));
+                            cachedDecks.put(info.code, info);
 
-                        handler.post(() -> listener.onDone(search, CardcastDecks.singleton(info)));
-                        return;
-                    } catch (IOException | JSONException ex) {
-                        Logging.log(ex);
+                            post(() -> listener.onDone(search, CardcastDecks.singleton(info)));
+                            return;
+                        } catch (IOException | JSONException ex) {
+                            Logging.log(ex);
+                        }
                     }
+
+                    post(() -> listener.onDone(search, decks));
+                } catch (JSONException | ParseException | IOException ex) {
+                    post(() -> listener.onException(ex));
                 }
-
-                handler.post(() -> listener.onDone(search, decks));
-            } catch (JSONException | ParseException | IOException ex) {
-                handler.post(() -> listener.onException(ex));
             }
         });
     }
 
-    public void getResponses(final String code, final OnResult<List<CardcastCard>> listener) {
-        executor.execute(() -> {
-            try {
-                final List<CardcastCard> cards = CardcastCard.toCardsList(code, (JSONArray) basicRequest("decks/" + code + "/responses"));
-                handler.post(() -> listener.onDone(cards));
-            } catch (IOException | JSONException | ParseException ex) {
-                handler.post(() -> listener.onException(ex));
+    public void getResponses(@NonNull String code, @Nullable Activity activity, @NonNull OnResult<List<CardcastCard>> listener) {
+        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
+            @Override
+            public void run() {
+                try {
+                    List<CardcastCard> cards = CardcastCard.toCardsList(code, (JSONArray) basicRequest("decks/" + code + "/responses"));
+                    post(() -> listener.onDone(cards));
+                } catch (IOException | JSONException | ParseException ex) {
+                    post(() -> listener.onException(ex));
+                }
             }
         });
     }
 
-    public void getCalls(final String code, final OnResult<List<CardcastCard>> listener) {
-        executor.execute(() -> {
-            try {
-                final List<CardcastCard> cards = CardcastCard.toCardsList(code, (JSONArray) basicRequest("decks/" + code + "/calls"));
-                handler.post(() -> listener.onDone(cards));
-            } catch (IOException | JSONException | ParseException ex) {
-                handler.post(() -> listener.onException(ex));
+    public void getCalls(@NonNull String code, @Nullable Activity activity, @NonNull OnResult<List<CardcastCard>> listener) {
+        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
+            @Override
+            public void run() {
+                try {
+                    List<CardcastCard> cards = CardcastCard.toCardsList(code, (JSONArray) basicRequest("decks/" + code + "/calls"));
+                    post(() -> listener.onDone(cards));
+                } catch (IOException | JSONException | ParseException ex) {
+                    post(() -> listener.onException(ex));
+                }
             }
         });
     }
 
     @WorkerThread
-    public CardcastDeckInfo getDeckInfoHitCache(String code) throws IOException, JSONException, ParseException {
+    public CardcastDeckInfo getDeckInfoHitCache(@NonNull String code) throws IOException, JSONException, ParseException {
         CardcastDeckInfo deck = cachedDecks.get(code);
         if (deck != null) return deck;
         else return new CardcastDeckInfo((JSONObject) basicRequest("decks/" + code));
     }
 
-    public void getDeckInfo(final String code, final OnResult<CardcastDeckInfo> listener) {
-        executor.execute(() -> {
-            try {
-                final CardcastDeckInfo info = new CardcastDeckInfo((JSONObject) basicRequest("decks/" + code));
-                cachedDecks.put(info.code, info);
-                handler.post(() -> listener.onDone(info));
-            } catch (IOException | ParseException | JSONException ex) {
-                handler.post(() -> listener.onException(ex));
+    public void getDeckInfo(@NonNull String code, @Nullable Activity activity, @NonNull OnResult<CardcastDeckInfo> listener) {
+        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
+            @Override
+            public void run() {
+                try {
+                    CardcastDeckInfo info = new CardcastDeckInfo((JSONObject) basicRequest("decks/" + code));
+                    cachedDecks.put(info.code, info);
+                    post(() -> listener.onDone(info));
+                } catch (IOException | ParseException | JSONException ex) {
+                    post(() -> listener.onException(ex));
+                }
             }
         });
     }
 
-    public void getCost(final String code, final OnResult<CardcastCost> listener) {
-        executor.execute(() -> {
-            try {
-                final CardcastCost cost = new CardcastCost((JSONObject) basicRequest("decks/" + code + "/cost"));
-                handler.post(() -> listener.onDone(cost));
-            } catch (IOException | JSONException ex) {
-                handler.post(() -> listener.onException(ex));
+    public void getCost(@NonNull String code, @Nullable Activity activity, @NonNull OnResult<CardcastCost> listener) {
+        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
+            @Override
+            public void run() {
+                try {
+                    CardcastCost cost = new CardcastCost((JSONObject) basicRequest("decks/" + code + "/cost"));
+                    post(() -> listener.onDone(cost));
+                } catch (IOException | JSONException ex) {
+                    post(() -> listener.onException(ex));
+                }
             }
         });
     }

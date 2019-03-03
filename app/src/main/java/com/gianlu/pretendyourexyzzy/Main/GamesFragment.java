@@ -159,11 +159,11 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
         tutorialManager = new TutorialManager(this, Discovery.GAMES);
 
-        this.layout.enableSwipeRefresh(() -> pyx.request(PyxRequests.getGamesList(), GamesFragment.this), R.color.colorAccent);
+        this.layout.enableSwipeRefresh(() -> pyx.request(PyxRequests.getGamesList(), null, GamesFragment.this), R.color.colorAccent);
 
         createGame.setOnClickListener(v -> {
             DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
-            pyx.request(PyxRequests.createGame(), new Pyx.OnResult<GamePermalink>() {
+            pyx.request(PyxRequests.createGame(), getActivity(), new Pyx.OnResult<GamePermalink>() {
                 @Override
                 public void onDone(@NonNull GamePermalink result) {
                     DialogUtils.dismissDialog(getActivity());
@@ -178,7 +178,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
             });
         });
 
-        pyx.request(PyxRequests.getGamesList(), this);
+        pyx.request(PyxRequests.getGamesList(), null, this);
 
         pyx.polling().addListener(this);
 
@@ -256,7 +256,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         if (getContext() == null) return;
 
         DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
-        pyx.request(PyxRequests.spectateGame(gid, password), new Pyx.OnResult<GamePermalink>() {
+        pyx.request(PyxRequests.spectateGame(gid, password), getActivity(), new Pyx.OnResult<GamePermalink>() {
             @Override
             public void onDone(@NonNull GamePermalink game) {
                 if (handler != null) handler.onParticipatingGame(game);
@@ -289,7 +289,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         if (getContext() == null) return;
 
         DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
-        pyx.request(PyxRequests.joinGame(gid, password), new Pyx.OnResult<GamePermalink>() {
+        pyx.request(PyxRequests.joinGame(gid, password), getActivity(), new Pyx.OnResult<GamePermalink>() {
             @Override
             public void onDone(@NonNull GamePermalink game) {
                 if (handler != null) handler.onParticipatingGame(game);
@@ -393,7 +393,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     @Override
     public void onPollMessage(@NonNull PollMessage message) {
         if (message.event == PollMessage.Event.GAME_LIST_REFRESH) {
-            pyx.request(PyxRequests.getGamesList(), new Pyx.OnResult<GamesList>() {
+            pyx.request(PyxRequests.getGamesList(), getActivity(), new Pyx.OnResult<GamesList>() {
                 @Override
                 public void onDone(@NonNull GamesList result) {
                     if (adapter == null) GamesFragment.this.onDone(result);

@@ -43,7 +43,7 @@ public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> 
         list.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         list.addItemDecoration(new DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL));
 
-        UrbanDictApi.get().define(payload, new UrbanDictApi.OnDefine() {
+        UrbanDictApi.get().define(payload, getActivity(), new UrbanDictApi.OnDefine() {
             @Override
             public void onResult(@NonNull Definitions result) {
                 update(result);

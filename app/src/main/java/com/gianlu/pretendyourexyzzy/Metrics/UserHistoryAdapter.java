@@ -51,7 +51,7 @@ class UserHistoryAdapter extends RecyclerView.Adapter<UserHistoryAdapter.ViewHol
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final UserHistory.Session item = history.get(position);
         holder.server.setText(item.name());
         holder.login.setText(CommonUtils.getFullVerbalDateFormatter().format(new Date(item.loginTimestamp)));
@@ -60,7 +60,7 @@ class UserHistoryAdapter extends RecyclerView.Adapter<UserHistoryAdapter.ViewHol
             if (listener != null) listener.onSessionSelected(item);
         });
 
-        pyx.getSessionStats(item.id, new Pyx.OnResult<SessionStats>() {
+        pyx.getSessionStats(item.id, null, new Pyx.OnResult<SessionStats>() {
             @Override
             public void onDone(@NonNull SessionStats result) {
                 notifyItemChanged(holder.getAdapterPosition(), result);

@@ -45,7 +45,7 @@ public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
             return layout;
         }
 
-        pyx.getUserHistory(this);
+        pyx.getUserHistory(null, this);
 
         return layout;
     }

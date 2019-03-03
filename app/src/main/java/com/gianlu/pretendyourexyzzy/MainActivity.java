@@ -415,7 +415,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     public void changeGameOptions(int gid, @NonNull Game.Options options) {
         try {
             showDialog(DialogUtils.progressDialog(this, R.string.loading));
-            pyx.request(PyxRequests.changeGameOptions(gid, options), new Pyx.OnSuccess() {
+            pyx.request(PyxRequests.changeGameOptions(gid, options), this, new Pyx.OnSuccess() {
                 @Override
                 public void onDone() {
                     dismissDialog();

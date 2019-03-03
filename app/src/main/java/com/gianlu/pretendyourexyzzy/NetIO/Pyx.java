@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
@@ -7,6 +8,8 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.Lifecycle.LifecycleAwareHandler;
+import com.gianlu.commonutils.Lifecycle.LifecycleAwareRunnable;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.OfflineActivity;
@@ -56,17 +59,17 @@ public class Pyx implements Closeable {
     protected final static int AJAX_TIMEOUT = 5;
     protected final static int POLLING_TIMEOUT = 30;
     public final Server server;
-    protected final Handler handler;
+    protected final LifecycleAwareHandler handler;
     protected final OkHttpClient client;
     protected final ExecutorService executor = Executors.newFixedThreadPool(5);
 
     Pyx() throws NoServersException {
-        this.handler = new Handler(Looper.getMainLooper());
+        this.handler = new LifecycleAwareHandler(new Handler(Looper.getMainLooper()));
         this.server = Server.lastServer();
         this.client = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
     }
 
-    protected Pyx(Server server, Handler handler, OkHttpClient client) {
+    protected Pyx(Server server, LifecycleAwareHandler handler, OkHttpClient client) {
         this.server = server;
         this.handler = handler;
         this.client = client;
@@ -145,17 +148,17 @@ public class Pyx implements Closeable {
         }
     }
 
-    public final void request(PyxRequest request, OnSuccess listener) {
-        executor.execute(new RequestRunner(request, listener));
+    public final void request(@NonNull PyxRequest request, @Nullable Activity activity, @NonNull OnSuccess listener) {
+        executor.execute(new RequestRunner(request, activity, listener));
     }
 
     @WorkerThread
-    public final void requestSync(PyxRequest request) throws JSONException, PyxException, IOException {
+    public final void requestSync(@NonNull PyxRequest request) throws JSONException, PyxException, IOException {
         request(request.op, request.params);
     }
 
-    public final <E> void request(PyxRequestWithResult<E> request, OnResult<E> listener) {
-        executor.execute(new RequestWithResultRunner<>(request, listener));
+    public final <E> void request(@NonNull PyxRequestWithResult<E> request, @Nullable Activity activity, @NonNull OnResult<E> listener) {
+        executor.execute(new RequestWithResultRunner<>(request, activity, listener));
     }
 
     @NonNull
@@ -202,108 +205,126 @@ public class Pyx implements Closeable {
         }
     }
 
-    public final void getUserHistory(@NonNull String userId, final OnResult<UserHistory> listener) {
+    public final void getUserHistory(@NonNull String userId, @Nullable Activity activity, @NonNull OnResult<UserHistory> listener) {
         final HttpUrl url = server.userHistory(userId);
         if (url == null) {
             listener.onException(new MetricsNotSupportedException(server));
             return;
         }
 
-        executor.execute(() -> {
-            try {
-                final UserHistory history = new UserHistory(new JSONObject(requestSync(url)));
-                handler.post(() -> listener.onDone(history));
-            } catch (JSONException | IOException ex) {
-                handler.post(() -> listener.onException(ex));
+        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
+            @Override
+            public void run() {
+                try {
+                    UserHistory history = new UserHistory(new JSONObject(requestSync(url)));
+                    post(() -> listener.onDone(history));
+                } catch (JSONException | IOException ex) {
+                    post(() -> listener.onException(ex));
+                }
             }
         });
     }
 
-    public final void getSessionHistory(@NonNull String sessionId, final OnResult<SessionHistory> listener) {
+    public final void getSessionHistory(@NonNull String sessionId, @Nullable Activity activity, @NonNull OnResult<SessionHistory> listener) {
         final HttpUrl url = server.sessionHistory(sessionId);
         if (url == null) {
             listener.onException(new MetricsNotSupportedException(server));
             return;
         }
 
-        executor.execute(() -> {
-            try {
-                final SessionHistory history = new SessionHistory(new JSONObject(requestSync(url)));
-                handler.post(() -> listener.onDone(history));
-            } catch (JSONException | IOException ex) {
-                handler.post(() -> listener.onException(ex));
+        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
+            @Override
+            public void run() {
+                try {
+                    SessionHistory history = new SessionHistory(new JSONObject(requestSync(url)));
+                    post(() -> listener.onDone(history));
+                } catch (JSONException | IOException ex) {
+                    post(() -> listener.onException(ex));
+                }
             }
         });
     }
 
-    public final void getSessionStats(@NonNull String sessionId, final OnResult<SessionStats> listener) {
+    public final void getSessionStats(@NonNull String sessionId, @Nullable Activity activity, @NonNull OnResult<SessionStats> listener) {
         final HttpUrl url = server.sessionStats(sessionId);
         if (url == null) {
             listener.onException(new MetricsNotSupportedException(server));
             return;
         }
 
-        executor.execute(() -> {
-            try {
-                final SessionStats history = new SessionStats(new JSONObject(requestSync(url)));
-                handler.post(() -> listener.onDone(history));
-            } catch (JSONException | IOException ex) {
-                handler.post(() -> listener.onException(ex));
+        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
+            @Override
+            public void run() {
+                try {
+                    SessionStats history = new SessionStats(new JSONObject(requestSync(url)));
+                    post(() -> listener.onDone(history));
+                } catch (JSONException | IOException ex) {
+                    post(() -> listener.onException(ex));
+                }
             }
         });
     }
 
-    public final void getGameHistory(@NonNull String gameId, final OnResult<GameHistory> listener) {
+    public final void getGameHistory(@NonNull String gameId, @Nullable Activity activity, @NonNull OnResult<GameHistory> listener) {
         final HttpUrl url = server.gameHistory(gameId);
         if (url == null) {
             listener.onException(new MetricsNotSupportedException(server));
             return;
         }
 
-        executor.execute(() -> {
-            try {
-                final GameHistory history = new GameHistory(new JSONArray(requestSync(url)));
-                handler.post(() -> listener.onDone(history));
-            } catch (JSONException | IOException ex) {
-                handler.post(() -> listener.onException(ex));
+        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
+            @Override
+            public void run() {
+                try {
+                    GameHistory history = new GameHistory(new JSONArray(requestSync(url)));
+                    post(() -> listener.onDone(history));
+                } catch (JSONException | IOException ex) {
+                    post(() -> listener.onException(ex));
+                }
             }
         });
     }
 
-    public final void getGameRound(@NonNull String roundId, final OnResult<GameRound> listener) {
+    public final void getGameRound(@NonNull String roundId, @Nullable Activity activity, @NonNull OnResult<GameRound> listener) {
         final HttpUrl url = server.gameRound(roundId);
         if (url == null) {
             listener.onException(new MetricsNotSupportedException(server));
             return;
         }
 
-        executor.execute(() -> {
-            try {
-                final GameRound history = new GameRound(new JSONObject(requestSync(url)));
-                handler.post(() -> listener.onDone(history));
-            } catch (JSONException | IOException ex) {
-                handler.post(() -> listener.onException(ex));
+        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
+            @Override
+            public void run() {
+                try {
+                    GameRound history = new GameRound(new JSONObject(requestSync(url)));
+                    post(() -> listener.onDone(history));
+                } catch (JSONException | IOException ex) {
+                    post(() -> listener.onException(ex));
+                }
             }
         });
     }
 
-    public final void firstLoad(final OnResult<FirstLoadedPyx> listener) {
+    public final void firstLoad(@Nullable Activity activity, @NonNull OnResult<FirstLoadedPyx> listener) {
         final InstanceHolder holder = InstanceHolder.holder();
 
         try {
-            final FirstLoadedPyx pyx = holder.get(InstanceHolder.Level.FIRST_LOADED);
-            handler.post(() -> listener.onDone(pyx));
+            FirstLoadedPyx pyx = holder.get(InstanceHolder.Level.FIRST_LOADED);
+            handler.post(activity == null ? listener : activity, () -> listener.onDone(pyx));
         } catch (LevelMismatchException exx) {
-            executor.execute(() -> {
-                try {
-                    FirstLoadAndConfig result = firstLoadSync();
+            executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
+                @Override
+                public void run() {
+                    try {
+                        FirstLoadAndConfig result = firstLoadSync();
 
-                    final FirstLoadedPyx pyx = new FirstLoadedPyx(server, handler, client, result);
-                    holder.set(pyx);
+                        FirstLoadedPyx pyx = new FirstLoadedPyx(server, handler, client, result);
+                        holder.set(pyx);
 
-                    handler.post(() -> listener.onDone(pyx));
-                } catch (PyxException | IOException | JSONException ex) {
-                    handler.post(() -> listener.onException(ex));
+                        post(() -> listener.onDone(pyx));
+                    } catch (PyxException | IOException | JSONException ex) {
+                        post(() -> listener.onException(ex));
+                    }
                 }
             });
         }
@@ -699,11 +720,12 @@ public class Pyx implements Closeable {
         }
     }
 
-    private class RequestRunner implements Runnable {
+    private class RequestRunner extends LifecycleAwareRunnable {
         private final PyxRequest request;
         private final OnSuccess listener;
 
-        RequestRunner(PyxRequest request, OnSuccess listener) {
+        RequestRunner(PyxRequest request, @Nullable Activity activity, @NonNull OnSuccess listener) {
+            super(handler, activity == null ? listener : activity);
             this.request = request;
             this.listener = listener;
         }
@@ -712,24 +734,19 @@ public class Pyx implements Closeable {
         public void run() {
             try {
                 request(request.op, request.params);
-                if (listener != null) {
-                    handler.post(listener::onDone);
-                }
+                post(listener::onDone);
             } catch (IOException | JSONException | PyxException ex) {
-                if (listener != null) {
-                    handler.post(() -> listener.onException(ex));
-                } else {
-                    Logging.log(ex);
-                }
+                post(() -> listener.onException(ex));
             }
         }
     }
 
-    private class RequestWithResultRunner<E> implements Runnable {
+    private class RequestWithResultRunner<E> extends LifecycleAwareRunnable {
         private final PyxRequestWithResult<E> request;
         private final OnResult<E> listener;
 
-        RequestWithResultRunner(PyxRequestWithResult<E> request, OnResult<E> listener) {
+        RequestWithResultRunner(PyxRequestWithResult<E> request, @Nullable Activity activity, @NonNull OnResult<E> listener) {
+            super(handler, activity == null ? listener : activity);
             this.request = request;
             this.listener = listener;
         }
@@ -738,16 +755,10 @@ public class Pyx implements Closeable {
         public void run() {
             try {
                 PyxResponse resp = request(request.op, request.params);
-                final E result = request.processor.process(resp.resp, resp.obj);
-                if (listener != null) {
-                    handler.post(() -> listener.onDone(result));
-                }
+                E result = request.processor.process(resp.resp, resp.obj);
+                post(() -> listener.onDone(result));
             } catch (IOException | JSONException | PyxException ex) {
-                if (listener != null) {
-                    handler.post(() -> listener.onException(ex));
-                } else {
-                    Logging.log(ex);
-                }
+                post(() -> listener.onException(ex));
             }
         }
     }

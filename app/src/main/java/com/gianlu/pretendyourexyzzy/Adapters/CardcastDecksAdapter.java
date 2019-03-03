@@ -85,8 +85,8 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
     }
 
     @Override
-    protected void moreContent(int page, @NonNull final ContentProvider<CardcastDeck> provider) {
-        cardcast.getDecks(search, limit, limit * page, new Cardcast.OnDecks() {
+    protected void moreContent(int page, @NonNull ContentProvider<CardcastDeck> provider) {
+        cardcast.getDecks(search, limit, limit * page, null, new Cardcast.OnDecks() {
             @Override
             public void onDone(@NonNull Cardcast.Search search, @NonNull CardcastDecks decks) {
                 provider.onMoreContent(decks);
