@@ -34,7 +34,7 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
     private final Random random = ThreadLocalRandom.current();
 
     public CardcastDecksAdapter(Context context, Cardcast cardcast, Cardcast.Search search, CardcastDecks items, int limit, Listener listener) {
-        super(new Config<CardcastDeck>(context).items(items).undeterminedPages().noSeparators());
+        super(context, new Config<CardcastDeck>().items(items).undeterminedPages().noSeparators());
         this.inflater = LayoutInflater.from(context);
         this.cardcast = cardcast;
         this.search = search;
@@ -53,7 +53,7 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
         final CardcastDeck deck = item.getItem();
 
         holder.name.setText(deck.name);
-        holder.author.setText(getContext().getString(R.string.byLowercase, deck.author.username));
+        CommonUtils.setText(holder.author, R.string.byLowercase, deck.author.username);
         holder.nsfw.setVisibility(deck.hasNsfwCards ? View.VISIBLE : View.GONE);
 
         if (deck.sampleCalls != null && !deck.sampleCalls.isEmpty()
@@ -75,7 +75,7 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
             if (listener != null) listener.onDeckSelected(deck);
         });
 
-        CommonUtils.setRecyclerViewTopMargin(getContext(), holder);
+        CommonUtils.setRecyclerViewTopMargin(holder);
     }
 
     @NonNull

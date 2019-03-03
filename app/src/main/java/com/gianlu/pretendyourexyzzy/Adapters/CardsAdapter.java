@@ -19,7 +19,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> implements PyxCardsGroupView.CardListener {
-    private final Context context;
     private final GameCardView.Action primary;
     private final GameCardView.Action secondary;
     private final List<CardsGroup> cards;
@@ -27,8 +26,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     private final boolean forGrid;
     private boolean isSelectable;
 
-    public CardsAdapter(@NonNull Context context, @Nullable GameCardView.Action primary, @Nullable GameCardView.Action secondary, @NonNull Listener listener) {
-        this.context = context;
+    public CardsAdapter(@Nullable GameCardView.Action primary, @Nullable GameCardView.Action secondary, @NonNull Listener listener) {
         this.primary = primary;
         this.secondary = secondary;
         this.listener = listener;
@@ -37,8 +35,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     @UiThread
-    public CardsAdapter(@NonNull Context context, boolean forGrid, List<? extends BaseCard> cards, @Nullable GameCardView.Action primary, @Nullable GameCardView.Action secondary, boolean isSelectable, @NonNull Listener listener) {
-        this.context = context;
+    public CardsAdapter(boolean forGrid, List<? extends BaseCard> cards, @Nullable GameCardView.Action primary, @Nullable GameCardView.Action secondary, boolean isSelectable, @NonNull Listener listener) {
         this.primary = primary;
         this.secondary = secondary;
         this.isSelectable = isSelectable;
@@ -58,7 +55,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder();
+        return new ViewHolder(parent.getContext());
     }
 
     @Override
@@ -197,7 +194,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final PyxCardsGroupView cards;
 
-        ViewHolder() {
+        ViewHolder(Context context) {
             super(new PyxCardsGroupView(context, CardsAdapter.this));
             cards = (PyxCardsGroupView) itemView;
         }

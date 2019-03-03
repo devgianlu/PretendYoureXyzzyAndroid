@@ -1,7 +1,6 @@
 package com.gianlu.pretendyourexyzzy.Adapters;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -22,18 +21,15 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHolder, Game, GamesAdapter.SortBy, Game.Protection> {
-    private final Context context;
     private final Listener listener;
     private final LayoutInflater inflater;
     private final FirstLoadedPyx pyx;
 
     public GamesAdapter(Context context, List<Game> objs, FirstLoadedPyx pyx, boolean filterOutLockedLobbies, Listener listener) {
         super(objs, SortBy.NUM_PLAYERS);
-        this.context = context;
         this.pyx = pyx;
         this.listener = listener;
         this.inflater = LayoutInflater.from(context);
@@ -93,7 +89,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         holder.spectators.setHtml(R.string.spectators, game.spectators.size(), game.options.spectatorsLimit);
         holder.goal.setHtml(R.string.goal, game.options.scoreLimit);
         holder.locked.setImageResource(game.hasPassword(false) ? R.drawable.outline_lock_24 : R.drawable.baseline_lock_open_24);
-        holder.locked.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(context, game.hasPassword(false) ? R.color.red : R.color.green)));
+        CommonUtils.setImageTintColor(holder.locked, game.hasPassword(false) ? R.color.red : R.color.green);
         holder.status.setImageResource(game.status == Game.Status.LOBBY ? R.drawable.baseline_hourglass_empty_24 : R.drawable.baseline_casino_24);
         holder.timerMultiplier.setHtml(R.string.timerMultiplier, game.options.timerMultiplier);
         holder.blankCards.setHtml(R.string.blankCards, game.options.blanksLimit);
@@ -109,7 +105,7 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
 
         holder.expand.setOnClickListener(v -> CommonUtils.handleCollapseClick(holder.expand, holder.details));
 
-        CommonUtils.setRecyclerViewTopMargin(context, holder);
+        CommonUtils.setRecyclerViewTopMargin(holder);
     }
 
     @Override

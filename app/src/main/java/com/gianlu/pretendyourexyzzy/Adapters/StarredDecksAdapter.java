@@ -16,13 +16,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class StarredDecksAdapter extends RecyclerView.Adapter<StarredDecksAdapter.ViewHolder> {
-    private final Context context;
     private final List<StarredDecksManager.StarredDeck> decks;
     private final LayoutInflater inflater;
     private final Listener listener;
 
-    public StarredDecksAdapter(Context context, List<StarredDecksManager.StarredDeck> decks, Listener listener) {
-        this.context = context;
+    public StarredDecksAdapter(@NonNull Context context, List<StarredDecksManager.StarredDeck> decks, Listener listener) {
         this.decks = decks;
         this.inflater = LayoutInflater.from(context);
         this.listener = listener;
@@ -44,7 +42,7 @@ public class StarredDecksAdapter extends RecyclerView.Adapter<StarredDecksAdapte
             if (listener != null) listener.onDeckSelected(deck);
         });
 
-        CommonUtils.setRecyclerViewTopMargin(context, holder);
+        CommonUtils.setRecyclerViewTopMargin(holder);
     }
 
     @Override

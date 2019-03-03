@@ -107,8 +107,8 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
         gameData.playersInterface = playersAdapter;
         playersList.setAdapter(playersAdapter);
 
-        tableAdapter = new CardsAdapter(getContext(), GameCardView.Action.SELECT, GameCardView.Action.TOGGLE_STAR, this);
-        handAdapter = new CardsAdapter(getContext(), GameCardView.Action.SELECT, GameCardView.Action.TOGGLE_STAR, this);
+        tableAdapter = new CardsAdapter(GameCardView.Action.SELECT, GameCardView.Action.TOGGLE_STAR, this);
+        handAdapter = new CardsAdapter(GameCardView.Action.SELECT, GameCardView.Action.TOGGLE_STAR, this);
     }
 
     @NonNull

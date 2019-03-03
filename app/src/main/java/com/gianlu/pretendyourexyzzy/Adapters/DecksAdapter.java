@@ -21,14 +21,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class DecksAdapter extends RecyclerView.Adapter<DecksAdapter.ViewHolder> {
-    private final Context context;
     private final List<Deck> sets;
     private final LayoutInflater inflater;
     private final Listener listener;
     private final OngoingGameHelper.Listener ongoingGameListener;
 
-    public DecksAdapter(Context context, List<Deck> sets, Listener listener, OngoingGameHelper.Listener ongoingGameListener) {
-        this.context = context;
+    public DecksAdapter(@NonNull Context context, List<Deck> sets, Listener listener, OngoingGameHelper.Listener ongoingGameListener) {
         this.sets = sets;
         this.inflater = LayoutInflater.from(context);
         this.listener = listener;
@@ -60,7 +58,7 @@ public class DecksAdapter extends RecyclerView.Adapter<DecksAdapter.ViewHolder> 
         if (deck != null) {
             holder.author.setHtml(R.string.byLowercase, deck.author.username);
             holder.code.setText(deck.code);
-            holder.itemView.setOnClickListener(v -> CardcastDeckActivity.startActivity(context, deck));
+            holder.itemView.setOnClickListener(v -> CardcastDeckActivity.startActivity(holder.itemView.getContext(), deck));
 
             if (ongoingGameListener != null && ongoingGameListener.canModifyCardcastDecks()) {
                 holder.remove.setVisibility(View.VISIBLE);
