@@ -76,8 +76,8 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
             return layout;
         }
 
-        final EditText message = layout.findViewById(R.id.chatFragment_message);
-        final ImageButton send = layout.findViewById(R.id.chatFragment_send);
+        EditText message = layout.findViewById(R.id.chatFragment_message);
+        ImageButton send = layout.findViewById(R.id.chatFragment_send);
         send.setOnClickListener(v -> {
             String msg = message.getText().toString();
             if (msg.isEmpty()) return;

@@ -13,6 +13,7 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.pretendyourexyzzy.BlockedUsers;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.WhoisResult;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
@@ -122,6 +123,17 @@ public class UserInfoDialog extends DialogFragment {
         } else {
             client.setVisibility(View.VISIBLE);
             client.setHtml(R.string.clientName, user.clientName());
+        }
+
+        Button blockUser = layout.findViewById(R.id.userInfoDialog_block);
+        if (BlockedUsers.isBlocked(user.nickname)) {
+            blockUser.setVisibility(View.GONE);
+        } else {
+            blockUser.setVisibility(View.VISIBLE);
+            blockUser.setOnClickListener(v -> {
+                BlockedUsers.block(user.nickname);
+                dismissAllowingStateLoss();
+            });
         }
 
         Button viewGame = layout.findViewById(R.id.userInfoDialog_viewGame);

@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import com.gianlu.commonutils.SuperTextView;
+import com.gianlu.pretendyourexyzzy.BlockedUsers;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.R;
 
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.UiThread;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
@@ -19,7 +21,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     private final LayoutInflater inflater;
     private final Listener listener;
 
-    public ChatAdapter(Context context, Listener listener) {
+    public ChatAdapter(@NonNull Context context, @NonNull Listener listener) {
         this.listener = listener;
         this.messages = new ArrayList<>();
         this.inflater = LayoutInflater.from(context);
@@ -51,8 +53,12 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         return messages.size();
     }
 
+    @UiThread
     public void newMessage(@NonNull PollMessage message, int gid) {
         if (message.event == PollMessage.Event.CHAT && ((message.gid == -1 && gid == -1) || (gid != -1 && message.gid == gid))) {
+            if (BlockedUsers.isBlocked(message.sender))
+                return;
+
             synchronized (messages) {
                 messages.add(message);
             }

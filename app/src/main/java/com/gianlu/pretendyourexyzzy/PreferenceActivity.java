@@ -8,14 +8,18 @@ import com.danielstone.materialaboutlibrary.items.MaterialAboutItem;
 import com.gianlu.commonutils.Preferences.BasePreferenceActivity;
 import com.gianlu.commonutils.Preferences.BasePreferenceFragment;
 import com.gianlu.commonutils.Preferences.MaterialAboutPreferenceItem;
+import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.SpareActivities.TutorialActivity;
 import com.yarolegovich.mp.MaterialCheckboxPreference;
+import com.yarolegovich.mp.MaterialStandardPreference;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 
 public class PreferenceActivity extends BasePreferenceActivity {
     @NonNull
@@ -53,6 +57,25 @@ public class PreferenceActivity extends BasePreferenceActivity {
 
     public static class GeneralFragment extends BasePreferenceFragment {
 
+        private void showUnblockDialog(Context context) {
+            String[] entries = Prefs.getSet(PK.BLOCKED_USERS, new HashSet<>()).toArray(new String[0]);
+            boolean[] checked = new boolean[entries.length];
+            for (int i = 0; i < checked.length; i++) checked[i] = false;
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(R.string.unblockUser)
+                    .setMultiChoiceItems(entries, checked, (dialog, which, isChecked) -> checked[which] = isChecked)
+                    .setPositiveButton(R.string.unblock, (dialog, which) -> {
+                        for (int i = 0; i < checked.length; i++) {
+                            if (checked[i]) BlockedUsers.unblock(entries[i]);
+                        }
+
+                        if (Prefs.isSetEmpty(PK.BLOCKED_USERS)) onBackPressed();
+                    }).setNegativeButton(android.R.string.cancel, null);
+
+            showDialog(builder);
+        }
+
         @Override
         protected void buildPreferences(@NonNull Context context) {
             MaterialCheckboxPreference nightMode = new MaterialCheckboxPreference.Builder(context)
@@ -62,6 +85,14 @@ public class PreferenceActivity extends BasePreferenceActivity {
             nightMode.setTitle(R.string.prefs_nightMode);
             nightMode.setSummary(R.string.prefs_nightMode_summary);
             addPreference(nightMode);
+
+            if (!Prefs.isSetEmpty(PK.BLOCKED_USERS)) {
+                MaterialStandardPreference unblock = new MaterialStandardPreference(context);
+                unblock.setTitle(R.string.unblockUser);
+                unblock.setSummary(R.string.unblockUser_summary);
+                unblock.setOnClickListener(v -> showUnblockDialog(context));
+                addPreference(unblock);
+            }
         }
 
         @Override

@@ -38,10 +38,12 @@ public class SensitiveGameData {
         return Objects.equals(host, me);
     }
 
+    @UiThread
     void update(@NonNull GameInfo info) {
         update(info, null, null);
     }
 
+    @UiThread
     void update(@NonNull GameInfo info, @Nullable GameCards cards, @Nullable GameLayout layout) {
         update(info.game);
 

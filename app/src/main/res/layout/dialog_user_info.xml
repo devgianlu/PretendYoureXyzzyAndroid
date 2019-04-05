@@ -40,14 +40,28 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <Button
-        android:id="@+id/userInfoDialog_viewGame"
-        style="?android:attr/borderlessButtonStyle"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom"
-        android:layout_marginBottom="-16dp"
-        android:text="@string/viewGame"
-        android:textColor="@color/colorAccent" />
+        android:gravity="end"
+        android:orientation="horizontal">
 
+        <Button
+            android:id="@+id/userInfoDialog_block"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="-16dp"
+            android:text="@string/blockUser"
+            android:textColor="@color/colorAccent" />
+
+        <Button
+            android:id="@+id/userInfoDialog_viewGame"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="-16dp"
+            android:text="@string/viewGame"
+            android:textColor="@color/colorAccent" />
+    </LinearLayout>
 </LinearLayout>
