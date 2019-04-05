@@ -57,7 +57,7 @@ public class PreferenceActivity extends BasePreferenceActivity {
 
     public static class GeneralFragment extends BasePreferenceFragment {
 
-        private void showUnblockDialog(Context context) {
+        private void showUnblockDialog(@NonNull Context context) {
             String[] entries = Prefs.getSet(PK.BLOCKED_USERS, new HashSet<>()).toArray(new String[0]);
             boolean[] checked = new boolean[entries.length];
             for (int i = 0; i < checked.length; i++) checked[i] = false;

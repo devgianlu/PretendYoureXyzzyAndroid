@@ -213,9 +213,10 @@ public class RegisteredPyx extends FirstLoadedPyx {
             Logging.log(ex);
         }
 
-        public void addListener(OnEventListener listener) {
+        public void addListener(@NonNull OnEventListener listener) {
             synchronized (listeners) {
-                listeners.add(listener);
+                if (!listeners.contains(listener))
+                    listeners.add(listener);
             }
         }
 
@@ -223,7 +224,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
             shouldStop = true;
         }
 
-        public void removeListener(OnEventListener listener) {
+        public void removeListener(@NonNull OnEventListener listener) {
             synchronized (listeners) {
                 listeners.remove(listener);
             }

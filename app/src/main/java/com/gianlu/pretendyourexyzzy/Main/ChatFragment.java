@@ -53,7 +53,6 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.fragment_chat, container, false);
-        if (getContext() == null) return layout;
         this.layout = layout.findViewById(R.id.chatFragment_recyclerViewLayout);
         this.layout.disableSwipeRefresh();
         LinearLayoutManager llm = new SuppressingLinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
@@ -64,7 +63,7 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
         if (args == null) gid = -1;
         else gid = args.getInt("gid", -1);
 
-        adapter = new ChatAdapter(getContext(), this);
+        adapter = new ChatAdapter(requireContext(), this);
         this.layout.loadListData(adapter);
         onItemCountChanged(0);
 
