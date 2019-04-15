@@ -47,11 +47,11 @@
     <string name="tutorial_joinGame">Entra nel gioco</string>
     <string name="tutorial_spectateGame_desc">Gli spettatori possono solo vedere cosa sta succedendo e non possono giocare, ma possono scrivere in chat.</string>
     <string name="tutorial_joinGame_desc">Entrando nel gioco ti godi a pieno la partita.</string>
-    <string name="tutorial_createGame">Crea partita</string>
+    <string name="createGame">Crea partita</string>
     <string name="tutorial_createGame_desc">Puoi creare il tuo gioco e scegliere le tue impostazioni.</string>
     <string name="tutorial_setupGame">Imposta gioco</string>
     <string name="tutorial_setupGame_desc">Qui puoi personalizzare la tua partita. Non dimenticare che puoi anche aggiungere mazzi da Cardcast.</string>
-    <string name="tutorial_startGame">Avvia gioco</string>
+    <string name="startGame">Avvia gioco</string>
     <string name="tutorial_startGame_desc">Una volta che hai finito, inizia il gioco. Per farlo devi avere almeno 3 giocatori e un determinato numero di carte.</string>
     <string name="tutorial_chooseIdCode">Scegli un codice</string>
     <string name="tutorial_chooseIdCode_desc">Scegli un codice o generane uno per rendere più difficile per qualcuno impersonarti.</string>

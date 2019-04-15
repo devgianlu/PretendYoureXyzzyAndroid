@@ -47,11 +47,11 @@
     <string name="tutorial_joinGame">Join game</string>
     <string name="tutorial_spectateGame_desc">Spectators can only see what\'s happening and cannot play, but they can write on the chat.</string>
     <string name="tutorial_joinGame_desc">By joining the game you\'ll enjoy the full game experience.</string>
-    <string name="tutorial_createGame">Create game</string>
+    <string name="createGame">Create game</string>
     <string name="tutorial_createGame_desc">You can create your own game and define your own settings.</string>
     <string name="tutorial_setupGame">Setup game</string>
     <string name="tutorial_setupGame_desc">Here you can customize your game options. Don\'t forget you can also add Cardcast decks from the menu up here.</string>
-    <string name="tutorial_startGame">Start game</string>
+    <string name="startGame">Start game</string>
     <string name="tutorial_startGame_desc">Once you\'re done, start the game. To do that you must have at least 3 players and a given number of cards.</string>
     <string name="tutorial_chooseIdCode">Enter an identification code</string>
     <string name="tutorial_chooseIdCode_desc">Enter or generate an identification code to make it difficult for someone to impersonate you.</string>

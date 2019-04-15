@@ -67,6 +67,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
+        android:contentDescription="@string/startGame"
         android:src="@drawable/baseline_done_24"
         android:tint="@color/bright_foreground_dark"
         android:visibility="gone" />

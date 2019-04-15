@@ -31,7 +31,7 @@ public class GamesTutorial extends BaseTutorial {
             forView(holder.locked, R.string.tutorial_gameLocked, R.string.tutorial_gameLocked_desc);
             forView(holder.spectate, R.string.tutorial_spectateGame, R.string.tutorial_spectateGame_desc);
             forView(holder.join, R.string.tutorial_joinGame, R.string.tutorial_joinGame_desc);
-            forView(createGame, R.string.tutorial_createGame, R.string.tutorial_createGame_desc)
+            forView(createGame, R.string.createGame, R.string.tutorial_createGame_desc)
                     .transparentTarget(true);
             return true;
         }

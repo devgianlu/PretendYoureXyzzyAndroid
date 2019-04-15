@@ -21,7 +21,7 @@ public class CreateGameTutorial extends BaseTutorial {
         View options = activity.getWindow().getDecorView().findViewById(R.id.ongoingGame_options);
         if (options != null) {
             forView(options, R.string.tutorial_setupGame, R.string.tutorial_setupGame_desc);
-            forView(gameLayout.getStartGameButton(), R.string.tutorial_startGame, R.string.tutorial_startGame_desc).transparentTarget(true);
+            forView(gameLayout.getStartGameButton(), R.string.startGame, R.string.tutorial_startGame_desc).transparentTarget(true);
             return true;
         }
 
