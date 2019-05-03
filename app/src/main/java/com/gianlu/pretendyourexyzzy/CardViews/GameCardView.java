@@ -14,19 +14,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
-import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.FontsManager;
-import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.SuperTextView;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
-import com.gianlu.pretendyourexyzzy.R;
-
 import androidx.annotation.AttrRes;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
@@ -35,6 +22,19 @@ import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
 import androidx.core.widget.TextViewCompat;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
+import com.gianlu.commonutils.CasualViews.SuperTextView;
+import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.FontsManager;
+import com.gianlu.commonutils.Logging;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
+import com.gianlu.pretendyourexyzzy.R;
 
 public class GameCardView extends CardView {
     public static final int WIDTH_DIP = 156;

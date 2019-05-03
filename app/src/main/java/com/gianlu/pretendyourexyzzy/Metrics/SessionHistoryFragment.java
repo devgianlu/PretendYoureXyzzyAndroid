@@ -7,22 +7,22 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
-import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.MessageView;
-import com.gianlu.commonutils.SuperTextView;
-import com.gianlu.pretendyourexyzzy.Adapters.CardsGridFixer;
-import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.SessionHistory;
-import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
-import com.gianlu.pretendyourexyzzy.R;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+
+import com.gianlu.commonutils.CasualViews.MessageView;
+import com.gianlu.commonutils.CasualViews.SuperTextView;
+import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
+import com.gianlu.commonutils.Logging;
+import com.gianlu.pretendyourexyzzy.Adapters.CardsGridFixer;
+import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.SessionHistory;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.R;
 
 public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<SessionHistory> {
     private ProgressBar loading;

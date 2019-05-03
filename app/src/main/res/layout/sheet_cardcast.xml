@@ -9,7 +9,7 @@
         android:nestedScrollingEnabled="false"
         android:layout_height="wrap_content" />
 
-    <com.gianlu.commonutils.MessageView
+    <com.gianlu.commonutils.CasualViews.MessageView
         android:id="@+id/cardcastSheet_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

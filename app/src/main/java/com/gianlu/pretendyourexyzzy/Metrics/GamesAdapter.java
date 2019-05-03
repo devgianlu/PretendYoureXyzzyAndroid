@@ -4,16 +4,16 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.gianlu.commonutils.CasualViews.SuperTextView;
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.SuperTextView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.SessionHistory;
 import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.Date;
 import java.util.List;
-
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 
 class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.ViewHolder> {
     private final LayoutInflater inflater;

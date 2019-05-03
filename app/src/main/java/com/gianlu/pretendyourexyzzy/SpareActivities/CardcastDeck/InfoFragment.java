@@ -10,15 +10,16 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import com.gianlu.commonutils.CasualViews.MessageView;
 import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.MessageView;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeckInfo;
 import com.gianlu.pretendyourexyzzy.R;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 
 public class InfoFragment extends Fragment implements Cardcast.OnResult<CardcastDeckInfo> {

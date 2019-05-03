@@ -5,20 +5,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.RecyclerViewLayout;
-import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.UserHistory;
-import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
-import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
-import com.gianlu.pretendyourexyzzy.R;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
+import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
+import com.gianlu.commonutils.Logging;
+import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
+import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.UserHistory;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
+import com.gianlu.pretendyourexyzzy.R;
 
 public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<UserHistory> {
     private RegisteredPyx pyx;

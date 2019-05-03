@@ -4,17 +4,17 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
-import com.gianlu.commonutils.RecyclerViewLayout;
-import com.gianlu.pretendyourexyzzy.Adapters.ServersAdapter;
-import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
-import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
-import com.gianlu.pretendyourexyzzy.R;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
+import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
+import com.gianlu.pretendyourexyzzy.Adapters.ServersAdapter;
+import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.R;
 
 public class ManageServersActivity extends ActivityWithDialog implements ServersAdapter.Listener, Dialogs.OnAddServer {
     private RecyclerViewLayout layout;

@@ -6,19 +6,19 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
-import com.gianlu.commonutils.RecyclerViewLayout;
-import com.gianlu.commonutils.Toaster;
-import com.gianlu.pretendyourexyzzy.Adapters.StarredDecksAdapter;
-import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
-import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeckActivity;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
+import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
+import com.gianlu.commonutils.Toaster;
+import com.gianlu.pretendyourexyzzy.Adapters.StarredDecksAdapter;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
+import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeckActivity;
 
 public class StarredDecksActivity extends ActivityWithDialog implements StarredDecksAdapter.Listener {
     private RecyclerViewLayout layout;
