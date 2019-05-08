@@ -168,6 +168,8 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
 
     @Override
     public void onDone(@NonNull Cardcast.Search search, @NonNull CardcastDecks decks) {
+        if (isDetached() || !isAdded()) return;
+
         if (decks.isEmpty())
             layout.showInfo(R.string.searchNoDecks);
         else
