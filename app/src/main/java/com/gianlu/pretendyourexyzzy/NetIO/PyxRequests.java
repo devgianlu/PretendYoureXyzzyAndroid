@@ -2,6 +2,9 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.os.Build;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.Preferences.Prefs;
@@ -26,8 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import okhttp3.Response;
 
 public final class PyxRequests {
@@ -131,13 +132,15 @@ public final class PyxRequests {
     }
 
     @NonNull
-    public static PyxRequest sendGameMessage(int gid, @NonNull String msg) {
-        return new PyxRequest(Pyx.Op.GAME_CHAT, new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("m", msg));
+    public static PyxRequest sendGameMessage(int gid, @NonNull String msg, boolean emote) {
+        return new PyxRequest(Pyx.Op.GAME_CHAT, new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("m", msg),
+                new NameValuePair("me", String.valueOf(emote)));
     }
 
     @NonNull
-    public static PyxRequest sendMessage(String msg) {
-        return new PyxRequest(Pyx.Op.CHAT, new NameValuePair("m", msg));
+    public static PyxRequest sendMessage(@NonNull String msg, boolean emote, boolean wall) {
+        return new PyxRequest(Pyx.Op.CHAT, new NameValuePair("m", msg), new NameValuePair("me", String.valueOf(emote)),
+                new NameValuePair("wall", String.valueOf(wall)));
     }
 
     @NonNull

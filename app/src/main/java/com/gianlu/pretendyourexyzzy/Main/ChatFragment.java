@@ -34,6 +34,8 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     private ChatAdapter adapter;
     private int gid;
     private RegisteredPyx pyx;
+    private ImageButton send;
+    private EditText message;
 
     @NonNull
     public static ChatFragment getGameInstance(int gid) {
@@ -75,34 +77,64 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
             return layout;
         }
 
-        EditText message = layout.findViewById(R.id.chatFragment_message);
-        ImageButton send = layout.findViewById(R.id.chatFragment_send);
+        message = layout.findViewById(R.id.chatFragment_message);
+        send = layout.findViewById(R.id.chatFragment_send);
         send.setOnClickListener(v -> {
             String msg = message.getText().toString();
             if (msg.isEmpty()) return;
-
-            message.setEnabled(false);
-            send.setEnabled(false);
-            send(msg, new Pyx.OnSuccess() {
-                @Override
-                public void onDone() {
-                    message.setText(null);
-                    message.setEnabled(true);
-                    send.setEnabled(true);
-                }
-
-                @Override
-                public void onException(@NonNull Exception ex) {
-                    showToast(Toaster.build().message(R.string.failedSendMessage).ex(ex));
-                    message.setEnabled(true);
-                    send.setEnabled(true);
-                }
-            });
+            sendMessage(msg);
         });
 
         pyx.polling().addListener(this);
 
         return layout;
+    }
+
+    private void sendMessage(@NonNull String msg) {
+        boolean emote;
+        boolean wall;
+        if (msg.startsWith("/")) {
+            String[] split = msg.split(" ");
+            if (split.length == 1 || split[1].isEmpty())
+                return;
+
+            msg = split[1];
+
+            switch (split[0].substring(1)) {
+                case "me":
+                    emote = true;
+                    wall = false;
+                    break;
+                case "wall":
+                    emote = false;
+                    wall = true;
+                    break;
+                default:
+                    showToast(Toaster.build().message(R.string.unknownChatCommand).error(false));
+                    return;
+            }
+        } else {
+            emote = false;
+            wall = false;
+        }
+
+        message.setEnabled(false);
+        send.setEnabled(false);
+        send(msg, emote, wall, new Pyx.OnSuccess() {
+            @Override
+            public void onDone() {
+                message.setText(null);
+                message.setEnabled(true);
+                send.setEnabled(true);
+            }
+
+            @Override
+            public void onException(@NonNull Exception ex) {
+                showToast(Toaster.build().message(R.string.failedSendMessage).ex(ex));
+                message.setEnabled(true);
+                send.setEnabled(true);
+            }
+        });
     }
 
     @Override
@@ -117,12 +149,12 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
         super.onDestroy();
     }
 
-    private void send(String msg, Pyx.OnSuccess listener) {
+    private void send(@NonNull String msg, boolean emote, boolean wall, @NonNull Pyx.OnSuccess listener) {
         if (gid == -1) {
-            pyx.request(PyxRequests.sendMessage(msg), getActivity(), listener);
+            pyx.request(PyxRequests.sendMessage(msg, emote, wall), getActivity(), listener);
             AnalyticsApplication.sendAnalytics(Utils.ACTION_SENT_MSG);
         } else {
-            pyx.request(PyxRequests.sendGameMessage(gid, msg), getActivity(), listener);
+            pyx.request(PyxRequests.sendGameMessage(gid, msg, emote), getActivity(), listener);
             AnalyticsApplication.sendAnalytics(Utils.ACTION_SENT_GAME_MSG);
         }
     }

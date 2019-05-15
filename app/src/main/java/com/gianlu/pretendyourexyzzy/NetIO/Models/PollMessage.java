@@ -26,7 +26,7 @@ public class PollMessage {
         message = obj.optString("m", null);
         gid = obj.optInt("gid", -1);
         timestamp = obj.optLong("ts", -1);
-        emote = obj.optBoolean("emote", false);
+        emote = obj.optBoolean("me", false);
         wall = obj.optBoolean("wall", false);
 
         this.obj = obj;

@@ -271,4 +271,5 @@
     <string name="unblockUser">Unblock user</string>
     <string name="unblockUser_summary">Unblock previous blocked users</string>
     <string name="unblock">Unblock</string>
+    <string name="unknownChatCommand">Unknown chat command.</string>
 </resources>
