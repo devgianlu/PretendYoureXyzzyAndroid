@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
+import androidx.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,8 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import androidx.annotation.NonNull;
-
 public class PollMessage {
     public final String sender;
     public final String message;
@@ -17,6 +17,8 @@ public class PollMessage {
     public final long timestamp;
     public final JSONObject obj;
     public final Event event;
+    public final boolean emote;
+    public final boolean wall;
 
     private PollMessage(JSONObject obj) throws JSONException {
         event = Event.parse(obj.getString("E"));
@@ -24,6 +26,9 @@ public class PollMessage {
         message = obj.optString("m", null);
         gid = obj.optInt("gid", -1);
         timestamp = obj.optLong("ts", -1);
+        emote = obj.optBoolean("emote", false);
+        wall = obj.optBoolean("wall", false);
+
         this.obj = obj;
     }
 

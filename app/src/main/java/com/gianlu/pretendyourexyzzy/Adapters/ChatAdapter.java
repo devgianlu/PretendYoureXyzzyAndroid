@@ -9,6 +9,7 @@ import androidx.annotation.UiThread;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CasualViews.SuperTextView;
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.pretendyourexyzzy.BlockedUsers;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.R;
@@ -41,11 +42,15 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        final PollMessage message = messages.get(position);
+        PollMessage message = messages.get(position);
         holder.text.setHtml(SuperTextView.makeBold(message.sender) + ": " + message.message);
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onChatItemSelected(message.sender);
         });
+
+        if (message.emote) CommonUtils.setTextColor(holder.text, R.color.purple);
+        else if (message.wall) CommonUtils.setTextColor(holder.text, R.color.red);
+        else CommonUtils.setTextColorFromAttr(holder.text, android.R.attr.textColorSecondary);
     }
 
     @Override
@@ -56,7 +61,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     @UiThread
     public void newMessage(@NonNull PollMessage message, int gid) {
         if (message.event == PollMessage.Event.CHAT && ((message.gid == -1 && gid == -1) || (gid != -1 && message.gid == gid))) {
-            if (BlockedUsers.isBlocked(message.sender))
+            if (!message.wall && BlockedUsers.isBlocked(message.sender))
                 return;
 
             synchronized (messages) {
