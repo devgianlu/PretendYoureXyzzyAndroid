@@ -116,7 +116,10 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
             return layout;
         }
 
-        layout.enableSwipeRefresh(() -> pyx.request(PyxRequests.getNamesList(), null, NamesFragment.this), R.color.colorAccent);
+        layout.enableSwipeRefresh(() -> {
+            adapter = null;
+            pyx.request(PyxRequests.getNamesList(), null, NamesFragment.this);
+        }, R.color.colorAccent);
 
         pyx.polling().addListener(new Pyx.OnEventListener() {
             @Override
@@ -130,6 +133,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
                         if (adapter != null) adapter.removeItem(msg.obj.getString("n"));
                         break;
                     case GAME_LIST_REFRESH:
+                        adapter = null;
                         pyx.request(PyxRequests.getNamesList(), null, NamesFragment.this);
                         break;
                 }
