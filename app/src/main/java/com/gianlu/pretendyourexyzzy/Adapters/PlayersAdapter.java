@@ -86,7 +86,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         final SuperTextView score;
         final ImageView status;
 
-        ViewHolder(ViewGroup parent) {
+        ViewHolder(@NonNull ViewGroup parent) {
             super(inflater.inflate(R.layout.item_player, parent, false));
             setIsRecyclable(true);
 

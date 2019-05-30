@@ -1,5 +1,10 @@
 package com.gianlu.pretendyourexyzzy.Main.OngoingGame;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+import androidx.recyclerview.widget.DiffUtil;
+
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameCards;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
@@ -10,11 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.UiThread;
-import androidx.recyclerview.widget.DiffUtil;
 
 public class SensitiveGameData {
     final List<GameInfo.Player> players = new ArrayList<>();
@@ -110,6 +110,7 @@ public class SensitiveGameData {
         return me.equals(judge);
     }
 
+    @UiThread
     void playerChange(@NonNull GameInfo.Player player) {
         playerChange(player, players);
         for (int i = 0; i < players.size(); i++) {
@@ -155,6 +156,7 @@ public class SensitiveGameData {
         }
     }
 
+    @UiThread
     void resetToIdleAndHost() {
         synchronized (players) {
             for (GameInfo.Player player : players) {

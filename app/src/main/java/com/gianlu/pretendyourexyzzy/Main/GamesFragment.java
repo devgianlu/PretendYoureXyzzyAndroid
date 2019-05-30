@@ -225,7 +225,8 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     @Override
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
-        layout.showError(R.string.failedLoading_reason, ex.getMessage());
+        if (!PyxException.solveNotRegistered(getContext(), ex))
+            layout.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 
     @Override
@@ -402,7 +403,8 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
                 @Override
                 public void onException(@NonNull Exception ex) {
-                    showToast(Toaster.build().message(R.string.failedLoading).ex(ex));
+                    if (!PyxException.solveNotRegistered(getContext(), ex))
+                        showToast(Toaster.build().message(R.string.failedLoading).ex(ex));
                 }
             });
         }

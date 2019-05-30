@@ -27,6 +27,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Name;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
+import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
@@ -173,7 +174,8 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     @Override
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
-        layout.showError(R.string.failedLoading_reason, ex.getMessage());
+        if (!PyxException.solveNotRegistered(getContext(), ex))
+            layout.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 
     @Override
