@@ -2,6 +2,9 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.app.Activity;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.gianlu.commonutils.Lifecycle.LifecycleAwareHandler;
 import com.gianlu.commonutils.Lifecycle.LifecycleAwareRunnable;
 import com.gianlu.commonutils.Logging;
@@ -26,8 +29,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -194,6 +195,8 @@ public class RegisteredPyx extends FirstLoadedPyx {
                     }
                 } catch (IOException | JSONException | PyxException ex) {
                     dispatchEx(ex);
+                } catch (IllegalArgumentException ex) {
+                    Logging.log(String.format("IAE! {server: %s}", server.url), ex);
                 }
             }
         }
