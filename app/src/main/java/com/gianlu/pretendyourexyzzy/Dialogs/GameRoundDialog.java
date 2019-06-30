@@ -18,6 +18,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.FileProvider;
+import androidx.fragment.app.DialogFragment;
+
 import com.gianlu.commonutils.AskPermission;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
@@ -33,12 +39,6 @@ import com.gianlu.pretendyourexyzzy.Utils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.FileProvider;
-import androidx.fragment.app.DialogFragment;
 
 public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<GameRound> {
     private GameRoundSummary summary;
@@ -179,7 +179,7 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
     }
 
     private void generate() {
-        if (getContext() == null) return;
+        if (getContext() == null || round == null) return;
 
         summary = new GameRoundSummary(getContext(), round, rotate.isChecked());
         image.setImageBitmap(summary.getBitmap());
