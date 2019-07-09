@@ -1,5 +1,8 @@
 package com.gianlu.pretendyourexyzzy;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -7,9 +10,6 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 
 import java.util.List;
 import java.util.Objects;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 public class Utils {
     public static final String ACTION_STARRED_CARD_ADD = "added_starred_card";
@@ -28,6 +28,7 @@ public class Utils {
     public static final String ACTION_SAVE_SHARE_ROUND = "save_share_round";
     public static final String ACTION_SENT_MSG = "sent_message";
     public static final String ACTION_OPEN_URBAN_DICT = "opened_urban_dict_sheet";
+    public static final String ACTION_UNKNOWN_EVENT = "unknown_server_event";
 
     @NonNull
     public static String buildDeckCountString(int decks, int black, int white) {

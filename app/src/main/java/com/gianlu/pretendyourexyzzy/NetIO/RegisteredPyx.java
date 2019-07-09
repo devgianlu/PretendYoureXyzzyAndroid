@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.app.Activity;
+import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,6 +19,8 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.UserHistory;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.PollMessage;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.User;
 import com.gianlu.pretendyourexyzzy.PK;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
+import com.gianlu.pretendyourexyzzy.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -197,6 +200,10 @@ public class RegisteredPyx extends FirstLoadedPyx {
                     dispatchEx(ex);
                 } catch (IllegalArgumentException ex) {
                     Logging.log(String.format("IAE! {server: %s}", server.url), ex);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("server", server.url.toString());
+                    bundle.putString("msg", ex.getMessage());
+                    ThisApplication.sendAnalytics(Utils.ACTION_UNKNOWN_EVENT, bundle);
                 }
             }
         }
