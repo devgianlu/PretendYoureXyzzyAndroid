@@ -21,6 +21,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
     private final List<GameInfo.Player> players;
     private final Listener listener;
     private final LayoutInflater inflater;
+    private RecyclerView view;
 
     public PlayersAdapter(Context context, List<GameInfo.Player> players, Listener listener) {
         this.inflater = LayoutInflater.from(context);
@@ -75,6 +76,21 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
     @Override
     public void dispatchUpdate(@NonNull DiffUtil.DiffResult result) {
         result.dispatchUpdatesTo(this);
+    }
+
+    @Override
+    public void clearPool() {
+        if (view != null) view.getRecycledViewPool().clear();
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        view = recyclerView;
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
+        view = null;
     }
 
     public interface Listener {

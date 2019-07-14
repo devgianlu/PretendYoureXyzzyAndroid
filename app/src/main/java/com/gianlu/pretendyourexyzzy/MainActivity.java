@@ -6,6 +6,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.annotation.UiThread;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
@@ -39,16 +49,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import org.json.JSONException;
 
 import java.util.Objects;
-
-import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
-import androidx.annotation.UiThread;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction {
     private BottomNavigationManager navigation;
@@ -468,6 +468,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     private void inflateNavigation(@NonNull Layout layout) {
+        if (navigation == null) return;
         navigation.clear();
 
         for (int i = 0; i < layout.items.length; i++) {

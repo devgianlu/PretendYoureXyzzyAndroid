@@ -165,6 +165,7 @@ public class SensitiveGameData {
             }
         }
 
+        playersInterface.clearPool();
         playersInterface.notifyDataSetChanged();
     }
 
@@ -185,6 +186,8 @@ public class SensitiveGameData {
         void dispatchUpdate(@NonNull DiffUtil.DiffResult result);
 
         void notifyItemChanged(int pos);
+
+        void clearPool();
     }
 
     private static class PlayersDiff extends DiffUtil.Callback {
