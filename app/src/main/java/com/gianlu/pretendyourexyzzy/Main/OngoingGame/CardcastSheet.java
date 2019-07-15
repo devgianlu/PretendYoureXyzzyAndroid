@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.gianlu.commonutils.BottomSheet.ModalBottomSheetHeaderView;
 import com.gianlu.commonutils.BottomSheet.ThemedModalBottomSheet;
 import com.gianlu.commonutils.CasualViews.MessageView;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
@@ -49,7 +50,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
         if (context instanceof OngoingGameHelper.Listener)
@@ -57,8 +58,8 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
     }
 
     @Override
-    protected boolean onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, @NonNull Integer gid) {
-        parent.setBackgroundResource(R.color.colorAccent_light);
+    protected boolean onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ModalBottomSheetHeaderView parent, @NonNull Integer gid) {
+        parent.setBackgroundColorRes(R.color.colorAccent_light);
         inflater.inflate(R.layout.sheet_header_cardcast, parent, true);
         count = parent.findViewById(R.id.cardcastSheet_count);
         count.setVisibility(View.GONE);
