@@ -13,10 +13,10 @@
     <application
         android:name=".ThisApplication"
         android:allowBackup="true"
-        android:resizeableActivity="true"
         android:fullBackupContent="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:resizeableActivity="true"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -24,6 +24,7 @@
         <!-- Loading activity -->
         <activity
             android:name=".LoadingActivity"
+            android:configChanges="uiMode"
             android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme">
             <intent-filter>
@@ -51,18 +52,21 @@
         <!-- Tutorial activity -->
         <activity
             android:name=".SpareActivities.TutorialActivity"
+            android:configChanges="uiMode"
             android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme" />
 
         <!-- Main activity (with all the fragments) -->
         <activity
             android:name=".MainActivity"
+            android:configChanges="uiMode"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar.Drawer" />
 
         <!-- Metrics activity (sessions, games, rounds) -->
         <activity
             android:name=".Metrics.MetricsActivity"
+            android:configChanges="uiMode"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -70,12 +74,14 @@
         <!-- Manager servers activity -->
         <activity
             android:name=".SpareActivities.ManageServersActivity"
+            android:configChanges="uiMode"
             android:parentActivityName=".LoadingActivity"
             android:screenOrientation="portrait" />
 
         <!-- Starred cards activity -->
         <activity
             android:name=".Starred.StarredCardsActivity"
+            android:configChanges="uiMode"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -83,18 +89,21 @@
         <!-- Starred decks activity -->
         <activity
             android:name=".Starred.StarredDecksActivity"
+            android:configChanges="uiMode"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" />
 
         <!-- Cardcast deck activity -->
         <activity
             android:name=".SpareActivities.CardcastDeckActivity"
+            android:configChanges="uiMode"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- Preferences activity -->
         <activity
             android:name=".PreferenceActivity"
+            android:configChanges="uiMode"
             android:screenOrientation="portrait" />
 
         <!-- GameRound images provider -->
