@@ -40,6 +40,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
+            android:background="?android:attr/colorBackground"
             app:itemBackground="?android:attr/colorBackground"
             app:itemIconTint="@color/bottom_navigation_color"
             app:itemTextColor="@color/bottom_navigation_color" />
