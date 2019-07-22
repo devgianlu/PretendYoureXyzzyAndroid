@@ -51,6 +51,7 @@ import org.json.JSONException;
 import java.util.Objects;
 
 public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction {
+    private final Object fragmentsLock = new Object();
     private BottomNavigationManager navigation;
     private NamesFragment namesFragment;
     private GamesFragment gamesFragment;
@@ -225,7 +226,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
         outState.putSerializable("currentGame", currentGame);
@@ -301,50 +302,52 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         if (isFinishing() || isDestroyed()) return;
 
-        FragmentManager manager = getSupportFragmentManager();
-        Fragment fragment = manager.findFragmentByTag(item.tag);
-        FragmentTransaction transaction = manager.beginTransaction()
-                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
+        synchronized (fragmentsLock) {
+            FragmentManager manager = getSupportFragmentManager();
+            Fragment fragment = manager.findFragmentByTag(item.tag);
+            FragmentTransaction transaction = manager.beginTransaction()
+                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
 
-        if (fragment != null) {
-            for (Fragment hideFragment : manager.getFragments())
-                if (!Objects.equals(hideFragment.getTag(), fragment.getTag()))
+            if (fragment != null) {
+                for (Fragment hideFragment : manager.getFragments())
+                    if (!Objects.equals(hideFragment.getTag(), fragment.getTag()))
+                        transaction.hide(hideFragment);
+
+                transaction.show(fragment);
+            } else {
+                for (Fragment hideFragment : manager.getFragments())
                     transaction.hide(hideFragment);
 
-            transaction.show(fragment);
-        } else {
-            for (Fragment hideFragment : manager.getFragments())
-                transaction.hide(hideFragment);
-
-            switch (item) {
-                case PLAYERS:
-                    transaction.add(R.id.main_container, namesFragment, item.tag);
-                    break;
-                case GAMES:
-                    transaction.add(R.id.main_container, gamesFragment, item.tag);
-                    break;
-                case CARDCAST:
-                    transaction.add(R.id.main_container, cardcastFragment, item.tag);
-                    break;
-                case ONGOING_GAME:
-                    if (ongoingGameFragment != null)
-                        transaction.add(R.id.main_container, ongoingGameFragment, item.tag);
-                    break;
-                case GAME_CHAT:
-                    if (gameChatFragment != null)
-                        transaction.add(R.id.main_container, gameChatFragment, item.tag);
-                    break;
-                case GLOBAL_CHAT:
-                    if (globalChatFragment != null)
-                        transaction.add(R.id.main_container, globalChatFragment, item.tag);
-                    break;
+                switch (item) {
+                    case PLAYERS:
+                        transaction.add(R.id.main_container, namesFragment, item.tag);
+                        break;
+                    case GAMES:
+                        transaction.add(R.id.main_container, gamesFragment, item.tag);
+                        break;
+                    case CARDCAST:
+                        transaction.add(R.id.main_container, cardcastFragment, item.tag);
+                        break;
+                    case ONGOING_GAME:
+                        if (ongoingGameFragment != null)
+                            transaction.add(R.id.main_container, ongoingGameFragment, item.tag);
+                        break;
+                    case GAME_CHAT:
+                        if (gameChatFragment != null)
+                            transaction.add(R.id.main_container, gameChatFragment, item.tag);
+                        break;
+                    case GLOBAL_CHAT:
+                        if (globalChatFragment != null)
+                            transaction.add(R.id.main_container, globalChatFragment, item.tag);
+                        break;
+                }
             }
-        }
 
-        try {
-            transaction.commit();
-        } catch (IllegalStateException ex) {
-            AnalyticsApplication.crashlyticsLog(ex.getMessage() + " at #switchTo(Item)");
+            try {
+                transaction.commit();
+            } catch (IllegalStateException ex) {
+                AnalyticsApplication.crashlyticsLog(ex.getMessage() + " at #switchTo(Item)");
+            }
         }
     }
 
@@ -355,20 +358,22 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         if (isFinishing() || isDestroyed()) return;
         inflateNavigation(Layout.ONGOING);
 
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        ongoingGameFragment = OngoingGameFragment.getInstance(game);
-        addOrReplace(transaction, ongoingGameFragment, Item.ONGOING_GAME);
+        synchronized (fragmentsLock) {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            ongoingGameFragment = OngoingGameFragment.getInstance(game);
+            addOrReplace(transaction, ongoingGameFragment, Item.ONGOING_GAME);
 
-        if (pyx.config().gameChatEnabled()) {
-            gameChatFragment = ChatFragment.getGameInstance(game.gid);
-            addOrReplace(transaction, gameChatFragment, Item.GAME_CHAT);
-        }
+            if (pyx.config().gameChatEnabled()) {
+                gameChatFragment = ChatFragment.getGameInstance(game.gid);
+                addOrReplace(transaction, gameChatFragment, Item.GAME_CHAT);
+            }
 
-        try {
-            transaction.commitNow();
-            navigation.setSelectedItem(Item.ONGOING_GAME);
-        } catch (IllegalStateException ex) {
-            AnalyticsApplication.crashlyticsLog(ex.getMessage() + " at #onParticipatingGame(GamePermalink)");
+            try {
+                transaction.commitNow();
+                navigation.setSelectedItem(Item.ONGOING_GAME);
+            } catch (IllegalStateException ex) {
+                AnalyticsApplication.crashlyticsLog(ex.getMessage() + " at #onParticipatingGame(GamePermalink)");
+            }
         }
     }
 
@@ -382,19 +387,21 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         inflateNavigation(Layout.LOBBY);
         navigation.setSelectedItem(Item.GAMES);
 
-        FragmentManager manager = getSupportFragmentManager();
-        FragmentTransaction transaction = manager.beginTransaction();
+        synchronized (fragmentsLock) {
+            FragmentManager manager = getSupportFragmentManager();
+            FragmentTransaction transaction = manager.beginTransaction();
 
-        Fragment ongoingGame = manager.findFragmentByTag(Item.ONGOING_GAME.tag);
-        if (ongoingGame != null) transaction.remove(ongoingGame);
+            Fragment ongoingGame = manager.findFragmentByTag(Item.ONGOING_GAME.tag);
+            if (ongoingGame != null) transaction.remove(ongoingGame);
 
-        Fragment gameChat = manager.findFragmentByTag(Item.GAME_CHAT.tag);
-        if (gameChat != null) transaction.remove(gameChat);
+            Fragment gameChat = manager.findFragmentByTag(Item.GAME_CHAT.tag);
+            if (gameChat != null) transaction.remove(gameChat);
 
-        try {
-            transaction.commit();
-        } catch (IllegalStateException ex) {
-            AnalyticsApplication.crashlyticsLog(ex.getMessage() + " at #onLeftGame()");
+            try {
+                transaction.commit();
+            } catch (IllegalStateException ex) {
+                AnalyticsApplication.crashlyticsLog(ex.getMessage() + " at #onLeftGame()");
+            }
         }
     }
 
