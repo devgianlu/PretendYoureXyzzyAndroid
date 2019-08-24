@@ -14,7 +14,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
+import com.gianlu.commonutils.CasualViews.RecyclerMessageView;
 import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.SuppressingLinearLayoutManager;
@@ -30,7 +30,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 public class ChatFragment extends FragmentWithDialog implements ChatAdapter.Listener, Pyx.OnEventListener {
-    private RecyclerViewLayout layout;
+    private RecyclerMessageView rmv;
     private ChatAdapter adapter;
     private int gid;
     private RegisteredPyx pyx;
@@ -55,25 +55,25 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.fragment_chat, container, false);
-        this.layout = layout.findViewById(R.id.chatFragment_recyclerViewLayout);
-        this.layout.disableSwipeRefresh();
+        this.rmv = layout.findViewById(R.id.chatFragment_recyclerViewLayout);
+        this.rmv.disableSwipeRefresh();
         LinearLayoutManager llm = new SuppressingLinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         llm.setStackFromEnd(true);
-        this.layout.setLayoutManager(llm);
+        this.rmv.setLayoutManager(llm);
 
         Bundle args = getArguments();
         if (args == null) gid = -1;
         else gid = args.getInt("gid", -1);
 
         adapter = new ChatAdapter(requireContext(), this);
-        this.layout.loadListData(adapter);
+        this.rmv.loadListData(adapter);
         onItemCountChanged(0);
 
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
             Logging.log(ex);
-            this.layout.showError(R.string.failedLoading);
+            this.rmv.showError(R.string.failedLoading);
             return layout;
         }
 
@@ -160,13 +160,13 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     }
 
     public void scrollToTop() {
-        if (layout != null) layout.getList().scrollToPosition(0);
+        if (rmv != null) rmv.list().scrollToPosition(0);
     }
 
     @Override
     public void onItemCountChanged(int count) {
-        if (count == 0) layout.showInfo(R.string.noMessages);
-        else layout.showList();
+        if (count == 0) rmv.showInfo(R.string.noMessages);
+        else rmv.showList();
     }
 
     @Override
@@ -181,7 +181,7 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     public void onPollMessage(@NonNull PollMessage message) {
         if (!isAdded()) return;
         adapter.newMessage(message, gid);
-        layout.getList().scrollToPosition(adapter.getItemCount() - 1);
+        rmv.list().scrollToPosition(adapter.getItemCount() - 1);
     }
 
     @Override

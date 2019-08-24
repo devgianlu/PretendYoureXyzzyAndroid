@@ -57,7 +57,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
         message = findViewById(R.id.starredCards_message);
         cards = findViewById(R.id.starredCards_cards);
 
-        message.setInfo(R.string.selectAStarredCard);
+        message.info(R.string.selectAStarredCard);
     }
 
     @Nullable
@@ -101,7 +101,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
                 case DELETE:
                     deleteCard(starred);
                     if (Objects.equals(cards.getTag(), card)) {
-                        message.setInfo(R.string.selectAStarredCard);
+                        message.info(R.string.selectAStarredCard);
                         cards.removeAllViews();
                     }
                     break;

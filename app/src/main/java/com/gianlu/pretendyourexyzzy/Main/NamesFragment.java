@@ -16,10 +16,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
+import com.gianlu.commonutils.CasualViews.RecyclerMessageView;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.pretendyourexyzzy.Adapters.NamesAdapter;
 import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
@@ -37,7 +36,7 @@ import org.json.JSONException;
 import java.util.List;
 
 public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>, NamesAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener {
-    private RecyclerViewLayout layout;
+    private RecyclerMessageView rmv;
     private int names = -1;
     private RegisteredPyx pyx;
     private NamesAdapter adapter;
@@ -68,7 +67,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.names_fragment, menu);
 
         if (getContext() == null) return;
@@ -106,18 +105,18 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        layout = new RecyclerViewLayout(requireContext());
-        layout.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
+        rmv = new RecyclerMessageView(requireContext());
+        rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
 
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
             Logging.log(ex);
-            layout.showError(R.string.failedLoading);
-            return layout;
+            rmv.showError(R.string.failedLoading);
+            return rmv;
         }
 
-        layout.enableSwipeRefresh(() -> {
+        rmv.enableSwipeRefresh(() -> {
             adapter = null;
             pyx.request(PyxRequests.getNamesList(), null, NamesFragment.this);
         }, R.color.colorAccent);
@@ -147,11 +146,11 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
 
         pyx.request(PyxRequests.getNamesList(), null, this);
 
-        return layout;
+        return rmv;
     }
 
     public void scrollToTop() {
-        if (layout != null) layout.getList().scrollToPosition(0);
+        if (rmv != null) rmv.list().scrollToPosition(0);
     }
 
     @Override
@@ -165,7 +164,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
         if (!isAdded()) return;
 
         adapter = new NamesAdapter(getContext(), result, this);
-        layout.loadListData(adapter);
+        rmv.loadListData(adapter);
 
         names = result.size();
         updateActivityTitle();
@@ -175,7 +174,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
         if (!PyxException.solveNotRegistered(getContext(), ex))
-            layout.showError(R.string.failedLoading_reason, ex.getMessage());
+            rmv.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 
     @Override
@@ -186,8 +185,8 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
 
     @Override
     public void shouldUpdateItemCount(int count) {
-        if (count == 0) layout.showInfo(R.string.noNames);
-        else layout.showList();
+        if (count == 0) rmv.showInfo(R.string.noNames);
+        else rmv.showList();
     }
 
     @Override

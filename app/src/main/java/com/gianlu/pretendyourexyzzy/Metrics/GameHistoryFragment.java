@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
+import com.gianlu.commonutils.CasualViews.RecyclerMessageView;
 import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsGridFixer;
@@ -20,7 +20,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 
 public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<GameHistory> {
-    private RecyclerViewLayout layout;
+    private RecyclerMessageView rmv;
 
     @NonNull
     public static GameHistoryFragment get(@NonNull String id) {
@@ -43,18 +43,18 @@ public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        layout = new RecyclerViewLayout(requireContext());
-        layout.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-        layout.startLoading();
-        layout.getList().addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
+        rmv = new RecyclerMessageView(requireContext());
+        rmv.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+        rmv.startLoading();
+        rmv.list().addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
 
         Bundle args = getArguments();
         String id;
         GameHistory history = null;
         if (args == null || ((id = args.getString("id", null)) == null
                 && (history = (GameHistory) args.getSerializable("history")) == null)) {
-            layout.showError(R.string.failedLoading);
-            return layout;
+            rmv.showError(R.string.failedLoading);
+            return rmv;
         }
 
         if (history == null) {
@@ -63,8 +63,8 @@ public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
                 pyx = RegisteredPyx.get();
             } catch (LevelMismatchException ex) {
                 Logging.log(ex);
-                layout.showError(R.string.failedLoading);
-                return layout;
+                rmv.showError(R.string.failedLoading);
+                return rmv;
             }
 
             pyx.getGameHistory(id, null, this);
@@ -72,19 +72,19 @@ public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
             onDone(history);
         }
 
-        return layout;
+        return rmv;
     }
 
     @Override
     public void onDone(@NonNull GameHistory result) {
         if (getContext() == null) return;
 
-        layout.loadListData(new RoundsAdapter(getContext(), result, (RoundsAdapter.Listener) getContext()));
+        rmv.loadListData(new RoundsAdapter(getContext(), result, (RoundsAdapter.Listener) getContext()));
     }
 
     @Override
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
-        layout.showError(R.string.failedLoading_reason, ex.getMessage());
+        rmv.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 }

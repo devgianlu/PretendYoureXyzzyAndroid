@@ -177,7 +177,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         if (args == null || (perm = (GamePermalink) args.getSerializable("game")) == null) {
             loading.setVisibility(View.GONE);
             gameLayout.setVisibility(View.GONE);
-            message.setError(R.string.failedLoading);
+            message.error(R.string.failedLoading);
             return layout;
         }
 
@@ -191,7 +191,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
             Logging.log(ex);
             loading.setVisibility(View.GONE);
             gameLayout.setVisibility(View.GONE);
-            message.setError(R.string.failedLoading);
+            message.error(R.string.failedLoading);
             return layout;
         }
 
@@ -432,6 +432,6 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         Logging.log(ex);
         loading.setVisibility(View.GONE);
         gameLayout.setVisibility(View.GONE);
-        message.setError(R.string.failedLoading_reason, ex.getMessage());
+        message.error(R.string.failedLoading_reason, ex.getMessage());
     }
 }

@@ -13,7 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
+import com.gianlu.commonutils.CasualViews.RecyclerMessageView;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
@@ -29,7 +29,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import java.util.List;
 
 public class CardsFragment extends Fragment implements Cardcast.OnResult<List<CardcastCard>>, CardsAdapter.Listener {
-    private RecyclerViewLayout layout;
+    private RecyclerMessageView rmv;
 
     @NonNull
     public static CardsFragment getInstance(Context context, boolean whiteCards, String code) {
@@ -45,46 +45,46 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        layout = new RecyclerViewLayout(requireContext());
-        layout.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary_background));
-        layout.disableSwipeRefresh();
-        layout.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-        layout.getList().addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
+        rmv = new RecyclerMessageView(requireContext());
+        rmv.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary_background));
+        rmv.disableSwipeRefresh();
+        rmv.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+        rmv.list().addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
 
         Bundle args = getArguments();
         String code;
         if (args == null || (code = args.getString("code", null)) == null) {
-            layout.showError(R.string.failedLoading);
-            return layout;
+            rmv.showError(R.string.failedLoading);
+            return rmv;
         }
 
         Cardcast cardcast = Cardcast.get();
         if (args.getBoolean("whiteCards", true)) cardcast.getResponses(code, null, this);
         else cardcast.getCalls(code, null, this);
 
-        return layout;
+        return rmv;
     }
 
     @Override
     public void onDone(@NonNull List<CardcastCard> result) {
         if (result.isEmpty()) {
-            layout.showInfo(R.string.noCards, false);
+            rmv.showInfo(R.string.noCards, false);
             return;
         }
 
-        layout.loadListData(new CardsAdapter(true, result, null, null, false, this));
+        rmv.loadListData(new CardsAdapter(true, result, null, null, false, this));
     }
 
     @Override
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
-        layout.showError(R.string.failedLoading_reason, ex.getMessage());
+        rmv.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 
     @Nullable
     @Override
     public RecyclerView getCardsRecyclerView() {
-        return layout.getList();
+        return rmv.list();
     }
 
     @Override

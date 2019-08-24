@@ -74,7 +74,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         String id;
         if (args == null || (id = args.getString("id", null)) == null) {
             loading.setVisibility(View.GONE);
-            message.setError(R.string.failedLoading);
+            message.error(R.string.failedLoading);
             return layout;
         }
 
@@ -84,7 +84,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         } catch (LevelMismatchException ex) {
             Logging.log(ex);
             loading.setVisibility(View.GONE);
-            message.setError(R.string.failedLoading);
+            message.error(R.string.failedLoading);
             return layout;
         }
 
@@ -100,7 +100,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         if (result.games.isEmpty()) {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.GONE);
-            message.setInfo(R.string.noActivity);
+            message.info(R.string.noActivity);
         } else {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.VISIBLE);
@@ -118,6 +118,6 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         Logging.log(ex);
         loading.setVisibility(View.GONE);
         container.setVisibility(View.GONE);
-        message.setError(R.string.failedLoading_reason, ex.getMessage());
+        message.error(R.string.failedLoading_reason, ex.getMessage());
     }
 }

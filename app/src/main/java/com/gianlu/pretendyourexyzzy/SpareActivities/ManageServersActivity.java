@@ -5,11 +5,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
+import com.gianlu.commonutils.CasualViews.RecyclerMessageView;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.pretendyourexyzzy.Adapters.ServersAdapter;
 import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
@@ -17,27 +15,27 @@ import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.R;
 
 public class ManageServersActivity extends ActivityWithDialog implements ServersAdapter.Listener, Dialogs.OnAddServer {
-    private RecyclerViewLayout layout;
+    private RecyclerMessageView rmv;
     private ServersAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        layout = new RecyclerViewLayout(this);
-        setContentView(layout);
+        rmv = new RecyclerMessageView(this);
+        setContentView(rmv);
         setTitle(R.string.manageServers);
 
-        layout.disableSwipeRefresh();
-        layout.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
-        layout.getList().addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        rmv.disableSwipeRefresh();
+        rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
+        rmv.dividerDecoration(RecyclerView.VERTICAL);
         loadServers();
     }
 
     @Override
     public void loadServers() {
         adapter = new ServersAdapter(this, Pyx.Server.loadAllServers(), this);
-        layout.loadListData(adapter, false);
+        rmv.loadListData(adapter, false);
     }
 
     @Override
@@ -69,8 +67,8 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
 
     @Override
     public void shouldUpdateItemCount(int count) {
-        if (count == 0) layout.showInfo(R.string.noServers);
-        else layout.showList();
+        if (count == 0) rmv.showInfo(R.string.noServers);
+        else rmv.showList();
     }
 
     @Override

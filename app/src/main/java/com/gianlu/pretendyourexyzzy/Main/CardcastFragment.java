@@ -17,10 +17,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
+import com.gianlu.commonutils.CasualViews.RecyclerMessageView;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
@@ -36,7 +35,7 @@ import java.util.List;
 
 public class CardcastFragment extends Fragment implements Cardcast.OnDecks, CardcastDecksAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
     private final static int LIMIT = 12;
-    private RecyclerViewLayout layout;
+    private RecyclerMessageView rmv;
     private Cardcast cardcast;
     private SearchView searchView;
     private Cardcast.Search search = new Cardcast.Search(null, null, Cardcast.Direction.DESCENDANT, Cardcast.Sort.RATING, true);
@@ -55,7 +54,7 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         if (getContext() == null) return;
 
         inflater.inflate(R.menu.cardcast_fragment, menu);
@@ -112,7 +111,7 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
     }
 
     private void refreshAdapter() {
-        layout.startLoading();
+        rmv.startLoading();
         cardcast.getDecks(search, LIMIT, 0, null, this);
     }
 
@@ -154,16 +153,16 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        layout = new RecyclerViewLayout(requireContext());
-        layout.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary_background));
-        layout.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
+        rmv = new RecyclerMessageView(requireContext());
+        rmv.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary_background));
+        rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
 
         cardcast = Cardcast.get();
-        layout.enableSwipeRefresh(() -> cardcast.getDecks(search, LIMIT, 0, null, this), R.color.colorAccent);
+        rmv.enableSwipeRefresh(() -> cardcast.getDecks(search, LIMIT, 0, null, this), R.color.colorAccent);
 
         cardcast.getDecks(search, LIMIT, 0, null, this);
 
-        return layout;
+        return rmv;
     }
 
     @Override
@@ -171,15 +170,15 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
         if (isDetached() || !isAdded()) return;
 
         if (decks.isEmpty())
-            layout.showInfo(R.string.searchNoDecks);
+            rmv.showInfo(R.string.searchNoDecks);
         else
-            layout.loadListData(new CardcastDecksAdapter(getContext(), cardcast, search, decks, LIMIT, this));
+            rmv.loadListData(new CardcastDecksAdapter(getContext(), cardcast, search, decks, LIMIT, this));
     }
 
     @Override
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
-        layout.showError(R.string.failedLoading_reason, ex.getMessage());
+        rmv.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 
     @Override

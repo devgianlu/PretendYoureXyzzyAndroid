@@ -150,7 +150,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
     @Override
     public void shouldUpdateItemCount(int count) {
         if (count == 0) {
-            message.setInfo(R.string.noCardSets);
+            message.info(R.string.noCardSets);
             list.setVisibility(View.GONE);
         } else {
             message.hide();

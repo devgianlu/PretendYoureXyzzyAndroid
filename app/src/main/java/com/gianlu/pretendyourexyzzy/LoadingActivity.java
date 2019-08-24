@@ -15,11 +15,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
+import com.gianlu.commonutils.CasualViews.RecyclerMessageView;
 import com.gianlu.commonutils.CasualViews.SuperTextView;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
@@ -172,13 +170,13 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         if (dismissible)
             builder.setNegativeButton(android.R.string.cancel, null);
 
-        RecyclerViewLayout layout = new RecyclerViewLayout(this);
-        builder.setView(layout);
+        RecyclerMessageView rmv = new RecyclerMessageView(this);
+        builder.setView(rmv);
 
-        layout.disableSwipeRefresh();
-        layout.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
-        layout.getList().addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-        layout.loadListData(new ServersAdapter(this, Pyx.Server.loadAllServers(), new ServersAdapter.Listener() {
+        rmv.disableSwipeRefresh();
+        rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
+        rmv.dividerDecoration(RecyclerView.VERTICAL);
+        rmv.loadListData(new ServersAdapter(this, Pyx.Server.loadAllServers(), new ServersAdapter.Listener() {
             @Override
             public void shouldUpdateItemCount(int count) {
             }
@@ -308,7 +306,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     private void goToMain() {
-        Intent intent = new Intent(LoadingActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        Intent intent = new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("shouldRequest", launchGameShouldRequest);
         if (launchGame != null) intent.putExtra("game", launchGame);
         if (launchGamePassword != null) intent.putExtra("password", launchGamePassword);

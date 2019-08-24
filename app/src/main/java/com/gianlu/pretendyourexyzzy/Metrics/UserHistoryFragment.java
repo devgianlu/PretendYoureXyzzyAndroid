@@ -7,11 +7,9 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
+import com.gianlu.commonutils.CasualViews.RecyclerMessageView;
 import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
@@ -22,7 +20,7 @@ import com.gianlu.pretendyourexyzzy.R;
 
 public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<UserHistory> {
     private RegisteredPyx pyx;
-    private RecyclerViewLayout layout;
+    private RecyclerMessageView rmv;
 
     @NonNull
     public static UserHistoryFragment get() {
@@ -32,34 +30,34 @@ public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        layout = new RecyclerViewLayout(requireContext());
-        layout.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
-        layout.getList().addItemDecoration(new DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL));
-        layout.startLoading();
+        rmv = new RecyclerMessageView(requireContext());
+        rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
+        rmv.dividerDecoration(RecyclerView.VERTICAL);
+        rmv.startLoading();
 
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
             Logging.log(ex);
-            layout.showError(R.string.failedLoading);
-            return layout;
+            rmv.showError(R.string.failedLoading);
+            return rmv;
         }
 
         pyx.getUserHistory(null, this);
 
-        return layout;
+        return rmv;
     }
 
     @Override
     public void onDone(@NonNull UserHistory result) {
         if (getContext() == null) return;
 
-        layout.loadListData(new UserHistoryAdapter(getContext(), pyx, result, (UserHistoryAdapter.Listener) getContext()));
+        rmv.loadListData(new UserHistoryAdapter(getContext(), pyx, result, (UserHistoryAdapter.Listener) getContext()));
     }
 
     @Override
     public void onException(@NonNull Exception ex) {
         Logging.log(ex);
-        layout.showError(R.string.failedLoading_reason, ex.getMessage());
+        rmv.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 }

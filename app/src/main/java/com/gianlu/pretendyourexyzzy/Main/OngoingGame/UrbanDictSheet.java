@@ -64,7 +64,7 @@ public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> 
     @Override
     protected void onRequestedUpdate(@NonNull Definitions payload) {
         if (payload.isEmpty()) {
-            message.setInfo(R.string.noDefinitions);
+            message.info(R.string.noDefinitions);
             list.setVisibility(View.GONE);
         } else {
             message.hide();

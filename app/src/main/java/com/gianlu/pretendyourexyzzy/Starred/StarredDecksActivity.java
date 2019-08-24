@@ -9,10 +9,9 @@ import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
+import com.gianlu.commonutils.CasualViews.RecyclerMessageView;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.StarredDecksAdapter;
@@ -21,7 +20,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeckActivity;
 
 public class StarredDecksActivity extends ActivityWithDialog implements StarredDecksAdapter.Listener {
-    private RecyclerViewLayout layout;
+    private RecyclerMessageView rmv;
     private StarredDecksManager starredDecks;
 
     public static void startActivity(Context context) {
@@ -62,8 +61,8 @@ public class StarredDecksActivity extends ActivityWithDialog implements StarredD
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        layout = new RecyclerViewLayout(this);
-        setContentView(layout);
+        rmv = new RecyclerMessageView(this);
+        setContentView(rmv);
         setTitle(R.string.starredCardcastDecks);
 
         ActionBar actionBar = getSupportActionBar();
@@ -71,17 +70,17 @@ public class StarredDecksActivity extends ActivityWithDialog implements StarredD
 
         starredDecks = StarredDecksManager.get();
 
-        layout.disableSwipeRefresh();
-        layout.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary_background));
-        layout.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
-        layout.loadListData(new StarredDecksAdapter(this, starredDecks.getDecks(), this));
+        rmv.disableSwipeRefresh();
+        rmv.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary_background));
+        rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
+        rmv.loadListData(new StarredDecksAdapter(this, starredDecks.getDecks(), this));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        layout.loadListData(new StarredDecksAdapter(this, starredDecks.getDecks(), this));
+        rmv.loadListData(new StarredDecksAdapter(this, starredDecks.getDecks(), this));
     }
 
     @Override
