@@ -108,8 +108,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         changeServer = findViewById(R.id.loading_changeServer);
         changeServer.setOnClickListener(v -> changeServerDialog(true));
 
-        Button generateIdCode = findViewById(R.id.loading_generateIdCode);
-        generateIdCode.setOnClickListener(v -> CommonUtils.setText(registerIdCode, CommonUtils.randomString(100, new SecureRandom())));
+        registerIdCode.setEndIconOnClickListener(v -> CommonUtils.setText(registerIdCode, CommonUtils.randomString(100, new SecureRandom())));
 
         if (Objects.equals(getIntent().getAction(), Intent.ACTION_VIEW) || Objects.equals(getIntent().getAction(), Intent.ACTION_SEND)) {
             Uri url = getIntent().getData();
@@ -160,7 +159,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
     private void changeServerDialog(boolean dismissible) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-        builder.setTitle(R.string.changeServer)
+        builder.setTitle(R.string.changeServer) // FIXME
                 .setCancelable(dismissible)
                 .setNeutralButton(R.string.manage, (dialog, which) -> {
                     startActivity(new Intent(this, ManageServersActivity.class));
