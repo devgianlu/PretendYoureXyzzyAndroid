@@ -3,6 +3,9 @@ package com.gianlu.pretendyourexyzzy;
 import android.content.Context;
 import android.content.Intent;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.danielstone.materialaboutlibrary.items.MaterialAboutActionItem;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutItem;
 import com.gianlu.commonutils.Preferences.BasePreferenceActivity;
@@ -10,16 +13,13 @@ import com.gianlu.commonutils.Preferences.BasePreferenceFragment;
 import com.gianlu.commonutils.Preferences.MaterialAboutPreferenceItem;
 import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.SpareActivities.TutorialActivity;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.yarolegovich.mp.MaterialCheckboxPreference;
 import com.yarolegovich.mp.MaterialStandardPreference;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 
 public class PreferenceActivity extends BasePreferenceActivity {
     @NonNull
@@ -62,7 +62,7 @@ public class PreferenceActivity extends BasePreferenceActivity {
             boolean[] checked = new boolean[entries.length];
             for (int i = 0; i < checked.length; i++) checked[i] = false;
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
             builder.setTitle(R.string.unblockUser)
                     .setMultiChoiceItems(entries, checked, (dialog, which, isChecked) -> checked[which] = isChecked)
                     .setPositiveButton(R.string.unblock, (dialog, which) -> {

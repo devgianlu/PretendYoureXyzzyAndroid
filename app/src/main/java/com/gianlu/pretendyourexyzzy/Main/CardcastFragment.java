@@ -14,8 +14,6 @@ import android.widget.SearchView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,6 +27,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDecks;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeckActivity;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +89,7 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
                 checkedFilters[CommonUtils.indexOf(filters, category)] = true;
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext());
         builder.setTitle(R.string.categories)
                 .setMultiChoiceItems(stringFilters, checkedFilters, (dialog, which, isChecked) -> checkedFilters[which] = isChecked)
                 .setNeutralButton(R.string.clearAll, (dialogInterface, i) -> {
@@ -154,7 +153,6 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         rmv = new RecyclerMessageView(requireContext());
-        rmv.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary_background));
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
 
         cardcast = Cardcast.get();

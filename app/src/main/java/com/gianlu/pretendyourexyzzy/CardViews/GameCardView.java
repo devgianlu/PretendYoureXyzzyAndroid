@@ -18,7 +18,6 @@ import androidx.annotation.AttrRes;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
 import androidx.core.widget.TextViewCompat;
@@ -35,8 +34,9 @@ import com.gianlu.commonutils.Logging;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.R;
+import com.google.android.material.card.MaterialCardView;
 
-public class GameCardView extends CardView {
+public class GameCardView extends MaterialCardView {
     public static final int WIDTH_DIP = 156;
     public final ImageButton primaryAction;
     public final SuperTextView text;

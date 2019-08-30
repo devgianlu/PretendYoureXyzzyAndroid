@@ -8,7 +8,6 @@ import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CasualViews.RecyclerMessageView;
@@ -71,7 +70,6 @@ public class StarredDecksActivity extends ActivityWithDialog implements StarredD
         starredDecks = StarredDecksManager.get();
 
         rmv.disableSwipeRefresh();
-        rmv.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary_background));
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
         rmv.loadListData(new StarredDecksAdapter(this, starredDecks.getDecks(), this));
     }

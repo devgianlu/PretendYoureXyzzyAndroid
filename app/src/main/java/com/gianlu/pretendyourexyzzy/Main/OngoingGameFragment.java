@@ -16,7 +16,6 @@ import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -58,6 +57,7 @@ import com.gianlu.pretendyourexyzzy.Starred.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Tutorial.CreateGameTutorial;
 import com.gianlu.pretendyourexyzzy.Tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.Utils;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -262,7 +262,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
         recyclerView.setAdapter(new PlayersAdapter(getContext(), manager.players(), this));
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext());
         builder.setTitle(R.string.playersLabel)
                 .setView(recyclerView)
                 .setPositiveButton(android.R.string.ok, null);
@@ -299,7 +299,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
         text.setPadding(padding, padding, padding, padding);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext());
         builder.setTitle(R.string.spectatorsLabel)
                 .setView(text)
                 .setPositiveButton(android.R.string.ok, null);
@@ -352,7 +352,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
 
         if (getContext() == null) return;
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext());
         builder.setTitle(R.string.leaveGame)
                 .setMessage(R.string.leaveGame_confirm)
                 .setPositiveButton(android.R.string.yes, (dialog, which) -> leaveGame())

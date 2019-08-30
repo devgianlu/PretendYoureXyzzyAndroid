@@ -60,7 +60,7 @@ public class UserInfoDialog extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Dialog dialog = new Dialog(requireActivity(), R.style.TitledDialog);
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
         WhoisResult user = getUser();
         if (user != null) dialog.setTitle(user.nickname);
         return dialog;
@@ -77,7 +77,7 @@ public class UserInfoDialog extends DialogFragment {
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
         if (context instanceof OnViewGame)

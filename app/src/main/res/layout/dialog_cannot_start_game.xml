@@ -4,13 +4,15 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!-- FIXME -->
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingEnd="24dp"
-        android:paddingStart="24dp">
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp">
 
         <View
             android:layout_width="0dp"
@@ -47,8 +49,8 @@
         android:layout_height="48dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingEnd="24dp"
-        android:paddingStart="24dp">
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp">
 
         <TextView
             android:layout_width="0dp"
@@ -89,7 +91,8 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/colorPrimary_shadow" />
+        android:alpha="0.20"
+        android:background="?colorOnSurface" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -97,8 +100,8 @@
         android:layout_marginBottom="16dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingEnd="24dp"
-        android:paddingStart="24dp">
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp">
 
         <TextView
             android:layout_width="0dp"
@@ -139,7 +142,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingEnd="24dp"
         android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         android:text="@string/cannotStartGame_solution" />
 </LinearLayout>

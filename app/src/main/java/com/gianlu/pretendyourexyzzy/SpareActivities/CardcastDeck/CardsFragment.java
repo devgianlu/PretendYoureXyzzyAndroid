@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
@@ -46,7 +45,6 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         rmv = new RecyclerMessageView(requireContext());
-        rmv.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary_background));
         rmv.disableSwipeRefresh();
         rmv.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         rmv.list().addOnLayoutChangeListener(new CardsGridFixer(requireContext()));

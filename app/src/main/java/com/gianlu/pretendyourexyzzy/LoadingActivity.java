@@ -14,7 +14,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CasualViews.RecyclerMessageView;
@@ -39,6 +38,7 @@ import com.gianlu.pretendyourexyzzy.SpareActivities.ManageServersActivity;
 import com.gianlu.pretendyourexyzzy.SpareActivities.TutorialActivity;
 import com.gianlu.pretendyourexyzzy.Tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.Tutorial.LoginTutorial;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONObject;
@@ -159,11 +159,11 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     private void changeServerDialog(boolean dismissible) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         builder.setTitle(R.string.changeServer)
                 .setCancelable(dismissible)
                 .setNeutralButton(R.string.manage, (dialog, which) -> {
-                    startActivity(new Intent(LoadingActivity.this, ManageServersActivity.class));
+                    startActivity(new Intent(this, ManageServersActivity.class));
                     dialog.dismiss();
                 });
 

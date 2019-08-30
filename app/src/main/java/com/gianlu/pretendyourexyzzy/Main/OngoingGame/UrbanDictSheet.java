@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -62,7 +61,7 @@ public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> 
     }
 
     @Override
-    protected void onRequestedUpdate(@NonNull Definitions payload) {
+    protected void onReceivedUpdate(@NonNull Definitions payload) {
         if (payload.isEmpty()) {
             message.info(R.string.noDefinitions);
             list.setVisibility(View.GONE);
@@ -74,14 +73,9 @@ public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> 
     }
 
     @Override
-    protected void onCustomizeToolbar(@NonNull Toolbar toolbar, @NonNull String payload) {
-        toolbar.setTitle(payload);
-        toolbar.setBackgroundResource(R.color.urbanPrimaryDark);
-    }
-
-    @Override
-    protected boolean onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ModalBottomSheetHeaderView parent, @NonNull String payload) {
-        return false;
+    protected void onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ModalBottomSheetHeaderView parent, @NonNull String payload) {
+        parent.setTitle(payload);
+        parent.setBackgroundColorRes(R.color.urbanPrimaryDark);
     }
 
     @Override

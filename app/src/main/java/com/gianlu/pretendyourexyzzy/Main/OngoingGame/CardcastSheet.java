@@ -9,11 +9,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,6 +32,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
 import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
@@ -58,16 +58,22 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
     }
 
     @Override
-    protected boolean onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ModalBottomSheetHeaderView parent, @NonNull Integer gid) {
-        parent.setBackgroundColorRes(R.color.colorAccent_light);
+    protected void onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ModalBottomSheetHeaderView parent, @NonNull Integer gid) {
+        parent.setBackgroundColorRes(R.color.colorPrimary); // FIXME
+
         inflater.inflate(R.layout.sheet_header_cardcast, parent, true);
         count = parent.findViewById(R.id.cardcastSheet_count);
         count.setVisibility(View.GONE);
-        return true;
     }
 
     @Override
-    protected void onRequestedUpdate(@NonNull List<Deck> decks) {
+    protected void onExpandedStateChanged(@NonNull ModalBottomSheetHeaderView header, boolean expanded) {
+        ImageView icon = header.findViewById(R.id.cardcastSheet_icon);
+        if (icon != null) icon.setVisibility(expanded ? View.GONE : View.VISIBLE);
+    }
+
+    @Override
+    protected void onReceivedUpdate(@NonNull List<Deck> decks) {
         list.setAdapter(new DecksAdapter(requireContext(), decks, CardcastSheet.this, listener));
 
         count.setVisibility(View.VISIBLE);
@@ -106,13 +112,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
         });
     }
 
-    @Override
-    protected void onCustomizeToolbar(@NonNull Toolbar toolbar, @NonNull Integer gid) {
-        toolbar.setBackgroundResource(R.color.colorAccent_light);
-        toolbar.setTitle(R.string.cardcast);
-    }
-
-    private void showAddCardcastDeckDialog() {
+    private void showAddCardcastDeckDialog() { // FIXME
         if (getContext() == null) return;
 
         final EditText code = new EditText(getContext());
@@ -121,7 +121,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
         code.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         code.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5), new InputFilter.AllCaps()});
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext());
         builder.setTitle(R.string.addCardcast)
                 .setView(code)
                 .setNeutralButton(R.string.addStarred, (dialog, which) -> {
@@ -160,7 +160,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
 
     @Override
     public void removeDeck(@NonNull Deck deck) {
-        if (getSetupPayload() == null || deck.cardcastCode == null) return;
+        if (deck.cardcastCode == null) return;
 
         pyx.request(PyxRequests.removeCardcastDeck(getSetupPayload(), deck.cardcastCode), getActivity(), new Pyx.OnSuccess() {
             @Override

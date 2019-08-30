@@ -23,6 +23,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.R;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONException;
@@ -42,7 +43,7 @@ public final class Dialogs {
         TextInputLayout urlField = layout.findViewById(R.id.addServer_url);
         CommonUtils.clearErrorOnEdit(urlField);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setTitle(R.string.addServer)
                 .setView(layout)
                 .setNegativeButton(android.R.string.cancel, null)
@@ -88,7 +89,7 @@ public final class Dialogs {
 
     @NonNull
     @SuppressLint("InflateParams")
-    public static AlertDialog.Builder gameOptions(@NonNull Context context, @NonNull Game.Options options, @NonNull FirstLoad firstLoad) {
+    public static MaterialAlertDialogBuilder gameOptions(@NonNull Context context, @NonNull Game.Options options, @NonNull FirstLoad firstLoad) {
         ScrollView layout = (ScrollView) LayoutInflater.from(context).inflate(R.layout.dialog_game_options, null, false);
 
         SuperTextView scoreLimit = layout.findViewById(R.id.gameOptions_scoreLimit);
@@ -115,7 +116,7 @@ public final class Dialogs {
         else
             password.setHtml(R.string.password, options.password);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setTitle(R.string.gameOptions)
                 .setView(layout)
                 .setPositiveButton(android.R.string.ok, null);
@@ -125,7 +126,7 @@ public final class Dialogs {
 
     @NonNull
     @SuppressLint("InflateParams")
-    public static AlertDialog.Builder notEnoughCards(@NonNull Context context, @NonNull PyxException ex) throws JSONException {
+    public static MaterialAlertDialogBuilder notEnoughCards(@NonNull Context context, @NonNull PyxException ex) throws JSONException {
         LinearLayout layout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.dialog_cannot_start_game, null, false);
 
         int wcr = ex.obj.getInt("wcr");
@@ -140,7 +141,7 @@ public final class Dialogs {
         ((ImageView) layout.findViewById(R.id.cannotStartGame_checkBc)).setImageResource(bcp >= bcr ? R.drawable.baseline_done_24 : R.drawable.baseline_clear_24);
         ((ImageView) layout.findViewById(R.id.cannotStartGame_checkWc)).setImageResource(wcp >= wcr ? R.drawable.baseline_done_24 : R.drawable.baseline_clear_24);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setTitle(R.string.cannotStartGame)
                 .setView(layout)
                 .setPositiveButton(android.R.string.ok, null);
@@ -149,27 +150,27 @@ public final class Dialogs {
     }
 
     @NonNull
-    public static AlertDialog.Builder askText(@NonNull Context context, @NonNull final OnText listener) {
+    public static MaterialAlertDialogBuilder askText(@NonNull Context context, @NonNull final OnText listener) {
         final EditText text = new EditText(context);
 
-        return new AlertDialog.Builder(context)
+        return new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.setBlankCardText)
                 .setView(text)
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> listener.onText(text.getText().toString())).setNegativeButton(android.R.string.cancel, null);
     }
 
     @NonNull
-    public static AlertDialog.Builder confirmation(@NonNull Context context, @NonNull final OnConfirmed listener) {
-        return new AlertDialog.Builder(context)
+    public static MaterialAlertDialogBuilder confirmation(@NonNull Context context, @NonNull final OnConfirmed listener) {
+        return new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.areYouSurePlayCard)
                 .setPositiveButton(android.R.string.yes, (dialog, which) -> listener.onConfirmed()).setNegativeButton(android.R.string.no, null);
     }
 
     @NonNull
-    public static AlertDialog.Builder askDefinitionWord(@NonNull Context context, @NonNull final OnText listener) {
+    public static MaterialAlertDialogBuilder askDefinitionWord(@NonNull Context context, @NonNull final OnText listener) {
         final EditText text = new EditText(context);
 
-        return new AlertDialog.Builder(context)
+        return new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.definition)
                 .setView(text)
                 .setPositiveButton(R.string.search, (dialog, which) -> listener.onText(text.getText().toString())).setNegativeButton(android.R.string.cancel, null);
