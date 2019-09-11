@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.Lifecycle.LifecycleAwareHandler;
 import com.gianlu.commonutils.Lifecycle.LifecycleAwareRunnable;
 import com.gianlu.commonutils.Logging;
@@ -49,6 +50,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
         this.pollingThread.start();
 
         Prefs.putString(PK.LAST_JSESSIONID, user.sessionId);
+        AnalyticsApplication.setCrashlyticsString("server", server.url.toString());
     }
 
     @NonNull

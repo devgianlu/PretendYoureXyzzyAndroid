@@ -2,6 +2,8 @@ package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 import androidx.annotation.NonNull;
 
+import com.gianlu.commonutils.Logging;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,7 +37,14 @@ public class PollMessage {
     @NonNull
     public static List<PollMessage> list(JSONArray array) throws JSONException {
         List<PollMessage> list = new ArrayList<>(array.length());
-        for (int i = 0; i < array.length(); i++) list.add(new PollMessage(array.getJSONObject(i)));
+        for (int i = 0; i < array.length(); i++) {
+            try {
+                list.add(new PollMessage(array.getJSONObject(i)));
+            } catch (IllegalArgumentException ex) {
+                Logging.log("Skipping poll message due to illegal event.", ex);
+            }
+        }
+
         return list;
     }
 
