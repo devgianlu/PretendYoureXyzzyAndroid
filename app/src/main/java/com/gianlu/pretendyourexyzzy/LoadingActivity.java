@@ -105,6 +105,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         changeServer.setOnClickListener(v -> changeServerDialog(true));
 
         registerIdCode.setEndIconOnClickListener(v -> CommonUtils.setText(registerIdCode, CommonUtils.randomString(100, new SecureRandom())));
+        CommonUtils.clearErrorOnEdit(registerIdCode);
 
         if (Objects.equals(getIntent().getAction(), Intent.ACTION_VIEW) || Objects.equals(getIntent().getAction(), Intent.ACTION_SEND)) {
             Uri url = getIntent().getData();

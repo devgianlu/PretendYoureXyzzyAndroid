@@ -319,7 +319,7 @@ public class Cardcast {
         }
 
         String value(String fallback) {
-            return key == null ? fallback : key;
+            return value == null ? fallback : value;
         }
     }
 
