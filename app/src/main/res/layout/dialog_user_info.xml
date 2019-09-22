@@ -5,37 +5,37 @@
     android:orientation="vertical"
     android:padding="24dp">
 
-    <com.gianlu.commonutils.CasualViews.SuperTextView
+    <com.gianlu.commonutils.misc.SuperTextView
         android:id="@+id/userInfoDialog_sigil"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <com.gianlu.commonutils.CasualViews.SuperTextView
+    <com.gianlu.commonutils.misc.SuperTextView
         android:id="@+id/userInfoDialog_idCode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <com.gianlu.commonutils.CasualViews.SuperTextView
+    <com.gianlu.commonutils.misc.SuperTextView
         android:id="@+id/userInfoDialog_connAt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <com.gianlu.commonutils.CasualViews.SuperTextView
+    <com.gianlu.commonutils.misc.SuperTextView
         android:id="@+id/userInfoDialog_idle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <com.gianlu.commonutils.CasualViews.SuperTextView
+    <com.gianlu.commonutils.misc.SuperTextView
         android:id="@+id/userInfoDialog_ipAddr"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <com.gianlu.commonutils.CasualViews.SuperTextView
+    <com.gianlu.commonutils.misc.SuperTextView
         android:id="@+id/userInfoDialog_client"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <com.gianlu.commonutils.CasualViews.SuperTextView
+    <com.gianlu.commonutils.misc.SuperTextView
         android:id="@+id/userInfoDialog_game"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

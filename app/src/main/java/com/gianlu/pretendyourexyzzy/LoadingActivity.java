@@ -16,16 +16,15 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.CasualViews.RecyclerMessageView;
-import com.gianlu.commonutils.CasualViews.SuperTextView;
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
-import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.NameValuePair;
-import com.gianlu.commonutils.Preferences.Prefs;
-import com.gianlu.commonutils.Toaster;
-import com.gianlu.commonutils.Tutorial.BaseTutorial;
-import com.gianlu.commonutils.Tutorial.TutorialManager;
+import com.gianlu.commonutils.dialogs.ActivityWithDialog;
+import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.misc.RecyclerMessageView;
+import com.gianlu.commonutils.misc.SuperTextView;
+import com.gianlu.commonutils.preferences.Prefs;
+import com.gianlu.commonutils.tutorial.BaseTutorial;
+import com.gianlu.commonutils.tutorial.TutorialManager;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.ServersAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
@@ -41,10 +40,7 @@ import com.gianlu.pretendyourexyzzy.Tutorial.LoginTutorial;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 
-import org.json.JSONObject;
-
 import java.security.SecureRandom;
-import java.util.List;
 import java.util.Objects;
 
 
@@ -118,6 +114,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
                 String fragment = url.getFragment();
                 if (fragment != null) {
+                    /* TODO
                     List<NameValuePair> params = CommonUtils.splitQuery(fragment);
                     for (NameValuePair pair : params) {
                         if (Objects.equals(pair.key(), "game")) {
@@ -132,6 +129,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                     }
 
                     launchGameShouldRequest = true;
+                    */
                 }
             }
         }

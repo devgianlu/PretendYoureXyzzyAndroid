@@ -12,17 +12,17 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 
-import com.gianlu.commonutils.CasualViews.MessageView;
-import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.dialogs.FragmentWithDialog;
+import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.misc.MessageView;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeckInfo;
 import com.gianlu.pretendyourexyzzy.R;
 
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 
-public class InfoFragment extends Fragment implements Cardcast.OnResult<CardcastDeckInfo> {
+public class InfoFragment extends FragmentWithDialog implements Cardcast.OnResult<CardcastDeckInfo> {
     private LinearLayout container;
     private ProgressBar loading;
     private MessageView message;

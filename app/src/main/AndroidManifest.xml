@@ -119,7 +119,7 @@
 
         <!-- Logs provider -->
         <provider
-            android:name="com.gianlu.commonutils.LogsProvider"
+            android:name="com.gianlu.commonutils.logging.LogsProvider"
             android:authorities="com.gianlu.pretendyourexyzzy.logs"
             android:exported="false"
             android:grantUriPermissions="true">

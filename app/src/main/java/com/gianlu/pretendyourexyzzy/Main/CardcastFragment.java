@@ -17,10 +17,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.CasualViews.RecyclerMessageView;
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.Dialogs.DialogUtils;
-import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.dialogs.DialogUtils;
+import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.Adapters.CardcastDecksAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
@@ -165,7 +165,7 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
 
     @Override
     public void onDone(@NonNull Cardcast.Search search, @NonNull CardcastDecks decks) {
-        if (isDetached() || !isAdded()) return;
+        if (getContext() == null) return;
 
         if (decks.isEmpty())
             rmv.showInfo(R.string.searchNoDecks);

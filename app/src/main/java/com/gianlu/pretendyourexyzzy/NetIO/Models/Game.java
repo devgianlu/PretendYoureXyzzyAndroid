@@ -4,8 +4,13 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 
-import com.gianlu.commonutils.Adapters.Filterable;
+import androidx.annotation.IdRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.adapters.Filterable;
 import com.gianlu.pretendyourexyzzy.R;
 
 import org.json.JSONArray;
@@ -16,11 +21,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
-
-import androidx.annotation.IdRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 
 public class Game implements Filterable<Game.Protection>, Serializable {
     public final int gid;

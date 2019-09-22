@@ -2,7 +2,7 @@ package com.gianlu.pretendyourexyzzy.NetIO.Models;
 
 import androidx.annotation.NonNull;
 
-import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.logging.Logging;
 
 import org.json.JSONArray;
 import org.json.JSONException;

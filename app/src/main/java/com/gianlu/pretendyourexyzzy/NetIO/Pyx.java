@@ -7,14 +7,18 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+import androidx.annotation.WorkerThread;
+
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.Lifecycle.LifecycleAwareHandler;
-import com.gianlu.commonutils.Lifecycle.LifecycleAwareRunnable;
-import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.NameValuePair;
-import com.gianlu.commonutils.OfflineActivity;
-import com.gianlu.commonutils.Preferences.Json.JsonStoring;
-import com.gianlu.commonutils.Preferences.Prefs;
+import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
+import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
+import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.preferences.Prefs;
+import com.gianlu.commonutils.preferences.json.JsonStoring;
+import com.gianlu.commonutils.ui.OfflineActivity;
 import com.gianlu.pretendyourexyzzy.LoadingActivity;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CahConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
@@ -43,10 +47,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.UiThread;
-import androidx.annotation.WorkerThread;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -101,15 +101,15 @@ public class Pyx implements Closeable {
     }
 
     @WorkerThread
-    protected final PyxResponse request(@NonNull Op operation, NameValuePair... params) throws IOException, JSONException, PyxException {
+    protected final PyxResponse request(@NonNull Op operation, PyxRequest.Param... params) throws IOException, JSONException, PyxException {
         return request(operation, false, params);
     }
 
     @NonNull
     @WorkerThread
-    private PyxResponse request(@NonNull Op operation, boolean retried, NameValuePair... params) throws IOException, JSONException, PyxException {
+    private PyxResponse request(@NonNull Op operation, boolean retried, PyxRequest.Param... params) throws IOException, JSONException, PyxException {
         FormBody.Builder reqBody = new FormBody.Builder(Charset.forName("UTF-8")).add("o", operation.val);
-        for (NameValuePair pair : params) {
+        for (PyxRequest.Param pair : params) {
             if (pair.value() != null)
                 reqBody.add(pair.key(), pair.value(""));
         }

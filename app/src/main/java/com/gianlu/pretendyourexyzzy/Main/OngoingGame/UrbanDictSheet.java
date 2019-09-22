@@ -11,11 +11,11 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.BottomSheet.ModalBottomSheetHeaderView;
-import com.gianlu.commonutils.BottomSheet.ThemedModalBottomSheet;
-import com.gianlu.commonutils.CasualViews.MessageView;
-import com.gianlu.commonutils.Dialogs.DialogUtils;
-import com.gianlu.commonutils.Toaster;
+import com.gianlu.commonutils.bottomsheet.ModalBottomSheetHeaderView;
+import com.gianlu.commonutils.bottomsheet.ThemedModalBottomSheet;
+import com.gianlu.commonutils.dialogs.DialogUtils;
+import com.gianlu.commonutils.misc.MessageView;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.DefinitionsAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.UrbanDictionary.Definition;
 import com.gianlu.pretendyourexyzzy.NetIO.UrbanDictionary.Definitions;

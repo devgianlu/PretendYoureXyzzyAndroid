@@ -8,13 +8,13 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import com.gianlu.commonutils.CasualViews.RecyclerMessageView;
-import com.gianlu.commonutils.Dialogs.DialogUtils;
-import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.dialogs.DialogUtils;
+import com.gianlu.commonutils.dialogs.FragmentWithDialog;
+import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
@@ -27,7 +27,7 @@ import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.List;
 
-public class CardsFragment extends Fragment implements Cardcast.OnResult<List<CardcastCard>>, CardsAdapter.Listener {
+public class CardsFragment extends FragmentWithDialog implements Cardcast.OnResult<List<CardcastCard>>, CardsAdapter.Listener {
     private RecyclerMessageView rmv;
 
     @NonNull
@@ -88,6 +88,6 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
     @Override
     public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
         if (action == GameCardView.Action.SELECT_IMG)
-            DialogUtils.showDialog(getActivity(), CardImageZoomDialog.get(card));
+            DialogUtils.showDialog(getActivity(), CardImageZoomDialog.get(card), null);
     }
 }

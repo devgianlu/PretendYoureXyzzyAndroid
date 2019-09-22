@@ -13,12 +13,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.gianlu.commonutils.Analytics.AnalyticsApplication;
-import com.gianlu.commonutils.CasualViews.RecyclerMessageView;
-import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.SuppressingLinearLayoutManager;
-import com.gianlu.commonutils.Toaster;
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
+import com.gianlu.commonutils.dialogs.FragmentWithDialog;
+import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.misc.RecyclerMessageView;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.ChatAdapter;
 import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
@@ -57,7 +56,7 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
         LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.fragment_chat, container, false);
         this.rmv = layout.findViewById(R.id.chatFragment_recyclerViewLayout);
         this.rmv.disableSwipeRefresh();
-        LinearLayoutManager llm = new SuppressingLinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
+        LinearLayoutManager llm = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         llm.setStackFromEnd(true);
         this.rmv.setLayoutManager(llm);
 

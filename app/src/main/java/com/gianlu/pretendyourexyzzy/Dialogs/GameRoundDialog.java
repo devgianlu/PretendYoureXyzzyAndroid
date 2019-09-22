@@ -24,10 +24,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.DialogFragment;
 
-import com.gianlu.commonutils.AskPermission;
-import com.gianlu.commonutils.Dialogs.DialogUtils;
-import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.Toaster;
+import com.gianlu.commonutils.dialogs.DialogUtils;
+import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.permissions.AskPermission;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.CardViews.GameRoundSummary;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameRound;

@@ -101,7 +101,7 @@
         android:layout_gravity="center"
         android:indeterminate="true" />
 
-    <com.gianlu.commonutils.CasualViews.MessageView
+    <com.gianlu.commonutils.misc.MessageView
         android:id="@+id/cardcastDeckInfo_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

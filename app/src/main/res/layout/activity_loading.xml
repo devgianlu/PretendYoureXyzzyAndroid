@@ -109,7 +109,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <com.gianlu.commonutils.CasualViews.SuperTextView
+    <com.gianlu.commonutils.misc.SuperTextView
         android:id="@+id/loading_welcomeMsg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

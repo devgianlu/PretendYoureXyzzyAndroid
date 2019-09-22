@@ -8,11 +8,15 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.LruCache;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+import androidx.annotation.WorkerThread;
+
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.Lifecycle.LifecycleAwareHandler;
-import com.gianlu.commonutils.Lifecycle.LifecycleAwareRunnable;
-import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.NameValuePair;
+import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
+import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
+import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCost;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeckInfo;
@@ -34,10 +38,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.UiThread;
-import androidx.annotation.WorkerThread;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -70,9 +70,9 @@ public class Cardcast {
     }
 
     @NonNull
-    private Object basicRequest(@NonNull String endpoint, List<NameValuePair> params) throws IOException, JSONException {
+    private Object basicRequest(@NonNull String endpoint, List<Param> params) throws IOException, JSONException {
         Uri.Builder builder = Uri.parse(BASE_URL + endpoint).buildUpon();
-        for (NameValuePair pair : params) builder.appendQueryParameter(pair.key(), pair.value(""));
+        for (Param pair : params) builder.appendQueryParameter(pair.key(), pair.value(""));
 
         Request request = new Request.Builder()
                 .get()
@@ -92,19 +92,19 @@ public class Cardcast {
         }
     }
 
-    private Object basicRequest(@NonNull String endpoint, NameValuePair... params) throws IOException, JSONException {
+    private Object basicRequest(@NonNull String endpoint, Param... params) throws IOException, JSONException {
         return basicRequest(endpoint, Arrays.asList(params));
     }
 
     public void getDecks(@NonNull Search search, int limit, int offset, @Nullable Activity activity, @NonNull OnDecks listener) {
-        final List<NameValuePair> params = new ArrayList<>();
-        if (search.query != null) params.add(new NameValuePair("search", search.query));
-        params.add(new NameValuePair("category", search.categories == null ? "" : CommonUtils.join(search.categories, ",")));
-        params.add(new NameValuePair("direction", search.direction.val));
-        params.add(new NameValuePair("sort", search.sort.val));
-        params.add(new NameValuePair("limit", String.valueOf(limit)));
-        params.add(new NameValuePair("offset", String.valueOf(offset)));
-        params.add(new NameValuePair("nsfw", String.valueOf(search.nsfw)));
+        final List<Param> params = new ArrayList<>();
+        if (search.query != null) params.add(new Param("search", search.query));
+        params.add(new Param("category", search.categories == null ? "" : CommonUtils.join(search.categories, ",")));
+        params.add(new Param("direction", search.direction.val));
+        params.add(new Param("sort", search.sort.val));
+        params.add(new Param("limit", String.valueOf(limit)));
+        params.add(new Param("offset", String.valueOf(offset)));
+        params.add(new Param("nsfw", String.valueOf(search.nsfw)));
 
         executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
             @Override
@@ -299,6 +299,28 @@ public class Cardcast {
 
         @UiThread
         void onException(@NonNull Exception ex);
+    }
+
+    private static class Param {
+        private final String key;
+        private final String value;
+
+        Param(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        String key() {
+            return key;
+        }
+
+        String value() {
+            return value;
+        }
+
+        String value(String fallback) {
+            return key == null ? fallback : key;
+        }
     }
 
     public static class Search {

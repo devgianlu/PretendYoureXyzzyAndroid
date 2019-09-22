@@ -104,7 +104,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <com.gianlu.commonutils.CasualViews.SuperTextView
+        <com.gianlu.commonutils.misc.SuperTextView
             android:id="@+id/serverItem_details"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

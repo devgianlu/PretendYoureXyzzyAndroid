@@ -10,7 +10,9 @@ import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 
-import com.gianlu.commonutils.FontsManager;
+import androidx.annotation.NonNull;
+
+import com.gianlu.commonutils.typography.FontsManager;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.GameRound;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.RoundCard;
 import com.gianlu.pretendyourexyzzy.ThisApplication;
@@ -18,8 +20,6 @@ import com.gianlu.pretendyourexyzzy.Utils;
 
 import java.util.List;
 import java.util.Random;
-
-import androidx.annotation.NonNull;
 
 public class GameRoundSummary {
     private final static int PADDING = 48;

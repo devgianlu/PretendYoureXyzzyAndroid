@@ -3,8 +3,10 @@ package com.gianlu.pretendyourexyzzy.NetIO.Models;
 import android.content.Context;
 import android.os.Build;
 
-import com.gianlu.commonutils.Drawer.BaseDrawerProfile;
-import com.gianlu.commonutils.Logging;
+import androidx.annotation.NonNull;
+
+import com.gianlu.commonutils.drawer.BaseDrawerProfile;
+import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 
 import org.json.JSONException;
@@ -12,8 +14,6 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.text.ParseException;
-
-import androidx.annotation.NonNull;
 
 public class UserInfo implements BaseDrawerProfile, Serializable {
     public final String nickname;

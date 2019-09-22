@@ -2,9 +2,12 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 
 import android.app.Activity;
 
-import com.gianlu.commonutils.Lifecycle.LifecycleAwareHandler;
-import com.gianlu.commonutils.Lifecycle.LifecycleAwareRunnable;
-import com.gianlu.commonutils.Preferences.Prefs;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
+import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
+import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CahConfig;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoadAndConfig;
@@ -15,8 +18,6 @@ import org.json.JSONException;
 
 import java.io.IOException;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import okhttp3.OkHttpClient;
 
 public class FirstLoadedPyx extends Pyx {

@@ -5,9 +5,8 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.NameValuePair;
-import com.gianlu.commonutils.Preferences.Prefs;
+import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -95,20 +94,20 @@ public final class PyxRequests {
     @NonNull
     public static PyxRequestWithResult<User> register(@NonNull String nickname, @Nullable String idCode, @Nullable String pid) {
         return new PyxRequestWithResult<>(Pyx.Op.REGISTER, REGISTER_PROCESSOR,
-                new NameValuePair("n", nickname),
-                new NameValuePair("idc", idCode),
-                new NameValuePair("pid", pid));
+                new PyxRequest.Param("n", nickname),
+                new PyxRequest.Param("idc", idCode),
+                new PyxRequest.Param("pid", pid));
     }
 
     @NonNull
     public static PyxRequest leaveGame(int gid) {
-        return new PyxRequest(Pyx.Op.LEAVE_GAME, new NameValuePair("gid", String.valueOf(gid)));
+        return new PyxRequest(Pyx.Op.LEAVE_GAME, new PyxRequest.Param("gid", String.valueOf(gid)));
     }
 
     public static PyxRequest changeGameOptions(int gid, @NonNull Game.Options options) throws JSONException {
         return new PyxRequest(Pyx.Op.CHANGE_GAME_OPTIONS,
-                new NameValuePair("gid", String.valueOf(gid)),
-                new NameValuePair("go", options.toJson().toString()));
+                new PyxRequest.Param("gid", String.valueOf(gid)),
+                new PyxRequest.Param("go", options.toJson().toString()));
     }
 
     @NonNull
@@ -118,29 +117,29 @@ public final class PyxRequests {
 
     @NonNull
     public static PyxRequestWithResult<GamePermalink> joinGame(final int gid, @Nullable String password) {
-        return new PyxRequestWithResult<>(Pyx.Op.JOIN_GAME, (response, obj) -> new GamePermalink(gid, obj), new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("pw", password));
+        return new PyxRequestWithResult<>(Pyx.Op.JOIN_GAME, (response, obj) -> new GamePermalink(gid, obj), new PyxRequest.Param("gid", String.valueOf(gid)), new PyxRequest.Param("pw", password));
     }
 
     @NonNull
     public static PyxRequestWithResult<GamePermalink> spectateGame(final int gid, @Nullable String password) {
-        return new PyxRequestWithResult<>(Pyx.Op.SPECTATE_GAME, (response, obj) -> new GamePermalink(gid, obj), new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("pw", password));
+        return new PyxRequestWithResult<>(Pyx.Op.SPECTATE_GAME, (response, obj) -> new GamePermalink(gid, obj), new PyxRequest.Param("gid", String.valueOf(gid)), new PyxRequest.Param("pw", password));
     }
 
     @NonNull
     public static PyxRequestWithResult<GameInfo> getGameInfo(int gid) {
-        return new PyxRequestWithResult<>(Pyx.Op.GET_GAME_INFO, GAME_INFO_PROCESSOR, new NameValuePair("gid", String.valueOf(gid)));
+        return new PyxRequestWithResult<>(Pyx.Op.GET_GAME_INFO, GAME_INFO_PROCESSOR, new PyxRequest.Param("gid", String.valueOf(gid)));
     }
 
     @NonNull
     public static PyxRequest sendGameMessage(int gid, @NonNull String msg, boolean emote) {
-        return new PyxRequest(Pyx.Op.GAME_CHAT, new NameValuePair("gid", String.valueOf(gid)), new NameValuePair("m", msg),
-                new NameValuePair("me", String.valueOf(emote)));
+        return new PyxRequest(Pyx.Op.GAME_CHAT, new PyxRequest.Param("gid", String.valueOf(gid)), new PyxRequest.Param("m", msg),
+                new PyxRequest.Param("me", String.valueOf(emote)));
     }
 
     @NonNull
     public static PyxRequest sendMessage(@NonNull String msg, boolean emote, boolean wall) {
-        return new PyxRequest(Pyx.Op.CHAT, new NameValuePair("m", msg), new NameValuePair("me", String.valueOf(emote)),
-                new NameValuePair("wall", String.valueOf(wall)));
+        return new PyxRequest(Pyx.Op.CHAT, new PyxRequest.Param("m", msg), new PyxRequest.Param("me", String.valueOf(emote)),
+                new PyxRequest.Param("wall", String.valueOf(wall)));
     }
 
     @NonNull
@@ -151,33 +150,33 @@ public final class PyxRequests {
     @NonNull
     public static PyxRequest removeCardcastDeck(int gid, @NonNull String code) {
         return new PyxRequest(Pyx.Op.REMOVE_CARDCAST_CARD_SET,
-                new NameValuePair("gid", String.valueOf(gid)),
-                new NameValuePair("cci", code));
+                new PyxRequest.Param("gid", String.valueOf(gid)),
+                new PyxRequest.Param("cci", code));
     }
 
     @NonNull
     public static PyxRequestWithResult<GameCards> getGameCards(int gid) {
-        return new PyxRequestWithResult<>(Pyx.Op.GET_GAME_CARDS, GAME_CARDS_PROCESSOR, new NameValuePair("gid", String.valueOf(gid)));
+        return new PyxRequestWithResult<>(Pyx.Op.GET_GAME_CARDS, GAME_CARDS_PROCESSOR, new PyxRequest.Param("gid", String.valueOf(gid)));
     }
 
     @NonNull
     public static PyxRequest startGame(int gid) {
-        return new PyxRequest(Pyx.Op.START_GAME, new NameValuePair("gid", String.valueOf(gid)));
+        return new PyxRequest(Pyx.Op.START_GAME, new PyxRequest.Param("gid", String.valueOf(gid)));
     }
 
     @NonNull
     public static PyxRequest judgeCard(int gid, int cardId) {
         return new PyxRequest(Pyx.Op.JUDGE_SELECT,
-                new NameValuePair("gid", String.valueOf(gid)),
-                new NameValuePair("cid", String.valueOf(cardId)));
+                new PyxRequest.Param("gid", String.valueOf(gid)),
+                new PyxRequest.Param("cid", String.valueOf(cardId)));
     }
 
     @NonNull
     public static PyxRequest playCard(int gid, int cardId, @Nullable String customText) {
         return new PyxRequest(Pyx.Op.PLAY_CARD,
-                new NameValuePair("gid", String.valueOf(gid)),
-                new NameValuePair("cid", String.valueOf(cardId)),
-                new NameValuePair("m", customText));
+                new PyxRequest.Param("gid", String.valueOf(gid)),
+                new PyxRequest.Param("cid", String.valueOf(cardId)),
+                new PyxRequest.Param("m", customText));
     }
 
     @NonNull
@@ -197,14 +196,14 @@ public final class PyxRequests {
             }
 
             return cards;
-        }, new NameValuePair("gid", String.valueOf(gid)));
+        }, new PyxRequest.Param("gid", String.valueOf(gid)));
     }
 
     @NonNull
     public static PyxRequest addCardcastDeck(int gid, String code) {
         return new PyxRequest(Pyx.Op.ADD_CARDCAST_CARD_SET,
-                new NameValuePair("gid", String.valueOf(gid)),
-                new NameValuePair("cci", code));
+                new PyxRequest.Param("gid", String.valueOf(gid)),
+                new PyxRequest.Param("cci", code));
     }
 
     @NonNull
@@ -214,6 +213,7 @@ public final class PyxRequests {
 
     @NonNull
     public static PyxRequestWithResult<WhoisResult> whois(String name) {
-        return new PyxRequestWithResult<>(Pyx.Op.WHOIS, WHOIS_RESULT_PROCESSOR, new NameValuePair("n", name));
+        return new PyxRequestWithResult<>(Pyx.Op.WHOIS, WHOIS_RESULT_PROCESSOR, new PyxRequest.Param("n", name));
     }
+
 }

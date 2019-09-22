@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.Main;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -21,17 +20,16 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.Analytics.AnalyticsApplication;
-import com.gianlu.commonutils.CasualViews.MessageView;
-import com.gianlu.commonutils.CasualViews.SuperTextView;
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.Dialogs.DialogUtils;
-import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.NameValuePair;
-import com.gianlu.commonutils.Toaster;
-import com.gianlu.commonutils.Tutorial.BaseTutorial;
-import com.gianlu.commonutils.Tutorial.TutorialManager;
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
+import com.gianlu.commonutils.dialogs.DialogUtils;
+import com.gianlu.commonutils.dialogs.FragmentWithDialog;
+import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.misc.MessageView;
+import com.gianlu.commonutils.misc.SuperTextView;
+import com.gianlu.commonutils.tutorial.BaseTutorial;
+import com.gianlu.commonutils.tutorial.TutorialManager;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.Dialogs.EditGameOptionsDialog;
@@ -63,8 +61,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import okhttp3.HttpUrl;
-
 public class OngoingGameFragment extends FragmentWithDialog implements OngoingGameHelper.Listener, PlayersAdapter.Listener, TutorialManager.Listener, AnotherGameManager.Listener {
     private OnLeftGame onLeftGame;
     private ProgressBar loading;
@@ -88,7 +84,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
         if (context instanceof OnLeftGame)
@@ -130,7 +126,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.ongoing_game, menu);
     }
 
@@ -211,7 +207,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (getContext() == null) return false;
 
         switch (item.getItemId()) {
@@ -270,11 +266,12 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         DialogUtils.showDialog(getActivity(), builder);
     }
 
-    private void shareGame() {
+    private void shareGame() { // FIXME
         if (manager == null) return;
         Game.Options options = manager.gameOptions();
         if (options == null) return;
 
+        /*
         HttpUrl.Builder builder = pyx.server.url.newBuilder();
         builder.addPathSegment("game.jsp");
 
@@ -289,6 +286,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         i.setType("text/plain");
         i.putExtra(Intent.EXTRA_TEXT, builder.toString());
         startActivity(Intent.createChooser(i, "Share game..."));
+         */
     }
 
     private void showSpectators() {
@@ -310,7 +308,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     private void editGameOptions() {
         if (manager == null || getContext() == null) return;
 
-        DialogUtils.showDialog(getActivity(), EditGameOptionsDialog.get(perm.gid, manager.gameOptions()));
+        DialogUtils.showDialog(getActivity(), EditGameOptionsDialog.get(perm.gid, manager.gameOptions()), null);
     }
 
     private void showGameOptions() {

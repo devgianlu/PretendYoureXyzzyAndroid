@@ -10,9 +10,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.CasualViews.InfiniteRecyclerView;
-import com.gianlu.commonutils.CasualViews.SuperTextView;
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.misc.InfiniteRecyclerView.InfiniteAdapter;
+import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
@@ -26,7 +26,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 
-public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<CardcastDecksAdapter.ViewHolder, CardcastDeck> {
+public class CardcastDecksAdapter extends InfiniteAdapter<CardcastDecksAdapter.ViewHolder, CardcastDeck> {
     private final LayoutInflater inflater;
     private final Cardcast cardcast;
     private final Cardcast.Search search;
@@ -35,7 +35,7 @@ public class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<C
     private final Random random = ThreadLocalRandom.current();
 
     public CardcastDecksAdapter(Context context, Cardcast cardcast, Cardcast.Search search, CardcastDecks items, int limit, Listener listener) {
-        super(context, new Config<CardcastDeck>().items(items).undeterminedPages().noSeparators());
+        super(context, new InfiniteAdapter.Config<CardcastDeck>().items(items).undeterminedPages().noSeparators());
         this.inflater = LayoutInflater.from(context);
         this.cardcast = cardcast;
         this.search = search;

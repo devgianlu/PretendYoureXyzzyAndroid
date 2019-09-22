@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:paddingBottom="16dp">
 
-    <com.gianlu.commonutils.CasualViews.SuperTextView
+    <com.gianlu.commonutils.misc.SuperTextView
         android:id="@+id/pyxCard_text"
         android:layout_width="156dp"
         android:layout_height="0dp"
@@ -81,13 +81,13 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <com.gianlu.commonutils.CasualViews.SuperTextView
+            <com.gianlu.commonutils.misc.SuperTextView
                 android:id="@+id/pyxCard_numPick"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAlignment="viewEnd" />
 
-            <com.gianlu.commonutils.CasualViews.SuperTextView
+            <com.gianlu.commonutils.misc.SuperTextView
                 android:id="@+id/pyxCard_numDraw"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
