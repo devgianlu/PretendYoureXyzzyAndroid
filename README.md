@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.com/devgianlu/PretendYoureXyzzyAndroid.svg?branch=master)](https://travis-ci.com/devgianlu/PretendYoureXyzzyAndroid)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c7c1308babb841b89beb2adc969c3ef8)](https://www.codacy.com/manual/devgianlu/PretendYoureXyzzyAndroid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=devgianlu/PretendYoureXyzzyAndroid&amp;utm_campaign=Badge_Grade)
-[![Translate - with Stringlate](https://img.shields.io/badge/translate%20with-stringlate-green.svg)](https://lonamiwebs.github.io/stringlate/translate?git=https%3A%2F%2Fgithub.com%2Fdevgianlu%2FPretendYoureXyzzyAndroid)
 [![Donate Bitcoin](https://img.shields.io/badge/donate-bitcoin-orange.svg)](https://gianlu.xyz/donate/)
 
 This app let's you play Pretend You're Xyzzy, an online card game, on your device wherever you are.
@@ -13,4 +12,15 @@ This app let's you play Pretend You're Xyzzy, an online card game, on your devic
 </div>
 
 ## Setup
-This project uses [devgianlu/CommonUtils](https://github.com/devgianlu/CommonUtils), please go figure how to setup your environment properly.
+This project uses [devgianlu/CommonUtils](https://github.com/devgianlu/CommonUtils), please follow the link to setup your environment properly.
+
+
+## Translations
+
+This project uses [POEditor](https://poeditor.com/) to keep track of the translation process. The following languages are currently available:
+
+![English](https://gianlu.xyz/poeditor-badge?id=287731&lang=en)
+![Italian](https://gianlu.xyz/poeditor-badge?id=287731&lang=it)
+
+If you're interested in helping out either create a PR or contact me via email to become a contributor on POEditor.
+
