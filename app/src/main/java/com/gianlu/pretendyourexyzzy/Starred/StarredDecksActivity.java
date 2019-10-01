@@ -9,19 +9,18 @@ import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.Adapters.StarredDecksAdapter;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeckActivity;
 
 public class StarredDecksActivity extends ActivityWithDialog implements StarredDecksAdapter.Listener {
-    private RecyclerViewLayout layout;
+    private RecyclerMessageView layout;
     private StarredDecksManager starredDecks;
 
     public static void startActivity(Context context) {
@@ -62,7 +61,7 @@ public class StarredDecksActivity extends ActivityWithDialog implements StarredD
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        layout = new RecyclerViewLayout(this);
+        layout = new RecyclerMessageView(this);
         setContentView(layout);
         setTitle(R.string.starredCardcastDecks);
 
@@ -73,7 +72,7 @@ public class StarredDecksActivity extends ActivityWithDialog implements StarredD
 
         layout.disableSwipeRefresh();
         layout.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary_background));
-        layout.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
+        layout.linearLayoutManager(RecyclerView.VERTICAL, false);
         layout.loadListData(new StarredDecksAdapter(this, starredDecks.getDecks(), this));
     }
 

@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.BottomSheet.ModalBottomSheetHeaderView;
 import com.gianlu.commonutils.BottomSheet.ThemedModalBottomSheet;
-import com.gianlu.commonutils.CasualViews.MessageView;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.commonutils.misc.MessageView;
 import com.gianlu.pretendyourexyzzy.Adapters.DefinitionsAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.UrbanDictionary.Definition;
 import com.gianlu.pretendyourexyzzy.NetIO.UrbanDictionary.Definitions;
@@ -64,7 +64,7 @@ public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> 
     @Override
     protected void onRequestedUpdate(@NonNull Definitions payload) {
         if (payload.isEmpty()) {
-            message.setInfo(R.string.noDefinitions);
+            message.info(R.string.noDefinitions);
             list.setVisibility(View.GONE);
         } else {
             message.hide();

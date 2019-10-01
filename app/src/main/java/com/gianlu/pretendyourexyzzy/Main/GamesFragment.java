@@ -19,11 +19,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
@@ -32,6 +30,7 @@ import com.gianlu.commonutils.Preferences.Prefs;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.commonutils.Tutorial.BaseTutorial;
 import com.gianlu.commonutils.Tutorial.TutorialManager;
+import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.Adapters.GamesAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -51,7 +50,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<GamesList>, GamesAdapter.Listener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, Pyx.OnEventListener, TutorialManager.Listener {
     private GamesList lastResult;
-    private RecyclerViewLayout layout;
+    private RecyclerMessageView layout;
     private OnParticipateGame handler;
     private SearchView searchView;
     private GamesAdapter adapter;
@@ -146,7 +145,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         if (getContext() == null) return layout;
         layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary_background));
         this.layout = layout.findViewById(R.id.gamesFragment_recyclerViewLayout);
-        this.layout.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
+        this.layout.linearLayoutManager(RecyclerView.VERTICAL, false);
         createGame = layout.findViewById(R.id.gamesFragment_createGame);
 
         try {
@@ -197,7 +196,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     }
 
     public void scrollToTop() {
-        if (layout != null) layout.getList().scrollToPosition(0);
+        if (layout != null) layout.list().scrollToPosition(0);
     }
 
     @Override
@@ -212,7 +211,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         if (launchGame != null) {
             launchGameInternal(launchGame, launchGamePassword, launchGameShouldRequest);
         } else {
-            layout.getList().post(() -> tutorialManager.tryShowingTutorials(getActivity()));
+            layout.list().post(() -> tutorialManager.tryShowingTutorials(getActivity()));
         }
     }
 
@@ -383,7 +382,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
         int pos = Utils.indexOf(adapter.getVisibleGames(), gid);
         if (pos != -1) {
-            RecyclerView list = layout.getList();
+            RecyclerView list = layout.list();
             list.scrollToPosition(pos);
             RecyclerView.ViewHolder holder = list.findViewHolderForAdapterPosition(pos);
             if (holder instanceof GamesAdapter.ViewHolder)
@@ -421,7 +420,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
     @Override
     public boolean buildSequence(@NonNull BaseTutorial tutorial) {
-        return tutorial instanceof GamesTutorial && ((GamesTutorial) tutorial).buildSequence(createGame, layout.getList());
+        return tutorial instanceof GamesTutorial && ((GamesTutorial) tutorial).buildSequence(createGame, layout.list());
     }
 
     public interface OnParticipateGame {

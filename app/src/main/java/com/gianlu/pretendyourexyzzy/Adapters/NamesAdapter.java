@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.Adapters.OrderedRecyclerViewAdapter;
-import com.gianlu.commonutils.CasualViews.SuperTextView;
+import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Name;
 import com.gianlu.pretendyourexyzzy.R;
 

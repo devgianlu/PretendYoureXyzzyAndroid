@@ -11,7 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.CasualViews.SuperTextView;
+import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;

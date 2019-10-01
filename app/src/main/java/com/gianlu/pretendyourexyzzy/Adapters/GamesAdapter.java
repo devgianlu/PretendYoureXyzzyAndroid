@@ -14,8 +14,8 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.Adapters.OrderedRecyclerViewAdapter;
-import com.gianlu.commonutils.CasualViews.SuperTextView;
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.NetIO.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.R;

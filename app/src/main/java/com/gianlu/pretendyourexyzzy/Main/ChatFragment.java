@@ -14,11 +14,11 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
 import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.Logging;
 import com.gianlu.commonutils.SuppressingLinearLayoutManager;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.Adapters.ChatAdapter;
 import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
@@ -30,7 +30,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 
 public class ChatFragment extends FragmentWithDialog implements ChatAdapter.Listener, Pyx.OnEventListener {
-    private RecyclerViewLayout layout;
+    private RecyclerMessageView layout;
     private ChatAdapter adapter;
     private int gid;
     private RegisteredPyx pyx;
@@ -160,7 +160,7 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     }
 
     public void scrollToTop() {
-        if (layout != null) layout.getList().scrollToPosition(0);
+        if (layout != null) layout.list().scrollToPosition(0);
     }
 
     @Override
@@ -181,7 +181,7 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     public void onPollMessage(@NonNull PollMessage message) {
         if (!isAdded()) return;
         adapter.newMessage(message, gid);
-        layout.getList().scrollToPosition(adapter.getItemCount() - 1);
+        layout.list().scrollToPosition(adapter.getItemCount() - 1);
     }
 
     @Override

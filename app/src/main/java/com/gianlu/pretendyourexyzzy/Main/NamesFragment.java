@@ -16,11 +16,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
 import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.Adapters.NamesAdapter;
 import com.gianlu.pretendyourexyzzy.Dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
@@ -37,7 +36,7 @@ import org.json.JSONException;
 import java.util.List;
 
 public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>, NamesAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener {
-    private RecyclerViewLayout layout;
+    private RecyclerMessageView layout;
     private int names = -1;
     private RegisteredPyx pyx;
     private NamesAdapter adapter;
@@ -106,8 +105,8 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        layout = new RecyclerViewLayout(requireContext());
-        layout.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
+        layout = new RecyclerMessageView(requireContext());
+        layout.linearLayoutManager(RecyclerView.VERTICAL, false);
 
         try {
             pyx = RegisteredPyx.get();
@@ -151,7 +150,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     }
 
     public void scrollToTop() {
-        if (layout != null) layout.getList().scrollToPosition(0);
+        if (layout != null) layout.list().scrollToPosition(0);
     }
 
     @Override

@@ -5,32 +5,30 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
+import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.Adapters.ServersAdapter;
 import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.R;
 
 public class ManageServersActivity extends ActivityWithDialog implements ServersAdapter.Listener, Dialogs.OnAddServer {
-    private RecyclerViewLayout layout;
+    private RecyclerMessageView layout;
     private ServersAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        layout = new RecyclerViewLayout(this);
+        layout = new RecyclerMessageView(this);
         setContentView(layout);
         setTitle(R.string.manageServers);
 
         layout.disableSwipeRefresh();
-        layout.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
-        layout.getList().addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        layout.linearLayoutManager(RecyclerView.VERTICAL, false);
+        layout.dividerDecoration(RecyclerView.VERTICAL);
         loadServers();
     }
 

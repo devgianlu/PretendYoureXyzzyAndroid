@@ -13,9 +13,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
@@ -29,7 +29,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import java.util.List;
 
 public class CardsFragment extends Fragment implements Cardcast.OnResult<List<CardcastCard>>, CardsAdapter.Listener {
-    private RecyclerViewLayout layout;
+    private RecyclerMessageView layout;
 
     @NonNull
     public static CardsFragment getInstance(Context context, boolean whiteCards, String code) {
@@ -45,11 +45,11 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        layout = new RecyclerViewLayout(requireContext());
+        layout = new RecyclerMessageView(requireContext());
         layout.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary_background));
         layout.disableSwipeRefresh();
         layout.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-        layout.getList().addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
+        layout.list().addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
 
         Bundle args = getArguments();
         String code;
@@ -84,7 +84,7 @@ public class CardsFragment extends Fragment implements Cardcast.OnResult<List<Ca
     @Nullable
     @Override
     public RecyclerView getCardsRecyclerView() {
-        return layout.getList();
+        return layout.list();
     }
 
     @Override

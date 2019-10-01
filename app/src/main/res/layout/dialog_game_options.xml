@@ -9,37 +9,37 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <com.gianlu.commonutils.CasualViews.SuperTextView
+        <com.gianlu.commonutils.misc.SuperTextView
             android:id="@+id/gameOptions_scoreLimit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <com.gianlu.commonutils.CasualViews.SuperTextView
+        <com.gianlu.commonutils.misc.SuperTextView
             android:id="@+id/gameOptions_playerLimit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <com.gianlu.commonutils.CasualViews.SuperTextView
+        <com.gianlu.commonutils.misc.SuperTextView
             android:id="@+id/gameOptions_spectatorLimit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <com.gianlu.commonutils.CasualViews.SuperTextView
+        <com.gianlu.commonutils.misc.SuperTextView
             android:id="@+id/gameOptions_timerMultiplier"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <com.gianlu.commonutils.CasualViews.SuperTextView
+        <com.gianlu.commonutils.misc.SuperTextView
             android:id="@+id/gameOptions_cardSets"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <com.gianlu.commonutils.CasualViews.SuperTextView
+        <com.gianlu.commonutils.misc.SuperTextView
             android:id="@+id/gameOptions_blankCards"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <com.gianlu.commonutils.CasualViews.SuperTextView
+        <com.gianlu.commonutils.misc.SuperTextView
             android:id="@+id/gameOptions_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />

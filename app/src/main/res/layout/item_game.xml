@@ -55,17 +55,17 @@
                         android:src="@drawable/outline_lock_24" />
                 </FrameLayout>
 
-                <com.gianlu.commonutils.CasualViews.SuperTextView
+                <com.gianlu.commonutils.misc.SuperTextView
                     android:id="@+id/gameItem_players"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
-                <com.gianlu.commonutils.CasualViews.SuperTextView
+                <com.gianlu.commonutils.misc.SuperTextView
                     android:id="@+id/gameItem_spectators"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
-                <com.gianlu.commonutils.CasualViews.SuperTextView
+                <com.gianlu.commonutils.misc.SuperTextView
                     android:id="@+id/gameItem_goal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
@@ -77,17 +77,17 @@
                     android:orientation="vertical"
                     android:visibility="gone">
 
-                    <com.gianlu.commonutils.CasualViews.SuperTextView
+                    <com.gianlu.commonutils.misc.SuperTextView
                         android:id="@+id/gameItem_timerMultiplier"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
 
-                    <com.gianlu.commonutils.CasualViews.SuperTextView
+                    <com.gianlu.commonutils.misc.SuperTextView
                         android:id="@+id/gameItem_blankCards"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
 
-                    <com.gianlu.commonutils.CasualViews.SuperTextView
+                    <com.gianlu.commonutils.misc.SuperTextView
                         android:id="@+id/gameItem_cardsets"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />

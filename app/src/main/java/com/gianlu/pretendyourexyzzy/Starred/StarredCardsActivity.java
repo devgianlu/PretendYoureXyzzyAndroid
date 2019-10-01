@@ -11,9 +11,9 @@ import androidx.appcompat.app.ActionBar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.CasualViews.MessageView;
 import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.commonutils.misc.MessageView;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
 import com.gianlu.pretendyourexyzzy.CardViews.PyxCardsGroupView;
@@ -57,7 +57,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
         message = findViewById(R.id.starredCards_message);
         cards = findViewById(R.id.starredCards_cards);
 
-        message.setInfo(R.string.selectAStarredCard);
+        message.info(R.string.selectAStarredCard);
     }
 
     @Nullable
@@ -101,7 +101,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
                 case DELETE:
                     deleteCard(starred);
                     if (Objects.equals(cards.getTag(), card)) {
-                        message.setInfo(R.string.selectAStarredCard);
+                        message.info(R.string.selectAStarredCard);
                         cards.removeAllViews();
                     }
                     break;

@@ -20,9 +20,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.BottomSheet.ModalBottomSheetHeaderView;
 import com.gianlu.commonutils.BottomSheet.ThemedModalBottomSheet;
-import com.gianlu.commonutils.CasualViews.MessageView;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Toaster;
+import com.gianlu.commonutils.misc.MessageView;
 import com.gianlu.pretendyourexyzzy.Adapters.DecksAdapter;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
@@ -150,7 +150,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
     @Override
     public void shouldUpdateItemCount(int count) {
         if (count == 0) {
-            message.setInfo(R.string.noCardSets);
+            message.info(R.string.noCardSets);
             list.setVisibility(View.GONE);
         } else {
             message.hide();

@@ -17,13 +17,12 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.CasualViews.RecyclerViewLayout;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.Adapters.CardcastDecksAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
@@ -36,7 +35,7 @@ import java.util.List;
 
 public class CardcastFragment extends Fragment implements Cardcast.OnDecks, CardcastDecksAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
     private final static int LIMIT = 12;
-    private RecyclerViewLayout layout;
+    private RecyclerMessageView layout;
     private Cardcast cardcast;
     private SearchView searchView;
     private Cardcast.Search search = new Cardcast.Search(null, null, Cardcast.Direction.DESCENDANT, Cardcast.Sort.RATING, true);
@@ -154,9 +153,9 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        layout = new RecyclerViewLayout(requireContext());
+        layout = new RecyclerMessageView(requireContext());
         layout.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary_background));
-        layout.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
+        layout.linearLayoutManager(RecyclerView.VERTICAL, false);
 
         cardcast = Cardcast.get();
         layout.enableSwipeRefresh(() -> cardcast.getDecks(search, LIMIT, 0, null, this), R.color.colorAccent);

@@ -23,8 +23,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.Analytics.AnalyticsApplication;
-import com.gianlu.commonutils.CasualViews.MessageView;
-import com.gianlu.commonutils.CasualViews.SuperTextView;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.Dialogs.DialogUtils;
 import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
@@ -33,6 +31,8 @@ import com.gianlu.commonutils.NameValuePair;
 import com.gianlu.commonutils.Toaster;
 import com.gianlu.commonutils.Tutorial.BaseTutorial;
 import com.gianlu.commonutils.Tutorial.TutorialManager;
+import com.gianlu.commonutils.misc.MessageView;
+import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.Dialogs.EditGameOptionsDialog;
@@ -177,7 +177,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         if (args == null || (perm = (GamePermalink) args.getSerializable("game")) == null) {
             loading.setVisibility(View.GONE);
             gameLayout.setVisibility(View.GONE);
-            message.setError(R.string.failedLoading);
+            message.error(R.string.failedLoading);
             return layout;
         }
 
@@ -191,7 +191,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
             Logging.log(ex);
             loading.setVisibility(View.GONE);
             gameLayout.setVisibility(View.GONE);
-            message.setError(R.string.failedLoading);
+            message.error(R.string.failedLoading);
             return layout;
         }
 
@@ -432,6 +432,6 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         Logging.log(ex);
         loading.setVisibility(View.GONE);
         gameLayout.setVisibility(View.GONE);
-        message.setError(R.string.failedLoading_reason, ex.getMessage());
+        message.error(R.string.failedLoading_reason, ex.getMessage());
     }
 }

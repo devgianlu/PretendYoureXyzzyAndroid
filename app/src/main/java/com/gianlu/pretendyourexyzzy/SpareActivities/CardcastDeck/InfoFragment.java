@@ -14,8 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.gianlu.commonutils.CasualViews.MessageView;
 import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.misc.MessageView;
 import com.gianlu.pretendyourexyzzy.NetIO.Cardcast;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeckInfo;
 import com.gianlu.pretendyourexyzzy.R;
@@ -50,7 +50,7 @@ public class InfoFragment extends Fragment implements Cardcast.OnResult<Cardcast
         if (args == null || (code = args.getString("code", null)) == null) {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.GONE);
-            message.setError(R.string.failedLoading);
+            message.error(R.string.failedLoading);
             return layout;
         }
 
@@ -87,6 +87,6 @@ public class InfoFragment extends Fragment implements Cardcast.OnResult<Cardcast
         Logging.log(ex);
         loading.setVisibility(View.GONE);
         container.setVisibility(View.GONE);
-        message.setError(R.string.failedLoading_reason, ex.getMessage());
+        message.error(R.string.failedLoading_reason, ex.getMessage());
     }
 }

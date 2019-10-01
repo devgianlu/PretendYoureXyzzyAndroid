@@ -14,10 +14,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import com.gianlu.commonutils.CasualViews.MessageView;
-import com.gianlu.commonutils.CasualViews.SuperTextView;
 import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.misc.MessageView;
+import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.Adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Metrics.SessionHistory;
@@ -74,7 +74,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         String id;
         if (args == null || (id = args.getString("id", null)) == null) {
             loading.setVisibility(View.GONE);
-            message.setError(R.string.failedLoading);
+            message.error(R.string.failedLoading);
             return layout;
         }
 
@@ -84,7 +84,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         } catch (LevelMismatchException ex) {
             Logging.log(ex);
             loading.setVisibility(View.GONE);
-            message.setError(R.string.failedLoading);
+            message.error(R.string.failedLoading);
             return layout;
         }
 
@@ -100,7 +100,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         if (result.games.isEmpty()) {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.GONE);
-            message.setInfo(R.string.noActivity);
+            message.info(R.string.noActivity);
         } else {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.VISIBLE);
@@ -118,6 +118,6 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         Logging.log(ex);
         loading.setVisibility(View.GONE);
         container.setVisibility(View.GONE);
-        message.setError(R.string.failedLoading_reason, ex.getMessage());
+        message.error(R.string.failedLoading_reason, ex.getMessage());
     }
 }

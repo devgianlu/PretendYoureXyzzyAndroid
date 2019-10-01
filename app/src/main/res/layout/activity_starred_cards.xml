@@ -50,7 +50,7 @@
 
         </HorizontalScrollView>
 
-        <com.gianlu.commonutils.CasualViews.MessageView
+        <com.gianlu.commonutils.misc.MessageView
             android:id="@+id/starredCards_message"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
