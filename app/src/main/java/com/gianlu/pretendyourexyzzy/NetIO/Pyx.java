@@ -339,6 +339,10 @@ public class Pyx implements Closeable {
         return server.metricsUrl != null;
     }
 
+    public boolean isServerSecure() {
+        return server.isHttps();
+    }
+
     public enum Op {
         REGISTER("r"),
         FIRST_LOAD("fl"),
@@ -717,6 +721,10 @@ public class Pyx implements Closeable {
 
         public boolean hasMetrics() {
             return metricsUrl != null;
+        }
+
+        public boolean isHttps() {
+            return url.isHttps();
         }
     }
 

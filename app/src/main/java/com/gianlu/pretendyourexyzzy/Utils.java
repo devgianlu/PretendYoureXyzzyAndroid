@@ -7,11 +7,17 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
+import com.gianlu.pretendyourexyzzy.NetIO.NameValuePair;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Utils {
+public final class Utils {
     public static final String ACTION_STARRED_CARD_ADD = "added_starred_card";
     public static final String ACTION_JOIN_GAME = "joined_game";
     public static final String ACTION_SPECTATE_GAME = "spectate_game";
@@ -29,6 +35,52 @@ public class Utils {
     public static final String ACTION_SENT_MSG = "sent_message";
     public static final String ACTION_OPEN_URBAN_DICT = "opened_urban_dict_sheet";
     public static final String ACTION_UNKNOWN_EVENT = "unknown_server_event";
+
+    private Utils() {
+    }
+
+    public static List<NameValuePair> splitQuery(@NonNull URL url) {
+        return splitQuery(url.getQuery());
+    }
+
+    public static List<NameValuePair> splitQuery(@NonNull String query) {
+        try {
+            List<NameValuePair> queryPairs = new ArrayList<>();
+            String[] pairs = query.split("&");
+            for (String pair : pairs) {
+                int idx = pair.indexOf("=");
+                if (idx > 0)
+                    queryPairs.add(new NameValuePair(
+                            URLDecoder.decode(pair.substring(0, idx), "UTF-8"),
+                            URLDecoder.decode(pair.substring(idx + 1), "UTF-8")));
+            }
+
+            return queryPairs;
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @NonNull
+    public static String formQuery(List<NameValuePair> pairs) {
+        StringBuilder builder = new StringBuilder();
+        boolean first = true;
+
+        try {
+            for (NameValuePair pair : pairs) {
+                if (!first) builder.append("&");
+                builder.append(URLEncoder.encode(pair.key(), "UTF-8"))
+                        .append("=")
+                        .append(URLEncoder.encode(pair.value(""), "UTF-8"));
+
+                first = false;
+            }
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        }
+
+        return builder.toString();
+    }
 
     @NonNull
     public static String buildDeckCountString(int decks, int black, int white) {

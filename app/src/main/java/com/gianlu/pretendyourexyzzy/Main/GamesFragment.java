@@ -17,7 +17,6 @@ import android.widget.SearchView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
@@ -47,6 +46,8 @@ import com.gianlu.pretendyourexyzzy.Tutorial.GamesTutorial;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import org.jetbrains.annotations.NotNull;
 
 public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<GamesList>, GamesAdapter.Listener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, Pyx.OnEventListener, TutorialManager.Listener {
     private GamesList lastResult;
@@ -83,7 +84,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NotNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.games_fragment, menu);
 
         if (getContext() == null) return;
@@ -143,7 +144,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.fragment_games, container, false);
         this.rmv = layout.findViewById(R.id.gamesFragment_recyclerViewLayout);
-        this.rmv.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
+        this.rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
         createGame = layout.findViewById(R.id.gamesFragment_createGame);
 
         try {

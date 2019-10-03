@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.Main;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -46,6 +47,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
+import com.gianlu.pretendyourexyzzy.NetIO.NameValuePair;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
@@ -60,6 +62,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import okhttp3.HttpUrl;
 
 public class OngoingGameFragment extends FragmentWithDialog implements OngoingGameHelper.Listener, PlayersAdapter.Listener, TutorialManager.Listener, AnotherGameManager.Listener {
     private OnLeftGame onLeftGame;
@@ -133,19 +137,19 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     private void leaveGame() {
         if (pyx != null)
             pyx.request(PyxRequests.leaveGame(perm.gid), getActivity(), new Pyx.OnSuccess() {
-            @Override
-            public void onDone() {
-                if (onLeftGame != null) onLeftGame.onLeftGame();
-            }
+                @Override
+                public void onDone() {
+                    if (onLeftGame != null) onLeftGame.onLeftGame();
+                }
 
-            @Override
-            public void onException(@NonNull Exception ex) {
-                if (ex instanceof PyxException && ((PyxException) ex).errorCode.equals("nitg"))
-                    onDone();
-                else
-                    showToast(Toaster.build().message(R.string.failedLeaving).ex(ex));
-            }
-        });
+                @Override
+                public void onException(@NonNull Exception ex) {
+                    if (ex instanceof PyxException && ((PyxException) ex).errorCode.equals("nitg"))
+                        onDone();
+                    else
+                        showToast(Toaster.build().message(R.string.failedLeaving).ex(ex));
+                }
+            });
     }
 
     @Override
@@ -266,12 +270,11 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         DialogUtils.showDialog(getActivity(), builder);
     }
 
-    private void shareGame() { // FIXME
+    private void shareGame() {
         if (manager == null) return;
         Game.Options options = manager.gameOptions();
         if (options == null) return;
 
-        /*
         HttpUrl.Builder builder = pyx.server.url.newBuilder();
         builder.addPathSegment("game.jsp");
 
@@ -280,20 +283,19 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         if (manager.hasPassword(true))
             params.add(new NameValuePair("password", options.password));
 
-        builder.fragment(CommonUtils.formQuery(params));
+        builder.fragment(Utils.formQuery(params));
 
         Intent i = new Intent(Intent.ACTION_SEND);
         i.setType("text/plain");
         i.putExtra(Intent.EXTRA_TEXT, builder.toString());
         startActivity(Intent.createChooser(i, "Share game..."));
-         */
     }
 
     private void showSpectators() {
         if (manager == null || getContext() == null) return;
 
         Collection<String> spectators = manager.spectators();
-        SuperTextView text = new SuperTextView(getContext(), R.string.spectatorsList, spectators.isEmpty() ? "none" : CommonUtils.join(spectators, ", "));
+        SuperTextView text = SuperTextView.html(getContext(), R.string.spectatorsList, spectators.isEmpty() ? "none" : CommonUtils.join(spectators, ", "));
         int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
         text.setPadding(padding, padding, padding, padding);
 

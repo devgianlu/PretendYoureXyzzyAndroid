@@ -29,6 +29,7 @@ import com.gianlu.pretendyourexyzzy.Adapters.ServersAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
+import com.gianlu.pretendyourexyzzy.NetIO.NameValuePair;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxDiscoveryApi;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
@@ -40,7 +41,10 @@ import com.gianlu.pretendyourexyzzy.Tutorial.LoginTutorial;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.json.JSONObject;
+
 import java.security.SecureRandom;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -115,8 +119,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
                 String fragment = url.getFragment();
                 if (fragment != null) {
-                    /* TODO
-                    List<NameValuePair> params = CommonUtils.splitQuery(fragment);
+                    List<NameValuePair> params = Utils.splitQuery(fragment);
                     for (NameValuePair pair : params) {
                         if (Objects.equals(pair.key(), "game")) {
                             try {
@@ -130,7 +133,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                     }
 
                     launchGameShouldRequest = true;
-                    */
                 }
             }
         }
@@ -218,16 +220,16 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         String lastIdCode = Prefs.getString(PK.LAST_ID_CODE, null);
         if (lastIdCode != null) CommonUtils.setText(registerIdCode, lastIdCode);
 
+        if (!pyx.isServerSecure() && !pyx.config().insecureIdAllowed())
+            registerIdCode.setEnabled(false);
+        else
+            registerIdCode.setEnabled(true);
+
         registerSubmit.setOnClickListener(v -> {
             loading.setVisibility(View.VISIBLE);
             register.setVisibility(View.GONE);
 
-            final String idCode = getIdCode();
-            if (idCode == null && !pyx.config().insecureIdAllowed()) {
-                registerIdCode.setError(getString(R.string.mustProvideIdCode));
-                return;
-            }
-
+            String idCode = getIdCode();
             String nick = CommonUtils.getText(registerNickname);
             pyx.register(nick, idCode, this, new Pyx.OnResult<RegisteredPyx>() {
                 @Override
