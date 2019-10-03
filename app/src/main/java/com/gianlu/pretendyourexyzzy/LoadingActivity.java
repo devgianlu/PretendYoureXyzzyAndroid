@@ -64,6 +64,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private SuperTextView welcomeMessage;
     private PyxDiscoveryApi discoveryApi;
     private TextView currentServer;
+    private Button generateIdCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +109,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         changeServer = findViewById(R.id.loading_changeServer);
         changeServer.setOnClickListener(v -> changeServerDialog(true));
 
-        Button generateIdCode = findViewById(R.id.loading_generateIdCode);
+        generateIdCode = findViewById(R.id.loading_generateIdCode);
         generateIdCode.setOnClickListener(v -> CommonUtils.setText(registerIdCode, CommonUtils.randomString(100, new SecureRandom())));
 
         if (Objects.equals(getIntent().getAction(), Intent.ACTION_VIEW) || Objects.equals(getIntent().getAction(), Intent.ACTION_SEND)) {
@@ -220,16 +221,19 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         String lastIdCode = Prefs.getString(PK.LAST_ID_CODE, null);
         if (lastIdCode != null) CommonUtils.setText(registerIdCode, lastIdCode);
 
-        registerSubmit.setOnClickListener(v -> {
-            final String idCode = getIdCode();
-            if (idCode == null && !pyx.config().insecureIdAllowed()) {
-                registerIdCode.setError(getString(R.string.mustProvideIdCode));
-                return;
-            }
+        if (!pyx.isServerSecure() && !pyx.config().insecureIdAllowed()) {
+            registerIdCode.setEnabled(false);
+            generateIdCode.setEnabled(false);
+        } else {
+            registerIdCode.setEnabled(true);
+            generateIdCode.setEnabled(true);
+        }
 
+        registerSubmit.setOnClickListener(v -> {
             loading.setVisibility(View.VISIBLE);
             register.setVisibility(View.GONE);
 
+            String idCode = getIdCode();
             String nick = CommonUtils.getText(registerNickname);
             pyx.register(nick, idCode, this, new Pyx.OnResult<RegisteredPyx>() {
                 @Override
