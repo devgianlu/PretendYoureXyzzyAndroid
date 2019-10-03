@@ -1,8 +1,8 @@
 package com.gianlu.pretendyourexyzzy;
 
-import com.gianlu.commonutils.Preferences.Prefs;
-
 import androidx.annotation.NonNull;
+
+import com.gianlu.commonutils.preferences.Prefs;
 
 public final class BlockedUsers {
 

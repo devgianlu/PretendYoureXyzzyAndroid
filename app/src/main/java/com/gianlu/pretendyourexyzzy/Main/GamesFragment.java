@@ -21,16 +21,16 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.Analytics.AnalyticsApplication;
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.Dialogs.DialogUtils;
-import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.Preferences.Prefs;
-import com.gianlu.commonutils.Toaster;
-import com.gianlu.commonutils.Tutorial.BaseTutorial;
-import com.gianlu.commonutils.Tutorial.TutorialManager;
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
+import com.gianlu.commonutils.dialogs.DialogUtils;
+import com.gianlu.commonutils.dialogs.FragmentWithDialog;
+import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
+import com.gianlu.commonutils.preferences.Prefs;
+import com.gianlu.commonutils.tutorial.BaseTutorial;
+import com.gianlu.commonutils.tutorial.TutorialManager;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.GamesAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
@@ -47,6 +47,8 @@ import com.gianlu.pretendyourexyzzy.Tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.Tutorial.GamesTutorial;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import org.jetbrains.annotations.NotNull;
 
 public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<GamesList>, GamesAdapter.Listener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, Pyx.OnEventListener, TutorialManager.Listener {
     private GamesList lastResult;
@@ -75,7 +77,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NotNull Context context) {
         super.onAttach(context);
 
         if (context instanceof OnParticipateGame)
@@ -83,7 +85,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NotNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.games_fragment, menu);
 
         if (getContext() == null) return;

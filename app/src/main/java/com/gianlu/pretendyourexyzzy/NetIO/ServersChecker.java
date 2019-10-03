@@ -3,7 +3,10 @@ package com.gianlu.pretendyourexyzzy.NetIO;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.gianlu.commonutils.Logging;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.gianlu.commonutils.logging.Logging;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -16,8 +19,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;

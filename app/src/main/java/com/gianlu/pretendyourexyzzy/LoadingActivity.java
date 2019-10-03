@@ -18,19 +18,19 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
-import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.NameValuePair;
-import com.gianlu.commonutils.Preferences.Prefs;
-import com.gianlu.commonutils.Toaster;
-import com.gianlu.commonutils.Tutorial.BaseTutorial;
-import com.gianlu.commonutils.Tutorial.TutorialManager;
+import com.gianlu.commonutils.dialogs.ActivityWithDialog;
+import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.misc.SuperTextView;
+import com.gianlu.commonutils.preferences.Prefs;
+import com.gianlu.commonutils.tutorial.BaseTutorial;
+import com.gianlu.commonutils.tutorial.TutorialManager;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.ServersAdapter;
 import com.gianlu.pretendyourexyzzy.NetIO.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
+import com.gianlu.pretendyourexyzzy.NetIO.NameValuePair;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxDiscoveryApi;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
@@ -119,7 +119,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
                 String fragment = url.getFragment();
                 if (fragment != null) {
-                    List<NameValuePair> params = CommonUtils.splitQuery(fragment);
+                    List<NameValuePair> params = Utils.splitQuery(fragment);
                     for (NameValuePair pair : params) {
                         if (Objects.equals(pair.key(), "game")) {
                             try {

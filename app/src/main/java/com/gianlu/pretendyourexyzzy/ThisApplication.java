@@ -1,8 +1,8 @@
 package com.gianlu.pretendyourexyzzy;
 
 import com.bumptech.glide.Glide;
-import com.gianlu.commonutils.Analytics.AnalyticsApplication;
-import com.gianlu.commonutils.Logging;
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
+import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.NetIO.BaseCardUrlLoader;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 

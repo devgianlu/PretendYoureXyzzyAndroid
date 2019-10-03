@@ -19,7 +19,8 @@
         android:resizeableActivity="true"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
 
         <!-- Loading activity -->
         <activity
@@ -119,7 +120,7 @@
 
         <!-- Logs provider -->
         <provider
-            android:name="com.gianlu.commonutils.LogsProvider"
+            android:name="com.gianlu.commonutils.logging.LogsProvider"
             android:authorities="com.gianlu.pretendyourexyzzy.logs"
             android:exported="false"
             android:grantUriPermissions="true">

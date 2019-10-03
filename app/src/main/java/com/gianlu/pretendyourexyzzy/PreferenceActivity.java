@@ -3,12 +3,16 @@ package com.gianlu.pretendyourexyzzy;
 import android.content.Context;
 import android.content.Intent;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+
 import com.danielstone.materialaboutlibrary.items.MaterialAboutActionItem;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutItem;
-import com.gianlu.commonutils.Preferences.BasePreferenceActivity;
-import com.gianlu.commonutils.Preferences.BasePreferenceFragment;
-import com.gianlu.commonutils.Preferences.MaterialAboutPreferenceItem;
-import com.gianlu.commonutils.Preferences.Prefs;
+import com.gianlu.commonutils.preferences.BasePreferenceActivity;
+import com.gianlu.commonutils.preferences.BasePreferenceFragment;
+import com.gianlu.commonutils.preferences.MaterialAboutPreferenceItem;
+import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.SpareActivities.TutorialActivity;
 import com.yarolegovich.mp.MaterialCheckboxPreference;
 import com.yarolegovich.mp.MaterialStandardPreference;
@@ -16,10 +20,6 @@ import com.yarolegovich.mp.MaterialStandardPreference;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 
 public class PreferenceActivity extends BasePreferenceActivity {
     @NonNull

@@ -6,9 +6,13 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.gianlu.commonutils.Analytics.AnalyticsApplication;
-import com.gianlu.commonutils.Dialogs.ActivityWithDialog;
-import com.gianlu.commonutils.Toaster;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.viewpager.widget.ViewPager;
+
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
+import com.gianlu.commonutils.dialogs.ActivityWithDialog;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.PagerAdapter;
 import com.gianlu.pretendyourexyzzy.Main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastDeck;
@@ -18,10 +22,6 @@ import com.gianlu.pretendyourexyzzy.SpareActivities.CardcastDeck.InfoFragment;
 import com.gianlu.pretendyourexyzzy.Starred.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.android.material.tabs.TabLayout;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.viewpager.widget.ViewPager;
 
 public class CardcastDeckActivity extends ActivityWithDialog {
     private String code;
