@@ -52,7 +52,7 @@
 
         <!-- Tutorial activity -->
         <activity
-            android:name=".SpareActivities.TutorialActivity"
+            android:name=".activities.TutorialActivity"
             android:configChanges="uiMode"
             android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme" />
@@ -66,7 +66,7 @@
 
         <!-- Metrics activity (sessions, games, rounds) -->
         <activity
-            android:name=".Metrics.MetricsActivity"
+            android:name=".metrics.MetricsActivity"
             android:configChanges="uiMode"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
@@ -74,14 +74,14 @@
 
         <!-- Manager servers activity -->
         <activity
-            android:name=".SpareActivities.ManageServersActivity"
+            android:name=".activities.ManageServersActivity"
             android:configChanges="uiMode"
             android:parentActivityName=".LoadingActivity"
             android:screenOrientation="portrait" />
 
         <!-- Starred cards activity -->
         <activity
-            android:name=".Starred.StarredCardsActivity"
+            android:name=".starred.StarredCardsActivity"
             android:configChanges="uiMode"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
@@ -89,14 +89,14 @@
 
         <!-- Starred decks activity -->
         <activity
-            android:name=".Starred.StarredDecksActivity"
+            android:name=".starred.StarredDecksActivity"
             android:configChanges="uiMode"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" />
 
         <!-- Cardcast deck activity -->
         <activity
-            android:name=".SpareActivities.CardcastDeckActivity"
+            android:name=".activities.CardcastDeckActivity"
             android:configChanges="uiMode"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />

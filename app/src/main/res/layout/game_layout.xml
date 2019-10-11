@@ -14,7 +14,7 @@
             android:layout_weight="1"
             android:orientation="horizontal">
 
-            <com.gianlu.pretendyourexyzzy.CardViews.GameCardView
+            <com.gianlu.pretendyourexyzzy.cards.GameCardView
                 android:id="@+id/gameLayout_blackCard"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"

@@ -12,7 +12,7 @@ import com.gianlu.commonutils.preferences.BasePreferenceActivity;
 import com.gianlu.commonutils.preferences.BasePreferenceFragment;
 import com.gianlu.commonutils.preferences.MaterialAboutPreferenceItem;
 import com.gianlu.commonutils.preferences.Prefs;
-import com.gianlu.pretendyourexyzzy.SpareActivities.TutorialActivity;
+import com.gianlu.pretendyourexyzzy.activities.TutorialActivity;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.yarolegovich.mp.MaterialCheckboxPreference;
 import com.yarolegovich.mp.MaterialStandardPreference;

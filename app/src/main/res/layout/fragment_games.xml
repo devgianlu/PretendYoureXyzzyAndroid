@@ -20,6 +20,6 @@
         android:contentDescription="@string/createGame"
         android:src="@drawable/baseline_add_24"
         android:tint="?colorOnPrimary"
-        app:layout_behavior="com.gianlu.pretendyourexyzzy.Main.FloatingActionButtonBehavior" />
+        app:layout_behavior="com.gianlu.pretendyourexyzzy.main.FloatingActionButtonBehavior" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
