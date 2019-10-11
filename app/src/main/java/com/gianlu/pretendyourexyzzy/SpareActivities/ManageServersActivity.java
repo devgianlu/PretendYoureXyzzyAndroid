@@ -56,10 +56,9 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.manageServers_add:
-                showDialog(Dialogs.addServer(this, null, this));
-                return true;
+        if (item.getItemId() == R.id.manageServers_add) {
+            showDialog(Dialogs.addServer(this, null, this));
+            return true;
         }
 
         return super.onOptionsItemSelected(item);

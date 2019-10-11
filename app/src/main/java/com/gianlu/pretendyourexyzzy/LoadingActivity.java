@@ -160,7 +160,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
     private void changeServerDialog(boolean dismissible) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-        builder.setTitle(R.string.changeServer) // FIXME
+        builder.setTitle(R.string.changeServer)
                 .setCancelable(dismissible)
                 .setNeutralButton(R.string.manage, (dialog, which) -> {
                     startActivity(new Intent(this, ManageServersActivity.class));
