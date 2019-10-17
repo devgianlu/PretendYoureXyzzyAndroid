@@ -233,8 +233,8 @@
     <string name="clientName"><![CDATA[<b>Nazwa Klienta:</b>]]> %s</string>
     <string name="viewGame">Zobacz grę</string>
     <string name="noNames">Brak nicków.</string>
-    <string name="gameStartedOpenDetails"><![CDATA[<b>Game:</b>]]> %1$s <![CDATA[<i>(started, %2$d/%3$d)</i>]]></string>
-    <string name="gameStartedLockedDetails"><![CDATA[<b>Game:</b>]]> %1$s <![CDATA[<i>(started, %2$d/%3$d, locked)</i>]]></string>
+    <string name="gameStartedOpenDetails"><![CDATA[<b>Gra:</b>]]> %1$s <![CDATA[<i>(rozpoczęta, %2$d/%3$d)</i>]]></string>
+    <string name="gameStartedLockedDetails"><![CDATA[<b>Gra:</b>]]> %1$s <![CDATA[<i>(rozpoczęta, %2$d/%3$d)</i>]]></string>
     <string name="gameLobbyOpenDetails"><![CDATA[<b>Game:</b>]]> %1$s <![CDATA[<i>(lobby, %2$d/%3$d)</i>]]></string>
     <string name="gameLobbyLockedDetails"><![CDATA[<b>Game:</b>]]> %1$s <![CDATA[<i>(lobby, %2$d/%3$d, locked)</i>]]></string>
     <string name="cancel">Cancel</string>
