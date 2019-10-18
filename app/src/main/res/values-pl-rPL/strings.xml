@@ -21,14 +21,14 @@
     <string name="game_judgeLeft_short">Sędzia %s opuścił grę.</string>
     <string name="game_roundWinner_long">Gratulacje %s wygrałeś rundę! Nowa rozpocznie się wkrótce…</string>
     <string name="game_roundWinner_short">%s wygrałeś rundę!</string>
-    <string name="game_gameWinner_long">%s won the game! Waiting for the host to start a new game…</string>
-    <string name="game_gameWinner_short">%s won the game!</string>
-    <string name="game_youGameWinner_long">You won the game! Waiting for the host to start a new game…</string>
-    <string name="game_youGameWinner_short">You won the game!</string>
+    <string name="game_gameWinner_long">%s wygrał grę! Oczekiwanie na rozpoczęcie nowej gry…</string>
+    <string name="game_gameWinner_short">%s wygral grę!</string>
+    <string name="game_youGameWinner_long">Wygrałeś grę! Oczekiwanie na rozpoczęcie nowej…</string>
+    <string name="game_youGameWinner_short">Wygrałeś grę!</string>
     <!-- Tutorial messages -->
-    <string name="tutorial_firstTitle">Welcome to Pretend You\'re Xyzzy</string>
-    <string name="tutorial_firstDesc">Pretend You\'re Xyzzy is an online cards game based on Cards Against Humanity. In this tutorial I\'ll explain you how to play.</string>
-    <string name="tutorial_secondTitle">The rules</string>
+    <string name="tutorial_firstTitle">Witaj w \"Udawaj że jesteś Xyzzy\"</string>
+    <string name="tutorial_firstDesc">\"Udawaj że jesteś Xyzzy\" jest karcianą grą opierającą się na Kartach przeciwko ludzkości. Ten samouczek wyjaśni ci zasady gry.</string>
+    <string name="tutorial_secondTitle">Zasady</string>
     <string name="tutorial_secondDesc">Every turn a Black Card is played by the Card Czar, everyone else answers the question or completes the fill-in-the-blank phrase. Once everyone played, the Card Czar chooses the funniest play, whoever submitted it gets one point. In the next turn a new player becomes the Card Czar and everyone is drawn back up with ten cards.</string>
     <string name="tutorial_thirdTitle">Cardcast</string>
     <string name="tutorial_thirdDesc">This game supports Cardcast integration: with Cardcast you can create custom decks (from the website <a>cardcastgame.com</a>) and add them to your own game. You can also search for decks someone else made and use them.</string>
