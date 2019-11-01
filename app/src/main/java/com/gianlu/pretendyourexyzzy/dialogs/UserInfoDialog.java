@@ -1,6 +1,5 @@
 package com.gianlu.pretendyourexyzzy.dialogs;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -8,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -57,15 +57,6 @@ public class UserInfoDialog extends DialogFragment {
         return dialog;
     }
 
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Dialog dialog = super.onCreateDialog(savedInstanceState);
-        WhoisResult user = getUser();
-        if (user != null) dialog.setTitle(user.nickname);
-        return dialog;
-    }
-
     @Nullable
     private WhoisResult getUser() {
         WhoisResult user;
@@ -91,6 +82,9 @@ public class UserInfoDialog extends DialogFragment {
 
         WhoisResult user = getUser();
         if (user == null) return null;
+
+        TextView name = layout.findViewById(R.id.userInfoDialog_name);
+        name.setText(user.nickname);
 
         SuperTextView sigil = layout.findViewById(R.id.userInfoDialog_sigil);
         sigil.setHtml(R.string.sigil, user.sigil.getFormal(getContext()));

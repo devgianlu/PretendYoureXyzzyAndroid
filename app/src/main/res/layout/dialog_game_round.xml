@@ -14,6 +14,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:adjustViewBounds="true"
+            android:contentDescription="@string/lastRound"
             android:scaleType="fitCenter" />
 
         <ProgressBar
@@ -29,8 +30,8 @@
         android:id="@+id/gameRoundDialog_rotate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:checked="true"
         android:text="@string/rotateRandomly" />
 
@@ -38,11 +39,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="4dp">
+        android:padding="8dp">
 
         <Button
             android:id="@+id/gameRoundDialog_cancel"
-            style="?android:attr/borderlessButtonStyle"
+            style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@android:string/cancel"
@@ -55,15 +56,16 @@
 
         <Button
             android:id="@+id/gameRoundDialog_save"
-            style="?android:attr/borderlessButtonStyle"
+            style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
             android:text="@string/save"
             android:textColor="@color/colorAccent" />
 
         <Button
             android:id="@+id/gameRoundDialog_share"
-            style="?android:attr/borderlessButtonStyle"
+            style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/share"
