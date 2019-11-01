@@ -104,7 +104,7 @@ public class PyxCardsGroupView extends LinearLayout {
         super.onDraw(canvas);
 
         if (cards != null && cards.size() > 1)
-            canvas.drawRoundRect(mPadding / 2f, mPadding / 2f + mLineWidth / 2f, canvas.getWidth() - mPadding / 2f, canvas.getHeight() - mPadding / 2f, mCornerRadius, mCornerRadius, mLinePaint);
+            canvas.drawRoundRect(mPadding / 2f, mPadding / 2f + mLineWidth / 2f, getWidth() - mPadding / 2f, getHeight() - mPadding / 2f, mCornerRadius, mCornerRadius, mLinePaint);
     }
 
     public interface CardListener {

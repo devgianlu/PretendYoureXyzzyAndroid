@@ -1,6 +1,5 @@
 package com.gianlu.pretendyourexyzzy.dialogs;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -26,6 +25,7 @@ import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
+import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.textfield.TextInputLayout;
 
 public class EditGameOptionsDialog extends DialogFragment {
@@ -85,14 +85,6 @@ public class EditGameOptionsDialog extends DialogFragment {
         if (listener != null) listener.changeGameOptions(gid, newOptions);
     }
 
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Dialog dialog = super.onCreateDialog(savedInstanceState);
-        dialog.setTitle(R.string.editGameOptions);
-        return dialog;
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -139,7 +131,7 @@ public class EditGameOptionsDialog extends DialogFragment {
         decks = layout.findViewById(R.id.editGameOptions_decks);
         decks.removeAllViews();
         for (Deck set : pyx.firstLoad().decks) {
-            CheckBox item = new CheckBox(getContext());
+            MaterialCheckBox item = new MaterialCheckBox(getContext());
             item.setTag(set);
             item.setText(set.name);
             item.setChecked(options.cardSets.contains(set.id));

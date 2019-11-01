@@ -11,13 +11,12 @@
         android:layout_height="wrap_content"
         android:elevation="0dp" />
 
-    <!-- FIXME -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/starredCards_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_gravity="center_vertical"
-        android:layout_weight="1"
+        android:layout_weight="0.4"
         android:background="@color/colorPrimary"
         android:paddingTop="8dp" />
 
@@ -25,7 +24,7 @@
         android:id="@+id/starredCards_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="0.6">
 
         <HorizontalScrollView
             android:layout_width="match_parent"
