@@ -96,7 +96,7 @@ public class UserInfoDialog extends DialogFragment {
         sigil.setHtml(R.string.sigil, user.sigil.getFormal(getContext()));
 
         SuperTextView idCode = layout.findViewById(R.id.userInfoDialog_idCode);
-        if (user.idCode == null || user.idCode.isEmpty()) {
+        if (user.idCode.isEmpty()) {
             idCode.setVisibility(View.GONE);
         } else {
             idCode.setVisibility(View.VISIBLE);

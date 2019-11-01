@@ -9,6 +9,8 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 
+import static com.gianlu.commonutils.CommonUtils.optString;
+
 public class WhoisResult extends UserInfo implements Serializable {
     public final long connectedAt;
     public final long idle;
@@ -25,8 +27,8 @@ public class WhoisResult extends UserInfo implements Serializable {
         if (CommonUtils.isStupidNull(obj, "gi")) game = null;
         else game = new Game(obj.getJSONObject("gi"));
 
-        ipAddr = obj.optString("IP", null);
-        client = obj.optString("cn", null);
+        ipAddr = optString(obj, "IP");
+        client = optString(obj, "cn");
     }
 
     @Nullable

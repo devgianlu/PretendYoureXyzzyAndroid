@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.api.models;
 
 import androidx.annotation.NonNull;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.logging.Logging;
 
 import org.json.JSONArray;
@@ -24,8 +25,8 @@ public class PollMessage {
 
     private PollMessage(JSONObject obj) throws JSONException {
         event = Event.parse(obj.getString("E"));
-        sender = obj.optString("f", null);
-        message = obj.optString("m", null);
+        sender = CommonUtils.optString(obj, "f");
+        message = CommonUtils.optString(obj, "m");
         gid = obj.optInt("gid", -1);
         timestamp = obj.optLong("ts", -1);
         emote = obj.optBoolean("me", false);

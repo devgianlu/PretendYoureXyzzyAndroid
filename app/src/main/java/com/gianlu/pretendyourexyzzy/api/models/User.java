@@ -3,6 +3,8 @@ package com.gianlu.pretendyourexyzzy.api.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.gianlu.commonutils.CommonUtils;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -16,8 +18,8 @@ public class User extends UserInfo {
         super(obj);
         this.sessionId = sessionId;
         this.persistentId = obj.getString("pid");
-        this.userPermalink = obj.optString("up", null);
-        this.sessionPermalink = obj.optString("sP", null);
+        this.userPermalink = CommonUtils.optString(obj, "up");
+        this.sessionPermalink = CommonUtils.optString(obj, "sP");
     }
 
     @Nullable

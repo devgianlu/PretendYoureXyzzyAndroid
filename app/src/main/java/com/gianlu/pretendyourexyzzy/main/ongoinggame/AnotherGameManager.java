@@ -34,6 +34,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import static com.gianlu.commonutils.CommonUtils.optString;
+
 public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Listener, SensitiveGameData.Listener {
     private final GamePermalink permalink;
     private final RegisteredPyx pyx;
@@ -84,7 +86,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 event(UiEvent.PLAYER_SKIPPED, msg.obj.getString("n"));
                 break;
             case GAME_ROUND_COMPLETE:
-                roundComplete(msg.obj.getInt("WC"), msg.obj.getString("rw"), msg.obj.getInt("i"), msg.obj.optString("rP", null));
+                roundComplete(msg.obj.getInt("WC"), msg.obj.getString("rw"), msg.obj.getInt("i"), optString(msg.obj, "rP"));
                 break;
             case GAME_STATE_CHANGE:
                 gameStateChange(msg);
@@ -185,7 +187,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 break;
         }
 
-        permalink.gamePermalink = msg.obj.optString("gp", null);
+        permalink.gamePermalink = optString(msg.obj, "gp");
     }
 
     @Override

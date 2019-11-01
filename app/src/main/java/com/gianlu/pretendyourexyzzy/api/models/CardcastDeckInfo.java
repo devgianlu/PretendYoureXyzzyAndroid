@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy.api.models;
 
+import com.gianlu.commonutils.CommonUtils;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,7 +15,7 @@ public class CardcastDeckInfo extends CardcastDeck {
     public CardcastDeckInfo(JSONObject obj) throws JSONException, ParseException {
         super(obj);
 
-        copyrightHolderUrl = obj.optString("copyright_holder_url", null);
+        copyrightHolderUrl = CommonUtils.optString(obj, "copyright_holder_url");
         description = obj.getString("description");
         unlisted = obj.getBoolean("unlisted");
     }

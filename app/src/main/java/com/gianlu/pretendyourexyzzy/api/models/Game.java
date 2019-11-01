@@ -166,7 +166,7 @@ public class Game implements Filterable<Game.Protection>, Serializable {
             playersLimit = obj.getInt("pL");
             scoreLimit = obj.getInt("sl");
             blanksLimit = obj.getInt("bl");
-            password = obj.optString("pw", null);
+            password = CommonUtils.optString(obj, "pw");
 
             JSONArray cardsSetsArray = obj.getJSONArray("css");
             cardSets = new ArrayList<>();

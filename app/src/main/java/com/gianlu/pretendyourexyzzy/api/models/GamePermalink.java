@@ -2,6 +2,8 @@ package com.gianlu.pretendyourexyzzy.api.models;
 
 import androidx.annotation.Nullable;
 
+import com.gianlu.commonutils.CommonUtils;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,12 +15,12 @@ public class GamePermalink implements Serializable {
 
     public GamePermalink(JSONObject obj) throws JSONException {
         this.gid = obj.getInt("gid");
-        this.gamePermalink = obj.optString("gp", null);
+        this.gamePermalink = CommonUtils.optString(obj, "gp");
     }
 
     public GamePermalink(int gid, JSONObject obj) {
         this.gid = gid;
-        this.gamePermalink = obj.optString("gp", null);
+        this.gamePermalink = CommonUtils.optString(obj, "gp");
     }
 
     @Nullable
