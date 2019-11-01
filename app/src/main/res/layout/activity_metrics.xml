@@ -23,7 +23,8 @@
             android:id="@+id/metrics_breadcrumbs"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:arrowRes="@drawable/baseline_keyboard_arrow_right_24" />
+            app:arrowRes="@drawable/baseline_keyboard_arrow_right_24"
+            app:color="@color/white" />
     </HorizontalScrollView>
 
     <FrameLayout

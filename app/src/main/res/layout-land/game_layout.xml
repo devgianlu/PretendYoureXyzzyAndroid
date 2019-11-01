@@ -55,7 +55,6 @@
             android:visibility="gone" />
     </LinearLayout>
 
-    <!-- FIXME -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/gameLayout_startGame"
         android:layout_width="wrap_content"
