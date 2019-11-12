@@ -238,7 +238,6 @@
     <string name="gameLobbyOpenDetails"><![CDATA[<b>Game:</b>]]> %1$s <![CDATA[<i>(lobby, %2$d/%3$d)</i>]]></string>
     <string name="gameLobbyLockedDetails"><![CDATA[<b>Game:</b>]]> %1$s <![CDATA[<i>(lobby, %2$d/%3$d, locked)</i>]]></string>
     <string name="cancel">Cancel</string>
-    <string name="mustProvideIdCode">An ID code is strictly necessary to join this server.</string>
     <string name="usersAndGames"><![CDATA[<b>Users:</b>]]> %1$d/%2$d    <![CDATA[<b>Games:</b>]]> %3$d/%4$d</string>
     <string name="failedLoadingImage">Failed loading this image! Try to visit the link directly.</string>
     <string name="rotateRandomly">Rotate randomly</string>

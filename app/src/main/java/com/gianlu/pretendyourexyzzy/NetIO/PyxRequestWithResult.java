@@ -1,7 +1,5 @@
 package com.gianlu.pretendyourexyzzy.NetIO;
 
-import com.gianlu.commonutils.NameValuePair;
-
 import androidx.annotation.NonNull;
 
 public class PyxRequestWithResult<E> extends PyxRequest {

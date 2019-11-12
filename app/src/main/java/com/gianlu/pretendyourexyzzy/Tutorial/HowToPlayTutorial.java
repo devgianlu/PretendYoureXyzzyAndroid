@@ -2,17 +2,17 @@ package com.gianlu.pretendyourexyzzy.Tutorial;
 
 import android.graphics.Rect;
 
-import com.gianlu.commonutils.Tutorial.BaseTutorial;
-import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
-import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
-import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
-import com.gianlu.pretendyourexyzzy.R;
-
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.gianlu.commonutils.tutorial.BaseTutorial;
+import com.gianlu.pretendyourexyzzy.Adapters.CardsAdapter;
+import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
+import com.gianlu.pretendyourexyzzy.CardViews.GameCardView;
+import com.gianlu.pretendyourexyzzy.R;
 
 public class HowToPlayTutorial extends BaseTutorial {
 

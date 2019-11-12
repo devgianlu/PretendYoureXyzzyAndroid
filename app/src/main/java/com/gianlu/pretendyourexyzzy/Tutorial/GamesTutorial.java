@@ -2,14 +2,14 @@ package com.gianlu.pretendyourexyzzy.Tutorial;
 
 import android.view.View;
 
-import com.gianlu.commonutils.Tutorial.BaseTutorial;
-import com.gianlu.pretendyourexyzzy.Adapters.GamesAdapter;
-import com.gianlu.pretendyourexyzzy.R;
-
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.gianlu.commonutils.tutorial.BaseTutorial;
+import com.gianlu.pretendyourexyzzy.Adapters.GamesAdapter;
+import com.gianlu.pretendyourexyzzy.R;
 
 public class GamesTutorial extends BaseTutorial {
 

@@ -15,7 +15,7 @@
             android:layout_margin="48dp"
             android:indeterminate="true" />
 
-        <com.gianlu.commonutils.CasualViews.MessageView
+        <com.gianlu.commonutils.misc.MessageView
             android:id="@+id/sessionFragment_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -31,7 +31,7 @@
             android:layout_marginStart="8dp"
             android:orientation="vertical">
 
-            <com.gianlu.commonutils.CasualViews.SuperTextView
+            <com.gianlu.commonutils.misc.SuperTextView
                 android:id="@+id/sessionFragment_gamesLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -45,7 +45,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <com.gianlu.commonutils.CasualViews.SuperTextView
+            <com.gianlu.commonutils.misc.SuperTextView
                 android:id="@+id/sessionFragment_playedRoundsLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -59,7 +59,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <com.gianlu.commonutils.CasualViews.SuperTextView
+            <com.gianlu.commonutils.misc.SuperTextView
                 android:id="@+id/sessionFragment_judgedRoundsLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

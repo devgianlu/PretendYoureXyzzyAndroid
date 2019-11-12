@@ -23,7 +23,7 @@
             android:layout_marginBottom="8dp"
             android:scrollbars="none">
 
-            <com.gianlu.commonutils.BreadcrumbsView
+            <com.gianlu.commonutils.misc.BreadcrumbsView
                 android:id="@+id/metrics_breadcrumbs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

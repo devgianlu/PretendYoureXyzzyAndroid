@@ -1,7 +1,10 @@
 package com.gianlu.pretendyourexyzzy.Starred;
 
-import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.Preferences.Json.JsonStoring;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.preferences.json.JsonStoring;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Card;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.CardsGroup;
@@ -16,9 +19,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 public class StarredCardsManager {
     private static StarredCardsManager instance;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.gianlu.commonutils.CasualViews.SuperTextView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.gianlu.commonutils.misc.SuperTextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?android:attr/selectableItemBackground"

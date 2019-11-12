@@ -3,12 +3,12 @@ package com.gianlu.pretendyourexyzzy.Tutorial;
 import android.app.Activity;
 import android.view.View;
 
-import com.gianlu.commonutils.Tutorial.BaseTutorial;
-import com.gianlu.pretendyourexyzzy.Main.OngoingGame.GameLayout;
-import com.gianlu.pretendyourexyzzy.R;
-
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
+
+import com.gianlu.commonutils.tutorial.BaseTutorial;
+import com.gianlu.pretendyourexyzzy.Main.OngoingGame.GameLayout;
+import com.gianlu.pretendyourexyzzy.R;
 
 public class CreateGameTutorial extends BaseTutorial {
 

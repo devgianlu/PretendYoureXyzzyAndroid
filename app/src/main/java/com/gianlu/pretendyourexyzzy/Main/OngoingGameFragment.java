@@ -22,17 +22,16 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.Analytics.AnalyticsApplication;
-import com.gianlu.commonutils.CasualViews.MessageView;
-import com.gianlu.commonutils.CasualViews.SuperTextView;
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.Dialogs.DialogUtils;
-import com.gianlu.commonutils.Dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.Logging;
-import com.gianlu.commonutils.NameValuePair;
-import com.gianlu.commonutils.Toaster;
-import com.gianlu.commonutils.Tutorial.BaseTutorial;
-import com.gianlu.commonutils.Tutorial.TutorialManager;
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
+import com.gianlu.commonutils.dialogs.DialogUtils;
+import com.gianlu.commonutils.dialogs.FragmentWithDialog;
+import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.misc.MessageView;
+import com.gianlu.commonutils.misc.SuperTextView;
+import com.gianlu.commonutils.tutorial.BaseTutorial;
+import com.gianlu.commonutils.tutorial.TutorialManager;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.Adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.Dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.Dialogs.EditGameOptionsDialog;
@@ -49,6 +48,7 @@ import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
 import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
+import com.gianlu.pretendyourexyzzy.NetIO.NameValuePair;
 import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
 import com.gianlu.pretendyourexyzzy.NetIO.PyxRequests;
@@ -58,6 +58,8 @@ import com.gianlu.pretendyourexyzzy.Starred.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.Tutorial.CreateGameTutorial;
 import com.gianlu.pretendyourexyzzy.Tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.Utils;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -130,26 +132,26 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NotNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.ongoing_game, menu);
     }
 
     private void leaveGame() {
         if (pyx != null)
             pyx.request(PyxRequests.leaveGame(perm.gid), getActivity(), new Pyx.OnSuccess() {
-            @Override
-            public void onDone() {
-                if (onLeftGame != null) onLeftGame.onLeftGame();
-            }
+                @Override
+                public void onDone() {
+                    if (onLeftGame != null) onLeftGame.onLeftGame();
+                }
 
-            @Override
-            public void onException(@NonNull Exception ex) {
-                if (ex instanceof PyxException && ((PyxException) ex).errorCode.equals("nitg"))
-                    onDone();
-                else
-                    showToast(Toaster.build().message(R.string.failedLeaving).ex(ex));
-            }
-        });
+                @Override
+                public void onException(@NonNull Exception ex) {
+                    if (ex instanceof PyxException && ((PyxException) ex).errorCode.equals("nitg"))
+                        onDone();
+                    else
+                        showToast(Toaster.build().message(R.string.failedLeaving).ex(ex));
+                }
+            });
     }
 
     @Override
@@ -211,7 +213,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NotNull MenuItem item) {
         if (getContext() == null) return false;
 
         switch (item.getItemId()) {
@@ -283,7 +285,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         if (manager.hasPassword(true))
             params.add(new NameValuePair("password", options.password));
 
-        builder.fragment(CommonUtils.formQuery(params));
+        builder.fragment(Utils.formQuery(params));
 
         Intent i = new Intent(Intent.ACTION_SEND);
         i.setType("text/plain");

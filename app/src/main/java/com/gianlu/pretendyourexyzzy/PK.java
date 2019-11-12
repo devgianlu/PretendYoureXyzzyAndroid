@@ -1,7 +1,7 @@
 package com.gianlu.pretendyourexyzzy;
 
-import com.gianlu.commonutils.CommonPK;
-import com.gianlu.commonutils.Preferences.Prefs;
+import com.gianlu.commonutils.preferences.CommonPK;
+import com.gianlu.commonutils.preferences.Prefs;
 
 
 public final class PK extends CommonPK {
