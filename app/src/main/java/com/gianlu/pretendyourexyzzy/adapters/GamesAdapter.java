@@ -86,7 +86,6 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
     public void onSetupViewHolder(@NonNull final ViewHolder holder, int position, @NonNull final Game game) {
         holder.name.setText(game.host);
         holder.players.setHtml(R.string.players, game.players.size(), game.options.playersLimit);
-        holder.spectators.setHtml(R.string.spectators, game.spectators.size(), game.options.spectatorsLimit);
         holder.goal.setHtml(R.string.goal, game.options.scoreLimit);
         holder.locked.setImageResource(game.hasPassword(false) ? R.drawable.outline_lock_24 : R.drawable.baseline_lock_open_24);
         CommonUtils.setImageTintColor(holder.locked, game.hasPassword(false) ? R.color.red : R.color.green);
@@ -94,6 +93,11 @@ public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHo
         holder.timerMultiplier.setHtml(R.string.timerMultiplier, game.options.timerMultiplier);
         holder.blankCards.setHtml(R.string.blankCards, game.options.blanksLimit);
         holder.cardsets.setHtml(R.string.cardSets, game.options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(pyx.firstLoad().createCardSetNamesList(game.options.cardSets), ", "));
+
+        if (game.options.spectatorsLimit == 0)
+            holder.spectators.setHtml(R.string.spectatorsNotAllowed);
+        else
+            holder.spectators.setHtml(R.string.spectators, game.spectators.size(), game.options.spectatorsLimit);
 
         holder.spectate.setOnClickListener(v -> {
             if (listener != null) listener.spectateGame(game);
