@@ -59,7 +59,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
 
     @Override
     protected void onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ModalBottomSheetHeaderView parent, @NonNull Integer gid) {
-        parent.setBackgroundColorRes(R.color.colorPrimary); // FIXME
+        parent.setBackgroundColorRes(R.color.colorPrimary);
 
         inflater.inflate(R.layout.sheet_header_cardcast, parent, true);
         count = parent.findViewById(R.id.cardcastSheet_count);
@@ -112,7 +112,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
         });
     }
 
-    private void showAddCardcastDeckDialog() { // FIXME
+    private void showAddCardcastDeckDialog() {
         if (getContext() == null) return;
 
         final EditText code = new EditText(getContext());

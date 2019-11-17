@@ -68,20 +68,20 @@
                     android:inputType="number" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:text="@string/timerMultiplierLabel"
-                android:textColor="?android:textColorTertiary"
-                android:textSize="12sp" />
-
-            <!-- FIXME: There is NO material spinner -->
-            <Spinner
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/editGameOptions_timerMultiplier"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp" />
+                android:layout_marginBottom="4dp"
+                android:hint="@string/timerMultiplierLabel">
+
+                <AutoCompleteTextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textNoSuggestions" />
+
+            </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/editGameOptions_blankCards"
@@ -120,7 +120,6 @@
                 android:textColor="?android:textColorTertiary"
                 android:textSize="12sp" />
 
-            <!-- FIXME: Checkboxes are a bit too big and ugly -->
             <LinearLayout
                 android:id="@+id/editGameOptions_decks"
                 android:layout_width="match_parent"

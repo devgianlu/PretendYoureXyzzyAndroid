@@ -2,14 +2,15 @@ package com.gianlu.pretendyourexyzzy.dialogs;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -32,7 +33,7 @@ public class EditGameOptionsDialog extends DialogFragment {
     private TextInputLayout scoreLimit;
     private TextInputLayout playerLimit;
     private TextInputLayout spectatorLimit;
-    private Spinner timerMultiplier;
+    private TextInputLayout timerMultiplier;
     private TextInputLayout blankCards;
     private TextInputLayout password;
     private LinearLayout decks;
@@ -63,12 +64,15 @@ public class EditGameOptionsDialog extends DialogFragment {
         scoreLimit.setErrorEnabled(false);
         playerLimit.setErrorEnabled(false);
         spectatorLimit.setErrorEnabled(false);
+        timerMultiplier.setErrorEnabled(false);
         blankCards.setErrorEnabled(false);
         password.setErrorEnabled(false);
 
         Game.Options newOptions;
         try {
-            newOptions = Game.Options.validateAndCreate(timerMultiplier.getSelectedItem().toString(), CommonUtils.getText(spectatorLimit), CommonUtils.getText(playerLimit), CommonUtils.getText(scoreLimit), CommonUtils.getText(blankCards), decks, CommonUtils.getText(password));
+            newOptions = Game.Options.validateAndCreate(CommonUtils.getText(timerMultiplier).trim(), CommonUtils.getText(spectatorLimit),
+                    CommonUtils.getText(playerLimit), CommonUtils.getText(scoreLimit), CommonUtils.getText(blankCards),
+                    decks, CommonUtils.getText(password));
         } catch (Game.Options.InvalidFieldException ex) {
             View view = layout.findViewById(ex.fieldId);
             if (view instanceof TextInputLayout) {
@@ -117,11 +121,25 @@ public class EditGameOptionsDialog extends DialogFragment {
         CommonUtils.setText(spectatorLimit, String.valueOf(options.spectatorsLimit));
 
         timerMultiplier = layout.findViewById(R.id.editGameOptions_timerMultiplier);
-        timerMultiplier.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, Game.Options.VALID_TIMER_MULTIPLIERS));
-        timerMultiplier.setSelection(Game.Options.timerMultiplierIndex(options.timerMultiplier));
+        AutoCompleteTextView timerMultiplierEditText = (AutoCompleteTextView) CommonUtils.getEditText(timerMultiplier);
+        timerMultiplierEditText.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, Game.Options.VALID_TIMER_MULTIPLIERS));
+        timerMultiplierEditText.setText(options.timerMultiplier, false);
+        timerMultiplierEditText.setValidator(new AutoCompleteTextView.Validator() {
+            @Override
+            public boolean isValid(CharSequence text) {
+                return Game.Options.timerMultiplierIndex(String.valueOf(text)) != -1;
+            }
+
+            @Override
+            public CharSequence fixText(CharSequence invalidText) {
+                return null;
+            }
+        });
 
         blankCards = layout.findViewById(R.id.editGameOptions_blankCards);
         CommonUtils.setText(blankCards, String.valueOf(options.blanksLimit));
+        if (pyx.config().blankCardsEnabled()) blankCards.setVisibility(View.VISIBLE);
+        else blankCards.setVisibility(View.GONE);
 
         password = layout.findViewById(R.id.editGameOptions_password);
         CommonUtils.setText(password, options.password);
@@ -136,7 +154,10 @@ public class EditGameOptionsDialog extends DialogFragment {
             item.setText(set.name);
             item.setChecked(options.cardSets.contains(set.id));
             item.setOnCheckedChangeListener((buttonView, isChecked) -> updateDecksCount());
-            decks.addView(item);
+
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.topMargin = lp.bottomMargin = (int) -TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
+            decks.addView(item, lp);
         }
 
         updateDecksCount();

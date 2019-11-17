@@ -5,11 +5,11 @@
     android:orientation="horizontal"
     android:padding="16dp">
 
-    <!-- FIXME -->
     <ImageButton
         android:id="@+id/bottomSheetHeader_close"
         android:layout_width="36dp"
         android:layout_height="36dp"
+        android:layout_marginTop="4dp"
         android:layout_marginEnd="8dp"
         android:background="?selectableItemBackgroundBorderless"
         android:src="@drawable/baseline_clear_24"
@@ -17,8 +17,8 @@
         android:visibility="gone" />
 
     <ImageView
-        android:layout_width="48dp"
         android:id="@+id/cardcastSheet_icon"
+        android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginEnd="16dp"
         android:src="@drawable/baseline_cast_24"
@@ -29,7 +29,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- FIXME -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -38,7 +37,6 @@
             android:textColor="?colorOnPrimary"
             android:textSize="30sp" />
 
-        <!-- FIXME -->
         <TextView
             android:id="@+id/cardcastSheet_count"
             android:layout_width="match_parent"

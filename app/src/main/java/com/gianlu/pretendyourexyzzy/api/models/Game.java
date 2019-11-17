@@ -205,7 +205,7 @@ public class Game implements Filterable<Game.Protection>, Serializable {
 
         public static Options validateAndCreate(String timerMultiplier, String spectatorsLimit, String playersLimit, String scoreLimit, String blanksLimit, LinearLayout cardSets, String password) throws InvalidFieldException {
             if (!CommonUtils.contains(VALID_TIMER_MULTIPLIERS, timerMultiplier))
-                throw new InvalidFieldException(R.id.gameOptions_timerMultiplier, R.string.invalidTimerMultiplier);
+                throw new InvalidFieldException(R.id.editGameOptions_timerMultiplier, R.string.invalidTimerMultiplier);
 
             int vL = parseIntOrThrow(spectatorsLimit, R.id.editGameOptions_spectatorLimit);
             checkMaxMin(vL, VL_MIN, VL_PL_MAX, R.id.editGameOptions_spectatorLimit);

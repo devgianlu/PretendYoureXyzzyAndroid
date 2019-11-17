@@ -185,6 +185,17 @@ public class Pyx implements Closeable {
             else throw new StatusCodeException(resp);
         }
 
+        try (Response resp = client.newBuilder()
+                .connectTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(AJAX_TIMEOUT, TimeUnit.SECONDS)
+                .build().newCall(new Request.Builder()
+                        .url(server.stats()).get().build()).execute()) {
+
+            ResponseBody respBody = resp.body();
+            if (respBody != null) cahConfig.appendStats(respBody.string());
+            else throw new StatusCodeException(resp);
+        }
+
         return new FirstLoadAndConfig(fl, cahConfig);
     }
 
