@@ -77,7 +77,8 @@
             android:name=".activities.ManageServersActivity"
             android:configChanges="uiMode"
             android:parentActivityName=".LoadingActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.FullDark" />
 
         <!-- Starred cards activity -->
         <activity
@@ -92,7 +93,8 @@
             android:name=".starred.StarredDecksActivity"
             android:configChanges="uiMode"
             android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.FullDark" />
 
         <!-- Cardcast deck activity -->
         <activity
@@ -105,7 +107,8 @@
         <activity
             android:name=".PreferenceActivity"
             android:configChanges="uiMode"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.FullDark" />
 
         <!-- GameRound images provider -->
         <provider

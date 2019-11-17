@@ -2,6 +2,10 @@
 
     <style name="AppTheme" parent="BaseAppTheme" />
 
+    <style name="AppTheme.FullDark" parent="AppTheme">
+        <item name="android:statusBarColor">?colorSurface</item>
+    </style>
+
     <style name="UrbanDictTheme">
         <item name="colorPrimary">@color/urbanPrimary</item>
         <item name="colorPrimaryDark">@color/urbanPrimaryDark</item>
