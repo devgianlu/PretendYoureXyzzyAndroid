@@ -76,7 +76,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     }
 
     @Override
-    public void onAttach(@NonNull Context context) {
+    public void onAttach(@NotNull Context context) {
         super.onAttach(context);
 
         if (context instanceof OnParticipateGame)
@@ -84,7 +84,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     }
 
     @Override
-    public void onCreateOptionsMenu(@NotNull Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.games_fragment, menu);
 
         if (getContext() == null) return;

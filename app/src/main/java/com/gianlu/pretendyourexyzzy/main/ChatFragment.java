@@ -58,7 +58,7 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
         this.rmv.disableSwipeRefresh();
         LinearLayoutManager llm = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         llm.setStackFromEnd(true);
-        this.rmv.setLayoutManager(llm);
+        rmv.setLayoutManager(llm);
 
         Bundle args = getArguments();
         if (args == null) gid = -1;
