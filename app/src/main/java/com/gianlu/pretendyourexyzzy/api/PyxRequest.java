@@ -32,6 +32,7 @@ public class PyxRequest {
             return value == null ? fallback : value;
         }
 
+        @NonNull
         @Override
         public String toString() {
             return '{' + key + ": " + value + '}';

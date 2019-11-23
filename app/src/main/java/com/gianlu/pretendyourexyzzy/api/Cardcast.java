@@ -111,7 +111,7 @@ public class Cardcast {
             public void run() {
                 try {
                     final CardcastDecks decks = new CardcastDecks((JSONObject) basicRequest("decks", params));
-                    if (decks.isEmpty() && offset == 0 && Pattern.matches("(?:[a-zA-Z]|\\d){5}", search.query)) {
+                    if (decks.isEmpty() && offset == 0 && search.query != null && Pattern.matches("(?:[a-zA-Z]|\\d){5}", search.query)) {
                         try {
                             CardcastDeckInfo info = new CardcastDeckInfo((JSONObject) basicRequest("decks/" + search.query));
                             cachedDecks.put(info.code, info);

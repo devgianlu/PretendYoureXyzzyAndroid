@@ -101,14 +101,12 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
 
     @Override
     public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
-        switch (action) {
-            case DELETE:
-                int pos = cards.indexOf(group);
-                if (pos != -1) {
-                    cards.remove(pos);
-                    notifyItemRemoved(pos);
-                }
-                break;
+        if (action == GameCardView.Action.DELETE) {
+            int pos = cards.indexOf(group);
+            if (pos != -1) {
+                cards.remove(pos);
+                notifyItemRemoved(pos);
+            }
         }
 
         if (listener != null) listener.onCardAction(action, group, card);

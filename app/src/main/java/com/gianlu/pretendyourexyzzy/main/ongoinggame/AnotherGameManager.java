@@ -76,10 +76,8 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             case GAME_PLAYER_KICKED_IDLE:
                 event(UiEvent.PLAYER_KICKED, msg.obj.getString("n"));
                 break;
-            case GAME_PLAYER_JOIN:
-                if (!msg.obj.getString("n").equals(gameData.me)) updateGameInfo();
-                break;
             case GAME_PLAYER_LEAVE:
+            case GAME_PLAYER_JOIN:
                 if (!msg.obj.getString("n").equals(gameData.me)) updateGameInfo();
                 break;
             case GAME_PLAYER_SKIPPED:

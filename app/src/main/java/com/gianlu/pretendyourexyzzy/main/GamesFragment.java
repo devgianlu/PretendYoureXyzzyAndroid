@@ -84,7 +84,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.games_fragment, menu);
 
         if (getContext() == null) return;
@@ -109,13 +109,12 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.gamesFragment_showLocked:
-                boolean show = !item.isChecked();
-                item.setChecked(show);
-                Prefs.putBoolean(PK.FILTER_LOCKED_LOBBIES, !show);
-                if (adapter != null) adapter.setFilterOutLockedLobbies(!show);
-                return true;
+        if (item.getItemId() == R.id.gamesFragment_showLocked) {
+            boolean show = !item.isChecked();
+            item.setChecked(show);
+            Prefs.putBoolean(PK.FILTER_LOCKED_LOBBIES, !show);
+            if (adapter != null) adapter.setFilterOutLockedLobbies(!show);
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -160,7 +159,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         this.rmv.enableSwipeRefresh(() -> pyx.request(PyxRequests.getGamesList(), null, GamesFragment.this), R.color.colorAccent);
 
         createGame.setOnClickListener(v -> {
-            DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(getContext(), R.string.loading));
+            DialogUtils.showDialog(getActivity(), DialogUtils.progressDialog(requireContext(), R.string.loading));
             pyx.request(PyxRequests.createGame(), getActivity(), new Pyx.OnResult<GamePermalink>() {
                 @Override
                 public void onDone(@NonNull GamePermalink result) {

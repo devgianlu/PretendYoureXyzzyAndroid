@@ -41,9 +41,8 @@ public class FloatingActionButtonBehavior extends CoordinatorLayout.Behavior<Flo
         return true;
     }
 
-
     @Override
-    public void onNestedScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull FloatingActionButton child, @NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
+    public void onNestedScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull FloatingActionButton child, @NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type, @NonNull int[] consumed) {
         if (child.getTag() == null) child.setTag(true);
         if (dyConsumed > 0 && ((boolean) child.getTag())) hide(child);
         else if (dyConsumed < 0 && (!(boolean) child.getTag())) show(child);

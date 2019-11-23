@@ -238,7 +238,7 @@ public class Game implements Filterable<Game.Protection>, Serializable {
             if (blanksLimit != options.blanksLimit) return false;
             if (!timerMultiplier.equals(options.timerMultiplier)) return false;
             if (!cardSets.equals(options.cardSets)) return false;
-            return password != null ? password.equals(options.password) : options.password == null;
+            return Objects.equals(password, options.password);
         }
 
         @Override

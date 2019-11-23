@@ -582,6 +582,8 @@ public class Pyx implements Closeable {
             List<Server> apiServers = loadServers(PK.API_SERVERS);
             if (name == null && !apiServers.isEmpty()) return apiServers.get(0);
 
+            if (name == null) throw new IllegalStateException("Cannot load any server!");
+
             Server server = null;
             try {
                 server = getServer(PK.USER_SERVERS, name);
