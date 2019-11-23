@@ -2,11 +2,8 @@
 
     <style name="AppTheme" parent="BaseAppTheme" />
 
-    <style name="TitledDialog" parent="DialogFix">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:windowNoTitle">false</item>
+    <style name="AppTheme.FullDark" parent="AppTheme">
+        <item name="android:statusBarColor">?colorSurface</item>
     </style>
 
     <style name="UrbanDictTheme">
@@ -14,4 +11,6 @@
         <item name="colorPrimaryDark">@color/urbanPrimaryDark</item>
         <item name="colorAccent">@color/urbanAccent</item>
     </style>
+
+    <style name="CustomTextInput" parent="Widget.MaterialComponents.TextInputLayout.FilledBox.Dense" />
 </resources>

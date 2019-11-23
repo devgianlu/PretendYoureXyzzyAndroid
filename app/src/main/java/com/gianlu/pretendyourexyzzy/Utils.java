@@ -3,11 +3,11 @@ package com.gianlu.pretendyourexyzzy;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.gianlu.pretendyourexyzzy.NetIO.Models.CardcastCard;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.Deck;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.Game;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.GameInfo;
-import com.gianlu.pretendyourexyzzy.NetIO.NameValuePair;
+import com.gianlu.pretendyourexyzzy.api.NameValuePair;
+import com.gianlu.pretendyourexyzzy.api.models.CardcastCard;
+import com.gianlu.pretendyourexyzzy.api.models.Deck;
+import com.gianlu.pretendyourexyzzy.api.models.Game;
+import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URL;

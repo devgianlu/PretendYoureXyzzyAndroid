@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="appColorBright">#00B0FF</color>
+
     <color name="colorPrimary">#212121</color>
-    <color name="colorPrimary_background">#1A212121</color>
-    <color name="colorPrimary_shadow">#4D212121</color>
-    <color name="colorPrimaryDark">#000000</color>
-    <color name="colorAccent">#00B0FF</color>
-    <color name="colorAccent_light">#4CC7FF</color>
-    <color name="colorAccent_translucent">#4D4CC7FF</color>
+    <color name="colorPrimaryVariant">#000000</color>
+    <color name="colorOnPrimary">@color/white</color>
+
+    <color name="colorSecondary">#00B0FF</color>
+    <color name="colorSecondaryVariant">#065ba5</color>
+    <color name="colorOnSecondary">@color/white</color>
 
     <color name="urbanPrimary">#134FE6</color>
     <color name="urbanPrimaryDark">#1D2439</color>

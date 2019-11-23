@@ -3,7 +3,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:paddingStart="24dp"
+    android:paddingTop="16dp"
+    android:paddingEnd="24dp"
+    android:paddingBottom="8dp">
+
+    <TextView
+        android:id="@+id/userInfoDialog_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:textAppearance="?textAppearanceHeadline5" />
 
     <com.gianlu.commonutils.misc.SuperTextView
         android:id="@+id/userInfoDialog_sigil"
@@ -48,19 +58,17 @@
 
         <Button
             android:id="@+id/userInfoDialog_block"
-            style="?android:attr/borderlessButtonStyle"
+            style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="-16dp"
             android:text="@string/blockUser"
             android:textColor="@color/colorAccent" />
 
         <Button
             android:id="@+id/userInfoDialog_viewGame"
-            style="?android:attr/borderlessButtonStyle"
+            style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="-16dp"
             android:text="@string/viewGame"
             android:textColor="@color/colorAccent" />
     </LinearLayout>

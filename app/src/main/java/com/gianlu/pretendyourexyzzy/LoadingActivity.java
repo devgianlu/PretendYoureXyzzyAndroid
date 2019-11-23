@@ -14,7 +14,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
@@ -26,19 +25,20 @@ import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.tutorial.BaseTutorial;
 import com.gianlu.commonutils.tutorial.TutorialManager;
 import com.gianlu.commonutils.ui.Toaster;
-import com.gianlu.pretendyourexyzzy.Adapters.ServersAdapter;
-import com.gianlu.pretendyourexyzzy.NetIO.FirstLoadedPyx;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.FirstLoad;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.GamePermalink;
-import com.gianlu.pretendyourexyzzy.NetIO.NameValuePair;
-import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
-import com.gianlu.pretendyourexyzzy.NetIO.PyxDiscoveryApi;
-import com.gianlu.pretendyourexyzzy.NetIO.PyxException;
-import com.gianlu.pretendyourexyzzy.NetIO.RegisteredPyx;
-import com.gianlu.pretendyourexyzzy.SpareActivities.ManageServersActivity;
-import com.gianlu.pretendyourexyzzy.SpareActivities.TutorialActivity;
-import com.gianlu.pretendyourexyzzy.Tutorial.Discovery;
-import com.gianlu.pretendyourexyzzy.Tutorial.LoginTutorial;
+import com.gianlu.pretendyourexyzzy.activities.ManageServersActivity;
+import com.gianlu.pretendyourexyzzy.activities.TutorialActivity;
+import com.gianlu.pretendyourexyzzy.adapters.ServersAdapter;
+import com.gianlu.pretendyourexyzzy.api.FirstLoadedPyx;
+import com.gianlu.pretendyourexyzzy.api.NameValuePair;
+import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.api.PyxDiscoveryApi;
+import com.gianlu.pretendyourexyzzy.api.PyxException;
+import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
+import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
+import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
+import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
+import com.gianlu.pretendyourexyzzy.tutorial.LoginTutorial;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONObject;
@@ -64,7 +64,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private SuperTextView welcomeMessage;
     private PyxDiscoveryApi discoveryApi;
     private TextView currentServer;
-    private Button generateIdCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,8 +108,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         changeServer = findViewById(R.id.loading_changeServer);
         changeServer.setOnClickListener(v -> changeServerDialog(true));
 
-        generateIdCode = findViewById(R.id.loading_generateIdCode);
-        generateIdCode.setOnClickListener(v -> CommonUtils.setText(registerIdCode, CommonUtils.randomString(100, new SecureRandom())));
+        registerIdCode.setEndIconOnClickListener(v -> CommonUtils.setText(registerIdCode, CommonUtils.randomString(100, new SecureRandom())));
+        CommonUtils.clearErrorOnEdit(registerIdCode);
 
         if (Objects.equals(getIntent().getAction(), Intent.ACTION_VIEW) || Objects.equals(getIntent().getAction(), Intent.ACTION_SEND)) {
             Uri url = getIntent().getData();
@@ -160,11 +159,11 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     private void changeServerDialog(boolean dismissible) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         builder.setTitle(R.string.changeServer)
                 .setCancelable(dismissible)
                 .setNeutralButton(R.string.manage, (dialog, which) -> {
-                    startActivity(new Intent(LoadingActivity.this, ManageServersActivity.class));
+                    startActivity(new Intent(this, ManageServersActivity.class));
                     dialog.dismiss();
                 });
 
@@ -221,17 +220,14 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         String lastIdCode = Prefs.getString(PK.LAST_ID_CODE, null);
         if (lastIdCode != null) CommonUtils.setText(registerIdCode, lastIdCode);
 
+        if (!pyx.isServerSecure() && !pyx.config().insecureIdAllowed())
+            registerIdCode.setEnabled(false);
+        else
+            registerIdCode.setEnabled(true);
+
         registerSubmit.setOnClickListener(v -> {
             loading.setVisibility(View.VISIBLE);
             register.setVisibility(View.GONE);
-
-            if (!pyx.isServerSecure() && !pyx.config().insecureIdAllowed()) {
-                registerIdCode.setEnabled(false);
-                generateIdCode.setEnabled(false);
-            } else {
-                registerIdCode.setEnabled(true);
-                generateIdCode.setEnabled(true);
-            }
 
             String idCode = getIdCode();
             String nick = CommonUtils.getText(registerNickname);

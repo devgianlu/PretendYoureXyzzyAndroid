@@ -9,8 +9,8 @@
         android:layout_height="48dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingEnd="24dp"
-        android:paddingStart="24dp">
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp">
 
         <View
             android:layout_width="0dp"
@@ -19,6 +19,7 @@
 
         <TextView
             android:layout_width="0dp"
+            android:textColor="?colorOnSurface"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/required"
@@ -27,6 +28,7 @@
 
         <TextView
             android:layout_width="0dp"
+            android:textColor="?colorOnSurface"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/provided"
@@ -35,6 +37,7 @@
 
         <TextView
             android:layout_width="0dp"
+            android:textColor="?colorOnSurface"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/status"
@@ -47,15 +50,15 @@
         android:layout_height="48dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingEnd="24dp"
-        android:paddingStart="24dp">
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.6"
             android:text="@string/whiteCards"
-            android:textColor="@android:color/black" />
+            android:textColor="?colorOnSurface" />
 
         <TextView
             android:id="@+id/cannotStartGame_wcr"
@@ -63,9 +66,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ellipsize="end"
-            android:maxLines="2"
             android:textAlignment="viewEnd"
-            android:textColor="@android:color/black" />
+            android:maxLines="2"
+            android:textColor="?colorOnSurface" />
 
         <TextView
             android:id="@+id/cannotStartGame_wcp"
@@ -75,7 +78,7 @@
             android:ellipsize="end"
             android:maxLines="2"
             android:textAlignment="viewEnd"
-            android:textColor="@android:color/black" />
+            android:textColor="?colorOnSurface" />
 
         <ImageView
             android:id="@+id/cannotStartGame_checkWc"
@@ -89,7 +92,8 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/colorPrimary_shadow" />
+        android:alpha="0.20"
+        android:background="?colorOnSurface" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -97,15 +101,15 @@
         android:layout_marginBottom="16dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingEnd="24dp"
-        android:paddingStart="24dp">
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.6"
             android:text="@string/blackCards"
-            android:textColor="@android:color/black" />
+            android:textColor="?colorOnSurface" />
 
         <TextView
             android:id="@+id/cannotStartGame_bcr"
@@ -115,7 +119,7 @@
             android:ellipsize="end"
             android:maxLines="2"
             android:textAlignment="viewEnd"
-            android:textColor="@android:color/black" />
+            android:textColor="?colorOnSurface" />
 
         <TextView
             android:id="@+id/cannotStartGame_bcp"
@@ -125,7 +129,7 @@
             android:ellipsize="end"
             android:maxLines="2"
             android:textAlignment="viewEnd"
-            android:textColor="@android:color/black" />
+            android:textColor="?colorOnSurface" />
 
         <ImageView
             android:id="@+id/cannotStartGame_checkBc"
@@ -139,7 +143,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingEnd="24dp"
         android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         android:text="@string/cannotStartGame_solution" />
 </LinearLayout>
