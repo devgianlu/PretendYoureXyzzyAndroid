@@ -11,6 +11,7 @@ import androidx.annotation.StringRes;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.Filterable;
+import com.gianlu.pretendyourexyzzy.NetIO.Pyx;
 import com.gianlu.pretendyourexyzzy.R;
 
 import org.json.JSONArray;
@@ -145,13 +146,6 @@ public class Game implements Filterable<Game.Protection>, Serializable {
 
     public static class Options implements Serializable {
         public static final String[] VALID_TIMER_MULTIPLIERS = {"0.25x", "0.5x", "0.75x", "1x", "1.25x", "1.5x", "1.75x", "2x", "2.5x", "3x", "4x", "5x", "10x", "Unlimited"};
-        private static final int BL_MIN = 0;
-        private static final int BL_MAX = 30;
-        private static final int VL_PL_MAX = 20;
-        private static final int VL_MIN = 0;
-        private static final int PL_MIN = 3;
-        private static final int SL_MAX = 69;
-        private static final int SL_MIN = 4;
         public final String timerMultiplier;
         public final int spectatorsLimit;
         public final int playersLimit;
@@ -203,21 +197,24 @@ public class Game implements Filterable<Game.Protection>, Serializable {
                 throw new InvalidFieldException(fieldId, min, max);
         }
 
-        public static Options validateAndCreate(String timerMultiplier, String spectatorsLimit, String playersLimit, String scoreLimit, String blanksLimit, LinearLayout cardSets, String password) throws InvalidFieldException {
+        @NonNull
+        public static Options validateAndCreate(@NonNull Pyx.Server.Params params, String timerMultiplier, String spectatorsLimit,
+                                                String playersLimit, String scoreLimit, String blanksLimit, LinearLayout cardSets,
+                                                String password) throws InvalidFieldException {
             if (!CommonUtils.contains(VALID_TIMER_MULTIPLIERS, timerMultiplier))
                 throw new InvalidFieldException(R.id.gameOptions_timerMultiplier, R.string.invalidTimerMultiplier);
 
             int vL = parseIntOrThrow(spectatorsLimit, R.id.editGameOptions_spectatorLimit);
-            checkMaxMin(vL, VL_MIN, VL_PL_MAX, R.id.editGameOptions_spectatorLimit);
+            checkMaxMin(vL, params.spectatorsMin, params.spectatorsMax, R.id.editGameOptions_spectatorLimit);
 
             int pL = parseIntOrThrow(playersLimit, R.id.editGameOptions_playerLimit);
-            checkMaxMin(pL, PL_MIN, VL_PL_MAX, R.id.editGameOptions_playerLimit);
+            checkMaxMin(pL, params.playersMin, params.playersMax, R.id.editGameOptions_playerLimit);
 
             int sl = parseIntOrThrow(scoreLimit, R.id.editGameOptions_scoreLimit);
-            checkMaxMin(sl, SL_MIN, SL_MAX, R.id.editGameOptions_scoreLimit);
+            checkMaxMin(sl, params.scoreMin, params.scoreMax, R.id.editGameOptions_scoreLimit);
 
             int bl = parseIntOrThrow(blanksLimit, R.id.editGameOptions_blankCards);
-            checkMaxMin(bl, BL_MIN, BL_MAX, R.id.editGameOptions_blankCards);
+            checkMaxMin(bl, params.blankCardsMin, params.blankCardsMax, R.id.editGameOptions_blankCards);
 
             ArrayList<Integer> cardSetIds = new ArrayList<>();
             for (int i = 0; i < cardSets.getChildCount(); i++) {

@@ -40,6 +40,7 @@ public class EditGameOptionsDialog extends DialogFragment {
     private int gid;
     private ApplyOptions listener;
     private TextView decksTitle;
+    private RegisteredPyx pyx;
 
     @NonNull
     public static EditGameOptionsDialog get(int gid, Game.Options options) {
@@ -52,7 +53,7 @@ public class EditGameOptionsDialog extends DialogFragment {
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
         if (context instanceof ApplyOptions)
@@ -68,7 +69,7 @@ public class EditGameOptionsDialog extends DialogFragment {
 
         Game.Options newOptions;
         try {
-            newOptions = Game.Options.validateAndCreate(timerMultiplier.getSelectedItem().toString(), CommonUtils.getText(spectatorLimit), CommonUtils.getText(playerLimit), CommonUtils.getText(scoreLimit), CommonUtils.getText(blankCards), decks, CommonUtils.getText(password));
+            newOptions = Game.Options.validateAndCreate(pyx.server.params(), timerMultiplier.getSelectedItem().toString(), CommonUtils.getText(spectatorLimit), CommonUtils.getText(playerLimit), CommonUtils.getText(scoreLimit), CommonUtils.getText(blankCards), decks, CommonUtils.getText(password));
         } catch (Game.Options.InvalidFieldException ex) {
             View view = layout.findViewById(ex.fieldId);
             if (view instanceof TextInputLayout) {
@@ -106,7 +107,7 @@ public class EditGameOptionsDialog extends DialogFragment {
             return layout;
         }
 
-        RegisteredPyx pyx;
+
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
