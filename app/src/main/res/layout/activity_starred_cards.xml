@@ -1,38 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/starredCards_toolbar"
+        style="@style/Widget.MaterialComponents.Toolbar.Primary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="0dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/starredCards_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/starredCards_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_scrollFlags="scroll|enterAlways"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/starredCards_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_vertical"
-            android:layout_marginTop="8dp" />
-
-    </com.google.android.material.appbar.AppBarLayout>
+        android:layout_gravity="center_vertical"
+        android:layout_weight="0.4"
+        android:background="@color/colorPrimary"
+        android:paddingTop="8dp" />
 
     <FrameLayout
         android:id="@+id/starredCards_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="@color/colorPrimary_background">
+        android:layout_weight="0.6">
 
         <HorizontalScrollView
             android:layout_width="match_parent"
@@ -45,8 +37,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
-                android:paddingEnd="8dp"
-                android:paddingStart="8dp" />
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp" />
 
         </HorizontalScrollView>
 

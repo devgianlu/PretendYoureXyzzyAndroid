@@ -5,7 +5,6 @@ import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 
 import com.danielstone.materialaboutlibrary.items.MaterialAboutActionItem;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutItem;
@@ -13,7 +12,8 @@ import com.gianlu.commonutils.preferences.BasePreferenceActivity;
 import com.gianlu.commonutils.preferences.BasePreferenceFragment;
 import com.gianlu.commonutils.preferences.MaterialAboutPreferenceItem;
 import com.gianlu.commonutils.preferences.Prefs;
-import com.gianlu.pretendyourexyzzy.SpareActivities.TutorialActivity;
+import com.gianlu.pretendyourexyzzy.activities.TutorialActivity;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.yarolegovich.mp.MaterialCheckboxPreference;
 import com.yarolegovich.mp.MaterialStandardPreference;
 
@@ -62,7 +62,7 @@ public class PreferenceActivity extends BasePreferenceActivity {
             boolean[] checked = new boolean[entries.length];
             for (int i = 0; i < checked.length; i++) checked[i] = false;
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
             builder.setTitle(R.string.unblockUser)
                     .setMultiChoiceItems(entries, checked, (dialog, which, isChecked) -> checked[which] = isChecked)
                     .setPositiveButton(R.string.unblock, (dialog, which) -> {

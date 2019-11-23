@@ -3,8 +3,8 @@ package com.gianlu.pretendyourexyzzy;
 import com.bumptech.glide.Glide;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.logging.Logging;
-import com.gianlu.pretendyourexyzzy.NetIO.BaseCardUrlLoader;
-import com.gianlu.pretendyourexyzzy.NetIO.Models.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.BaseCardUrlLoader;
+import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
 
 import java.io.InputStream;
 

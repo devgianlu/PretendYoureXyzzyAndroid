@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorPrimary_background">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal">
 
-        <com.gianlu.pretendyourexyzzy.CardViews.GameCardView
+        <com.gianlu.pretendyourexyzzy.cards.GameCardView
             android:id="@+id/gameLayout_blackCard"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -65,6 +64,6 @@
         android:layout_marginEnd="16dp"
         android:contentDescription="@string/startGame"
         android:src="@drawable/baseline_done_24"
-        android:tint="@color/bright_foreground_dark"
+        android:tint="?colorOnPrimary"
         android:visibility="gone" />
 </FrameLayout>
