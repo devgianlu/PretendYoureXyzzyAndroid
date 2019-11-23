@@ -271,4 +271,6 @@
     <string name="unblockUser_summary">Odblokuj poprzednio zablokowanych użytkowników</string>
     <string name="unblock">Odblokuj</string>
     <string name="unknownChatCommand">Nieznane polecenie czatu.</string>
+    <string name="lastRound">Last round</string>
+    <string name="spectatorsNotAllowed"><![CDATA[<b>Spectators:</b>]]><![CDATA[<i>not allowed</i>]]></string>
 </resources>
