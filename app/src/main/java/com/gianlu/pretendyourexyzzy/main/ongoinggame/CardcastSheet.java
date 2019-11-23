@@ -142,7 +142,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
             return false;
 
         action.setImageResource(R.drawable.baseline_add_24);
-        action.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.colorSecondaryVariant)));
+        action.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.cardcastSheetFabBg)));
         action.setOnClickListener(v -> showAddCardcastDeckDialog());
         action.setSupportImageTintList(ColorStateList.valueOf(Color.WHITE));
 

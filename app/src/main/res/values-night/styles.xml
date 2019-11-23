@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <style name="AppTheme.FullDark" parent="AppTheme">
+        <item name="android:statusBarColor">?colorSurface</item>
+    </style>
+
     <style name="CustomTextInput" parent="Widget.MaterialComponents.TextInputLayout.FilledBox.Dense">
         <item name="boxStrokeColor">@color/colorSecondary</item>
         <item name="endIconTint">@color/white</item>

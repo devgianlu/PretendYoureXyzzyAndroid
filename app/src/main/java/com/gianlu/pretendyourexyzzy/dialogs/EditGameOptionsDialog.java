@@ -71,7 +71,7 @@ public class EditGameOptionsDialog extends DialogFragment {
 
         Game.Options newOptions;
         try {
-            newOptions = Game.Options.validateAndCreate(pyx.server.params(), CommonUtils.getText(timerMultiplier).trim(), CommonUtils.getText(spectatorLimit),
+            newOptions = Game.Options.validateAndCreate(pyx.config(), pyx.server.params(), CommonUtils.getText(timerMultiplier).trim(), CommonUtils.getText(spectatorLimit),
                     CommonUtils.getText(playerLimit), CommonUtils.getText(scoreLimit), CommonUtils.getText(blankCards),
                     decks, CommonUtils.getText(password));
         } catch (Game.Options.InvalidFieldException ex) {

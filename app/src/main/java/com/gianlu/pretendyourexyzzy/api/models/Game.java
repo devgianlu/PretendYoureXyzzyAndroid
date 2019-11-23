@@ -198,7 +198,7 @@ public class Game implements Filterable<Game.Protection>, Serializable {
         }
 
         @NonNull
-        public static Options validateAndCreate(@NonNull Pyx.Server.Params params, String timerMultiplier, String spectatorsLimit,
+        public static Options validateAndCreate(@NonNull CahConfig config, @NonNull Pyx.Server.Params params, String timerMultiplier, String spectatorsLimit,
                                                 String playersLimit, String scoreLimit, String blanksLimit, LinearLayout cardSets,
                                                 String password) throws InvalidFieldException {
             if (!CommonUtils.contains(VALID_TIMER_MULTIPLIERS, timerMultiplier))
@@ -213,8 +213,11 @@ public class Game implements Filterable<Game.Protection>, Serializable {
             int sl = parseIntOrThrow(scoreLimit, R.id.editGameOptions_scoreLimit);
             checkMaxMin(sl, params.scoreMin, params.scoreMax, R.id.editGameOptions_scoreLimit);
 
-            int bl = parseIntOrThrow(blanksLimit, R.id.editGameOptions_blankCards);
-            checkMaxMin(bl, params.blankCardsMin, params.blankCardsMax, R.id.editGameOptions_blankCards);
+            int bl = 0;
+            if (config.blankCardsEnabled()) {
+                bl = parseIntOrThrow(blanksLimit, R.id.editGameOptions_blankCards);
+                checkMaxMin(bl, params.blankCardsMin, params.blankCardsMax, R.id.editGameOptions_blankCards);
+            }
 
             ArrayList<Integer> cardSetIds = new ArrayList<>();
             for (int i = 0; i < cardSets.getChildCount(); i++) {
