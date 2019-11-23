@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -141,6 +142,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
             return false;
 
         action.setImageResource(R.drawable.baseline_add_24);
+        action.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.colorSecondaryVariant)));
         action.setOnClickListener(v -> showAddCardcastDeckDialog());
         action.setSupportImageTintList(ColorStateList.valueOf(Color.WHITE));
 

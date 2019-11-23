@@ -295,7 +295,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         if (manager == null || getContext() == null) return;
 
         Collection<String> spectators = manager.spectators();
-        SuperTextView text = SuperTextView.html(getContext(), R.string.spectatorsList, spectators.isEmpty() ? "none" : CommonUtils.join(spectators, ", "));
+        SuperTextView text = SuperTextView.html(getContext(), spectators.isEmpty() ? "<i>none</i>" : CommonUtils.join(spectators, ", "));
         int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
         text.setPadding(padding, padding, padding, padding);
 

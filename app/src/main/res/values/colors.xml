@@ -7,7 +7,7 @@
     <color name="colorOnPrimary">@color/white</color>
 
     <color name="colorSecondary">#00B0FF</color>
-    <color name="colorSecondaryVariant">#005176</color>
+    <color name="colorSecondaryVariant">#065ba5</color>
     <color name="colorOnSecondary">@color/white</color>
 
     <color name="urbanPrimary">#134FE6</color>
