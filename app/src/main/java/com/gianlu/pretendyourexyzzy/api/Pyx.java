@@ -31,6 +31,7 @@ import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionHistory;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionStats;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -439,21 +440,25 @@ public class Pyx implements Closeable {
         public final String name;
         private final boolean editable;
         private final HttpUrl metricsUrl;
+        private final Params params;
         public transient volatile ServersChecker.CheckResult status = null;
         private transient HttpUrl ajaxUrl;
         private transient HttpUrl pollingUrl;
         private transient HttpUrl configUrl;
         private transient HttpUrl statsUrl;
 
-        public Server(@NonNull HttpUrl url, @Nullable HttpUrl metricsUrl, @NonNull String name, boolean editable) {
+        public Server(@NonNull HttpUrl url, @Nullable HttpUrl metricsUrl, @NonNull String name, @NonNull Params params, boolean editable) {
             this.url = url;
             this.metricsUrl = metricsUrl;
             this.name = name;
+            this.params = params;
             this.editable = editable;
         }
 
         Server(JSONObject obj) throws JSONException {
-            this(parseUrlOrThrow(obj.getString("uri")), parseNullableUrl(obj.optString("metrics")), obj.getString("name"), obj.optBoolean("editable", true));
+            this(parseUrlOrThrow(obj.getString("uri")), parseNullableUrl(obj.optString("metrics")), obj.getString("name"),
+                    obj.has("params") ? new Params(obj.getJSONObject("params")) : Params.defaultValues(),
+                    obj.optBoolean("editable", true));
         }
 
         @Nullable
@@ -476,9 +481,9 @@ public class Pyx implements Closeable {
                         .build();
 
                 String metrics = CommonUtils.getStupidString(obj, "metrics");
-                servers.add(new Server(url,
-                        metrics == null ? null : HttpUrl.parse(metrics),
+                servers.add(new Server(url, metrics == null ? null : HttpUrl.parse(metrics),
                         name == null ? (url.host() + " server") : name,
+                        obj.has("params") ? new Params(obj.getJSONObject("params")) : Params.defaultValues(),
                         false));
             }
 
@@ -640,6 +645,11 @@ public class Pyx implements Closeable {
             }
         }
 
+        @NonNull
+        public Params params() {
+            return params;
+        }
+
         @Override
         public int hashCode() {
             int result = url.hashCode();
@@ -658,6 +668,7 @@ public class Pyx implements Closeable {
         @NonNull
         private JSONObject toJson() throws JSONException {
             return new JSONObject()
+                    .put("params", params == null ? null : params.toJson())
                     .put("name", name)
                     .put("metrics", metricsUrl)
                     .put("editable", editable)
@@ -736,6 +747,59 @@ public class Pyx implements Closeable {
 
         public boolean isHttps() {
             return url.isHttps();
+        }
+
+        public static class Params {
+            public final int blankCardsMin;
+            public final int blankCardsMax;
+            public final int playersMin;
+            public final int playersMax;
+            public final int spectatorsMin;
+            public final int spectatorsMax;
+            public final int scoreMin;
+            public final int scoreMax;
+
+            private Params(int blankCardsMin, int blankCardsMax, int playersMin, int playersMax,
+                           int spectatorsMin, int spectatorsMax, int scoreMin, int scoreMax) {
+                this.blankCardsMin = blankCardsMin;
+                this.blankCardsMax = blankCardsMax;
+                this.playersMin = playersMin;
+                this.playersMax = playersMax;
+                this.spectatorsMin = spectatorsMin;
+                this.spectatorsMax = spectatorsMax;
+                this.scoreMin = scoreMin;
+                this.scoreMax = scoreMax;
+            }
+
+            private Params(@NonNull JSONObject obj) throws JSONException {
+                blankCardsMin = obj.getInt("bl-min");
+                blankCardsMax = obj.getInt("bl-max");
+                scoreMin = obj.getInt("sl-min");
+                scoreMax = obj.getInt("sl-max");
+                spectatorsMin = obj.getInt("vL-min");
+                spectatorsMax = obj.getInt("vL-max");
+                playersMin = obj.getInt("pL-min");
+                playersMax = obj.getInt("pL-max");
+            }
+
+            @NonNull
+            public static Params defaultValues() {
+                return new Params(0, 30, 3, 20, 0, 20, 4, 69);
+            }
+
+            @NotNull
+            JSONObject toJson() throws JSONException {
+                JSONObject obj = new JSONObject();
+                obj.put("bl-min", blankCardsMin);
+                obj.put("bl-max", blankCardsMax);
+                obj.put("sl-min", scoreMin);
+                obj.put("sl-max", scoreMax);
+                obj.put("vL-min", spectatorsMin);
+                obj.put("vL-max", spectatorsMax);
+                obj.put("pL-min", playersMin);
+                obj.put("pL-max", playersMax);
+                return obj;
+            }
         }
     }
 

@@ -1,6 +1,6 @@
 package com.gianlu.pretendyourexyzzy.api;
 
-public class NameValuePair {
+public final class NameValuePair {
     private final String key;
     private final String value;
 
