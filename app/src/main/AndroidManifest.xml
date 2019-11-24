@@ -110,6 +110,11 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.FullDark" />
 
+        <!-- Logs activity -->
+        <activity
+            android:name="com.gianlu.commonutils.logging.LogsActivity"
+            android:theme="@style/AppTheme.FullDark" />
+
         <!-- GameRound images provider -->
         <provider
             android:name="androidx.core.content.FileProvider"

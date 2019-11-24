@@ -11,6 +11,8 @@ import com.gianlu.commonutils.tutorial.BaseTutorial;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.GamesAdapter;
 
+import me.toptas.fancyshowcase.FocusShape;
+
 public class GamesTutorial extends BaseTutorial {
 
     @Keep
@@ -27,12 +29,28 @@ public class GamesTutorial extends BaseTutorial {
 
         GamesAdapter.ViewHolder holder = (GamesAdapter.ViewHolder) list.findViewHolderForLayoutPosition(pos);
         if (holder != null) {
-            forView(holder.status, R.string.tutorial_gameStatus, R.string.tutorial_gameStatus_desc);
-            forView(holder.locked, R.string.tutorial_gameLocked, R.string.tutorial_gameLocked_desc);
-            forView(holder.spectate, R.string.tutorial_spectateGame, R.string.tutorial_spectateGame_desc);
-            forView(holder.join, R.string.tutorial_joinGame, R.string.tutorial_joinGame_desc);
-            forView(createGame, R.string.createGame, R.string.tutorial_createGame_desc)
-                    .transparentTarget(true);
+            add(forView(holder.status, R.string.tutorial_gameStatus)
+                    .focusShape(FocusShape.CIRCLE)
+                    .enableAutoTextPosition()
+                    .fitSystemWindows(true));
+            add(forView(holder.locked, R.string.tutorial_gameLocked)
+                    .focusShape(FocusShape.CIRCLE)
+                    .enableAutoTextPosition()
+                    .fitSystemWindows(true));
+            add(forView(holder.spectate, R.string.tutorial_spectateGame)
+                    .focusShape(FocusShape.ROUNDED_RECTANGLE)
+                    .roundRectRadius(8)
+                    .enableAutoTextPosition()
+                    .fitSystemWindows(true));
+            add(forView(holder.join, R.string.tutorial_joinGame)
+                    .focusShape(FocusShape.ROUNDED_RECTANGLE)
+                    .roundRectRadius(8)
+                    .enableAutoTextPosition()
+                    .fitSystemWindows(true));
+            add(forView(createGame, R.string.tutorial_createGame)
+                    .focusShape(FocusShape.CIRCLE)
+                    .enableAutoTextPosition()
+                    .fitSystemWindows(true));
             return true;
         }
 

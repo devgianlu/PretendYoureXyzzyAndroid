@@ -24,6 +24,7 @@
     <string name="game_gameWinner_short">%s ha vinto il gioco!</string>
     <string name="game_youGameWinner_long">Hai vinto questo gioco! Attendi che il creatore ne avvii un altro…</string>
     <string name="game_youGameWinner_short">Hai vinto il gioco!</string>
+
     <!-- Tutorial messages -->
     <string name="tutorial_firstTitle">Benvenuto in Pretend You\'re Xyzzy</string>
     <string name="tutorial_firstDesc">Pretend You\'re Xyzzy è un gioco online basato su Cards Against Humanity. In questo tutorial ti spiegherò come giocare.</string>
@@ -33,36 +34,22 @@
     <string name="tutorial_thirdDesc">Questo gioco supporta l\’integrazione con Cardcast: con Cardcast puoi creare mazzi personalizzati (dal sito<a>cardcastgame.com</a>) e aggiungerli al tuo gioco. Puoi anche cercare mazzi fatti da qualcun altro e usarli.</string>
     <string name="tutorial_fourthTitle">Altre funzioni</string>
     <string name="tutorial_fourthDesc">Nell\'app ci sono anche altre funzioni, ma le imparerai giocando!</string>
-    <string name="tutorial_chooseNickname">Scegli un nome</string>
-    <string name="tutorial_chooseNickname_desc">Scegli un nome per giocare, non sarà permanente.</string>
-    <string name="tutorial_changeServer">Cambia server</string>
-    <string name="tutorial_changeServer_desc">Sono disponibili più server, scegli quello che preferisci. Puoi anche creare il tuo server e aggiungerlo.</string>
-    <string name="tutorial_joinTheServer">Entra nel server</string>
-    <string name="tutorial_joinTheServer_desc">Entra nella lobby, ti attenderanno varie partite.</string>
-    <string name="tutorial_gameStatus">Stato del gioco</string>
-    <string name="tutorial_gameStatus_desc">Questo indica se il gioco è stato avviato o meno. Puoi unirti comunque, purché ci sia spazio per te.</string>
-    <string name="tutorial_gameLocked">Gioco bloccato</string>
-    <string name="tutorial_gameLocked_desc">Un gioco può essere bloccato con una password per limitarne l\'accesso, che viene impostata dal creatore del gioco.</string>
-    <string name="tutorial_spectateGame">Guarda il gioco</string>
-    <string name="tutorial_joinGame">Entra nel gioco</string>
-    <string name="tutorial_spectateGame_desc">Gli spettatori possono solo vedere cosa sta succedendo e non possono giocare, ma possono scrivere in chat.</string>
-    <string name="tutorial_joinGame_desc">Entrando nel gioco ti godi a pieno la partita.</string>
-    <string name="createGame">Crea partita</string>
-    <string name="tutorial_createGame_desc">Puoi creare il tuo gioco e scegliere le tue impostazioni.</string>
-    <string name="tutorial_setupGame">Imposta gioco</string>
-    <string name="tutorial_setupGame_desc">Qui puoi personalizzare la tua partita. Non dimenticare che puoi anche aggiungere mazzi da Cardcast.</string>
-    <string name="startGame">Avvia gioco</string>
-    <string name="tutorial_startGame_desc">Una volta che hai finito, inizia il gioco. Per farlo devi avere almeno 3 giocatori e un determinato numero di carte.</string>
-    <string name="tutorial_chooseIdCode">Scegli un codice</string>
-    <string name="tutorial_chooseIdCode_desc">Scegli un codice o generane uno per rendere più difficile per qualcuno impersonarti.</string>
-    <string name="tutorial_blackCard">Questa è una carta nera</string>
-    <string name="tutorial_blackCard_desc">Devi completare la frase con le carte sotto.</string>
-    <string name="tutorial_whiteCard">Questa è una carta bianca</string>
-    <string name="tutorial_whiteCard_desc">Gioca una o più carte per completare la frase. Se non conosci il significato di una parola, usa la funzione dizionario nel menu in alto a destra.</string>
-    <string name="tutorial_playCard">Gioca una carta</string>
-    <string name="tutorial_playCard_desc">Per giocare una carta basta toccare questa icona: apparirà una finestra di conferma.</string>
-    <string name="tutorial_player">Questo è un giocatore</string>
-    <string name="tutorial_player_desc">Una volta che un giocatore raggiunge l\'obiettivo, vince. Puoi toccare sul nome per rivelare ulteriori informazioni.</string>
+    <string name="tutorial_chooseNickname">Scegli un nome per giocare, non sarà permanente.</string>
+    <string name="tutorial_changeServer">Sono disponibili più server, scegli quello che preferisci.</string>
+    <string name="tutorial_joinTheServer">Entra nella lobby, ti attenderanno molte partite.</string>
+    <string name="tutorial_gameStatus">Questo indica se il gioco è stato avviato o meno. Puoi unirti comunque, purché ci sia spazio per te.</string>
+    <string name="tutorial_gameLocked">Un gioco può essere bloccato con una password, che viene impostata dal creatore del gioco, per limitarne l\'accesso.</string>
+    <string name="tutorial_spectateGame">Gli spettatori possono solo vedere cosa sta succedendo e non possono giocare, ma possono scrivere in chat.</string>
+    <string name="tutorial_joinGame">Entra nella partita per iniziare subito a giocare.</string>
+    <string name="tutorial_createGame">Puoi creare il tuo gioco e scegliere le tue impostazioni.</string>
+    <string name="tutorial_setupGame">Qui puoi personalizzare la tua partita. Non dimenticare che puoi anche aggiungere mazzi da Cardcast.</string>
+    <string name="tutorial_startGame">Una volta che hai finito, inizia il gioco. Per farlo devi avere almeno 3 giocatori e un determinato numero di carte.</string>
+    <string name="tutorial_chooseIdCode">Scegli un codice o generane uno per rendere più difficile per qualcuno impersonarti.</string>
+    <string name="tutorial_blackCard">Questa è una carta nera: devi completare la frase con le carte bianche qui sotto.</string>
+    <string name="tutorial_whiteCard">Gioca una o più carte per completare la frase. Se non conosci il significato di una parola, usa la funzione dizionario nel menu in alto a destra.</string>
+    <string name="tutorial_playCard">Per giocare una carta basta toccarla: apparirà una finestra di conferma.</string>
+    <string name="tutorial_player">Una volta che un giocatore raggiunge l\'obiettivo, vince. Puoi toccare sul nome per rivelare ulteriori informazioni.</string>
+
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
     <string name="nickname">Nome</string>

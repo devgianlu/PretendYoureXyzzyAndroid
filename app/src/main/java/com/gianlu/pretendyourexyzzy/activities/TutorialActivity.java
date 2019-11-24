@@ -81,7 +81,7 @@ public class TutorialActivity extends AppIntro {
 
     public static class NoImageAppIntroFragment extends AppIntroBaseFragment {
 
-        public static NoImageAppIntroFragment newInstance(SliderPage sliderPage) {
+        static NoImageAppIntroFragment newInstance(SliderPage sliderPage) {
             NoImageAppIntroFragment slide = new NoImageAppIntroFragment();
             Bundle args = new Bundle();
             args.putString(ARG_TITLE, sliderPage.getTitleString());

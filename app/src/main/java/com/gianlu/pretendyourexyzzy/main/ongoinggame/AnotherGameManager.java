@@ -44,6 +44,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     private final Listener listener;
     private final int gid;
     private final Context context;
+    private OnPlayerStateChanged playerStateListener = null;
 
     public AnotherGameManager(@NonNull GamePermalink permalink, @NonNull RegisteredPyx pyx, @NonNull GameLayout layout, @NonNull Listener listener) {
         this.permalink = permalink;
@@ -226,6 +227,12 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             case SPECTATOR:
                 break;
         }
+
+        if (playerStateListener != null) playerStateListener.onPlayerStateChanged(player.status);
+    }
+
+    public boolean isPlayerStatus(@NonNull GameInfo.PlayerStatus status) {
+        return gameData.isPlayerStatus(gameData.me, status);
     }
 
     @Override
@@ -451,6 +458,10 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         else return gameData.hasPassword;
     }
 
+    public void setPlayerStateChangedListener(OnPlayerStateChanged listener) {
+        playerStateListener = listener;
+    }
+
     private enum UiEvent {
         YOU_JUDGE(R.string.game_youJudge, Kind.TEXT),
         SELECT_WINNING_CARD(R.string.game_selectWinningCard, Kind.TEXT),
@@ -509,5 +520,9 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         void justLeaveGame();
 
         void showDialog(@NonNull DialogFragment dialog);
+    }
+
+    public interface OnPlayerStateChanged {
+        void onPlayerStateChanged(@NonNull GameInfo.PlayerStatus status);
     }
 }

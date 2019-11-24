@@ -47,6 +47,8 @@ import java.security.SecureRandom;
 import java.util.List;
 import java.util.Objects;
 
+import me.toptas.fancyshowcase.FocusShape;
+
 
 public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener {
     private Intent goTo;
@@ -320,11 +322,23 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     @Override
-    public boolean buildSequence(@NonNull BaseTutorial tutorial) {
-        tutorial.forView(registerNickname, R.string.tutorial_chooseNickname, R.string.tutorial_chooseNickname_desc);
-        tutorial.forView(registerIdCode, R.string.tutorial_chooseIdCode, R.string.tutorial_chooseIdCode_desc);
-        tutorial.forView(changeServer, R.string.tutorial_changeServer, R.string.tutorial_changeServer_desc);
-        tutorial.forView(registerSubmit, R.string.tutorial_joinTheServer, R.string.tutorial_joinTheServer_desc);
+    public boolean buildSequence(@NonNull BaseTutorial t) {
+        t.add(t.forView(registerNickname, R.string.tutorial_chooseNickname)
+                .enableAutoTextPosition()
+                .roundRectRadius(8)
+                .focusShape(FocusShape.ROUNDED_RECTANGLE));
+        t.add(t.forView(registerIdCode, R.string.tutorial_chooseIdCode)
+                .enableAutoTextPosition()
+                .roundRectRadius(8)
+                .focusShape(FocusShape.ROUNDED_RECTANGLE));
+        t.add(t.forView(changeServer, R.string.tutorial_changeServer)
+                .roundRectRadius(8)
+                .enableAutoTextPosition()
+                .focusShape(FocusShape.ROUNDED_RECTANGLE));
+        t.add(t.forView(registerSubmit, R.string.tutorial_joinTheServer)
+                .roundRectRadius(8)
+                .enableAutoTextPosition()
+                .focusShape(FocusShape.ROUNDED_RECTANGLE));
         return true;
     }
 }

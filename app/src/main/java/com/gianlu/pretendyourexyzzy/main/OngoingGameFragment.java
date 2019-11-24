@@ -57,6 +57,7 @@ import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
 import com.gianlu.pretendyourexyzzy.starred.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.tutorial.CreateGameTutorial;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
+import com.gianlu.pretendyourexyzzy.tutorial.HowToPlayTutorial;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
@@ -65,7 +66,7 @@ import java.util.List;
 
 import okhttp3.HttpUrl;
 
-public class OngoingGameFragment extends FragmentWithDialog implements OngoingGameHelper.Listener, PlayersAdapter.Listener, TutorialManager.Listener, AnotherGameManager.Listener {
+public class OngoingGameFragment extends FragmentWithDialog implements OngoingGameHelper.Listener, PlayersAdapter.Listener, TutorialManager.Listener, AnotherGameManager.Listener, AnotherGameManager.OnPlayerStateChanged {
     private OnLeftGame onLeftGame;
     private ProgressBar loading;
     private GameLayout gameLayout;
@@ -181,7 +182,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
             return layout;
         }
 
-        tutorialManager = new TutorialManager(this, Discovery.CREATE_GAME);
+        tutorialManager = new TutorialManager(this, Discovery.CREATE_GAME, Discovery.HOW_TO_PLAY);
 
         try {
             pyx = RegisteredPyx.get();
@@ -196,6 +197,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         }
 
         manager.begin();
+        manager.setPlayerStateChangedListener(this);
 
         return layout;
     }
@@ -408,12 +410,32 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
 
     @Override
     public boolean canShow(@NonNull BaseTutorial tutorial) {
-        return tutorial instanceof CreateGameTutorial && getActivity() != null && manager != null && CommonUtils.isVisible(this) && manager.amHost();
+        if (getActivity() == null || !CommonUtils.isVisible(this)) return false;
+
+        if (tutorial instanceof CreateGameTutorial) {
+            return manager != null && manager.amHost();
+        } else if (tutorial instanceof HowToPlayTutorial) {
+            return manager != null && manager.isPlayerStatus(GameInfo.PlayerStatus.PLAYING);
+        } else {
+            return false;
+        }
     }
 
     @Override
     public boolean buildSequence(@NonNull BaseTutorial tutorial) {
-        return tutorial instanceof CreateGameTutorial && ((CreateGameTutorial) tutorial).buildSequence(requireActivity(), gameLayout);
+        if (tutorial instanceof CreateGameTutorial) {
+            return ((CreateGameTutorial) tutorial).buildSequence(requireActivity(), gameLayout);
+        } else if (tutorial instanceof HowToPlayTutorial) {
+            return ((HowToPlayTutorial) tutorial).buildSequence(gameLayout.getBlackCardView(),
+                    gameLayout.getCardsRecyclerView(), gameLayout.getPlayersRecyclerView());
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public void onPlayerStateChanged(@NonNull GameInfo.PlayerStatus status) {
+        gameLayout.getCardsRecyclerView().post(() -> tutorialManager.tryShowingTutorials(getActivity()));
     }
 
     @Override

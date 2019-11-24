@@ -169,6 +169,17 @@ public class SensitiveGameData {
         playersInterface.notifyDataSetChanged();
     }
 
+    boolean isPlayerStatus(@NonNull String me, @NonNull GameInfo.PlayerStatus status) {
+        synchronized (players) {
+            for (GameInfo.Player player : players) {
+                if (Objects.equals(player.name, me))
+                    return player.status == status;
+            }
+
+            return false;
+        }
+    }
+
     public interface Listener {
         void ourPlayerChanged(@NonNull GameInfo.Player player, @Nullable GameInfo.PlayerStatus oldStatus);
 
