@@ -25,7 +25,6 @@
     <string name="game_gameWinner_short">%s ha vinto il gioco!</string>
     <string name="game_youGameWinner_long">Hai vinto questo gioco! Attendi che il creatore ne avvii un altro…</string>
     <string name="game_youGameWinner_short">Hai vinto il gioco!</string>
-
     <!-- Tutorial messages -->
     <string name="tutorial_firstTitle">Benvenuto in Pretend You\'re Xyzzy</string>
     <string name="tutorial_firstDesc">Pretend You\'re Xyzzy è un gioco online basato su Cards Against Humanity. In questo tutorial ti spiegherò come giocare.</string>
@@ -50,7 +49,6 @@
     <string name="tutorial_whiteCard">Gioca una o più carte per completare la frase. Se non conosci il significato di una parola, usa la funzione dizionario nel menu in alto a destra.</string>
     <string name="tutorial_playCard">Per giocare una carta basta toccarla: apparirà una finestra di conferma.</string>
     <string name="tutorial_player">Una volta che un giocatore raggiunge l\'obiettivo, vince. Puoi toccare sul nome per rivelare ulteriori informazioni.</string>
-
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
     <string name="nickname">Nome</string>
@@ -208,7 +206,7 @@
     <string name="tapTargetView">TapTargetView</string>
     <string name="materialRatingBar">MaterialRatingBar</string>
     <string name="idCodeLabel">Codice di identicazione</string>
-    <string name="idCode"><![CDATA[<b>ID code:</b>]]> %s</string>
+    <string name="idCode"><![CDATA[<b>Codice ID</b>]]> %s</string>
     <string name="invalidIdCode">Il codice deve essere lungo tra gli 8 e i 100 caratteri.</string>
     <string name="generate">Genera</string>
     <string name="sigil"><![CDATA[<b>Sigillo:</b>]]> %s</string>
@@ -258,6 +256,6 @@
     <string name="unblockUser_summary">Sblocca gli utenti precedentemente bloccati</string>
     <string name="unblock">Sblocca</string>
     <string name="unknownChatCommand">Comando chat sconosciuto.</string>
-    <string name="lastRound">Last round</string>
-    <string name="spectatorsNotAllowed"><![CDATA[<b>Spectators:</b>]]><![CDATA[<i>not allowed</i>]]></string>
+    <string name="lastRound">Ultimo round</string>
+    <string name="spectatorsNotAllowed"><![CDATA[<b>Spettatori:</b>]]><![CDATA[<i>non consentiti</i>]]></string>
 </resources>
