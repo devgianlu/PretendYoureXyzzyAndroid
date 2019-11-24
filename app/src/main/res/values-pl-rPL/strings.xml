@@ -54,14 +54,12 @@
     <string name="nickname">Nickname</string>
     <string name="submit">Submit</string>
     <string name="changeServer">Change server</string>
-    <string name="third_part">Third part projects</string>
     <string name="reservedNickname">Nickname is reserved!</string>
     <string name="invalidNickname">Nickname must contain only upper and lower case letters, numbers, or underscores, must be 3 to 30 characters long, and must not start with a number.</string>
     <string name="alreadyUsedNickname">Nickname is already in use.</string>
     <string name="tooManyUsers">There are too many users connected. Either join another server, or wait for a user to disconnect.</string>
     <string name="failedLoading">Failed loading!</string>
     <string name="globalChat">Global chat</string>
-    <string name="apacheLicense">Licensed under Apache License 2.0</string>
     <string name="games">Games</string>
     <string name="gameChat">Game chat</string>
     <string name="failedLoading_reason">Failed loading: %s</string>
@@ -88,10 +86,7 @@
     <string name="score"><![CDATA[<b>Score:</b>]]> %d</string>
     <string name="numPick"><![CDATA[<b>Pick</b>]]> %d</string>
     <string name="numDraw"><![CDATA[<b>Draw</b>]]> %d</string>
-    <string name="winnerIs">%s wins this round!</string>
     <string name="gameOptions">Game options</string>
-    <string name="playerSkipped">Player %s has been skipped.</string>
-    <string name="judgeSkipped">Judge %s has been skipped!</string>
     <string name="scoreLimit"><![CDATA[<b>Score limit:</b>]]> %d</string>
     <string name="playerLimit"><![CDATA[<b>Players limit:</b>]]> %d</string>
     <string name="timerMultiplier"><![CDATA[<b>Timer multiplier:</b>]]> %s</string>
@@ -99,7 +94,6 @@
     <string name="blankCards"><![CDATA[<b>Blank cards:</b>]]> %d</string>
     <string name="cardSets"><![CDATA[<b>Card sets:</b>]]> %s</string>
     <string name="spectatorsLabel">Spectators</string>
-    <string name="spectatorsList"><![CDATA[<b>Spectators:</b>]]> %s</string>
     <string name="keepScreenOn">Keep screen on</string>
     <string name="starredCards">Starred cards</string>
     <string name="selectAStarredCard">Select a card from the list above.</string>
@@ -116,7 +110,6 @@
     <string name="cannotStartGame">Nie udało się uruchomić gry</string>
     <string name="gameStarted">Gra rozpoczęta!</string>
     <string name="share">Udostępnij</string>
-    <string name="failedSharing">Nie udało utworzyć utworzyć się linku do udostępnienia!</string>
     <string name="apply">Zastosuj</string>
     <string name="failedChangingOptions">Zmiana ustawień gry nie powiodła się!</string>
     <string name="optionsChanged">Ustawienia gry zostały zmienione.</string>
@@ -124,7 +117,6 @@
     <string name="password"><![CDATA[<b>Hasło:</b>]]> %s</string>
     <string name="scoreLimitLabel">Limit punktów</string>
     <string name="passwordLabel">Hasło</string>
-    <string name="hidePassword">Ukryj hasło</string>
     <string name="blankCardsLabel">Puste karty</string>
     <string name="timerMultiplierLabel">Mnożnik czasu</string>
     <string name="spectatorsLimitLabel">Limit obserwatorów</string>
@@ -140,7 +132,6 @@
     <string name="failedAddingCardcast">Nie udało się dodać zestawu kart!</string>
     <string name="notEnoughPlayers">Za mało graczy!</string>
     <string name="noCardSets">Brak zestawów kart.</string>
-    <string name="judgeLeft">Sędzia opuścił grę!</string>
     <string name="cannotStartGame_solution">Spełnij wymagania, dodając zestawy kart do gry.</string>
     <string name="byLowercase">przez %s</string>
     <string name="nsfw">NSFW</string>
@@ -173,7 +164,6 @@
     <string name="starredCardcastDecks">Ulubione zestawy Cardcast</string>
     <string name="noStarredDecks">Brak ulubionych zestawów kart!</string>
     <string name="toggleStarred">Dodaj/Usuń ulubione</string>
-    <string name="addStarredDecks">Dodaj ulubione zestawy</string>
     <string name="addStarredDecksFailedPartial">Nie można było dodać części zestawów kart!</string>
     <string name="starredDecksAdded">Dodano wszystkie ulubione zestawy kart.</string>
     <string name="loading">Ładowanie…</string>
@@ -189,10 +179,7 @@
     <string name="failedRemovingCardcastDeck">Failed removing the deck!</string>
     <string name="general">General</string>
     <string name="showBeginnerTutorial">Show beginner tutorial</string>
-    <string name="restartInAppTutorial">Restart features tutorial</string>
     <string name="showBeginnerTutorial_summary">Show the intro tutorial for the app</string>
-    <string name="restartInAppTutorial_summary">Features tutorial will be shown again while using the app</string>
-    <string name="tutorial">Tutorial</string>
     <string name="manage">Manage</string>
     <string name="manageServers">Manage servers</string>
     <string name="noServers">There are no custom servers.</string>
@@ -202,9 +189,6 @@
     <string name="invalidServerUrl">The server URL is invalid.</string>
     <string name="failedAddingServer">Failed adding a new server!</string>
     <string name="remove">Remove</string>
-    <string name="appIntro">App Intro</string>
-    <string name="tapTargetView">TapTargetView</string>
-    <string name="materialRatingBar">MaterialRatingBar</string>
     <string name="idCodeLabel">Identification code</string>
     <string name="idCode"><![CDATA[<b>ID code:</b>]]> %s</string>
     <string name="invalidIdCode">ID code must be between 8 and 100 characters long.</string>
@@ -233,8 +217,6 @@
     <string name="askWritePermission">Zapytaj o uprawnienia</string>
     <string name="askWritePermission_roundImage">Aby zapisać ten obraz aplikacja potrzebuje uprawnień do zapisu w pamięci urządzenia.</string>
     <string name="metrics">Wskaźniki</string>
-    <string name="playedRounds">Zagrano %d</string>
-    <string name="judgedRounds">Osądzono %d</string>
     <string name="playedAndJudged">%1$d rozegrano, %2$d osądzono</string>
     <string name="gameStartedAt">Gra rozpocznie się %s</string>
     <string name="playedRoundsLabel">Rozegrane rundy</string>
