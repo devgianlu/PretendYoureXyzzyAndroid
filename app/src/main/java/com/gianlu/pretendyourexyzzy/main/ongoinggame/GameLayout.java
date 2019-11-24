@@ -179,7 +179,7 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
         if (card != null) tableAdapter.addBlankCards(card);
     }
 
-    @Nullable
+    @NonNull
     @Override
     public RecyclerView getCardsRecyclerView() {
         return whiteCardsList;
@@ -212,6 +212,16 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
     public void resetTimer() {
         if (currentTask != null) currentTask.cancel();
         time.setText("");
+    }
+
+    @NonNull
+    public RecyclerView getPlayersRecyclerView() {
+        return playersList;
+    }
+
+    @NonNull
+    public GameCardView getBlackCardView() {
+        return blackCard;
     }
 
     public interface Listener {
