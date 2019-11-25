@@ -1,3 +1,7 @@
-Release 2.8.15:
-- Fixed crash on startup
-- Minor bug fixes
+### Added
+- Retrieve min/max players, spectators, score and blank cards
+
+### Changed
+- Updated Material design
+- Fixed wrong behaviour of insecure ID allowed
+- Updated onboarding tutorial
