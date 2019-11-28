@@ -391,16 +391,16 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             FragmentManager manager = getSupportFragmentManager();
             FragmentTransaction transaction = manager.beginTransaction();
 
-            Fragment ongoingGame = manager.findFragmentByTag(Item.ONGOING_GAME.tag);
-            if (ongoingGame != null) transaction.remove(ongoingGame);
-
-            Fragment gameChat = manager.findFragmentByTag(Item.GAME_CHAT.tag);
-            if (gameChat != null) transaction.remove(gameChat);
-
             try {
+                Fragment ongoingGame = manager.findFragmentByTag(Item.ONGOING_GAME.tag);
+                if (ongoingGame != null) transaction.remove(ongoingGame);
+
+                Fragment gameChat = manager.findFragmentByTag(Item.GAME_CHAT.tag);
+                if (gameChat != null) transaction.remove(gameChat);
+
                 transaction.commit();
             } catch (IllegalStateException ex) {
-                AnalyticsApplication.crashlyticsLog(ex.getMessage() + " at #onLeftGame()");
+                Logging.log("Failed fragments transaction on left game.", ex);
             }
         }
     }
