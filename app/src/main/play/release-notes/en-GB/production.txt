@@ -5,3 +5,4 @@
 - Updated Material design
 - Fixed wrong behaviour of insecure ID allowed
 - Updated onboarding tutorial
+- Fixed minor crashes
