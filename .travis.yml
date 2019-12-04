@@ -8,8 +8,8 @@ android:
     - extra-google-google_play_services
 
 before_install:
-  - openssl aes-256-cbc -K $encrypted_ab252fbdbf9f_key -iv $encrypted_ab252fbdbf9f_iv
-    -in secrets.tar.enc -out .travis/secrets.tar -d
+  - openssl aes-256-cbc -K $encrypted_66845d59e2a6_key -iv $encrypted_66845d59e2a6_iv
+    -in .travis/secrets.tar.enc -out .travis/secrets.tar -d
   - tar xvf .travis/secrets.tar -C .travis
   - chmod +x gradlew .travis/*.sh
   - cp .travis/google-services.json app
