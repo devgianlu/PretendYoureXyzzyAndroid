@@ -1,8 +1,3 @@
-### Added
-- Retrieve min/max players, spectators, score and blank cards
-
 ### Changed
-- Updated Material design
-- Fixed wrong behaviour of insecure ID allowed
-- Updated onboarding tutorial
-- Fixed minor crashes
+- Migrated to Firebase (Google Play users only)
+- Updated OkHttp and build tools
