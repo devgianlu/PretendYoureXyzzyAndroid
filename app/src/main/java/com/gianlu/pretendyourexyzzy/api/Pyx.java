@@ -48,6 +48,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.ssl.SSLException;
+
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -145,6 +147,9 @@ public class Pyx implements Closeable {
             }
         } catch (SocketTimeoutException ex) {
             if (!retried) return request(operation, true, params);
+            else throw ex;
+        } catch (RuntimeException ex) {
+            if (ex.getCause() instanceof SSLException) throw (SSLException) ex.getCause();
             else throw ex;
         }
     }
