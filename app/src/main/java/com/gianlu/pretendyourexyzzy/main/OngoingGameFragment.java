@@ -241,8 +241,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
                 return true;
             case R.id.ongoingGame_lastRound:
                 String roundId = manager == null ? null : manager.getLastRoundMetricsId();
-                if (roundId != null && getActivity() != null)
-                    GameRoundDialog.get(roundId).show(getActivity().getSupportFragmentManager(), null);
+                if (roundId != null) showDialog(GameRoundDialog.get(roundId));
                 return true;
             case R.id.ongoingGame_cardcast:
                 cardcastSheet = CardcastSheet.get();
