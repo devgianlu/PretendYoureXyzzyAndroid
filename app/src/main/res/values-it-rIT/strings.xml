@@ -240,4 +240,7 @@
     <string name="unknownChatCommand">Comando chat sconosciuto.</string>
     <string name="lastRound">Ultimo round</string>
     <string name="spectatorsNotAllowed"><![CDATA[<b>Spettatori:</b>]]><![CDATA[<i>non consentiti</i>]]></string>
+    <string name="googlePlayGames">Google Play Games</string>
+    <string name="loggedIn">Logged in</string>
+    <string name="login">Login</string>
 </resources>
