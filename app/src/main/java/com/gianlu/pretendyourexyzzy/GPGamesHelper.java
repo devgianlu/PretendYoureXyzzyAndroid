@@ -1,14 +1,20 @@
 package com.gianlu.pretendyourexyzzy;
 
 import android.content.Context;
+import android.view.Gravity;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.games.AchievementsClient;
 import com.google.android.gms.games.EventsClient;
 import com.google.android.gms.games.Games;
+import com.google.android.gms.games.GamesClient;
+
+import org.intellij.lang.annotations.MagicConstant;
 
 public final class GPGamesHelper {
     public static final String EVENT_CARDS_PLAYED = "CgkIus2n760REAIQAQ";
@@ -16,19 +22,70 @@ public final class GPGamesHelper {
     public static final String EVENT_ROUNDS_JUDGED = "CgkIus2n760REAIQAw";
     public static final String EVENT_ROUNDS_WON = "CgkIus2n760REAIQBA";
     public static final String EVENT_GAMES_WON = "CgkIus2n760REAIQBg";
+    public static final String ACH_WIN_10_ROUNDS = "CgkIus2n760REAIQBw";
+    public static final String ACH_WIN_30_ROUNDS = "CgkIus2n760REAIQCA";
+    public static final String ACH_WIN_69_ROUNDS = "CgkIus2n760REAIQCQ";
+    public static final String ACH_WIN_420_ROUNDS = "CgkIus2n760REAIQCg";
+    public static final String ACH_3_PEOPLE_GAME = "CgkIus2n760REAIQDA";
+    public static final String ACH_5_PEOPLE_GAME = "CgkIus2n760REAIQDQ";
+    public static final String ACH_10_PEOPLE_GAME = "CgkIus2n760REAIQDg ";
+    public static final String ACH_CARDCAST = "CgkIus2n760REAIQDw";
 
     private GPGamesHelper() {
     }
 
     @Nullable
-    private static EventsClient client(@NonNull Context context) {
+    private static EventsClient eventsClient(@NonNull Context context) {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (account == null) return null;
         else return Games.getEventsClient(context, account);
     }
 
-    public static void incrementEvent(@NonNull Context context, @NonNull String event, int amount) {
-        EventsClient client = client(context);
-        if (client != null) client.increment(event, amount);
+    @Nullable
+    private static AchievementsClient achievementsClient(@NonNull Context context) {
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+        if (account == null) return null;
+        else return Games.getAchievementsClient(context, account);
+    }
+
+    public static void setPopupView(@NonNull Context context, @NonNull View view, @MagicConstant(flagsFromClass = Gravity.class) int gravity) {
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+        if (account == null) return;
+
+        GamesClient client = Games.getGamesClient(context, account);
+        client.setViewForPopups(view);
+        client.setGravityForPopups(gravity);
+    }
+
+    public static void incrementEvent(@NonNull Context context, int amount, @NonNull String... events) {
+        EventsClient client = eventsClient(context);
+        if (client != null) {
+            for (String ev : events)
+                client.increment(ev, amount);
+        }
+    }
+
+    public static void achievementSteps(@NonNull Context context, int steps, @NonNull String... achievements) {
+        AchievementsClient client = achievementsClient(context);
+        if (client != null) {
+            for (String ac : achievements)
+                client.setSteps(ac, steps);
+        }
+    }
+
+    public static void unlockAchievement(@NonNull Context context, @NonNull String... achievements) {
+        AchievementsClient client = achievementsClient(context);
+        if (client != null) {
+            for (String ac : achievements)
+                client.unlock(ac);
+        }
+    }
+
+    public static void incrementAchievement(@NonNull Context context, int amount, @NonNull String... achievements) {
+        AchievementsClient client = achievementsClient(context);
+        if (client != null) {
+            for (String ac : achievements)
+                client.increment(ac, amount);
+        }
     }
 }

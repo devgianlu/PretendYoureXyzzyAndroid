@@ -2,8 +2,10 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 
 import androidx.annotation.DrawableRes;
@@ -108,9 +110,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 .addMenuItem(new BaseDrawerItem<>(DrawerItem.REPORT, R.drawable.baseline_report_problem_24, getString(R.string.report)))
                 .singleProfile(pyx.user(), this);
 
-        drawerManager = drawerConfig
-                .build(this, findViewById(R.id.main_drawer), toolbar);
-
+        drawerManager = drawerConfig.build(this, findViewById(R.id.main_drawer), toolbar);
         drawerManager.setActiveItem(DrawerItem.HOME);
 
         navigation = new BottomNavigationManager(findViewById(R.id.main_navigation));
@@ -158,6 +158,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         });
 
         setKeepScreenOn(Prefs.getBoolean(PK.KEEP_SCREEN_ON));
+
+        GPGamesHelper.setPopupView(this, (View) navigation.view.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         namesFragment = (NamesFragment) getOrAdd(transaction, Item.PLAYERS, NamesFragment::getInstance);

@@ -5,6 +5,7 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -102,6 +103,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
         Button preferences = findViewById(R.id.loading_preferences);
         preferences.setOnClickListener(v -> startActivity(new Intent(LoadingActivity.this, PreferenceActivity.class)));
+
+        GPGamesHelper.setPopupView(this, (View) preferences.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
 
         tutorialManager = new TutorialManager(this, Discovery.LOGIN);
 
