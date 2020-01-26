@@ -13,33 +13,28 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.adapters.ChatAdapter;
-import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
-import com.gianlu.pretendyourexyzzy.api.Pyx;
-import com.gianlu.pretendyourexyzzy.api.PyxRequests;
-import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
-import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
-import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
+import com.gianlu.pretendyourexyzzy.main.chats.ChatController;
+import com.gianlu.pretendyourexyzzy.main.chats.OverloadedChat;
+import com.gianlu.pretendyourexyzzy.main.chats.PyxChat;
 
-public class ChatFragment extends FragmentWithDialog implements ChatAdapter.Listener, Pyx.OnEventListener {
+public class ChatFragment extends FragmentWithDialog implements ChatAdapter.Listener, ChatController.Listener {
     private RecyclerMessageView rmv;
     private ChatAdapter adapter;
-    private int gid;
-    private RegisteredPyx pyx;
     private ImageButton send;
     private EditText message;
+    private ChatController controller;
 
     @NonNull
     public static ChatFragment getGameInstance(int gid) {
         ChatFragment fragment = new ChatFragment();
         Bundle args = new Bundle();
+        args.putSerializable("type", Type.GAME);
         args.putInt("gid", gid);
         fragment.setArguments(args);
         return fragment;
@@ -47,7 +42,20 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
 
     @NonNull
     public static ChatFragment getGlobalInstance() {
-        return new ChatFragment();
+        ChatFragment fragment = new ChatFragment();
+        Bundle args = new Bundle();
+        args.putSerializable("type", Type.GLOBAL);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @NonNull
+    public static ChatFragment getOverloadedInstance() {
+        ChatFragment fragment = new ChatFragment();
+        Bundle args = new Bundle();
+        args.putSerializable("type", Type.OVERLOADED);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Nullable
@@ -60,17 +68,35 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
         llm.setStackFromEnd(true);
         rmv.setLayoutManager(llm);
 
+        Type type;
         Bundle args = getArguments();
-        if (args == null) gid = -1;
-        else gid = args.getInt("gid", -1);
+        if (args == null || (type = (Type) args.getSerializable("type")) == null) {
+            this.rmv.showError(R.string.failedLoading);
+            return layout;
+        }
+
+        switch (type) {
+            case GLOBAL:
+                controller = PyxChat.globalController();
+                break;
+            case GAME:
+                controller = PyxChat.gameController(args.getInt("gid", -1));
+                break;
+            case OVERLOADED:
+                controller = new OverloadedChat();
+                break;
+            default:
+                this.rmv.showError(R.string.failedLoading);
+                return layout;
+        }
 
         adapter = new ChatAdapter(requireContext(), this);
         this.rmv.loadListData(adapter);
         onItemCountChanged(0);
 
         try {
-            pyx = RegisteredPyx.get();
-        } catch (LevelMismatchException ex) {
+            controller.init();
+        } catch (ChatController.InitException ex) {
             Logging.log(ex);
             this.rmv.showError(R.string.failedLoading);
             return layout;
@@ -80,60 +106,37 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
         send = layout.findViewById(R.id.chatFragment_send);
         send.setOnClickListener(v -> {
             String msg = message.getText().toString();
-            if (msg.isEmpty()) return;
-            sendMessage(msg);
+            if (msg.isEmpty() || controller == null) return;
+
+            send.setEnabled(false);
+            message.setEnabled(false);
+            controller.send(msg, getActivity(), new ChatController.SendCallback() {
+                @Override
+                public void onSuccessful() {
+                    message.setText(null);
+                    send.setEnabled(true);
+                    message.setEnabled(true);
+                }
+
+                @Override
+                public void unknownCommand() {
+                    showToast(Toaster.build().message(R.string.unknownChatCommand).error(false));
+                    send.setEnabled(true);
+                    message.setEnabled(true);
+                }
+
+                @Override
+                public void onFailed(@NonNull Exception ex) {
+                    showToast(Toaster.build().message(R.string.failedSendMessage).ex(ex));
+                    send.setEnabled(true);
+                    message.setEnabled(true);
+                }
+            });
         });
 
-        pyx.polling().addListener(this);
+        controller.listener(this);
 
         return layout;
-    }
-
-    private void sendMessage(@NonNull String msg) {
-        boolean emote;
-        boolean wall;
-        if (msg.startsWith("/")) {
-            String[] split = msg.split(" ");
-            if (split.length == 1 || split[1].isEmpty())
-                return;
-
-            msg = split[1];
-
-            switch (split[0].substring(1)) {
-                case "me":
-                    emote = true;
-                    wall = false;
-                    break;
-                case "wall":
-                    emote = false;
-                    wall = true;
-                    break;
-                default:
-                    showToast(Toaster.build().message(R.string.unknownChatCommand).error(false));
-                    return;
-            }
-        } else {
-            emote = false;
-            wall = false;
-        }
-
-        message.setEnabled(false);
-        send.setEnabled(false);
-        send(msg, emote, wall, new Pyx.OnSuccess() {
-            @Override
-            public void onDone() {
-                message.setText(null);
-                message.setEnabled(true);
-                send.setEnabled(true);
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                showToast(Toaster.build().message(R.string.failedSendMessage).ex(ex));
-                message.setEnabled(true);
-                send.setEnabled(true);
-            }
-        });
     }
 
     @Override
@@ -144,18 +147,8 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
 
     @Override
     public void onDestroy() {
-        if (pyx != null) pyx.polling().removeListener(this);
+        if (controller != null) controller.onDestroy();
         super.onDestroy();
-    }
-
-    private void send(@NonNull String msg, boolean emote, boolean wall, @NonNull Pyx.OnSuccess listener) {
-        if (gid == -1) {
-            pyx.request(PyxRequests.sendMessage(msg, emote, wall), getActivity(), listener);
-            AnalyticsApplication.sendAnalytics(Utils.ACTION_SENT_MSG);
-        } else {
-            pyx.request(PyxRequests.sendGameMessage(gid, msg, emote), getActivity(), listener);
-            AnalyticsApplication.sendAnalytics(Utils.ACTION_SENT_GAME_MSG);
-        }
     }
 
     public void scrollToTop() {
@@ -173,18 +166,18 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
         FragmentActivity activity = getActivity();
         if (activity == null) return;
 
-        UserInfoDialog.loadAndShow(pyx, activity, sender);
+        // TODO: UserInfoDialog.loadAndShow(pyx, activity, sender);
     }
 
     @Override
-    public void onPollMessage(@NonNull PollMessage message) {
+    public void onChatMessage(@NonNull ChatController.ChatMessage msg) {
         if (!isAdded()) return;
-        adapter.newMessage(message, gid);
+        adapter.newMessage(msg);
         rmv.list().scrollToPosition(adapter.getItemCount() - 1);
     }
 
-    @Override
-    public void onStoppedPolling() {
+    private enum Type {
+        GLOBAL, GAME, OVERLOADED
     }
 }
 
