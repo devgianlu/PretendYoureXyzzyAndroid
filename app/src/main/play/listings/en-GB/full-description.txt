@@ -4,7 +4,7 @@ This app let's you play Pretend You're Xyzzy, an online card game, on your devic
 This app content may disappoint some people. If you don't agree with the content of this app, don't complain with me. I'm not the creator of this game, just a player who is also a developer.
 --------------------------------
 
-The game is simple. Each round, one player asks a question from a black card, and everyone else answers with their funniest white card.
+The game is simple. Each round, a black card is randomly chosen from the deck, everyone answers with their funniest white card. The judge the decies which player wins.
 
 This project is open source at https://github.com/devgianlu/PretendYoureXyzzyAndroid
 ------------------------------
