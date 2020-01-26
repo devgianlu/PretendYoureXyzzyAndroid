@@ -2,6 +2,9 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.view.Gravity;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,20 +15,41 @@ import com.gianlu.commonutils.preferences.BasePreferenceActivity;
 import com.gianlu.commonutils.preferences.BasePreferenceFragment;
 import com.gianlu.commonutils.preferences.MaterialAboutPreferenceItem;
 import com.gianlu.commonutils.preferences.Prefs;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.activities.TutorialActivity;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.games.Games;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.yarolegovich.mp.MaterialCheckboxPreference;
 import com.yarolegovich.mp.MaterialStandardPreference;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
 public class PreferenceActivity extends BasePreferenceActivity {
+    private static final int GOOGLE_SIGN_IN_CODE = 2;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        View root = getWindow().getDecorView().findViewById(android.R.id.content);
+        if (root != null)
+            GPGamesHelper.setPopupView(this, root, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+    }
+
     @NonNull
     @Override
     protected List<MaterialAboutPreferenceItem> getPreferencesItems() {
-        return Collections.singletonList(new MaterialAboutPreferenceItem(R.string.general, R.drawable.baseline_settings_24, GeneralFragment.class));
+        return Arrays.asList(new MaterialAboutPreferenceItem(R.string.general, R.drawable.baseline_settings_24, GeneralFragment.class),
+                new MaterialAboutPreferenceItem(R.string.googlePlayGames, R.drawable.baseline_videogame_asset_24, GooglePlayGamesFragment.class));
     }
 
     @Override
@@ -98,6 +122,63 @@ public class PreferenceActivity extends BasePreferenceActivity {
         @Override
         public int getTitleRes() {
             return R.string.general;
+        }
+    }
+
+    public static class GooglePlayGamesFragment extends BasePreferenceFragment {
+
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+            if (requestCode == GOOGLE_SIGN_IN_CODE) {
+                GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+                if (result.isSuccess()) {
+                    onBackPressed();
+                } else {
+                    String msg = result.getStatus().getStatusMessage();
+                    if (msg != null && !msg.isEmpty())
+                        showToast(Toaster.build().message(msg).error(false));
+                }
+            } else {
+                super.onActivityResult(requestCode, resultCode, data);
+            }
+        }
+
+        @Override
+        protected void buildPreferences(@NonNull Context context) {
+            GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+            if (account == null) {
+                MaterialStandardPreference login = new MaterialStandardPreference(context);
+                login.setTitle(R.string.login);
+                login.setOnClickListener(v -> {
+                    GoogleSignInClient signInClient = GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+                    startActivityForResult(signInClient.getSignInIntent(), GOOGLE_SIGN_IN_CODE);
+                });
+                addPreference(login);
+                return;
+            }
+
+            MaterialStandardPreference loggedInAs = new MaterialStandardPreference(context);
+            loggedInAs.setTitle(R.string.loggedIn);
+            loggedInAs.setSummary(Utils.getAccountName(account));
+            loggedInAs.setClickable(false);
+            addPreference(loggedInAs);
+
+            MaterialStandardPreference logout = new MaterialStandardPreference(context);
+            logout.setTitle(R.string.logout);
+            logout.setIcon(R.drawable.outline_exit_to_app_24);
+            logout.setOnClickListener(v -> {
+                GoogleSignInClient signInClient = GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+                signInClient.signOut().addOnCompleteListener(task -> onBackPressed());
+            });
+            addPreference(logout);
+
+            Games.getPlayersClient(context, account).getCurrentPlayer()
+                    .addOnSuccessListener(requireActivity(), player -> loggedInAs.setSummary(player.getDisplayName()));
+        }
+
+        @Override
+        public int getTitleRes() {
+            return R.string.googlePlayGames;
         }
     }
 }

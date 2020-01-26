@@ -45,6 +45,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -103,8 +104,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
         Button preferences = findViewById(R.id.loading_preferences);
         preferences.setOnClickListener(v -> startActivity(new Intent(LoadingActivity.this, PreferenceActivity.class)));
-
-        GPGamesHelper.setPopupView(this, (View) preferences.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
 
         tutorialManager = new TutorialManager(this, Discovery.LOGIN);
 
@@ -175,7 +174,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private void googleSignedIn(GoogleSignInAccount account) {
         if (account == null) return;
 
-        Logging.log("Successfully logged in Google Play as " + account.getEmail(), false);
+        Logging.log("Successfully logged in Google Play as " + Utils.getAccountName(account), false);
     }
 
     private void signInSilently() {
@@ -189,8 +188,10 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 if (task.isSuccessful()) {
                     googleSignedIn(task.getResult());
                 } else {
-                    Intent intent = signInClient.getSignInIntent();
-                    startActivityForResult(intent, GOOGLE_SIGN_IN_CODE);
+                    if (Prefs.getBoolean(PK.SHOULD_PROMPT_GOOGLE_PLAY, true)) {
+                        Intent intent = signInClient.getSignInIntent();
+                        startActivityForResult(intent, GOOGLE_SIGN_IN_CODE);
+                    }
                 }
             });
         }
@@ -203,6 +204,9 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             if (result.isSuccess()) {
                 googleSignedIn(result.getSignInAccount());
             } else {
+                if (result.getStatus().getStatusCode() == GoogleSignInStatusCodes.SIGN_IN_CANCELLED)
+                    Prefs.putBoolean(PK.SHOULD_PROMPT_GOOGLE_PLAY, false);
+
                 String msg = result.getStatus().getStatusMessage();
                 if (msg != null && !msg.isEmpty())
                     Toaster.with(this).message(msg).error(false).show();
@@ -394,5 +398,9 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         return true;
     }
 
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+        GPGamesHelper.setPopupView(this, (View) register.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+    }
 }
