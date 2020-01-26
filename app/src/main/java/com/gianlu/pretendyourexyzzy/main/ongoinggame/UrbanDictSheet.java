@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.main.ongoinggame;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.LayoutInflater;
@@ -90,6 +91,10 @@ public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> 
 
     @Override
     public void onDefinitionSelected(@NonNull Definition definition) {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(definition.permalink)));
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(definition.permalink)));
+        } catch (ActivityNotFoundException ex) {
+            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.missingWebBrowser).ex(ex));
+        }
     }
 }

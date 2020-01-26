@@ -5,6 +5,7 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -38,6 +39,13 @@ import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.tutorial.LoginTutorial;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -51,6 +59,7 @@ import me.toptas.fancyshowcase.FocusShape;
 
 
 public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener {
+    private static final int GOOGLE_SIGN_IN_CODE = 3;
     private Intent goTo;
     private boolean finished = false;
     private ProgressBar loading;
@@ -158,6 +167,53 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         });
         discoveryApi.firstLoad(this, null, this);
+
+        signInSilently();
+    }
+
+    private void googleSignedIn(GoogleSignInAccount account) {
+        if (account == null) return;
+
+        Logging.log("Successfully logged in Google Play as " + Utils.getAccountName(account), false);
+    }
+
+    private void signInSilently() {
+        GoogleSignInOptions signInOptions = GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN;
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        if (GoogleSignIn.hasPermissions(account, signInOptions.getScopeArray())) {
+            googleSignedIn(account);
+        } else {
+            GoogleSignInClient signInClient = GoogleSignIn.getClient(this, signInOptions);
+            signInClient.silentSignIn().addOnCompleteListener(this, task -> {
+                if (task.isSuccessful()) {
+                    googleSignedIn(task.getResult());
+                } else {
+                    if (Prefs.getBoolean(PK.SHOULD_PROMPT_GOOGLE_PLAY, true)) {
+                        Intent intent = signInClient.getSignInIntent();
+                        startActivityForResult(intent, GOOGLE_SIGN_IN_CODE);
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == GOOGLE_SIGN_IN_CODE) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            if (result.isSuccess()) {
+                googleSignedIn(result.getSignInAccount());
+            } else {
+                if (result.getStatus().getStatusCode() == GoogleSignInStatusCodes.SIGN_IN_CANCELLED)
+                    Prefs.putBoolean(PK.SHOULD_PROMPT_GOOGLE_PLAY, false);
+
+                String msg = result.getStatus().getStatusMessage();
+                if (msg != null && !msg.isEmpty())
+                    Toaster.with(this).message(msg).error(false).show();
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     private void changeServerDialog(boolean dismissible) {
@@ -340,5 +396,11 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 .enableAutoTextPosition()
                 .focusShape(FocusShape.ROUNDED_RECTANGLE));
         return true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        GPGamesHelper.setPopupView(this, (View) register.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
     }
 }

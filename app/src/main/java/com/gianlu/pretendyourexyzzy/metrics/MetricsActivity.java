@@ -183,6 +183,6 @@ public class MetricsActivity extends ActivityWithDialog implements BreadcrumbsVi
 
     @Override
     public void onRoundSelected(@NonNull SimpleRound round) {
-        GameRoundDialog.get(round.id).show(getSupportFragmentManager(), TAG_ROUND + round.id);
+        showDialog(GameRoundDialog.get(round.id), TAG_ROUND + round.id);
     }
 }
