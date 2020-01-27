@@ -10,6 +10,7 @@ import androidx.fragment.app.DialogFragment;
 
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.ui.Toaster;
+import com.gianlu.pretendyourexyzzy.GPGamesHelper;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
@@ -147,8 +148,16 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         gameLayout.notifyWinnerCard(winnerCard);
         gameLayout.countFrom(intermission);
 
-        if (roundWinner.equals(gameData.me)) event(UiEvent.YOU_ROUND_WINNER);
-        else event(UiEvent.ROUND_WINNER, roundWinner);
+        if (roundWinner.equals(gameData.me)) {
+            GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_ROUNDS_WON);
+            GPGamesHelper.incrementAchievement(context, 1, GPGamesHelper.ACH_WIN_10_ROUNDS,
+                    GPGamesHelper.ACH_WIN_30_ROUNDS, GPGamesHelper.ACH_WIN_69_ROUNDS,
+                    GPGamesHelper.ACH_WIN_420_ROUNDS);
+
+            event(UiEvent.YOU_ROUND_WINNER);
+        } else {
+            event(UiEvent.ROUND_WINNER, roundWinner);
+        }
 
         gameData.lastRoundPermalink = lastRoundPermalink;
     }
@@ -171,6 +180,16 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 gameLayout.clearTable();
                 gameLayout.setBlackCard(new Card(msg.obj.getJSONObject("bc")));
                 updateGameInfo();
+
+                if (gameData.amHost()) {
+                    boolean hasCardcast = false;
+                    for (int deckId : gameData.options.cardSets) {
+                        if (deckId < 0) hasCardcast = true; // Cardcast deck ids are always negative
+                    }
+
+                    if (hasCardcast)
+                        GPGamesHelper.unlockAchievement(context, GPGamesHelper.ACH_CARDCAST);
+                }
                 break;
             case LOBBY:
                 event(UiEvent.WAITING_FOR_START);
@@ -199,8 +218,10 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 break;
             case IDLE:
                 if (oldStatus == GameInfo.PlayerStatus.PLAYING) {
-                    if (gameData.status != Game.Status.JUDGING)
+                    if (gameData.status != Game.Status.JUDGING) {
+                        GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_ROUNDS_PLAYED);
                         event(UiEvent.WAITING_FOR_OTHER_PLAYERS);
+                    }
                 } else if (oldStatus == null) {
                     if (gameData.status == Game.Status.LOBBY) event(UiEvent.WAITING_FOR_START);
                     else event(UiEvent.WAITING_FOR_ROUND_TO_END);
@@ -223,6 +244,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 break;
             case WINNER:
                 event(UiEvent.YOU_GAME_WINNER);
+                GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_GAMES_WON);
                 break;
             case SPECTATOR:
                 break;
@@ -284,6 +306,12 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             @Override
             public void onDone(@NonNull GameInfo result) {
                 gameData.update(result);
+
+                if (gameData.amHost()) {
+                    int players = result.players.size() - 1; // Do not include ourselves
+                    GPGamesHelper.achievementSteps(context, players, GPGamesHelper.ACH_3_PEOPLE_GAME,
+                            GPGamesHelper.ACH_5_PEOPLE_GAME, GPGamesHelper.ACH_10_PEOPLE_GAME);
+                }
             }
 
             @Override
@@ -369,6 +397,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             @Override
             public void onDone() {
                 ThisApplication.sendAnalytics(Utils.ACTION_JUDGE_CARD);
+                GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_ROUNDS_JUDGED);
             }
 
             @Override
@@ -393,6 +422,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 gameLayout.addTable(card, gameLayout.blackCard());
 
                 ThisApplication.sendAnalytics(text == null ? Utils.ACTION_PLAY_CARD : Utils.ACTION_PLAY_CUSTOM_CARD);
+                GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_CARDS_PLAYED);
             }
 
             @Override

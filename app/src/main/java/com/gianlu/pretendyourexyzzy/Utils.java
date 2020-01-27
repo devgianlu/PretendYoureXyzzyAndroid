@@ -8,6 +8,7 @@ import com.gianlu.pretendyourexyzzy.api.models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -37,6 +38,23 @@ public final class Utils {
     public static final String ACTION_UNKNOWN_EVENT = "unknown_server_event";
 
     private Utils() {
+    }
+
+    @NonNull
+    public static String getAccountName(@NonNull GoogleSignInAccount account) {
+        String name = account.getDisplayName();
+        if (name == null || name.isEmpty()) {
+            name = account.getGivenName();
+            if (name == null || name.isEmpty()) {
+                name = account.getEmail();
+                if (name == null || name.isEmpty()) {
+                    name = account.getId();
+                    if (name == null || name.isEmpty()) name = "<unknown>";
+                }
+            }
+        }
+
+        return name;
     }
 
     public static List<NameValuePair> splitQuery(@NonNull URL url) {
