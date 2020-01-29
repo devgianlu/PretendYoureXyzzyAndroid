@@ -243,4 +243,5 @@
     <string name="googlePlayGames">Google Play Games</string>
     <string name="loggedIn">Logged in</string>
     <string name="login">Login</string>
+    <string name="failedSigningIn">Failed signing in!</string>
 </resources>

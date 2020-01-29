@@ -17,14 +17,15 @@ import com.gianlu.commonutils.preferences.MaterialAboutPreferenceItem;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.activities.TutorialActivity;
+import com.gianlu.pretendyourexyzzy.api.overloaded.OverloadedApi;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.games.Games;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.auth.FirebaseAuth;
 import com.yarolegovich.mp.MaterialCheckboxPreference;
 import com.yarolegovich.mp.MaterialStandardPreference;
 
@@ -132,11 +133,14 @@ public class PreferenceActivity extends BasePreferenceActivity {
             if (requestCode == GOOGLE_SIGN_IN_CODE) {
                 GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
                 if (result.isSuccess()) {
+                    if (getActivity() != null && result.getSignInAccount() != null)
+                        OverloadedApi.authenticateFirebase(result.getSignInAccount());
+
                     onBackPressed();
                 } else {
                     String msg = result.getStatus().getStatusMessage();
-                    if (msg != null && !msg.isEmpty())
-                        showToast(Toaster.build().message(msg).error(false));
+                    if (msg == null || msg.isEmpty()) msg = getString(R.string.failedSigningIn);
+                    showToast(Toaster.build().message(msg).error(false));
                 }
             } else {
                 super.onActivityResult(requestCode, resultCode, data);
@@ -150,7 +154,7 @@ public class PreferenceActivity extends BasePreferenceActivity {
                 MaterialStandardPreference login = new MaterialStandardPreference(context);
                 login.setTitle(R.string.login);
                 login.setOnClickListener(v -> {
-                    GoogleSignInClient signInClient = GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+                    GoogleSignInClient signInClient = GoogleSignIn.getClient(context, OverloadedApi.googleSignInOptions());
                     startActivityForResult(signInClient.getSignInIntent(), GOOGLE_SIGN_IN_CODE);
                 });
                 addPreference(login);
@@ -167,7 +171,8 @@ public class PreferenceActivity extends BasePreferenceActivity {
             logout.setTitle(R.string.logout);
             logout.setIcon(R.drawable.outline_exit_to_app_24);
             logout.setOnClickListener(v -> {
-                GoogleSignInClient signInClient = GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+                FirebaseAuth.getInstance().signOut();
+                GoogleSignInClient signInClient = GoogleSignIn.getClient(context, OverloadedApi.googleSignInOptions());
                 signInClient.signOut().addOnCompleteListener(task -> onBackPressed());
             });
             addPreference(logout);

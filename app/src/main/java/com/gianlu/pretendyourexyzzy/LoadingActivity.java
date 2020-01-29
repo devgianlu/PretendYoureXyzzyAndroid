@@ -37,6 +37,7 @@ import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
+import com.gianlu.pretendyourexyzzy.api.overloaded.OverloadedApi;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.tutorial.LoginTutorial;
 import com.google.android.gms.auth.api.Auth;
@@ -175,15 +176,16 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         if (account == null) return;
 
         Logging.log("Successfully logged in Google Play as " + Utils.getAccountName(account), false);
+        OverloadedApi.authenticateFirebase(account);
     }
 
     private void signInSilently() {
-        GoogleSignInOptions signInOptions = GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN;
+        GoogleSignInOptions gso = OverloadedApi.googleSignInOptions();
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        if (GoogleSignIn.hasPermissions(account, signInOptions.getScopeArray())) {
+        if (GoogleSignIn.hasPermissions(account, gso.getScopeArray())) {
             googleSignedIn(account);
         } else {
-            GoogleSignInClient signInClient = GoogleSignIn.getClient(this, signInOptions);
+            GoogleSignInClient signInClient = GoogleSignIn.getClient(this, gso);
             signInClient.silentSignIn().addOnCompleteListener(this, task -> {
                 if (task.isSuccessful()) {
                     googleSignedIn(task.getResult());
@@ -208,8 +210,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                     Prefs.putBoolean(PK.SHOULD_PROMPT_GOOGLE_PLAY, false);
 
                 String msg = result.getStatus().getStatusMessage();
-                if (msg != null && !msg.isEmpty())
-                    Toaster.with(this).message(msg).error(false).show();
+                if (msg == null || msg.isEmpty()) msg = getString(R.string.failedSigningIn);
+                showToast(Toaster.build().message(msg).error(false));
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);

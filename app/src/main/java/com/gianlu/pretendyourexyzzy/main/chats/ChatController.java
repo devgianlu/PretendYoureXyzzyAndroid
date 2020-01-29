@@ -30,6 +30,10 @@ public interface ChatController {
         InitException(Throwable cause) {
             super(cause);
         }
+
+        InitException(String message) {
+            super(message);
+        }
     }
 
     class ChatMessage {

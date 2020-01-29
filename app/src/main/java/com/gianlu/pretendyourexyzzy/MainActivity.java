@@ -43,6 +43,8 @@ import com.gianlu.pretendyourexyzzy.main.NamesFragment;
 import com.gianlu.pretendyourexyzzy.main.OnLeftGame;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameHelper;
+import com.gianlu.pretendyourexyzzy.main.chats.ChatController;
+import com.gianlu.pretendyourexyzzy.main.chats.OverloadedChat;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsActivity;
 import com.gianlu.pretendyourexyzzy.starred.StarredDecksActivity;
@@ -215,6 +217,25 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             gamesFragment.launchGame(perm, getIntent().getStringExtra("password"), getIntent().getBooleanExtra("shouldRequest", true));
             getIntent().removeExtra("gid");
         }
+
+        testOverloadedChat(); // FIXME
+    }
+
+    private void testOverloadedChat() {
+        OverloadedChat chat = new OverloadedChat();
+        try {
+            chat.init();
+        } catch (ChatController.InitException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        chat.listener(new ChatController.Listener() {
+            @Override
+            public void onChatMessage(@NonNull ChatController.ChatMessage msg) {
+                System.out.println(msg);
+            }
+        });
     }
 
     @NonNull

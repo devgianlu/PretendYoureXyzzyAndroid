@@ -100,6 +100,7 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
 
     implementation 'com.google.firebase:firebase-firestore:21.3.1'
+    implementation 'com.google.firebase:firebase-auth:19.2.0'
 
     implementation 'com.google.android.gms:play-services-games:19.0.0'
     implementation 'com.google.android.gms:play-services-auth:17.0.0'
