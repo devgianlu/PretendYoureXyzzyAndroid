@@ -166,7 +166,8 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
         FragmentActivity activity = getActivity();
         if (activity == null) return;
 
-        // TODO: UserInfoDialog.loadAndShow(pyx, activity, sender);
+        // TODO: Show sender's info
+        // UserInfoDialog.loadAndShow(pyx, activity, sender);
     }
 
     @Override

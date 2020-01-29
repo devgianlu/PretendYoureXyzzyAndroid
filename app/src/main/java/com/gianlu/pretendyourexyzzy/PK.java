@@ -21,5 +21,4 @@ public final class PK extends CommonPK {
     public static final Prefs.Key WELCOME_MSG_CACHE = new Prefs.Key("welcomeMsgCache");
     public static final Prefs.Key WELCOME_MSG_CACHE_AGE = new Prefs.Key("welcomeMsgCacheAge");
     public static final Prefs.Key BLOCKED_USERS = new Prefs.Key("blockedUsers");
-    public static final Prefs.Key SHOULD_PROMPT_GOOGLE_PLAY = new Prefs.Key("shouldPromptGooglePlay");
 }

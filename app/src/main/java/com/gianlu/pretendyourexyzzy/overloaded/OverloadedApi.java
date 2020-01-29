@@ -1,18 +1,13 @@
-package com.gianlu.pretendyourexyzzy.api.overloaded;
+package com.gianlu.pretendyourexyzzy.overloaded;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.main.chats.ChatController;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.PlayGamesAuthProvider;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -23,43 +18,12 @@ import java.util.Collections;
 import java.util.List;
 
 public class OverloadedApi {
-    private static final String CLIENT_ID = "596428580538-idv220mduj2clinjoq11sd0n60dgbjr4.apps.googleusercontent.com";
     private static OverloadedApi instance = null;
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
     private ChatModule chat;
 
     private OverloadedApi() {
-    }
-
-    @NonNull
-    public static GoogleSignInOptions googleSignInOptions() {
-        return new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
-                .requestServerAuthCode(CLIENT_ID)
-                .build();
-    }
-
-    public static void authenticateFirebase(@NonNull GoogleSignInAccount account) {
-        if (get().auth.getCurrentUser() != null) {
-            Logging.log("Already logged in Firebase as " + get().auth.getCurrentUser().getUid(), false);
-            return;
-        }
-
-        if (account.getServerAuthCode() == null) return;
-
-        AuthCredential credential = PlayGamesAuthProvider.getCredential(account.getServerAuthCode());
-        get().auth.signInWithCredential(credential).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                AuthResult result = task.getResult();
-                FirebaseUser user;
-                if (result != null && (user = result.getUser()) != null) {
-                    Logging.log("Successfully logged in Firebase as " + user.getUid(), false);
-                    return;
-                }
-            }
-
-            Logging.log("Failed logging in Firebase!", task.getException());
-        });
     }
 
     @NonNull
@@ -105,7 +69,7 @@ public class OverloadedApi {
         private static ChatController.ChatMessage processSnapshot(@NonNull DocumentSnapshot doc) {
             System.out.println(doc);
             System.out.println(doc.getReference().getPath());
-            return null; // FIXME
+            return null; // FIXME: Parse chat message properly
         }
 
         @NonNull

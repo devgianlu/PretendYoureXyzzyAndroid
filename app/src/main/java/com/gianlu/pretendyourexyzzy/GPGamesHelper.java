@@ -7,14 +7,17 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.games.AchievementsClient;
 import com.google.android.gms.games.EventsClient;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesClient;
 
 import org.intellij.lang.annotations.MagicConstant;
+import org.jetbrains.annotations.Contract;
 
 public final class GPGamesHelper {
     public static final String EVENT_CARDS_PLAYED = "CgkIus2n760REAIQAQ";
@@ -34,23 +37,39 @@ public final class GPGamesHelper {
     private GPGamesHelper() {
     }
 
+    @Contract("null -> false")
+    private static boolean checkAccount(@Nullable GoogleSignInAccount account) {
+        if (!OverloadedSignInHelper.isSignedIn())
+            return false;
+
+        if (account == null)
+            return false;
+
+        for (Scope scope : account.getGrantedScopes()) {
+            if (scope.getScopeUri().equals("https://www.googleapis.com/auth/games_lite"))
+                return true;
+        }
+
+        return false;
+    }
+
     @Nullable
     private static EventsClient eventsClient(@NonNull Context context) {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-        if (account == null) return null;
-        else return Games.getEventsClient(context, account);
+        if (checkAccount(account)) return Games.getEventsClient(context, account);
+        else return null;
     }
 
     @Nullable
     private static AchievementsClient achievementsClient(@NonNull Context context) {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-        if (account == null) return null;
-        else return Games.getAchievementsClient(context, account);
+        if (checkAccount(account)) return Games.getAchievementsClient(context, account);
+        else return null;
     }
 
     public static void setPopupView(@NonNull Context context, @NonNull View view, @MagicConstant(flagsFromClass = Gravity.class) int gravity) {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-        if (account == null) return;
+        if (!checkAccount(account)) return;
 
         GamesClient client = Games.getGamesClient(context, account);
         client.setViewForPopups(view);

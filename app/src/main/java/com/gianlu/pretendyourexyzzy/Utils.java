@@ -8,7 +8,7 @@ import com.gianlu.pretendyourexyzzy.api.models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -41,17 +41,12 @@ public final class Utils {
     }
 
     @NonNull
-    public static String getAccountName(@NonNull GoogleSignInAccount account) {
-        String name = account.getDisplayName();
+    public static String getDisplayableName(@NonNull FirebaseUser user) {
+        String name = user.getDisplayName();
         if (name == null || name.isEmpty()) {
-            name = account.getGivenName();
-            if (name == null || name.isEmpty()) {
-                name = account.getEmail();
-                if (name == null || name.isEmpty()) {
-                    name = account.getId();
-                    if (name == null || name.isEmpty()) name = "<unknown>";
-                }
-            }
+            name = user.getEmail();
+            if (name == null || name.isEmpty())
+                name = user.getUid();
         }
 
         return name;

@@ -244,4 +244,11 @@
     <string name="loggedIn">Logged in</string>
     <string name="login">Login</string>
     <string name="failedSigningIn">Failed signing in!</string>
+    <string name="buyOverloaded">Buy Overloaded</string>
+    <string name="overloaded_requiresSignIn">Overloaded requires sign in</string>
+    <string name="overloaded_requiresSignIn_desc">Before joining Overloaded, you must sign in with one of the following providers!</string>
+    <string name="google">Google</string>
+    <string name="signInSuccessful">Successfully signed in!</string>
+    <string name="overloaded" translatable="false">Overloaded</string>
+    <string name="overloadedLogin_please">Login to enable exciting features!</string>
 </resources>

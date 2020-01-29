@@ -5,7 +5,7 @@ import android.app.Activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.gianlu.pretendyourexyzzy.api.overloaded.OverloadedApi;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedApi;
 import com.google.firebase.firestore.ListenerRegistration;
 
 public class OverloadedChat implements ChatController {
@@ -27,7 +27,7 @@ public class OverloadedChat implements ChatController {
 
     @Override
     public void send(@NonNull String msg, @Nullable Activity activity, @NonNull SendCallback callback) {
-        // TODO
+        // TODO: Send chat message
     }
 
     @Override

@@ -11,21 +11,19 @@ import androidx.annotation.Nullable;
 
 import com.danielstone.materialaboutlibrary.items.MaterialAboutActionItem;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutItem;
+import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.preferences.BasePreferenceActivity;
 import com.gianlu.commonutils.preferences.BasePreferenceFragment;
 import com.gianlu.commonutils.preferences.MaterialAboutPreferenceItem;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.activities.TutorialActivity;
-import com.gianlu.pretendyourexyzzy.api.overloaded.OverloadedApi;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.games.Games;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInDialog;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper.SignInProvider;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.yarolegovich.mp.MaterialCheckboxPreference;
 import com.yarolegovich.mp.MaterialStandardPreference;
 
@@ -34,8 +32,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-public class PreferenceActivity extends BasePreferenceActivity {
-    private static final int GOOGLE_SIGN_IN_CODE = 2;
+public class PreferenceActivity extends BasePreferenceActivity implements OverloadedSignInDialog.Listener {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,7 +47,7 @@ public class PreferenceActivity extends BasePreferenceActivity {
     @Override
     protected List<MaterialAboutPreferenceItem> getPreferencesItems() {
         return Arrays.asList(new MaterialAboutPreferenceItem(R.string.general, R.drawable.baseline_settings_24, GeneralFragment.class),
-                new MaterialAboutPreferenceItem(R.string.googlePlayGames, R.drawable.baseline_videogame_asset_24, GooglePlayGamesFragment.class));
+                new MaterialAboutPreferenceItem(R.string.overloaded, R.drawable.baseline_videogame_asset_24, OverloadedFragment.class));
     }
 
     @Override
@@ -78,6 +75,12 @@ public class PreferenceActivity extends BasePreferenceActivity {
     @Override
     protected boolean disableOtherDonationsOnGooglePlay() {
         return true;
+    }
+
+    @Override
+    public void onSelectedSignInProvider(@NonNull SignInProvider provider) {
+        OverloadedFragment fragment = (OverloadedFragment) getSupportFragmentManager().findFragmentByTag(OverloadedFragment.class.getName());
+        if (fragment != null) fragment.onSelectedSignInProvider(provider);
     }
 
     public static class GeneralFragment extends BasePreferenceFragment {
@@ -126,21 +129,27 @@ public class PreferenceActivity extends BasePreferenceActivity {
         }
     }
 
-    public static class GooglePlayGamesFragment extends BasePreferenceFragment {
+    public static class OverloadedFragment extends BasePreferenceFragment implements OverloadedSignInDialog.Listener {
+        private static final int RC_SIGN_IN = 3;
+        private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
 
         @Override
         public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-            if (requestCode == GOOGLE_SIGN_IN_CODE) {
-                GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-                if (result.isSuccess()) {
-                    if (getActivity() != null && result.getSignInAccount() != null)
-                        OverloadedApi.authenticateFirebase(result.getSignInAccount());
+            if (requestCode == RC_SIGN_IN) {
+                if (data != null) {
+                    signInHelper.processSignInData(data, new OverloadedSignInHelper.SignInCallback() {
+                        @Override
+                        public void onSignInSuccessful() {
+                            showToast(Toaster.build().message(R.string.signInSuccessful));
+                            onBackPressed();
+                        }
 
-                    onBackPressed();
-                } else {
-                    String msg = result.getStatus().getStatusMessage();
-                    if (msg == null || msg.isEmpty()) msg = getString(R.string.failedSigningIn);
-                    showToast(Toaster.build().message(msg).error(false));
+                        @Override
+                        public void onSignInFailed() {
+                            showToast(Toaster.build().message(R.string.failedSigningIn));
+                            onBackPressed();
+                        }
+                    });
                 }
             } else {
                 super.onActivityResult(requestCode, resultCode, data);
@@ -149,41 +158,42 @@ public class PreferenceActivity extends BasePreferenceActivity {
 
         @Override
         protected void buildPreferences(@NonNull Context context) {
-            GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-            if (account == null) {
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (currentUser != null) {
+                MaterialStandardPreference loggedInAs = new MaterialStandardPreference(context);
+                loggedInAs.setTitle(R.string.loggedIn);
+                loggedInAs.setSummary(Utils.getDisplayableName(currentUser));
+                loggedInAs.setClickable(false);
+                addPreference(loggedInAs);
+
+                // TODO: Overloaded payment status
+
+                MaterialStandardPreference logout = new MaterialStandardPreference(context);
+                logout.setTitle(R.string.logout);
+                logout.setIcon(R.drawable.outline_exit_to_app_24);
+                logout.setOnClickListener(v -> {
+                    FirebaseAuth.getInstance().signOut();
+                    onBackPressed();
+                });
+                addPreference(logout);
+            } else {
                 MaterialStandardPreference login = new MaterialStandardPreference(context);
                 login.setTitle(R.string.login);
-                login.setOnClickListener(v -> {
-                    GoogleSignInClient signInClient = GoogleSignIn.getClient(context, OverloadedApi.googleSignInOptions());
-                    startActivityForResult(signInClient.getSignInIntent(), GOOGLE_SIGN_IN_CODE);
-                });
+                login.setSummary(R.string.overloadedLogin_please);
+                login.setOnClickListener(v -> DialogUtils.showDialog(getActivity(), OverloadedSignInDialog.getInstance(), null));
                 addPreference(login);
-                return;
             }
-
-            MaterialStandardPreference loggedInAs = new MaterialStandardPreference(context);
-            loggedInAs.setTitle(R.string.loggedIn);
-            loggedInAs.setSummary(Utils.getAccountName(account));
-            loggedInAs.setClickable(false);
-            addPreference(loggedInAs);
-
-            MaterialStandardPreference logout = new MaterialStandardPreference(context);
-            logout.setTitle(R.string.logout);
-            logout.setIcon(R.drawable.outline_exit_to_app_24);
-            logout.setOnClickListener(v -> {
-                FirebaseAuth.getInstance().signOut();
-                GoogleSignInClient signInClient = GoogleSignIn.getClient(context, OverloadedApi.googleSignInOptions());
-                signInClient.signOut().addOnCompleteListener(task -> onBackPressed());
-            });
-            addPreference(logout);
-
-            Games.getPlayersClient(context, account).getCurrentPlayer()
-                    .addOnSuccessListener(requireActivity(), player -> loggedInAs.setSummary(player.getDisplayName()));
         }
 
         @Override
         public int getTitleRes() {
-            return R.string.googlePlayGames;
+            return R.string.overloaded;
+        }
+
+        @Override
+        public void onSelectedSignInProvider(@NonNull SignInProvider provider) {
+            if (getActivity() == null) return;
+            startActivityForResult(signInHelper.startFlow(getActivity(), provider), RC_SIGN_IN);
         }
     }
 }

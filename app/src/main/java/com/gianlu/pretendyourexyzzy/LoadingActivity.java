@@ -17,6 +17,13 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingClient.BillingResponseCode;
+import com.android.billingclient.api.BillingClientStateListener;
+import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.SkuDetailsParams;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.logging.Logging;
@@ -37,30 +44,26 @@ import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
-import com.gianlu.pretendyourexyzzy.api.overloaded.OverloadedApi;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInDialog;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.tutorial.LoginTutorial;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONObject;
 
 import java.security.SecureRandom;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import me.toptas.fancyshowcase.FocusShape;
 
 
-public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener {
-    private static final int GOOGLE_SIGN_IN_CODE = 3;
+public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, OverloadedSignInDialog.Listener {
+    private static final int RC_SIGN_IN = 3;
+    private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
     private Intent goTo;
     private boolean finished = false;
     private ProgressBar loading;
@@ -76,6 +79,70 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private SuperTextView welcomeMessage;
     private PyxDiscoveryApi discoveryApi;
     private TextView currentServer;
+    private Button buyOverloaded;
+    private BillingClient billingClient;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        billingClient = BillingClient.newBuilder(this).enablePendingPurchases().setListener((br, list) -> {
+            if (br.getResponseCode() != BillingResponseCode.OK) {
+                handleBillingErrors(br.getResponseCode());
+                return;
+            }
+
+            if (list == null || list.isEmpty()) return;
+
+            // TODO: Verify (and ack) purchase with server
+        }).build();
+
+        billingClient.startConnection(new BillingClientStateListener() {
+            private boolean retried = false;
+
+            @Override
+            public void onBillingSetupFinished(BillingResult br) {
+                if (br.getResponseCode() == BillingResponseCode.OK) {
+                    billingClient.querySkuDetailsAsync(SkuDetailsParams.newBuilder()
+                                    .setSkusList(Collections.singletonList("overloaded.infinite"))
+                                    .setType(BillingClient.SkuType.INAPP).build(),
+                            (br1, list) -> {
+                                if (br1.getResponseCode() == BillingResponseCode.OK) {
+                                    if (buyOverloaded != null && !list.isEmpty()) {
+                                        buyOverloaded.setTag(list.get(0));
+                                        buyOverloaded.setVisibility(View.VISIBLE);
+                                    }
+                                } else {
+                                    Logging.log(br1.getDebugMessage(), true);
+                                }
+                            });
+                } else {
+                    Logging.log(br.getDebugMessage(), true);
+                }
+            }
+
+            @Override
+            public void onBillingServiceDisconnected() {
+                if (!retried) {
+                    retried = true;
+                    billingClient.startConnection(this);
+                } else {
+                    Toaster.with(LoadingActivity.this).message(R.string.failedBillingConnection);
+                    if (buyOverloaded != null) buyOverloaded.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+
+    private void startBillingFlow(@NonNull SkuDetails product) {
+        BillingFlowParams flowParams = BillingFlowParams.newBuilder()
+                .setSkuDetails(product)
+                .build();
+
+        BillingResult result = billingClient.launchBillingFlow(this, flowParams);
+        if (result.getResponseCode() != BillingResponseCode.OK)
+            handleBillingErrors(result.getResponseCode());
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +172,16 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
         Button preferences = findViewById(R.id.loading_preferences);
         preferences.setOnClickListener(v -> startActivity(new Intent(LoadingActivity.this, PreferenceActivity.class)));
+
+        buyOverloaded = findViewById(R.id.loading_buyOverloaded);
+        buyOverloaded.setOnClickListener(v -> {
+            if (OverloadedSignInHelper.isSignedIn()) {
+                if (v.getTag() != null && billingClient != null && billingClient.isReady())
+                    startBillingFlow((SkuDetails) v.getTag());
+            } else {
+                showSignInDialog();
+            }
+        });
 
         tutorialManager = new TutorialManager(this, Discovery.LOGIN);
 
@@ -168,50 +245,32 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         });
         discoveryApi.firstLoad(this, null, this);
-
-        signInSilently();
     }
 
-    private void googleSignedIn(GoogleSignInAccount account) {
-        if (account == null) return;
-
-        Logging.log("Successfully logged in Google Play as " + Utils.getAccountName(account), false);
-        OverloadedApi.authenticateFirebase(account);
+    public void showSignInDialog() {
+        showDialog(OverloadedSignInDialog.getInstance());
     }
 
-    private void signInSilently() {
-        GoogleSignInOptions gso = OverloadedApi.googleSignInOptions();
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        if (GoogleSignIn.hasPermissions(account, gso.getScopeArray())) {
-            googleSignedIn(account);
-        } else {
-            GoogleSignInClient signInClient = GoogleSignIn.getClient(this, gso);
-            signInClient.silentSignIn().addOnCompleteListener(this, task -> {
-                if (task.isSuccessful()) {
-                    googleSignedIn(task.getResult());
-                } else {
-                    if (Prefs.getBoolean(PK.SHOULD_PROMPT_GOOGLE_PLAY, true)) {
-                        Intent intent = signInClient.getSignInIntent();
-                        startActivityForResult(intent, GOOGLE_SIGN_IN_CODE);
-                    }
-                }
-            });
-        }
+    @Override
+    public void onSelectedSignInProvider(@NonNull OverloadedSignInHelper.SignInProvider provider) {
+        startActivityForResult(signInHelper.startFlow(this, provider), RC_SIGN_IN);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (requestCode == GOOGLE_SIGN_IN_CODE) {
-            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            if (result.isSuccess()) {
-                googleSignedIn(result.getSignInAccount());
-            } else {
-                if (result.getStatus().getStatusCode() == GoogleSignInStatusCodes.SIGN_IN_CANCELLED)
-                    Prefs.putBoolean(PK.SHOULD_PROMPT_GOOGLE_PLAY, false);
+        if (requestCode == RC_SIGN_IN) {
+            if (data != null) {
+                signInHelper.processSignInData(data, new OverloadedSignInHelper.SignInCallback() {
+                    @Override
+                    public void onSignInSuccessful() {
+                        showToast(Toaster.build().message(R.string.signInSuccessful));
+                    }
 
-                String msg = result.getStatus().getStatusMessage();
-                if (msg == null || msg.isEmpty()) msg = getString(R.string.failedSigningIn);
-                showToast(Toaster.build().message(msg).error(false));
+                    @Override
+                    public void onSignInFailed() {
+                        showToast(Toaster.build().message(R.string.failedSigningIn));
+                    }
+                });
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
@@ -403,6 +462,31 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     @Override
     protected void onResume() {
         super.onResume();
-        GPGamesHelper.setPopupView(this, (View) register.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        if (register != null)
+            GPGamesHelper.setPopupView(this, (View) register.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+    }
+
+    private void handleBillingErrors(@BillingResponseCode int code) {
+        switch (code) {
+            case BillingResponseCode.BILLING_UNAVAILABLE:
+            case BillingResponseCode.SERVICE_UNAVAILABLE:
+            case BillingResponseCode.SERVICE_DISCONNECTED:
+            case BillingResponseCode.SERVICE_TIMEOUT:
+                Toaster.with(this).message(R.string.failedBillingConnection).show();
+                break;
+            case BillingResponseCode.USER_CANCELED:
+                Toaster.with(this).message(R.string.userCancelled).show();
+                break;
+            case BillingResponseCode.DEVELOPER_ERROR:
+            case BillingResponseCode.ITEM_UNAVAILABLE:
+            case BillingResponseCode.FEATURE_NOT_SUPPORTED:
+            case BillingResponseCode.ITEM_ALREADY_OWNED:
+            case BillingResponseCode.ITEM_NOT_OWNED:
+            case BillingResponseCode.ERROR:
+                Toaster.with(this).message(R.string.failedBuying).show();
+                break;
+            case BillingResponseCode.OK:
+                break;
+        }
     }
 }
