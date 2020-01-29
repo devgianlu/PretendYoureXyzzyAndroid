@@ -1,3 +1,5 @@
-### Changed
-- Fixed crash with invalid SSL certificates
-- Fixed crash due to invalid dialog
+### Added
+- Google Play Games integration
+
+### Fixed
+- Fixed payments being refunded automatically
