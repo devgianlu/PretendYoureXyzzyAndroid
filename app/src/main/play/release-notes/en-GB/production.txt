@@ -3,3 +3,4 @@
 
 ### Fixed
 - Fixed payments being refunded automatically
+- Fixed crash when opening app for the first time
