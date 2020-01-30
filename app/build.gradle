@@ -50,17 +50,6 @@ android {
                 }
             }
         }
-
-        foss {
-            dimension 'main'
-
-            buildTypes {
-                release {
-                    minifyEnabled false
-                    shrinkResources false
-                }
-            }
-        }
     }
 
     compileOptions {
