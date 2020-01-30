@@ -401,6 +401,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     @Override
     protected void onResume() {
         super.onResume();
-        GPGamesHelper.setPopupView(this, (View) register.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        if (register != null)
+            GPGamesHelper.setPopupView(this, (View) register.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
     }
 }
