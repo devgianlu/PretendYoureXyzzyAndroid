@@ -259,4 +259,6 @@
     <string name="failedLinkingAccount">Failed linking account!</string>
     <string name="ok">Ok</string>
     <string name="none">None</string>
+    <string name="purchaseVerified">Purchase verified!</string>
+    <string name="pending">Pending</string>
 </resources>

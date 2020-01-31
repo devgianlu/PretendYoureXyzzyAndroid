@@ -116,6 +116,14 @@
             android:layout_marginTop="8dp"
             android:text="@string/buyOverloaded"
             android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/loading_overloadedStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:visibility="gone" />
     </LinearLayout>
 
     <com.gianlu.commonutils.misc.SuperTextView

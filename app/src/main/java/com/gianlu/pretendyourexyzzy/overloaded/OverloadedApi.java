@@ -10,6 +10,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.main.chats.ChatController;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper.SignInProvider;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.RuntimeExecutionException;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
@@ -19,6 +20,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.functions.FirebaseFunctions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -132,16 +134,27 @@ public class OverloadedApi {
             return;
         }
 
-        db.document("users/" + user.getUid()).get().addOnCompleteListener(task -> {
+        purchaseStatus().addOnCompleteListener(task -> {
+            Purchase purchase;
+            if ((purchase = task.getResult()) != null) callback.onPurchaseStatus(purchase);
+            else if (task.getException() != null) callback.onFailed(task.getException());
+            else throw new IllegalStateException();
+        });
+    }
+
+    @NonNull
+    private Task<Purchase> purchaseStatus() {
+        return db.document("users/" + user.getUid()).get().continueWith(task -> {
             DocumentSnapshot snap;
             if ((snap = task.getResult()) != null) {
                 Purchase.Status status = Purchase.Status.parse((String) snap.get("purchase_status"));
                 String token = (String) snap.get("purchase_token");
-                callback.onPurchaseStatus(new Purchase(status, token));
+                if (token == null) token = "";
+                return new Purchase(status, token);
             } else if (task.getException() != null) {
-                callback.onFailed(task.getException());
+                throw new RuntimeExecutionException(task.getException());
             } else {
-                callback.onFailed(new IllegalStateException("What's that?"));
+                throw new IllegalStateException();
             }
         });
     }
@@ -155,6 +168,19 @@ public class OverloadedApi {
                 .addOnCompleteListener(listener);
     }
 
+    public void verifyPurchase(@NonNull String purchaseToken, @NonNull PurchaseStatusCallback callback) {
+        FirebaseFunctions.getInstance()
+                .getHttpsCallable("verifyPayment")
+                .call(Collections.singletonMap("purchase_token", purchaseToken))
+                .continueWithTask(task -> purchaseStatus())
+                .addOnCompleteListener(task -> {
+                    Purchase purchase;
+                    if ((purchase = task.getResult()) != null) callback.onPurchaseStatus(purchase);
+                    else if (task.getException() != null) callback.onFailed(task.getException());
+                    else throw new IllegalStateException();
+                });
+    }
+
     public interface PurchaseStatusCallback {
         void onPurchaseStatus(@NonNull Purchase status);
 
@@ -165,13 +191,13 @@ public class OverloadedApi {
         public final Status status;
         public final String purchaseToken;
 
-        Purchase(@NonNull Status status, @Nullable String purchaseToken) {
+        Purchase(@NonNull Status status, @NonNull String purchaseToken) {
             this.status = status;
             this.purchaseToken = purchaseToken;
         }
 
         public enum Status {
-            NONE("none"), OK("ok"); //, PENDING, EXPIRED
+            NONE("none"), OK("ok"), PENDING("pending");
 
             private final String val;
 
@@ -200,6 +226,9 @@ public class OverloadedApi {
                         break;
                     case OK:
                         res = R.string.ok;
+                        break;
+                    case PENDING:
+                        res = R.string.pending;
                         break;
                     default:
                         res = R.string.unknown;

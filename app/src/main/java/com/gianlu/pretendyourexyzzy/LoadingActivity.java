@@ -17,13 +17,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClient.BillingResponseCode;
-import com.android.billingclient.api.BillingClientStateListener;
-import com.android.billingclient.api.BillingFlowParams;
-import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.SkuDetails;
-import com.android.billingclient.api.SkuDetailsParams;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.logging.Logging;
@@ -44,6 +38,7 @@ import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedBillingHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
@@ -54,16 +49,16 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.json.JSONObject;
 
 import java.security.SecureRandom;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import me.toptas.fancyshowcase.FocusShape;
 
 
-public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, OverloadedChooseProviderDialog.Listener {
+public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener {
     private static final int RC_SIGN_IN = 3;
     private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
+    private final OverloadedBillingHelper billingHelper = new OverloadedBillingHelper(this);
     private Intent goTo;
     private boolean finished = false;
     private ProgressBar loading;
@@ -80,68 +75,12 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private PyxDiscoveryApi discoveryApi;
     private TextView currentServer;
     private Button buyOverloaded;
-    private BillingClient billingClient;
+    private TextView overloadedStatus;
 
     @Override
     protected void onStart() {
         super.onStart();
-
-        billingClient = BillingClient.newBuilder(this).enablePendingPurchases().setListener((br, list) -> {
-            if (br.getResponseCode() != BillingResponseCode.OK) {
-                handleBillingErrors(br.getResponseCode());
-                return;
-            }
-
-            if (list == null || list.isEmpty()) return;
-
-            // TODO: Verify (and ack) purchase with server
-        }).build();
-
-        billingClient.startConnection(new BillingClientStateListener() {
-            private boolean retried = false;
-
-            @Override
-            public void onBillingSetupFinished(BillingResult br) {
-                if (br.getResponseCode() == BillingResponseCode.OK) {
-                    billingClient.querySkuDetailsAsync(SkuDetailsParams.newBuilder()
-                                    .setSkusList(Collections.singletonList("overloaded.infinite"))
-                                    .setType(BillingClient.SkuType.INAPP).build(),
-                            (br1, list) -> {
-                                if (br1.getResponseCode() == BillingResponseCode.OK) {
-                                    if (buyOverloaded != null && !list.isEmpty()) {
-                                        buyOverloaded.setTag(list.get(0));
-                                        buyOverloaded.setVisibility(View.VISIBLE);
-                                    }
-                                } else {
-                                    Logging.log(br1.getDebugMessage(), true);
-                                }
-                            });
-                } else {
-                    Logging.log(br.getDebugMessage(), true);
-                }
-            }
-
-            @Override
-            public void onBillingServiceDisconnected() {
-                if (!retried) {
-                    retried = true;
-                    billingClient.startConnection(this);
-                } else {
-                    Toaster.with(LoadingActivity.this).message(R.string.failedBillingConnection);
-                    if (buyOverloaded != null) buyOverloaded.setVisibility(View.GONE);
-                }
-            }
-        });
-    }
-
-    private void startBillingFlow(@NonNull SkuDetails product) {
-        BillingFlowParams flowParams = BillingFlowParams.newBuilder()
-                .setSkuDetails(product)
-                .build();
-
-        BillingResult result = billingClient.launchBillingFlow(this, flowParams);
-        if (result.getResponseCode() != BillingResponseCode.OK)
-            handleBillingErrors(result.getResponseCode());
+        billingHelper.onStart(this);
     }
 
     @Override
@@ -173,15 +112,9 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         Button preferences = findViewById(R.id.loading_preferences);
         preferences.setOnClickListener(v -> startActivity(new Intent(LoadingActivity.this, PreferenceActivity.class)));
 
+        overloadedStatus = findViewById(R.id.loading_overloadedStatus);
         buyOverloaded = findViewById(R.id.loading_buyOverloaded);
-        buyOverloaded.setOnClickListener(v -> {
-            if (OverloadedSignInHelper.isSignedIn()) {
-                if (v.getTag() != null && billingClient != null && billingClient.isReady())
-                    startBillingFlow((SkuDetails) v.getTag());
-            } else {
-                showDialog(OverloadedChooseProviderDialog.getSignInInstance());
-            }
-        });
+        buyOverloaded.setOnClickListener(billingHelper.buyOverloadedOnClick(this));
 
         tutorialManager = new TutorialManager(this, Discovery.LOGIN);
 
@@ -462,7 +395,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             GPGamesHelper.setPopupView(this, (View) register.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
     }
 
-    private void handleBillingErrors(@BillingResponseCode int code) {
+    @Override
+    public void handleBillingErrors(@BillingResponseCode int code) {
         switch (code) {
             case BillingResponseCode.BILLING_UNAVAILABLE:
             case BillingResponseCode.SERVICE_UNAVAILABLE:
@@ -484,5 +418,24 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             case BillingResponseCode.OK:
                 break;
         }
+    }
+
+    @Override
+    public void toggleBuyOverloadedVisibility(boolean visible) {
+        if (buyOverloaded != null) buyOverloaded.setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
+
+    @Override
+    public void updateOverloadedStatusText(@Nullable String text) {
+        if (overloadedStatus != null) {
+            overloadedStatus.setText(text);
+            overloadedStatus.setVisibility(text == null ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        billingHelper.onDestroy();
     }
 }
