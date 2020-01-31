@@ -16,14 +16,23 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class OverloadedApi {
     private static OverloadedApi instance = null;
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final FirebaseAuth auth = FirebaseAuth.getInstance();
     private ChatModule chat;
+    private FirebaseUser user;
 
     private OverloadedApi() {
+        FirebaseAuth.getInstance().addAuthStateListener(fa -> {
+            user = fa.getCurrentUser();
+            if (user == null) {
+                chat = null;
+            } else {
+                chat = new ChatModule(user, db);
+            }
+        });
     }
 
     @NonNull
@@ -39,26 +48,70 @@ public class OverloadedApi {
 
     @Nullable
     public ChatModule chat() {
-        if (auth.getCurrentUser() == null) {
-            chat = null;
-            return null;
-        }
-
-        if (chat != null && !chat.user.getUid().equals(auth.getCurrentUser().getUid())) {
-            chat = null;
-            return chat();
-        }
-
-        if (chat == null && auth.getCurrentUser() != null)
-            chat = new ChatModule(auth.getCurrentUser(), db);
-
         return chat;
+    }
+
+    public void purchaseStatus(@NonNull PurchaseStatusCallback callback) {
+        if (user == null) {
+            callback.onFailed(new IllegalStateException("No signed in user!"));
+            return;
+        }
+
+        db.document("users/" + user.getUid()).get().addOnCompleteListener(task -> {
+            DocumentSnapshot snap;
+            if ((snap = task.getResult()) != null) {
+                Purchase.Status status = Purchase.Status.parse((String) snap.get("purchase_status"));
+                String token = (String) snap.get("purchase_token");
+                callback.onPurchaseStatus(new Purchase(status, token));
+            } else if (task.getException() != null) {
+                callback.onFailed(task.getException());
+            } else {
+                callback.onFailed(new IllegalStateException("What's that?"));
+            }
+        });
+    }
+
+    public interface PurchaseStatusCallback {
+        void onPurchaseStatus(@NonNull Purchase status);
+
+        void onFailed(@NonNull Exception ex);
+    }
+
+    public static final class Purchase {
+        public final Status status;
+        public final String purchase_token;
+
+        Purchase(@NonNull Status status, @Nullable String purchase_token) {
+            this.status = status;
+            this.purchase_token = purchase_token;
+        }
+
+        public enum Status {
+            NONE("none"), OK("ok"); //, PENDING, EXPIRED
+
+            private final String val;
+
+            Status(String val) {
+                this.val = val;
+            }
+
+            @NonNull
+            private static Status parse(@Nullable String val) {
+                if (val == null) throw new IllegalArgumentException("Can't parse null value.");
+
+                for (Status status : values()) {
+                    if (Objects.equals(status.val, val))
+                        return status;
+                }
+
+                throw new IllegalArgumentException("Unknown status: " + val);
+            }
+        }
     }
 
     public static class ChatModule {
         private final FirebaseUser user;
         private final FirebaseFirestore db;
-
 
         private ChatModule(@NonNull FirebaseUser user, @NonNull FirebaseFirestore db) {
             this.user = user;

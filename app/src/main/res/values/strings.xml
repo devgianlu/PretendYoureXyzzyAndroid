@@ -251,4 +251,5 @@
     <string name="signInSuccessful">Successfully signed in!</string>
     <string name="overloaded" translatable="false">Overloaded</string>
     <string name="overloadedLogin_please">Login to enable exciting features!</string>
+    <string name="purchaseStatus">Purchase status</string>
 </resources>

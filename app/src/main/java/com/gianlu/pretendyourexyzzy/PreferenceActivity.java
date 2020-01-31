@@ -12,12 +12,14 @@ import androidx.annotation.Nullable;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutActionItem;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutItem;
 import com.gianlu.commonutils.dialogs.DialogUtils;
+import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.preferences.BasePreferenceActivity;
 import com.gianlu.commonutils.preferences.BasePreferenceFragment;
 import com.gianlu.commonutils.preferences.MaterialAboutPreferenceItem;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.activities.TutorialActivity;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedApi;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper.SignInProvider;
@@ -165,6 +167,24 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                 loggedInAs.setSummary(Utils.getDisplayableName(currentUser));
                 loggedInAs.setClickable(false);
                 addPreference(loggedInAs);
+
+                MaterialStandardPreference purchaseStatus = new MaterialStandardPreference(context);
+                purchaseStatus.setTitle(R.string.purchaseStatus);
+                purchaseStatus.setSummary("<unknown>");
+                purchaseStatus.setClickable(false);
+                addPreference(purchaseStatus);
+
+                OverloadedApi.get().purchaseStatus(new OverloadedApi.PurchaseStatusCallback() {
+                    @Override
+                    public void onPurchaseStatus(@NonNull OverloadedApi.Purchase purchase) {
+                        purchaseStatus.setSummary(purchase.status.name()); // FIXME
+                    }
+
+                    @Override
+                    public void onFailed(@NonNull Exception ex) {
+                        Logging.log(ex);
+                    }
+                });
 
                 // TODO: Overloaded payment status
 
