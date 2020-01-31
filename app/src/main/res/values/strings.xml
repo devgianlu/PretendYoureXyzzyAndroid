@@ -252,4 +252,11 @@
     <string name="overloaded" translatable="false">Overloaded</string>
     <string name="overloadedLogin_please">Login to enable exciting features!</string>
     <string name="purchaseStatus">Purchase status</string>
+    <string name="linkAccount">Link account</string>
+    <string name="overloaded_linkAccount">Link account</string>
+    <string name="overloaded_linkAccount_desc">Link another account to your current profile</string>
+    <string name="accountLinked">Account linked!</string>
+    <string name="failedLinkingAccount">Failed linking account!</string>
+    <string name="ok">Ok</string>
+    <string name="none">None</string>
 </resources>

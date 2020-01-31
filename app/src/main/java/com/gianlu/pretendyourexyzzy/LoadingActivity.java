@@ -44,7 +44,7 @@ import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInDialog;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.tutorial.LoginTutorial;
@@ -61,7 +61,7 @@ import java.util.Objects;
 import me.toptas.fancyshowcase.FocusShape;
 
 
-public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, OverloadedSignInDialog.Listener {
+public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, OverloadedChooseProviderDialog.Listener {
     private static final int RC_SIGN_IN = 3;
     private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
     private Intent goTo;
@@ -179,7 +179,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 if (v.getTag() != null && billingClient != null && billingClient.isReady())
                     startBillingFlow((SkuDetails) v.getTag());
             } else {
-                showSignInDialog();
+                showDialog(OverloadedChooseProviderDialog.getSignInInstance());
             }
         });
 
@@ -245,10 +245,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         });
         discoveryApi.firstLoad(this, null, this);
-    }
-
-    public void showSignInDialog() {
-        showDialog(OverloadedSignInDialog.getInstance());
     }
 
     @Override

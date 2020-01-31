@@ -25,6 +25,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.PlayGamesAuthProvider;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class OverloadedSignInHelper {
@@ -33,7 +34,7 @@ public final class OverloadedSignInHelper {
 
     static {
         SIGN_IN_PROVIDERS = new ArrayList<>();
-        SIGN_IN_PROVIDERS.add(new SignInProvider(R.drawable.ic_google_auth, R.string.google) {
+        SIGN_IN_PROVIDERS.add(new SignInProvider(GoogleAuthProvider.PROVIDER_ID, R.drawable.ic_google_auth, R.string.google) {
             @NonNull
             @Override
             GoogleSignInOptions googleSignInOptions() {
@@ -61,7 +62,7 @@ public final class OverloadedSignInHelper {
                 }
             }
         });
-        SIGN_IN_PROVIDERS.add(new SignInProvider(R.drawable.ic_play_games_auth, R.string.googlePlayGames) {
+        SIGN_IN_PROVIDERS.add(new SignInProvider(PlayGamesAuthProvider.PROVIDER_ID, R.drawable.ic_play_games_auth, R.string.googlePlayGames) {
             @NonNull
             @Override
             GoogleSignInOptions googleSignInOptions() {
@@ -92,6 +93,13 @@ public final class OverloadedSignInHelper {
     public OverloadedSignInHelper() {
     }
 
+    @NonNull
+    public static List<String> providerIds() {
+        List<String> list = new ArrayList<>(SIGN_IN_PROVIDERS.size());
+        for (SignInProvider provider : SIGN_IN_PROVIDERS) list.add(provider.id);
+        return Collections.unmodifiableList(list);
+    }
+
     public static boolean isSignedIn() {
         return FirebaseAuth.getInstance().getCurrentUser() != null;
     }
@@ -102,6 +110,12 @@ public final class OverloadedSignInHelper {
         currentFlow.provider = provider;
         currentFlow.client = GoogleSignIn.getClient(activity, provider.googleSignInOptions());
         return currentFlow.client.getSignInIntent();
+    }
+
+    @Nullable
+    public AuthCredential extractCredential(@NonNull Intent data) {
+        if (currentFlow == null) throw new IllegalStateException();
+        return currentFlow.provider.extractCredential(data);
     }
 
     public void processSignInData(@NonNull Intent data, @NonNull SignInCallback callback) {
@@ -139,10 +153,12 @@ public final class OverloadedSignInHelper {
     public static abstract class SignInProvider {
         public final int iconRes;
         public final int nameRes;
+        public final String id;
 
-        SignInProvider(@DrawableRes int iconRes, int nameRes) {
+        SignInProvider(@NonNull String id, @DrawableRes int iconRes, int nameRes) {
             this.iconRes = iconRes;
             this.nameRes = nameRes;
+            this.id = id;
         }
 
         @NonNull

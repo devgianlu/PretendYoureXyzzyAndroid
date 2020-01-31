@@ -15,17 +15,37 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper.SignInProvider;
 
 import org.jetbrains.annotations.NotNull;
 
-public final class OverloadedSignInDialog extends DialogFragment {
+import java.util.List;
+
+public final class OverloadedChooseProviderDialog extends DialogFragment {
     private Listener listener;
 
     @NonNull
-    public static OverloadedSignInDialog getInstance() {
-        return new OverloadedSignInDialog();
+    private static OverloadedChooseProviderDialog getInstance(boolean link, @NonNull List<String> providers) {
+        if (providers.isEmpty()) throw new IllegalArgumentException();
+
+        OverloadedChooseProviderDialog dialog = new OverloadedChooseProviderDialog();
+        Bundle args = new Bundle();
+        args.putBoolean("link", link);
+        args.putCharSequenceArray("providers", providers.toArray(new String[0]));
+        dialog.setArguments(args);
+        return dialog;
+    }
+
+    @NonNull
+    public static OverloadedChooseProviderDialog getLinkInstance(@NonNull List<String> providers) {
+        return getInstance(true, providers);
+    }
+
+    @NonNull
+    public static OverloadedChooseProviderDialog getSignInInstance() {
+        return getInstance(false, OverloadedSignInHelper.providerIds());
     }
 
     @Override
@@ -64,7 +84,17 @@ public final class OverloadedSignInDialog extends DialogFragment {
     @NotNull
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.dialog_overloaded_sign_in, container, false);
+        LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.dialog_overloaded_choose_provider, container, false);
+
+        TextView title = layout.findViewById(R.id.overloadedSignInDialog_title);
+        TextView desc = layout.findViewById(R.id.overloadedSignInDialog_desc);
+        if (requireArguments().getBoolean("link", false)) {
+            title.setText(R.string.overloaded_linkAccount);
+            desc.setText(R.string.overloaded_linkAccount_desc);
+        } else {
+            title.setText(R.string.overloaded_requiresSignIn);
+            desc.setText(R.string.overloaded_requiresSignIn_desc);
+        }
 
         Button cancel = layout.findViewById(R.id.overloadedSignInDialog_cancel);
         cancel.setOnClickListener(v -> dismissAllowingStateLoss());
@@ -72,8 +102,13 @@ public final class OverloadedSignInDialog extends DialogFragment {
         LinearLayout providersLayout = layout.findViewById(R.id.overloadedSignInDialog_providers);
         providersLayout.removeAllViews();
 
-        for (SignInProvider provider : OverloadedSignInHelper.SIGN_IN_PROVIDERS)
-            providersLayout.addView(createProviderItem(inflater, providersLayout, provider));
+        CharSequence[] providers = requireArguments().getCharSequenceArray("providers");
+        if (providers == null) throw new IllegalStateException();
+
+        for (SignInProvider provider : OverloadedSignInHelper.SIGN_IN_PROVIDERS) {
+            if (CommonUtils.contains(providers, provider.id))
+                providersLayout.addView(createProviderItem(inflater, providersLayout, provider));
+        }
 
         return layout;
     }

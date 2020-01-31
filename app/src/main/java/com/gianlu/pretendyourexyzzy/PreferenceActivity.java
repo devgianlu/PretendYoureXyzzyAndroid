@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import com.danielstone.materialaboutlibrary.items.MaterialAboutActionItem;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutItem;
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.preferences.BasePreferenceActivity;
@@ -20,10 +21,11 @@ import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.activities.TutorialActivity;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedApi;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInDialog;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper.SignInProvider;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.yarolegovich.mp.MaterialCheckboxPreference;
@@ -34,7 +36,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-public class PreferenceActivity extends BasePreferenceActivity implements OverloadedSignInDialog.Listener {
+public class PreferenceActivity extends BasePreferenceActivity implements OverloadedChooseProviderDialog.Listener {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -131,14 +133,30 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
         }
     }
 
-    public static class OverloadedFragment extends BasePreferenceFragment implements OverloadedSignInDialog.Listener {
+    public static class OverloadedFragment extends BasePreferenceFragment implements OverloadedChooseProviderDialog.Listener {
         private static final int RC_SIGN_IN = 3;
         private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
+        private boolean link;
 
         @Override
         public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-            if (requestCode == RC_SIGN_IN) {
-                if (data != null) {
+            if (requestCode == RC_SIGN_IN && data != null) {
+                if (link) {
+                    AuthCredential credential = signInHelper.extractCredential(data);
+                    if (credential == null) {
+                        showToast(Toaster.build().message(R.string.failedSigningIn));
+                        return;
+                    }
+
+                    OverloadedApi.get().link(credential, task -> {
+                        if (task.isSuccessful())
+                            showToast(Toaster.build().message(R.string.accountLinked));
+                        else
+                            showToast(Toaster.build().message(R.string.failedLinkingAccount));
+
+                        onBackPressed();
+                    });
+                } else {
                     signInHelper.processSignInData(data, new OverloadedSignInHelper.SignInCallback() {
                         @Override
                         public void onSignInSuccessful() {
@@ -168,25 +186,38 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                 loggedInAs.setClickable(false);
                 addPreference(loggedInAs);
 
+                if (OverloadedApi.get().canLink()) {
+                    MaterialStandardPreference linkAccount = new MaterialStandardPreference(context);
+                    linkAccount.setTitle(R.string.linkAccount);
+                    linkAccount.setSummary(CommonUtils.join(OverloadedApi.get().linkableProviderNames(context), ", "));
+                    linkAccount.setOnClickListener(v -> {
+                        link = true;
+                        DialogUtils.showDialog(getActivity(),
+                                OverloadedChooseProviderDialog.getLinkInstance(OverloadedApi.get().linkableProviderIds()),
+                                null);
+                    });
+                    addPreference(linkAccount);
+                }
+
                 MaterialStandardPreference purchaseStatus = new MaterialStandardPreference(context);
                 purchaseStatus.setTitle(R.string.purchaseStatus);
-                purchaseStatus.setSummary("<unknown>");
                 purchaseStatus.setClickable(false);
+                purchaseStatus.setLoading(true);
                 addPreference(purchaseStatus);
-
                 OverloadedApi.get().purchaseStatus(new OverloadedApi.PurchaseStatusCallback() {
                     @Override
                     public void onPurchaseStatus(@NonNull OverloadedApi.Purchase purchase) {
-                        purchaseStatus.setSummary(purchase.status.name()); // FIXME
+                        purchaseStatus.setSummary(purchase.status.toString(context));
+                        purchaseStatus.setLoading(false);
                     }
 
                     @Override
                     public void onFailed(@NonNull Exception ex) {
+                        purchaseStatus.setSummary("<error>");
+                        purchaseStatus.setLoading(false);
                         Logging.log(ex);
                     }
                 });
-
-                // TODO: Overloaded payment status
 
                 MaterialStandardPreference logout = new MaterialStandardPreference(context);
                 logout.setTitle(R.string.logout);
@@ -200,7 +231,10 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                 MaterialStandardPreference login = new MaterialStandardPreference(context);
                 login.setTitle(R.string.login);
                 login.setSummary(R.string.overloadedLogin_please);
-                login.setOnClickListener(v -> DialogUtils.showDialog(getActivity(), OverloadedSignInDialog.getInstance(), null));
+                login.setOnClickListener(v -> {
+                    link = false;
+                    DialogUtils.showDialog(getActivity(), OverloadedChooseProviderDialog.getSignInInstance(), null);
+                });
                 addPreference(login);
             }
         }
