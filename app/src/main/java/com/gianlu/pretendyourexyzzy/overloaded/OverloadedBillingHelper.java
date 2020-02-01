@@ -24,16 +24,18 @@ import java.util.Collections;
 import java.util.List;
 
 public final class OverloadedBillingHelper implements PurchasesUpdatedListener, OverloadedApi.PurchaseStatusCallback {
+    private final Context context;
     private final Listener listener;
     private BillingClient billingClient;
     private volatile SkuDetails infiniteSku;
     private volatile OverloadedApi.Purchase purchase;
 
-    public OverloadedBillingHelper(@NonNull Listener listener) {
+    public OverloadedBillingHelper(@NonNull Context context, @NonNull Listener listener) {
+        this.context = context;
         this.listener = listener;
     }
 
-    public void onStart(@NonNull Context context) {
+    public void onStart() {
         billingClient = BillingClient.newBuilder(context).enablePendingPurchases().setListener(this).build();
         billingClient.startConnection(new BillingClientStateListener() {
             private boolean retried = false;
@@ -43,7 +45,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                 if (br.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                     checkUpdateUi();
                 } else {
-                    Logging.log(br.getDebugMessage(), true);
+                    Logging.log(br.getResponseCode() + ": " + br.getDebugMessage(), true);
                 }
             }
 
@@ -97,7 +99,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                             checkUpdateUi();
                         }
                     } else {
-                        Logging.log(br1.getDebugMessage(), true);
+                        Logging.log(br1.getResponseCode() + ": " + br1.getDebugMessage(), true);
                     }
                 });
             } else {
@@ -108,7 +110,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             switch (purchase.status) {
                 case OK:
                     listener.toggleBuyOverloadedVisibility(false);
-                    listener.updateOverloadedStatusText("Your subscription is OK!!!!!"); // FIXME
+                    listener.updateOverloadedStatusText(context.getString(R.string.overloadedStatus_ok));
                     break;
                 case NONE:
                     listener.toggleBuyOverloadedVisibility(true);
@@ -116,7 +118,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                     break;
                 case PENDING:
                     listener.toggleBuyOverloadedVisibility(false);
-                    listener.updateOverloadedStatusText("Check back later!!! Payment is still pending!"); // FIXME
+                    listener.updateOverloadedStatusText(context.getString(R.string.overloadedStatus_purchasePending));
                     break;
                 default:
                     listener.toggleBuyOverloadedVisibility(false);

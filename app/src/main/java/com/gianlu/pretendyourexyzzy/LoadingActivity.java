@@ -58,7 +58,7 @@ import me.toptas.fancyshowcase.FocusShape;
 public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener {
     private static final int RC_SIGN_IN = 3;
     private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
-    private final OverloadedBillingHelper billingHelper = new OverloadedBillingHelper(this);
+    private final OverloadedBillingHelper billingHelper = new OverloadedBillingHelper(this, this);
     private Intent goTo;
     private boolean finished = false;
     private ProgressBar loading;
@@ -80,7 +80,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     @Override
     protected void onStart() {
         super.onStart();
-        billingHelper.onStart(this);
+        billingHelper.onStart();
     }
 
     @Override

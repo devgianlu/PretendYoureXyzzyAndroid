@@ -257,8 +257,10 @@
     <string name="overloaded_linkAccount_desc">Link another account to your current profile</string>
     <string name="accountLinked">Account linked!</string>
     <string name="failedLinkingAccount">Failed linking account!</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="none">None</string>
     <string name="purchaseVerified">Purchase verified!</string>
     <string name="pending">Pending</string>
+    <string name="overloadedStatus_purchasePending">You payment is still pending, check back later!</string>
+    <string name="overloadedStatus_ok">OvErLoAdEd</string>
 </resources>
