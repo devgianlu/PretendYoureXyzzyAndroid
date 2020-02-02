@@ -90,9 +90,6 @@ public final class OverloadedSignInHelper {
 
     private Flow currentFlow = null;
 
-    public OverloadedSignInHelper() {
-    }
-
     @NonNull
     public static List<String> providerIds() {
         List<String> list = new ArrayList<>(SIGN_IN_PROVIDERS.size());

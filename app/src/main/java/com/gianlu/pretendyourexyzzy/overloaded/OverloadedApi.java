@@ -12,11 +12,13 @@ import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper.SignInProv
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.RuntimeExecutionException;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -27,6 +29,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class OverloadedApi {
     private final static OverloadedApi instance = new OverloadedApi();
@@ -241,6 +245,7 @@ public class OverloadedApi {
     }
 
     public static class ChatModule {
+        private static final Pattern CHAT_MESSAGE_PATH_PATTERN = Pattern.compile("chats/(.*)/thread/(.*)");
         private final FirebaseUser user;
         private final FirebaseFirestore db;
 
@@ -251,9 +256,53 @@ public class OverloadedApi {
 
         @Nullable
         private static ChatController.ChatMessage processSnapshot(@NonNull DocumentSnapshot doc) {
-            System.out.println(doc);
-            System.out.println(doc.getReference().getPath());
-            return null; // FIXME: Parse chat message properly
+            Matcher matcher = CHAT_MESSAGE_PATH_PATTERN.matcher(doc.getReference().getPath());
+            if (!matcher.find()) return null;
+
+            String chatId = matcher.group(1);
+            if (chatId == null || chatId.isEmpty()) return null;
+
+            String msgId = matcher.group(2);
+            if (msgId == null || msgId.isEmpty()) return null;
+
+            String sender = doc.getString("sender");
+            if (sender == null) return null;
+
+            String text = doc.getString("text");
+            if (text == null) return null;
+
+            Timestamp ts = doc.getTimestamp("timestamp");
+            if (ts == null) return null;
+
+            return new ChatMessage(chatId, msgId, sender, text, false, false, ts.toDate().getTime());
+        }
+
+        @NonNull
+        public Task<List<ListenerRegistration>> addListener(@NonNull ChatController.Listener listener) {
+            return getChatIds().continueWith(task -> {
+                log(task);
+
+                List<String> ids = task.getResult();
+                if (ids == null) return null;
+
+                EventListener<QuerySnapshot> snapListener = (snap, e) -> {
+                    if (snap != null) {
+                        for (DocumentSnapshot doc : snap.getDocuments()) {
+                            ChatController.ChatMessage msg = processSnapshot(doc);
+                            if (msg != null) listener.onChatMessage(msg);
+                        }
+                    } else if (e != null) {
+                        Logging.log("Failed receiving snapshot!", e);
+                    }
+                };
+
+                List<ListenerRegistration> registrations = new ArrayList<>(ids.size());
+                for (String id : ids)
+                    registrations.add(db.collection("chats/" + id + "/thread")
+                            .addSnapshotListener(snapListener));
+
+                return registrations;
+            });
         }
 
         @NonNull
@@ -284,25 +333,15 @@ public class OverloadedApi {
             });
         }
 
-        @NonNull
-        public Task<ListenerRegistration> addListener(@NonNull ChatController.Listener listener) {
-            return getChatIds().continueWith(task -> {
-                log(task);
+        private static class ChatMessage extends ChatController.ChatMessage {
+            private final String chatId;
+            private final String msgId;
 
-                List<String> list = task.getResult();
-                if (list == null) return null;
-
-                return db.collection("chats").whereIn("__name__", list).addSnapshotListener((snap, e) -> {
-                    if (snap != null) {
-                        for (DocumentSnapshot doc : snap.getDocuments()) {
-                            ChatController.ChatMessage msg = processSnapshot(doc);
-                            if (msg != null) listener.onChatMessage(msg);
-                        }
-                    } else if (e != null) {
-                        Logging.log("Failed receiving snapshot!", e); // FIXME: Listener is now dead
-                    }
-                });
-            });
+            ChatMessage(@NonNull String chatId, @NonNull String msgId, @NonNull String sender, @NonNull String text, boolean wall, boolean emote, long timestamp) {
+                super(sender, text, wall, emote, timestamp);
+                this.chatId = chatId;
+                this.msgId = msgId;
+            }
         }
     }
 }

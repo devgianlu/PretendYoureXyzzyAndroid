@@ -415,6 +415,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             case BillingResponseCode.ERROR:
                 Toaster.with(this).message(R.string.failedBuying).show();
                 break;
+            default:
             case BillingResponseCode.OK:
                 break;
         }

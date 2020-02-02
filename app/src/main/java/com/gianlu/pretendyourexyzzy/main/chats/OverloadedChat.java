@@ -8,9 +8,13 @@ import androidx.annotation.Nullable;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedApi;
 import com.google.firebase.firestore.ListenerRegistration;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 public class OverloadedChat implements ChatController {
+    private final List<ListenerRegistration> registrations = new ArrayList<>();
     private OverloadedApi.ChatModule chat;
-    private volatile ListenerRegistration listenerRegistration;
 
     @Override
     public void init() throws InitException {
@@ -21,8 +25,7 @@ public class OverloadedChat implements ChatController {
     @Override
     public void listener(@NonNull Listener listener) {
         if (chat == null) throw new IllegalStateException();
-
-        chat.addListener(listener).addOnSuccessListener(lr -> listenerRegistration = lr);
+        chat.addListener(listener).addOnSuccessListener(registrations::addAll);
     }
 
     @Override
@@ -32,6 +35,10 @@ public class OverloadedChat implements ChatController {
 
     @Override
     public void onDestroy() {
-        if (listenerRegistration != null) listenerRegistration.remove();
+        Iterator<ListenerRegistration> iter = registrations.iterator();
+        while (iter.hasNext()) {
+            iter.next().remove();
+            iter.remove();
+        }
     }
 }

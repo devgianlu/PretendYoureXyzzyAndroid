@@ -44,6 +44,7 @@ import com.gianlu.pretendyourexyzzy.main.OnLeftGame;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsActivity;
 import com.gianlu.pretendyourexyzzy.starred.StarredDecksActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -61,6 +62,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     private ChatFragment gameChatFragment;
     private OngoingGameFragment ongoingGameFragment;
     private ChatFragment globalChatFragment;
+    private ChatFragment overloadedChat;
     private RegisteredPyx pyx;
     private DrawerManager<User, DrawerItem> drawerManager;
     private volatile GamePermalink currentGame;
@@ -134,6 +136,9 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 case GLOBAL_CHAT:
                     setTitle(getString(R.string.globalChat) + " - " + getString(R.string.app_name));
                     break;
+                case OVERLOADED_CHAT:
+                    setTitle(getString(R.string.overloadedChat) + " - " + getString(R.string.app_name));
+                    break;
             }
 
             switchTo(item);
@@ -165,6 +170,9 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         namesFragment = (NamesFragment) getOrAdd(transaction, Item.PLAYERS, NamesFragment::getInstance);
         gamesFragment = (GamesFragment) getOrAdd(transaction, Item.GAMES, GamesFragment::getInstance);
         cardcastFragment = (CardcastFragment) getOrAdd(transaction, Item.CARDCAST, CardcastFragment::getInstance);
+
+        if (OverloadedSignInHelper.isSignedIn())
+            overloadedChat = (ChatFragment) getOrAdd(transaction, Item.OVERLOADED_CHAT, ChatFragment::getOverloadedInstance);
 
         if (pyx.config().globalChatEnabled())
             globalChatFragment = (ChatFragment) getOrAdd(transaction, Item.GLOBAL_CHAT, ChatFragment::getGlobalInstance);
@@ -342,6 +350,10 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                         if (globalChatFragment != null)
                             transaction.add(R.id.main_container, globalChatFragment, item.tag);
                         break;
+                    case OVERLOADED_CHAT:
+                        if (overloadedChat != null)
+                            transaction.add(R.id.main_container, overloadedChat, item.tag);
+                        break;
                 }
             }
 
@@ -486,6 +498,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 continue;
             else if (item == Item.GLOBAL_CHAT && !pyx.config().globalChatEnabled())
                 continue;
+            else if (item == Item.OVERLOADED_CHAT && !OverloadedSignInHelper.isSignedIn())
+                continue;
 
             navigation.add(item);
         }
@@ -494,7 +508,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     private enum Item {
         GLOBAL_CHAT(R.string.globalChat, R.drawable.baseline_chat_24), GAME_CHAT(R.string.gameChat, R.drawable.baseline_chat_bubble_outline_24),
         CARDCAST(R.string.cardcast, R.drawable.baseline_cast_24), GAMES(R.string.games, R.drawable.baseline_games_24),
-        PLAYERS(R.string.playersLabel, R.drawable.baseline_people_24), ONGOING_GAME(R.string.ongoingGame, R.drawable.baseline_casino_24);
+        PLAYERS(R.string.playersLabel, R.drawable.baseline_people_24), ONGOING_GAME(R.string.ongoingGame, R.drawable.baseline_casino_24),
+        OVERLOADED_CHAT(R.string.overloadedChat, R.drawable.baseline_videogame_asset_24);
 
         private final int text;
         private final int icon;
@@ -519,7 +534,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     private enum Layout {
-        LOBBY(Item.PLAYERS, Item.GLOBAL_CHAT, Item.GAMES, Item.CARDCAST),
+        LOBBY(Item.PLAYERS, Item.GLOBAL_CHAT, Item.GAMES, Item.CARDCAST, Item.OVERLOADED_CHAT),
         ONGOING(Item.PLAYERS, Item.GLOBAL_CHAT, Item.CARDCAST, Item.ONGOING_GAME, Item.GAME_CHAT);
 
         private final Item[] items;

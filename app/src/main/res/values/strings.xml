@@ -263,4 +263,5 @@
     <string name="pending">Pending</string>
     <string name="overloadedStatus_purchasePending">You payment is still pending, check back later!</string>
     <string name="overloadedStatus_ok">OvErLoAdEd</string>
+    <string name="overloadedChat">Overloaded chat</string>
 </resources>

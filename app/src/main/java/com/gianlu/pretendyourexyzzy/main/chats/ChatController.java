@@ -5,6 +5,8 @@ import android.app.Activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.jetbrains.annotations.NotNull;
+
 public interface ChatController {
     void init() throws InitException;
 
@@ -43,12 +45,24 @@ public interface ChatController {
         public final boolean emote;
         public final long timestamp;
 
-        ChatMessage(@NonNull String sender, @NonNull String text, boolean wall, boolean emote, long timestamp) {
+        protected ChatMessage(@NonNull String sender, @NonNull String text, boolean wall, boolean emote, long timestamp) {
             this.sender = sender;
             this.text = text;
             this.wall = wall;
             this.emote = emote;
             this.timestamp = timestamp;
+        }
+
+        @NotNull
+        @Override
+        public String toString() {
+            return "ChatMessage{" +
+                    "sender='" + sender + '\'' +
+                    ", text='" + text + '\'' +
+                    ", wall=" + wall +
+                    ", emote=" + emote +
+                    ", timestamp=" + timestamp +
+                    '}';
         }
     }
 }

@@ -62,6 +62,7 @@ public class PyxChat implements ChatController {
 
             @Override
             public void onStoppedPolling() {
+                // Not interested
             }
         });
     }
