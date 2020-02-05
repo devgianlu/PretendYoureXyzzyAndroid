@@ -160,6 +160,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         }
 
         gameData.lastRoundPermalink = lastRoundPermalink;
+        GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_ROUNDS_PLAYED);
     }
 
     private void dealCards(List<Card> cards) {
@@ -218,10 +219,8 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 break;
             case IDLE:
                 if (oldStatus == GameInfo.PlayerStatus.PLAYING) {
-                    if (gameData.status != Game.Status.JUDGING) {
-                        GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_ROUNDS_PLAYED);
+                    if (gameData.status != Game.Status.JUDGING)
                         event(UiEvent.WAITING_FOR_OTHER_PLAYERS);
-                    }
                 } else if (oldStatus == null) {
                     if (gameData.status == Game.Status.LOBBY) event(UiEvent.WAITING_FOR_START);
                     else event(UiEvent.WAITING_FOR_ROUND_TO_END);
