@@ -3,7 +3,7 @@ android:
   components:
     - tools
     - platform-tools
-    - build-tools-29.0.2
+    - build-tools-29.0.3
     - android-29
     - extra-google-google_play_services
 
@@ -25,7 +25,7 @@ before_deploy:
 deploy:
   - provider: script
     script: ./.travis/github-release.sh
-    skip_cleanup: true
+    cleanup: false
     on:
       repo: devgianlu/PretendYoureXyzzyAndroid
       branch: master
