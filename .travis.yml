@@ -25,7 +25,7 @@ before_deploy:
 deploy:
   - provider: script
     script: ./.travis/github-release.sh
-    cleanup: false
+    skip_cleanup: true
     on:
       repo: devgianlu/PretendYoureXyzzyAndroid
       branch: master
