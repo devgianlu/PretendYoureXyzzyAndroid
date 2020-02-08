@@ -26,8 +26,10 @@ import com.google.firebase.functions.FirebaseFunctions;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -331,6 +333,15 @@ public class OverloadedApi {
 
                 return db.collection("chats").whereIn("__name__", list).get();
             });
+        }
+
+        @NonNull
+        public Task<Void> send(@NonNull String chatId, @NonNull String msg) { // TODO: We should probably do some server side validation
+            Map<String, Object> data = new HashMap<>();
+            data.put("sender", user.getUid());
+            data.put("text", msg);
+            data.put("timestamp", Timestamp.now());
+            return db.collection("chats/" + chatId + "/thread").document().set(data);
         }
 
         private static class ChatMessage extends ChatController.ChatMessage {

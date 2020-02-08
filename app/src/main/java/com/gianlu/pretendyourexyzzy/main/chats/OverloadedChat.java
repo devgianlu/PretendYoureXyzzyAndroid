@@ -30,7 +30,12 @@ public class OverloadedChat implements ChatController {
 
     @Override
     public void send(@NonNull String msg, @Nullable Activity activity, @NonNull SendCallback callback) {
-        // TODO: Send chat message
+        if (chat == null) throw new IllegalStateException();
+        chat.send("" /* TODO: Missing chat ID */, msg).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) callback.onSuccessful();
+            else if (task.getException() != null) callback.onFailed(task.getException());
+            else throw new IllegalStateException();
+        });
     }
 
     @Override
