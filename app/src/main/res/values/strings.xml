@@ -271,4 +271,6 @@
     <string name="usernameSetSuccessfully">Username set successfully!</string>
     <string name="overloaded_usernameAlreadyInUse">This username is already in use.</string>
     <string name="overloaded_invalidUsername">The username must contain only upper and lower case letters, numbers, or underscores, must be 3 to 30 characters long, and must not start with a number.</string>
+    <string name="verifyingPurchase">Verifying purchase...</string>
+    <string name="failedVerifyingPurchase">Failed verifying purchase!</string>
 </resources>

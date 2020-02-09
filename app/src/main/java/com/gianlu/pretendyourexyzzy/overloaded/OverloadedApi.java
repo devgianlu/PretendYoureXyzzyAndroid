@@ -176,8 +176,8 @@ public class OverloadedApi {
 
         purchaseStatus().addOnCompleteListener(task -> {
             Purchase purchase;
-            if ((purchase = task.getResult()) != null) callback.onPurchaseStatus(purchase);
-            else if (task.getException() != null) callback.onFailed(task.getException());
+            if (task.getException() != null) callback.onFailed(task.getException());
+            else if ((purchase = task.getResult()) != null) callback.onPurchaseStatus(purchase);
             else throw new IllegalStateException();
         });
     }
@@ -215,27 +215,28 @@ public class OverloadedApi {
                 .continueWithTask(task -> purchaseStatus())
                 .addOnCompleteListener(task -> {
                     Purchase purchase;
-                    if ((purchase = task.getResult()) != null) callback.onPurchaseStatus(purchase);
-                    else if (task.getException() != null) callback.onFailed(task.getException());
+                    if (task.getException() != null) callback.onFailed(task.getException());
+                    else if ((purchase = task.getResult()) != null)
+                        callback.onPurchaseStatus(purchase);
                     else throw new IllegalStateException();
                 });
     }
 
-    public void setUsername(@NonNull String username, @NonNull SuccessfulCallback callback) {
+    public void setUsername(@NonNull String username, @NonNull PurchaseStatusCallback callback) {
         FirebaseFunctions.getInstance()
                 .getHttpsCallable("setUsername")
                 .call(Collections.singletonMap("username", username))
+                .continueWithTask(task -> {
+                    task.getResult();
+                    return purchaseStatus();
+                })
                 .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) callback.onSuccessful();
-                    else if (task.getException() != null) callback.onFailed(task.getException());
+                    Purchase purchase;
+                    if (task.getException() != null) callback.onFailed(task.getException());
+                    else if ((purchase = task.getResult()) != null)
+                        callback.onPurchaseStatus(purchase);
                     else throw new IllegalStateException();
                 });
-    }
-
-    public interface SuccessfulCallback {
-        void onSuccessful();
-
-        void onFailed(@NonNull Exception ex);
     }
 
     public interface PurchaseStatusCallback {
@@ -253,6 +254,15 @@ public class OverloadedApi {
             this.username = username;
             this.status = status;
             this.purchaseToken = purchaseToken;
+        }
+
+        @Override
+        public String toString() {
+            return "Purchase{" +
+                    "status=" + status +
+                    ", purchaseToken='" + purchaseToken + '\'' +
+                    ", username='" + username + '\'' +
+                    '}';
         }
 
         public boolean hasUsername() {

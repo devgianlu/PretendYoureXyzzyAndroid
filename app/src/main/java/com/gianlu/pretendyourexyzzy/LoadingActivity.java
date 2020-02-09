@@ -38,6 +38,8 @@ import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
+import com.gianlu.pretendyourexyzzy.overloaded.AskUsernameDialog;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedApi;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedBillingHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
@@ -46,6 +48,7 @@ import com.gianlu.pretendyourexyzzy.tutorial.LoginTutorial;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.security.SecureRandom;
@@ -55,7 +58,7 @@ import java.util.Objects;
 import me.toptas.fancyshowcase.FocusShape;
 
 
-public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener {
+public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, AskUsernameDialog.Listener, OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener {
     private static final int RC_SIGN_IN = 3;
     private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
     private final OverloadedBillingHelper billingHelper = new OverloadedBillingHelper(this, this);
@@ -440,5 +443,10 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     protected void onDestroy() {
         super.onDestroy();
         billingHelper.onDestroy();
+    }
+
+    @Override
+    public void overloadedSetupFinished(@NotNull OverloadedApi.Purchase status) {
+        billingHelper.updatePurchase(status);
     }
 }

@@ -17,7 +17,10 @@ import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
+import com.gianlu.pretendyourexyzzy.BuildConfig;
+import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.Collections;
@@ -63,26 +66,78 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         });
 
         if (OverloadedSignInHelper.isSignedIn()) {
-            // TODO: We need to trigger a loading state if the registration is not complete
+            if (!Prefs.getBoolean(PK.OVERLOADED_FINISHED_SETUP, false))
+                listener.showProgress(R.string.verifyingPurchase);
+
             OverloadedApi.get().purchaseStatus(new OverloadedApi.PurchaseStatusCallback() {
                 @Override
                 public void onPurchaseStatus(@NonNull OverloadedApi.Purchase status) {
                     purchase = status;
                     checkUpdateUi();
 
-                    if (status.status == OverloadedApi.Purchase.Status.PENDING)
+                    if (status.status == OverloadedApi.Purchase.Status.NONE && !status.purchaseToken.isEmpty()) {
                         OverloadedApi.get().verifyPurchase(status.purchaseToken, OverloadedBillingHelper.this);
-                    else if (!status.hasUsername() && status.status == OverloadedApi.Purchase.Status.OK)
-                        listener.showDialog(AskUsernameDialog.get());
+                        return;
+                    }
+
+                    if (status.status == OverloadedApi.Purchase.Status.PENDING) {
+                        OverloadedApi.get().verifyPurchase(status.purchaseToken, OverloadedBillingHelper.this);
+                    } else if (status.status == OverloadedApi.Purchase.Status.OK) {
+                        listener.dismissDialog();
+                        if (status.hasUsername())
+                            Prefs.putBoolean(PK.OVERLOADED_FINISHED_SETUP, true);
+                        else
+                            listener.showDialog(AskUsernameDialog.get());
+                    } else {
+                        List<Purchase> purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP).getPurchasesList();
+                        if (purchases == null || purchases.isEmpty()) {
+                            listener.dismissDialog();
+                            return;
+                        }
+
+                        Purchase latestPurchase = null;
+                        for (Purchase p : purchases) {
+                            if (!p.getSku().equals("overloaded.infinite") || !p.getPackageName().equals(BuildConfig.APPLICATION_ID))
+                                continue;
+
+                            if (latestPurchase == null)
+                                latestPurchase = p;
+                            else if (latestPurchase.getPurchaseTime() < p.getPurchaseTime())
+                                latestPurchase = p;
+                        }
+
+                        if (latestPurchase == null) {
+                            listener.dismissDialog();
+                            return;
+                        }
+
+                        OverloadedApi.get().verifyPurchase(latestPurchase.getPurchaseToken(), OverloadedBillingHelper.this);
+                    }
                 }
 
                 @Override
                 public void onFailed(@NonNull Exception ex) {
+                    listener.dismissDialog();
                     Logging.log(ex);
                     purchase = null;
                 }
             });
         }
+    }
+
+    private void getSkuDetails() {
+        billingClient.querySkuDetailsAsync(SkuDetailsParams.newBuilder()
+                .setSkusList(Collections.singletonList("overloaded.infinite"))
+                .setType(BillingClient.SkuType.INAPP).build(), (br1, list) -> {
+            if (br1.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                if (!list.isEmpty()) {
+                    infiniteSku = list.get(0);
+                    checkUpdateUi();
+                }
+            } else {
+                Logging.log(br1.getResponseCode() + ": " + br1.getDebugMessage(), true);
+            }
+        });
     }
 
     private synchronized void checkUpdateUi() {
@@ -94,18 +149,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             }
 
             if (infiniteSku == null) {
-                billingClient.querySkuDetailsAsync(SkuDetailsParams.newBuilder()
-                        .setSkusList(Collections.singletonList("overloaded.infinite"))
-                        .setType(BillingClient.SkuType.INAPP).build(), (br1, list) -> {
-                    if (br1.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                        if (!list.isEmpty()) {
-                            infiniteSku = list.get(0);
-                            checkUpdateUi();
-                        }
-                    } else {
-                        Logging.log(br1.getResponseCode() + ": " + br1.getDebugMessage(), true);
-                    }
-                });
+                getSkuDetails();
             } else {
                 listener.toggleBuyOverloadedVisibility(true);
                 listener.updateOverloadedStatusText(null);
@@ -115,7 +159,10 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                 case OK:
                     if (purchase.hasUsername()) {
                         listener.toggleBuyOverloadedVisibility(false);
-                        listener.updateOverloadedStatusText(context.getString(R.string.overloadedStatus_ok));
+                        listener.updateOverloadedStatusText(context.getString(R.string.overloadedStatus_ok) + ": " + purchase.username);
+                    } else {
+                        listener.toggleBuyOverloadedVisibility(false);
+                        listener.updateOverloadedStatusText(null);
                     }
                     break;
                 case NONE:
@@ -153,8 +200,11 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     public View.OnClickListener buyOverloadedOnClick(@NonNull Activity activity) {
         return v -> {
             if (OverloadedSignInHelper.isSignedIn()) {
-                if (infiniteSku != null && billingClient != null && billingClient.isReady())
+                if (infiniteSku == null) {
+                    getSkuDetails();
+                } else if (billingClient != null && billingClient.isReady()) {
                     startBillingFlow(activity, infiniteSku);
+                }
             } else {
                 wasBuying = true;
                 listener.showDialog(OverloadedChooseProviderDialog.getSignInInstance());
@@ -171,7 +221,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
 
         if (list == null || list.isEmpty()) return;
 
-        // TODO: We need to trigger a loading state
+        listener.showProgress(R.string.verifyingPurchase);
         OverloadedApi.get().verifyPurchase(list.get(0).getPurchaseToken(), this);
     }
 
@@ -179,21 +229,32 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     public void onPurchaseStatus(@NonNull OverloadedApi.Purchase status) {
         purchase = status;
         checkUpdateUi();
-        listener.showToast(Toaster.build().message(R.string.purchaseVerified));
+        listener.dismissDialog();
 
-        if (!status.hasUsername() && status.status == OverloadedApi.Purchase.Status.OK)
-            listener.showDialog(AskUsernameDialog.get());
+        if (status.status == OverloadedApi.Purchase.Status.OK) {
+            listener.showToast(Toaster.build().message(R.string.purchaseVerified));
+            if (status.hasUsername()) Prefs.putBoolean(PK.OVERLOADED_FINISHED_SETUP, true);
+            else listener.showDialog(AskUsernameDialog.get());
+        } else {
+            listener.showToast(Toaster.build().message(R.string.failedVerifyingPurchase).extra(status));
+        }
     }
 
     @Override
     public void onFailed(@NonNull Exception ex) {
         purchase = null;
         checkUpdateUi();
+        listener.dismissDialog();
         listener.showToast(Toaster.build().message(R.string.failedBuying).ex(ex));
     }
 
     public void onDestroy() {
         if (billingClient != null) billingClient.endConnection();
+    }
+
+    public synchronized void updatePurchase(@NonNull OverloadedApi.Purchase status) {
+        purchase = status;
+        checkUpdateUi();
     }
 
     public interface Listener extends DialogUtils.ShowStuffInterface {
