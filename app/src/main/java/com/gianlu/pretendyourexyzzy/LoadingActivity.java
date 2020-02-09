@@ -38,6 +38,7 @@ import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
+import com.gianlu.pretendyourexyzzy.overloaded.AskUsernameDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedBillingHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
@@ -55,7 +56,7 @@ import java.util.Objects;
 import me.toptas.fancyshowcase.FocusShape;
 
 
-public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener {
+public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener, AskUsernameDialog.Listener {
     private static final int RC_SIGN_IN = 3;
     private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
     private final OverloadedBillingHelper billingHelper = new OverloadedBillingHelper(this, this);
@@ -438,5 +439,10 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     protected void onDestroy() {
         super.onDestroy();
         billingHelper.onDestroy();
+    }
+
+    @Override
+    public void onUsernameChosen(@NonNull String username) {
+        billingHelper.usernameChosen(username);
     }
 }

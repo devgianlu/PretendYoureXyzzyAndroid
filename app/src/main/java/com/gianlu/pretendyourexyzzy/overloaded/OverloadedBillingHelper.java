@@ -15,9 +15,11 @@ import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
-import com.gianlu.commonutils.dialogs.ActivityWithDialog;
+import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
+import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.Collections;
@@ -29,6 +31,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     private BillingClient billingClient;
     private volatile SkuDetails infiniteSku;
     private volatile OverloadedApi.Purchase purchase;
+    private String pendingPurchaseToken = null;
 
     public OverloadedBillingHelper(@NonNull Context context, @NonNull Listener listener) {
         this.context = context;
@@ -68,8 +71,17 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                     purchase = status;
                     checkUpdateUi();
 
-                    if (status.status == OverloadedApi.Purchase.Status.PENDING)
-                        OverloadedApi.get().verifyPurchase(status.purchaseToken, OverloadedBillingHelper.this);
+                    if (status.status == OverloadedApi.Purchase.Status.PENDING) {
+                        String lastUsername = Prefs.getString(PK.OVERLOADED_LAST_USERNAME, null);
+                        if (lastUsername == null || !OverloadedApi.checkUsernameValid(lastUsername)) {
+                            Prefs.remove(PK.OVERLOADED_LAST_USERNAME);
+                            pendingPurchaseToken = status.purchaseToken;
+                            listener.showDialog(AskUsernameDialog.get());
+                        } else {
+                            OverloadedApi.get().verifyPurchase(lastUsername, status.purchaseToken,
+                                    OverloadedBillingHelper.this);
+                        }
+                    }
                 }
 
                 @Override
@@ -139,13 +151,13 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     }
 
     @NonNull
-    public View.OnClickListener buyOverloadedOnClick(@NonNull ActivityWithDialog activity) {
+    public View.OnClickListener buyOverloadedOnClick(@NonNull Activity activity) {
         return v -> {
             if (OverloadedSignInHelper.isSignedIn()) {
                 if (infiniteSku != null && billingClient != null && billingClient.isReady())
                     startBillingFlow(activity, infiniteSku);
             } else {
-                activity.showDialog(OverloadedChooseProviderDialog.getSignInInstance());
+                listener.showDialog(OverloadedChooseProviderDialog.getSignInInstance());
             }
         };
     }
@@ -159,7 +171,14 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
 
         if (list == null || list.isEmpty()) return;
 
-        OverloadedApi.get().verifyPurchase(list.get(0).getPurchaseToken(), this);
+        pendingPurchaseToken = list.get(0).getPurchaseToken();
+        listener.showDialog(AskUsernameDialog.get());
+    }
+
+    public void usernameChosen(@NonNull String username) {
+        if (pendingPurchaseToken == null) return;
+        Prefs.putString(PK.OVERLOADED_LAST_USERNAME, username);
+        OverloadedApi.get().verifyPurchase(username, pendingPurchaseToken, this);
     }
 
     @Override
@@ -167,6 +186,8 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         purchase = status;
         checkUpdateUi();
         listener.showToast(Toaster.build().message(R.string.purchaseVerified));
+
+        pendingPurchaseToken = null;
     }
 
     @Override
@@ -180,10 +201,8 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         if (billingClient != null) billingClient.endConnection();
     }
 
-    public interface Listener {
+    public interface Listener extends DialogUtils.ShowStuffInterface {
         void handleBillingErrors(@BillingClient.BillingResponseCode int code);
-
-        void showToast(@NonNull Toaster toaster);
 
         void toggleBuyOverloadedVisibility(boolean visible);
 

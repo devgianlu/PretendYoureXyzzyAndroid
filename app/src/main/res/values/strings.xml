@@ -263,4 +263,7 @@
     <string name="pending">Pending</string>
     <string name="overloadedStatus_purchasePending">You payment is still pending, check back later!</string>
     <string name="overloadedStatus_ok">OvErLoAdEd</string>
+    <string name="username">Username</string>
+    <string name="askOverloadedUsername_title">Choose your Overloaded username</string>
+    <string name="askOverloadedUsername_desc">Please choose a username for your Overloaded account. You can still use a different username for PYX.</string>
 </resources>

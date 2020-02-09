@@ -23,6 +23,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.functions.FirebaseFunctions;
+import com.google.firebase.functions.HttpsCallableResult;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +54,10 @@ public class OverloadedApi {
         });
     }
 
+    public static boolean checkUsernameValid(@NonNull String str) {
+        return Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]{2,29}$").matcher(str).matches();
+    }
+
     @NonNull
     public static OverloadedApi get() {
         return instance;
@@ -61,6 +66,23 @@ public class OverloadedApi {
     private static void log(@NonNull Task<?> task) {
         if (task.getException() == null) return;
         Logging.log("Failed executing task!", task.getException());
+    }
+
+    @NonNull
+    public static Task<Boolean> isUsernameUnique(@NonNull String username) {
+        return FirebaseFunctions.getInstance()
+                .getHttpsCallable("checkUsername")
+                .call(Collections.singletonMap("username", username))
+                .continueWith(task -> {
+                    HttpsCallableResult result = task.getResult();
+                    if (result == null) {
+                        if (task.getException() == null) throw new IllegalStateException();
+                        else throw task.getException();
+                    }
+
+                    System.out.println(result.getData()); // TODO: What is this data?
+                    return false;
+                });
     }
 
     private boolean updateUser() {
@@ -174,10 +196,13 @@ public class OverloadedApi {
                 .addOnCompleteListener(listener);
     }
 
-    public void verifyPurchase(@NonNull String purchaseToken, @NonNull PurchaseStatusCallback callback) {
+    public void verifyPurchase(@NonNull String username, @NonNull String purchaseToken, @NonNull PurchaseStatusCallback callback) {
+        Map<String, String> params = new HashMap<>();
+        params.put("username", username);
+        params.put("purchase_token", purchaseToken);
         FirebaseFunctions.getInstance()
                 .getHttpsCallable("verifyPayment")
-                .call(Collections.singletonMap("purchase_token", purchaseToken))
+                .call(params)
                 .continueWithTask(task -> purchaseStatus())
                 .addOnCompleteListener(task -> {
                     Purchase purchase;
