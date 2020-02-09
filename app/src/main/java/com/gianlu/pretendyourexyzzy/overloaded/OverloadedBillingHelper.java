@@ -17,9 +17,7 @@ import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.logging.Logging;
-import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
-import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 
 import java.util.Collections;
@@ -28,10 +26,10 @@ import java.util.List;
 public final class OverloadedBillingHelper implements PurchasesUpdatedListener, OverloadedApi.PurchaseStatusCallback {
     private final Context context;
     private final Listener listener;
+    public boolean wasBuying = false;
     private BillingClient billingClient;
     private volatile SkuDetails infiniteSku;
     private volatile OverloadedApi.Purchase purchase;
-    private String pendingPurchaseToken = null;
 
     public OverloadedBillingHelper(@NonNull Context context, @NonNull Listener listener) {
         this.context = context;
@@ -65,23 +63,17 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         });
 
         if (OverloadedSignInHelper.isSignedIn()) {
+            // TODO: We need to trigger a loading state if the registration is not complete
             OverloadedApi.get().purchaseStatus(new OverloadedApi.PurchaseStatusCallback() {
                 @Override
                 public void onPurchaseStatus(@NonNull OverloadedApi.Purchase status) {
                     purchase = status;
                     checkUpdateUi();
 
-                    if (status.status == OverloadedApi.Purchase.Status.PENDING) {
-                        String lastUsername = Prefs.getString(PK.OVERLOADED_LAST_USERNAME, null);
-                        if (lastUsername == null || !OverloadedApi.checkUsernameValid(lastUsername)) {
-                            Prefs.remove(PK.OVERLOADED_LAST_USERNAME);
-                            pendingPurchaseToken = status.purchaseToken;
-                            listener.showDialog(AskUsernameDialog.get());
-                        } else {
-                            OverloadedApi.get().verifyPurchase(lastUsername, status.purchaseToken,
-                                    OverloadedBillingHelper.this);
-                        }
-                    }
+                    if (status.status == OverloadedApi.Purchase.Status.PENDING)
+                        OverloadedApi.get().verifyPurchase(status.purchaseToken, OverloadedBillingHelper.this);
+                    else if (!status.hasUsername() && status.status == OverloadedApi.Purchase.Status.OK)
+                        listener.showDialog(AskUsernameDialog.get());
                 }
 
                 @Override
@@ -121,8 +113,10 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         } else {
             switch (purchase.status) {
                 case OK:
-                    listener.toggleBuyOverloadedVisibility(false);
-                    listener.updateOverloadedStatusText(context.getString(R.string.overloadedStatus_ok));
+                    if (purchase.hasUsername()) {
+                        listener.toggleBuyOverloadedVisibility(false);
+                        listener.updateOverloadedStatusText(context.getString(R.string.overloadedStatus_ok));
+                    }
                     break;
                 case NONE:
                     listener.toggleBuyOverloadedVisibility(true);
@@ -150,6 +144,11 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             listener.handleBillingErrors(result.getResponseCode());
     }
 
+    public void startBillingFlow(@NonNull Activity activity) {
+        if (infiniteSku != null && billingClient != null && billingClient.isReady())
+            startBillingFlow(activity, infiniteSku);
+    }
+
     @NonNull
     public View.OnClickListener buyOverloadedOnClick(@NonNull Activity activity) {
         return v -> {
@@ -157,6 +156,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                 if (infiniteSku != null && billingClient != null && billingClient.isReady())
                     startBillingFlow(activity, infiniteSku);
             } else {
+                wasBuying = true;
                 listener.showDialog(OverloadedChooseProviderDialog.getSignInInstance());
             }
         };
@@ -171,14 +171,8 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
 
         if (list == null || list.isEmpty()) return;
 
-        pendingPurchaseToken = list.get(0).getPurchaseToken();
-        listener.showDialog(AskUsernameDialog.get());
-    }
-
-    public void usernameChosen(@NonNull String username) {
-        if (pendingPurchaseToken == null) return;
-        Prefs.putString(PK.OVERLOADED_LAST_USERNAME, username);
-        OverloadedApi.get().verifyPurchase(username, pendingPurchaseToken, this);
+        // TODO: We need to trigger a loading state
+        OverloadedApi.get().verifyPurchase(list.get(0).getPurchaseToken(), this);
     }
 
     @Override
@@ -187,7 +181,8 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         checkUpdateUi();
         listener.showToast(Toaster.build().message(R.string.purchaseVerified));
 
-        pendingPurchaseToken = null;
+        if (!status.hasUsername() && status.status == OverloadedApi.Purchase.Status.OK)
+            listener.showDialog(AskUsernameDialog.get());
     }
 
     @Override

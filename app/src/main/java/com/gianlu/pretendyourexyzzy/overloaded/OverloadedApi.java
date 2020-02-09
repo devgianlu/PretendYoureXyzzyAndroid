@@ -75,13 +75,13 @@ public class OverloadedApi {
                 .call(Collections.singletonMap("username", username))
                 .continueWith(task -> {
                     HttpsCallableResult result = task.getResult();
-                    if (result == null) {
-                        if (task.getException() == null) throw new IllegalStateException();
-                        else throw task.getException();
-                    }
+                    if (result == null) return false;
 
-                    System.out.println(result.getData()); // TODO: What is this data?
-                    return false;
+                    // noinspection unchecked
+                    Map<String, Object> map = (Map<String, Object>) result.getData();
+                    if (map == null) return false;
+
+                    return Boolean.parseBoolean(String.valueOf(map.get("unique")));
                 });
     }
 
@@ -156,6 +156,18 @@ public class OverloadedApi {
         return ids;
     }
 
+    @Nullable
+    public UserInfo getProviderUserInfo(@NonNull String id) {
+        if (user == null && updateUser())
+            return null;
+
+        for (UserInfo info : user.getProviderData())
+            if (info.getProviderId().equals(id))
+                return info;
+
+        return null;
+    }
+
     public void purchaseStatus(@NonNull PurchaseStatusCallback callback) {
         if (user == null && updateUser()) {
             callback.onFailed(new IllegalStateException("No signed in user!"));
@@ -178,7 +190,7 @@ public class OverloadedApi {
                 Purchase.Status status = Purchase.Status.parse((String) snap.get("purchase_status"));
                 String token = (String) snap.get("purchase_token");
                 if (token == null) token = "";
-                return new Purchase(status, token);
+                return new Purchase(snap.getString("username"), status, token);
             } else if (task.getException() != null) {
                 throw new RuntimeExecutionException(task.getException());
             } else {
@@ -196,13 +208,10 @@ public class OverloadedApi {
                 .addOnCompleteListener(listener);
     }
 
-    public void verifyPurchase(@NonNull String username, @NonNull String purchaseToken, @NonNull PurchaseStatusCallback callback) {
-        Map<String, String> params = new HashMap<>();
-        params.put("username", username);
-        params.put("purchase_token", purchaseToken);
+    public void verifyPurchase(@NonNull String purchaseToken, @NonNull PurchaseStatusCallback callback) {
         FirebaseFunctions.getInstance()
                 .getHttpsCallable("verifyPayment")
-                .call(params)
+                .call(Collections.singletonMap("purchase_token", purchaseToken))
                 .continueWithTask(task -> purchaseStatus())
                 .addOnCompleteListener(task -> {
                     Purchase purchase;
@@ -210,6 +219,23 @@ public class OverloadedApi {
                     else if (task.getException() != null) callback.onFailed(task.getException());
                     else throw new IllegalStateException();
                 });
+    }
+
+    public void setUsername(@NonNull String username, @NonNull SuccessfulCallback callback) {
+        FirebaseFunctions.getInstance()
+                .getHttpsCallable("setUsername")
+                .call(Collections.singletonMap("username", username))
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) callback.onSuccessful();
+                    else if (task.getException() != null) callback.onFailed(task.getException());
+                    else throw new IllegalStateException();
+                });
+    }
+
+    public interface SuccessfulCallback {
+        void onSuccessful();
+
+        void onFailed(@NonNull Exception ex);
     }
 
     public interface PurchaseStatusCallback {
@@ -221,10 +247,16 @@ public class OverloadedApi {
     public static final class Purchase {
         public final Status status;
         public final String purchaseToken;
+        public final String username;
 
-        Purchase(@NonNull Status status, @NonNull String purchaseToken) {
+        Purchase(@Nullable String username, @NonNull Status status, @NonNull String purchaseToken) {
+            this.username = username;
             this.status = status;
             this.purchaseToken = purchaseToken;
+        }
+
+        public boolean hasUsername() {
+            return username != null && !username.isEmpty();
         }
 
         public enum Status {

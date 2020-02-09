@@ -266,4 +266,9 @@
     <string name="username">Username</string>
     <string name="askOverloadedUsername_title">Choose your Overloaded username</string>
     <string name="askOverloadedUsername_desc">Please choose a username for your Overloaded account. You can still use a different username for PYX.</string>
+    <string name="done">Done</string>
+    <string name="failedSettingUsername">Failed setting username!</string>
+    <string name="usernameSetSuccessfully">Username set successfully!</string>
+    <string name="overloaded_usernameAlreadyInUse">This username is already in use.</string>
+    <string name="overloaded_invalidUsername">The username must contain only upper and lower case letters, numbers, or underscores, must be 3 to 30 characters long, and must not start with a number.</string>
 </resources>
