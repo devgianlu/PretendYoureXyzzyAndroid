@@ -17,7 +17,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.billingclient.api.BillingClient.BillingResponseCode;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.logging.Logging;
@@ -349,7 +348,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             if (Objects.equals(((PyxException) ex).errorCode, "se")) {
                 loading.setVisibility(View.GONE);
                 register.setVisibility(View.VISIBLE);
-
                 return;
             }
         }
@@ -396,34 +394,9 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     @Override
     protected void onResume() {
         super.onResume();
+        billingHelper.onResume();
         if (register != null)
             GPGamesHelper.setPopupView(this, (View) register.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
-    }
-
-    @Override
-    public void handleBillingErrors(@BillingResponseCode int code) {
-        switch (code) {
-            case BillingResponseCode.BILLING_UNAVAILABLE:
-            case BillingResponseCode.SERVICE_UNAVAILABLE:
-            case BillingResponseCode.SERVICE_DISCONNECTED:
-            case BillingResponseCode.SERVICE_TIMEOUT:
-                Toaster.with(this).message(R.string.failedBillingConnection).show();
-                break;
-            case BillingResponseCode.USER_CANCELED:
-                Toaster.with(this).message(R.string.userCancelled).show();
-                break;
-            case BillingResponseCode.DEVELOPER_ERROR:
-            case BillingResponseCode.ITEM_UNAVAILABLE:
-            case BillingResponseCode.FEATURE_NOT_SUPPORTED:
-            case BillingResponseCode.ITEM_ALREADY_OWNED:
-            case BillingResponseCode.ITEM_NOT_OWNED:
-            case BillingResponseCode.ERROR:
-                Toaster.with(this).message(R.string.failedBuying).show();
-                break;
-            default:
-            case BillingResponseCode.OK:
-                break;
-        }
     }
 
     @Override

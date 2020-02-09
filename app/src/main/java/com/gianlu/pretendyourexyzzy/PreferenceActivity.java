@@ -207,7 +207,7 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                 OverloadedApi.get().purchaseStatus(new OverloadedApi.PurchaseStatusCallback() {
                     @Override
                     public void onPurchaseStatus(@NonNull OverloadedApi.Purchase purchase) {
-                        purchaseStatus.setSummary(purchase.status.toString(context));
+                        purchaseStatus.setSummary(String.format("%s (%s)", purchase.status.toString(context), purchase.username));
                         purchaseStatus.setLoading(false);
                     }
 

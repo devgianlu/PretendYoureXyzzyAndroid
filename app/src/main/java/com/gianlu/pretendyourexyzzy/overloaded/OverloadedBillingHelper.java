@@ -140,6 +140,13 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         });
     }
 
+    public void onResume() {
+        if (!OverloadedSignInHelper.isSignedIn()) {
+            purchase = null;
+            checkUpdateUi();
+        }
+    }
+
     private synchronized void checkUpdateUi() {
         if (purchase == null) {
             if (billingClient == null || !billingClient.isReady()) {
@@ -181,14 +188,56 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         }
     }
 
+    private void handleBillingErrors(@BillingClient.BillingResponseCode int code) {
+        switch (code) {
+            case BillingClient.BillingResponseCode.BILLING_UNAVAILABLE:
+            case BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE:
+            case BillingClient.BillingResponseCode.SERVICE_DISCONNECTED:
+            case BillingClient.BillingResponseCode.SERVICE_TIMEOUT:
+                listener.showToast(Toaster.build().message(R.string.failedBillingConnection).extra(code));
+                break;
+            case BillingClient.BillingResponseCode.USER_CANCELED:
+                listener.showToast(Toaster.build().message(R.string.userCancelled).extra(code));
+                break;
+            case BillingClient.BillingResponseCode.DEVELOPER_ERROR:
+            case BillingClient.BillingResponseCode.ITEM_UNAVAILABLE:
+            case BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED:
+            case BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED:
+            case BillingClient.BillingResponseCode.ITEM_NOT_OWNED:
+            case BillingClient.BillingResponseCode.ERROR:
+                listener.showToast(Toaster.build().message(R.string.failedBuying).extra(code));
+                break;
+            default:
+            case BillingClient.BillingResponseCode.OK:
+                break;
+        }
+    }
+
     private void startBillingFlow(@NonNull Activity activity, @NonNull SkuDetails product) {
         BillingFlowParams flowParams = BillingFlowParams.newBuilder()
                 .setSkuDetails(product)
                 .build();
 
         BillingResult result = billingClient.launchBillingFlow(activity, flowParams);
-        if (result.getResponseCode() != BillingClient.BillingResponseCode.OK)
-            listener.handleBillingErrors(result.getResponseCode());
+        if (result.getResponseCode() == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+            listener.showProgress(R.string.verifyingPurchase);
+            OverloadedApi.get().purchaseStatus(new OverloadedApi.PurchaseStatusCallback() {
+                @Override
+                public void onPurchaseStatus(@NonNull OverloadedApi.Purchase status) {
+                    purchase = status;
+                    checkUpdateUi();
+                    listener.dismissDialog();
+                }
+
+                @Override
+                public void onFailed(@NonNull Exception ex) {
+                    Logging.log(ex);
+                    listener.dismissDialog();
+                }
+            });
+        } else if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+            handleBillingErrors(result.getResponseCode());
+        }
     }
 
     public void startBillingFlow(@NonNull Activity activity) {
@@ -215,7 +264,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     @Override
     public void onPurchasesUpdated(BillingResult br, @Nullable List<Purchase> list) {
         if (br.getResponseCode() != BillingClient.BillingResponseCode.OK) {
-            listener.handleBillingErrors(br.getResponseCode());
+            handleBillingErrors(br.getResponseCode());
             return;
         }
 
@@ -258,8 +307,6 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     }
 
     public interface Listener extends DialogUtils.ShowStuffInterface {
-        void handleBillingErrors(@BillingClient.BillingResponseCode int code);
-
         void toggleBuyOverloadedVisibility(boolean visible);
 
         void updateOverloadedStatusText(@Nullable String text);
