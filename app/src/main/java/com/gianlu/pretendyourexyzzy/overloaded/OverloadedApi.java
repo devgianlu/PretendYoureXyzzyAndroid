@@ -12,6 +12,7 @@ import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper.SignInProv
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.RuntimeExecutionException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
@@ -40,17 +41,14 @@ public class OverloadedApi {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private ChatModule chat;
     private FirebaseUser user;
+    private UserData latestUserData;
 
     private OverloadedApi() {
         FirebaseAuth.getInstance().addAuthStateListener(fa -> {
             user = fa.getCurrentUser();
             Logging.log(String.format("Auth state updated! {user: %s}", user), false);
 
-            if (user == null) {
-                chat = null;
-            } else {
-                chat = new ChatModule(user, db);
-            }
+            chat = null;
         });
     }
 
@@ -97,6 +95,10 @@ public class OverloadedApi {
 
     @Nullable
     public ChatModule chat() {
+        if (user == null && updateUser())
+            return null;
+
+        if (chat == null) chat = new ChatModule(user, db);
         return chat;
     }
 
@@ -168,29 +170,34 @@ public class OverloadedApi {
         return null;
     }
 
-    public void purchaseStatus(@NonNull PurchaseStatusCallback callback) {
+    public void userData(@NonNull UserDataCallback callback) {
         if (user == null && updateUser()) {
             callback.onFailed(new IllegalStateException("No signed in user!"));
             return;
         }
 
-        purchaseStatus().addOnCompleteListener(task -> {
-            Purchase purchase;
+        userData().addOnCompleteListener(task -> {
+            UserData userData;
             if (task.getException() != null) callback.onFailed(task.getException());
-            else if ((purchase = task.getResult()) != null) callback.onPurchaseStatus(purchase);
+            else if ((userData = task.getResult()) != null) callback.onUserData(userData);
             else throw new IllegalStateException();
         });
     }
 
+    @Nullable
+    public UserData userDataCache() {
+        return latestUserData;
+    }
+
     @NonNull
-    private Task<Purchase> purchaseStatus() {
+    private Task<UserData> userData() {
         return db.document("users/" + user.getUid()).get().continueWith(task -> {
             DocumentSnapshot snap;
             if ((snap = task.getResult()) != null) {
-                Purchase.Status status = Purchase.Status.parse((String) snap.get("purchase_status"));
+                UserData.PurchaseStatus status = UserData.PurchaseStatus.parse((String) snap.get("purchase_status"));
                 String token = (String) snap.get("purchase_token");
                 if (token == null) token = "";
-                return new Purchase(snap.getString("username"), status, token);
+                return latestUserData = new UserData(snap.getString("username"), status, token);
             } else if (task.getException() != null) {
                 throw new RuntimeExecutionException(task.getException());
             } else {
@@ -208,58 +215,57 @@ public class OverloadedApi {
                 .addOnCompleteListener(listener);
     }
 
-    public void verifyPurchase(@NonNull String purchaseToken, @NonNull PurchaseStatusCallback callback) {
+    public void verifyPurchase(@NonNull String purchaseToken, @NonNull UserDataCallback callback) {
         FirebaseFunctions.getInstance()
                 .getHttpsCallable("verifyPayment")
                 .call(Collections.singletonMap("purchase_token", purchaseToken))
-                .continueWithTask(task -> purchaseStatus())
+                .continueWithTask(task -> userData())
                 .addOnCompleteListener(task -> {
-                    Purchase purchase;
+                    UserData userData;
                     if (task.getException() != null) callback.onFailed(task.getException());
-                    else if ((purchase = task.getResult()) != null)
-                        callback.onPurchaseStatus(purchase);
+                    else if ((userData = task.getResult()) != null)
+                        callback.onUserData(userData);
                     else throw new IllegalStateException();
                 });
     }
 
-    public void setUsername(@NonNull String username, @NonNull PurchaseStatusCallback callback) {
+    public void setUsername(@NonNull String username, @NonNull UserDataCallback callback) {
         FirebaseFunctions.getInstance()
                 .getHttpsCallable("setUsername")
                 .call(Collections.singletonMap("username", username))
                 .continueWithTask(task -> {
                     task.getResult();
-                    return purchaseStatus();
+                    return userData();
                 })
                 .addOnCompleteListener(task -> {
-                    Purchase purchase;
+                    UserData userData;
                     if (task.getException() != null) callback.onFailed(task.getException());
-                    else if ((purchase = task.getResult()) != null)
-                        callback.onPurchaseStatus(purchase);
+                    else if ((userData = task.getResult()) != null) callback.onUserData(userData);
                     else throw new IllegalStateException();
                 });
     }
 
-    public interface PurchaseStatusCallback {
-        void onPurchaseStatus(@NonNull Purchase status);
+    public interface UserDataCallback {
+        void onUserData(@NonNull UserData status);
 
         void onFailed(@NonNull Exception ex);
     }
 
-    public static final class Purchase {
-        public final Status status;
+    public static final class UserData {
+        public final PurchaseStatus purchaseStatus;
         public final String purchaseToken;
         public final String username;
 
-        Purchase(@Nullable String username, @NonNull Status status, @NonNull String purchaseToken) {
+        UserData(@Nullable String username, @NonNull PurchaseStatus purchaseStatus, @NonNull String purchaseToken) {
             this.username = username;
-            this.status = status;
+            this.purchaseStatus = purchaseStatus;
             this.purchaseToken = purchaseToken;
         }
 
         @Override
         public String toString() {
-            return "Purchase{" +
-                    "status=" + status +
+            return "UserData{" +
+                    "purchaseStatus=" + purchaseStatus +
                     ", purchaseToken='" + purchaseToken + '\'' +
                     ", username='" + username + '\'' +
                     '}';
@@ -269,25 +275,25 @@ public class OverloadedApi {
             return username != null && !username.isEmpty();
         }
 
-        public enum Status {
+        public enum PurchaseStatus {
             NONE("none"), OK("ok"), PENDING("pending");
 
             private final String val;
 
-            Status(String val) {
+            PurchaseStatus(String val) {
                 this.val = val;
             }
 
             @NonNull
-            private static Status parse(@Nullable String val) {
+            private static PurchaseStatus parse(@Nullable String val) {
                 if (val == null) throw new IllegalArgumentException("Can't parse null value.");
 
-                for (Status status : values()) {
+                for (PurchaseStatus status : values()) {
                     if (Objects.equals(status.val, val))
                         return status;
                 }
 
-                throw new IllegalArgumentException("Unknown status: " + val);
+                throw new IllegalArgumentException("Unknown purchaseStatus: " + val);
             }
 
             @NonNull
@@ -391,14 +397,25 @@ public class OverloadedApi {
         }
 
         @NonNull
-        public Task<QuerySnapshot> getAllChats() {
+        public Task<List<Map<String, Object>>> getAllChats() {
             return getChatIds().continueWithTask(task -> {
                 log(task);
 
                 List<String> list = task.getResult();
-                if (list == null) return null;
+                if (list == null || list.isEmpty()) return Tasks.forResult(null);
 
                 return db.collection("chats").whereIn("__name__", list).get();
+            }).continueWith(task -> {
+                log(task);
+
+                QuerySnapshot snap = task.getResult();
+                if (snap == null) return Collections.emptyList();
+
+                List<Map<String, Object>> list = new ArrayList<>();
+                for (DocumentSnapshot doc : snap.getDocuments())
+                    list.add(doc.getData());
+
+                return list;
             });
         }
 
@@ -411,11 +428,17 @@ public class OverloadedApi {
             return db.collection("chats/" + chatId + "/thread").document().set(data);
         }
 
+        @NonNull
+        public String uid() {
+            return user.getUid();
+        }
+
         private static class ChatMessage extends ChatController.ChatMessage {
             private final String chatId;
             private final String msgId;
 
-            ChatMessage(@NonNull String chatId, @NonNull String msgId, @NonNull String sender, @NonNull String text, boolean wall, boolean emote, long timestamp) {
+            ChatMessage(@NonNull String chatId, @NonNull String msgId, @NonNull String sender, @NonNull String text,
+                        boolean wall, boolean emote, long timestamp) {
                 super(sender, text, wall, emote, timestamp);
                 this.chatId = chatId;
                 this.msgId = msgId;

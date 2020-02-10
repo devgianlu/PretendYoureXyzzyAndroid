@@ -112,7 +112,7 @@ public class Game implements Filterable<Game.Protection>, Serializable {
                 if (Objects.equals(status.val, val))
                     return status;
 
-            throw new IllegalArgumentException("Cannot find status with value: " + val);
+            throw new IllegalArgumentException("Cannot find purchaseStatus with value: " + val);
         }
 
         public boolean isStarted() {

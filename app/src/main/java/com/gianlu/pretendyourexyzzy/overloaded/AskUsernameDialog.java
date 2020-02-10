@@ -113,9 +113,9 @@ public final class AskUsernameDialog extends DialogFragment {
                 loadable.loading(true);
                 OverloadedApi.isUsernameUnique(username).addOnCompleteListener(task -> {
                     if (task.getResult() != null && task.getResult()) {
-                        OverloadedApi.get().setUsername(username, new OverloadedApi.PurchaseStatusCallback() {
+                        OverloadedApi.get().setUsername(username, new OverloadedApi.UserDataCallback() {
                             @Override
-                            public void onPurchaseStatus(@NonNull OverloadedApi.Purchase status) {
+                            public void onUserData(@NonNull OverloadedApi.UserData status) {
                                 Prefs.putBoolean(PK.OVERLOADED_FINISHED_SETUP, true);
 
                                 loadable.notLoading(false);
@@ -145,6 +145,6 @@ public final class AskUsernameDialog extends DialogFragment {
     }
 
     public interface Listener {
-        void overloadedSetupFinished(@NonNull OverloadedApi.Purchase status);
+        void overloadedSetupFinished(@NonNull OverloadedApi.UserData status);
     }
 }

@@ -419,7 +419,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     @Override
-    public void overloadedSetupFinished(@NotNull OverloadedApi.Purchase status) {
+    public void overloadedSetupFinished(@NotNull OverloadedApi.UserData status) {
         billingHelper.updatePurchase(status);
     }
 }
