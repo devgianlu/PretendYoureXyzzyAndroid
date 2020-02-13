@@ -7,6 +7,8 @@ import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.main.chats.ChatController;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper.SignInProvider;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -80,6 +82,46 @@ public class OverloadedApi {
                     if (map == null) return false;
 
                     return Boolean.parseBoolean(String.valueOf(map.get("unique")));
+                });
+    }
+
+    @NonNull
+    private static String serverUrlIdentifier(@NonNull Pyx.Server server) {
+        return server.url.host() + ":" + server.url.port() + server.url.encodedPath();
+    }
+
+    public void loggedIntoPyxServer(@NonNull User user, @NonNull Pyx.Server server) {
+        Map<String, String> map = new HashMap<>();
+        map.put("nickname", user.nickname);
+        map.put("idCode", user.idCode == null ? "" : user.idCode);
+        map.put("serverUrl", serverUrlIdentifier(server));
+        FirebaseFunctions.getInstance()
+                .getHttpsCallable("pyxServerLoggedIn")
+                .call(map).addOnCompleteListener(OverloadedApi::log);
+    }
+
+    public void loggedOutOfPyxServer(@NonNull Pyx.Server server) { // FIXME: We will not receive this call if the user closes the app
+        FirebaseFunctions.getInstance()
+                .getHttpsCallable("pyxServerLoggedOut")
+                .call(Collections.singletonMap("serverUrl", serverUrlIdentifier(server)))
+                .addOnCompleteListener(OverloadedApi::log);
+    }
+
+    @NonNull
+    public Task<List<String>> listUsers(@NonNull Pyx.Server server) {
+        return FirebaseFunctions.getInstance()
+                .getHttpsCallable("listUsersForServer")
+                .call(Collections.singletonMap("serverUrl", serverUrlIdentifier(server)))
+                .continueWith(task -> {
+                    OverloadedApi.log(task);
+
+                    HttpsCallableResult result = task.getResult();
+                    if (result == null) return Collections.emptyList();
+
+                    // noinspection unchecked
+                    List<String> list = (List<String>) result.getData();
+                    if (list == null) return Collections.emptyList();
+                    else return list;
                 });
     }
 

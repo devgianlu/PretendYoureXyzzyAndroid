@@ -1,28 +1,34 @@
 package com.gianlu.pretendyourexyzzy.adapters;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.models.Name;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHolder, Name, NamesAdapter.Sorting, String> {
     private final LayoutInflater inflater;
+    private final List<String> overloadedNames;
     private final Listener listener;
 
-    public NamesAdapter(Context context, List<Name> names, Listener listener) {
+    public NamesAdapter(Context context, List<Name> names, @Nullable List<String> overloadedNames, Listener listener) {
         super(names, Sorting.AZ);
         this.inflater = LayoutInflater.from(context);
+        this.overloadedNames = overloadedNames == null ? new ArrayList<>() : overloadedNames;
         this.listener = listener;
     }
 
@@ -38,9 +44,14 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
     }
 
     @Override
-    protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull final Name name) {
+    protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull Name name) {
         ((SuperTextView) holder.itemView).setHtml(name.sigil() == Name.Sigil.NORMAL_USER ? name.withSigil() : (SuperTextView.makeBold(name.sigil().symbol()) + name.noSigil()));
         holder.itemView.setOnClickListener(v -> listener.onNameSelected(name.noSigil()));
+        if (overloadedNames.contains(name.noSigil())) {
+            ((SuperTextView) holder.itemView).setTextColor(Color.RED);
+        } else {
+            CommonUtils.setTextColorFromAttr((TextView) holder.itemView, android.R.attr.textColorSecondary);
+        }
     }
 
     @Override
@@ -72,6 +83,12 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
                 break;
             }
         }
+    }
+
+    public void setOverloadedNames(List<String> list) {
+        overloadedNames.clear();
+        overloadedNames.addAll(list);
+        notifyDataSetChanged(); // FIXME
     }
 
     public enum Sorting {
