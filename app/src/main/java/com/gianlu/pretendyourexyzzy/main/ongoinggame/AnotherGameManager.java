@@ -160,7 +160,8 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         }
 
         gameData.lastRoundPermalink = lastRoundPermalink;
-        GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_ROUNDS_PLAYED);
+        if (!gameData.amSpectator())
+            GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_ROUNDS_PLAYED);
     }
 
     private void dealCards(List<Card> cards) {
