@@ -8,14 +8,16 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.overloaded.ChatsAdapter;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedApi;
+import com.gianlu.pretendyourexyzzy.overloaded.adapters.ChatsAdapter;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class ChatsFragment extends FragmentWithDialog {
 
@@ -31,7 +33,8 @@ public class ChatsFragment extends FragmentWithDialog {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        RecyclerMessageView rmv = new RecyclerMessageView(requireContext());
+        CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.fragment_overloaded_chats, container, false);
+        RecyclerMessageView rmv = layout.findViewById(R.id.overloadedChatsFragment_list);
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
         rmv.dividerDecoration(RecyclerView.VERTICAL);
         rmv.startLoading();
@@ -39,8 +42,18 @@ public class ChatsFragment extends FragmentWithDialog {
         OverloadedApi.ChatModule chat = OverloadedApi.get().chat();
         if (chat == null) {
             rmv.showError(R.string.failedLoading);
-            return rmv;
+            return layout;
         }
+
+        FloatingActionButton createChat = layout.findViewById(R.id.overloadedChatsFragment_createChat);
+        createChat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: Create chat UI
+
+                chat.startChatWith("ktDO0rsOgEh7URV1mfb4UO8OQSo1");
+            }
+        });
 
         chat.getAllChats()
                 .addOnSuccessListener(requireActivity(), chats -> {
@@ -52,6 +65,6 @@ public class ChatsFragment extends FragmentWithDialog {
                     Logging.log(ex);
                 });
 
-        return rmv;
+        return layout;
     }
 }

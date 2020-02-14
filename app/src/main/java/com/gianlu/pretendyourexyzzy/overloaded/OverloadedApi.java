@@ -29,6 +29,7 @@ import com.google.firebase.functions.FirebaseFunctions;
 import com.google.firebase.functions.HttpsCallableResult;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -473,6 +474,16 @@ public class OverloadedApi {
         @NonNull
         public String uid() {
             return user.getUid();
+        }
+
+        public void startChatWith(@NonNull String uid) {
+            db.collection("chats").document().set(Collections.singletonMap("users", Arrays.asList(uid, user.getUid()))).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    log(task);
+                    System.out.println("HEIIIIIIIIIIIIIIIIIIIIIIIIIII");
+                }
+            });
         }
 
         private static class ChatMessage extends ChatController.ChatMessage {

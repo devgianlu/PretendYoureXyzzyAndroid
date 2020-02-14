@@ -7,7 +7,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#2c2c2c"
+        android:background="@color/overloadedHeaderBg"
         android:minHeight="200dp"
         android:padding="16dp">
 
