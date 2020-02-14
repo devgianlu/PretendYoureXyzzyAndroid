@@ -30,8 +30,6 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Name;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedApi;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 
 import org.json.JSONException;
 
@@ -43,7 +41,6 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     private RegisteredPyx pyx;
     private NamesAdapter adapter;
     private SearchView searchView;
-    private List<String> overloadedNames;
 
     @NonNull
     public static NamesFragment getInstance() {
@@ -148,13 +145,6 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
         });
 
         pyx.request(PyxRequests.getNamesList(), null, this);
-        if (OverloadedSignInHelper.isSignedIn()) {
-            OverloadedApi.get().listUsers(pyx.server).addOnSuccessListener(list -> {
-                if (adapter == null) overloadedNames = list;
-                else adapter.setOverloadedNames(list);
-            });
-        }
-
         return rmv;
     }
 
@@ -172,7 +162,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     public void onDone(@NonNull final List<Name> result) {
         if (!isAdded()) return;
 
-        adapter = new NamesAdapter(getContext(), result, overloadedNames, this);
+        adapter = new NamesAdapter(getContext(), result, null, this);
         rmv.loadListData(adapter);
 
         names = result.size();

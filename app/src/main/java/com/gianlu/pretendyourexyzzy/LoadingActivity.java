@@ -38,10 +38,10 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.overloaded.AskUsernameDialog;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedApi;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedBillingHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.tutorial.LoginTutorial;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -191,9 +191,11 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == RC_SIGN_IN) {
             if (data != null) {
+                showProgress(R.string.loading);
                 signInHelper.processSignInData(data, new OverloadedSignInHelper.SignInCallback() {
                     @Override
                     public void onSignInSuccessful() {
+                        dismissDialog();
                         showToast(Toaster.build().message(R.string.signInSuccessful));
                         if (billingHelper.wasBuying)
                             billingHelper.startBillingFlow(LoadingActivity.this);
@@ -201,6 +203,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
                     @Override
                     public void onSignInFailed() {
+                        dismissDialog();
                         showToast(Toaster.build().message(R.string.failedSigningIn));
                     }
                 });

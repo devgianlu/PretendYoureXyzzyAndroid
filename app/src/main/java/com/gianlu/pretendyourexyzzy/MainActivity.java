@@ -45,7 +45,7 @@ import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.main.OverloadedFragment;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsActivity;
 import com.gianlu.pretendyourexyzzy.starred.StarredDecksActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -172,7 +172,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         gamesFragment = getOrAdd(transaction, Item.GAMES, GamesFragment::getInstance);
         cardcastFragment = getOrAdd(transaction, Item.CARDCAST, CardcastFragment::getInstance);
 
-        if (OverloadedSignInHelper.isSignedIn())
+        if (OverloadedUtils.isSignedIn())
             overloadedFragment = getOrAdd(transaction, Item.OVERLOADED, OverloadedFragment::getInstance);
 
         if (pyx.config().globalChatEnabled())
@@ -500,7 +500,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 continue;
             else if (item == Item.GLOBAL_CHAT && !pyx.config().globalChatEnabled())
                 continue;
-            else if (item == Item.OVERLOADED && !OverloadedSignInHelper.isSignedIn())
+            else if (item == Item.OVERLOADED && !OverloadedUtils.isSignedIn())
                 continue;
 
             navigation.add(item);

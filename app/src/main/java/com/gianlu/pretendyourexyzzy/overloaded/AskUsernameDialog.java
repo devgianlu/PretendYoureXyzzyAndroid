@@ -24,6 +24,10 @@ import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.overloaded.api.BooleanCallback;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
+import com.gianlu.pretendyourexyzzy.overloaded.api.UserDataCallback;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.PlayGamesAuthProvider;
 import com.google.firebase.auth.UserInfo;
@@ -90,10 +94,20 @@ public final class AskUsernameDialog extends DialogFragment {
                         String username = CommonUtils.getText(input);
                         if (username.trim().isEmpty()) return;
 
-                        if (OverloadedApi.checkUsernameValid(username)) {
-                            OverloadedApi.isUsernameUnique(username).addOnCompleteListener(task -> {
-                                if (task.getResult() == null || !task.getResult())
-                                    new Handler(Looper.getMainLooper()).post(() -> input.setError(getString(R.string.overloaded_usernameAlreadyInUse)));
+                        if (OverloadedUtils.checkUsernameValid(username)) {
+                            OverloadedApi.get().isUsernameUnique(username, getActivity(), new BooleanCallback() {
+                                @Override
+                                public void onResult(boolean result) {
+                                    if (!result)
+                                        input.setError(getString(R.string.overloaded_usernameAlreadyInUse));
+                                    else
+                                        input.setErrorEnabled(false);
+                                }
+
+                                @Override
+                                public void onFailed(@NonNull Exception ex) {
+                                    Logging.log(ex);
+                                }
                             });
                         } else {
                             new Handler(Looper.getMainLooper()).post(() -> input.setError(getString(R.string.overloaded_invalidUsername)));
@@ -109,31 +123,41 @@ public final class AskUsernameDialog extends DialogFragment {
 
         done.setOnClickListener(v -> {
             String username = CommonUtils.getText(input);
-            if (OverloadedApi.checkUsernameValid(username)) {
+            if (OverloadedUtils.checkUsernameValid(username)) {
                 loadable.loading(true);
-                OverloadedApi.isUsernameUnique(username).addOnCompleteListener(task -> {
-                    if (task.getResult() != null && task.getResult()) {
-                        OverloadedApi.get().setUsername(username, new OverloadedApi.UserDataCallback() {
-                            @Override
-                            public void onUserData(@NonNull OverloadedApi.UserData status) {
-                                Prefs.putBoolean(PK.OVERLOADED_FINISHED_SETUP, true);
+                OverloadedApi.get().isUsernameUnique(username, getActivity(), new BooleanCallback() {
+                    @Override
+                    public void onResult(boolean result) {
+                        if (result) {
+                            OverloadedApi.get().setUsername(username, getActivity(), new UserDataCallback() {
+                                @Override
+                                public void onUserData(@NonNull OverloadedApi.UserData status) {
+                                    Prefs.putBoolean(PK.OVERLOADED_FINISHED_SETUP, true);
 
-                                loadable.notLoading(false);
-                                DialogUtils.showToast(getActivity(), Toaster.build().message(R.string.usernameSetSuccessfully));
-                                dismissAllowingStateLoss();
-                                if (listener != null) listener.overloadedSetupFinished(status);
-                            }
+                                    loadable.notLoading(false);
+                                    DialogUtils.showToast(getActivity(), Toaster.build().message(R.string.usernameSetSuccessfully));
+                                    dismissAllowingStateLoss();
+                                    if (listener != null) listener.overloadedSetupFinished(status);
+                                }
 
-                            @Override
-                            public void onFailed(@NonNull Exception ex) {
-                                input.setError(getString(R.string.failedSettingUsername));
-                                loadable.notLoading(true);
-                                Logging.log(ex);
-                            }
-                        });
-                    } else {
-                        input.setError(getString(R.string.overloaded_usernameAlreadyInUse));
+                                @Override
+                                public void onFailed(@NonNull Exception ex) {
+                                    input.setError(getString(R.string.failedSettingUsername));
+                                    loadable.notLoading(true);
+                                    Logging.log(ex);
+                                }
+                            });
+                        } else {
+                            input.setError(getString(R.string.overloaded_usernameAlreadyInUse));
+                            loadable.notLoading(true);
+                        }
+                    }
+
+                    @Override
+                    public void onFailed(@NonNull Exception ex) {
+                        input.setError(getString(R.string.failedSettingUsername));
                         loadable.notLoading(true);
+                        Logging.log(ex);
                     }
                 });
             } else {

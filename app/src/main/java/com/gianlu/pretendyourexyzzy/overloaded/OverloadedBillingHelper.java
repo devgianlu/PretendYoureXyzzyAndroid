@@ -22,11 +22,14 @@ import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
+import com.gianlu.pretendyourexyzzy.overloaded.api.UserDataCallback;
 
 import java.util.Collections;
 import java.util.List;
 
-public final class OverloadedBillingHelper implements PurchasesUpdatedListener, OverloadedApi.UserDataCallback {
+public final class OverloadedBillingHelper implements PurchasesUpdatedListener, UserDataCallback {
     private final Context context;
     private final Listener listener;
     public boolean wasBuying = false;
@@ -65,26 +68,26 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             }
         });
 
-        if (OverloadedSignInHelper.isSignedIn()) {
+        if (OverloadedUtils.isSignedIn()) {
             if (!Prefs.getBoolean(PK.OVERLOADED_FINISHED_SETUP, false))
                 listener.showProgress(R.string.verifyingPurchase);
 
-            OverloadedApi.get().userData(new OverloadedApi.UserDataCallback() {
+            OverloadedApi.get().userData(null, new UserDataCallback() {
                 @Override
-                public void onUserData(@NonNull OverloadedApi.UserData status) {
-                    userData = status;
+                public void onUserData(@NonNull OverloadedApi.UserData data) {
+                    userData = data;
                     checkUpdateUi();
 
-                    if (status.purchaseStatus == OverloadedApi.UserData.PurchaseStatus.NONE && !status.purchaseToken.isEmpty()) {
-                        OverloadedApi.get().verifyPurchase(status.purchaseToken, OverloadedBillingHelper.this);
+                    if (data.purchaseStatus == OverloadedApi.UserData.PurchaseStatus.NONE && !data.purchaseToken.isEmpty()) {
+                        OverloadedApi.get().verifyPurchase(data.purchaseToken, null, OverloadedBillingHelper.this);
                         return;
                     }
 
-                    if (status.purchaseStatus == OverloadedApi.UserData.PurchaseStatus.PENDING) {
-                        OverloadedApi.get().verifyPurchase(status.purchaseToken, OverloadedBillingHelper.this);
-                    } else if (status.purchaseStatus == OverloadedApi.UserData.PurchaseStatus.OK) {
+                    if (data.purchaseStatus == OverloadedApi.UserData.PurchaseStatus.PENDING) {
+                        OverloadedApi.get().verifyPurchase(data.purchaseToken, null, OverloadedBillingHelper.this);
+                    } else if (data.purchaseStatus == OverloadedApi.UserData.PurchaseStatus.OK) {
                         listener.dismissDialog();
-                        if (status.hasUsername())
+                        if (data.hasUsername())
                             Prefs.putBoolean(PK.OVERLOADED_FINISHED_SETUP, true);
                         else
                             listener.showDialog(AskUsernameDialog.get());
@@ -111,7 +114,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                             return;
                         }
 
-                        OverloadedApi.get().verifyPurchase(latestPurchase.getPurchaseToken(), OverloadedBillingHelper.this);
+                        OverloadedApi.get().verifyPurchase(latestPurchase.getPurchaseToken(), null, OverloadedBillingHelper.this);
                     }
                 }
 
@@ -141,7 +144,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     }
 
     public void onResume() {
-        if (!OverloadedSignInHelper.isSignedIn()) {
+        if (!OverloadedUtils.isSignedIn()) {
             userData = null;
             checkUpdateUi();
         }
@@ -221,7 +224,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         BillingResult result = billingClient.launchBillingFlow(activity, flowParams);
         if (result.getResponseCode() == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
             listener.showProgress(R.string.verifyingPurchase);
-            OverloadedApi.get().userData(new OverloadedApi.UserDataCallback() {
+            OverloadedApi.get().userData(activity, new UserDataCallback() {
                 @Override
                 public void onUserData(@NonNull OverloadedApi.UserData status) {
                     userData = status;
@@ -248,7 +251,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     @NonNull
     public View.OnClickListener buyOverloadedOnClick(@NonNull Activity activity) {
         return v -> {
-            if (OverloadedSignInHelper.isSignedIn()) {
+            if (OverloadedUtils.isSignedIn()) {
                 if (infiniteSku == null) {
                     getSkuDetails();
                 } else if (billingClient != null && billingClient.isReady()) {
@@ -271,7 +274,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         if (list == null || list.isEmpty()) return;
 
         listener.showProgress(R.string.verifyingPurchase);
-        OverloadedApi.get().verifyPurchase(list.get(0).getPurchaseToken(), this);
+        OverloadedApi.get().verifyPurchase(list.get(0).getPurchaseToken(), null, this);
     }
 
     @Override

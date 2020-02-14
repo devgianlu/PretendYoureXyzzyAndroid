@@ -12,11 +12,8 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedApi;
-import com.gianlu.pretendyourexyzzy.overloaded.adapters.ChatsAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class ChatsFragment extends FragmentWithDialog {
@@ -39,31 +36,15 @@ public class ChatsFragment extends FragmentWithDialog {
         rmv.dividerDecoration(RecyclerView.VERTICAL);
         rmv.startLoading();
 
-        OverloadedApi.ChatModule chat = OverloadedApi.get().chat();
-        if (chat == null) {
-            rmv.showError(R.string.failedLoading);
-            return layout;
-        }
-
         FloatingActionButton createChat = layout.findViewById(R.id.overloadedChatsFragment_createChat);
         createChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Create chat UI
-
-                chat.startChatWith("ktDO0rsOgEh7URV1mfb4UO8OQSo1");
+                // TODO: Show create chat UI
             }
         });
 
-        chat.getAllChats()
-                .addOnSuccessListener(requireActivity(), chats -> {
-                    rmv.loadListData(new ChatsAdapter(requireContext(), chat, chats));
-                    if (chats.isEmpty()) rmv.showInfo(R.string.overloaded_noChats);
-                })
-                .addOnFailureListener(requireActivity(), ex -> {
-                    rmv.showError(R.string.failedLoading);
-                    Logging.log(ex);
-                });
+        // TODO: Actually load chats
 
         return layout;
     }

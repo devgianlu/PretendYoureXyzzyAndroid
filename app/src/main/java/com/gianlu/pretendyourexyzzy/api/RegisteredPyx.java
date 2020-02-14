@@ -22,7 +22,6 @@ import com.gianlu.pretendyourexyzzy.api.models.GameInfoAndCards;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedApi;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -93,7 +92,6 @@ public class RegisteredPyx extends FirstLoadedPyx {
 
         InstanceHolder.holder().invalidate();
         Prefs.remove(PK.LAST_JSESSIONID);
-        OverloadedApi.get().loggedOutOfPyxServer(server);
     }
 
     public final void getGameInfoAndCards(int gid, @Nullable Activity activity, @NonNull OnResult<GameInfoAndCards> listener) {

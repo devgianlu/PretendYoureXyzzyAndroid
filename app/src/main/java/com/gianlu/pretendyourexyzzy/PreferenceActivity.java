@@ -20,10 +20,11 @@ import com.gianlu.commonutils.preferences.MaterialAboutPreferenceItem;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.activities.TutorialActivity;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedApi;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper.SignInProvider;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
+import com.gianlu.pretendyourexyzzy.overloaded.api.UserDataCallback;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
@@ -204,7 +205,7 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                 purchaseStatus.setClickable(false);
                 purchaseStatus.setLoading(true);
                 addPreference(purchaseStatus);
-                OverloadedApi.get().userData(new OverloadedApi.UserDataCallback() {
+                OverloadedApi.get().userData(getActivity(), new UserDataCallback() {
                     @Override
                     public void onUserData(@NonNull OverloadedApi.UserData userData) {
                         purchaseStatus.setSummary(String.format("%s (%s)", userData.purchaseStatus.toString(context), userData.username));

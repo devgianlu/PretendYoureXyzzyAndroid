@@ -9,6 +9,8 @@ import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
+import com.gianlu.pretendyourexyzzy.overloaded.api.UserDataCallback;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -97,10 +99,6 @@ public final class OverloadedSignInHelper {
         return Collections.unmodifiableList(list);
     }
 
-    public static boolean isSignedIn() {
-        return FirebaseAuth.getInstance().getCurrentUser() != null;
-    }
-
     @NonNull
     public Intent startFlow(@NonNull Activity activity, @NonNull SignInProvider provider) {
         currentFlow = new Flow();
@@ -131,12 +129,25 @@ public final class OverloadedSignInHelper {
                         FirebaseUser loggedUser;
                         if (result != null && (loggedUser = result.getUser()) != null) {
                             Logging.log("Successfully logged in Firebase as " + loggedUser.getUid(), false);
-                            callback.onSignInSuccessful();
+                            OverloadedApi.get().registerUser(loggedUser, null, new UserDataCallback() {
+                                @Override
+                                public void onUserData(@NonNull OverloadedApi.UserData data) {
+                                    callback.onSignInSuccessful();
+                                }
+
+                                @Override
+                                public void onFailed(@NonNull Exception ex) {
+                                    Logging.log(ex);
+                                    FirebaseAuth.getInstance().signOut();
+                                    callback.onSignInFailed();
+                                }
+                            });
                             return;
                         }
                     }
 
                     Logging.log("Failed logging in Firebase!", task.getException());
+                    FirebaseAuth.getInstance().signOut();
                     callback.onSignInFailed();
                 });
     }

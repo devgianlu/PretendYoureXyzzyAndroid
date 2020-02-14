@@ -7,7 +7,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.api.Scope;
@@ -39,7 +39,7 @@ public final class GPGamesHelper {
 
     @Contract("null -> false")
     private static boolean checkAccount(@Nullable GoogleSignInAccount account) {
-        if (!OverloadedSignInHelper.isSignedIn())
+        if (!OverloadedUtils.isSignedIn())
             return false;
 
         if (account == null)

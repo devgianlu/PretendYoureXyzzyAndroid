@@ -20,7 +20,6 @@ import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.ChatAdapter;
 import com.gianlu.pretendyourexyzzy.main.chats.ChatController;
-import com.gianlu.pretendyourexyzzy.main.chats.OverloadedChat;
 import com.gianlu.pretendyourexyzzy.main.chats.PyxChat;
 
 public class ChatFragment extends FragmentWithDialog implements ChatAdapter.Listener, ChatController.Listener {
@@ -49,15 +48,6 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
         return fragment;
     }
 
-    @NonNull
-    public static ChatFragment getOverloadedInstance() {
-        ChatFragment fragment = new ChatFragment();
-        Bundle args = new Bundle();
-        args.putSerializable("type", Type.OVERLOADED);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -81,9 +71,6 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
                 break;
             case GAME:
                 controller = PyxChat.gameController(args.getInt("gid", -1));
-                break;
-            case OVERLOADED:
-                controller = new OverloadedChat();
                 break;
             default:
                 this.rmv.showError(R.string.failedLoading);
@@ -178,7 +165,7 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     }
 
     private enum Type {
-        GLOBAL, GAME, OVERLOADED
+        GLOBAL, GAME
     }
 }
 
