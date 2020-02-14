@@ -13,6 +13,8 @@ import com.gianlu.pretendyourexyzzy.api.models.CahConfig;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoadAndConfig;
 import com.gianlu.pretendyourexyzzy.api.models.User;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
 
 import org.json.JSONException;
 
@@ -50,6 +52,8 @@ public class FirstLoadedPyx extends Pyx {
                         Prefs.putString(PK.LAST_PERSISTENT_ID, user.persistentId);
                         RegisteredPyx pyx = upgrade(user);
                         post(() -> listener.onDone(pyx));
+                        if (OverloadedUtils.isSignedIn())
+                            OverloadedApi.get().loggedIntoPyxServer(server, nickname, user.idCode);
                     } catch (JSONException | PyxException | IOException ex) {
                         post(() -> listener.onException(ex));
                     }

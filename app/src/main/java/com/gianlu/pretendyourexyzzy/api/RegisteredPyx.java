@@ -22,6 +22,8 @@ import com.gianlu.pretendyourexyzzy.api.models.GameInfoAndCards;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -90,6 +92,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
             }
         });
 
+        if (OverloadedUtils.isSignedIn()) OverloadedApi.get().loggedOutFromPyxServer();
         InstanceHolder.holder().invalidate();
         Prefs.remove(PK.LAST_JSESSIONID);
     }

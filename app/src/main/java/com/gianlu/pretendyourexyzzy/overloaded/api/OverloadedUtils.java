@@ -41,6 +41,11 @@ public final class OverloadedUtils {
     static RequestBody singletonJsonBody(@NonNull String key, String value) throws JSONException {
         JSONObject obj = new JSONObject();
         obj.put(key, value);
+        return jsonBody(obj);
+    }
+
+    @NonNull
+    static RequestBody jsonBody(@NonNull JSONObject obj) {
         return RequestBody.create(obj.toString().getBytes(), MediaType.get("application/json"));
     }
 

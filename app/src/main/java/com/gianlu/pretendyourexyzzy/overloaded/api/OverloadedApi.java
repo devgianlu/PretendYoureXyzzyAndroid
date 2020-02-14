@@ -10,6 +10,7 @@ import androidx.annotation.WorkerThread;
 
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper.SignInProvider;
 import com.google.android.gms.tasks.Continuation;
@@ -37,9 +38,9 @@ import java.util.concurrent.Executors;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okhttp3.internal.Util;
 
 import static com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils.callbacks;
 import static com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils.overloadedServerUrl;
@@ -62,6 +63,28 @@ public class OverloadedApi {
     @NonNull
     public static OverloadedApi get() {
         return instance;
+    }
+
+    public void loggedOutFromPyxServer() {
+        Tasks.call(executorService, () -> {
+            serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Pyx/Logout"))
+                    .post(Util.EMPTY_REQUEST));
+            return true;
+        });
+    }
+
+    public void loggedIntoPyxServer(@NonNull Pyx.Server server, @NonNull String nickname, @Nullable String idCode) {
+        Tasks.call(executorService, () -> {
+            JSONObject params = new JSONObject();
+            params.put("serverUrl", server.url.toString());
+            params.put("nickname", nickname);
+            if (idCode != null) params.put("idCode", idCode);
+            serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Pyx/Login"))
+                    .post(OverloadedUtils.jsonBody(params)));
+            return true;
+        });
     }
 
     private boolean updateUser() {
@@ -177,7 +200,7 @@ public class OverloadedApi {
         return Tasks.call(executorService, () -> {
             JSONObject obj = serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/Data"))
-                    .post(RequestBody.create(new byte[0])));
+                    .post(Util.EMPTY_REQUEST));
 
             return UserData.parse(obj);
         });
@@ -222,10 +245,21 @@ public class OverloadedApi {
                 .continueWith(executorService, new NonNullContinuation<OverloadedToken, UserData>() {
                     @Override
                     public UserData then(@NonNull OverloadedToken token) throws OverloadedException, JSONException {
-                        JSONObject obj = serverRequest(new Request.Builder()
-                                .url(overloadedServerUrl("User/Register"))
-                                .post(RequestBody.create(new byte[0])));
-                        return UserData.parse(obj.getJSONObject("userData"));
+                        try {
+                            JSONObject obj = serverRequest(new Request.Builder()
+                                    .url(overloadedServerUrl("User/Register"))
+                                    .post(Util.EMPTY_REQUEST));
+                            return UserData.parse(obj.getJSONObject("userData"));
+                        } catch (OverloadedServerException ex) {
+                            if (ex.code == 403) {
+                                JSONObject obj = serverRequest(new Request.Builder()
+                                        .url(overloadedServerUrl("User/Data"))
+                                        .post(Util.EMPTY_REQUEST));
+                                return UserData.parse(obj);
+                            } else {
+                                throw ex;
+                            }
+                        }
                     }
                 });
 
@@ -277,13 +311,17 @@ public class OverloadedApi {
     }
 
     private static class OverloadedServerException extends OverloadedException {
+        final int code;
 
-        private OverloadedServerException(String msg) {
+        private OverloadedServerException(String msg, int code) {
             super(msg);
+            this.code = code;
         }
 
         OverloadedServerException(@NonNull Request request, @NonNull Throwable ex) {
             super(request.toString(), ex);
+
+            this.code = -1;
         }
 
         @SuppressLint("DefaultLocale")
@@ -292,9 +330,9 @@ public class OverloadedApi {
                 ResponseBody body = resp.body();
                 String bodyStr;
                 if (body == null || (bodyStr = body.string()).isEmpty())
-                    return new OverloadedServerException(String.format("%s -> %d: %s", resp.request(), resp.code(), resp.message()));
+                    return new OverloadedServerException(String.format("%s -> %d: %s", resp.request(), resp.code(), resp.message()), resp.code());
 
-                return new OverloadedServerException(String.format("%s -> %d: %s", resp.request(), resp.code(), bodyStr));
+                return new OverloadedServerException(String.format("%s -> %d: %s", resp.request(), resp.code(), bodyStr), resp.code());
             } catch (IOException ex) {
                 throw new IllegalStateException(ex);
             }

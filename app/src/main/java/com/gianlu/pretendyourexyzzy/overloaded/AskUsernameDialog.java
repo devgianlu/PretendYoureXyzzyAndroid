@@ -69,6 +69,7 @@ public final class AskUsernameDialog extends DialogFragment {
         LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.dialog_ask_overloaded_username, container, false);
         LoadableContentView loadable = layout.findViewById(R.id.askUsernameDialog_loadable);
         loadable.notLoading(false);
+        loadable.setScrimColor(CommonUtils.resolveAttrAsColor(requireContext(), R.attr.colorBackgroundFloating));
 
         Button done = layout.findViewById(R.id.askUsernameDialog_done);
         TextInputLayout input = layout.findViewById(R.id.askUsernameDialog_input);
