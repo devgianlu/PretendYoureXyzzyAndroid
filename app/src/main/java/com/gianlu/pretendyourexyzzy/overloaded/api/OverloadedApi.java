@@ -23,6 +23,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.auth.UserInfo;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -66,25 +67,44 @@ public class OverloadedApi {
     }
 
     public void loggedOutFromPyxServer() {
-        Tasks.call(executorService, () -> {
+        OverloadedUtils.loggingCallbacks(Tasks.call(executorService, () -> {
             serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Pyx/Logout"))
                     .post(Util.EMPTY_REQUEST));
             return true;
-        });
+        }), "logoutFromPyx");
     }
 
     public void loggedIntoPyxServer(@NonNull Pyx.Server server, @NonNull String nickname, @Nullable String idCode) {
-        Tasks.call(executorService, () -> {
-            JSONObject params = new JSONObject();
-            params.put("serverUrl", server.url.toString());
-            params.put("nickname", nickname);
-            if (idCode != null) params.put("idCode", idCode);
-            serverRequest(new Request.Builder()
+        OverloadedUtils.loggingCallbacks(userData().continueWith(executorService, new NonNullContinuation<UserData, Void>() {
+            @Override
+            public Void then(@NonNull UserData userData) throws Exception {
+                if (!userData.username.equals(nickname))
+                    return null;
+
+                JSONObject params = new JSONObject();
+                params.put("serverUrl", server.url.toString());
+                params.put("nickname", nickname);
+                if (idCode != null) params.put("idCode", idCode);
+                serverRequest(new Request.Builder()
+                        .url(overloadedServerUrl("Pyx/Login"))
+                        .post(OverloadedUtils.jsonBody(params)));
+                return null;
+            }
+        }), "logIntoPyx");
+    }
+
+    public void listUsers(@NonNull Pyx.Server server, @Nullable Activity activity, @NonNull UsersCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject obj = serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Pyx/Login"))
-                    .post(OverloadedUtils.jsonBody(params)));
-            return true;
-        });
+                    .post(OverloadedUtils.singletonJsonBody("serverUrl", server.url.toString())));
+
+            JSONArray array = obj.getJSONArray("users");
+            List<String> list = new ArrayList<>(array.length());
+            for (int i = 0; i < array.length(); i++) list.add(array.getString(i));
+            return list;
+        }), activity, callback::onUsers, callback::onFailed);
     }
 
     private boolean updateUser() {
@@ -291,6 +311,12 @@ public class OverloadedApi {
                     .post(singletonJsonBody("username", username)));
             return UserData.parse(obj.getJSONObject("userData"));
         }), activity, callback::onUserData, callback::onFailed);
+    }
+
+    public interface UsersCallback {
+        void onUsers(@NonNull List<String> list);
+
+        void onFailed(@NonNull Exception ex);
     }
 
     public static class OverloadedException extends Exception {

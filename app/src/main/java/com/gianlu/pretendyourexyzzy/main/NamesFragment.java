@@ -30,6 +30,8 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Name;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
 
 import org.json.JSONException;
 
@@ -41,6 +43,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     private RegisteredPyx pyx;
     private NamesAdapter adapter;
     private SearchView searchView;
+    private List<String> overloadedUsers = null;
 
     @NonNull
     public static NamesFragment getInstance() {
@@ -145,6 +148,20 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
         });
 
         pyx.request(PyxRequests.getNamesList(), null, this);
+        if (OverloadedUtils.isSignedIn())
+            OverloadedApi.get().listUsers(pyx.server, getActivity(), new OverloadedApi.UsersCallback() {
+                @Override
+                public void onUsers(@NonNull List<String> list) {
+                    if (adapter == null) overloadedUsers = list;
+                    else adapter.setOverloadedNames(list);
+                }
+
+                @Override
+                public void onFailed(@NonNull Exception ex) {
+                    overloadedUsers = null;
+                    Logging.log(ex);
+                }
+            });
         return rmv;
     }
 
@@ -162,7 +179,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     public void onDone(@NonNull final List<Name> result) {
         if (!isAdded()) return;
 
-        adapter = new NamesAdapter(getContext(), result, null, this);
+        adapter = new NamesAdapter(getContext(), result, overloadedUsers, this);
         rmv.loadListData(adapter);
 
         names = result.size();

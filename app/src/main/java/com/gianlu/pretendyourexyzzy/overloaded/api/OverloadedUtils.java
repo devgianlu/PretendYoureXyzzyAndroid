@@ -5,6 +5,7 @@ import android.app.Activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.gianlu.commonutils.logging.Logging;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -47,6 +48,10 @@ public final class OverloadedUtils {
     @NonNull
     static RequestBody jsonBody(@NonNull JSONObject obj) {
         return RequestBody.create(obj.toString().getBytes(), MediaType.get("application/json"));
+    }
+
+    static void loggingCallbacks(@NonNull Task<?> task, @NonNull String taskName) {
+        task.addOnFailureListener((OnFailureListener) ex -> Logging.log(String.format("Failed processing task %s!", taskName), ex));
     }
 
     static <R> void successfulCallback(@NonNull Task<R> task, @Nullable Activity activity, @NonNull OnSuccessListener<R> listener) {
