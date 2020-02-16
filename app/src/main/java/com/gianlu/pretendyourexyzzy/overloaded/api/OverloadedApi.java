@@ -3,9 +3,12 @@ package com.gianlu.pretendyourexyzzy.overloaded.api;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
 import com.gianlu.commonutils.logging.Logging;
@@ -23,6 +26,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.auth.UserInfo;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,6 +37,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,9 +46,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
 import okhttp3.internal.Util;
 
 import static com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils.callbacks;
+import static com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils.loggingCallbacks;
 import static com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils.overloadedServerUrl;
 import static com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils.singletonJsonBody;
 
@@ -51,6 +59,7 @@ public class OverloadedApi {
     private final static OverloadedApi instance = new OverloadedApi();
     private final OkHttpClient client = new OkHttpClient();
     private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final WebSocketHolder webSocket = new WebSocketHolder();
     private FirebaseUser user;
     private volatile OverloadedToken lastToken;
 
@@ -73,6 +82,24 @@ public class OverloadedApi {
                     .post(Util.EMPTY_REQUEST));
             return true;
         }), "logoutFromPyx");
+    }
+
+    public void openWebSocket() {
+        loggingCallbacks(Tasks.call(executorService, (Callable<Void>) () -> {
+            if (lastToken == null || lastToken.expired()) {
+                if (user == null && updateUser())
+                    throw new NotSignedInException();
+
+                updateTokenSync();
+                if (lastToken == null)
+                    throw new NotSignedInException();
+            }
+
+            client.newWebSocket(new Request.Builder().get()
+                    .header("Authorization", "FirebaseToken " + lastToken.token)
+                    .url(overloadedServerUrl("Events")).build(), webSocket);
+            return null;
+        }), "openWebSocket");
     }
 
     @NonNull
@@ -314,10 +341,87 @@ public class OverloadedApi {
         }), activity, callback::onUserData, callback::onFailed);
     }
 
+    public void addEventListener(@NonNull EventListener listener) {
+        webSocket.listeners.add(listener);
+    }
+
+    public void removeEventListener(@NonNull EventListener listener) {
+        webSocket.listeners.remove(listener);
+    }
+
+    @UiThread
     public interface UsersCallback {
         void onUsers(@NonNull List<String> list);
 
         void onFailed(@NonNull Exception ex);
+    }
+
+    @UiThread
+    public interface EventListener {
+        void onEvent(@NonNull Event event) throws JSONException;
+    }
+
+    public static class Event {
+        public final Type type;
+        public final JSONObject obj;
+
+        Event(@NonNull Type type, @NonNull JSONObject obj) {
+            this.type = type;
+            this.obj = obj;
+        }
+
+        public enum Type {
+            USER_LEFT_SERVER("uls"), USER_JOINED_SERVER("ujs");
+
+            private final String code;
+
+            Type(@NotNull String code) {
+                this.code = code;
+            }
+
+            @Nullable
+            static Type parse(@NonNull String str) {
+                for (Type type : values())
+                    if (type.code.equals(str))
+                        return type;
+
+                return null;
+            }
+        }
+    }
+
+    private static class WebSocketHolder extends WebSocketListener {
+        final List<EventListener> listeners = new ArrayList<>();
+        private final Handler handler = new Handler(Looper.getMainLooper());
+
+        @Override
+        public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
+            JSONObject obj;
+            Event.Type type;
+            try {
+                obj = new JSONObject(text);
+                type = Event.Type.parse(obj.getString("type"));
+            } catch (JSONException ex) {
+                Logging.log("Failed parsing event: " + text, ex);
+                return;
+            }
+
+            if (type == null) {
+                Logging.log("Unknown event type: " + text, true);
+                return;
+            }
+
+            Event event = new Event(type, obj);
+            for (EventListener listener : new ArrayList<>(listeners)) {
+                handler.post(() -> {
+                    try {
+                        listener.onEvent(event);
+                    } catch (JSONException ex) {
+                        Logging.log("Failed handling event: " + text, ex);
+                    }
+                });
+            }
+        }
     }
 
     public static class OverloadedException extends Exception {

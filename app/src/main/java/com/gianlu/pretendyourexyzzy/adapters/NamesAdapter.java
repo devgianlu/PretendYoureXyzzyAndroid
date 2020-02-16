@@ -16,19 +16,19 @@ import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.models.Name;
 
-import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHolder, Name, NamesAdapter.Sorting, String> {
     private final LayoutInflater inflater;
-    private final List<String> overloadedNames;
+    private final List<String> overloadedUsers;
     private final Listener listener;
 
-    public NamesAdapter(Context context, List<Name> names, @Nullable List<String> overloadedNames, Listener listener) {
+    public NamesAdapter(Context context, List<Name> names, @NonNull List<String> overloadedUsers, Listener listener) {
         super(names, Sorting.AZ);
         this.inflater = LayoutInflater.from(context);
-        this.overloadedNames = overloadedNames == null ? new ArrayList<>() : overloadedNames;
+        this.overloadedUsers = overloadedUsers;
         this.listener = listener;
     }
 
@@ -47,11 +47,10 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
     protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull Name name) {
         ((SuperTextView) holder.itemView).setHtml(name.sigil() == Name.Sigil.NORMAL_USER ? name.withSigil() : (SuperTextView.makeBold(name.sigil().symbol()) + name.noSigil()));
         holder.itemView.setOnClickListener(v -> listener.onNameSelected(name.noSigil()));
-        if (overloadedNames.contains(name.noSigil())) {
-            ((SuperTextView) holder.itemView).setTextColor(Color.RED);
-        } else {
+        if (overloadedUsers.contains(name.noSigil()))
+            ((SuperTextView) holder.itemView).setTextColor(Color.RED); // TODO
+        else
             CommonUtils.setTextColorFromAttr((TextView) holder.itemView, android.R.attr.textColorSecondary);
-        }
     }
 
     @Override
@@ -76,19 +75,41 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
     }
 
     public void removeItem(String name) {
-        for (int i = 0; i < objs.size(); i++) {
-            Name n = objs.get(i);
-            if (name.equals(n.noSigil())) {
-                removeItem(n);
+        Iterator<Name> iter = originalObjs.iterator();
+        while (iter.hasNext()) {
+            if (name.equals(iter.next().noSigil())) {
+                iter.remove();
                 break;
             }
         }
     }
 
-    public void setOverloadedNames(List<String> list) {
-        overloadedNames.clear();
-        overloadedNames.addAll(list);
-        notifyDataSetChanged(); // FIXME
+    public void overloadedUserLeft(@NonNull String nick) {
+        if (!overloadedUsers.remove(nick)) return;
+
+        for (Name name : originalObjs) {
+            if (name.noSigil().equals(nick)) {
+                itemChangedOrAdded(name);
+                break;
+            }
+        }
+    }
+
+    public void overloadedUserJoined(@NonNull String nick) {
+        if (!overloadedUsers.add(nick)) return;
+
+        for (Name name : originalObjs) {
+            if (name.noSigil().equals(nick)) {
+                itemChangedOrAdded(name);
+                break;
+            }
+        }
+    }
+
+    public void setOverloadedUsers(@NonNull List<String> list) {
+        overloadedUsers.clear();
+        overloadedUsers.addAll(list);
+        notifyDataSetChanged();
     }
 
     public enum Sorting {

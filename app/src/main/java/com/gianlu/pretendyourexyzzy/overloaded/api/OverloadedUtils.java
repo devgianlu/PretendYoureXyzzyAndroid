@@ -52,7 +52,8 @@ public final class OverloadedUtils {
 
     @NonNull
     static <R> Task<R> loggingCallbacks(@NonNull Task<R> task, @NonNull String taskName) {
-        task.addOnFailureListener(ex -> Logging.log(String.format("Failed processing task %s!", taskName), ex));
+        task.addOnFailureListener(ex -> Logging.log(String.format("Failed processing task %s!", taskName), ex))
+                .addOnSuccessListener(r -> Logging.log(String.format("Task %s completed successfully, result: %s", taskName, String.valueOf(r)), false));
         return task;
     }
 

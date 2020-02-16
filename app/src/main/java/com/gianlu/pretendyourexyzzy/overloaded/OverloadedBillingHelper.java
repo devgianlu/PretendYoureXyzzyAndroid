@@ -87,10 +87,12 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                         OverloadedApi.get().verifyPurchase(data.purchaseToken, null, OverloadedBillingHelper.this);
                     } else if (data.purchaseStatus == OverloadedApi.UserData.PurchaseStatus.OK) {
                         listener.dismissDialog();
-                        if (data.hasUsername())
+                        if (data.hasUsername()) {
                             Prefs.putBoolean(PK.OVERLOADED_FINISHED_SETUP, true);
-                        else
+                            OverloadedApi.get().openWebSocket();
+                        } else {
                             listener.showDialog(AskUsernameDialog.get());
+                        }
                     } else {
                         List<Purchase> purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP).getPurchasesList();
                         if (purchases == null || purchases.isEmpty()) {

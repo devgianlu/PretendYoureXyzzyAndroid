@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SearchView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
@@ -35,15 +37,16 @@ import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
 
 import org.json.JSONException;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>, NamesAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener {
+public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>, NamesAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, OverloadedApi.EventListener {
+    private final List<String> overloadedUsers = new ArrayList<>();
     private RecyclerMessageView rmv;
     private int names = -1;
     private RegisteredPyx pyx;
     private NamesAdapter adapter;
     private SearchView searchView;
-    private List<String> overloadedUsers = null;
 
     @NonNull
     public static NamesFragment getInstance() {
@@ -73,8 +76,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.names_fragment, menu);
 
-        if (getContext() == null) return;
-        SearchManager searchManager = (SearchManager) getContext().getSystemService(Context.SEARCH_SERVICE);
+        SearchManager searchManager = (SearchManager) requireContext().getSystemService(Context.SEARCH_SERVICE);
         MenuItem item = menu.findItem(R.id.namesFragment_search);
         item.setOnActionExpandListener(this);
 
@@ -84,6 +86,9 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
             searchView.setIconifiedByDefault(false);
             searchView.setOnCloseListener(this);
             searchView.setOnQueryTextListener(this);
+
+            TextView textView = searchView.findViewById(getResources().getIdentifier("android:id/search_src_text", null, null));
+            if (textView != null) CommonUtils.setTextColorFromAttr(textView, R.attr.colorOnPrimary);
         }
     }
 
@@ -148,20 +153,23 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
         });
 
         pyx.request(PyxRequests.getNamesList(), null, this);
-        if (OverloadedUtils.isSignedIn())
+        if (OverloadedUtils.isSignedIn()) {
+            OverloadedApi.get().addEventListener(this);
             OverloadedApi.get().listUsers(pyx.server, getActivity(), new OverloadedApi.UsersCallback() {
                 @Override
                 public void onUsers(@NonNull List<String> list) {
-                    if (adapter == null) overloadedUsers = list;
-                    else adapter.setOverloadedNames(list);
+                    overloadedUsers.clear();
+                    overloadedUsers.addAll(list);
+                    if (adapter != null) adapter.setOverloadedUsers(list);
                 }
 
                 @Override
                 public void onFailed(@NonNull Exception ex) {
-                    overloadedUsers = null;
+                    overloadedUsers.clear();
                     Logging.log(ex);
                 }
             });
+        }
         return rmv;
     }
 
@@ -176,11 +184,14 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     }
 
     @Override
-    public void onDone(@NonNull final List<Name> result) {
+    public void onDone(@NonNull List<Name> result) {
         if (!isAdded()) return;
 
         adapter = new NamesAdapter(getContext(), result, overloadedUsers, this);
         rmv.loadListData(adapter);
+
+        if (searchView != null && searchView.getQuery() != null)
+            onQueryTextSubmit(searchView.getQuery().toString());
 
         names = result.size();
         updateActivityTitle();
@@ -195,7 +206,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
 
     @Override
     public void onNameSelected(@NonNull String name) {
-        final FragmentActivity activity = getActivity();
+        FragmentActivity activity = getActivity();
         if (activity != null) UserInfoDialog.loadAndShow(pyx, activity, name);
     }
 
@@ -214,5 +225,23 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     public boolean onMenuItemActionCollapse(MenuItem item) {
         onClose();
         return true;
+    }
+
+    @Override
+    public void onEvent(@NonNull OverloadedApi.Event event) throws JSONException {
+        switch (event.type) {
+            case USER_LEFT_SERVER:
+                adapter.overloadedUserLeft(event.obj.getString("nick"));
+                break;
+            case USER_JOINED_SERVER:
+                adapter.overloadedUserJoined(event.obj.getString("nick"));
+                break;
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        OverloadedApi.get().removeEventListener(this);
     }
 }
