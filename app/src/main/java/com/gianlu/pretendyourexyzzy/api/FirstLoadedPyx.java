@@ -15,10 +15,12 @@ import com.gianlu.pretendyourexyzzy.api.models.FirstLoadAndConfig;
 import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
 import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
+import com.google.android.gms.tasks.Tasks;
 
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import okhttp3.OkHttpClient;
 
@@ -50,10 +52,15 @@ public class FirstLoadedPyx extends Pyx {
                     try {
                         User user = requestSync(PyxRequests.register(nickname, idCode, Prefs.getString(PK.LAST_PERSISTENT_ID, null)));
                         Prefs.putString(PK.LAST_PERSISTENT_ID, user.persistentId);
+                        if (OverloadedUtils.isSignedIn()) {
+                            try {
+                                Tasks.await(OverloadedApi.get().loggedIntoPyxServer(server, nickname, user.idCode));
+                            } catch (ExecutionException | InterruptedException ignored) {
+                            }
+                        }
+
                         RegisteredPyx pyx = upgrade(user);
                         post(() -> listener.onDone(pyx));
-                        if (OverloadedUtils.isSignedIn())
-                            OverloadedApi.get().loggedIntoPyxServer(server, nickname, user.idCode);
                     } catch (JSONException | PyxException | IOException ex) {
                         post(() -> listener.onException(ex));
                     }

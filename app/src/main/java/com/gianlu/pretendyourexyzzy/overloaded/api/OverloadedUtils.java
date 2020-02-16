@@ -50,8 +50,10 @@ public final class OverloadedUtils {
         return RequestBody.create(obj.toString().getBytes(), MediaType.get("application/json"));
     }
 
-    static void loggingCallbacks(@NonNull Task<?> task, @NonNull String taskName) {
-        task.addOnFailureListener((OnFailureListener) ex -> Logging.log(String.format("Failed processing task %s!", taskName), ex));
+    @NonNull
+    static <R> Task<R> loggingCallbacks(@NonNull Task<R> task, @NonNull String taskName) {
+        task.addOnFailureListener(ex -> Logging.log(String.format("Failed processing task %s!", taskName), ex));
+        return task;
     }
 
     static <R> void successfulCallback(@NonNull Task<R> task, @Nullable Activity activity, @NonNull OnSuccessListener<R> listener) {

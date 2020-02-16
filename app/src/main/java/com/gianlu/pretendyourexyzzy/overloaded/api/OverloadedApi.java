@@ -75,8 +75,9 @@ public class OverloadedApi {
         }), "logoutFromPyx");
     }
 
-    public void loggedIntoPyxServer(@NonNull Pyx.Server server, @NonNull String nickname, @Nullable String idCode) {
-        OverloadedUtils.loggingCallbacks(userData().continueWith(executorService, new NonNullContinuation<UserData, Void>() {
+    @NonNull
+    public Task<Void> loggedIntoPyxServer(@NonNull Pyx.Server server, @NonNull String nickname, @Nullable String idCode) {
+        return OverloadedUtils.loggingCallbacks(userData().continueWith(executorService, new NonNullContinuation<UserData, Void>() {
             @Override
             public Void then(@NonNull UserData userData) throws Exception {
                 if (!userData.username.equals(nickname))
@@ -97,7 +98,7 @@ public class OverloadedApi {
     public void listUsers(@NonNull Pyx.Server server, @Nullable Activity activity, @NonNull UsersCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
             JSONObject obj = serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Pyx/Login"))
+                    .url(overloadedServerUrl("Pyx/ListOnline"))
                     .post(OverloadedUtils.singletonJsonBody("serverUrl", server.url.toString())));
 
             JSONArray array = obj.getJSONArray("users");
