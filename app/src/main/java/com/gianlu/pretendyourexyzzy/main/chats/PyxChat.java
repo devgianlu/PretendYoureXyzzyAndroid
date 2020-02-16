@@ -4,6 +4,7 @@ import android.app.Activity;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
 
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.pretendyourexyzzy.BlockedUsers;
@@ -13,6 +14,7 @@ import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
+import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
 
 public class PyxChat implements ChatController {
     private final int gid;
@@ -124,5 +126,10 @@ public class PyxChat implements ChatController {
     @Override
     public void onDestroy() {
         if (pyx != null && eventListener != null) pyx.polling().removeListener(eventListener);
+    }
+
+    @Override
+    public void showUserInfo(@NonNull FragmentActivity activity, @NonNull String sender) {
+        UserInfoDialog.loadAndShow(pyx, activity, sender);
     }
 }

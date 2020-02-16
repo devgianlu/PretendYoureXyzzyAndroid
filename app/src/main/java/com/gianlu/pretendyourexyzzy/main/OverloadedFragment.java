@@ -12,8 +12,11 @@ import androidx.annotation.Nullable;
 import androidx.viewpager.widget.ViewPager;
 
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
+import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.PagerAdapter;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
+import com.gianlu.pretendyourexyzzy.overloaded.api.UserDataCallback;
 import com.gianlu.pretendyourexyzzy.overloaded.fragments.ChatsFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.fragments.ProfileFragment;
 import com.google.android.material.tabs.TabLayout;
@@ -31,7 +34,17 @@ public class OverloadedFragment extends FragmentWithDialog {
         LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.fragment_overloaded, container, false);
 
         TextView username = layout.findViewById(R.id.overloaded_username);
-        username.setText("testtttt");
+        OverloadedApi.get().userData(getActivity(), new UserDataCallback() {
+            @Override
+            public void onUserData(@NonNull OverloadedApi.UserData data) {
+                username.setText(data.username);
+            }
+
+            @Override
+            public void onFailed(@NonNull Exception ex) {
+                Logging.log(ex);
+            }
+        });
 
         TabLayout tabs = layout.findViewById(R.id.overloaded_tabs);
         ViewPager pager = layout.findViewById(R.id.overloaded_pager);

@@ -151,10 +151,7 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     @Override
     public void onChatItemSelected(@NonNull String sender) {
         FragmentActivity activity = getActivity();
-        if (activity == null) return;
-
-        // TODO: Show sender's info
-        // UserInfoDialog.loadAndShow(pyx, activity, sender);
+        if (activity != null) controller.showUserInfo(activity, sender);
     }
 
     @Override

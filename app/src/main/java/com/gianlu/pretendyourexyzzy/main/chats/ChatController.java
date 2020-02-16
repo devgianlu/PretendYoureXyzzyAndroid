@@ -4,6 +4,7 @@ import android.app.Activity;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -15,6 +16,8 @@ public interface ChatController {
     void send(@NonNull String msg, @Nullable Activity activity, @NonNull SendCallback callback);
 
     void onDestroy();
+
+    void showUserInfo(@NonNull FragmentActivity activity, @NonNull String sender);
 
     interface SendCallback {
         void onSuccessful();

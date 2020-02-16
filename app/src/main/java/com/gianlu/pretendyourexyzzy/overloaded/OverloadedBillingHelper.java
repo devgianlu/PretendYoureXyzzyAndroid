@@ -163,6 +163,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             if (infiniteSku == null) {
                 getSkuDetails();
             } else {
+                // FIXME: Button is visible for a moment until the user data loads (add loading animation)
                 listener.toggleBuyOverloadedVisibility(true);
                 listener.updateOverloadedStatusText(null);
             }
