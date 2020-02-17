@@ -284,4 +284,5 @@
     <string name="overloadedDifferentUsername_message">You cannot use a different username for PYX when using Overloaded. Do you want to change it now?</string>
     <string name="change">Change</string>
     <string name="overloaded_notBought">You\'re almost there, tap to buy</string>
+    <string name="overloadedStatus_error">An error occurred! Please try again.</string>
 </resources>

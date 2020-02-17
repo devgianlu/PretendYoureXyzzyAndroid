@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.facebook.shimmer.ShimmerFrameLayout;
@@ -73,6 +74,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private PyxDiscoveryApi discoveryApi;
     private TextView currentServer;
     private ShimmerFrameLayout overloadedLoading;
+    private ShimmerFrameLayout inputLoading;
     private TextView overloadedStatus;
     private SwitchMaterial overloadedToggle;
 
@@ -108,6 +110,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
         tutorialManager = new TutorialManager(this, Discovery.LOGIN);
 
+        inputLoading = findViewById(R.id.loading_inputLoading);
         serverLoading = findViewById(R.id.loading_serverLoading);
         overloadedLoading = findViewById(R.id.loading_overloadedLoading);
         overloadedToggle = findViewById(R.id.loading_overloadedToggle);
@@ -251,8 +254,15 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private void toggleLoading(boolean val) {
         registerSubmit.setEnabled(!val);
         registerSubmit.setClickable(!val);
-        if (val) serverLoading.showShimmer(true);
-        else serverLoading.hideShimmer();
+        if (val) {
+            inputLoading.showShimmer(true);
+            serverLoading.showShimmer(true);
+            overloadedLoading.showShimmer(true);
+        } else {
+            inputLoading.hideShimmer();
+            serverLoading.hideShimmer();
+            overloadedLoading.hideShimmer();
+        }
     }
 
     private void setServer(@NonNull Pyx.Server server) {
@@ -401,6 +411,12 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             return;
 
         switch (status) {
+            case ERROR:
+                overloadedLoading.hideShimmer();
+                overloadedStatus.setText(R.string.overloadedStatus_error);
+                overloadedToggle.setEnabled(false);
+                overloadedToggle.setChecked(false);
+                break;
             case LOADING:
                 overloadedLoading.showShimmer(true);
                 break;
@@ -431,6 +447,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         }
 
         overloadedStatus.setVisibility(status == OverloadedBillingHelper.Status.LOADING ? View.GONE : View.VISIBLE);
+        overloadedStatus.setTextColor(status == OverloadedBillingHelper.Status.ERROR ? ContextCompat.getColor(this, R.color.red) : CommonUtils.resolveAttrAsColor(this, android.R.attr.textColorSecondary));
     }
 
     @Override

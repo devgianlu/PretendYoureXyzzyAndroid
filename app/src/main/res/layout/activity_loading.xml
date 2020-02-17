@@ -86,51 +86,57 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="8dp">
 
-        <LinearLayout
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/loading_inputLoading"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="12dp">
+            android:layout_height="wrap_content">
 
-            <TextView
-                style="@style/LoadingActivityCardTitle"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="@string/pyxLogin" />
+                android:orientation="vertical"
+                android:padding="12dp">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/loading_registerNickname"
-                style="@style/CustomTextInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:hint="@string/nickname">
-
-                <com.google.android.material.textfield.TextInputEditText
+                <TextView
+                    style="@style/LoadingActivityCardTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textNoSuggestions"
-                    android:maxLines="1" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/pyxLogin" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/loading_registerIdCode"
-                style="@style/CustomTextInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/idCodeLabel"
-                app:endIconContentDescription="@string/generate"
-                app:endIconDrawable="@drawable/baseline_autorenew_24"
-                app:endIconMode="custom">
-
-                <com.google.android.material.textfield.TextInputEditText
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/loading_registerNickname"
+                    style="@style/CustomTextInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textVisiblePassword"
-                    android:maxLines="1" />
-            </com.google.android.material.textfield.TextInputLayout>
-        </LinearLayout>
+                    android:layout_marginBottom="8dp"
+                    android:hint="@string/nickname">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textNoSuggestions"
+                        android:maxLines="1" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/loading_registerIdCode"
+                    style="@style/CustomTextInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/idCodeLabel"
+                    app:endIconContentDescription="@string/generate"
+                    app:endIconDrawable="@drawable/baseline_autorenew_24"
+                    app:endIconMode="custom">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textVisiblePassword"
+                        android:maxLines="1" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+        </com.facebook.shimmer.ShimmerFrameLayout>
     </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView

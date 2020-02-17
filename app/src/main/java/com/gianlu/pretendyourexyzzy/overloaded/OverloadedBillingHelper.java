@@ -36,6 +36,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     private BillingClient billingClient;
     private volatile SkuDetails infiniteSku;
     private volatile OverloadedApi.UserData userData;
+    private volatile Exception exception;
 
     public OverloadedBillingHelper(@NonNull Context context, @NonNull Listener listener) {
         this.context = context;
@@ -77,6 +78,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                 @Override
                 public void onUserData(@NonNull OverloadedApi.UserData data) {
                     userData = data;
+                    exception = null;
                     checkUpdateUi();
 
                     if (data.purchaseStatus == OverloadedApi.UserData.PurchaseStatus.NONE && !data.purchaseToken.isEmpty()) {
@@ -126,6 +128,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                     listener.dismissDialog();
                     Logging.log(ex);
                     userData = null;
+                    exception = ex;
                 }
             });
         }
@@ -151,11 +154,17 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     public void onResume() {
         if (!OverloadedUtils.isSignedIn()) {
             userData = null;
+            exception = null;
             checkUpdateUi();
         }
     }
 
     private synchronized void checkUpdateUi() {
+        if (exception != null) {
+            listener.updateOverloadedStatus(Status.ERROR, null);
+            return;
+        }
+
         if (OverloadedUtils.isSignedIn()) {
             if (userData == null) {
                 listener.updateOverloadedStatus(Status.LOADING, null);
@@ -230,6 +239,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                 @Override
                 public void onUserData(@NonNull OverloadedApi.UserData status) {
                     userData = status;
+                    exception = null;
                     checkUpdateUi();
                     listener.dismissDialog();
                 }
@@ -297,6 +307,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     @Override
     public void onUserData(@NonNull OverloadedApi.UserData status) {
         userData = status;
+        exception = null;
         checkUpdateUi();
         listener.dismissDialog();
 
@@ -312,6 +323,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     @Override
     public void onFailed(@NonNull Exception ex) {
         userData = null;
+        exception = ex;
         checkUpdateUi();
         listener.dismissDialog();
         listener.showToast(Toaster.build().message(R.string.failedBuying).ex(ex));
@@ -323,11 +335,12 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
 
     public synchronized void updatePurchase(@NonNull OverloadedApi.UserData status) {
         userData = status;
+        exception = null;
         checkUpdateUi();
     }
 
     public enum Status {
-        LOADING, NOT_BOUGHT, PURCHASE_PENDING, SIGNED_IN, NOT_SIGNED_IN
+        LOADING, NOT_BOUGHT, PURCHASE_PENDING, SIGNED_IN, NOT_SIGNED_IN, ERROR
     }
 
     public interface Listener extends DialogUtils.ShowStuffInterface {
