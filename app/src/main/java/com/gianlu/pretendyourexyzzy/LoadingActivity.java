@@ -261,7 +261,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         } else {
             inputLoading.hideShimmer();
             serverLoading.hideShimmer();
-            overloadedLoading.hideShimmer();
+            if (billingHelper.lastStatus() != OverloadedBillingHelper.Status.LOADING)
+                overloadedLoading.hideShimmer();
         }
     }
 

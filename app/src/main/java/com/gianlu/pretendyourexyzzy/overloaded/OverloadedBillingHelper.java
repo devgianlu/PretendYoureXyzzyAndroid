@@ -37,6 +37,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     private volatile SkuDetails infiniteSku;
     private volatile OverloadedApi.UserData userData;
     private volatile Exception exception;
+    private Status lastStatus;
 
     public OverloadedBillingHelper(@NonNull Context context, @NonNull Listener listener) {
         this.context = context;
@@ -129,6 +130,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                     Logging.log(ex);
                     userData = null;
                     exception = ex;
+                    checkUpdateUi();
                 }
             });
         }
@@ -161,43 +163,44 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
 
     private synchronized void checkUpdateUi() {
         if (exception != null) {
-            listener.updateOverloadedStatus(Status.ERROR, null);
+            listener.updateOverloadedStatus(lastStatus = Status.ERROR, null);
             return;
         }
 
         if (OverloadedUtils.isSignedIn()) {
             if (userData == null) {
-                listener.updateOverloadedStatus(Status.LOADING, null);
+                listener.updateOverloadedStatus(lastStatus = Status.LOADING, null);
                 return;
             }
 
             switch (userData.purchaseStatus) {
                 case OK:
                     if (userData.hasUsername())
-                        listener.updateOverloadedStatus(Status.SIGNED_IN, userData);
-                    else listener.updateOverloadedStatus(Status.LOADING, userData);
+                        listener.updateOverloadedStatus(lastStatus = Status.SIGNED_IN, userData);
+                    else
+                        listener.updateOverloadedStatus(lastStatus = Status.LOADING, userData);
                     break;
                 case NONE:
-                    listener.updateOverloadedStatus(Status.NOT_BOUGHT, userData);
+                    listener.updateOverloadedStatus(lastStatus = Status.NOT_BOUGHT, userData);
                     break;
                 case PENDING:
-                    listener.updateOverloadedStatus(Status.PURCHASE_PENDING, userData);
+                    listener.updateOverloadedStatus(lastStatus = Status.PURCHASE_PENDING, userData);
                     break;
                 default:
-                    listener.updateOverloadedStatus(Status.LOADING, null);
+                    listener.updateOverloadedStatus(lastStatus = Status.LOADING, null);
                     break;
             }
         } else {
             if (billingClient == null || !billingClient.isReady()) {
-                listener.updateOverloadedStatus(Status.LOADING, null);
+                listener.updateOverloadedStatus(lastStatus = Status.LOADING, null);
             } else {
                 if (infiniteSku == null) {
-                    listener.updateOverloadedStatus(Status.LOADING, null);
+                    listener.updateOverloadedStatus(lastStatus = Status.LOADING, null);
                     getSkuDetails();
                     return;
                 }
 
-                listener.updateOverloadedStatus(Status.NOT_SIGNED_IN, null);
+                listener.updateOverloadedStatus(lastStatus = Status.NOT_SIGNED_IN, null);
             }
         }
     }
@@ -337,6 +340,11 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         userData = status;
         exception = null;
         checkUpdateUi();
+    }
+
+    @Nullable
+    public Status lastStatus() {
+        return lastStatus;
     }
 
     public enum Status {
