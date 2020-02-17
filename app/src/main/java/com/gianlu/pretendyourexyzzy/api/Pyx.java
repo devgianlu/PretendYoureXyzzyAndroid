@@ -580,6 +580,15 @@ public class Pyx implements Closeable {
             return null;
         }
 
+        @Nullable
+        public static Server lastServerNoThrow() {
+            try {
+                return lastServer();
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+
         @NonNull
         public static Server lastServer() throws NoServersException {
             String name = Prefs.getString(PK.LAST_SERVER, null);

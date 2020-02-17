@@ -24,116 +24,180 @@
         android:layout_weight="1" />
 
     <ImageView
-        android:layout_width="128dp"
-        android:layout_height="128dp"
-        android:layout_gravity="center_horizontal"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
         android:src="@drawable/ic_launcher" />
 
-    <ProgressBar
-        android:id="@+id/loading_loading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="8dp"
-        android:indeterminateOnly="true" />
-
-    <LinearLayout
-        android:id="@+id/loading_register"
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:orientation="vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:visibility="gone">
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp">
 
-        <TextView
-            android:id="@+id/loading_currentServer"
+        <com.facebook.shimmer.ShimmerFrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:textAlignment="center"
-            android:textAppearance="?textAppearanceHeadline5" />
+            android:id="@+id/loading_serverLoading"
+            android:layout_height="wrap_content">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/loading_registerNickname"
-            style="@style/CustomTextInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:hint="@string/nickname">
-
-            <com.google.android.material.textfield.TextInputEditText
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textNoSuggestions"
-                android:maxLines="1" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:orientation="vertical"
+                android:padding="12dp">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/loading_registerIdCode"
-            style="@style/CustomTextInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:hint="@string/idCodeLabel"
-            app:endIconContentDescription="@string/generate"
-            app:endIconDrawable="@drawable/baseline_autorenew_24"
-            app:endIconMode="custom">
+                <TextView
+                    style="@style/LoadingActivityCardTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
+                    android:text="@string/yourServer" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textVisiblePassword"
-                android:maxLines="1" />
-        </com.google.android.material.textfield.TextInputLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/loading_currentServer"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:textAppearance="?textAppearanceHeadline5" />
+
+                    <ImageButton
+                        android:id="@+id/loading_changeServer"
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
+                        android:background="?selectableItemBackgroundBorderless"
+                        android:src="@drawable/baseline_swap_horiz_24" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.facebook.shimmer.ShimmerFrameLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="12dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/loading_registerSubmit"
-                android:layout_width="wrap_content"
+            <TextView
+                style="@style/LoadingActivityCardTitle"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="@string/submit" />
+                android:layout_marginBottom="8dp"
+                android:text="@string/pyxLogin" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/loading_changeServer"
-                android:layout_width="wrap_content"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/loading_registerNickname"
+                style="@style/CustomTextInput"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/changeServer" />
+                android:layout_marginBottom="8dp"
+                android:hint="@string/nickname">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textNoSuggestions"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/loading_registerIdCode"
+                style="@style/CustomTextInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/idCodeLabel"
+                app:endIconContentDescription="@string/generate"
+                app:endIconDrawable="@drawable/baseline_autorenew_24"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textVisiblePassword"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/loading_buyOverloaded"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
-            android:text="@string/buyOverloaded"
-            android:visibility="gone" />
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp">
 
-        <TextView
-            android:id="@+id/loading_overloadedStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
-            android:visibility="gone" />
-    </LinearLayout>
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/loading_overloadedLoading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="12dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/overloaded"
+                        android:textAppearance="?attr/textAppearanceHeadline6" />
+
+                    <TextView
+                        android:id="@+id/loading_overloadedStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceCaption" />
+                </LinearLayout>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/loading_overloadedToggle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+        </com.facebook.shimmer.ShimmerFrameLayout>
+    </androidx.cardview.widget.CardView>
+
+    <Button
+        android:id="@+id/loading_registerSubmit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/submit" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5" />
 
     <com.gianlu.commonutils.misc.SuperTextView
         android:id="@+id/loading_welcomeMsg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:autoLink="web"
-        android:paddingStart="24dp"
-        android:paddingTop="24dp"
-        android:paddingEnd="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
         android:textAlignment="center"
         android:textAppearance="?textAppearanceCaption" />
 

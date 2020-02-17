@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
@@ -65,6 +66,12 @@ public final class GPGamesHelper {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (checkAccount(account)) return Games.getAchievementsClient(context, account);
         else return null;
+    }
+
+    public static void setPopupView(@NonNull Activity activity, @MagicConstant(flagsFromClass = Gravity.class) int gravity) {
+        View root = activity.getWindow().getDecorView().findViewById(android.R.id.content);
+        if (root != null)
+            GPGamesHelper.setPopupView(activity, root, gravity);
     }
 
     public static void setPopupView(@NonNull Context context, @NonNull View view, @MagicConstant(flagsFromClass = Gravity.class) int gravity) {

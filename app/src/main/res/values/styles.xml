@@ -10,5 +10,12 @@
         <item name="colorAccent">@color/urbanAccent</item>
     </style>
 
-    <style name="CustomTextInput" parent="Widget.MaterialComponents.TextInputLayout.FilledBox.Dense" />
+    <style name="CustomTextInput" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense" />
+
+    <style name="LoadingActivityCardTitle">
+        <item name="android:textColor">?colorOnSurface</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:fontFamily">@font/roboto_medium</item>
+    </style>
 </resources>

@@ -1,15 +1,12 @@
 package com.gianlu.pretendyourexyzzy;
 
 import android.content.Intent;
-import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.logging.Logging;
@@ -45,6 +43,7 @@ import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.tutorial.LoginTutorial;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputLayout;
 
 import org.jetbrains.annotations.NotNull;
@@ -61,23 +60,21 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private static final int RC_SIGN_IN = 3;
     private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
     private final OverloadedBillingHelper billingHelper = new OverloadedBillingHelper(this, this);
-    private Intent goTo;
-    private boolean finished = false;
-    private ProgressBar loading;
-    private LinearLayout register;
     private TextInputLayout registerNickname;
     private Button registerSubmit;
     private GamePermalink launchGame = null;
     private String launchGamePassword;
-    private Button changeServer;
+    private ImageButton changeServer;
     private boolean launchGameShouldRequest;
+    private ShimmerFrameLayout serverLoading;
     private TextInputLayout registerIdCode;
     private TutorialManager tutorialManager;
     private SuperTextView welcomeMessage;
     private PyxDiscoveryApi discoveryApi;
     private TextView currentServer;
-    private Button buyOverloaded;
+    private ShimmerFrameLayout overloadedLoading;
     private TextView overloadedStatus;
+    private SwitchMaterial overloadedToggle;
 
     @Override
     protected void onStart() {
@@ -100,11 +97,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
-        new Handler().postDelayed(() -> {
-            finished = true;
-            if (goTo != null) startActivity(goTo);
-        }, 1000);
-
         if (Prefs.getBoolean(PK.FIRST_RUN, true)) {
             startActivity(new Intent(this, TutorialActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
@@ -114,16 +106,14 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         Button preferences = findViewById(R.id.loading_preferences);
         preferences.setOnClickListener(v -> startActivity(new Intent(LoadingActivity.this, PreferenceActivity.class)));
 
-        overloadedStatus = findViewById(R.id.loading_overloadedStatus);
-        buyOverloaded = findViewById(R.id.loading_buyOverloaded);
-        buyOverloaded.setOnClickListener(billingHelper.buyOverloadedOnClick(this));
-
         tutorialManager = new TutorialManager(this, Discovery.LOGIN);
 
-        loading = findViewById(R.id.loading_loading);
-        loading.getIndeterminateDrawable().setColorFilter(CommonUtils.resolveAttrAsColor(this, android.R.attr.textColorPrimary), PorterDuff.Mode.SRC_IN);
+        serverLoading = findViewById(R.id.loading_serverLoading);
+        overloadedLoading = findViewById(R.id.loading_overloadedLoading);
+        overloadedToggle = findViewById(R.id.loading_overloadedToggle);
+        overloadedToggle.setOnCheckedChangeListener(billingHelper.toggleOverloaded(this));
+        overloadedStatus = findViewById(R.id.loading_overloadedStatus);
         currentServer = findViewById(R.id.loading_currentServer);
-        register = findViewById(R.id.loading_register);
         registerNickname = findViewById(R.id.loading_registerNickname);
         registerSubmit = findViewById(R.id.loading_registerSubmit);
         registerIdCode = findViewById(R.id.loading_registerIdCode);
@@ -160,6 +150,15 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 }
             }
         }
+
+        String lastNickname = Prefs.getString(PK.LAST_NICKNAME, null);
+        if (lastNickname != null) CommonUtils.setText(registerNickname, lastNickname);
+
+        String lastIdCode = Prefs.getString(PK.LAST_ID_CODE, null);
+        if (lastIdCode != null) CommonUtils.setText(registerIdCode, lastIdCode);
+
+        Pyx.Server lastServer = Pyx.Server.lastServerNoThrow();
+        if (lastServer != null) currentServer.setText(lastServer.name);
 
         discoveryApi = PyxDiscoveryApi.get();
         discoveryApi.getWelcomeMessage(this, new Pyx.OnResult<String>() {
@@ -239,8 +238,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             @Override
             public void serverSelected(@NonNull Pyx.Server server) {
                 setServer(server);
-                loading.setVisibility(View.VISIBLE);
-                register.setVisibility(View.GONE);
+                toggleLoading(true);
                 dismissDialog();
 
                 discoveryApi.firstLoad(LoadingActivity.this, null, LoadingActivity.this);
@@ -248,6 +246,13 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         }));
 
         showDialog(builder);
+    }
+
+    private void toggleLoading(boolean val) {
+        registerSubmit.setEnabled(!val);
+        registerSubmit.setClickable(!val);
+        if (val) serverLoading.showShimmer(true);
+        else serverLoading.hideShimmer();
     }
 
     private void setServer(@NonNull Pyx.Server server) {
@@ -264,16 +269,9 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     private void showRegisterUI(final FirstLoadedPyx pyx) {
-        loading.setVisibility(View.GONE);
-        register.setVisibility(View.VISIBLE);
+        toggleLoading(false);
         registerNickname.setErrorEnabled(false);
         registerIdCode.setErrorEnabled(false);
-
-        String lastNickname = Prefs.getString(PK.LAST_NICKNAME, null);
-        if (lastNickname != null) CommonUtils.setText(registerNickname, lastNickname);
-
-        String lastIdCode = Prefs.getString(PK.LAST_ID_CODE, null);
-        if (lastIdCode != null) CommonUtils.setText(registerIdCode, lastIdCode);
 
         if (!pyx.isServerSecure() && !pyx.config().insecureIdAllowed())
             registerIdCode.setEnabled(false);
@@ -281,8 +279,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             registerIdCode.setEnabled(true);
 
         registerSubmit.setOnClickListener(v -> {
-            loading.setVisibility(View.VISIBLE);
-            register.setVisibility(View.GONE);
+            toggleLoading(true);
 
             String idCode = getIdCode();
             String nick = CommonUtils.getText(registerNickname);
@@ -298,8 +295,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 public void onException(@NonNull Exception ex) {
                     Logging.log(ex);
 
-                    loading.setVisibility(View.GONE);
-                    register.setVisibility(View.VISIBLE);
+                    toggleLoading(false);
 
                     if (ex instanceof PyxException) {
                         switch (((PyxException) ex).errorCode) {
@@ -349,8 +345,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     public void onException(@NonNull Exception ex) {
         if (ex instanceof PyxException) {
             if (Objects.equals(((PyxException) ex).errorCode, "se")) {
-                loading.setVisibility(View.GONE);
-                register.setVisibility(View.VISIBLE);
+                toggleLoading(false);
                 return;
             }
         }
@@ -364,8 +359,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         intent.putExtra("shouldRequest", launchGameShouldRequest);
         if (launchGame != null) intent.putExtra("game", launchGame);
         if (launchGamePassword != null) intent.putExtra("password", launchGamePassword);
-        if (finished) startActivity(intent);
-        else this.goTo = intent;
+        startActivity(intent);
     }
 
     @Override
@@ -398,20 +392,78 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     protected void onResume() {
         super.onResume();
         billingHelper.onResume();
-        if (register != null)
-            GPGamesHelper.setPopupView(this, (View) register.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        GPGamesHelper.setPopupView(this, Gravity.CENTER_HORIZONTAL | Gravity.TOP);
     }
 
     @Override
-    public void toggleBuyOverloadedVisibility(boolean visible) {
-        if (buyOverloaded != null) buyOverloaded.setVisibility(visible ? View.VISIBLE : View.GONE);
+    public void updateOverloadedStatus(@NonNull OverloadedBillingHelper.Status status, OverloadedApi.UserData data) {
+        if (overloadedLoading == null || overloadedStatus == null || overloadedToggle == null)
+            return;
+
+        switch (status) {
+            case LOADING:
+                overloadedLoading.showShimmer(true);
+                break;
+            case PURCHASE_PENDING:
+                overloadedLoading.hideShimmer();
+                overloadedStatus.setText(R.string.overloadedStatus_purchasePending);
+                overloadedToggle.setEnabled(false);
+                overloadedToggle.setChecked(false);
+                break;
+            case NOT_BOUGHT:
+                overloadedLoading.hideShimmer();
+                overloadedStatus.setText(R.string.overloaded_notBought);
+                overloadedToggle.setEnabled(true);
+                overloadedToggle.setChecked(false);
+                break;
+            case SIGNED_IN:
+                overloadedLoading.hideShimmer();
+                overloadedStatus.setText(getString(R.string.loggedInAs, data.username));
+                overloadedToggle.setEnabled(true);
+                overloadedToggle.setChecked(Prefs.getBoolean(PK.OVERLOADED_LAST_ENABLED, false));
+                break;
+            case NOT_SIGNED_IN:
+                overloadedLoading.hideShimmer();
+                overloadedStatus.setText(R.string.overloaded_notSignedIn);
+                overloadedToggle.setEnabled(true);
+                overloadedToggle.setChecked(false);
+                break;
+        }
+
+        overloadedStatus.setVisibility(status == OverloadedBillingHelper.Status.LOADING ? View.GONE : View.VISIBLE);
     }
 
     @Override
-    public void updateOverloadedStatusText(@Nullable String text) {
-        if (overloadedStatus != null) {
-            overloadedStatus.setText(text);
-            overloadedStatus.setVisibility(text == null ? View.GONE : View.VISIBLE);
+    public void updateOverloadedMode(boolean enabled, OverloadedApi.UserData data) {
+        if (registerNickname == null || overloadedToggle == null) return;
+
+        if (enabled) {
+            if (data == null) {
+                overloadedToggle.setChecked(false);
+                return;
+            }
+
+            String nickname = CommonUtils.getText(registerNickname);
+            if (Objects.equals(nickname, data.username)) {
+                registerNickname.setEnabled(false);
+                Prefs.putBoolean(PK.OVERLOADED_LAST_ENABLED, true);
+                return;
+            }
+
+            overloadedToggle.setChecked(false);
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+            builder.setTitle(R.string.overloadedDifferentUsername_title)
+                    .setMessage(R.string.overloadedDifferentUsername_message)
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(R.string.change, (dialog, which) -> {
+                        CommonUtils.setText(registerNickname, data.username);
+                        overloadedToggle.setChecked(true);
+                    });
+
+            showDialog(builder);
+        } else {
+            Prefs.putBoolean(PK.OVERLOADED_LAST_ENABLED, false);
+            registerNickname.setEnabled(true);
         }
     }
 

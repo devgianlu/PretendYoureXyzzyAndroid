@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Gravity;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -42,10 +41,7 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        View root = getWindow().getDecorView().findViewById(android.R.id.content);
-        if (root != null)
-            GPGamesHelper.setPopupView(this, root, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        GPGamesHelper.setPopupView(this, Gravity.CENTER_HORIZONTAL | Gravity.TOP);
     }
 
     @NonNull
@@ -225,6 +221,7 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                 logout.setIcon(R.drawable.outline_exit_to_app_24);
                 logout.setOnClickListener(v -> {
                     FirebaseAuth.getInstance().signOut();
+                    OverloadedApi.get().logout();
                     onBackPressed();
                 });
                 addPreference(logout);

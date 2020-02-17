@@ -15,7 +15,6 @@ import androidx.fragment.app.Fragment;
 
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.preferences.Prefs;
-import com.gianlu.commonutils.typography.FontsManager;
 import com.gianlu.pretendyourexyzzy.LoadingActivity;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
@@ -30,8 +29,8 @@ public class TutorialActivity extends AppIntro {
     @NonNull
     private static SliderPage getDefault() {
         SliderPage page = new SliderPage();
-        page.setDescTypeface(FontsManager.ROBOTO_THIN);
-        page.setTitleTypeface(FontsManager.ROBOTO_MEDIUM);
+        page.setDescTypefaceFontRes(R.font.roboto_thin);
+        page.setTitleTypefaceFontRes(R.font.roboto_medium);
         return page;
     }
 

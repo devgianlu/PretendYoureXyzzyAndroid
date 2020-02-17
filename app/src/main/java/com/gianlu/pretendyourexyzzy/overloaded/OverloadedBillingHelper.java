@@ -2,7 +2,7 @@ package com.gianlu.pretendyourexyzzy.overloaded;
 
 import android.app.Activity;
 import android.content.Context;
-import android.view.View;
+import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -50,6 +50,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             @Override
             public void onBillingSetupFinished(BillingResult br) {
                 if (br.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    getSkuDetails();
                     checkUpdateUi();
                 } else {
                     Logging.log(br.getResponseCode() + ": " + br.getDebugMessage(), true);
@@ -128,6 +129,8 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                 }
             });
         }
+
+        checkUpdateUi();
     }
 
     private void getSkuDetails() {
@@ -153,43 +156,39 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     }
 
     private synchronized void checkUpdateUi() {
-        if (userData == null) {
-            if (billingClient == null || !billingClient.isReady()) {
-                listener.toggleBuyOverloadedVisibility(false);
-                listener.updateOverloadedStatusText(null);
+        if (OverloadedUtils.isSignedIn()) {
+            if (userData == null) {
+                listener.updateOverloadedStatus(Status.LOADING, null);
                 return;
             }
 
-            if (infiniteSku == null) {
-                getSkuDetails();
-            } else {
-                // FIXME: Button is visible for a moment until the user data loads (add loading animation)
-                listener.toggleBuyOverloadedVisibility(true);
-                listener.updateOverloadedStatusText(null);
-            }
-        } else {
             switch (userData.purchaseStatus) {
                 case OK:
-                    if (userData.hasUsername()) {
-                        listener.toggleBuyOverloadedVisibility(false);
-                        listener.updateOverloadedStatusText(context.getString(R.string.overloadedStatus_ok) + ": " + userData.username);
-                    } else {
-                        listener.toggleBuyOverloadedVisibility(false);
-                        listener.updateOverloadedStatusText(null);
-                    }
+                    if (userData.hasUsername())
+                        listener.updateOverloadedStatus(Status.SIGNED_IN, userData);
+                    else listener.updateOverloadedStatus(Status.LOADING, userData);
                     break;
                 case NONE:
-                    listener.toggleBuyOverloadedVisibility(true);
-                    listener.updateOverloadedStatusText(null);
+                    listener.updateOverloadedStatus(Status.NOT_BOUGHT, userData);
                     break;
                 case PENDING:
-                    listener.toggleBuyOverloadedVisibility(false);
-                    listener.updateOverloadedStatusText(context.getString(R.string.overloadedStatus_purchasePending));
+                    listener.updateOverloadedStatus(Status.PURCHASE_PENDING, userData);
                     break;
                 default:
-                    listener.toggleBuyOverloadedVisibility(false);
-                    listener.updateOverloadedStatusText(null);
+                    listener.updateOverloadedStatus(Status.LOADING, null);
                     break;
+            }
+        } else {
+            if (billingClient == null || !billingClient.isReady()) {
+                listener.updateOverloadedStatus(Status.LOADING, null);
+            } else {
+                if (infiniteSku == null) {
+                    listener.updateOverloadedStatus(Status.LOADING, null);
+                    getSkuDetails();
+                    return;
+                }
+
+                listener.updateOverloadedStatus(Status.NOT_SIGNED_IN, null);
             }
         }
     }
@@ -252,24 +251,39 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     }
 
     @NonNull
-    public View.OnClickListener buyOverloadedOnClick(@NonNull Activity activity) {
-        return v -> {
-            if (OverloadedUtils.isSignedIn()) {
-                if (infiniteSku == null) {
-                    getSkuDetails();
-                } else if (billingClient != null && billingClient.isReady()) {
-                    startBillingFlow(activity, infiniteSku);
+    public CompoundButton.OnCheckedChangeListener toggleOverloaded(@NonNull Activity activity) {
+        return (btn, isChecked) -> {
+            // infiniteSku and userData have already been loaded
+            if (isChecked) {
+                if (OverloadedUtils.isSignedIn() && userData != null) {
+                    switch (userData.purchaseStatus) {
+                        case NONE:
+                            btn.setChecked(false);
+                            startBillingFlow(activity, infiniteSku);
+                            break;
+                        case OK:
+                            listener.updateOverloadedMode(true, userData);
+                            break;
+                        default:
+                        case PENDING: // Shouldn't be allowed to click when in this state
+                            btn.setChecked(false);
+                            break;
+                    }
+                } else {
+                    btn.setChecked(false);
+                    wasBuying = true;
+                    listener.showDialog(OverloadedChooseProviderDialog.getSignInInstance());
                 }
             } else {
-                wasBuying = true;
-                listener.showDialog(OverloadedChooseProviderDialog.getSignInInstance());
+                listener.updateOverloadedMode(false, null);
             }
         };
     }
 
     @Override
     public void onPurchasesUpdated(BillingResult br, @Nullable List<Purchase> list) {
-        if (br.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+        if (br.getResponseCode() != BillingClient.BillingResponseCode.OK &&
+                br.getResponseCode() != BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
             handleBillingErrors(br.getResponseCode());
             return;
         }
@@ -312,9 +326,13 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         checkUpdateUi();
     }
 
-    public interface Listener extends DialogUtils.ShowStuffInterface {
-        void toggleBuyOverloadedVisibility(boolean visible);
+    public enum Status {
+        LOADING, NOT_BOUGHT, PURCHASE_PENDING, SIGNED_IN, NOT_SIGNED_IN
+    }
 
-        void updateOverloadedStatusText(@Nullable String text);
+    public interface Listener extends DialogUtils.ShowStuffInterface {
+        void updateOverloadedStatus(@NonNull Status status, OverloadedApi.UserData data);
+
+        void updateOverloadedMode(boolean enabled, OverloadedApi.UserData data);
     }
 }

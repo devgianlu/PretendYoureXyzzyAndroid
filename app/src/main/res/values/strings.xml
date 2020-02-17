@@ -261,7 +261,7 @@
     <string name="none">None</string>
     <string name="purchaseVerified">Purchase verified!</string>
     <string name="pending">Pending</string>
-    <string name="overloadedStatus_purchasePending">You payment is still pending, check back later!</string>
+    <string name="overloadedStatus_purchasePending">Your payment is still pending, check back later!</string>
     <string name="overloadedStatus_ok">OvErLoAdEd</string>
     <string name="username">Username</string>
     <string name="askOverloadedUsername_title">Choose your Overloaded username</string>
@@ -276,4 +276,12 @@
     <string name="chats">Chats</string>
     <string name="profile">Profile</string>
     <string name="overloaded_noChats">There are no chats!</string>
+    <string name="yourServer">Your server</string>
+    <string name="pyxLogin">PYX login</string>
+    <string name="overloaded_notSignedIn">Not signed in</string>
+    <string name="loggedInAs">Logged in as %s</string>
+    <string name="overloadedDifferentUsername_title">Different usernames</string>
+    <string name="overloadedDifferentUsername_message">You cannot use a different username for PYX when using Overloaded. Do you want to change it now?</string>
+    <string name="change">Change</string>
+    <string name="overloaded_notBought">You\'re almost there, tap to buy</string>
 </resources>

@@ -81,6 +81,7 @@ dependencies {
     implementation project(':CommonUtils')
     implementation 'com.github.paolorotolo:appintro:v5.1.0'
     implementation 'me.zhanghai.android.materialratingbar:library:1.4.0'
+    implementation 'com.facebook.shimmer:shimmer:0.5.0'
 
     implementation 'com.squareup.okhttp3:okhttp:4.2.2'
 

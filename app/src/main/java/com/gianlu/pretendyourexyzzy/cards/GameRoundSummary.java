@@ -13,6 +13,7 @@ import android.text.TextPaint;
 import androidx.annotation.NonNull;
 
 import com.gianlu.commonutils.typography.FontsManager;
+import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.GameRound;
@@ -65,7 +66,7 @@ public class GameRoundSummary {
         blackTextPaint = new TextPaint();
         blackTextPaint.setAntiAlias(true);
         blackTextPaint.setColor(Color.BLACK);
-        FontsManager.set(context, blackTextPaint, FontsManager.ROBOTO_MEDIUM);
+        FontsManager.set(context, blackTextPaint, R.font.roboto_medium);
 
         whitePaint = new Paint();
         whitePaint.setColor(Color.WHITE);
@@ -75,7 +76,7 @@ public class GameRoundSummary {
         whiteTextPaint = new TextPaint();
         whiteTextPaint.setColor(Color.WHITE);
         whiteTextPaint.setAntiAlias(true);
-        FontsManager.set(context, whiteTextPaint, FontsManager.ROBOTO_MEDIUM);
+        FontsManager.set(context, whiteTextPaint, R.font.roboto_medium);
 
         winnerPaint = new Paint();
         winnerPaint.setColor(WINNER_COLOR);
@@ -85,7 +86,7 @@ public class GameRoundSummary {
         grayTextPaint = new TextPaint();
         grayTextPaint.setColor(Color.DKGRAY);
         grayTextPaint.setAntiAlias(true);
-        FontsManager.set(context, grayTextPaint, FontsManager.ROBOTO_MEDIUM);
+        FontsManager.set(context, grayTextPaint, R.font.roboto_medium);
 
         backgroundPaint = new Paint();
         backgroundPaint.setColor(BACKGROUND_COLOR);

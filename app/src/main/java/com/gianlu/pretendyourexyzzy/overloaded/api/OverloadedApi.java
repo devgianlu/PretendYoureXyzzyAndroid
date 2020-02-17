@@ -95,7 +95,7 @@ public class OverloadedApi {
                     throw new NotSignedInException();
             }
 
-            client.newWebSocket(new Request.Builder().get()
+            webSocket.client = client.newWebSocket(new Request.Builder().get()
                     .header("Authorization", "FirebaseToken " + lastToken.token)
                     .url(overloadedServerUrl("Events")).build(), webSocket);
             return null;
@@ -349,6 +349,15 @@ public class OverloadedApi {
         webSocket.listeners.remove(listener);
     }
 
+    public void logout() {
+        if (webSocket.client != null) {
+            webSocket.client.close(1000, null);
+            webSocket.client = null;
+        }
+
+        updateUser();
+    }
+
     @UiThread
     public interface UsersCallback {
         void onUsers(@NonNull List<String> list);
@@ -393,6 +402,7 @@ public class OverloadedApi {
     private static class WebSocketHolder extends WebSocketListener {
         final List<EventListener> listeners = new ArrayList<>();
         private final Handler handler = new Handler(Looper.getMainLooper());
+        public WebSocket client;
 
         @Override
         public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {

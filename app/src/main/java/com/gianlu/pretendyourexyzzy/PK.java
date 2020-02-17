@@ -22,4 +22,5 @@ public final class PK extends CommonPK {
     public static final Prefs.Key WELCOME_MSG_CACHE_AGE = new Prefs.Key("welcomeMsgCacheAge");
     public static final Prefs.Key BLOCKED_USERS = new Prefs.Key("blockedUsers");
     public static final Prefs.Key OVERLOADED_FINISHED_SETUP = new Prefs.Key("finishedOverloadedSetup");
+    public static final Prefs.Key OVERLOADED_LAST_ENABLED = new Prefs.Key("overloadedLastEnabled");
 }
