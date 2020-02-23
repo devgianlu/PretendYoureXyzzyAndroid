@@ -285,4 +285,7 @@
     <string name="change">Change</string>
     <string name="overloaded_notBought">You\'re almost there, tap to buy</string>
     <string name="overloadedStatus_error">An error occurred! Please try again.</string>
+    <string name="overloadedHeader_cardsPlayed"><![CDATA[<b>Cards played</b><br>]]>%s</string>
+    <string name="overloadedHeader_roundsPlayed"><![CDATA[<b>Rounds played</b><br>]]>%s</string>
+    <string name="overloadedHeader_roundsWon"><![CDATA[<b>Rounds won</b><br>]]>%s</string>
 </resources>

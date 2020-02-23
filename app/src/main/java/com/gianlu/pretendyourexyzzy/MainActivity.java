@@ -539,6 +539,12 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         LOBBY(Item.PLAYERS, Item.GLOBAL_CHAT, Item.GAMES, Item.CARDCAST, Item.OVERLOADED),
         ONGOING(Item.PLAYERS, Item.GLOBAL_CHAT, Item.CARDCAST, Item.ONGOING_GAME, Item.GAME_CHAT);
 
+        static {
+            for (Layout l : values())
+                if (l.items.length > 5)
+                    throw new IllegalStateException();
+        }
+
         private final Item[] items;
 
         Layout(Item... items) {

@@ -4,21 +4,61 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/overloadedHeaderBg"
-        android:minHeight="200dp"
+        android:orientation="vertical"
         android:padding="16dp">
 
         <TextView
             android:id="@+id/overloaded_username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline4" />
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline4"
+            android:textColor="?colorOnSurface" />
 
-    </FrameLayout>
+        <LinearLayout
+            android:id="@+id/overloaded_achievements"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="4dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="8dp">
+
+            <com.gianlu.commonutils.misc.SuperTextView
+                android:id="@+id/overloaded_cardsPlayed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:textAlignment="center" />
+
+            <com.gianlu.commonutils.misc.SuperTextView
+                android:id="@+id/overloaded_roundsPlayed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:textAlignment="center" />
+
+            <com.gianlu.commonutils.misc.SuperTextView
+                android:id="@+id/overloaded_roundsWon"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:textAlignment="center" />
+        </LinearLayout>
+    </LinearLayout>
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/overloaded_tabs"

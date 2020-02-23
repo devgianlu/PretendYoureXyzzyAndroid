@@ -37,8 +37,8 @@
         android:layout_marginBottom="8dp">
 
         <com.facebook.shimmer.ShimmerFrameLayout
-            android:layout_width="match_parent"
             android:id="@+id/loading_serverLoading"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <LinearLayout
@@ -73,7 +73,8 @@
                         android:layout_width="42dp"
                         android:layout_height="42dp"
                         android:background="?selectableItemBackgroundBorderless"
-                        android:src="@drawable/baseline_swap_horiz_24" />
+                        android:src="@drawable/baseline_swap_horiz_24"
+                        android:tint="?colorOnSurface" />
                 </LinearLayout>
             </LinearLayout>
         </com.facebook.shimmer.ShimmerFrameLayout>
@@ -201,9 +202,9 @@
         android:id="@+id/loading_welcomeMsg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:autoLink="web"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
+        android:autoLink="web"
         android:textAlignment="center"
         android:textAppearance="?textAppearanceCaption" />
 

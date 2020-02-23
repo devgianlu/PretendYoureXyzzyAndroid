@@ -102,25 +102,7 @@ public class OverloadedApi {
         }), "openWebSocket");
     }
 
-    @NonNull
-    public Task<Void> loggedIntoPyxServer(@NonNull Pyx.Server server, @NonNull String nickname, @Nullable String idCode) {
-        return OverloadedUtils.loggingCallbacks(userData().continueWith(executorService, new NonNullContinuation<UserData, Void>() {
-            @Override
-            public Void then(@NonNull UserData userData) throws Exception {
-                if (!userData.username.equals(nickname))
-                    return null;
-
-                JSONObject params = new JSONObject();
-                params.put("serverUrl", server.url.toString());
-                params.put("nickname", nickname);
-                if (idCode != null) params.put("idCode", idCode);
-                serverRequest(new Request.Builder()
-                        .url(overloadedServerUrl("Pyx/Login"))
-                        .post(OverloadedUtils.jsonBody(params)));
-                return null;
-            }
-        }), "logIntoPyx");
-    }
+    private UserData userDataCached = null;
 
     public void listUsers(@NonNull Pyx.Server server, @Nullable Activity activity, @NonNull UsersCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
@@ -222,8 +204,28 @@ public class OverloadedApi {
                 .addOnCompleteListener(listener);
     }
 
-    public void userData(@Nullable Activity activity, @NonNull UserDataCallback callback) {
-        OverloadedUtils.callbacks(userData(), activity, callback::onUserData, callback::onFailed);
+    @NonNull
+    public Task<Void> loggedIntoPyxServer(@NonNull Pyx.Server server, @NonNull String nickname, @Nullable String idCode) {
+        return OverloadedUtils.loggingCallbacks(userData(false).continueWith(executorService, new NonNullContinuation<UserData, Void>() {
+            @Override
+            public Void then(@NonNull UserData userData) throws Exception {
+                if (!userData.username.equals(nickname))
+                    return null;
+
+                JSONObject params = new JSONObject();
+                params.put("serverUrl", server.url.toString());
+                params.put("nickname", nickname);
+                if (idCode != null) params.put("idCode", idCode);
+                serverRequest(new Request.Builder()
+                        .url(overloadedServerUrl("Pyx/Login"))
+                        .post(OverloadedUtils.jsonBody(params)));
+                return null;
+            }
+        }), "logIntoPyx");
+    }
+
+    public void userData(@Nullable Activity activity, boolean preferCache, @NonNull UserDataCallback callback) {
+        OverloadedUtils.callbacks(userData(preferCache), activity, callback::onUserData, callback::onFailed);
     }
 
     @WorkerThread
@@ -243,14 +245,21 @@ public class OverloadedApi {
         }
     }
 
+    public void userData(@Nullable Activity activity, @NonNull UserDataCallback callback) {
+        userData(activity, false, callback);
+    }
+
     @NonNull
-    private Task<UserData> userData() {
+    private Task<UserData> userData(boolean preferCache) {
+        if (preferCache && userDataCached != null)
+            return Tasks.forResult(userDataCached);
+
         return Tasks.call(executorService, () -> {
             JSONObject obj = serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/Data"))
                     .post(Util.EMPTY_REQUEST));
 
-            return UserData.parse(obj);
+            return userDataCached = UserData.parse(obj);
         });
     }
 
