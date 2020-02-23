@@ -33,8 +33,13 @@ import com.google.android.material.tabs.TabLayout;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class OverloadedFragment extends FragmentWithDialog {
+    private LinearLayout achievements;
+    private SuperTextView cardsPlayed;
+    private SuperTextView roundsPlayed;
+    private SuperTextView roundsWon;
 
     @NonNull
     public static OverloadedFragment getInstance() {
@@ -50,6 +55,9 @@ public class OverloadedFragment extends FragmentWithDialog {
             ImageView view = new ImageView(layout.getContext());
             im.loadImage(view, ach.getUnlockedImageUri());
             layout.addView(view, new LinearLayout.LayoutParams(size, size));
+
+            if (!Objects.equals(ach.getAchievementId(), GPGamesHelper.ACH_CARDCAST))
+                view.setPadding(24, 24, 24, 24);
         }
     }
 
@@ -67,12 +75,10 @@ public class OverloadedFragment extends FragmentWithDialog {
         view.setHtml(titleRes, formattedValue);
     }
 
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.fragment_overloaded, container, false);
+    public void onResume() {
+        super.onResume();
 
-        LinearLayout achievements = layout.findViewById(R.id.overloaded_achievements);
         GPGamesHelper.loadAchievements(requireContext(), getActivity(), new GPGamesHelper.LoadIterable<Achievement>() {
             @Override
             public void onLoaded(@NonNull Iterable<Achievement> result) {
@@ -92,9 +98,6 @@ public class OverloadedFragment extends FragmentWithDialog {
             }
         });
 
-        SuperTextView cardsPlayed = layout.findViewById(R.id.overloaded_cardsPlayed);
-        SuperTextView roundsPlayed = layout.findViewById(R.id.overloaded_roundsPlayed);
-        SuperTextView roundsWon = layout.findViewById(R.id.overloaded_roundsWon);
         GPGamesHelper.loadEvents(requireContext(), getActivity(), new GPGamesHelper.LoadIterable<Event>() {
             @Override
             public void onLoaded(@NonNull Iterable<Event> result) {
@@ -109,6 +112,17 @@ public class OverloadedFragment extends FragmentWithDialog {
                 onLoaded(Collections.emptyList());
             }
         });
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.fragment_overloaded, container, false);
+
+        achievements = layout.findViewById(R.id.overloaded_achievements);
+        cardsPlayed = layout.findViewById(R.id.overloaded_cardsPlayed);
+        roundsPlayed = layout.findViewById(R.id.overloaded_roundsPlayed);
+        roundsWon = layout.findViewById(R.id.overloaded_roundsWon);
 
         TextView username = layout.findViewById(R.id.overloaded_username);
         OverloadedApi.get().userData(getActivity(), true, new UserDataCallback() {
