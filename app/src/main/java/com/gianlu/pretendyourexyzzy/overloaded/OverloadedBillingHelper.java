@@ -26,6 +26,7 @@ import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
 import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.overloaded.api.UserDataCallback;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -53,10 +54,13 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             public void onBillingSetupFinished(BillingResult br) {
                 if (br.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                     getSkuDetails();
-                    checkUpdateUi();
+                    exception = null;
                 } else {
-                    Logging.log(br.getResponseCode() + ": " + br.getDebugMessage(), true);
+                    exception = new IOException(br.getResponseCode() + ": " + br.getDebugMessage());
+                    Logging.log(exception);
                 }
+
+                checkUpdateUi();
             }
 
             @Override
@@ -66,6 +70,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                     billingClient.startConnection(this);
                 } else {
                     listener.showToast(Toaster.build().message(R.string.failedBillingConnection));
+                    exception = new IOException("Failed connecting to the billing service.");
                     checkUpdateUi();
                 }
             }
@@ -141,15 +146,16 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     private void getSkuDetails() {
         billingClient.querySkuDetailsAsync(SkuDetailsParams.newBuilder()
                 .setSkusList(Collections.singletonList("overloaded.infinite"))
-                .setType(BillingClient.SkuType.INAPP).build(), (br1, list) -> {
-            if (br1.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                if (!list.isEmpty()) {
-                    infiniteSku = list.get(0);
-                    checkUpdateUi();
-                }
+                .setType(BillingClient.SkuType.INAPP).build(), (br, list) -> {
+            if (br.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                infiniteSku = list.get(0);
+                exception = null;
             } else {
-                Logging.log(br1.getResponseCode() + ": " + br1.getDebugMessage(), true);
+                exception = new IOException(br.getResponseCode() + ": " + br.getDebugMessage());
+                Logging.log(exception);
             }
+
+            checkUpdateUi();
         });
     }
 
@@ -181,6 +187,12 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                         listener.updateOverloadedStatus(lastStatus = Status.LOADING, userData);
                     break;
                 case NONE:
+                    if (infiniteSku == null) {
+                        listener.updateOverloadedStatus(lastStatus = Status.LOADING, null);
+                        getSkuDetails();
+                        return;
+                    }
+
                     listener.updateOverloadedStatus(lastStatus = Status.NOT_BOUGHT, userData);
                     break;
                 case PENDING:
