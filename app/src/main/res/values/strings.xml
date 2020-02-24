@@ -48,6 +48,7 @@
     <string name="tutorial_whiteCard">Play one or multiple white cards to complete the sentence. If you don\'t know the meaning of a word, use the definition function in the upper right menu.</string>
     <string name="tutorial_playCard">To play a card just tap it: a confirmation dialog will appear.</string>
     <string name="tutorial_player">Once a player reaches the score goal, it wins. You can tap on players to reveal additional information.</string>
+    <string name="tutorial_overloaded">Overloaded enables many cool features not present in the standard game experience. It\'s a one time purchase.</string>
 
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>

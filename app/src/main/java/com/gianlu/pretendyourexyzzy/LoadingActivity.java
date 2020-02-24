@@ -392,6 +392,10 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 .roundRectRadius(8)
                 .enableAutoTextPosition()
                 .focusShape(FocusShape.ROUNDED_RECTANGLE));
+        t.add(t.forView(overloadedLoading, R.string.tutorial_overloaded)
+                .roundRectRadius(8)
+                .enableAutoTextPosition()
+                .focusShape(FocusShape.ROUNDED_RECTANGLE));
         t.add(t.forView(registerSubmit, R.string.tutorial_joinTheServer)
                 .roundRectRadius(8)
                 .enableAutoTextPosition()
