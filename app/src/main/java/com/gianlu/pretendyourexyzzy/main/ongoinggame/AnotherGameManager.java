@@ -153,7 +153,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             GPGamesHelper.incrementAchievement(context, 1, GPGamesHelper.ACH_WIN_10_ROUNDS,
                     GPGamesHelper.ACH_WIN_30_ROUNDS, GPGamesHelper.ACH_WIN_69_ROUNDS,
                     GPGamesHelper.ACH_WIN_420_ROUNDS);
-
+            GPGamesHelper.updateWinRate(context);
             event(UiEvent.YOU_ROUND_WINNER);
         } else {
             event(UiEvent.ROUND_WINNER, roundWinner);
@@ -220,6 +220,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 if (oldStatus == GameInfo.PlayerStatus.PLAYING) {
                     if (gameData.status != Game.Status.JUDGING) {
                         GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_ROUNDS_PLAYED);
+                        GPGamesHelper.updateWinRate(context);
                         event(UiEvent.WAITING_FOR_OTHER_PLAYERS);
                     }
                 } else if (oldStatus == null) {

@@ -16,6 +16,7 @@ import com.google.android.gms.games.AchievementsClient;
 import com.google.android.gms.games.EventsClient;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesClient;
+import com.google.android.gms.games.LeaderboardsClient;
 import com.google.android.gms.games.achievement.Achievement;
 import com.google.android.gms.games.achievement.AchievementBuffer;
 import com.google.android.gms.games.event.Event;
@@ -23,6 +24,7 @@ import com.google.android.gms.games.event.EventBuffer;
 
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 
@@ -40,10 +42,12 @@ public final class GPGamesHelper {
     public static final String ACH_5_PEOPLE_GAME = "CgkIus2n760REAIQDQ";
     public static final String ACH_10_PEOPLE_GAME = "CgkIus2n760REAIQDg ";
     public static final String ACH_CARDCAST = "CgkIus2n760REAIQDw";
+    public static final String LEAD_WIN_RATE = "CgkIus2n760REAIQEA";
     public static final String[] ACHS_WIN_ROUNDS = new String[]{ACH_WIN_10_ROUNDS, ACH_WIN_30_ROUNDS, ACH_WIN_69_ROUNDS, ACH_WIN_420_ROUNDS};
     public static final String[] ACHS_PEOPLE_GAME = new String[]{ACH_3_PEOPLE_GAME, ACH_5_PEOPLE_GAME, ACH_10_PEOPLE_GAME};
     private static EventsClient eventsClient;
     private static AchievementsClient achievementsClient;
+    private static LeaderboardsClient leaderboardsClient;
 
     private GPGamesHelper() {
     }
@@ -84,6 +88,18 @@ public final class GPGamesHelper {
             return null;
     }
 
+
+    @Nullable
+    private static LeaderboardsClient leaderboardsClient(@NonNull Context context) {
+        if (leaderboardsClient != null) return leaderboardsClient;
+
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+        if (checkAccount(account))
+            return leaderboardsClient = Games.getLeaderboardsClient(context, account);
+        else
+            return null;
+    }
+
     public static void setPopupView(@NonNull Activity activity, @MagicConstant(flagsFromClass = Gravity.class) int gravity) {
         View root = activity.getWindow().getDecorView().findViewById(android.R.id.content);
         if (root != null)
@@ -105,6 +121,24 @@ public final class GPGamesHelper {
             for (String ev : events)
                 client.increment(ev, amount);
         }
+    }
+
+    public static void updateWinRate(@NotNull Context context) {
+        EventsClient eventsClient = eventsClient(context);
+        LeaderboardsClient leaderboardsClient = leaderboardsClient(context);
+        if (eventsClient == null || leaderboardsClient == null) return;
+
+        eventsClient.loadByIds(true, EVENT_ROUNDS_PLAYED, EVENT_ROUNDS_WON).addOnSuccessListener(data -> {
+            EventBuffer buffer = data.get();
+            if (buffer == null) return;
+
+            Event playedEvent = OverloadedUtils.findEvent(buffer, EVENT_ROUNDS_PLAYED);
+            Event wonEvent = OverloadedUtils.findEvent(buffer, EVENT_ROUNDS_WON);
+            if (playedEvent == null || wonEvent == null) return;
+
+            long score = (long) (((float) wonEvent.getValue() / (float) playedEvent.getValue()) * 100 * 10000);
+            leaderboardsClient.submitScore(LEAD_WIN_RATE, score);
+        });
     }
 
     public static void achievementSteps(@NonNull Context context, int steps, @NonNull String... achievements) {
