@@ -1,11 +1,9 @@
 package com.gianlu.pretendyourexyzzy.main;
 
 import android.os.Bundle;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -19,13 +17,14 @@ import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.GPGamesHelper;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.adapters.ImagesListView;
 import com.gianlu.pretendyourexyzzy.adapters.PagerAdapter;
+import com.gianlu.pretendyourexyzzy.overloaded.AchievementImageLoader;
 import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
 import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.overloaded.api.UserDataCallback;
 import com.gianlu.pretendyourexyzzy.overloaded.fragments.ChatsFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.fragments.ProfileFragment;
-import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.achievement.Achievement;
 import com.google.android.gms.games.event.Event;
 import com.google.android.material.tabs.TabLayout;
@@ -33,10 +32,9 @@ import com.google.android.material.tabs.TabLayout;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 public class OverloadedFragment extends FragmentWithDialog {
-    private LinearLayout achievements;
+    private ImagesListView achievements;
     private SuperTextView cardsPlayed;
     private SuperTextView roundsPlayed;
     private SuperTextView roundsWon;
@@ -44,21 +42,6 @@ public class OverloadedFragment extends FragmentWithDialog {
     @NonNull
     public static OverloadedFragment getInstance() {
         return new OverloadedFragment();
-    }
-
-    private static void populateAchievementsLayout(@NonNull LinearLayout layout, @NonNull List<Achievement> achievements) {
-        layout.removeAllViews();
-        ImageManager im = ImageManager.create(layout.getContext());
-        int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, layout.getContext().getResources().getDisplayMetrics());
-
-        for (Achievement ach : achievements) {
-            ImageView view = new ImageView(layout.getContext());
-            im.loadImage(view, ach.getUnlockedImageUri());
-            layout.addView(view, new LinearLayout.LayoutParams(size, size));
-
-            if (!Objects.equals(ach.getAchievementId(), GPGamesHelper.ACH_CARDCAST))
-                view.setPadding(24, 24, 24, 24);
-        }
     }
 
     private static void setEventCount(@NonNull Iterable<Event> events, @NonNull String eventId, @NonNull SuperTextView view, @StringRes int titleRes) {
@@ -82,13 +65,17 @@ public class OverloadedFragment extends FragmentWithDialog {
         GPGamesHelper.loadAchievements(requireContext(), getActivity(), new GPGamesHelper.LoadIterable<Achievement>() {
             @Override
             public void onLoaded(@NonNull Iterable<Achievement> result) {
-                if (!result.iterator().hasNext()) {
-                    achievements.setVisibility(View.GONE);
-                    return;
-                }
+                AchievementImageLoader il = new AchievementImageLoader(requireContext());
 
-                achievements.setVisibility(View.VISIBLE);
-                populateAchievementsLayout(achievements, OverloadedUtils.getBestAchievements(result));
+                achievements.removeAllViews();
+                List<Achievement> list = OverloadedUtils.getBestAchievements(result);
+                if (list.isEmpty()) {
+                    achievements.setVisibility(View.GONE);
+                } else {
+                    achievements.setVisibility(View.VISIBLE);
+                    for (Achievement ach : OverloadedUtils.getBestAchievements(result))
+                        achievements.addItem(ach, il);
+                }
             }
 
             @Override

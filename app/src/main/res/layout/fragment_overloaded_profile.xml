@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_medium"
+        android:text="@string/linkedAccounts"
+        android:textAllCaps="true"
+        android:textColor="?colorOnSurface"
+        android:textSize="14sp" />
+
+    <com.gianlu.pretendyourexyzzy.adapters.ImagesListView
+        android:id="@+id/overloadedProfileFragment_linkedAccounts"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        app:imageSize="32dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_medium"
+        android:text="@string/achievements"
+        android:textAllCaps="true"
+        android:textColor="?colorOnSurface"
+        android:textSize="14sp" />
+
+    <com.gianlu.pretendyourexyzzy.adapters.ImagesListView
+        android:id="@+id/overloadedProfileFragment_achievements"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        app:emptyText="@string/noAchievements"
+        app:imageSize="48dp"
+        app:textColor="?colorOnSurface"
+        app:textGravity="start"
+        app:textSize="24sp" />
+
+</LinearLayout>

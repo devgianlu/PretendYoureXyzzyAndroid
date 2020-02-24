@@ -58,13 +58,23 @@ public final class OverloadedUtils {
     public static List<Achievement> getBestAchievements(@NonNull Iterable<Achievement> achievements) {
         List<Achievement> best = new ArrayList<>(3);
         Achievement ach = findAchievement(achievements, GPGamesHelper.ACH_CARDCAST);
-        if (ach != null) best.add(ach);
+        if (ach != null && ach.getState() == Achievement.STATE_UNLOCKED) best.add(ach);
         ach = findBestAchievementOf(achievements, GPGamesHelper.ACHS_PEOPLE_GAME);
         if (ach != null) best.add(ach);
         ach = findBestAchievementOf(achievements, GPGamesHelper.ACHS_WIN_ROUNDS);
         if (ach != null) best.add(ach);
         return best;
     }
+
+    @NonNull
+    public static List<Achievement> getUnlockedAchievements(@NonNull Iterable<Achievement> achievements) {
+        List<Achievement> list = new ArrayList<>(5);
+        for (Achievement ach : achievements)
+            if (ach.getState() == Achievement.STATE_UNLOCKED)
+                list.add(ach);
+        return list;
+    }
+
 
     @Nullable
     public static Event findEvent(@NonNull Iterable<Event> events, @NonNull String id) {

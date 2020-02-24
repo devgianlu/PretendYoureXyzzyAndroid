@@ -143,7 +143,7 @@ public class OverloadedApi {
         return providers.size() > 0;
     }
 
-    private boolean hasLinkedProvider(@NonNull String id) {
+    public boolean hasLinkedProvider(@NonNull String id) {
         if (user == null && updateUser())
             return false;
 

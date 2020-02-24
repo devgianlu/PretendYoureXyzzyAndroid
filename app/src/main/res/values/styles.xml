@@ -18,4 +18,15 @@
         <item name="android:textAllCaps">true</item>
         <item name="android:fontFamily">@font/roboto_medium</item>
     </style>
+
+    <declare-styleable name="ImagesListView">
+        <attr name="textColor" format="color" />
+        <attr name="textSize" format="dimension" />
+        <attr name="textGravity" format="enum">
+            <enum name="start" value="0" />
+            <enum name="center" value="1" />
+        </attr>
+        <attr name="emptyText" format="string" />
+        <attr name="imageSize" format="dimension" />
+    </declare-styleable>
 </resources>
