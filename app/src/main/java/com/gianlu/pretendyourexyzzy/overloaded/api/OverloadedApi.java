@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
@@ -62,6 +63,7 @@ public class OverloadedApi {
     private final WebSocketHolder webSocket = new WebSocketHolder();
     private FirebaseUser user;
     private volatile OverloadedToken lastToken;
+    private UserData userDataCached = null;
 
     private OverloadedApi() {
         FirebaseAuth.getInstance().addAuthStateListener(fa -> {
@@ -101,8 +103,6 @@ public class OverloadedApi {
             return null;
         }), "openWebSocket");
     }
-
-    private UserData userDataCached = null;
 
     public void listUsers(@NonNull Pyx.Server server, @Nullable Activity activity, @NonNull UsersCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
@@ -259,7 +259,7 @@ public class OverloadedApi {
                     .url(overloadedServerUrl("User/Data"))
                     .post(Util.EMPTY_REQUEST));
 
-            return userDataCached = UserData.parse(obj);
+            return userDataCached = new UserData(obj);
         });
     }
 
@@ -306,13 +306,13 @@ public class OverloadedApi {
                             JSONObject obj = serverRequest(new Request.Builder()
                                     .url(overloadedServerUrl("User/Register"))
                                     .post(Util.EMPTY_REQUEST));
-                            return UserData.parse(obj.getJSONObject("userData"));
+                            return new UserData(obj.getJSONObject("userData"));
                         } catch (OverloadedServerException ex) {
                             if (ex.code == 403) {
                                 JSONObject obj = serverRequest(new Request.Builder()
                                         .url(overloadedServerUrl("User/Data"))
                                         .post(Util.EMPTY_REQUEST));
-                                return UserData.parse(obj);
+                                return new UserData(obj);
                             } else {
                                 throw ex;
                             }
@@ -328,7 +328,7 @@ public class OverloadedApi {
             JSONObject obj = serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/VerifyPurchase"))
                     .post(singletonJsonBody("purchaseToken", purchaseToken)));
-            return UserData.parse(obj.getJSONObject("userData"));
+            return new UserData(obj.getJSONObject("userData"));
         }), activity, callback::onUserData, callback::onFailed);
     }
 
@@ -346,7 +346,7 @@ public class OverloadedApi {
             JSONObject obj = serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/SetUsername"))
                     .post(singletonJsonBody("username", username)));
-            return UserData.parse(obj.getJSONObject("userData"));
+            return new UserData(obj.getJSONObject("userData"));
         }), activity, callback::onUserData, callback::onFailed);
     }
 
@@ -365,6 +365,24 @@ public class OverloadedApi {
         }
 
         updateUser();
+    }
+
+    public void removeFriend(@NotNull String username, @Nullable Activity activity, @NotNull SuccessfulCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("User/RemoveFriend"))
+                    .post(singletonJsonBody("username", username)));
+            return null;
+        }), activity, (r) -> callback.onSuccessful(), callback::onFailed);
+    }
+
+    public void addFriend(@NotNull String username, @Nullable Activity activity, @NotNull SuccessfulCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("User/AddFriend"))
+                    .post(singletonJsonBody("username", username)));
+            return null;
+        }), activity, (r) -> callback.onSuccessful(), callback::onFailed);
     }
 
     @UiThread
@@ -528,18 +546,13 @@ public class OverloadedApi {
         public final PurchaseStatus purchaseStatus;
         public final String purchaseToken;
         public final String username;
+        public final List<String> friends;
 
-        UserData(@Nullable String username, @NonNull PurchaseStatus purchaseStatus, @NonNull String purchaseToken) {
-            this.username = username;
-            this.purchaseStatus = purchaseStatus;
-            this.purchaseToken = purchaseToken;
-        }
-
-        @NonNull
-        private static UserData parse(@NonNull JSONObject obj) throws JSONException {
-            return new UserData(obj.getString("username"),
-                    PurchaseStatus.parse(obj.getString("purchaseStatus")),
-                    obj.getString("purchaseToken"));
+        UserData(@NotNull JSONObject obj) throws JSONException {
+            this.username = obj.getString("username");
+            this.purchaseStatus = PurchaseStatus.parse(obj.getString("purchaseStatus"));
+            this.purchaseToken = obj.getString("purchaseToken");
+            this.friends = CommonUtils.toStringsList(obj.getJSONArray("friends"), false);
         }
 
         @Override

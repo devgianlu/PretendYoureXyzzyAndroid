@@ -20,6 +20,7 @@ import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.BlockedUsers;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
@@ -27,6 +28,7 @@ import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.WhoisResult;
 
 import java.util.Date;
+import java.util.Objects;
 
 public class UserInfoDialog extends DialogFragment {
     private OnViewGame listener;
@@ -55,6 +57,15 @@ public class UserInfoDialog extends DialogFragment {
         args.putSerializable("user", user);
         dialog.setArguments(args);
         return dialog;
+    }
+
+    @Nullable
+    private static String myUsername() {
+        try {
+            return RegisteredPyx.get().user().nickname;
+        } catch (LevelMismatchException ex) {
+            return null;
+        }
     }
 
     @Nullable
@@ -120,7 +131,7 @@ public class UserInfoDialog extends DialogFragment {
         }
 
         Button blockUser = layout.findViewById(R.id.userInfoDialog_block);
-        if (BlockedUsers.isBlocked(user.nickname)) {
+        if (BlockedUsers.isBlocked(user.nickname) || Objects.equals(user.nickname, myUsername())) {
             blockUser.setVisibility(View.GONE);
         } else {
             blockUser.setVisibility(View.VISIBLE);

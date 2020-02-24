@@ -36,11 +36,28 @@
         android:id="@+id/overloadedProfileFragment_achievements"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="48dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        android:minHeight="36dp"
         app:emptyText="@string/noAchievements"
-        app:imageSize="48dp"
+        app:imageSize="36dp"
         app:textColor="?colorOnSurface"
         app:textGravity="start"
-        app:textSize="24sp" />
+        app:textSize="20sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_medium"
+        android:text="@string/friends"
+        android:textAllCaps="true"
+        android:textColor="?colorOnSurface"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:id="@+id/overloadedProfileFragment_friends"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
 
 </LinearLayout>

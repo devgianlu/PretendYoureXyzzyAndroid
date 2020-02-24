@@ -279,7 +279,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         return id.isEmpty() ? null : id;
     }
 
-    private void showRegisterUI(final FirstLoadedPyx pyx) {
+    private void showRegisterUi(final FirstLoadedPyx pyx) {
         toggleLoading(false);
         registerNickname.setErrorEnabled(false);
         registerIdCode.setErrorEnabled(false);
@@ -347,7 +347,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             goToMain();
         } else {
             currentServer.setText(result.server.name);
-            showRegisterUI(result);
+            showRegisterUi(result);
             tutorialManager.tryShowingTutorials(this);
         }
     }
