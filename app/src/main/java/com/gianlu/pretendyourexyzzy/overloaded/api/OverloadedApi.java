@@ -35,8 +35,10 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -350,6 +352,23 @@ public class OverloadedApi {
         }), activity, callback::onUserData, callback::onFailed);
     }
 
+    public void friendsStatus(@Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject obj = serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("User/FriendsStatus"))
+                    .post(Util.EMPTY_REQUEST));
+
+            Map<String, FriendStatus> map = new HashMap<>();
+            Iterator<String> iter = obj.keys();
+            while (iter.hasNext()) {
+                String username = iter.next();
+                map.put(username, new FriendStatus(username, obj.getJSONObject(username)));
+            }
+
+            return map;
+        }), activity, callback::onFriendsStatus, callback::onFailed);
+    }
+
     public void addEventListener(@NonNull EventListener listener) {
         webSocket.listeners.add(listener);
     }
@@ -539,6 +558,27 @@ public class OverloadedApi {
 
         public boolean expired() {
             return expiration <= System.currentTimeMillis();
+        }
+    }
+
+    public static final class FriendStatus {
+        public final String username;
+        public final boolean mutual;
+        public String serverId;
+
+        FriendStatus(@NotNull String username, @NotNull JSONObject obj) throws JSONException {
+            this.username = username;
+            mutual = obj.getBoolean("mutual");
+            serverId = CommonUtils.optString(obj, "loggedServer");
+        }
+
+        @Nullable
+        public String server() {
+            return serverId;
+        }
+
+        public void update(@Nullable String serverId) {
+            this.serverId = serverId;
         }
     }
 

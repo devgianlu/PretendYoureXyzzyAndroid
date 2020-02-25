@@ -54,10 +54,9 @@
         android:textColor="?colorOnSurface"
         android:textSize="14sp" />
 
-    <LinearLayout
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/overloadedProfileFragment_friends"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" />
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

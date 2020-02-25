@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.GPGamesHelper;
+import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.google.android.gms.games.achievement.Achievement;
 import com.google.android.gms.games.event.Event;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -140,5 +141,10 @@ public final class OverloadedUtils {
     public static <R> void callbacks(@NonNull Task<R> task, @Nullable Activity activity, @NonNull OnSuccessListener<R> successListener, @NonNull OnFailureListener failureListener) {
         successfulCallback(task, activity, successListener);
         failureCallback(task, activity, failureListener);
+    }
+
+    @NonNull
+    public static String getServerId(@NonNull Pyx.Server server) {
+        return server.url.host() + ":" + server.url.port() + server.url.encodedPath();
     }
 }

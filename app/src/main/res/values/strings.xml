@@ -293,4 +293,7 @@
     <string name="noAchievements">You have no achievements!</string>
     <string name="linkedAccounts">Linked accounts</string>
     <string name="friends">Friends</string>
+    <string name="friendOffline">Offline</string>
+    <string name="friendOnlineOn">Online on %s</string>
+    <string name="notMutual">Friendship not mutual</string>
 </resources>

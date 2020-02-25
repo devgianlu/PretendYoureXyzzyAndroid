@@ -30,6 +30,7 @@ import com.gianlu.pretendyourexyzzy.api.models.metrics.GameRound;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionHistory;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionStats;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -39,7 +40,7 @@ import org.json.JSONObject;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -111,7 +112,7 @@ public class Pyx implements Closeable {
     @NonNull
     @WorkerThread
     private PyxResponse request(@NonNull Op operation, boolean retried, PyxRequest.Param... params) throws IOException, JSONException, PyxException {
-        FormBody.Builder reqBody = new FormBody.Builder(Charset.forName("UTF-8")).add("o", operation.val);
+        FormBody.Builder reqBody = new FormBody.Builder(StandardCharsets.UTF_8).add("o", operation.val);
         for (PyxRequest.Param pair : params) {
             if (pair.value() != null)
                 reqBody.add(pair.key(), pair.value(""));
@@ -441,6 +442,7 @@ public class Pyx implements Closeable {
     }
 
     public static class Server {
+        private static List<Server> allServers = null;
         public final HttpUrl url;
         public final String name;
         private final boolean editable;
@@ -541,7 +543,7 @@ public class Pyx implements Closeable {
             List<Server> all = new ArrayList<>(10);
             all.addAll(loadServers(PK.USER_SERVERS));
             all.addAll(loadServers(PK.API_SERVERS));
-            return all;
+            return allServers = all;
         }
 
         @NonNull
@@ -652,13 +654,24 @@ public class Pyx implements Closeable {
             }
         }
 
-        public static boolean hasServer(String name) {
+        public static boolean hasServer(@NonNull String name) {
             try {
                 return getServer(PK.USER_SERVERS, name) != null || getServer(PK.API_SERVERS, name) != null;
             } catch (JSONException ex) {
                 Logging.log(ex);
                 return true;
             }
+        }
+
+        @Nullable
+        public static Server fromOverloadedId(@NonNull String serverId) {
+            if (allServers == null) loadAllServers();
+
+            for (Server server : allServers)
+                if (OverloadedUtils.getServerId(server).equals(serverId))
+                    return server;
+
+            return null;
         }
 
         @NonNull
