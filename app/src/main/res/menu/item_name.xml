@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nameItemMenu_showInfo"
+        android:title="@string/showInfo" />
+    <item
+        android:id="@+id/nameItemMenu_block"
+        android:title="@string/blockUser" />
+    <item
+        android:id="@+id/nameItemMenu_unblock"
+        android:title="@string/unblockUser" />
+    <item
+        android:id="@+id/nameItemMenu_addFriend"
+        android:title="@string/addFriend" />
+</menu>

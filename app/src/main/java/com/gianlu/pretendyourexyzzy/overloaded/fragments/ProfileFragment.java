@@ -15,12 +15,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.GPGamesHelper;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.ImagesListView;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.dialogs.OverloadedUserDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.AchievementImageLoader;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.api.FriendsStatusCallback;
@@ -37,6 +39,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static com.gianlu.commonutils.CommonUtils.hideViewAndLabel;
+import static com.gianlu.commonutils.CommonUtils.showViewAndLabel;
 
 public class ProfileFragment extends FragmentWithDialog implements OverloadedApi.EventListener {
     private ImagesListView achievements;
@@ -62,6 +67,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
             public void onLoaded(@NonNull Iterable<Achievement> result) {
                 AchievementImageLoader il = new AchievementImageLoader(requireContext());
 
+                showViewAndLabel(achievements);
                 achievements.removeAllViews();
                 for (Achievement ach : OverloadedUtils.getUnlockedAchievements(result))
                     achievements.addItem(ach, il);
@@ -74,6 +80,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
             }
         });
 
+        showViewAndLabel(linkedAccounts);
         linkedAccounts.removeAllViews();
         for (OverloadedSignInHelper.SignInProvider provider : OverloadedSignInHelper.SIGN_IN_PROVIDERS)
             if (OverloadedApi.get().hasLinkedProvider(provider.id))
@@ -82,6 +89,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
         OverloadedApi.get().friendsStatus(getActivity(), new FriendsStatusCallback() {
             @Override
             public void onFriendsStatus(@NotNull Map<String, OverloadedApi.FriendStatus> result) {
+                showViewAndLabel(friends);
                 friends.setAdapter(friendsAdapter = new FriendsAdapter(requireContext(), result.values()));
             }
 
@@ -110,9 +118,15 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.fragment_overloaded_profile, container, false);
         achievements = layout.findViewById(R.id.overloadedProfileFragment_achievements);
+        hideViewAndLabel(achievements);
+
         linkedAccounts = layout.findViewById(R.id.overloadedProfileFragment_linkedAccounts);
+        hideViewAndLabel(linkedAccounts);
+
         friends = layout.findViewById(R.id.overloadedProfileFragment_friends);
         friends.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
+        hideViewAndLabel(friends);
+
         return layout;
     }
 
@@ -127,7 +141,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
         }
     }
 
-    private static class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHolder> {
+    private class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHolder> {
         private final LayoutInflater inflater;
         private final List<OverloadedApi.FriendStatus> friends;
 
@@ -181,12 +195,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                 CommonUtils.setText(holder.status, R.string.notMutual);
             }
 
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // TODO: Friend options menu
-                }
-            });
+            holder.itemView.setOnClickListener(v -> DialogUtils.showDialog(getActivity(), OverloadedUserDialog.get(friend.username), null));
         }
 
         @Override

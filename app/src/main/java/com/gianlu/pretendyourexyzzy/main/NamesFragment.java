@@ -15,11 +15,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
@@ -40,7 +40,7 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>, NamesAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, OverloadedApi.EventListener {
+public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<List<Name>>, NamesAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, OverloadedApi.EventListener {
     private final List<String> overloadedUsers = new ArrayList<>();
     private RecyclerMessageView rmv;
     private int names = -1;
@@ -205,15 +205,15 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     }
 
     @Override
-    public void onNameSelected(@NonNull String name) {
-        FragmentActivity activity = getActivity();
-        if (activity != null) UserInfoDialog.loadAndShow(pyx, activity, name);
-    }
-
-    @Override
     public void shouldUpdateItemCount(int count) {
         if (count == 0) rmv.showInfo(R.string.noNames);
         else rmv.showList();
+    }
+
+    @Override
+    public void onShowUserInfo(@NonNull String name) {
+        FragmentActivity activity = getActivity();
+        if (activity != null) UserInfoDialog.loadAndShow(pyx, activity, name);
     }
 
     @Override

@@ -2,23 +2,36 @@ package com.gianlu.pretendyourexyzzy.adapters;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
+import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.misc.SuperTextView;
+import com.gianlu.commonutils.ui.Toaster;
+import com.gianlu.pretendyourexyzzy.BlockedUsers;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.models.Name;
+import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
+import com.gianlu.pretendyourexyzzy.overloaded.api.SuccessfulCallback;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHolder, Name, NamesAdapter.Sorting, String> {
     private final LayoutInflater inflater;
@@ -46,11 +59,65 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
     @Override
     protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull Name name) {
         ((SuperTextView) holder.itemView).setHtml(name.sigil() == Name.Sigil.NORMAL_USER ? name.withSigil() : (SuperTextView.makeBold(name.sigil().symbol()) + name.noSigil()));
-        holder.itemView.setOnClickListener(v -> listener.onNameSelected(name.noSigil()));
+        holder.itemView.setOnClickListener(v -> showPopup(holder.itemView.getContext(), holder.itemView, name.noSigil()));
         if (overloadedUsers.contains(name.noSigil()))
             ((SuperTextView) holder.itemView).setTextColor(Color.RED); // TODO
         else
             CommonUtils.setTextColorFromAttr((TextView) holder.itemView, android.R.attr.textColorSecondary);
+    }
+
+    private void showPopup(@NonNull Context context, @NonNull View anchor, @NonNull String username) {
+        PopupMenu popup = new PopupMenu(context, anchor);
+        popup.inflate(R.menu.item_name);
+
+        Menu menu = popup.getMenu();
+        if (!username.equals(Utils.myPyxUsername())) {
+            if (BlockedUsers.isBlocked(username)) menu.removeItem(R.id.nameItemMenu_block);
+            else menu.removeItem(R.id.nameItemMenu_unblock);
+
+            if (overloadedUsers.contains(username)) {
+                Map<String, OverloadedApi.FriendStatus> map = OverloadedApi.get().friendsStatusCache();
+                if (map != null && map.containsKey(username))
+                    menu.removeItem(R.id.nameItemMenu_addFriend);
+            } else {
+                menu.removeItem(R.id.nameItemMenu_addFriend);
+            }
+        } else {
+            menu.removeItem(R.id.nameItemMenu_unblock);
+            menu.removeItem(R.id.nameItemMenu_block);
+            menu.removeItem(R.id.nameItemMenu_addFriend);
+        }
+
+        popup.setOnMenuItemClickListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.nameItemMenu_showInfo:
+                    listener.onShowUserInfo(username);
+                    return true;
+                case R.id.nameItemMenu_unblock:
+                    BlockedUsers.unblock(username);
+                    return true;
+                case R.id.nameItemMenu_block:
+                    BlockedUsers.block(username);
+                    return true;
+                case R.id.nameItemMenu_addFriend:
+                    OverloadedApi.get().addFriend(username, null, new SuccessfulCallback() {
+                        @Override
+                        public void onSuccessful() {
+                            listener.showToast(Toaster.build().message(R.string.friendAdded).extra(username));
+                        }
+
+                        @Override
+                        public void onFailed(@NotNull Exception ex) {
+                            listener.showToast(Toaster.build().message(R.string.failedAddingFriend).ex(ex).extra(username));
+                        }
+                    });
+                    return true;
+                default:
+                    return false;
+            }
+        });
+
+        CommonUtils.showPopupOffset(popup, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, context.getResources().getDisplayMetrics()), 0);
     }
 
     @Override
@@ -117,10 +184,10 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
         ZA
     }
 
-    public interface Listener {
-        void onNameSelected(@NonNull String name);
-
+    public interface Listener extends DialogUtils.ShowStuffInterface {
         void shouldUpdateItemCount(int count);
+
+        void onShowUserInfo(@NonNull String nickname);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

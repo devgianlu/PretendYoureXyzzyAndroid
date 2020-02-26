@@ -3,7 +3,9 @@ package com.gianlu.pretendyourexyzzy;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.NameValuePair;
+import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
@@ -38,6 +40,15 @@ public final class Utils {
     public static final String ACTION_UNKNOWN_EVENT = "unknown_server_event";
 
     private Utils() {
+    }
+
+    @Nullable
+    public static String myPyxUsername() {
+        try {
+            return RegisteredPyx.get().user().nickname;
+        } catch (LevelMismatchException ex) {
+            return null;
+        }
     }
 
     @NonNull

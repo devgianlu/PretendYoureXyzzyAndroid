@@ -66,6 +66,7 @@ public class OverloadedApi {
     private FirebaseUser user;
     private volatile OverloadedToken lastToken;
     private UserData userDataCached = null;
+    private Map<String, FriendStatus> friendsStatusCached = null;
 
     private OverloadedApi() {
         FirebaseAuth.getInstance().addAuthStateListener(fa -> {
@@ -352,6 +353,11 @@ public class OverloadedApi {
         }), activity, callback::onUserData, callback::onFailed);
     }
 
+    @Nullable
+    public Map<String, FriendStatus> friendsStatusCache() {
+        return friendsStatusCached;
+    }
+
     public void friendsStatus(@Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
             JSONObject obj = serverRequest(new Request.Builder()
@@ -365,7 +371,7 @@ public class OverloadedApi {
                 map.put(username, new FriendStatus(username, obj.getJSONObject(username)));
             }
 
-            return map;
+            return friendsStatusCached = map;
         }), activity, callback::onFriendsStatus, callback::onFailed);
     }
 

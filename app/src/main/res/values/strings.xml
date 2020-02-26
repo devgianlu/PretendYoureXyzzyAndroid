@@ -296,4 +296,8 @@
     <string name="friendOffline">Offline</string>
     <string name="friendOnlineOn">Online on %s</string>
     <string name="notMutual">Friendship not mutual</string>
+    <string name="showInfo">Show info</string>
+    <string name="addFriend">Add friend</string>
+    <string name="friendAdded">Friend added!</string>
+    <string name="failedAddingFriend">Failed adding friend!</string>
 </resources>
