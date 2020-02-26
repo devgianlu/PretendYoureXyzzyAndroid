@@ -300,4 +300,9 @@
     <string name="addFriend">Add friend</string>
     <string name="friendAdded">Friend added!</string>
     <string name="failedAddingFriend">Failed adding friend!</string>
+    <string name="removeFriend">Remove friend</string>
+    <string name="openChat">Open chat</string>
+    <string name="showProfile">Show profile</string>
+    <string name="removedFriend">Friend removed!</string>
+    <string name="failedRemovingFriend">Failed removing friend!</string>
 </resources>

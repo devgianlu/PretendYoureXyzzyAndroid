@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.overloaded.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,18 +12,18 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.GPGamesHelper;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.ImagesListView;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
-import com.gianlu.pretendyourexyzzy.dialogs.OverloadedUserDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.AchievementImageLoader;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.api.FriendsStatusCallback;
@@ -39,9 +40,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import static com.gianlu.commonutils.CommonUtils.hideViewAndLabel;
-import static com.gianlu.commonutils.CommonUtils.showViewAndLabel;
 
 public class ProfileFragment extends FragmentWithDialog implements OverloadedApi.EventListener {
     private ImagesListView achievements;
@@ -67,7 +65,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
             public void onLoaded(@NonNull Iterable<Achievement> result) {
                 AchievementImageLoader il = new AchievementImageLoader(requireContext());
 
-                showViewAndLabel(achievements);
+                CommonUtils.showViewAndLabel(achievements);
                 achievements.removeAllViews();
                 for (Achievement ach : OverloadedUtils.getUnlockedAchievements(result))
                     achievements.addItem(ach, il);
@@ -80,7 +78,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
             }
         });
 
-        showViewAndLabel(linkedAccounts);
+        CommonUtils.showViewAndLabel(linkedAccounts);
         linkedAccounts.removeAllViews();
         for (OverloadedSignInHelper.SignInProvider provider : OverloadedSignInHelper.SIGN_IN_PROVIDERS)
             if (OverloadedApi.get().hasLinkedProvider(provider.id))
@@ -89,8 +87,12 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
         OverloadedApi.get().friendsStatus(getActivity(), new FriendsStatusCallback() {
             @Override
             public void onFriendsStatus(@NotNull Map<String, OverloadedApi.FriendStatus> result) {
-                showViewAndLabel(friends);
-                friends.setAdapter(friendsAdapter = new FriendsAdapter(requireContext(), result.values()));
+                if (result.isEmpty()) {
+                    CommonUtils.hideViewAndLabel(friends);
+                } else {
+                    CommonUtils.showViewAndLabel(friends);
+                    friends.setAdapter(friendsAdapter = new FriendsAdapter(requireContext(), result.values()));
+                }
             }
 
             @Override
@@ -118,14 +120,14 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.fragment_overloaded_profile, container, false);
         achievements = layout.findViewById(R.id.overloadedProfileFragment_achievements);
-        hideViewAndLabel(achievements);
+        CommonUtils.hideViewAndLabel(achievements);
 
         linkedAccounts = layout.findViewById(R.id.overloadedProfileFragment_linkedAccounts);
-        hideViewAndLabel(linkedAccounts);
+        CommonUtils.hideViewAndLabel(linkedAccounts);
 
         friends = layout.findViewById(R.id.overloadedProfileFragment_friends);
         friends.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
-        hideViewAndLabel(friends);
+        CommonUtils.hideViewAndLabel(friends);
 
         return layout;
     }
@@ -195,7 +197,50 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                 CommonUtils.setText(holder.status, R.string.notMutual);
             }
 
-            holder.itemView.setOnClickListener(v -> DialogUtils.showDialog(getActivity(), OverloadedUserDialog.get(friend.username), null));
+            holder.itemView.setOnClickListener(v -> showPopup(holder.itemView.getContext(), holder.itemView, friend.username));
+        }
+
+        private void showPopup(@NonNull Context context, @NonNull View anchor, @NonNull String username) {
+            PopupMenu popup = new PopupMenu(context, anchor);
+            popup.inflate(R.menu.item_overloaded_user);
+            popup.setOnMenuItemClickListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.overloadedUserItemMenu_showProfile:
+                        // TODO: Show user profile
+                        return true;
+                    case R.id.overloadedUserItemMenu_openChat:
+                        // TODO: Open chat with user
+                        return true;
+                    case R.id.overloadedUserItemMenu_removeFriend:
+                        OverloadedApi.get().removeFriend(username, null, new FriendsStatusCallback() {
+                            @Override
+                            public void onFriendsStatus(@NotNull Map<String, OverloadedApi.FriendStatus> result) {
+                                showToast(Toaster.build().message(R.string.removedFriend).extra(username));
+                                if (friendsAdapter != null) friendsAdapter.removeUser(username);
+                            }
+
+                            @Override
+                            public void onFailed(@NotNull Exception ex) {
+                                showToast(Toaster.build().message(R.string.failedRemovingFriend).ex(ex).extra(username));
+                            }
+                        });
+                        return true;
+                    default:
+                        return false;
+                }
+            });
+
+            CommonUtils.showPopupOffset(popup, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, context.getResources().getDisplayMetrics()), 0);
+        }
+
+        private void removeUser(@NonNull String username) {
+            for (int i = 0; i < friends.size(); i++) {
+                if (Objects.equals(friends.get(i).username, username)) {
+                    friends.remove(i);
+                    notifyItemRemoved(i);
+                    return;
+                }
+            }
         }
 
         @Override

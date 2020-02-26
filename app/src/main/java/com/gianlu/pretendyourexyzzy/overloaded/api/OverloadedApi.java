@@ -65,8 +65,8 @@ public class OverloadedApi {
     private final WebSocketHolder webSocket = new WebSocketHolder();
     private FirebaseUser user;
     private volatile OverloadedToken lastToken;
-    private UserData userDataCached = null;
-    private Map<String, FriendStatus> friendsStatusCached = null;
+    private volatile UserData userDataCached = null;
+    private volatile Map<String, FriendStatus> friendsStatusCached = null;
 
     private OverloadedApi() {
         FirebaseAuth.getInstance().addAuthStateListener(fa -> {
@@ -363,15 +363,25 @@ public class OverloadedApi {
             JSONObject obj = serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/FriendsStatus"))
                     .post(Util.EMPTY_REQUEST));
+            return friendsStatusCached = FriendStatus.parse(obj);
+        }), activity, callback::onFriendsStatus, callback::onFailed);
+    }
 
-            Map<String, FriendStatus> map = new HashMap<>();
-            Iterator<String> iter = obj.keys();
-            while (iter.hasNext()) {
-                String username = iter.next();
-                map.put(username, new FriendStatus(username, obj.getJSONObject(username)));
-            }
+    public void removeFriend(@NotNull String username, @Nullable Activity activity, @NotNull FriendsStatusCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject obj = serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("User/RemoveFriend"))
+                    .post(singletonJsonBody("username", username)));
+            return friendsStatusCached = FriendStatus.parse(obj);
+        }), activity, callback::onFriendsStatus, callback::onFailed);
+    }
 
-            return friendsStatusCached = map;
+    public void addFriend(@NotNull String username, @Nullable Activity activity, @NotNull FriendsStatusCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject obj = serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("User/AddFriend"))
+                    .post(singletonJsonBody("username", username)));
+            return friendsStatusCached = FriendStatus.parse(obj);
         }), activity, callback::onFriendsStatus, callback::onFailed);
     }
 
@@ -390,24 +400,6 @@ public class OverloadedApi {
         }
 
         updateUser();
-    }
-
-    public void removeFriend(@NotNull String username, @Nullable Activity activity, @NotNull SuccessfulCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("User/RemoveFriend"))
-                    .post(singletonJsonBody("username", username)));
-            return null;
-        }), activity, (r) -> callback.onSuccessful(), callback::onFailed);
-    }
-
-    public void addFriend(@NotNull String username, @Nullable Activity activity, @NotNull SuccessfulCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("User/AddFriend"))
-                    .post(singletonJsonBody("username", username)));
-            return null;
-        }), activity, (r) -> callback.onSuccessful(), callback::onFailed);
     }
 
     @UiThread
@@ -576,6 +568,18 @@ public class OverloadedApi {
             this.username = username;
             mutual = obj.getBoolean("mutual");
             serverId = CommonUtils.optString(obj, "loggedServer");
+        }
+
+        @NonNull
+        static Map<String, FriendStatus> parse(@NonNull JSONObject obj) throws JSONException {
+            Map<String, FriendStatus> map = new HashMap<>();
+            Iterator<String> iter = obj.keys();
+            while (iter.hasNext()) {
+                String username = iter.next();
+                map.put(username, new FriendStatus(username, obj.getJSONObject(username)));
+            }
+
+            return map;
         }
 
         @Nullable

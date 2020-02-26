@@ -1,7 +1,6 @@
 package com.gianlu.pretendyourexyzzy.adapters;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,8 +22,8 @@ import com.gianlu.pretendyourexyzzy.BlockedUsers;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.models.Name;
+import com.gianlu.pretendyourexyzzy.overloaded.api.FriendsStatusCallback;
 import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
-import com.gianlu.pretendyourexyzzy.overloaded.api.SuccessfulCallback;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -61,7 +60,7 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
         ((SuperTextView) holder.itemView).setHtml(name.sigil() == Name.Sigil.NORMAL_USER ? name.withSigil() : (SuperTextView.makeBold(name.sigil().symbol()) + name.noSigil()));
         holder.itemView.setOnClickListener(v -> showPopup(holder.itemView.getContext(), holder.itemView, name.noSigil()));
         if (overloadedUsers.contains(name.noSigil()))
-            ((SuperTextView) holder.itemView).setTextColor(Color.RED); // TODO
+            CommonUtils.setTextColor((TextView) holder.itemView, R.color.appColorBright);
         else
             CommonUtils.setTextColorFromAttr((TextView) holder.itemView, android.R.attr.textColorSecondary);
     }
@@ -72,15 +71,18 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
 
         Menu menu = popup.getMenu();
         if (!username.equals(Utils.myPyxUsername())) {
-            if (BlockedUsers.isBlocked(username)) menu.removeItem(R.id.nameItemMenu_block);
-            else menu.removeItem(R.id.nameItemMenu_unblock);
-
-            if (overloadedUsers.contains(username)) {
-                Map<String, OverloadedApi.FriendStatus> map = OverloadedApi.get().friendsStatusCache();
-                if (map != null && map.containsKey(username))
-                    menu.removeItem(R.id.nameItemMenu_addFriend);
-            } else {
+            if (BlockedUsers.isBlocked(username)) {
+                menu.removeItem(R.id.nameItemMenu_block);
                 menu.removeItem(R.id.nameItemMenu_addFriend);
+            } else {
+                menu.removeItem(R.id.nameItemMenu_unblock);
+                if (overloadedUsers.contains(username)) {
+                    Map<String, OverloadedApi.FriendStatus> map = OverloadedApi.get().friendsStatusCache();
+                    if (map != null && map.containsKey(username))
+                        menu.removeItem(R.id.nameItemMenu_addFriend);
+                } else {
+                    menu.removeItem(R.id.nameItemMenu_addFriend);
+                }
             }
         } else {
             menu.removeItem(R.id.nameItemMenu_unblock);
@@ -100,9 +102,9 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
                     BlockedUsers.block(username);
                     return true;
                 case R.id.nameItemMenu_addFriend:
-                    OverloadedApi.get().addFriend(username, null, new SuccessfulCallback() {
+                    OverloadedApi.get().addFriend(username, null, new FriendsStatusCallback() {
                         @Override
-                        public void onSuccessful() {
+                        public void onFriendsStatus(@NotNull Map<String, OverloadedApi.FriendStatus> result) {
                             listener.showToast(Toaster.build().message(R.string.friendAdded).extra(username));
                         }
 
