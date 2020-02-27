@@ -34,6 +34,7 @@ import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
 import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
+import com.gianlu.pretendyourexyzzy.overloaded.api.UsersCallback;
 
 import org.json.JSONException;
 
@@ -155,7 +156,7 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
         pyx.request(PyxRequests.getNamesList(), null, this);
         if (OverloadedUtils.isSignedIn()) {
             OverloadedApi.get().addEventListener(this);
-            OverloadedApi.get().listUsers(pyx.server, getActivity(), new OverloadedApi.UsersCallback() {
+            OverloadedApi.get().listUsers(pyx.server, getActivity(), new UsersCallback() {
                 @Override
                 public void onUsers(@NonNull List<String> list) {
                     overloadedUsers.clear();

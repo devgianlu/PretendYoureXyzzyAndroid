@@ -1,14 +1,15 @@
 package com.gianlu.pretendyourexyzzy.overloaded.api;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
+import java.util.List;
 
 @UiThread
-public interface FriendsStatusCallback {
-    void onFriendsStatus(@NotNull Map<String, OverloadedApi.FriendStatus> result);
+public interface ChatMessagesCallback {
+    void onMessages(@NonNull List<OverloadedApi.ChatMessage> msg);
 
     void onFailed(@NotNull Exception ex);
 }

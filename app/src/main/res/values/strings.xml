@@ -305,4 +305,5 @@
     <string name="showProfile">Show profile</string>
     <string name="removedFriend">Friend removed!</string>
     <string name="failedRemovingFriend">Failed removing friend!</string>
+    <string name="failedCreatingChat">Failed creating chat!</string>
 </resources>

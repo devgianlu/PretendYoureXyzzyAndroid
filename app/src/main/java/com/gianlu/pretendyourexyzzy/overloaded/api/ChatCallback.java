@@ -4,8 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
 
 @UiThread
-public interface UserDataCallback {
-    void onUserData(@NonNull OverloadedApi.UserData data);
+public interface ChatCallback {
+    void onChat(@NonNull OverloadedApi.Chat chat);
 
     void onFailed(@NonNull Exception ex);
 }

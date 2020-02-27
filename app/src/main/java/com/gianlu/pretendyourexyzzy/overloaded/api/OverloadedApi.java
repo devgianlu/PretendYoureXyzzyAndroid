@@ -54,6 +54,7 @@ import okhttp3.WebSocketListener;
 import okhttp3.internal.Util;
 
 import static com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils.callbacks;
+import static com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils.jsonBody;
 import static com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils.loggingCallbacks;
 import static com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils.overloadedServerUrl;
 import static com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils.singletonJsonBody;
@@ -385,6 +386,45 @@ public class OverloadedApi {
         }), activity, callback::onFriendsStatus, callback::onFailed);
     }
 
+    public void startChat(@NonNull String username, @Nullable Activity activity, @NonNull ChatCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject obj = serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Chat/Start"))
+                    .post(singletonJsonBody("username", username)));
+            return new Chat(obj);
+        }), activity, callback::onChat, callback::onFailed);
+    }
+
+    public void listChats(@Nullable Activity activity, @NonNull ChatsCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject obj = serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Chat/List"))
+                    .post(Util.EMPTY_REQUEST));
+            return Chat.parse(obj.getJSONArray("chats"));
+        }), activity, callback::onChats, callback::onFailed);
+    }
+
+    public void sendMessage(@NonNull String chatId, @NonNull String text, @Nullable Activity activity, @NonNull ChatMessageCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject body = new JSONObject();
+            body.put("chatId", chatId);
+            body.put("message", text);
+            JSONObject obj = serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Chat/Start"))
+                    .post(jsonBody(body)));
+            return new ChatMessage(obj);
+        }), activity, callback::onMessage, callback::onFailed);
+    }
+
+    public void getMessages(@NonNull String chatId, @Nullable Activity activity, @NonNull ChatMessagesCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject obj = serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Chat/Messages"))
+                    .post(singletonJsonBody("chatId", chatId)));
+            return ChatMessage.parse(obj.getJSONArray("messages"));
+        }), activity, callback::onMessages, callback::onFailed);
+    }
+
     public void addEventListener(@NonNull EventListener listener) {
         webSocket.listeners.add(listener);
     }
@@ -402,16 +442,64 @@ public class OverloadedApi {
         updateUser();
     }
 
-    @UiThread
-    public interface UsersCallback {
-        void onUsers(@NonNull List<String> list);
-
-        void onFailed(@NonNull Exception ex);
+    @Nullable
+    public UserData userDataCached() {
+        return userDataCached;
     }
 
     @UiThread
     public interface EventListener {
         void onEvent(@NonNull Event event) throws JSONException;
+    }
+
+    public static class Chat {
+        public final String id;
+        public final List<String> participants;
+        public final ChatMessage lastMsg;
+
+        Chat(@NonNull JSONObject obj) throws JSONException {
+            id = obj.getString("id");
+            participants = CommonUtils.toStringsList(obj.getJSONArray("participants"), false);
+            JSONObject lastMsgObj = obj.optJSONObject("lastMsg");
+            if (lastMsgObj != null) lastMsg = new ChatMessage(lastMsgObj);
+            else lastMsg = null;
+        }
+
+        @NonNull
+        public static List<Chat> parse(@NonNull JSONArray array) throws JSONException {
+            List<Chat> chats = new ArrayList<>(array.length());
+            for (int i = 0; i < array.length(); i++) chats.add(new Chat(array.getJSONObject(i)));
+            return chats;
+        }
+
+        @NonNull
+        public String getOtherUsername() {
+            OverloadedApi.UserData user = OverloadedApi.get().userDataCached();
+            if (user == null) throw new IllegalStateException();
+            return participants.get(Objects.equals(participants.get(0), user.username) ? 1 : 0);
+        }
+    }
+
+    public static class ChatMessage {
+        public final String id;
+        public final String text;
+        public final long timestamp;
+        public final String from;
+
+        ChatMessage(@NonNull JSONObject obj) throws JSONException {
+            id = obj.getString("id");
+            text = obj.getString("text");
+            timestamp = obj.getLong("timestamp");
+            from = obj.getString("from");
+        }
+
+        @NonNull
+        public static List<ChatMessage> parse(@NonNull JSONArray array) throws JSONException {
+            List<ChatMessage> chats = new ArrayList<>(array.length());
+            for (int i = 0; i < array.length(); i++)
+                chats.add(new ChatMessage(array.getJSONObject(i)));
+            return chats;
+        }
     }
 
     public static class Event {

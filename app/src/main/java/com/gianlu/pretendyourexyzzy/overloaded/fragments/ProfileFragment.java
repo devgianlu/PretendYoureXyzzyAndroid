@@ -25,7 +25,9 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.ImagesListView;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.overloaded.AchievementImageLoader;
+import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
+import com.gianlu.pretendyourexyzzy.overloaded.api.ChatCallback;
 import com.gianlu.pretendyourexyzzy.overloaded.api.FriendsStatusCallback;
 import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
 import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
@@ -209,7 +211,18 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                         // TODO: Show user profile
                         return true;
                     case R.id.overloadedUserItemMenu_openChat:
-                        // TODO: Open chat with user
+                        OverloadedApi.get().startChat(username, getActivity(), new ChatCallback() {
+                            @Override
+                            public void onChat(@NonNull OverloadedApi.Chat chat) {
+                                ChatBottomSheet sheet = new ChatBottomSheet();
+                                sheet.show(getActivity(), chat);
+                            }
+
+                            @Override
+                            public void onFailed(@NonNull Exception ex) {
+                                showToast(Toaster.build().message(R.string.failedCreatingChat).ex(ex).extra(username));
+                            }
+                        });
                         return true;
                     case R.id.overloadedUserItemMenu_removeFriend:
                         OverloadedApi.get().removeFriend(username, null, new FriendsStatusCallback() {
