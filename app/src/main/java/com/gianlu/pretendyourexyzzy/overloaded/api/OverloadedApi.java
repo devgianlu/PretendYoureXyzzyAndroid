@@ -410,7 +410,7 @@ public class OverloadedApi {
             body.put("chatId", chatId);
             body.put("message", text);
             JSONObject obj = serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Chat/Start"))
+                    .url(overloadedServerUrl("Chat/Send"))
                     .post(jsonBody(body)));
             return new ChatMessage(obj);
         }), activity, callback::onMessage, callback::onFailed);
@@ -455,7 +455,7 @@ public class OverloadedApi {
     public static class Chat {
         public final String id;
         public final List<String> participants;
-        public final ChatMessage lastMsg;
+        public ChatMessage lastMsg;
 
         Chat(@NonNull JSONObject obj) throws JSONException {
             id = obj.getString("id");
@@ -486,7 +486,7 @@ public class OverloadedApi {
         public final long timestamp;
         public final String from;
 
-        ChatMessage(@NonNull JSONObject obj) throws JSONException {
+        public ChatMessage(@NonNull JSONObject obj) throws JSONException {
             id = obj.getString("id");
             text = obj.getString("text");
             timestamp = obj.getLong("timestamp");
@@ -512,7 +512,7 @@ public class OverloadedApi {
         }
 
         public enum Type {
-            USER_LEFT_SERVER("uls"), USER_JOINED_SERVER("ujs");
+            USER_LEFT_SERVER("uls"), USER_JOINED_SERVER("ujs"), CHAT_MESSAGE("cm");
 
             private final String code;
 

@@ -19,9 +19,13 @@ import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
 import com.gianlu.pretendyourexyzzy.overloaded.api.ChatsCallback;
 import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
 
+import org.json.JSONException;
+
 import java.util.List;
 
-public class ChatsFragment extends FragmentWithDialog {
+public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.EventListener {
+    private ChatBottomSheet lastChatSheet;
+    private ChatsAdapter adapter;
 
     @NonNull
     public static ChatsFragment get(@NonNull Context context) {
@@ -48,7 +52,7 @@ public class ChatsFragment extends FragmentWithDialog {
                     return;
                 }
 
-                rmv.loadListData(new ChatsAdapter(requireContext(), chats));
+                rmv.loadListData(adapter = new ChatsAdapter(requireContext(), chats));
             }
 
             @Override
@@ -58,7 +62,22 @@ public class ChatsFragment extends FragmentWithDialog {
             }
         });
 
+        OverloadedApi.get().addEventListener(this);
+
         return rmv;
+    }
+
+    @Override
+    public void onEvent(@NonNull OverloadedApi.Event event) throws JSONException {
+        if (event.type == OverloadedApi.Event.Type.CHAT_MESSAGE) {
+            String chatId = event.obj.getString("chatId");
+            OverloadedApi.ChatMessage msg = new OverloadedApi.ChatMessage(event.obj);
+
+            if (adapter != null) adapter.updateLastMessage(chatId, msg);
+
+            if (lastChatSheet != null && lastChatSheet.isVisible() && lastChatSheet.chatId().equals(chatId))
+                lastChatSheet.update(ChatBottomSheet.Update.received(msg));
+        }
     }
 
     private class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> {
@@ -76,6 +95,17 @@ public class ChatsFragment extends FragmentWithDialog {
             return new ViewHolder(parent);
         }
 
+        void updateLastMessage(@NonNull String chatId, @NonNull OverloadedApi.ChatMessage msg) {
+            for (int i = 0; i < chats.size(); i++) {
+                OverloadedApi.Chat chat = chats.get(i);
+                if (chat.id.equals(chatId)) {
+                    chat.lastMsg = msg;
+                    notifyItemChanged(i);
+                    break;
+                }
+            }
+        }
+
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             OverloadedApi.Chat chat = chats.get(position);
@@ -90,8 +120,8 @@ public class ChatsFragment extends FragmentWithDialog {
             }
 
             holder.itemView.setOnClickListener(v -> {
-                ChatBottomSheet sheet = new ChatBottomSheet();
-                sheet.show(getActivity(), chat);
+                lastChatSheet = new ChatBottomSheet();
+                lastChatSheet.show(getActivity(), chat);
             });
         }
 
