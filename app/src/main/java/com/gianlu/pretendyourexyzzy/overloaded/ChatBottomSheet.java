@@ -25,11 +25,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, ChatBottomSheet.Update> {
+public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, ChatBottomSheet.Update> implements OverloadedApi.EventListener {
     private RecyclerMessageView rmv;
     private TextInputLayout send;
     private ChatMessagesAdapter adapter;
@@ -53,7 +54,6 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, 
             OverloadedApi.get().sendMessage(payload.id, text, getActivity(), new ChatMessageCallback() {
                 @Override
                 public void onMessage(@NonNull OverloadedApi.ChatMessage msg) {
-                    update(Update.sent(msg));
                     CommonUtils.setText(send, "");
                     send.setEnabled(true);
                 }
@@ -75,7 +75,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, 
 
         OverloadedApi.get().getMessages(payload.id, getActivity(), new ChatMessagesCallback() {
             @Override
-            public void onMessages(@NonNull List<OverloadedApi.ChatMessage> msg) {
+            public void onMessages(@NonNull OverloadedApi.ChatMessages msg) {
                 update(Update.allMessages(msg));
             }
 
@@ -85,6 +85,8 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, 
                 rmv.showError(R.string.failedLoading);
             }
         });
+
+        OverloadedApi.get().addEventListener(this);
     }
 
     @Override
@@ -102,8 +104,17 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, 
     }
 
     @NonNull
-    public String chatId() {
+    private String chatId() {
         return getSetupPayload().id;
+    }
+
+    @Override
+    public void onEvent(@NonNull OverloadedApi.Event event) throws JSONException {
+        if (event.type == OverloadedApi.Event.Type.CHAT_MESSAGE) {
+            String chatId = event.obj.getString("chatId");
+            if (chatId().equals(chatId))
+                update(Update.received(new OverloadedApi.ChatMessage(event.obj)));
+        }
     }
 
     private static class ChatMessagesAdapter extends RecyclerView.Adapter<ChatMessagesAdapter.ViewHolder> {
@@ -143,7 +154,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, 
         }
     }
 
-    public static class Update {
+    static class Update {
         final List<OverloadedApi.ChatMessage> messages;
         final OverloadedApi.ChatMessage message;
 
@@ -161,12 +172,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, 
         }
 
         @NonNull
-        static Update sent(@NonNull OverloadedApi.ChatMessage msg) {
-            return new Update(null, msg);
-        }
-
-        @NonNull
-        public static Update received(@NonNull OverloadedApi.ChatMessage msg) {
+        static Update received(@NonNull OverloadedApi.ChatMessage msg) {
             return new Update(null, msg);
         }
 

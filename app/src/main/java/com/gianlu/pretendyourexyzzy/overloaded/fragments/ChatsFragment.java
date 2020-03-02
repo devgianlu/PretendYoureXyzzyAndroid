@@ -16,9 +16,11 @@ import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
+import com.gianlu.pretendyourexyzzy.overloaded.api.ChatMessagesCallback;
 import com.gianlu.pretendyourexyzzy.overloaded.api.ChatsCallback;
 import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.List;
 public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.EventListener {
     private ChatBottomSheet lastChatSheet;
     private ChatsAdapter adapter;
+    private RecyclerMessageView rmv;
 
     @NonNull
     public static ChatsFragment get(@NonNull Context context) {
@@ -39,7 +42,8 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        RecyclerMessageView rmv = new RecyclerMessageView(requireContext());
+
+        rmv = new RecyclerMessageView(requireContext());
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
         rmv.dividerDecoration(RecyclerView.VERTICAL);
         rmv.startLoading();
@@ -47,12 +51,8 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         OverloadedApi.get().listChats(getActivity(), new ChatsCallback() {
             @Override
             public void onChats(@NonNull List<OverloadedApi.Chat> chats) {
-                if (chats.isEmpty()) {
-                    rmv.showInfo(R.string.overloaded_noChats);
-                    return;
-                }
-
                 rmv.loadListData(adapter = new ChatsAdapter(requireContext(), chats));
+                itemCountChanged(chats.size());
             }
 
             @Override
@@ -72,12 +72,13 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         if (event.type == OverloadedApi.Event.Type.CHAT_MESSAGE) {
             String chatId = event.obj.getString("chatId");
             OverloadedApi.ChatMessage msg = new OverloadedApi.ChatMessage(event.obj);
-
             if (adapter != null) adapter.updateLastMessage(chatId, msg);
-
-            if (lastChatSheet != null && lastChatSheet.isVisible() && lastChatSheet.chatId().equals(chatId))
-                lastChatSheet.update(ChatBottomSheet.Update.received(msg));
         }
+    }
+
+    private void itemCountChanged(int size) {
+        if (size == 0) rmv.showInfo(R.string.overloaded_noChats);
+        else rmv.showList();
     }
 
     private class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> {
@@ -101,9 +102,23 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
                 if (chat.id.equals(chatId)) {
                     chat.lastMsg = msg;
                     notifyItemChanged(i);
-                    break;
+                    return;
                 }
             }
+
+            OverloadedApi.get().getMessages(chatId, getActivity(), new ChatMessagesCallback() {
+                @Override
+                public void onMessages(@NonNull OverloadedApi.ChatMessages messages) {
+                    chats.add(0, messages.chat);
+                    notifyItemInserted(0);
+                    itemCountChanged(chats.size());
+                }
+
+                @Override
+                public void onFailed(@NotNull Exception ex) {
+                    Logging.log(ex);
+                }
+            });
         }
 
         @Override

@@ -413,7 +413,15 @@ public class OverloadedApi {
                     .url(overloadedServerUrl("Chat/Send"))
                     .post(jsonBody(body)));
             return new ChatMessage(obj);
-        }), activity, callback::onMessage, callback::onFailed);
+        }), activity, message -> {
+            callback.onMessage(message);
+
+            try {
+                dispatchMessageSent(chatId, message);
+            } catch (JSONException ex) {
+                Logging.log(ex);
+            }
+        }, callback::onFailed);
     }
 
     public void getMessages(@NonNull String chatId, @Nullable Activity activity, @NonNull ChatMessagesCallback callback) {
@@ -421,8 +429,14 @@ public class OverloadedApi {
             JSONObject obj = serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Chat/Messages"))
                     .post(singletonJsonBody("chatId", chatId)));
-            return ChatMessage.parse(obj.getJSONArray("messages"));
+            return ChatMessages.parse(obj);
         }), activity, callback::onMessages, callback::onFailed);
+    }
+
+    private void dispatchMessageSent(@NonNull String chatId, @NonNull ChatMessage msg) throws JSONException {
+        JSONObject obj = msg.toJson();
+        obj.put("chatId", chatId);
+        webSocket.dispatchEvent(new Event(Event.Type.CHAT_MESSAGE, obj));
     }
 
     public void addEventListener(@NonNull EventListener listener) {
@@ -480,6 +494,24 @@ public class OverloadedApi {
         }
     }
 
+    public static class ChatMessages extends ArrayList<ChatMessage> {
+        public final Chat chat;
+
+        private ChatMessages(int initialCapacity, @NonNull Chat chat) {
+            super(initialCapacity);
+            this.chat = chat;
+        }
+
+        @NonNull
+        public static ChatMessages parse(@NonNull JSONObject obj) throws JSONException {
+            JSONArray array = obj.getJSONArray("messages");
+            ChatMessages chats = new ChatMessages(array.length(), new Chat(obj));
+            for (int i = 0; i < array.length(); i++)
+                chats.add(new ChatMessage(array.getJSONObject(i)));
+            return chats;
+        }
+    }
+
     public static class ChatMessage {
         public final String id;
         public final String text;
@@ -494,11 +526,13 @@ public class OverloadedApi {
         }
 
         @NonNull
-        public static List<ChatMessage> parse(@NonNull JSONArray array) throws JSONException {
-            List<ChatMessage> chats = new ArrayList<>(array.length());
-            for (int i = 0; i < array.length(); i++)
-                chats.add(new ChatMessage(array.getJSONObject(i)));
-            return chats;
+        public JSONObject toJson() throws JSONException {
+            JSONObject obj = new JSONObject();
+            obj.put("id", id);
+            obj.put("text", text);
+            obj.put("timestamp", timestamp);
+            obj.put("from", from);
+            return obj;
         }
     }
 
@@ -509,6 +543,12 @@ public class OverloadedApi {
         Event(@NonNull Type type, @NonNull JSONObject obj) {
             this.type = type;
             this.obj = obj;
+        }
+
+        @NotNull
+        @Override
+        public String toString() {
+            return "Event{type=" + type + ", obj=" + obj + '}';
         }
 
         public enum Type {
@@ -536,6 +576,18 @@ public class OverloadedApi {
         private final Handler handler = new Handler(Looper.getMainLooper());
         public WebSocket client;
 
+        void dispatchEvent(@NonNull Event event) {
+            for (EventListener listener : new ArrayList<>(listeners)) {
+                handler.post(() -> {
+                    try {
+                        listener.onEvent(event);
+                    } catch (JSONException ex) {
+                        Logging.log("Failed handling event: " + event, ex);
+                    }
+                });
+            }
+        }
+
         @Override
         public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
             JSONObject obj;
@@ -553,16 +605,7 @@ public class OverloadedApi {
                 return;
             }
 
-            Event event = new Event(type, obj);
-            for (EventListener listener : new ArrayList<>(listeners)) {
-                handler.post(() -> {
-                    try {
-                        listener.onEvent(event);
-                    } catch (JSONException ex) {
-                        Logging.log("Failed handling event: " + text, ex);
-                    }
-                });
-            }
+            dispatchEvent(new Event(type, obj));
         }
     }
 

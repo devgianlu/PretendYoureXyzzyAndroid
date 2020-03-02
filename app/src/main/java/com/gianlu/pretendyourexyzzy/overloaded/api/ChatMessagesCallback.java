@@ -5,11 +5,9 @@ import androidx.annotation.UiThread;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 @UiThread
 public interface ChatMessagesCallback {
-    void onMessages(@NonNull List<OverloadedApi.ChatMessage> msg);
+    void onMessages(@NonNull OverloadedApi.ChatMessages messages);
 
     void onFailed(@NotNull Exception ex);
 }
