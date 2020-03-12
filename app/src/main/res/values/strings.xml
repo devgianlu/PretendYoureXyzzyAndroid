@@ -307,4 +307,5 @@
     <string name="failedRemovingFriend">Failed removing friend!</string>
     <string name="failedCreatingChat">Failed creating chat!</string>
     <string name="beTheFirstToSendAMessage">Be the first one to send a message!</string>
+    <string name="noFriends">You have no friends!</string>
 </resources>

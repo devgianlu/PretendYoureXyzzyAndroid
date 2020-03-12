@@ -57,7 +57,7 @@
         android:textColor="?colorOnSurface"
         android:textSize="14sp" />
 
-    <androidx.recyclerview.widget.RecyclerView
+    <com.gianlu.commonutils.misc.RecyclerMessageView
         android:id="@+id/overloadedProfileFragment_friends"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

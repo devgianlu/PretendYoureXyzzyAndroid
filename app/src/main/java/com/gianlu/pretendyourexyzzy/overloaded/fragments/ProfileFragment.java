@@ -13,12 +13,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.GPGamesHelper;
 import com.gianlu.pretendyourexyzzy.R;
@@ -46,7 +46,7 @@ import java.util.Objects;
 public class ProfileFragment extends FragmentWithDialog implements OverloadedApi.EventListener {
     private ImagesListView achievements;
     private ImagesListView linkedAccounts;
-    private RecyclerView friends;
+    private RecyclerMessageView friends;
     private FriendsAdapter friendsAdapter;
 
     @NonNull
@@ -89,18 +89,17 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
         OverloadedApi.get().friendsStatus(getActivity(), new FriendsStatusCallback() {
             @Override
             public void onFriendsStatus(@NotNull Map<String, OverloadedApi.FriendStatus> result) {
-                if (result.isEmpty()) {
-                    CommonUtils.hideViewAndLabel(friends);
-                } else {
-                    CommonUtils.showViewAndLabel(friends);
-                    friends.setAdapter(friendsAdapter = new FriendsAdapter(requireContext(), result.values()));
-                }
+                if (result.isEmpty())
+                    friends.showInfo(R.string.noFriends);
+                else
+                    friends.loadListData(friendsAdapter = new FriendsAdapter(requireContext(), result.values()));
             }
 
             @Override
             public void onFailed(@NotNull Exception ex) {
                 friendsAdapter = null;
                 Logging.log(ex);
+                friends.showError(R.string.failedLoading);
             }
         });
     }
@@ -128,8 +127,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
         CommonUtils.hideViewAndLabel(linkedAccounts);
 
         friends = layout.findViewById(R.id.overloadedProfileFragment_friends);
-        friends.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
-        CommonUtils.hideViewAndLabel(friends);
+        friends.linearLayoutManager(RecyclerView.VERTICAL, false);
 
         return layout;
     }

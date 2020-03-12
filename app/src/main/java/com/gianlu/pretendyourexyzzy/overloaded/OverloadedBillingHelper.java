@@ -37,13 +37,8 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     private BillingClient billingClient;
     private volatile SkuDetails infiniteSku;
     private volatile OverloadedApi.UserData userData;
-    private volatile Exception exception;
+    private volatile ExceptionWithType exception;
     private Status lastStatus;
-
-    public OverloadedBillingHelper(@NonNull Context context, @NonNull Listener listener) {
-        this.context = context;
-        this.listener = listener;
-    }
 
     public void onStart() {
         billingClient = BillingClient.newBuilder(context).enablePendingPurchases().setListener(this).build();
@@ -56,7 +51,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                     getSkuDetails();
                     exception = null;
                 } else {
-                    exception = new IOException(br.getResponseCode() + ": " + br.getDebugMessage());
+                    exception = new ExceptionWithType(ExceptionWithType.Type.BILLING, new IOException(br.getResponseCode() + ": " + br.getDebugMessage()));
                     Logging.log(exception);
                 }
 
@@ -70,7 +65,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                     billingClient.startConnection(this);
                 } else {
                     listener.showToast(Toaster.build().message(R.string.failedBillingConnection));
-                    exception = new IOException("Failed connecting to the billing service.");
+                    exception = new ExceptionWithType(ExceptionWithType.Type.BILLING, new IOException("Failed connecting to the billing service."));
                     checkUpdateUi();
                 }
             }
@@ -134,13 +129,18 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                     listener.dismissDialog();
                     Logging.log(ex);
                     userData = null;
-                    exception = ex;
+                    exception = new ExceptionWithType(ExceptionWithType.Type.OVERLOADED, ex);
                     checkUpdateUi();
                 }
             });
         }
 
         checkUpdateUi();
+    }
+
+    public OverloadedBillingHelper(@NonNull Context context, @NonNull Listener listener) {
+        this.context = context;
+        this.listener = listener;
     }
 
     private void getSkuDetails() {
@@ -151,7 +151,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                 infiniteSku = list.get(0);
                 exception = null;
             } else {
-                exception = new IOException(br.getResponseCode() + ": " + br.getDebugMessage());
+                exception = new ExceptionWithType(ExceptionWithType.Type.BILLING, new IOException(br.getResponseCode() + ": " + br.getDebugMessage()));
                 Logging.log(exception);
             }
 
@@ -159,21 +159,13 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         });
     }
 
-    public void onResume() {
-        if (!OverloadedUtils.isSignedIn()) {
-            userData = null;
-            exception = null;
-            checkUpdateUi();
-        }
-    }
-
     private synchronized void checkUpdateUi() {
-        if (exception != null) {
-            listener.updateOverloadedStatus(lastStatus = Status.ERROR, null);
-            return;
-        }
-
         if (OverloadedUtils.isSignedIn()) {
+            if (exception != null && exception.type == ExceptionWithType.Type.OVERLOADED) {
+                listener.updateOverloadedStatus(lastStatus = Status.ERROR, null);
+                return;
+            }
+
             if (userData == null) {
                 listener.updateOverloadedStatus(lastStatus = Status.LOADING, null);
                 return;
@@ -187,6 +179,11 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                         listener.updateOverloadedStatus(lastStatus = Status.LOADING, userData);
                     break;
                 case NONE:
+                    if (exception != null && exception.type == ExceptionWithType.Type.BILLING) {
+                        listener.updateOverloadedStatus(lastStatus = Status.ERROR, null);
+                        return;
+                    }
+
                     if (infiniteSku == null) {
                         listener.updateOverloadedStatus(lastStatus = Status.LOADING, null);
                         getSkuDetails();
@@ -203,6 +200,11 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                     break;
             }
         } else {
+            if (exception != null && exception.type == ExceptionWithType.Type.BILLING) {
+                listener.updateOverloadedStatus(lastStatus = Status.ERROR, null);
+                return;
+            }
+
             if (billingClient == null || !billingClient.isReady()) {
                 listener.updateOverloadedStatus(lastStatus = Status.LOADING, null);
             } else {
@@ -215,6 +217,23 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                 listener.updateOverloadedStatus(lastStatus = Status.NOT_SIGNED_IN, null);
             }
         }
+    }
+
+    public void onResume() {
+        if (!OverloadedUtils.isSignedIn()) {
+            userData = null;
+            exception = null;
+            checkUpdateUi();
+        }
+    }
+
+    @Override
+    public void onFailed(@NonNull Exception ex) {
+        userData = null;
+        exception = new ExceptionWithType(ExceptionWithType.Type.OVERLOADED, ex);
+        checkUpdateUi();
+        listener.dismissDialog();
+        listener.showToast(Toaster.build().message(R.string.failedBuying).ex(ex));
     }
 
     private void handleBillingErrors(@BillingClient.BillingResponseCode int code) {
@@ -335,13 +354,17 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         }
     }
 
-    @Override
-    public void onFailed(@NonNull Exception ex) {
-        userData = null;
-        exception = ex;
-        checkUpdateUi();
-        listener.dismissDialog();
-        listener.showToast(Toaster.build().message(R.string.failedBuying).ex(ex));
+    private static class ExceptionWithType extends Exception {
+        private final Type type;
+
+        public ExceptionWithType(Type type, Throwable cause) {
+            super(type.name(), cause);
+            this.type = type;
+        }
+
+        private enum Type {
+            BILLING, OVERLOADED
+        }
     }
 
     public void onDestroy() {
