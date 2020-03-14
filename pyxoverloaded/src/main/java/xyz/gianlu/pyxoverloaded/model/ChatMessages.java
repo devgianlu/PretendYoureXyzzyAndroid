@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class ChatMessages extends ArrayList<ChatMessage> {
     public final Chat chat;
 
-    private ChatMessages(int initialCapacity, @NonNull Chat chat) {
+    public ChatMessages(int initialCapacity, @NonNull Chat chat) {
         super(initialCapacity);
         this.chat = chat;
     }
@@ -23,5 +23,11 @@ public class ChatMessages extends ArrayList<ChatMessage> {
         for (int i = 0; i < array.length(); i++)
             chats.add(new ChatMessage(array.getJSONObject(i)));
         return chats;
+    }
+
+    public boolean hasUpdates(@NonNull ChatMessages old) {
+        if (old.isEmpty() && isEmpty()) return false;
+        else if (old.isEmpty()) return true;
+        else return !old.get(old.size() - 1).id.equals(get(size() - 1).id);
     }
 }

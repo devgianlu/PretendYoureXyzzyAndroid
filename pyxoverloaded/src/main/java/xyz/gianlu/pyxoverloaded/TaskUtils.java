@@ -26,7 +26,8 @@ public final class TaskUtils {
         if (activity == null) {
             if (listener instanceof Activity)
                 task.addOnSuccessListener((Activity) listener, listener);
-            else task.addOnSuccessListener(listener);
+            else
+                task.addOnSuccessListener(listener);
         } else {
             task.addOnSuccessListener(activity, listener);
         }
@@ -36,7 +37,8 @@ public final class TaskUtils {
         if (activity == null) {
             if (listener instanceof Activity)
                 task.addOnFailureListener((Activity) listener, listener);
-            else task.addOnFailureListener(listener);
+            else
+                task.addOnFailureListener(listener);
         } else {
             task.addOnFailureListener(activity, listener);
         }

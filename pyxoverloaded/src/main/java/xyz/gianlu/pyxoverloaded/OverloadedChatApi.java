@@ -2,6 +2,9 @@ package xyz.gianlu.pyxoverloaded;
 
 import android.app.Activity;
 import android.content.Context;
+import android.database.Cursor;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,6 +15,8 @@ import com.google.android.gms.tasks.Tasks;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.List;
 
 import okhttp3.Request;
 import okhttp3.internal.Util;
@@ -38,12 +43,22 @@ public class OverloadedChatApi {
     }
 
     public void startChat(@NonNull String username, @Nullable Activity activity, @NonNull ChatCallback callback) {
+        Chat chat = db.findChatWith(username);
+        if (chat != null)
+            new Handler(Looper.getMainLooper()).post(() -> callback.onChat(chat));
+
         callbacks(Tasks.call(api.executorService, () -> {
             JSONObject obj = api.serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Chat/Start"))
                     .post(singletonJsonBody("username", username)));
-            return new Chat(obj);
-        }), activity, callback::onChat, callback::onFailed);
+
+            Chat remoteChat = new Chat(obj);
+            db.putChat(remoteChat);
+            if (chat != null && chat.lastMsg == null) chat.lastMsg = remoteChat.lastMsg;
+            return remoteChat;
+        }), activity, remoteChat -> {
+            if (chat == null) callback.onChat(remoteChat);
+        }, callback::onFailed);
     }
 
     public void listChats(@Nullable Activity activity, @NonNull ChatsCallback callback) {
@@ -51,7 +66,10 @@ public class OverloadedChatApi {
             JSONObject obj = api.serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Chat/List"))
                     .post(Util.EMPTY_REQUEST));
-            return Chat.parse(obj.getJSONArray("chats"));
+
+            List<Chat> chats = Chat.parse(obj.getJSONArray("chats"));
+            db.putChats(chats);
+            return chats;
         }), activity, callback::onChats, callback::onFailed);
     }
 
@@ -76,15 +94,42 @@ public class OverloadedChatApi {
     }
 
     public void getMessages(@NonNull String chatId, @Nullable Activity activity, @NonNull ChatMessagesCallback callback) {
+        final ChatMessages list;
+        Chat chat = db.getChat(chatId);
+        if (chat != null) {
+            list = new ChatMessages(128, chat);
+            try (Cursor cursor = db.getMessages(chatId, 128)) {
+                if (cursor != null) {
+                    while (cursor.moveToNext())
+                        list.add(new ChatMessage(cursor));
+                }
+            }
+
+            if (!list.isEmpty())
+                new Handler(Looper.getMainLooper()).post(() -> callback.onLocalMessages(list));
+        } else {
+            list = null;
+        }
+
         callbacks(Tasks.call(api.executorService, () -> {
             JSONObject body = new JSONObject();
             body.put("chatId", chatId);
 
+            // TODO: Not implemented on server
+            body.put("since", chat == null ? 0 : chat.lastSeen);
+            body.put("limit", 128);
+
             JSONObject obj = api.serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Chat/Messages"))
                     .post(jsonBody(body)));
-            return ChatMessages.parse(obj);
-        }), activity, callback::onMessages, callback::onFailed);
+
+            ChatMessages removeList = ChatMessages.parse(obj);
+            db.putMessages(removeList);
+            return removeList;
+        }), activity, remoteList -> {
+            if (list == null || remoteList.hasUpdates(list))
+                callback.onRemoteMessages(remoteList);
+        }, callback::onFailed);
     }
 
     private void dispatchMessageSent(@NonNull String chatId, @NonNull ChatMessage msg) throws JSONException {
@@ -94,9 +139,11 @@ public class OverloadedChatApi {
     }
 
     @WorkerThread
-    void handleEvent(@NonNull OverloadedApi.Event event) {
+    void handleEvent(@NonNull OverloadedApi.Event event) throws JSONException {
         if (event.type == OverloadedApi.Event.Type.CHAT_MESSAGE) {
-
+            String chatId = event.obj.getString("chatId");
+            ChatMessage msg = new ChatMessage(event.obj);
+            db.addMessage(chatId, msg);
         }
     }
 }

@@ -438,7 +438,11 @@ public class OverloadedApi {
                 });
             }
 
-            chatInstance.handleEvent(event);
+            try {
+                chatInstance.handleEvent(event);
+            } catch (JSONException ex) {
+                Logging.log("Failed handling event in worker: " + event, ex);
+            }
         }
 
         @Override

@@ -9,7 +9,9 @@ import xyz.gianlu.pyxoverloaded.model.ChatMessages;
 
 @UiThread
 public interface ChatMessagesCallback {
-    void onMessages(@NonNull ChatMessages messages);
+    void onRemoteMessages(@NonNull ChatMessages messages);
+
+    void onLocalMessages(@NonNull ChatMessages messages);
 
     void onFailed(@NotNull Exception ex);
 }

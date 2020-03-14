@@ -1,6 +1,5 @@
 package com.gianlu.pretendyourexyzzy.overloaded;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -9,6 +8,8 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.adapters.NotFilterable;
+import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.bottomsheet.ModalBottomSheetHeaderView;
 import com.gianlu.commonutils.bottomsheet.ThemedModalBottomSheet;
 import com.gianlu.commonutils.dialogs.DialogUtils;
@@ -25,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
@@ -72,15 +74,20 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
 
         rmv = parent.findViewById(R.id.chatSheet_list);
         rmv.linearLayoutManager(RecyclerView.VERTICAL, true);
-        rmv.loadListData(adapter = new ChatMessagesAdapter(requireContext()), false);
+        rmv.loadListData(adapter = new ChatMessagesAdapter(), false);
         rmv.startLoading();
 
         isLoading(false);
 
         OverloadedApi.chat().getMessages(payload.id, getActivity(), new ChatMessagesCallback() {
             @Override
-            public void onMessages(@NonNull ChatMessages msg) {
-                update(Update.allMessages(msg));
+            public void onRemoteMessages(@NonNull ChatMessages messages) {
+                update(Update.messages(messages));
+            }
+
+            @Override
+            public void onLocalMessages(@NonNull ChatMessages messages) {
+                update(Update.messages(messages));
             }
 
             @Override
@@ -96,10 +103,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
     @Override
     protected void onReceivedUpdate(@NonNull Update payload) {
         isLoading(false);
-
         adapter.handleUpdate(payload);
-        if (adapter.messages.isEmpty()) rmv.showInfo(R.string.beTheFirstToSendAMessage);
-        else rmv.showList();
     }
 
     @Override
@@ -116,44 +120,8 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
     public void onEvent(@NonNull OverloadedApi.Event event) throws JSONException {
         if (event.type == OverloadedApi.Event.Type.CHAT_MESSAGE) {
             String chatId = event.obj.getString("chatId");
-            if (chatId().equals(chatId))
-                update(Update.received(new ChatMessage(event.obj)));
-        }
-    }
-
-    private static class ChatMessagesAdapter extends RecyclerView.Adapter<ChatMessagesAdapter.ViewHolder> {
-        private final LayoutInflater inflater;
-        private final List<ChatMessage> messages = new ArrayList<>(100);
-
-        ChatMessagesAdapter(@NonNull Context context) {
-            this.inflater = LayoutInflater.from(context);
-        }
-
-        @NonNull
-        @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new ViewHolder(parent);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            ChatMessage msg = messages.get(position);
-
-            ((SuperTextView) holder.itemView).setText(msg.from + " -> " + msg.text);
-        }
-
-        @Override
-        public int getItemCount() {
-            return messages.size();
-        }
-
-        void handleUpdate(@NonNull Update update) {
-            notifyItemRangeInserted(0, update.addAll(messages));
-        }
-
-        class ViewHolder extends RecyclerView.ViewHolder {
-            ViewHolder(@NonNull ViewGroup parent) {
-                super(inflater.inflate(R.layout.item_overloaded_chat_message, parent, false));
+            if (chatId().equals(chatId)) {
+                update(Update.message(new ChatMessage(event.obj)));
             }
         }
     }
@@ -171,22 +139,66 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         }
 
         @NonNull
-        static Update allMessages(@NonNull List<ChatMessage> messages) {
+        static Update messages(@NonNull List<ChatMessage> messages) {
             return new Update(messages, null);
         }
 
         @NonNull
-        static Update received(@NonNull ChatMessage msg) {
+        static Update message(@NonNull ChatMessage msg) {
             return new Update(null, msg);
         }
+    }
 
-        int addAll(@NonNull List<ChatMessage> dest) {
-            if (messages != null) {
-                dest.addAll(0, messages);
-                return messages.size();
-            } else {
-                dest.add(0, message);
-                return 1;
+    private class ChatMessagesAdapter extends OrderedRecyclerViewAdapter<ChatMessagesAdapter.ViewHolder, ChatMessage, Void, NotFilterable> {
+        private final LayoutInflater inflater;
+
+        ChatMessagesAdapter() {
+            super(new ArrayList<>(128), null);
+            this.inflater = LayoutInflater.from(requireContext());
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new ViewHolder(parent);
+        }
+
+        @Override
+        protected boolean matchQuery(@NonNull ChatMessage item, @Nullable String query) {
+            return true;
+        }
+
+        @Override
+        protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull ChatMessage payload) {
+            ChatMessage msg = objs.get(position);
+            ((SuperTextView) holder.itemView).setText(msg.from + " -> " + msg.text);
+        }
+
+        @Override
+        protected void onUpdateViewHolder(@NonNull ViewHolder holder, int position, @NonNull ChatMessage payload) {
+            onSetupViewHolder(holder, position, payload);
+        }
+
+        @Override
+        protected void shouldUpdateItemCount(int count) {
+            if (count == 0) rmv.showInfo(R.string.beTheFirstToSendAMessage);
+            else rmv.showList();
+        }
+
+        @NonNull
+        @Override
+        public Comparator<ChatMessage> getComparatorFor(Void sorting) {
+            return (o1, o2) -> (int) (o2.timestamp - o1.timestamp);
+        }
+
+        void handleUpdate(@NonNull Update update) {
+            if (update.messages != null) itemsChanged(update.messages);
+            else itemChangedOrAdded(update.message);
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            ViewHolder(@NonNull ViewGroup parent) {
+                super(inflater.inflate(R.layout.item_overloaded_chat_message, parent, false));
             }
         }
     }
