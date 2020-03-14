@@ -53,8 +53,7 @@ public class OverloadedChatApi {
                     .post(singletonJsonBody("username", username)));
 
             Chat remoteChat = new Chat(obj);
-            db.putChat(remoteChat);
-            if (chat != null && chat.lastMsg == null) chat.lastMsg = remoteChat.lastMsg;
+            if (chat == null) db.putChat(remoteChat);
             return remoteChat;
         }), activity, remoteChat -> {
             if (chat == null) callback.onChat(remoteChat);
@@ -62,15 +61,29 @@ public class OverloadedChatApi {
     }
 
     public void listChats(@Nullable Activity activity, @NonNull ChatsCallback callback) {
+        List<Chat> list = db.getChats();
+        if (!list.isEmpty())
+            new Handler(Looper.getMainLooper()).post(() -> callback.onLocalChats(list));
+
         callbacks(Tasks.call(api.executorService, () -> {
             JSONObject obj = api.serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Chat/List"))
                     .post(Util.EMPTY_REQUEST));
 
             List<Chat> chats = Chat.parse(obj.getJSONArray("chats"));
+            if (!list.isEmpty()) {
+                for (Chat chat : chats) {
+                    int index = Chat.indexOf(list, chat.id);
+                    if (index != -1) {
+                        list.get(index).lastMsg = chat.lastMsg;
+                        chat.lastSeen = list.get(index).lastSeen;
+                    }
+                }
+            }
+
             db.putChats(chats);
             return chats;
-        }), activity, callback::onChats, callback::onFailed);
+        }), activity, callback::onRemoteChats, callback::onFailed);
     }
 
     public void sendMessage(@NonNull String chatId, @NonNull String text, @Nullable Activity activity, @NonNull ChatMessageCallback callback) {
@@ -93,12 +106,12 @@ public class OverloadedChatApi {
         }, callback::onFailed);
     }
 
-    public void getMessages(@NonNull String chatId, @Nullable Activity activity, @NonNull ChatMessagesCallback callback) {
+    public void getMessages(@NonNull String chatId, int offset, @Nullable Activity activity, @NonNull ChatMessagesCallback callback) {
         final ChatMessages list;
         Chat chat = db.getChat(chatId);
         if (chat != null) {
             list = new ChatMessages(128, chat);
-            try (Cursor cursor = db.getMessages(chatId, 128)) {
+            try (Cursor cursor = db.getMessages(chatId, 128, offset)) {
                 if (cursor != null) {
                     while (cursor.moveToNext())
                         list.add(new ChatMessage(cursor));
@@ -114,21 +127,24 @@ public class OverloadedChatApi {
         callbacks(Tasks.call(api.executorService, () -> {
             JSONObject body = new JSONObject();
             body.put("chatId", chatId);
-
-            // TODO: Not implemented on server
             body.put("since", chat == null ? 0 : chat.lastSeen);
             body.put("limit", 128);
+            body.put("offset", offset);
 
             JSONObject obj = api.serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Chat/Messages"))
                     .post(jsonBody(body)));
 
-            ChatMessages removeList = ChatMessages.parse(obj);
-            db.putMessages(removeList);
-            return removeList;
+            ChatMessages remoteList = ChatMessages.parse(obj);
+            db.putMessages(remoteList);
+            return remoteList;
         }), activity, remoteList -> {
-            if (list == null || remoteList.hasUpdates(list))
+            if (list != null) {
+                list.addAll(remoteList);
+                callback.onRemoteMessages(list);
+            } else {
                 callback.onRemoteMessages(remoteList);
+            }
         }, callback::onFailed);
     }
 
@@ -145,5 +161,19 @@ public class OverloadedChatApi {
             ChatMessage msg = new ChatMessage(event.obj);
             db.addMessage(chatId, msg);
         }
+    }
+
+    public void updateLastSeen(@NonNull String chatId, @NonNull ChatMessage msg) {
+        db.updateLastSeen(chatId, msg.timestamp + 1);
+    }
+
+    public int countSinceLastSeen(@NonNull String chatId) {
+        Chat chat = db.getChat(chatId);
+        if (chat == null || chat.lastSeen == 0) return 0;
+        else return db.countSinceLastSeen(chatId, chat.lastSeen);
+    }
+
+    void close() {
+        db.close();
     }
 }

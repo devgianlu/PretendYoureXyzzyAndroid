@@ -79,10 +79,12 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
 
         isLoading(false);
 
-        OverloadedApi.chat().getMessages(payload.id, getActivity(), new ChatMessagesCallback() {
+        OverloadedApi.chat().getMessages(payload.id, 0, getActivity(), new ChatMessagesCallback() {
             @Override
             public void onRemoteMessages(@NonNull ChatMessages messages) {
                 update(Update.messages(messages));
+                if (!messages.isEmpty())
+                    OverloadedApi.chat().updateLastSeen(chatId(), messages.get(0));
             }
 
             @Override
@@ -121,7 +123,9 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         if (event.type == OverloadedApi.Event.Type.CHAT_MESSAGE) {
             String chatId = event.obj.getString("chatId");
             if (chatId().equals(chatId)) {
-                update(Update.message(new ChatMessage(event.obj)));
+                ChatMessage msg = new ChatMessage(event.obj);
+                if (isVisible()) OverloadedApi.chat().updateLastSeen(chatId(), msg);
+                update(Update.message(msg));
             }
         }
     }
@@ -194,6 +198,9 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         void handleUpdate(@NonNull Update update) {
             if (update.messages != null) itemsChanged(update.messages);
             else itemChangedOrAdded(update.message);
+
+            RecyclerView list = getList();
+            if (list != null) list.scrollToPosition(0);
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {

@@ -9,7 +9,9 @@ import xyz.gianlu.pyxoverloaded.model.Chat;
 
 @UiThread
 public interface ChatsCallback {
-    void onChats(@NonNull List<Chat> chats);
+    void onRemoteChats(@NonNull List<Chat> chats);
+
+    void onLocalChats(@NonNull List<Chat> chats);
 
     void onFailed(@NonNull Exception ex);
 }

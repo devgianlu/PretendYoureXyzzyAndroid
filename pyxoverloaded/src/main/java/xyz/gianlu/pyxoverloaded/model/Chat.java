@@ -5,6 +5,8 @@ import android.database.Cursor;
 import androidx.annotation.NonNull;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.adapters.Filterable;
+import com.gianlu.commonutils.adapters.NotFilterable;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,7 +19,7 @@ import java.util.Objects;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
-public class Chat {
+public class Chat implements Filterable<NotFilterable> {
     public final String id;
     public final List<String> participants;
     public ChatMessage lastMsg;
@@ -33,9 +35,17 @@ public class Chat {
 
     public Chat(@NonNull Cursor cursor) {
         id = cursor.getString(cursor.getColumnIndex("id"));
-        participants = Arrays.asList(cursor.getString(cursor.getColumnIndex("participants")).split(","));
+        participants = Arrays.asList(cursor.getString(cursor.getColumnIndex("oneParticipant")), cursor.getString(cursor.getColumnIndex("otherParticipant")));
         lastSeen = cursor.getLong(cursor.getColumnIndex("last_seen"));
         lastMsg = null;
+    }
+
+    public static int indexOf(List<Chat> list, String id) {
+        for (int i = 0; i < list.size(); i++)
+            if (list.get(i).id.equals(id))
+                return i;
+
+        return -1;
     }
 
     @NonNull
@@ -50,5 +60,10 @@ public class Chat {
         UserData user = OverloadedApi.get().userDataCached();
         if (user == null) throw new IllegalStateException();
         return participants.get(Objects.equals(participants.get(0), user.username) ? 1 : 0);
+    }
+
+    @Override
+    public NotFilterable getFilterable() {
+        return null;
     }
 }

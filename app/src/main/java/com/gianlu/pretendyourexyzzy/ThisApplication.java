@@ -29,4 +29,10 @@ public class ThisApplication extends AnalyticsApplication {
 
         if (OverloadedUtils.isSignedIn()) OverloadedApi.init(this);
     }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        OverloadedApi.close();
+    }
 }

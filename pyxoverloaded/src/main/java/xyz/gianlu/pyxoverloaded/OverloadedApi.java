@@ -89,6 +89,10 @@ public class OverloadedApi {
         return chatInstance;
     }
 
+    public static void close() {
+        chatInstance.close();
+    }
+
     public void loggedOutFromPyxServer() {
         loggingCallbacks(Tasks.call(executorService, () -> {
             serverRequest(new Request.Builder()
@@ -428,6 +432,12 @@ public class OverloadedApi {
         public WebSocket client;
 
         void dispatchEvent(@NonNull Event event) {
+            try {
+                chatInstance.handleEvent(event);
+            } catch (JSONException ex) {
+                Logging.log("Failed handling event in worker: " + event, ex);
+            }
+
             for (EventListener listener : new ArrayList<>(listeners)) {
                 handler.post(() -> {
                     try {
@@ -436,12 +446,6 @@ public class OverloadedApi {
                         Logging.log("Failed handling event: " + event, ex);
                     }
                 });
-            }
-
-            try {
-                chatInstance.handleEvent(event);
-            } catch (JSONException ex) {
-                Logging.log("Failed handling event in worker: " + event, ex);
             }
         }
 

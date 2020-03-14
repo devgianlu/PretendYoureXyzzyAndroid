@@ -30,6 +30,19 @@ public class ChatMessage implements Filterable<NotFilterable> {
         from = cursor.getString(cursor.getColumnIndex("from"));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChatMessage that = (ChatMessage) o;
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
     @NonNull
     public JSONObject toJson() throws JSONException {
         JSONObject obj = new JSONObject();

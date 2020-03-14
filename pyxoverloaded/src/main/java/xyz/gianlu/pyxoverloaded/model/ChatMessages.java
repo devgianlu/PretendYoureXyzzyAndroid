@@ -20,14 +20,7 @@ public class ChatMessages extends ArrayList<ChatMessage> {
     public static ChatMessages parse(@NonNull JSONObject obj) throws JSONException {
         JSONArray array = obj.getJSONArray("messages");
         ChatMessages chats = new ChatMessages(array.length(), new Chat(obj));
-        for (int i = 0; i < array.length(); i++)
-            chats.add(new ChatMessage(array.getJSONObject(i)));
+        for (int i = 0; i < array.length(); i++) chats.add(new ChatMessage(array.getJSONObject(i)));
         return chats;
-    }
-
-    public boolean hasUpdates(@NonNull ChatMessages old) {
-        if (old.isEmpty() && isEmpty()) return false;
-        else if (old.isEmpty()) return true;
-        else return !old.get(old.size() - 1).id.equals(get(size() - 1).id);
     }
 }

@@ -11,6 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.gianlu.commonutils.adapters.NotFilterable;
+import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
@@ -20,6 +22,7 @@ import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
+import java.util.Comparator;
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
@@ -53,9 +56,14 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
 
         OverloadedApi.chat().listChats(getActivity(), new ChatsCallback() {
             @Override
-            public void onChats(@NonNull List<Chat> chats) {
+            public void onRemoteChats(@NonNull List<Chat> chats) {
+                if (adapter != null) adapter.itemsChanged(chats);
+                else rmv.loadListData(adapter = new ChatsAdapter(requireContext(), chats));
+            }
+
+            @Override
+            public void onLocalChats(@NonNull List<Chat> chats) {
                 rmv.loadListData(adapter = new ChatsAdapter(requireContext(), chats));
-                itemCountChanged(chats.size());
             }
 
             @Override
@@ -75,22 +83,19 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         if (event.type == OverloadedApi.Event.Type.CHAT_MESSAGE) {
             String chatId = event.obj.getString("chatId");
             ChatMessage msg = new ChatMessage(event.obj);
+            if (lastChatSheet != null && lastChatSheet.isVisible() && lastChatSheet.getSetupPayload().id.equals(chatId))
+                OverloadedApi.chat().updateLastSeen(chatId, msg);
+
             if (adapter != null) adapter.updateLastMessage(chatId, msg);
         }
     }
 
-    private void itemCountChanged(int size) {
-        if (size == 0) rmv.showInfo(R.string.overloaded_noChats);
-        else rmv.showList();
-    }
-
-    private class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> {
+    private class ChatsAdapter extends OrderedRecyclerViewAdapter<ChatsAdapter.ViewHolder, Chat, Void, NotFilterable> {
         private final LayoutInflater inflater;
-        private final List<Chat> chats;
 
         ChatsAdapter(@NonNull Context context, @NonNull List<Chat> chats) {
+            super(chats, null);
             inflater = LayoutInflater.from(context);
-            this.chats = chats;
         }
 
         @NonNull
@@ -100,8 +105,8 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         }
 
         void updateLastMessage(@NonNull String chatId, @NonNull ChatMessage msg) {
-            for (int i = 0; i < chats.size(); i++) {
-                Chat chat = chats.get(i);
+            for (int i = 0; i < objs.size(); i++) {
+                Chat chat = objs.get(i);
                 if (chat.id.equals(chatId)) {
                     chat.lastMsg = msg;
                     notifyItemChanged(i);
@@ -109,12 +114,10 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
                 }
             }
 
-            OverloadedApi.chat().getMessages(chatId, getActivity(), new ChatMessagesCallback() {
+            OverloadedApi.chat().getMessages(chatId, 0, getActivity(), new ChatMessagesCallback() {
                 @Override
                 public void onRemoteMessages(@NonNull ChatMessages messages) {
-                    chats.add(0, messages.chat);
-                    notifyItemInserted(0);
-                    itemCountChanged(chats.size());
+                    itemChangedOrAdded(messages.chat);
                 }
 
                 @Override
@@ -129,8 +132,13 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         }
 
         @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            Chat chat = chats.get(position);
+        protected boolean matchQuery(@NonNull Chat item, @Nullable String query) {
+            return true;
+        }
+
+        @Override
+        protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull Chat payload) {
+            Chat chat = objs.get(position);
             holder.username.setText(chat.getOtherUsername());
 
             ChatMessage lastMsg = chat.lastMsg;
@@ -141,15 +149,41 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
                 holder.lastMsg.setText(lastMsg.text);
             }
 
+            int unread = OverloadedApi.chat().countSinceLastSeen(chat.id);
+            if (unread == 0) {
+                holder.unread.setVisibility(View.GONE);
+            } else {
+                holder.unread.setVisibility(View.VISIBLE);
+                holder.unread.setText(String.valueOf(unread));
+            }
+
             holder.itemView.setOnClickListener(v -> {
                 lastChatSheet = new ChatBottomSheet();
                 lastChatSheet.show(getActivity(), chat);
+                if (chat.lastMsg != null) {
+                    OverloadedApi.chat().updateLastSeen(chat.id, chat.lastMsg);
+                    notifyItemChanged(holder.getAdapterPosition());
+                }
             });
         }
 
         @Override
-        public int getItemCount() {
-            return chats.size();
+        protected void onUpdateViewHolder(@NonNull ViewHolder holder, int position, @NonNull Chat payload) {
+        }
+
+        @Override
+        protected void shouldUpdateItemCount(int count) {
+            if (count == 0) rmv.showInfo(R.string.overloaded_noChats);
+            else rmv.showList();
+        }
+
+        @NonNull
+        @Override
+        public Comparator<Chat> getComparatorFor(Void sorting) {
+            return (o1, o2) -> {
+                if (o1.lastMsg == null || o2.lastMsg == null) return 0;
+                else return (int) (o2.lastMsg.timestamp - o1.lastMsg.timestamp);
+            };
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
