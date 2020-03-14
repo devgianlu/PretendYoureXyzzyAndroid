@@ -22,8 +22,7 @@ import com.gianlu.pretendyourexyzzy.api.models.GameInfoAndCards;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,6 +39,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.internal.Util;
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
 public class RegisteredPyx extends FirstLoadedPyx {
     private final User user;

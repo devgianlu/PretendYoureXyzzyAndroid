@@ -30,7 +30,7 @@ import com.gianlu.pretendyourexyzzy.api.models.metrics.GameRound;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionHistory;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionStats;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;

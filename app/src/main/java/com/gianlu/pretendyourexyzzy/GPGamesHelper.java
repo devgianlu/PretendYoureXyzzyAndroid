@@ -8,7 +8,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.api.Scope;
@@ -27,6 +27,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+
+import xyz.gianlu.pyxoverloaded.TaskUtils;
 
 public final class GPGamesHelper {
     public static final String EVENT_CARDS_PLAYED = "CgkIus2n760REAIQAQ";
@@ -172,7 +174,7 @@ public final class GPGamesHelper {
             return;
         }
 
-        OverloadedUtils.callbacks(client.load(false), activity, data -> {
+        TaskUtils.callbacks(client.load(false), activity, data -> {
             AchievementBuffer buffer = data.get();
             if (buffer == null) {
                 callback.onLoaded(Collections.emptyList());
@@ -190,7 +192,7 @@ public final class GPGamesHelper {
             return;
         }
 
-        OverloadedUtils.callbacks(client.load(false), activity, data -> {
+        TaskUtils.callbacks(client.load(false), activity, data -> {
             EventBuffer buffer = data.get();
             if (buffer == null) {
                 callback.onLoaded(Collections.emptyList());

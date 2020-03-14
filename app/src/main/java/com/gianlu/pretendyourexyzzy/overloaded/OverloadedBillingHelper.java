@@ -22,13 +22,14 @@ import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
-import com.gianlu.pretendyourexyzzy.overloaded.api.UserDataCallback;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
+import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public final class OverloadedBillingHelper implements PurchasesUpdatedListener, UserDataCallback {
     private final Context context;
@@ -36,9 +37,14 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     public boolean wasBuying = false;
     private BillingClient billingClient;
     private volatile SkuDetails infiniteSku;
-    private volatile OverloadedApi.UserData userData;
+    private volatile UserData userData;
     private volatile ExceptionWithType exception;
     private Status lastStatus;
+
+    public OverloadedBillingHelper(@NonNull Context context, @NonNull Listener listener) {
+        this.context = context;
+        this.listener = listener;
+    }
 
     public void onStart() {
         billingClient = BillingClient.newBuilder(context).enablePendingPurchases().setListener(this).build();
@@ -77,19 +83,19 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
 
             OverloadedApi.get().userData(null, new UserDataCallback() {
                 @Override
-                public void onUserData(@NonNull OverloadedApi.UserData data) {
+                public void onUserData(@NonNull UserData data) {
                     userData = data;
                     exception = null;
                     checkUpdateUi();
 
-                    if (data.purchaseStatus == OverloadedApi.UserData.PurchaseStatus.NONE && !data.purchaseToken.isEmpty()) {
+                    if (data.purchaseStatus == UserData.PurchaseStatus.NONE && !data.purchaseToken.isEmpty()) {
                         OverloadedApi.get().verifyPurchase(data.purchaseToken, null, OverloadedBillingHelper.this);
                         return;
                     }
 
-                    if (data.purchaseStatus == OverloadedApi.UserData.PurchaseStatus.PENDING) {
+                    if (data.purchaseStatus == UserData.PurchaseStatus.PENDING) {
                         OverloadedApi.get().verifyPurchase(data.purchaseToken, null, OverloadedBillingHelper.this);
-                    } else if (data.purchaseStatus == OverloadedApi.UserData.PurchaseStatus.OK) {
+                    } else if (data.purchaseStatus == UserData.PurchaseStatus.OK) {
                         listener.dismissDialog();
                         if (data.hasUsername()) {
                             Prefs.putBoolean(PK.OVERLOADED_FINISHED_SETUP, true);
@@ -136,11 +142,6 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         }
 
         checkUpdateUi();
-    }
-
-    public OverloadedBillingHelper(@NonNull Context context, @NonNull Listener listener) {
-        this.context = context;
-        this.listener = listener;
     }
 
     private void getSkuDetails() {
@@ -271,7 +272,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             listener.showProgress(R.string.verifyingPurchase);
             OverloadedApi.get().userData(activity, new UserDataCallback() {
                 @Override
-                public void onUserData(@NonNull OverloadedApi.UserData status) {
+                public void onUserData(@NonNull UserData status) {
                     userData = status;
                     exception = null;
                     checkUpdateUi();
@@ -339,13 +340,13 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     }
 
     @Override
-    public void onUserData(@NonNull OverloadedApi.UserData status) {
+    public void onUserData(@NonNull UserData status) {
         userData = status;
         exception = null;
         checkUpdateUi();
         listener.dismissDialog();
 
-        if (status.purchaseStatus == OverloadedApi.UserData.PurchaseStatus.OK) {
+        if (status.purchaseStatus == UserData.PurchaseStatus.OK) {
             listener.showToast(Toaster.build().message(R.string.purchaseVerified));
             if (status.hasUsername()) Prefs.putBoolean(PK.OVERLOADED_FINISHED_SETUP, true);
             else listener.showDialog(AskUsernameDialog.get());
@@ -354,24 +355,11 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         }
     }
 
-    private static class ExceptionWithType extends Exception {
-        private final Type type;
-
-        public ExceptionWithType(Type type, Throwable cause) {
-            super(type.name(), cause);
-            this.type = type;
-        }
-
-        private enum Type {
-            BILLING, OVERLOADED
-        }
-    }
-
     public void onDestroy() {
         if (billingClient != null) billingClient.endConnection();
     }
 
-    public synchronized void updatePurchase(@NonNull OverloadedApi.UserData status) {
+    public synchronized void updatePurchase(@NonNull UserData status) {
         userData = status;
         exception = null;
         checkUpdateUi();
@@ -387,8 +375,21 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     }
 
     public interface Listener extends DialogUtils.ShowStuffInterface {
-        void updateOverloadedStatus(@NonNull Status status, OverloadedApi.UserData data);
+        void updateOverloadedStatus(@NonNull Status status, UserData data);
 
-        void updateOverloadedMode(boolean enabled, OverloadedApi.UserData data);
+        void updateOverloadedMode(boolean enabled, UserData data);
+    }
+
+    private static class ExceptionWithType extends Exception {
+        private final Type type;
+
+        public ExceptionWithType(Type type, Throwable cause) {
+            super(type.name(), cause);
+            this.type = type;
+        }
+
+        private enum Type {
+            BILLING, OVERLOADED
+        }
     }
 }

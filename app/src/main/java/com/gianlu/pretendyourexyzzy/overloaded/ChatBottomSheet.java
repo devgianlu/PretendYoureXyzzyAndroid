@@ -18,9 +18,6 @@ import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.typography.MaterialColors;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.overloaded.api.ChatMessageCallback;
-import com.gianlu.pretendyourexyzzy.overloaded.api.ChatMessagesCallback;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -30,19 +27,26 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, ChatBottomSheet.Update> implements OverloadedApi.EventListener {
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.ChatMessageCallback;
+import xyz.gianlu.pyxoverloaded.callback.ChatMessagesCallback;
+import xyz.gianlu.pyxoverloaded.model.Chat;
+import xyz.gianlu.pyxoverloaded.model.ChatMessage;
+import xyz.gianlu.pyxoverloaded.model.ChatMessages;
+
+public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomSheet.Update> implements OverloadedApi.EventListener {
     private RecyclerMessageView rmv;
     private TextInputLayout send;
     private ChatMessagesAdapter adapter;
 
     @Override
-    protected void onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ModalBottomSheetHeaderView header, @NonNull OverloadedApi.Chat payload) {
+    protected void onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ModalBottomSheetHeaderView header, @NonNull Chat payload) {
         header.setTitle(payload.getOtherUsername());
         header.setBackgroundColorRes(MaterialColors.getShuffledInstance().next());
     }
 
     @Override
-    protected void onCreateBody(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, @NonNull OverloadedApi.Chat payload) {
+    protected void onCreateBody(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, @NonNull Chat payload) {
         inflater.inflate(R.layout.sheet_overloaded_chat, parent, true);
         send = parent.findViewById(R.id.chatSheet_input);
         send.setEndIconOnClickListener(v -> {
@@ -51,9 +55,9 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, 
                 return;
 
             send.setEnabled(false);
-            OverloadedApi.get().sendMessage(payload.id, text, getActivity(), new ChatMessageCallback() {
+            OverloadedApi.chat().sendMessage(payload.id, text, getActivity(), new ChatMessageCallback() {
                 @Override
-                public void onMessage(@NonNull OverloadedApi.ChatMessage msg) {
+                public void onMessage(@NonNull ChatMessage msg) {
                     CommonUtils.setText(send, "");
                     send.setEnabled(true);
                 }
@@ -73,9 +77,9 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, 
 
         isLoading(false);
 
-        OverloadedApi.get().getMessages(payload.id, getActivity(), new ChatMessagesCallback() {
+        OverloadedApi.chat().getMessages(payload.id, getActivity(), new ChatMessagesCallback() {
             @Override
-            public void onMessages(@NonNull OverloadedApi.ChatMessages msg) {
+            public void onMessages(@NonNull ChatMessages msg) {
                 update(Update.allMessages(msg));
             }
 
@@ -99,7 +103,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, 
     }
 
     @Override
-    protected boolean onCustomizeAction(@NonNull FloatingActionButton action, @NonNull OverloadedApi.Chat payload) {
+    protected boolean onCustomizeAction(@NonNull FloatingActionButton action, @NonNull Chat payload) {
         return false;
     }
 
@@ -113,13 +117,13 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, 
         if (event.type == OverloadedApi.Event.Type.CHAT_MESSAGE) {
             String chatId = event.obj.getString("chatId");
             if (chatId().equals(chatId))
-                update(Update.received(new OverloadedApi.ChatMessage(event.obj)));
+                update(Update.received(new ChatMessage(event.obj)));
         }
     }
 
     private static class ChatMessagesAdapter extends RecyclerView.Adapter<ChatMessagesAdapter.ViewHolder> {
         private final LayoutInflater inflater;
-        private final List<OverloadedApi.ChatMessage> messages = new ArrayList<>(100);
+        private final List<ChatMessage> messages = new ArrayList<>(100);
 
         ChatMessagesAdapter(@NonNull Context context) {
             this.inflater = LayoutInflater.from(context);
@@ -133,7 +137,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, 
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            OverloadedApi.ChatMessage msg = messages.get(position);
+            ChatMessage msg = messages.get(position);
 
             ((SuperTextView) holder.itemView).setText(msg.from + " -> " + msg.text);
         }
@@ -155,10 +159,10 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, 
     }
 
     static class Update {
-        final List<OverloadedApi.ChatMessage> messages;
-        final OverloadedApi.ChatMessage message;
+        final List<ChatMessage> messages;
+        final ChatMessage message;
 
-        Update(@Nullable List<OverloadedApi.ChatMessage> messages, @Nullable OverloadedApi.ChatMessage message) {
+        Update(@Nullable List<ChatMessage> messages, @Nullable ChatMessage message) {
             this.messages = messages;
             this.message = message;
 
@@ -167,16 +171,16 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<OverloadedApi.Chat, 
         }
 
         @NonNull
-        static Update allMessages(@NonNull List<OverloadedApi.ChatMessage> messages) {
+        static Update allMessages(@NonNull List<ChatMessage> messages) {
             return new Update(messages, null);
         }
 
         @NonNull
-        static Update received(@NonNull OverloadedApi.ChatMessage msg) {
+        static Update received(@NonNull ChatMessage msg) {
             return new Update(null, msg);
         }
 
-        int addAll(@NonNull List<OverloadedApi.ChatMessage> dest) {
+        int addAll(@NonNull List<ChatMessage> dest) {
             if (messages != null) {
                 dest.addAll(0, messages);
                 return messages.size();

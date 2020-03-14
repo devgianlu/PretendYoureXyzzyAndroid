@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.overloaded.api;
+package xyz.gianlu.pyxoverloaded.callback;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;

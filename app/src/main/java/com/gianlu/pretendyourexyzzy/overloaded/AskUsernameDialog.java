@@ -24,10 +24,6 @@ import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.overloaded.api.BooleanCallback;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
-import com.gianlu.pretendyourexyzzy.overloaded.api.UserDataCallback;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.PlayGamesAuthProvider;
 import com.google.firebase.auth.UserInfo;
@@ -36,6 +32,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Timer;
 import java.util.TimerTask;
+
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.BooleanCallback;
+import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
+import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public final class AskUsernameDialog extends DialogFragment {
     private Listener listener;
@@ -132,7 +133,7 @@ public final class AskUsernameDialog extends DialogFragment {
                         if (result) {
                             OverloadedApi.get().setUsername(username, getActivity(), new UserDataCallback() {
                                 @Override
-                                public void onUserData(@NonNull OverloadedApi.UserData status) {
+                                public void onUserData(@NonNull UserData status) {
                                     Prefs.putBoolean(PK.OVERLOADED_FINISHED_SETUP, true);
 
                                     loadable.notLoading(false);
@@ -170,6 +171,6 @@ public final class AskUsernameDialog extends DialogFragment {
     }
 
     public interface Listener {
-        void overloadedSetupFinished(@NonNull OverloadedApi.UserData status);
+        void overloadedSetupFinished(@NonNull UserData status);
     }
 }

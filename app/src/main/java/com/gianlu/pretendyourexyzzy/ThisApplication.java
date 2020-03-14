@@ -5,8 +5,11 @@ import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.api.BaseCardUrlLoader;
 import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import java.io.InputStream;
+
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
 public class ThisApplication extends AnalyticsApplication {
     public static final String USER_AGENT = "PYX Android by devgianlu";
@@ -23,5 +26,7 @@ public class ThisApplication extends AnalyticsApplication {
         Logging.clearLogs(this, 3); // Due to enforced logging
 
         Glide.get(this).getRegistry().prepend(BaseCard.class, InputStream.class, new BaseCardUrlLoader.Factory());
+
+        if (OverloadedUtils.isSignedIn()) OverloadedApi.init(this);
     }
 }

@@ -22,19 +22,25 @@ import com.gianlu.pretendyourexyzzy.activities.TutorialActivity;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper.SignInProvider;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
-import com.gianlu.pretendyourexyzzy.overloaded.api.UserDataCallback;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
 import com.yarolegovich.mp.MaterialCheckboxPreference;
 import com.yarolegovich.mp.MaterialStandardPreference;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
+import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public class PreferenceActivity extends BasePreferenceActivity implements OverloadedChooseProviderDialog.Listener {
 
@@ -89,7 +95,6 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
         private void showUnblockDialog(@NonNull Context context) {
             String[] entries = Prefs.getSet(PK.BLOCKED_USERS, new HashSet<>()).toArray(new String[0]);
             boolean[] checked = new boolean[entries.length];
-            for (int i = 0; i < checked.length; i++) checked[i] = false;
 
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
             builder.setTitle(R.string.unblockUser)
@@ -173,6 +178,44 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
             }
         }
 
+        private boolean canLink() {
+            FirebaseUser user = OverloadedApi.get().firebaseUser();
+            if (user == null) return false;
+
+            List<String> providers = new ArrayList<>(OverloadedSignInHelper.providerIds());
+            for (UserInfo info : user.getProviderData()) {
+                Iterator<String> iterator = providers.iterator();
+                while (iterator.hasNext()) {
+                    if (Objects.equals(iterator.next(), info.getProviderId()))
+                        iterator.remove();
+                }
+            }
+
+            return providers.size() > 0;
+        }
+
+        @NonNull
+        private List<String> linkableProviderNames(@NonNull Context context) {
+            List<String> names = new ArrayList<>();
+            for (SignInProvider provider : OverloadedSignInHelper.SIGN_IN_PROVIDERS) {
+                if (!OverloadedApi.get().hasLinkedProvider(provider.id))
+                    names.add(context.getString(provider.nameRes));
+            }
+
+            return names;
+        }
+
+        @NonNull
+        private List<String> linkableProviderIds() {
+            List<String> ids = new ArrayList<>();
+            for (SignInProvider provider : OverloadedSignInHelper.SIGN_IN_PROVIDERS) {
+                if (!OverloadedApi.get().hasLinkedProvider(provider.id))
+                    ids.add(provider.id);
+            }
+
+            return ids;
+        }
+
         @Override
         protected void buildPreferences(@NonNull Context context) {
             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -183,14 +226,14 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                 loggedInAs.setClickable(false);
                 addPreference(loggedInAs);
 
-                if (OverloadedApi.get().canLink()) {
+                if (canLink()) {
                     MaterialStandardPreference linkAccount = new MaterialStandardPreference(context);
                     linkAccount.setTitle(R.string.linkAccount);
-                    linkAccount.setSummary(CommonUtils.join(OverloadedApi.get().linkableProviderNames(context), ", "));
+                    linkAccount.setSummary(CommonUtils.join(linkableProviderNames(context), ", "));
                     linkAccount.setOnClickListener(v -> {
                         link = true;
                         DialogUtils.showDialog(getActivity(),
-                                OverloadedChooseProviderDialog.getLinkInstance(OverloadedApi.get().linkableProviderIds()),
+                                OverloadedChooseProviderDialog.getLinkInstance(linkableProviderIds()),
                                 null);
                     });
                     addPreference(linkAccount);
@@ -203,7 +246,7 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                 addPreference(purchaseStatus);
                 OverloadedApi.get().userData(getActivity(), new UserDataCallback() {
                     @Override
-                    public void onUserData(@NonNull OverloadedApi.UserData userData) {
+                    public void onUserData(@NonNull UserData userData) {
                         purchaseStatus.setSummary(String.format("%s (%s)", userData.purchaseStatus.toString(context), userData.username));
                         purchaseStatus.setLoading(false);
                     }

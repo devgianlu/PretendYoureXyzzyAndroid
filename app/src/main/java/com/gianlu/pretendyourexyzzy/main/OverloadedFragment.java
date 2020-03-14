@@ -22,9 +22,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.ImagesListView;
 import com.gianlu.pretendyourexyzzy.adapters.PagerAdapter;
 import com.gianlu.pretendyourexyzzy.overloaded.AchievementImageLoader;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
-import com.gianlu.pretendyourexyzzy.overloaded.api.UserDataCallback;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.overloaded.fragments.ChatsFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.fragments.ProfileFragment;
 import com.google.android.gms.games.achievement.Achievement;
@@ -34,6 +32,10 @@ import com.google.android.material.tabs.TabLayout;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
+import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public class OverloadedFragment extends FragmentWithDialog {
     private ImagesListView achievements;
@@ -127,7 +129,7 @@ public class OverloadedFragment extends FragmentWithDialog {
         TextView username = layout.findViewById(R.id.overloaded_username);
         OverloadedApi.get().userData(getActivity(), true, new UserDataCallback() {
             @Override
-            public void onUserData(@NonNull OverloadedApi.UserData data) {
+            public void onUserData(@NonNull UserData data) {
                 username.setText(data.username);
             }
 

@@ -27,10 +27,7 @@ import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.overloaded.AchievementImageLoader;
 import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
-import com.gianlu.pretendyourexyzzy.overloaded.api.ChatCallback;
-import com.gianlu.pretendyourexyzzy.overloaded.api.FriendsStatusCallback;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.gms.games.achievement.Achievement;
 
 import org.jetbrains.annotations.NotNull;
@@ -42,6 +39,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.ChatCallback;
+import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
+import xyz.gianlu.pyxoverloaded.model.Chat;
+import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
 public class ProfileFragment extends FragmentWithDialog implements OverloadedApi.EventListener {
     private ImagesListView achievements;
@@ -88,7 +91,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
 
         OverloadedApi.get().friendsStatus(getActivity(), new FriendsStatusCallback() {
             @Override
-            public void onFriendsStatus(@NotNull Map<String, OverloadedApi.FriendStatus> result) {
+            public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
                 if (result.isEmpty())
                     friends.showInfo(R.string.noFriends);
                 else
@@ -145,9 +148,9 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
 
     private class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHolder> {
         private final LayoutInflater inflater;
-        private final List<OverloadedApi.FriendStatus> friends;
+        private final List<FriendStatus> friends;
 
-        FriendsAdapter(@NonNull Context context, Collection<OverloadedApi.FriendStatus> friends) {
+        FriendsAdapter(@NonNull Context context, Collection<FriendStatus> friends) {
             this.inflater = LayoutInflater.from(context);
             this.friends = new ArrayList<>(friends);
         }
@@ -160,7 +163,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
 
         void userLeft(@NonNull String nickname) {
             for (int i = 0; i < friends.size(); i++) {
-                OverloadedApi.FriendStatus friend = friends.get(i);
+                FriendStatus friend = friends.get(i);
                 if (Objects.equals(friend.username, nickname)) {
                     friend.update(null);
                     notifyItemChanged(i);
@@ -170,7 +173,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
 
         void userJoined(@NonNull String nickname, @NonNull String serverId) {
             for (int i = 0; i < friends.size(); i++) {
-                OverloadedApi.FriendStatus friend = friends.get(i);
+                FriendStatus friend = friends.get(i);
                 if (Objects.equals(friend.username, nickname)) {
                     friend.update(serverId);
                     notifyItemChanged(i);
@@ -180,7 +183,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            OverloadedApi.FriendStatus friend = friends.get(position);
+            FriendStatus friend = friends.get(position);
             holder.name.setText(friend.username);
 
             if (friend.mutual) {
@@ -209,9 +212,9 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                         // TODO: Show user profile
                         return true;
                     case R.id.overloadedUserItemMenu_openChat:
-                        OverloadedApi.get().startChat(username, getActivity(), new ChatCallback() {
+                        OverloadedApi.chat().startChat(username, getActivity(), new ChatCallback() {
                             @Override
-                            public void onChat(@NonNull OverloadedApi.Chat chat) {
+                            public void onChat(@NonNull Chat chat) {
                                 ChatBottomSheet sheet = new ChatBottomSheet();
                                 sheet.show(getActivity(), chat);
                             }
@@ -225,7 +228,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                     case R.id.overloadedUserItemMenu_removeFriend:
                         OverloadedApi.get().removeFriend(username, null, new FriendsStatusCallback() {
                             @Override
-                            public void onFriendsStatus(@NotNull Map<String, OverloadedApi.FriendStatus> result) {
+                            public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
                                 showToast(Toaster.build().message(R.string.removedFriend).extra(username));
                                 if (friendsAdapter != null) friendsAdapter.removeUser(username);
                             }

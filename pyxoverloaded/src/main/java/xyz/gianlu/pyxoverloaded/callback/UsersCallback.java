@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.overloaded.api;
+package xyz.gianlu.pyxoverloaded.callback;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
@@ -6,8 +6,8 @@ import androidx.annotation.UiThread;
 import java.util.List;
 
 @UiThread
-public interface ChatsCallback {
-    void onChats(@NonNull List<OverloadedApi.Chat> chats);
+public interface UsersCallback {
+    void onUsers(@NonNull List<String> list);
 
     void onFailed(@NonNull Exception ex);
 }

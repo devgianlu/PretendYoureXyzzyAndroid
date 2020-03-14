@@ -32,14 +32,15 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Name;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
-import com.gianlu.pretendyourexyzzy.overloaded.api.UsersCallback;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.UsersCallback;
 
 public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<List<Name>>, NamesAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, OverloadedApi.EventListener {
     private final List<String> overloadedUsers = new ArrayList<>();
@@ -156,7 +157,7 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
         pyx.request(PyxRequests.getNamesList(), null, this);
         if (OverloadedUtils.isSignedIn()) {
             OverloadedApi.get().addEventListener(this);
-            OverloadedApi.get().listUsers(pyx.server, getActivity(), new UsersCallback() {
+            OverloadedApi.get().listUsers(pyx.server.url, getActivity(), new UsersCallback() {
                 @Override
                 public void onUsers(@NonNull List<String> list) {
                     overloadedUsers.clear();

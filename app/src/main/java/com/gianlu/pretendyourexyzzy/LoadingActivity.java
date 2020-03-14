@@ -40,7 +40,6 @@ import com.gianlu.pretendyourexyzzy.overloaded.AskUsernameDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedBillingHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.tutorial.LoginTutorial;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -55,6 +54,7 @@ import java.util.List;
 import java.util.Objects;
 
 import me.toptas.fancyshowcase.FocusShape;
+import xyz.gianlu.pyxoverloaded.model.UserData;
 
 
 public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, AskUsernameDialog.Listener, OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener {
@@ -411,7 +411,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     @Override
-    public void updateOverloadedStatus(@NonNull OverloadedBillingHelper.Status status, OverloadedApi.UserData data) {
+    public void updateOverloadedStatus(@NonNull OverloadedBillingHelper.Status status, UserData data) {
         if (overloadedLoading == null || overloadedStatus == null || overloadedToggle == null)
             return;
 
@@ -456,7 +456,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     @Override
-    public void updateOverloadedMode(boolean enabled, OverloadedApi.UserData data) {
+    public void updateOverloadedMode(boolean enabled, UserData data) {
         if (registerNickname == null || overloadedToggle == null) return;
 
         if (enabled) {
@@ -496,7 +496,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     @Override
-    public void overloadedSetupFinished(@NotNull OverloadedApi.UserData status) {
+    public void overloadedSetupFinished(@NotNull UserData status) {
         billingHelper.updatePurchase(status);
     }
 }

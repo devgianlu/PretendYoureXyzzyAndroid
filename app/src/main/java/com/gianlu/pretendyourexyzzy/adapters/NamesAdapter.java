@@ -22,8 +22,6 @@ import com.gianlu.pretendyourexyzzy.BlockedUsers;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.models.Name;
-import com.gianlu.pretendyourexyzzy.overloaded.api.FriendsStatusCallback;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -31,6 +29,10 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
+import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
 public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHolder, Name, NamesAdapter.Sorting, String> {
     private final LayoutInflater inflater;
@@ -77,7 +79,7 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
             } else {
                 menu.removeItem(R.id.nameItemMenu_unblock);
                 if (overloadedUsers.contains(username)) {
-                    Map<String, OverloadedApi.FriendStatus> map = OverloadedApi.get().friendsStatusCache();
+                    Map<String, FriendStatus> map = OverloadedApi.get().friendsStatusCache();
                     if (map != null && map.containsKey(username))
                         menu.removeItem(R.id.nameItemMenu_addFriend);
                 } else {
@@ -104,7 +106,7 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
                 case R.id.nameItemMenu_addFriend:
                     OverloadedApi.get().addFriend(username, null, new FriendsStatusCallback() {
                         @Override
-                        public void onFriendsStatus(@NotNull Map<String, OverloadedApi.FriendStatus> result) {
+                        public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
                             listener.showToast(Toaster.build().message(R.string.friendAdded).extra(username));
                         }
 

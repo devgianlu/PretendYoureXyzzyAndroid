@@ -45,7 +45,7 @@ import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.main.OverloadedFragment;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsActivity;
 import com.gianlu.pretendyourexyzzy.starred.StarredDecksActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;

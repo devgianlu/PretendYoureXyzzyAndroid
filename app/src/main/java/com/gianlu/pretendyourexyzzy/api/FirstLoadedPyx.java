@@ -13,8 +13,7 @@ import com.gianlu.pretendyourexyzzy.api.models.CahConfig;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoadAndConfig;
 import com.gianlu.pretendyourexyzzy.api.models.User;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedUtils;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.gms.tasks.Tasks;
 
 import org.json.JSONException;
@@ -23,6 +22,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import okhttp3.OkHttpClient;
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
 public class FirstLoadedPyx extends Pyx {
     private final FirstLoadAndConfig firstLoadAndConfig;
@@ -54,7 +54,7 @@ public class FirstLoadedPyx extends Pyx {
                         Prefs.putString(PK.LAST_PERSISTENT_ID, user.persistentId);
                         if (OverloadedUtils.isSignedIn()) {
                             try {
-                                Tasks.await(OverloadedApi.get().loggedIntoPyxServer(server, nickname, user.idCode));
+                                Tasks.await(OverloadedApi.get().loggedIntoPyxServer(server.url, nickname, user.idCode));
                             } catch (ExecutionException | InterruptedException ignored) {
                             }
                         }

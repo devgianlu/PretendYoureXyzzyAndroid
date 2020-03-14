@@ -9,8 +9,6 @@ import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.overloaded.api.OverloadedApi;
-import com.gianlu.pretendyourexyzzy.overloaded.api.UserDataCallback;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -29,6 +27,10 @@ import com.google.firebase.auth.PlayGamesAuthProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
+import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public final class OverloadedSignInHelper {
     public static final List<SignInProvider> SIGN_IN_PROVIDERS;
@@ -131,7 +133,7 @@ public final class OverloadedSignInHelper {
                             Logging.log("Successfully logged in Firebase as " + loggedUser.getUid(), false);
                             OverloadedApi.get().registerUser(loggedUser, null, new UserDataCallback() {
                                 @Override
-                                public void onUserData(@NonNull OverloadedApi.UserData data) {
+                                public void onUserData(@NonNull UserData data) {
                                     callback.onSignInSuccessful();
                                 }
 
