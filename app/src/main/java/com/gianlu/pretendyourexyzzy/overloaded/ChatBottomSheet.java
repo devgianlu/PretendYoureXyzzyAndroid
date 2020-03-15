@@ -50,7 +50,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
     }
 
     @Override
-    protected void onCreateBody(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, @NonNull Chat payload) {
+    protected boolean onCreateNoScrollBody(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, @NonNull Chat payload) {
         inflater.inflate(R.layout.sheet_overloaded_chat, parent, true);
         send = parent.findViewById(R.id.chatSheet_input);
         send.setEndIconOnClickListener(v -> {
@@ -72,6 +72,10 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
                     send.setEnabled(true);
                 }
             });
+        });
+        send.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (rmv != null)
+                rmv.setPadding(rmv.getPaddingLeft(), rmv.getPaddingTop(), rmv.getPaddingRight(), v.getHeight());
         });
 
         rmv = parent.findViewById(R.id.chatSheet_list);
@@ -106,6 +110,18 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         });
 
         OverloadedApi.get().addEventListener(this);
+        return true;
+    }
+
+    @Override
+    protected void onExpandedStateChanged(@NonNull ModalBottomSheetHeaderView header, boolean expanded) {
+        super.onExpandedStateChanged(header, expanded);
+        setDraggable(!expanded);
+    }
+
+    @Override
+    protected void onCreateBody(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, @NonNull Chat payload) {
+        setHasBody(false);
     }
 
     @Override
