@@ -35,6 +35,8 @@
         android:id="@+id/overloadedChatItem_lastMsg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/roboto_regular" />
+        android:ellipsize="marquee"
+        android:fontFamily="@font/roboto_regular"
+        android:singleLine="true" />
 
 </LinearLayout>

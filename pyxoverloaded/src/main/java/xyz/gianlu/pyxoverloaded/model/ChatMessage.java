@@ -10,6 +10,10 @@ import com.gianlu.commonutils.adapters.NotFilterable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Objects;
+
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+
 public class ChatMessage implements Filterable<NotFilterable> {
     public final String id;
     public final String text;
@@ -56,5 +60,10 @@ public class ChatMessage implements Filterable<NotFilterable> {
     @Override
     public NotFilterable getFilterable() {
         return new NotFilterable();
+    }
+
+    public boolean isFromMe() {
+        UserData data = OverloadedApi.get().userDataCached();
+        return data != null && Objects.equals(from, data.username);
     }
 }

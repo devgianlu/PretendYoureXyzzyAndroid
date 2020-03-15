@@ -1,7 +1,12 @@
 package com.gianlu.pretendyourexyzzy.overloaded;
 
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,9 +31,12 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.callback.ChatMessageCallback;
@@ -177,10 +185,12 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
 
     private class ChatMessagesAdapter extends OrderedRecyclerViewAdapter<ChatMessagesAdapter.ViewHolder, ChatMessage, Void, NotFilterable> {
         private final LayoutInflater inflater;
+        private final int dp64;
 
         ChatMessagesAdapter() {
             super(new ArrayList<>(128), null);
             this.inflater = LayoutInflater.from(requireContext());
+            this.dp64 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 64, getResources().getDisplayMetrics());
         }
 
         @NonNull
@@ -194,10 +204,41 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
             return true;
         }
 
+        private boolean needsHeader(int pos) {
+            if (pos + 1 >= objs.size()) return true;
+
+            Calendar cal1 = Calendar.getInstance();
+            cal1.setTimeInMillis(objs.get(pos).timestamp);
+
+            Calendar cal2 = Calendar.getInstance();
+            cal2.setTimeInMillis(objs.get(pos + 1).timestamp);
+
+            return cal1.get(Calendar.ERA) != cal2.get(Calendar.ERA) ||
+                    cal1.get(Calendar.YEAR) != cal2.get(Calendar.YEAR) ||
+                    cal1.get(Calendar.DAY_OF_YEAR) != cal2.get(Calendar.DAY_OF_YEAR);
+        }
+
         @Override
         protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull ChatMessage payload) {
             ChatMessage msg = objs.get(position);
-            ((SuperTextView) holder.itemView).setText(msg.from + " -> " + msg.text);
+
+            if (needsHeader(position)) {
+                holder.header.setVisibility(View.VISIBLE);
+                holder.header.setText(new SimpleDateFormat("EEE, dd/MM/yyyy", Locale.getDefault()).format(msg.timestamp));
+            } else {
+                holder.header.setVisibility(View.GONE);
+            }
+
+            holder.text.setText(msg.text);
+            if (payload.isFromMe()) {
+                holder.parent.setGravity(Gravity.END);
+                holder.text.setPaddingRelative(dp64, 0, 0, 0);
+            } else {
+                holder.parent.setGravity(Gravity.START);
+                holder.text.setPaddingRelative(0, 0, dp64, 0);
+            }
+
+            holder.time.setText(new SimpleDateFormat("HH:mm", Locale.getDefault()).format(payload.timestamp));
         }
 
         @Override
@@ -226,8 +267,17 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
+            final SuperTextView text;
+            final TextView time;
+            final TextView header;
+            final LinearLayout parent;
+
             ViewHolder(@NonNull ViewGroup parent) {
                 super(inflater.inflate(R.layout.item_overloaded_chat_message, parent, false));
+                header = itemView.findViewById(R.id.overloadedChatMessageItem_header);
+                text = itemView.findViewById(R.id.overloadedChatMessageItem_text);
+                time = itemView.findViewById(R.id.overloadedChatMessageItem_time);
+                this.parent = (LinearLayout) text.getParent();
             }
         }
     }
