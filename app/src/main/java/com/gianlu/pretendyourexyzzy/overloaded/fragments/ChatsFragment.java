@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.overloaded.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -86,8 +87,19 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
             if (lastChatSheet != null && lastChatSheet.isVisible() && lastChatSheet.getSetupPayload().id.equals(chatId))
                 OverloadedApi.chat().updateLastSeen(chatId, msg);
 
-            if (adapter != null) adapter.updateLastMessage(chatId, msg);
+            if (adapter != null) adapter.refresh(chatId);
         }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == ChatBottomSheet.RC_REFRESH_LIST) {
+            if (adapter != null && lastChatSheet != null && lastChatSheet.isVisible())
+                adapter.refresh(lastChatSheet.getSetupPayload().id);
+            return;
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private class ChatsAdapter extends OrderedRecyclerViewAdapter<ChatsAdapter.ViewHolder, Chat, Void, NotFilterable> {
@@ -104,11 +116,10 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
             return new ViewHolder(parent);
         }
 
-        void updateLastMessage(@NonNull String chatId, @NonNull ChatMessage msg) {
+        void refresh(@NonNull String chatId) {
             for (int i = 0; i < objs.size(); i++) {
                 Chat chat = objs.get(i);
                 if (chat.id.equals(chatId)) {
-                    chat.lastMsg = msg;
                     notifyItemChanged(i);
                     return;
                 }
@@ -141,7 +152,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
             Chat chat = objs.get(position);
             holder.username.setText(chat.getOtherUsername());
 
-            ChatMessage lastMsg = chat.lastMsg;
+            ChatMessage lastMsg = chat.lastMessage();
             if (lastMsg == null) {
                 holder.lastMsg.setVisibility(View.GONE);
             } else {
@@ -159,11 +170,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
 
             holder.itemView.setOnClickListener(v -> {
                 lastChatSheet = new ChatBottomSheet();
-                lastChatSheet.show(getActivity(), chat);
-                if (chat.lastMsg != null) {
-                    OverloadedApi.chat().updateLastSeen(chat.id, chat.lastMsg);
-                    notifyItemChanged(holder.getAdapterPosition());
-                }
+                lastChatSheet.show(ChatsFragment.this, chat);
             });
         }
 
@@ -181,8 +188,13 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         @Override
         public Comparator<Chat> getComparatorFor(Void sorting) {
             return (o1, o2) -> {
-                if (o1.lastMsg == null || o2.lastMsg == null) return 0;
-                else return (int) (o2.lastMsg.timestamp - o1.lastMsg.timestamp);
+                ChatMessage m1 = o1.lastMessage();
+                if (m1 == null) return 0;
+
+                ChatMessage m2 = o2.lastMessage();
+                if (m2 == null) return 0;
+
+                return (int) (m2.timestamp - m1.timestamp);
             };
         }
 

@@ -22,7 +22,9 @@ import xyz.gianlu.pyxoverloaded.model.ChatMessage;
 import xyz.gianlu.pyxoverloaded.model.ChatMessages;
 
 class ChatDatabaseHelper extends SQLiteOpenHelper {
-    private final Map<String, Chat> chats = new HashMap<>(64);
+    private final Map<String, Chat> chatsCache = new HashMap<>(64);
+    private final Map<String, Long> lastSeenCache = new HashMap<>(64);
+    private final Map<String, ChatMessage> lastMessageCache = new HashMap<>(64);
 
     ChatDatabaseHelper(Context context) {
         super(context, "chat.db", null, 1);
@@ -30,8 +32,8 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE chats(id TEXT UNIQUE, oneParticipant TEXT, otherParticipant TEXT, last_seen LONG)");
-        db.execSQL("CREATE TABLE messages(id TEXT UNIQUE, chat_id TEXT, text TEXT, timestamp LONG, `from` TEXT)");
+        db.execSQL("CREATE TABLE chats(id TEXT UNIQUE NOT NULL, oneParticipant TEXT NOT NULL, otherParticipant TEXT NOT NULL, last_seen LONG DEFAULT NULL, last_msg TEXT DEFAULT NULL)");
+        db.execSQL("CREATE TABLE messages(id TEXT UNIQUE NOT NULL, chat_id TEXT NOT NULL, text TEXT NOT NULL, timestamp LONG NOT NULL, `from` TEXT NOT NULL)");
     }
 
     @Override
@@ -45,52 +47,38 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
         onUpgrade(db, oldVersion, newVersion);
     }
 
-    synchronized void updateLastSeen(@NotNull String chatId, long lastSeen) {
-        Chat chat = chats.get(chatId);
-        if (chat != null) {
-            if (chat.lastSeen == lastSeen) return;
-            else chat.lastSeen = lastSeen;
-        }
-
-        SQLiteDatabase db = getWritableDatabase();
-        db.beginTransaction();
-        try {
-            ContentValues values = new ContentValues();
-            values.put("last_seen", lastSeen);
-            db.update("chats", values, "id=?", new String[]{chatId});
-            db.setTransactionSuccessful();
-        } finally {
-            db.endTransaction();
-        }
-    }
-
     @Nullable
-    synchronized Chat getChat(@NonNull String chatId) {
-        Chat chat = chats.get(chatId);
-        if (chat != null) return chat;
-
+    synchronized ChatMessage getMessage(@NonNull String chatId, @NonNull String msgId) {
         SQLiteDatabase db = getReadableDatabase();
         db.beginTransaction();
-        try (Cursor cursor = db.query("chats", null, "id=?", new String[]{chatId}, null, null, null, null)) {
+        try (Cursor cursor = db.rawQuery("SELECT * FROM messages WHERE chat_id=? AND id=?", new String[]{chatId, msgId})) {
             if (cursor == null || !cursor.moveToNext()) return null;
-
-            chat = new Chat(cursor);
-            chats.put(chatId, chat);
-            return chat;
+            return new ChatMessage(cursor);
         } finally {
             db.endTransaction();
         }
     }
 
     @Nullable
-    synchronized Cursor getMessages(@NonNull String chatId, int limit, int offset) {
+    synchronized ChatMessages getMessages(@NonNull String chatId, int limit, int offset) {
+        Chat chat = getChat(chatId);
+        if (chat == null) return null;
+
         SQLiteDatabase db = getReadableDatabase();
         db.beginTransaction();
-        try {
-            Cursor cursor = db.query("messages", null, "chat_id=?", new String[]{chatId}, null, null, "timestamp DESC", String.valueOf(offset + limit));
-            if (cursor == null || (offset != 0 && cursor.moveToFirst() && !cursor.move(offset)))
+        try (Cursor cursor = db.query("messages", null, "chat_id=?", new String[]{chatId}, null, null, "timestamp DESC", String.valueOf(offset + limit))) {
+            if (cursor == null)
                 return null;
-            return cursor;
+
+            if (!cursor.moveToFirst()) return null;
+            if (offset != 0 && !cursor.move(offset))
+                return null;
+
+            ChatMessages list = new ChatMessages(limit, chat);
+            do {
+                list.add(new ChatMessage(cursor));
+            } while (cursor.moveToNext());
+            return list;
         } finally {
             db.endTransaction();
         }
@@ -136,32 +124,19 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    synchronized void putChats(@NonNull List<Chat> list) {
-        if (list.isEmpty()) return;
+    @Nullable
+    synchronized Chat getChat(@NonNull String chatId) {
+        Chat chat = chatsCache.get(chatId);
+        if (chat != null) return chat;
 
-        SQLiteDatabase db = getWritableDatabase();
+        SQLiteDatabase db = getReadableDatabase();
         db.beginTransaction();
-        try {
-            for (Chat chat : list) {
-                if (chat.participants.size() != 2)
-                    throw new IllegalStateException();
+        try (Cursor cursor = db.query("chats", null, "id=?", new String[]{chatId}, null, null, null, null)) {
+            if (cursor == null || !cursor.moveToNext()) return null;
 
-                if (chats.containsKey(chat.id)) {
-                    chats.put(chat.id, chat);
-                } else {
-
-                }
-
-
-                ContentValues values = new ContentValues();
-                values.put("id", chat.id);
-                values.put("last_seen", chat.lastSeen);
-                values.put("oneParticipant", chat.participants.get(0));
-                values.put("otherParticipant", chat.participants.get(1));
-                db.insertWithOnConflict("chats", null, values, SQLiteDatabase.CONFLICT_REPLACE);
-            }
-
-            db.setTransactionSuccessful();
+            chat = new Chat(cursor);
+            chatsCache.put(chatId, chat);
+            return chat;
         } finally {
             db.endTransaction();
         }
@@ -171,16 +146,17 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
         if (chat.participants.size() != 2)
             throw new IllegalStateException();
 
+        if (chatsCache.containsKey(chat.id)) return;
+        else chatsCache.put(chat.id, chat);
+
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         try {
-            if (!chats.containsKey(chat.id)) chats.put(chat.id, chat);
             ContentValues values = new ContentValues();
             values.put("id", chat.id);
-            values.put("last_seen", chat.lastSeen);
             values.put("oneParticipant", chat.participants.get(0));
             values.put("otherParticipant", chat.participants.get(1));
-            db.insertWithOnConflict("chats", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+            db.insertWithOnConflict("chats", null, values, SQLiteDatabase.CONFLICT_IGNORE);
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
@@ -189,7 +165,7 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
 
     @Nullable
     synchronized Chat findChatWith(@NotNull String username) {
-        for (Chat chat : chats.values())
+        for (Chat chat : chatsCache.values())
             if (chat.participants.contains(username))
                 return chat;
 
@@ -200,7 +176,7 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
                 return null;
 
             Chat chat = new Chat(cursor);
-            chats.put(chat.id, chat);
+            chatsCache.put(chat.id, chat);
             return chat;
         } finally {
             db.endTransaction();
@@ -209,7 +185,7 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
 
     @NonNull
     synchronized List<Chat> getChats() {
-        if (!chats.isEmpty()) return new ArrayList<>(chats.values());
+        if (!chatsCache.isEmpty()) return new ArrayList<>(chatsCache.values());
 
         SQLiteDatabase db = getReadableDatabase();
         db.beginTransaction();
@@ -220,7 +196,7 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
             List<Chat> list = new ArrayList<>(32);
             do {
                 Chat chat = new Chat(cursor);
-                if (!chats.containsKey(chat.id)) chats.put(chat.id, chat);
+                if (!chatsCache.containsKey(chat.id)) chatsCache.put(chat.id, chat);
                 list.add(chat);
             } while (cursor.moveToNext());
 
@@ -230,12 +206,87 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    int countSinceLastSeen(@NonNull String chatId, long lastSeen) {
+    synchronized void updateLastSeen(@NotNull String chatId, long lastSeen) {
+        lastSeenCache.put(chatId, lastSeen);
+
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            ContentValues values = new ContentValues();
+            values.put("last_seen", lastSeen);
+            db.update("chats", values, "id=?", new String[]{chatId});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    @Nullable
+    synchronized Long getLastSeen(@NonNull String chatId) {
+        Long lastSeen = lastSeenCache.get(chatId);
+        if (lastSeen != null) return lastSeen;
+
+        SQLiteDatabase db = getReadableDatabase();
+        db.beginTransaction();
+        try (Cursor cursor = db.rawQuery("SELECT last_seen FROM chats WHERE id=?", new String[]{chatId})) {
+            if (!cursor.moveToNext()) return null;
+
+            if (cursor.isNull(0))
+                return null;
+
+            lastSeen = cursor.getLong(0);
+            lastSeenCache.put(chatId, lastSeen);
+            return lastSeen;
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    synchronized int countSinceLastSeen(@NonNull String chatId) {
+        Long lastSeen = getLastSeen(chatId);
+        if (lastSeen == null) return 0;
+
         SQLiteDatabase db = getReadableDatabase();
         db.beginTransaction();
         try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM messages WHERE timestamp >= ? AND chat_id=?", new String[]{String.valueOf(lastSeen), chatId})) {
             if (!cursor.moveToNext()) return 0;
-            else return cursor.getInt(0);
+            return cursor.getInt(0);
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    synchronized void updateLastMessage(@NonNull String chatId, @NonNull ChatMessage msg) {
+        lastMessageCache.put(chatId, msg);
+
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            ContentValues values = new ContentValues();
+            values.put("last_msg", msg.id);
+            db.update("chats", values, "id=?", new String[]{chatId});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    @Nullable
+    synchronized ChatMessage getLastMessage(@NonNull String chatId) {
+        ChatMessage lastMsg = lastMessageCache.get(chatId);
+        if (lastMsg != null) return lastMsg;
+
+        SQLiteDatabase db = getReadableDatabase();
+        db.beginTransaction();
+        try (Cursor cursor = db.rawQuery("SELECT last_msg FROM chats WHERE id=?", new String[]{chatId})) {
+            if (!cursor.moveToNext()) return null;
+
+            String lastMsgId = cursor.getString(0);
+            if (lastMsgId == null) return null;
+
+            ChatMessage msg = getMessage(chatId, lastMsgId);
+            lastMessageCache.put(chatId, msg);
+            return msg;
         } finally {
             db.endTransaction();
         }

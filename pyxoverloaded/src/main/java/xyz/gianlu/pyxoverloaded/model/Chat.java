@@ -3,6 +3,7 @@ package xyz.gianlu.pyxoverloaded.model;
 import android.database.Cursor;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.Filterable;
@@ -22,30 +23,15 @@ import xyz.gianlu.pyxoverloaded.OverloadedApi;
 public class Chat implements Filterable<NotFilterable> {
     public final String id;
     public final List<String> participants;
-    public ChatMessage lastMsg;
-    public long lastSeen = 0;
 
     public Chat(@NonNull JSONObject obj) throws JSONException {
         id = obj.getString("id");
         participants = CommonUtils.toStringsList(obj.getJSONArray("participants"), false);
-        JSONObject lastMsgObj = obj.optJSONObject("lastMsg");
-        if (lastMsgObj != null) lastMsg = new ChatMessage(lastMsgObj);
-        else lastMsg = null;
     }
 
     public Chat(@NonNull Cursor cursor) {
         id = cursor.getString(cursor.getColumnIndex("id"));
         participants = Arrays.asList(cursor.getString(cursor.getColumnIndex("oneParticipant")), cursor.getString(cursor.getColumnIndex("otherParticipant")));
-        lastSeen = cursor.getLong(cursor.getColumnIndex("last_seen"));
-        lastMsg = null;
-    }
-
-    public static int indexOf(List<Chat> list, String id) {
-        for (int i = 0; i < list.size(); i++)
-            if (list.get(i).id.equals(id))
-                return i;
-
-        return -1;
     }
 
     @NonNull
@@ -53,6 +39,29 @@ public class Chat implements Filterable<NotFilterable> {
         List<Chat> chats = new ArrayList<>(array.length());
         for (int i = 0; i < array.length(); i++) chats.add(new Chat(array.getJSONObject(i)));
         return chats;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Chat chat = (Chat) o;
+        return id.equals(chat.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Nullable
+    public Long lastSeen() {
+        return OverloadedApi.chat().getLastSeen(id);
+    }
+
+    @Nullable
+    public ChatMessage lastMessage() {
+        return OverloadedApi.chat().getLastMessage(id);
     }
 
     @NonNull

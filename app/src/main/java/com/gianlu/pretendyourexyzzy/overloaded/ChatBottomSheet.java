@@ -5,6 +5,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
@@ -37,6 +38,7 @@ import xyz.gianlu.pyxoverloaded.model.ChatMessage;
 import xyz.gianlu.pyxoverloaded.model.ChatMessages;
 
 public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomSheet.Update> implements OverloadedApi.EventListener {
+    public static final int RC_REFRESH_LIST = 5;
     private RecyclerMessageView rmv;
     private TextInputLayout send;
     private ChatMessagesAdapter adapter;
@@ -83,8 +85,12 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
             @Override
             public void onRemoteMessages(@NonNull ChatMessages messages) {
                 update(Update.messages(messages));
-                if (!messages.isEmpty())
+                if (!messages.isEmpty()) {
                     OverloadedApi.chat().updateLastSeen(chatId(), messages.get(0));
+
+                    Fragment fragment = getParentFragment();
+                    if (fragment != null) fragment.onActivityResult(RC_REFRESH_LIST, 0, null);
+                }
             }
 
             @Override

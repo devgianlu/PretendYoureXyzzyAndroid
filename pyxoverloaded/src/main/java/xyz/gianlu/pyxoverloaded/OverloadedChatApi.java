@@ -2,7 +2,6 @@ package xyz.gianlu.pyxoverloaded;
 
 import android.app.Activity;
 import android.content.Context;
-import android.database.Cursor;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -13,9 +12,12 @@ import androidx.annotation.WorkerThread;
 import com.gianlu.commonutils.logging.Logging;
 import com.google.android.gms.tasks.Tasks;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Request;
@@ -33,7 +35,7 @@ import static xyz.gianlu.pyxoverloaded.Utils.jsonBody;
 import static xyz.gianlu.pyxoverloaded.Utils.overloadedServerUrl;
 import static xyz.gianlu.pyxoverloaded.Utils.singletonJsonBody;
 
-public class OverloadedChatApi {
+public class OverloadedChatApi implements Closeable {
     private final OverloadedApi api;
     private final ChatDatabaseHelper db;
 
@@ -53,7 +55,11 @@ public class OverloadedChatApi {
                     .post(singletonJsonBody("username", username)));
 
             Chat remoteChat = new Chat(obj);
-            if (chat == null) db.putChat(remoteChat);
+            db.putChat(remoteChat);
+
+            JSONObject lastMsgObj = obj.optJSONObject("lastMsg");
+            if (lastMsgObj != null)
+                db.updateLastMessage(remoteChat.id, new ChatMessage(lastMsgObj));
             return remoteChat;
         }), activity, remoteChat -> {
             if (chat == null) callback.onChat(remoteChat);
@@ -70,18 +76,18 @@ public class OverloadedChatApi {
                     .url(overloadedServerUrl("Chat/List"))
                     .post(Util.EMPTY_REQUEST));
 
-            List<Chat> chats = Chat.parse(obj.getJSONArray("chats"));
-            if (!list.isEmpty()) {
-                for (Chat chat : chats) {
-                    int index = Chat.indexOf(list, chat.id);
-                    if (index != -1) {
-                        list.get(index).lastMsg = chat.lastMsg;
-                        chat.lastSeen = list.get(index).lastSeen;
-                    }
-                }
+            JSONArray array = obj.getJSONArray("chats");
+            List<Chat> chats = new ArrayList<>(array.length());
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject chatObj = array.getJSONObject(i);
+                Chat chat = new Chat(chatObj);
+                chats.add(chat);
+                db.putChat(chat);
+
+                JSONObject lastMsgObj = chatObj.optJSONObject("lastMsg");
+                if (lastMsgObj != null) db.updateLastMessage(chat.id, new ChatMessage(lastMsgObj));
             }
 
-            db.putChats(chats);
             return chats;
         }), activity, callback::onRemoteChats, callback::onFailed);
     }
@@ -107,27 +113,17 @@ public class OverloadedChatApi {
     }
 
     public void getMessages(@NonNull String chatId, int offset, @Nullable Activity activity, @NonNull ChatMessagesCallback callback) {
-        final ChatMessages list;
-        Chat chat = db.getChat(chatId);
-        if (chat != null) {
-            list = new ChatMessages(128, chat);
-            try (Cursor cursor = db.getMessages(chatId, 128, offset)) {
-                if (cursor != null) {
-                    while (cursor.moveToNext())
-                        list.add(new ChatMessage(cursor));
-                }
-            }
-
-            if (!list.isEmpty())
-                new Handler(Looper.getMainLooper()).post(() -> callback.onLocalMessages(list));
-        } else {
-            list = null;
-        }
+        ChatMessages list = db.getMessages(chatId, 128, offset);
+        if (list != null && !list.isEmpty())
+            new Handler(Looper.getMainLooper()).post(() -> callback.onLocalMessages(list));
 
         callbacks(Tasks.call(api.executorService, () -> {
+            Long lastSeen = db.getLastSeen(chatId);
+            if (lastSeen == null) lastSeen = 0L;
+
             JSONObject body = new JSONObject();
             body.put("chatId", chatId);
-            body.put("since", chat == null ? 0 : chat.lastSeen);
+            body.put("since", lastSeen);
             body.put("limit", 128);
             body.put("offset", offset);
 
@@ -140,7 +136,7 @@ public class OverloadedChatApi {
             return remoteList;
         }), activity, remoteList -> {
             if (list != null) {
-                list.addAll(remoteList);
+                list.addAll(0, remoteList); // This are newer, right?
                 callback.onRemoteMessages(list);
             } else {
                 callback.onRemoteMessages(remoteList);
@@ -160,6 +156,7 @@ public class OverloadedChatApi {
             String chatId = event.obj.getString("chatId");
             ChatMessage msg = new ChatMessage(event.obj);
             db.addMessage(chatId, msg);
+            db.updateLastMessage(chatId, msg);
         }
     }
 
@@ -168,12 +165,21 @@ public class OverloadedChatApi {
     }
 
     public int countSinceLastSeen(@NonNull String chatId) {
-        Chat chat = db.getChat(chatId);
-        if (chat == null || chat.lastSeen == 0) return 0;
-        else return db.countSinceLastSeen(chatId, chat.lastSeen);
+        return db.countSinceLastSeen(chatId);
     }
 
-    void close() {
+    @Nullable
+    public Long getLastSeen(@NonNull String chatId) {
+        return db.getLastSeen(chatId);
+    }
+
+    @Nullable
+    public ChatMessage getLastMessage(@NonNull String chatId) {
+        return db.getLastMessage(chatId);
+    }
+
+    @Override
+    public void close() {
         db.close();
     }
 }
