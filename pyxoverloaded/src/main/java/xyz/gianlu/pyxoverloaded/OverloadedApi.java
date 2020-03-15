@@ -407,7 +407,7 @@ public class OverloadedApi {
         }
 
         public enum Type {
-            USER_LEFT_SERVER("uls"), USER_JOINED_SERVER("ujs"), CHAT_MESSAGE("cm");
+            USER_LEFT_SERVER("uls"), USER_JOINED_SERVER("ujs"), CHAT_MESSAGE("cm"), PING("p");
 
             private final String code;
 
@@ -465,6 +465,8 @@ public class OverloadedApi {
                 Logging.log("Unknown event type: " + text, true);
                 return;
             }
+
+            if (type == Event.Type.PING) return;
 
             dispatchEvent(new Event(type, obj));
         }

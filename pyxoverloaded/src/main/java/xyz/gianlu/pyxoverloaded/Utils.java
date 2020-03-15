@@ -16,7 +16,7 @@ final class Utils {
 
     @NonNull
     static HttpUrl overloadedServerUrl(@NonNull String path) {
-        return HttpUrl.get("http://192.168.1.25:8080/" + path); // FIXME: Testing url
+        return HttpUrl.get("https://pyx-overloaded.gianlu.xyz/" + path);
     }
 
     @NonNull
