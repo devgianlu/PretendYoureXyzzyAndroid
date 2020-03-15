@@ -25,8 +25,9 @@
             android:id="@+id/overloadedChatItem_unread"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:background="@drawable/bg_circle_accent"
+            android:background="@drawable/bg_circle_secondary"
             android:textAlignment="center"
+            android:textColor="@color/colorOnSecondary"
             android:textSize="14sp" />
     </LinearLayout>
 

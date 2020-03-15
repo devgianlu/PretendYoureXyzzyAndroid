@@ -139,10 +139,9 @@ public class OverloadedFragment extends FragmentWithDialog {
             }
         });
 
-        TabLayout tabs = layout.findViewById(R.id.overloaded_tabs);
-
         pager = layout.findViewById(R.id.overloaded_pager);
         pager.setOffscreenPageLimit(3);
+        TabLayout tabs = layout.findViewById(R.id.overloaded_tabs);
         tabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {

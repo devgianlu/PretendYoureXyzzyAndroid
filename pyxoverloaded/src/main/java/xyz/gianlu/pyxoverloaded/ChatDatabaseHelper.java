@@ -291,4 +291,18 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
             db.endTransaction();
         }
     }
+
+    @Nullable
+    public Long getLastLastSeen() {
+        SQLiteDatabase db = getReadableDatabase();
+        db.beginTransaction();
+        try (Cursor cursor = db.rawQuery("SELECT MAX(last_seen) FROM chats", null)) {
+            if (!cursor.moveToNext()) return null;
+
+            if (cursor.isNull(0)) return null;
+            else return cursor.getLong(0);
+        } finally {
+            db.endTransaction();
+        }
+    }
 }

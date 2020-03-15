@@ -18,6 +18,7 @@ import org.json.JSONObject;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import okhttp3.Request;
@@ -31,6 +32,7 @@ import xyz.gianlu.pyxoverloaded.model.ChatMessage;
 import xyz.gianlu.pyxoverloaded.model.ChatMessages;
 
 import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
+import static xyz.gianlu.pyxoverloaded.TaskUtils.loggingCallbacks;
 import static xyz.gianlu.pyxoverloaded.Utils.jsonBody;
 import static xyz.gianlu.pyxoverloaded.Utils.overloadedServerUrl;
 import static xyz.gianlu.pyxoverloaded.Utils.singletonJsonBody;
@@ -42,6 +44,37 @@ public class OverloadedChatApi implements Closeable {
     OverloadedChatApi(@NonNull Context context, @NonNull OverloadedApi api) {
         this.api = api;
         this.db = new ChatDatabaseHelper(context);
+    }
+
+    public void getSummary() {
+        loggingCallbacks(Tasks.call(api.executorService, () -> {
+            Long since = db.getLastLastSeen();
+            JSONObject obj = api.serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Chat/Summary"))
+                    .post(singletonJsonBody("since", String.valueOf(since == null ? 0 : since))));
+
+            Iterator<String> iter = obj.keys();
+            while (iter.hasNext()) {
+                String chatId = iter.next();
+                JSONObject chatObj = obj.getJSONObject(chatId);
+
+                Chat chat = db.getChat(chatId);
+                if (chat == null) {
+                    chat = new Chat(chatObj.getJSONObject("chat"));
+                    db.putChat(chat);
+                }
+
+                JSONArray array = chatObj.getJSONArray("messages");
+                ChatMessages messages = new ChatMessages(array.length(), chat);
+                for (int i = 0; i < array.length(); i++)
+                    messages.add(new ChatMessage(array.getJSONObject(i)));
+
+                db.putMessages(messages);
+                if (!messages.isEmpty()) db.updateLastMessage(chatId, messages.get(0));
+            }
+
+            return obj.length();
+        }), "chat-summary");
     }
 
     public void startChat(@NonNull String username, @Nullable Activity activity, @NonNull ChatCallback callback) {
