@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +26,6 @@ import androidx.core.content.FileProvider;
 import androidx.fragment.app.DialogFragment;
 
 import com.gianlu.commonutils.dialogs.DialogUtils;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.permissions.AskPermission;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
@@ -41,6 +41,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<GameRound> {
+    private static final String TAG = GameRoundDialog.class.getSimpleName();
     private GameRoundSummary summary;
     private ImageView image;
     private CheckBox rotate;
@@ -95,7 +96,7 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
         try {
             pyx = Pyx.get();
         } catch (LevelMismatchException ex) {
-            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading).ex(ex));
+            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
             dismissAllowingStateLoss();
             return layout;
         }
@@ -130,7 +131,7 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
 
             @Override
             public void permissionDenied(@NonNull String permission) {
-                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.deniedWritePermission).error(true));
+                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.deniedWritePermission));
             }
 
             @Override
@@ -153,7 +154,7 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
         try (FileOutputStream out = new FileOutputStream(image)) {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
         } catch (IOException ex) {
-            Logging.log(ex);
+            Log.e(TAG, "Failed saving image.", ex);
             return null;
         }
 
@@ -165,7 +166,7 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
     private void share(@NonNull Context context) {
         File image = save(new File(context.getFilesDir(), "gameRoundImages"));
         if (image == null) {
-            Toaster.with(context).message(R.string.failedSavingImage).error(true).show();
+            Toaster.with(context).message(R.string.failedSavingImage).show();
             return;
         }
 
@@ -199,7 +200,8 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
 
     @Override
     public void onException(@NonNull Exception ex) {
-        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading).ex(ex));
+        Log.e(TAG, "Failed loading round.", ex);
+        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
         dismissAllowingStateLoss();
     }
 }

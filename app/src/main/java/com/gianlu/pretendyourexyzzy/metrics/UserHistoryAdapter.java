@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.metrics;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -9,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 class UserHistoryAdapter extends RecyclerView.Adapter<UserHistoryAdapter.ViewHolder> {
+    private static final String TAG = UserHistoryAdapter.class.getSimpleName();
     private final LayoutInflater inflater;
     private final UserHistory history;
     private final Listener listener;
@@ -68,7 +69,7 @@ class UserHistoryAdapter extends RecyclerView.Adapter<UserHistoryAdapter.ViewHol
 
             @Override
             public void onException(@NonNull Exception ex) {
-                Logging.log(ex);
+                Log.e(TAG, "Failed getting session stats.", ex);
             }
         });
     }

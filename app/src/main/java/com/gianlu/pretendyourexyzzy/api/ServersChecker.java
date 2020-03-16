@@ -2,11 +2,10 @@ package com.gianlu.pretendyourexyzzy.api;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import com.gianlu.commonutils.logging.Logging;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -26,6 +25,7 @@ import okhttp3.ResponseBody;
 
 public final class ServersChecker {
     private static final int TIMEOUT = 5; // sec
+    private static final String TAG = ServersChecker.class.getSimpleName();
     private final OkHttpClient client;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final Handler handler;
@@ -176,7 +176,7 @@ public final class ServersChecker {
                 Response response = client.newCall(createRequest(server)).execute();
                 server.status = validateResponse(response, System.currentTimeMillis() - start);
             } catch (IOException ex) {
-                Logging.log(ex);
+                Log.e(TAG, "Failed checking server.", ex);
                 server.status = handleException(ex);
             }
 

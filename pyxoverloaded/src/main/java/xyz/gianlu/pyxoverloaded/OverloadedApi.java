@@ -5,13 +5,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
-import com.gianlu.commonutils.logging.Logging;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -59,6 +59,7 @@ import static xyz.gianlu.pyxoverloaded.Utils.singletonJsonBody;
 
 public class OverloadedApi {
     private final static OverloadedApi instance = new OverloadedApi();
+    private static final String TAG = OverloadedApi.class.getSimpleName();
     private static OverloadedChatApi chatInstance;
     final ExecutorService executorService = Executors.newCachedThreadPool();
     private final OkHttpClient client = new OkHttpClient();
@@ -71,7 +72,7 @@ public class OverloadedApi {
     private OverloadedApi() {
         FirebaseAuth.getInstance().addAuthStateListener(fa -> {
             user = fa.getCurrentUser();
-            Logging.log(String.format("Auth state updated! {user: %s}", user), false);
+            Log.i(TAG, String.format("Auth state updated! {user: %s}", user));
         });
     }
 
@@ -218,7 +219,7 @@ public class OverloadedApi {
                 }
             }));
         } catch (ExecutionException | InterruptedException ex) {
-            Logging.log(ex);
+            Log.e(TAG, "Failed updating token.", ex);
             lastToken = null;
         }
     }
@@ -435,7 +436,7 @@ public class OverloadedApi {
             try {
                 chatInstance.handleEvent(event);
             } catch (JSONException ex) {
-                Logging.log("Failed handling event in worker: " + event, ex);
+                Log.e(TAG, "Failed handling event in worker: " + event, ex);
             }
 
             for (EventListener listener : new ArrayList<>(listeners)) {
@@ -443,7 +444,7 @@ public class OverloadedApi {
                     try {
                         listener.onEvent(event);
                     } catch (JSONException ex) {
-                        Logging.log("Failed handling event: " + event, ex);
+                        Log.e(TAG, "Failed handling event: " + event, ex);
                     }
                 });
             }
@@ -457,12 +458,12 @@ public class OverloadedApi {
                 obj = new JSONObject(text);
                 type = Event.Type.parse(obj.getString("type"));
             } catch (JSONException ex) {
-                Logging.log("Failed parsing event: " + text, ex);
+                Log.e(TAG, "Failed parsing event: " + text, ex);
                 return;
             }
 
             if (type == null) {
-                Logging.log("Unknown event type: " + text, true);
+                Log.w(TAG, "Unknown event type: " + text);
                 return;
             }
 

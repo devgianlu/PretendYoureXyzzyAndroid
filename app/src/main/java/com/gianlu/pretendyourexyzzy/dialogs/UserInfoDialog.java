@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.dialogs;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +31,7 @@ import java.util.Date;
 import static android.view.View.GONE;
 
 public class UserInfoDialog extends DialogFragment {
+    private static final String TAG = UserInfoDialog.class.getSimpleName();
     private OnViewGame listener;
 
     public static void loadAndShow(@NonNull RegisteredPyx pyx, @NonNull FragmentActivity activity, @NonNull String name) {
@@ -44,7 +46,8 @@ public class UserInfoDialog extends DialogFragment {
             @Override
             public void onException(@NonNull Exception ex) {
                 DialogUtils.dismissDialog(activity);
-                Toaster.with(activity).message(R.string.failedLoading).ex(ex).show();
+                Log.e(TAG, "Failed whois.", ex);
+                Toaster.with(activity).message(R.string.failedLoading).show();
             }
         });
     }

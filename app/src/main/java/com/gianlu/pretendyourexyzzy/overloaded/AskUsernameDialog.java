@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +19,6 @@ import androidx.fragment.app.DialogFragment;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.DialogUtils;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.LoadableContentView;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
@@ -64,6 +64,8 @@ public final class AskUsernameDialog extends DialogFragment {
         listener = null;
     }
 
+    private static final String TAG = AskUsernameDialog.class.getSimpleName();
+
     @NotNull
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -108,7 +110,7 @@ public final class AskUsernameDialog extends DialogFragment {
 
                                 @Override
                                 public void onFailed(@NonNull Exception ex) {
-                                    Logging.log(ex);
+                                    Log.w(TAG, "Failed checking username unique.", ex);
                                 }
                             });
                         } else {
@@ -146,7 +148,7 @@ public final class AskUsernameDialog extends DialogFragment {
                                 public void onFailed(@NonNull Exception ex) {
                                     input.setError(getString(R.string.failedSettingUsername));
                                     loadable.notLoading(true);
-                                    Logging.log(ex);
+                                    Log.e(TAG, "Failed setting username.", ex);
                                 }
                             });
                         } else {
@@ -159,7 +161,7 @@ public final class AskUsernameDialog extends DialogFragment {
                     public void onFailed(@NonNull Exception ex) {
                         input.setError(getString(R.string.failedSettingUsername));
                         loadable.notLoading(true);
-                        Logging.log(ex);
+                        Log.e(TAG, "Failed checking username unique.", ex);
                     }
                 });
             } else {

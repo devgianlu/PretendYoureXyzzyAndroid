@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.overloaded;
 
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -19,7 +20,6 @@ import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.bottomsheet.ModalBottomSheetHeaderView;
 import com.gianlu.commonutils.bottomsheet.ThemedModalBottomSheet;
 import com.gianlu.commonutils.dialogs.DialogUtils;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.typography.MaterialColors;
@@ -47,6 +47,7 @@ import xyz.gianlu.pyxoverloaded.model.ChatMessages;
 
 public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomSheet.Update> implements OverloadedApi.EventListener {
     public static final int RC_REFRESH_LIST = 5;
+    private static final String TAG = ChatBottomSheet.class.getSimpleName();
     private RecyclerMessageView rmv;
     private TextInputLayout send;
     private ChatMessagesAdapter adapter;
@@ -76,7 +77,8 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
 
                 @Override
                 public void onFailed(@NotNull Exception ex) {
-                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSendMessage).ex(ex).extra(payload.id));
+                    Log.e(TAG, "Failed sending message.", ex);
+                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSendMessage).extra(payload.id));
                     send.setEnabled(true);
                 }
             });
@@ -112,7 +114,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
 
             @Override
             public void onFailed(@NotNull Exception ex) {
-                Logging.log(ex);
+                Log.e(TAG, "Failed getting messages.", ex);
                 rmv.showError(R.string.failedLoading);
             }
         });

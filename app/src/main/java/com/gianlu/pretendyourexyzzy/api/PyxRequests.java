@@ -1,11 +1,11 @@
 package com.gianlu.pretendyourexyzzy.api;
 
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.api.models.Deck;
@@ -179,6 +179,8 @@ public final class PyxRequests {
                 new PyxRequest.Param("m", customText));
     }
 
+    private static final String TAG = PyxRequests.class.getSimpleName();
+
     @NonNull
     public static PyxRequestWithResult<List<Deck>> listCardcastDecks(int gid, @NonNull final Cardcast cardcast) {
         return new PyxRequestWithResult<>(Pyx.Op.LIST_CARDCAST_CARD_SETS, (response, obj) -> {
@@ -191,7 +193,7 @@ public final class PyxRequests {
                 try {
                     set.cardcastDeck(cardcast.getDeckInfoHitCache(set.cardcastCode));
                 } catch (IOException | ParseException | JSONException ex) {
-                    Logging.log(ex);
+                    Log.w(TAG, ex);
                 }
             }
 

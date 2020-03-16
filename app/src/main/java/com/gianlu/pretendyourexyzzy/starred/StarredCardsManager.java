@@ -1,9 +1,10 @@
 package com.gianlu.pretendyourexyzzy.starred;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.preferences.json.JsonStoring;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
@@ -44,15 +45,7 @@ public class StarredCardsManager {
         return !a;
     }
 
-    private void saveCards() {
-        try {
-            JSONArray array = new JSONArray();
-            for (StarredCard card : list) array.put(card.toJson());
-            storing.putJsonArray(PK.STARRED_CARDS, array);
-        } catch (JSONException ex) {
-            Logging.log(ex);
-        }
-    }
+    private static final String TAG = StarredCardsManager.class.getSimpleName();
 
     public void removeCard(@NonNull StarredCard card) {
         list.remove(card);
@@ -64,13 +57,23 @@ public class StarredCardsManager {
         return list;
     }
 
+    private void saveCards() {
+        try {
+            JSONArray array = new JSONArray();
+            for (StarredCard card : list) array.put(card.toJson());
+            storing.putJsonArray(PK.STARRED_CARDS, array);
+        } catch (JSONException ex) {
+            Log.e(TAG, "Failed saving JSON.", ex);
+        }
+    }
+
     private void loadCards() {
         try {
             list.clear();
             list.addAll(StarredCard.asList(storing.getJsonArray(PK.STARRED_CARDS)));
             Collections.sort(list, new AddedAtComparator());
         } catch (JSONException ex) {
-            Logging.log(ex);
+            Log.e(TAG, "Failed loading JSON.", ex);
         }
     }
 
@@ -136,8 +139,7 @@ public class StarredCardsManager {
 
                     try {
                         blackText = blackText.replaceFirst("____", "<u>" + whiteText + "</u>");
-                    } catch (ArrayIndexOutOfBoundsException ex) {
-                        Logging.log(ex);
+                    } catch (ArrayIndexOutOfBoundsException ignored) {
                     }
 
                     firstCapital = false;

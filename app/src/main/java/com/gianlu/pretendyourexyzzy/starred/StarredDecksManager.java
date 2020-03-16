@@ -1,9 +1,10 @@
 package com.gianlu.pretendyourexyzzy.starred;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.preferences.json.JsonStoring;
 import com.gianlu.pretendyourexyzzy.PK;
 
@@ -22,6 +23,7 @@ public class StarredDecksManager {
     private static StarredDecksManager instance;
     private final JsonStoring storing;
     private final List<StarredDeck> list;
+    private static final String TAG = StarredDecksManager.class.getSimpleName();
 
     private StarredDecksManager() {
         storing = JsonStoring.intoPrefs();
@@ -54,7 +56,7 @@ public class StarredDecksManager {
             for (StarredDeck deck : list) array.put(deck.toJson());
             storing.putJsonArray(PK.STARRED_DECKS, array);
         } catch (JSONException ex) {
-            Logging.log(ex);
+            Log.e(TAG, "Failed saving decks.", ex);
         }
     }
 
@@ -73,7 +75,7 @@ public class StarredDecksManager {
             list.addAll(StarredDeck.asList(storing.getJsonArray(PK.STARRED_DECKS)));
             Collections.sort(list, new AddedAtComparator());
         } catch (JSONException ex) {
-            Logging.log(ex);
+            Log.e(TAG, "Failed loading decks.", ex);
         }
     }
 

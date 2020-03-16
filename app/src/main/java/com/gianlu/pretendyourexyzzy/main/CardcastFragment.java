@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.main;
 import android.app.SearchManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,7 +20,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.DialogUtils;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.activities.CardcastDeckActivity;
@@ -173,9 +173,11 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
             rmv.loadListData(new CardcastDecksAdapter(getContext(), cardcast, search, decks, LIMIT, this));
     }
 
+    private static final String TAG = CardcastFragment.class.getSimpleName();
+
     @Override
     public void onException(@NonNull Exception ex) {
-        Logging.log(ex);
+        Log.e(TAG, "Search failed.", ex);
         rmv.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 

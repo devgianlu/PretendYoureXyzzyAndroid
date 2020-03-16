@@ -5,6 +5,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +40,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.List;
 
 public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> implements DecksAdapter.Listener {
+    private static final String TAG = CardcastSheet.class.getSimpleName();
     private OngoingGameHelper.Listener listener;
     private RegisteredPyx pyx;
     private RecyclerView list;
@@ -93,7 +95,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
-            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading).ex(ex));
+            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
             dismissAllowingStateLoss();
             return;
         }
@@ -107,7 +109,8 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
 
             @Override
             public void onException(@NonNull Exception ex) {
-                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading).ex(ex));
+                Log.e(TAG, "Failed getting Cardcast decks.", ex);
+                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
                 dismissAllowingStateLoss();
             }
         });
@@ -172,7 +175,8 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
 
             @Override
             public void onException(@NonNull Exception ex) {
-                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedRemovingCardcastDeck).ex(ex));
+                Log.e(TAG, "Failed removing Cardcast deck.", ex);
+                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedRemovingCardcastDeck));
             }
         });
     }

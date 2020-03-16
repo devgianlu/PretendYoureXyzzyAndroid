@@ -4,12 +4,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
-import com.gianlu.commonutils.logging.Logging;
 import com.google.android.gms.tasks.Tasks;
 
 import org.json.JSONArray;
@@ -38,6 +38,7 @@ import static xyz.gianlu.pyxoverloaded.Utils.overloadedServerUrl;
 import static xyz.gianlu.pyxoverloaded.Utils.singletonJsonBody;
 
 public class OverloadedChatApi implements Closeable {
+    private static final String TAG = OverloadedApi.class.getSimpleName();
     private final OverloadedApi api;
     private final ChatDatabaseHelper db;
 
@@ -140,7 +141,7 @@ public class OverloadedChatApi implements Closeable {
             try {
                 dispatchMessageSent(chatId, message);
             } catch (JSONException ex) {
-                Logging.log(ex);
+                Log.e(TAG, "Failed dispatching message sent.", ex);
             }
         }, callback::onFailed);
     }

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.util.LruCache;
 
 import androidx.annotation.NonNull;
@@ -16,7 +17,6 @@ import androidx.annotation.WorkerThread;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.api.models.CardcastCost;
@@ -45,6 +45,7 @@ import okhttp3.ResponseBody;
 
 public class Cardcast {
     private static final String BASE_URL = "https://api.cardcastgame.com/v1/";
+    private static final String TAG = Cardcast.class.getSimpleName();
     private static Cardcast instance;
     private final OkHttpClient client;
     private final ExecutorService executor;
@@ -119,7 +120,7 @@ public class Cardcast {
                             post(() -> listener.onDone(search, CardcastDecks.singleton(info)));
                             return;
                         } catch (IOException | JSONException ex) {
-                            Logging.log(ex);
+                            Log.e(TAG, "Failed requesting deck.", ex);
                         }
                     }
 

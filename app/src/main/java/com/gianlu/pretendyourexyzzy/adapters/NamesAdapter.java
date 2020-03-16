@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -35,6 +36,7 @@ import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
 public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHolder, Name, NamesAdapter.Sorting, String> {
+    private static final String TAG = NamesAdapter.class.getSimpleName();
     private final LayoutInflater inflater;
     private final List<String> overloadedUsers;
     private final Listener listener;
@@ -112,7 +114,8 @@ public class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHo
 
                         @Override
                         public void onFailed(@NotNull Exception ex) {
-                            listener.showToast(Toaster.build().message(R.string.failedAddingFriend).ex(ex).extra(username));
+                            Log.e(TAG, "Failed adding friend.", ex);
+                            listener.showToast(Toaster.build().message(R.string.failedAddingFriend).extra(username));
                         }
                     });
                     return true;

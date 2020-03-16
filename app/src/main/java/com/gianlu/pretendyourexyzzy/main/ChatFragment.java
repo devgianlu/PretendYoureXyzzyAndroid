@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.main;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +15,6 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
@@ -23,6 +23,7 @@ import com.gianlu.pretendyourexyzzy.main.chats.ChatController;
 import com.gianlu.pretendyourexyzzy.main.chats.PyxChat;
 
 public class ChatFragment extends FragmentWithDialog implements ChatAdapter.Listener, ChatController.Listener {
+    private static final String TAG = ChatFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
     private ChatAdapter adapter;
     private ImageButton send;
@@ -84,7 +85,6 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
         try {
             controller.init();
         } catch (ChatController.InitException ex) {
-            Logging.log(ex);
             this.rmv.showError(R.string.failedLoading);
             return layout;
         }
@@ -107,14 +107,15 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
 
                 @Override
                 public void unknownCommand() {
-                    showToast(Toaster.build().message(R.string.unknownChatCommand).error(false));
+                    showToast(Toaster.build().message(R.string.unknownChatCommand));
                     send.setEnabled(true);
                     message.setEnabled(true);
                 }
 
                 @Override
                 public void onFailed(@NonNull Exception ex) {
-                    showToast(Toaster.build().message(R.string.failedSendMessage).ex(ex));
+                    Log.e(TAG, "Failed sending message.", ex);
+                    showToast(Toaster.build().message(R.string.failedSendMessage));
                     send.setEnabled(true);
                     message.setEnabled(true);
                 }

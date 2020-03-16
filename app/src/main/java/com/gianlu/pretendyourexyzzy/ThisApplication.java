@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy;
 
 import com.bumptech.glide.Glide;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.api.BaseCardUrlLoader;
 import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
@@ -22,11 +21,7 @@ public class ThisApplication extends AnalyticsApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        Logging.clearLogs(this, 3); // Due to enforced logging
-
         Glide.get(this).getRegistry().prepend(BaseCard.class, InputStream.class, new BaseCardUrlLoader.Factory());
-
         if (OverloadedUtils.isSignedIn()) OverloadedApi.init(this);
     }
 

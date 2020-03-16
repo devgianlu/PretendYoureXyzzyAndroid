@@ -2,12 +2,12 @@ package com.gianlu.pretendyourexyzzy.overloaded;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.pretendyourexyzzy.R;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -35,6 +35,7 @@ import xyz.gianlu.pyxoverloaded.model.UserData;
 public final class OverloadedSignInHelper {
     public static final List<SignInProvider> SIGN_IN_PROVIDERS;
     private static final String CLIENT_ID = "596428580538-idv220mduj2clinjoq11sd0n60dgbjr4.apps.googleusercontent.com";
+    private static final String TAG = OverloadedSignInHelper.class.getSimpleName();
 
     static {
         SIGN_IN_PROVIDERS = new ArrayList<>();
@@ -55,13 +56,13 @@ public final class OverloadedSignInHelper {
                 try {
                     GoogleSignInAccount account = task.getResult(ApiException.class);
                     if (account == null) {
-                        Logging.log("Failed authenticating with Google!", true);
+                        Log.d(TAG, "Failed authenticating with Google!");
                         return null;
                     }
 
                     return GoogleAuthProvider.getCredential(account.getIdToken(), null);
                 } catch (ApiException ex) {
-                    Logging.log("Failed authenticating with Google!", ex);
+                    Log.e(TAG, "Failed authenticating with Google!", ex);
                     return null;
                 }
             }
@@ -86,7 +87,7 @@ public final class OverloadedSignInHelper {
                         return PlayGamesAuthProvider.getCredential(serverCode);
                 }
 
-                Logging.log("Failed authenticating with Google Play Games! " + result.getStatus(), true);
+                Log.e(TAG, "Failed authenticating with Google Play Games: " + result.getStatus());
                 return null;
             }
         });
@@ -120,7 +121,7 @@ public final class OverloadedSignInHelper {
 
         AuthCredential credential = currentFlow.provider.extractCredential(data);
         if (credential == null) {
-            Logging.log("Couldn't extract credentials: " + data, true);
+            Log.d(TAG, "Couldn't extract credentials: " + data);
             callback.onSignInFailed();
             return;
         }
@@ -131,7 +132,7 @@ public final class OverloadedSignInHelper {
                         AuthResult result = task.getResult();
                         FirebaseUser loggedUser;
                         if (result != null && (loggedUser = result.getUser()) != null) {
-                            Logging.log("Successfully logged in Firebase as " + loggedUser.getUid(), false);
+                            Log.i(TAG, "Successfully logged in Firebase as " + loggedUser.getUid());
                             OverloadedApi.get().registerUser(loggedUser, null, new UserDataCallback() {
                                 @Override
                                 public void onUserData(@NonNull UserData data) {
@@ -140,7 +141,7 @@ public final class OverloadedSignInHelper {
 
                                 @Override
                                 public void onFailed(@NonNull Exception ex) {
-                                    Logging.log(ex);
+                                    Log.e(TAG, "Failed registering user.", ex);
                                     FirebaseAuth.getInstance().signOut();
                                     callback.onSignInFailed();
                                 }
@@ -149,7 +150,7 @@ public final class OverloadedSignInHelper {
                         }
                     }
 
-                    Logging.log("Failed logging in Firebase!", task.getException());
+                    Log.e(TAG, "Failed logging in Firebase!", task.getException());
                     FirebaseAuth.getInstance().signOut();
                     callback.onSignInFailed();
                 });

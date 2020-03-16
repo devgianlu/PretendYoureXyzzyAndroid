@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.overloaded;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
@@ -16,7 +17,6 @@ import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.gianlu.commonutils.dialogs.DialogUtils;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
@@ -32,6 +32,7 @@ import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public final class OverloadedBillingHelper implements PurchasesUpdatedListener, UserDataCallback {
+    private static final String TAG = OverloadedBillingHelper.class.getSimpleName();
     private final Context context;
     private final Listener listener;
     public boolean wasBuying = false;
@@ -58,7 +59,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                     exception = null;
                 } else {
                     exception = new ExceptionWithType(ExceptionWithType.Type.BILLING, new IOException(br.getResponseCode() + ": " + br.getDebugMessage()));
-                    Logging.log(exception);
+                    Log.e(TAG, "Failed setting up billing client.", exception);
                 }
 
                 checkUpdateUi();
@@ -133,9 +134,9 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                 @Override
                 public void onFailed(@NonNull Exception ex) {
                     listener.dismissDialog();
-                    Logging.log(ex);
                     userData = null;
                     exception = new ExceptionWithType(ExceptionWithType.Type.OVERLOADED, ex);
+                    Log.e(TAG, "Failed getting user data.", ex);
                     checkUpdateUi();
                 }
             });
@@ -153,7 +154,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                 exception = null;
             } else {
                 exception = new ExceptionWithType(ExceptionWithType.Type.BILLING, new IOException(br.getResponseCode() + ": " + br.getDebugMessage()));
-                Logging.log(exception);
+                Log.e(TAG, "Failed getting SKU details.", exception);
             }
 
             checkUpdateUi();
@@ -232,9 +233,11 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     public void onFailed(@NonNull Exception ex) {
         userData = null;
         exception = new ExceptionWithType(ExceptionWithType.Type.OVERLOADED, ex);
+        Log.e(TAG, "Failed buying item.", ex);
+
         checkUpdateUi();
         listener.dismissDialog();
-        listener.showToast(Toaster.build().message(R.string.failedBuying).ex(ex));
+        listener.showToast(Toaster.build().message(R.string.failedBuying));
     }
 
     private void handleBillingErrors(@BillingClient.BillingResponseCode int code) {
@@ -281,7 +284,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
 
                 @Override
                 public void onFailed(@NonNull Exception ex) {
-                    Logging.log(ex);
+                    Log.e(TAG, "Failed getting user data.", ex);
                     listener.dismissDialog();
                 }
             });
@@ -383,7 +386,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     private static class ExceptionWithType extends Exception {
         private final Type type;
 
-        public ExceptionWithType(Type type, Throwable cause) {
+        ExceptionWithType(Type type, Throwable cause) {
             super(type.name(), cause);
             this.type = type;
         }

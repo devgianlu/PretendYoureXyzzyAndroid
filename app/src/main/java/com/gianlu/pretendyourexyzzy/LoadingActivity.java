@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -18,7 +19,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.preferences.Prefs;
@@ -59,6 +59,7 @@ import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, AskUsernameDialog.Listener, OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener {
     private static final int RC_SIGN_IN = 3;
+    private static final String TAG = LoadingActivity.class.getSimpleName();
     private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
     private final OverloadedBillingHelper billingHelper = new OverloadedBillingHelper(this, this);
     private TextInputLayout registerNickname;
@@ -141,8 +142,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                         if (Objects.equals(pair.key(), "game")) {
                             try {
                                 launchGame = new GamePermalink(Integer.parseInt(pair.value("")), new JSONObject()); // A bit hacky
-                            } catch (NumberFormatException ex) {
-                                Logging.log(ex);
+                            } catch (NumberFormatException ignored) {
                             }
                         } else if (Objects.equals(pair.key(), "password")) {
                             launchGamePassword = pair.value("");
@@ -177,7 +177,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
             @Override
             public void onException(@NonNull Exception ex) {
-                Logging.log(ex);
+                Log.e(TAG, "Failed loading welcome message.", ex);
                 welcomeMessage.setVisibility(View.GONE);
             }
         });
@@ -304,7 +304,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
                 @Override
                 public void onException(@NonNull Exception ex) {
-                    Logging.log(ex);
+                    Log.e(TAG, "Failed registering on server.", ex);
 
                     toggleLoading(false);
 
@@ -328,7 +328,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                         }
                     }
 
-                    Toaster.with(LoadingActivity.this).message(R.string.failedLoading).ex(ex).show();
+                    Log.e(TAG, "Failed registering user on server.", ex);
+                    Toaster.with(LoadingActivity.this).message(R.string.failedLoading).show();
                 }
             });
         });
@@ -361,7 +362,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         }
 
-        Toaster.with(this).message(R.string.failedLoading).ex(ex).show();
+        Log.e(TAG, "Failed loading server.", ex);
+        Toaster.with(this).message(R.string.failedLoading).show();
         changeServerDialog(false);
     }
 

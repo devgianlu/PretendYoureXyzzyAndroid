@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,7 +24,7 @@ import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.drawer.BaseDrawerItem;
 import com.gianlu.commonutils.drawer.DrawerManager;
-import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.logs.LogsHelper;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
@@ -83,152 +84,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         if (drawerManager != null) drawerManager.syncTogglerState();
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        Toolbar toolbar = findViewById(R.id.main_toolbar);
-        setSupportActionBar(toolbar);
-
-        OngoingGameHelper.setup(this);
-
-        try {
-            pyx = RegisteredPyx.get();
-        } catch (LevelMismatchException ex) {
-            Toaster.with(this).message(R.string.failedLoading).ex(ex).show();
-            startActivity(new Intent(this, LoadingActivity.class)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-            return;
-        }
-
-        DrawerManager.Config<User, DrawerItem> drawerConfig = new DrawerManager.Config<User, DrawerItem>(this)
-                .addMenuItem(new BaseDrawerItem<>(DrawerItem.HOME, R.drawable.baseline_home_24, getString(R.string.home)));
-
-        if (pyx.hasMetrics())
-            drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.USER_METRICS, R.drawable.baseline_person_24, getString(R.string.metrics)));
-
-        drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.STARRED_CARDS, R.drawable.baseline_star_24, getString(R.string.starredCards)))
-                .addMenuItem(new BaseDrawerItem<>(DrawerItem.STARRED_CARDCAST_DECKS, R.drawable.baseline_bookmarks_24, getString(R.string.starredCardcastDecks)))
-                .addMenuItemSeparator()
-                .addMenuItem(new BaseDrawerItem<>(DrawerItem.PREFERENCES, R.drawable.baseline_settings_24, getString(R.string.preferences)))
-                .addMenuItem(new BaseDrawerItem<>(DrawerItem.REPORT, R.drawable.baseline_report_problem_24, getString(R.string.report)))
-                .singleProfile(pyx.user(), this);
-
-        drawerManager = drawerConfig.build(this, findViewById(R.id.main_drawer), toolbar);
-        drawerManager.setActiveItem(DrawerItem.HOME);
-
-        navigation = new BottomNavigationManager(findViewById(R.id.main_navigation));
-        navigation.setOnNavigationItemSelectedListener(item -> {
-            switch (item) {
-                case PLAYERS:
-                    setTitle(getString(R.string.playersLabel) + " - " + getString(R.string.app_name));
-                    break;
-                case GAMES:
-                    setTitle(getString(R.string.games) + " - " + getString(R.string.app_name));
-                    break;
-                case CARDCAST:
-                    setTitle(getString(R.string.cardcast) + " - " + getString(R.string.app_name));
-                    break;
-                case ONGOING_GAME:
-                    setTitle(getString(R.string.gameLabel) + " - " + getString(R.string.app_name));
-                    break;
-                case GAME_CHAT:
-                    setTitle(getString(R.string.gameChat) + " - " + getString(R.string.app_name));
-                    break;
-                case GLOBAL_CHAT:
-                    setTitle(getString(R.string.globalChat) + " - " + getString(R.string.app_name));
-                    break;
-                case OVERLOADED:
-                    setTitle(getString(R.string.overloaded) + " - " + getString(R.string.app_name));
-                    break;
-            }
-
-            switchTo(item);
-
-            return true;
-        });
-        navigation.setOnNavigationItemReselectedListener(item -> {
-            switch (item) {
-                case PLAYERS:
-                    if (namesFragment != null) namesFragment.scrollToTop();
-                    break;
-                case GAMES:
-                    if (gamesFragment != null) gamesFragment.scrollToTop();
-                    break;
-                case GAME_CHAT:
-                    if (gameChatFragment != null) gameChatFragment.scrollToTop();
-                    break;
-                case GLOBAL_CHAT:
-                    if (globalChatFragment != null) globalChatFragment.scrollToTop();
-                    break;
-            }
-        });
-
-        setKeepScreenOn(Prefs.getBoolean(PK.KEEP_SCREEN_ON));
-
-        GPGamesHelper.setPopupView(this, (View) navigation.view.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
-
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        namesFragment = getOrAdd(transaction, Item.PLAYERS, NamesFragment::getInstance);
-        gamesFragment = getOrAdd(transaction, Item.GAMES, GamesFragment::getInstance);
-        cardcastFragment = getOrAdd(transaction, Item.CARDCAST, CardcastFragment::getInstance);
-
-        if (OverloadedUtils.isSignedIn()) {
-            overloadedFragment = getOrAdd(transaction, Item.OVERLOADED, OverloadedFragment::getInstance);
-            OverloadedApi.chat().getSummary();
-        }
-
-        if (pyx.config().globalChatEnabled())
-            globalChatFragment = getOrAdd(transaction, Item.GLOBAL_CHAT, ChatFragment::getGlobalInstance);
-
-        transaction.commitNow();
-
-        Item currentFragment = null;
-        if (savedInstanceState != null) {
-            currentGame = (GamePermalink) savedInstanceState.getSerializable("currentGame");
-            currentFragment = (Item) savedInstanceState.getSerializable("currentFragment");
-        }
-
-        ongoingGameFragment = (OngoingGameFragment) getSupportFragmentManager().findFragmentByTag(Item.ONGOING_GAME.tag);
-        gameChatFragment = (ChatFragment) getSupportFragmentManager().findFragmentByTag(Item.GAME_CHAT.tag);
-
-        if (currentGame == null) {
-            inflateNavigation(Layout.LOBBY);
-            if (currentFragment == null) navigation.setSelectedItem(Item.GAMES);
-
-            if (gameChatFragment != null || ongoingGameFragment != null) {
-                transaction = getSupportFragmentManager().beginTransaction();
-                if (gameChatFragment != null) transaction.remove(gameChatFragment);
-                if (ongoingGameFragment != null) transaction.remove(ongoingGameFragment);
-                transaction.commitNow();
-            }
-        } else {
-            if (ongoingGameFragment == null) {
-                transaction = getSupportFragmentManager().beginTransaction();
-                ongoingGameFragment = OngoingGameFragment.getInstance(currentGame);
-                addOrReplace(transaction, ongoingGameFragment, Item.ONGOING_GAME);
-
-                if (pyx.config().gameChatEnabled()) {
-                    gameChatFragment = ChatFragment.getGameInstance(currentGame.gid);
-                    addOrReplace(transaction, gameChatFragment, Item.GAME_CHAT);
-                }
-
-                transaction.commitNow();
-            }
-
-            inflateNavigation(Layout.ONGOING);
-            if (currentFragment == null) navigation.setSelectedItem(Item.ONGOING_GAME);
-        }
-
-        if (currentFragment != null) navigation.setSelectedItem(currentFragment);
-
-        GamePermalink perm = (GamePermalink) getIntent().getSerializableExtra("game");
-        if (perm != null) {
-            gamesFragment.launchGame(perm, getIntent().getStringExtra("password"), getIntent().getBooleanExtra("shouldRequest", true));
-            getIntent().removeExtra("gid");
-        }
-    }
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     @NonNull
     private <F extends Fragment> F getOrAdd(@NonNull FragmentTransaction transaction, @NonNull Item item, @NonNull CreateFragment<F> provider) {
@@ -398,6 +254,153 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
+
+        OngoingGameHelper.setup(this);
+
+        try {
+            pyx = RegisteredPyx.get();
+        } catch (LevelMismatchException ex) {
+            Toaster.with(this).message(R.string.failedLoading).show();
+            startActivity(new Intent(this, LoadingActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+            return;
+        }
+
+        DrawerManager.Config<User, DrawerItem> drawerConfig = new DrawerManager.Config<User, DrawerItem>(this)
+                .addMenuItem(new BaseDrawerItem<>(DrawerItem.HOME, R.drawable.baseline_home_24, getString(R.string.home)));
+
+        if (pyx.hasMetrics())
+            drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.USER_METRICS, R.drawable.baseline_person_24, getString(R.string.metrics)));
+
+        drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.STARRED_CARDS, R.drawable.baseline_star_24, getString(R.string.starredCards)))
+                .addMenuItem(new BaseDrawerItem<>(DrawerItem.STARRED_CARDCAST_DECKS, R.drawable.baseline_bookmarks_24, getString(R.string.starredCardcastDecks)))
+                .addMenuItemSeparator()
+                .addMenuItem(new BaseDrawerItem<>(DrawerItem.PREFERENCES, R.drawable.baseline_settings_24, getString(R.string.preferences)))
+                .addMenuItem(new BaseDrawerItem<>(DrawerItem.REPORT, R.drawable.baseline_report_problem_24, getString(R.string.report)))
+                .singleProfile(pyx.user(), this);
+
+        drawerManager = drawerConfig.build(this, findViewById(R.id.main_drawer), toolbar);
+        drawerManager.setActiveItem(DrawerItem.HOME);
+
+        navigation = new BottomNavigationManager(findViewById(R.id.main_navigation));
+        navigation.setOnNavigationItemSelectedListener(item -> {
+            switch (item) {
+                case PLAYERS:
+                    setTitle(getString(R.string.playersLabel) + " - " + getString(R.string.app_name));
+                    break;
+                case GAMES:
+                    setTitle(getString(R.string.games) + " - " + getString(R.string.app_name));
+                    break;
+                case CARDCAST:
+                    setTitle(getString(R.string.cardcast) + " - " + getString(R.string.app_name));
+                    break;
+                case ONGOING_GAME:
+                    setTitle(getString(R.string.gameLabel) + " - " + getString(R.string.app_name));
+                    break;
+                case GAME_CHAT:
+                    setTitle(getString(R.string.gameChat) + " - " + getString(R.string.app_name));
+                    break;
+                case GLOBAL_CHAT:
+                    setTitle(getString(R.string.globalChat) + " - " + getString(R.string.app_name));
+                    break;
+                case OVERLOADED:
+                    setTitle(getString(R.string.overloaded) + " - " + getString(R.string.app_name));
+                    break;
+            }
+
+            switchTo(item);
+
+            return true;
+        });
+        navigation.setOnNavigationItemReselectedListener(item -> {
+            switch (item) {
+                case PLAYERS:
+                    if (namesFragment != null) namesFragment.scrollToTop();
+                    break;
+                case GAMES:
+                    if (gamesFragment != null) gamesFragment.scrollToTop();
+                    break;
+                case GAME_CHAT:
+                    if (gameChatFragment != null) gameChatFragment.scrollToTop();
+                    break;
+                case GLOBAL_CHAT:
+                    if (globalChatFragment != null) globalChatFragment.scrollToTop();
+                    break;
+            }
+        });
+
+        setKeepScreenOn(Prefs.getBoolean(PK.KEEP_SCREEN_ON));
+
+        GPGamesHelper.setPopupView(this, (View) navigation.view.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        namesFragment = getOrAdd(transaction, Item.PLAYERS, NamesFragment::getInstance);
+        gamesFragment = getOrAdd(transaction, Item.GAMES, GamesFragment::getInstance);
+        cardcastFragment = getOrAdd(transaction, Item.CARDCAST, CardcastFragment::getInstance);
+
+        if (OverloadedUtils.isSignedIn()) {
+            overloadedFragment = getOrAdd(transaction, Item.OVERLOADED, OverloadedFragment::getInstance);
+            OverloadedApi.chat().getSummary();
+        }
+
+        if (pyx.config().globalChatEnabled())
+            globalChatFragment = getOrAdd(transaction, Item.GLOBAL_CHAT, ChatFragment::getGlobalInstance);
+
+        transaction.commitNow();
+
+        Item currentFragment = null;
+        if (savedInstanceState != null) {
+            currentGame = (GamePermalink) savedInstanceState.getSerializable("currentGame");
+            currentFragment = (Item) savedInstanceState.getSerializable("currentFragment");
+        }
+
+        ongoingGameFragment = (OngoingGameFragment) getSupportFragmentManager().findFragmentByTag(Item.ONGOING_GAME.tag);
+        gameChatFragment = (ChatFragment) getSupportFragmentManager().findFragmentByTag(Item.GAME_CHAT.tag);
+
+        if (currentGame == null) {
+            inflateNavigation(Layout.LOBBY);
+            if (currentFragment == null) navigation.setSelectedItem(Item.GAMES);
+
+            if (gameChatFragment != null || ongoingGameFragment != null) {
+                transaction = getSupportFragmentManager().beginTransaction();
+                if (gameChatFragment != null) transaction.remove(gameChatFragment);
+                if (ongoingGameFragment != null) transaction.remove(ongoingGameFragment);
+                transaction.commitNow();
+            }
+        } else {
+            if (ongoingGameFragment == null) {
+                transaction = getSupportFragmentManager().beginTransaction();
+                ongoingGameFragment = OngoingGameFragment.getInstance(currentGame);
+                addOrReplace(transaction, ongoingGameFragment, Item.ONGOING_GAME);
+
+                if (pyx.config().gameChatEnabled()) {
+                    gameChatFragment = ChatFragment.getGameInstance(currentGame.gid);
+                    addOrReplace(transaction, gameChatFragment, Item.GAME_CHAT);
+                }
+
+                transaction.commitNow();
+            }
+
+            inflateNavigation(Layout.ONGOING);
+            if (currentFragment == null) navigation.setSelectedItem(Item.ONGOING_GAME);
+        }
+
+        if (currentFragment != null) navigation.setSelectedItem(currentFragment);
+
+        GamePermalink perm = (GamePermalink) getIntent().getSerializableExtra("game");
+        if (perm != null) {
+            gamesFragment.launchGame(perm, getIntent().getStringExtra("password"), getIntent().getBooleanExtra("shouldRequest", true));
+            getIntent().removeExtra("gid");
+        }
+    }
+
+    @Override
     public void onLeftGame() {
         currentGame = null;
         ongoingGameFragment = null;
@@ -420,7 +423,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
                 transaction.commit();
             } catch (IllegalStateException ex) {
-                Logging.log("Failed fragments transaction on left game.", ex);
+                Log.d(TAG, "Failed fragments transaction on left game.", ex);
             }
         }
     }
@@ -452,12 +455,14 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 @Override
                 public void onException(@NonNull Exception ex) {
                     dismissDialog();
-                    Toaster.with(MainActivity.this).message(R.string.failedChangingOptions).ex(ex).show();
+                    Log.e(TAG, "Failed changing game options.", ex);
+                    Toaster.with(MainActivity.this).message(R.string.failedChangingOptions).show();
                 }
             });
         } catch (JSONException ex) {
             dismissDialog();
-            Toaster.with(this).message(R.string.failedChangingOptions).ex(ex).show();
+            Log.e(TAG, "Failed parsing game options.", ex);
+            Toaster.with(this).message(R.string.failedChangingOptions).show();
         }
     }
 
@@ -487,7 +492,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 startActivity(new Intent(this, PreferenceActivity.class));
                 return true;
             case REPORT:
-                Logging.sendEmail(this, null);
+                LogsHelper.sendEmail(this, null);
                 return true;
         }
 

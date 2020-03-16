@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 
 import androidx.annotation.NonNull;
@@ -12,7 +13,6 @@ import com.danielstone.materialaboutlibrary.items.MaterialAboutActionItem;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutItem;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.DialogUtils;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.preferences.BasePreferenceActivity;
 import com.gianlu.commonutils.preferences.BasePreferenceFragment;
 import com.gianlu.commonutils.preferences.MaterialAboutPreferenceItem;
@@ -43,6 +43,8 @@ import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public class PreferenceActivity extends BasePreferenceActivity implements OverloadedChooseProviderDialog.Listener {
+
+    private static final String TAG = PreferenceActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -146,7 +148,7 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                 if (link) {
                     AuthCredential credential = signInHelper.extractCredential(data);
                     if (credential == null) {
-                        Logging.log("Couldn't extract credentials: " + data, true);
+                        Log.w(TAG, "Couldn't extract credentials: " + data);
                         showToast(Toaster.build().message(R.string.failedSigningIn));
                         return;
                     }
@@ -254,9 +256,9 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
 
                     @Override
                     public void onFailed(@NonNull Exception ex) {
+                        Log.e(TAG, "Failed getting user data.", ex);
                         purchaseStatus.setSummary("<error>");
                         purchaseStatus.setLoading(false);
-                        Logging.log(ex);
                     }
                 });
 

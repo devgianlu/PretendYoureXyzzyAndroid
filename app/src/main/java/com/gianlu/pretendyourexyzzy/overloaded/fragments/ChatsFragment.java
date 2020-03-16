@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.overloaded.fragments;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.gianlu.commonutils.adapters.NotFilterable;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
@@ -47,37 +47,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         return fragment;
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        rmv = new RecyclerMessageView(requireContext());
-        rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
-        rmv.dividerDecoration(RecyclerView.VERTICAL);
-        rmv.startLoading();
-
-        OverloadedApi.chat().listChats(getActivity(), new ChatsCallback() {
-            @Override
-            public void onRemoteChats(@NonNull List<Chat> chats) {
-                if (adapter != null) adapter.itemsChanged(chats);
-                else rmv.loadListData(adapter = new ChatsAdapter(requireContext(), chats));
-            }
-
-            @Override
-            public void onLocalChats(@NonNull List<Chat> chats) {
-                rmv.loadListData(adapter = new ChatsAdapter(requireContext(), chats));
-            }
-
-            @Override
-            public void onFailed(@NonNull Exception ex) {
-                rmv.showError(R.string.failedLoading);
-                Logging.log(ex);
-            }
-        });
-
-        OverloadedApi.get().addEventListener(this);
-
-        return rmv;
-    }
+    private static final String TAG = ChatsFragment.class.getSimpleName();
 
     @Override
     public void onEvent(@NonNull OverloadedApi.Event event) throws JSONException {
@@ -100,6 +70,38 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        rmv = new RecyclerMessageView(requireContext());
+        rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
+        rmv.dividerDecoration(RecyclerView.VERTICAL);
+        rmv.startLoading();
+
+        OverloadedApi.chat().listChats(getActivity(), new ChatsCallback() {
+            @Override
+            public void onRemoteChats(@NonNull List<Chat> chats) {
+                if (adapter != null) adapter.itemsChanged(chats);
+                else rmv.loadListData(adapter = new ChatsAdapter(requireContext(), chats));
+            }
+
+            @Override
+            public void onLocalChats(@NonNull List<Chat> chats) {
+                rmv.loadListData(adapter = new ChatsAdapter(requireContext(), chats));
+            }
+
+            @Override
+            public void onFailed(@NonNull Exception ex) {
+                Log.e(TAG, "Failed getting chats.", ex);
+                rmv.showError(R.string.failedLoading);
+            }
+        });
+
+        OverloadedApi.get().addEventListener(this);
+
+        return rmv;
     }
 
     private class ChatsAdapter extends OrderedRecyclerViewAdapter<ChatsAdapter.ViewHolder, Chat, Void, NotFilterable> {
@@ -137,7 +139,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
 
                 @Override
                 public void onFailed(@NotNull Exception ex) {
-                    Logging.log(ex);
+                    Log.e(TAG, "Failed getting messages.", ex);
                 }
             });
         }

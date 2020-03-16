@@ -77,7 +77,7 @@ public final class Dialogs {
                 Pyx.Server.addUserServer(new Pyx.Server(url, null, nameStr, Pyx.Server.Params.defaultValues(), true));
                 listener.loadServers();
             } catch (JSONException ex) {
-                Toaster.with(context).message(R.string.failedAddingServer).ex(ex).show();
+                Toaster.with(context).message(R.string.failedAddingServer).show();
             }
 
             dialogInterface.dismiss();

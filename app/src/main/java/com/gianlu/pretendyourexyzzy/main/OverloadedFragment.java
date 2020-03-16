@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.main;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +16,6 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.GPGamesHelper;
 import com.gianlu.pretendyourexyzzy.R;
@@ -38,6 +38,7 @@ import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public class OverloadedFragment extends FragmentWithDialog {
+    private static final String TAG = OverloadedFragment.class.getSimpleName();
     private ImagesListView achievements;
     private SuperTextView cardsPlayed;
     private SuperTextView roundsPlayed;
@@ -85,7 +86,7 @@ public class OverloadedFragment extends FragmentWithDialog {
 
             @Override
             public void onFailed(@NonNull Exception ex) {
-                Logging.log(ex);
+                Log.e(TAG, "Failed loading achievements.", ex);
                 onLoaded(Collections.emptyList());
             }
         });
@@ -100,7 +101,7 @@ public class OverloadedFragment extends FragmentWithDialog {
 
             @Override
             public void onFailed(@NonNull Exception ex) {
-                Logging.log(ex);
+                Log.e(TAG, "Failed loading events.", ex);
                 onLoaded(Collections.emptyList());
             }
         });
@@ -135,7 +136,7 @@ public class OverloadedFragment extends FragmentWithDialog {
 
             @Override
             public void onFailed(@NonNull Exception ex) {
-                Logging.log(ex); // Will hardly fail
+                Log.e(TAG, "Failed loading user data.", ex);
             }
         });
 

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,7 +21,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.NamesAdapter;
@@ -43,6 +43,7 @@ import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.callback.UsersCallback;
 
 public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<List<Name>>, NamesAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, OverloadedApi.EventListener {
+    private static final String TAG = NamesFragment.class.getSimpleName();
     private final List<String> overloadedUsers = new ArrayList<>();
     private RecyclerMessageView rmv;
     private int names = -1;
@@ -121,7 +122,7 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
-            Logging.log(ex);
+            Log.e(TAG, "LevelMismatchException", ex);
             rmv.showError(R.string.failedLoading);
             return rmv;
         }
@@ -168,7 +169,7 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
                 @Override
                 public void onFailed(@NonNull Exception ex) {
                     overloadedUsers.clear();
-                    Logging.log(ex);
+                    Log.e(TAG, "Failed listing Overloaded users.", ex);
                 }
             });
         }
@@ -201,7 +202,7 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
 
     @Override
     public void onException(@NonNull Exception ex) {
-        Logging.log(ex);
+        Log.e(TAG, "Failed loading names.", ex);
         if (!PyxException.solveNotRegistered(getContext(), ex))
             rmv.showError(R.string.failedLoading_reason, ex.getMessage());
     }

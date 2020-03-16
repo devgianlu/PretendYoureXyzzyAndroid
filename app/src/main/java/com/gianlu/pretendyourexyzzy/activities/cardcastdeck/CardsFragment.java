@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.activities.cardcastdeck;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +14,6 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.CardsAdapter;
@@ -28,6 +28,7 @@ import com.gianlu.pretendyourexyzzy.dialogs.CardImageZoomDialog;
 import java.util.List;
 
 public class CardsFragment extends FragmentWithDialog implements Cardcast.OnResult<List<CardcastCard>>, CardsAdapter.Listener {
+    private static final String TAG = CardsFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
 
     @NonNull
@@ -75,7 +76,7 @@ public class CardsFragment extends FragmentWithDialog implements Cardcast.OnResu
 
     @Override
     public void onException(@NonNull Exception ex) {
-        Logging.log(ex);
+        Log.e(TAG, "Failed loading cards.", ex);
         rmv.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 

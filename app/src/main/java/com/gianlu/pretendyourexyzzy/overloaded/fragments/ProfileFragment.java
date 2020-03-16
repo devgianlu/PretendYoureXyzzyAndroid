@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.overloaded.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,7 +18,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.GPGamesHelper;
@@ -61,6 +61,8 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
         return fragment;
     }
 
+    private static final String TAG = ProfileFragment.class.getSimpleName();
+
     @Override
     public void onResume() {
         super.onResume();
@@ -78,7 +80,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
 
             @Override
             public void onFailed(@NonNull Exception ex) {
-                Logging.log(ex);
+                Log.e(TAG, "Failed getting achievements.", ex);
                 onLoaded(Collections.emptyList());
             }
         });
@@ -101,7 +103,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
             @Override
             public void onFailed(@NotNull Exception ex) {
                 friendsAdapter = null;
-                Logging.log(ex);
+                Log.e(TAG, "Failed getting friends status.", ex);
                 friends.showError(R.string.failedLoading);
             }
         });
@@ -221,7 +223,8 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
 
                             @Override
                             public void onFailed(@NonNull Exception ex) {
-                                showToast(Toaster.build().message(R.string.failedCreatingChat).ex(ex).extra(username));
+                                Log.e(TAG, "Failed opening chat.", ex);
+                                showToast(Toaster.build().message(R.string.failedCreatingChat).extra(username));
                             }
                         });
                         return true;
@@ -235,7 +238,8 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
 
                             @Override
                             public void onFailed(@NotNull Exception ex) {
-                                showToast(Toaster.build().message(R.string.failedRemovingFriend).ex(ex).extra(username));
+                                Log.e(TAG, "Failed removing friend.", ex);
+                                showToast(Toaster.build().message(R.string.failedRemovingFriend).extra(username));
                             }
                         });
                         return true;
