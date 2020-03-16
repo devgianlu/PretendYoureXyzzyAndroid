@@ -84,7 +84,6 @@ public class PreferenceActivity extends BasePreferenceActivity {
         private void showUnblockDialog(@NonNull Context context) {
             String[] entries = Prefs.getSet(PK.BLOCKED_USERS, new HashSet<>()).toArray(new String[0]);
             boolean[] checked = new boolean[entries.length];
-            for (int i = 0; i < checked.length; i++) checked[i] = false;
 
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
             builder.setTitle(R.string.unblockUser)
@@ -131,12 +130,14 @@ public class PreferenceActivity extends BasePreferenceActivity {
         public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
             if (requestCode == GOOGLE_SIGN_IN_CODE) {
                 GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+                if (result == null) return;
+
                 if (result.isSuccess()) {
                     onBackPressed();
                 } else {
                     String msg = result.getStatus().getStatusMessage();
                     if (msg != null && !msg.isEmpty())
-                        showToast(Toaster.build().message(msg).error(false));
+                        showToast(Toaster.build().message(msg));
                 }
             } else {
                 super.onActivityResult(requestCode, resultCode, data);

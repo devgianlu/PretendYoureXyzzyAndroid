@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.metrics;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.MessageView;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.R;
@@ -82,7 +82,6 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         try {
             pyx = Pyx.get();
         } catch (LevelMismatchException ex) {
-            Logging.log(ex);
             loading.setVisibility(View.GONE);
             message.error(R.string.failedLoading);
             return layout;
@@ -113,9 +112,11 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         }
     }
 
+    private static final String TAG = SessionHistoryFragment.class.getSimpleName();
+
     @Override
     public void onException(@NonNull Exception ex) {
-        Logging.log(ex);
+        Log.e(TAG, "Failed loading history.", ex);
         loading.setVisibility(View.GONE);
         container.setVisibility(View.GONE);
         message.error(R.string.failedLoading_reason, ex.getMessage());

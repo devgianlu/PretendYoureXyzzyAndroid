@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,7 +16,6 @@ import androidx.annotation.WorkerThread;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.preferences.json.JsonStoring;
 import com.gianlu.commonutils.ui.OfflineActivity;
@@ -39,7 +39,7 @@ import org.json.JSONObject;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -108,10 +108,12 @@ public class Pyx implements Closeable {
         return request(operation, false, params);
     }
 
+    private static final String TAG = Pyx.class.getSimpleName();
+
     @NonNull
     @WorkerThread
     private PyxResponse request(@NonNull Op operation, boolean retried, PyxRequest.Param... params) throws IOException, JSONException, PyxException {
-        FormBody.Builder reqBody = new FormBody.Builder(Charset.forName("UTF-8")).add("o", operation.val);
+        FormBody.Builder reqBody = new FormBody.Builder(StandardCharsets.UTF_8).add("o", operation.val);
         for (PyxRequest.Param pair : params) {
             if (pair.value() != null)
                 reqBody.add(pair.key(), pair.value(""));
@@ -134,9 +136,9 @@ public class Pyx implements Closeable {
 
                 try {
                     raiseException(obj);
-                    Logging.log(operation + "; " + Arrays.toString(params), false);
+                    Log.v(TAG, operation + "; " + Arrays.toString(params));
                 } catch (PyxException ex) {
-                    Logging.log("op = " + operation + ", params = " + Arrays.toString(params) + ", code = " + ex.errorCode + ", retried = " + retried, true);
+                    Log.d(TAG, "op = " + operation + ", params = " + Arrays.toString(params) + ", code = " + ex.errorCode + ", retried = " + retried, ex);
                     if (!retried && ex.shouldRetry()) return request(operation, true, params);
                     throw ex;
                 }
@@ -452,6 +454,8 @@ public class Pyx implements Closeable {
         private transient HttpUrl configUrl;
         private transient HttpUrl statsUrl;
 
+        private static final String TAG = Server.class.getSimpleName();
+
         public Server(@NonNull HttpUrl url, @Nullable HttpUrl metricsUrl, @NonNull String name, @NonNull Params params, boolean editable) {
             this.url = url;
             this.metricsUrl = metricsUrl;
@@ -531,7 +535,7 @@ public class Pyx implements Closeable {
             try {
                 return HttpUrl.parse(str);
             } catch (IllegalStateException ex) {
-                Logging.log(ex);
+                Log.w(TAG, "Failed parsing URL: " + str, ex);
                 return null;
             }
         }
@@ -552,7 +556,7 @@ public class Pyx implements Closeable {
                 array = JsonStoring.intoPrefs().getJsonArray(key);
                 if (array == null) array = new JSONArray();
             } catch (JSONException ex) {
-                Logging.log(ex);
+                Log.e(TAG, "Failed parsing JSON.", ex);
                 return new ArrayList<>();
             }
 
@@ -560,7 +564,7 @@ public class Pyx implements Closeable {
                 try {
                     servers.add(new Server(array.getJSONObject(i)));
                 } catch (JSONException ex) {
-                    Logging.log(ex);
+                    Log.e(TAG, "Failed parsing JSON.", ex);
                 }
             }
 
@@ -593,14 +597,14 @@ public class Pyx implements Closeable {
             try {
                 server = getServer(PK.USER_SERVERS, name);
             } catch (JSONException ex) {
-                Logging.log(ex);
+                Log.e(TAG, "Failed parsing JSON.", ex);
             }
 
             if (server == null) {
                 try {
                     server = getServer(PK.API_SERVERS, name);
                 } catch (JSONException ex) {
-                    Logging.log(ex);
+                    Log.e(TAG, "Failed parsing JSON.", ex);
                 }
             }
 
@@ -639,7 +643,7 @@ public class Pyx implements Closeable {
 
                 JsonStoring.intoPrefs().putJsonArray(PK.USER_SERVERS, array);
             } catch (JSONException ex) {
-                Logging.log(ex);
+                Log.e(TAG, "Failed parsing JSON.", ex);
             }
         }
 
@@ -647,7 +651,7 @@ public class Pyx implements Closeable {
             try {
                 return getServer(PK.USER_SERVERS, name) != null || getServer(PK.API_SERVERS, name) != null;
             } catch (JSONException ex) {
-                Logging.log(ex);
+                Log.e(TAG, "Failed parsing JSON.", ex);
                 return true;
             }
         }

@@ -107,7 +107,7 @@ public class EditGameOptionsDialog extends DialogFragment {
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
-            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading).ex(ex));
+            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
             dismissAllowingStateLoss();
             return layout;
         }

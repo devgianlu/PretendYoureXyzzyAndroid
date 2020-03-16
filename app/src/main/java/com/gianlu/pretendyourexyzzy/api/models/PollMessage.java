@@ -3,7 +3,6 @@ package com.gianlu.pretendyourexyzzy.api.models;
 import androidx.annotation.NonNull;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.logging.Logging;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,8 +40,7 @@ public class PollMessage {
         for (int i = 0; i < array.length(); i++) {
             try {
                 list.add(new PollMessage(array.getJSONObject(i)));
-            } catch (IllegalArgumentException ex) {
-                Logging.log("Skipping poll message due to illegal event.", ex);
+            } catch (IllegalArgumentException ignored) {
             }
         }
 

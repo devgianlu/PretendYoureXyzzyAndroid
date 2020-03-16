@@ -5,6 +5,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,7 +24,6 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.tutorial.BaseTutorial;
@@ -138,6 +138,8 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         return false;
     }
 
+    private static final String TAG = GamesFragment.class.getSimpleName();
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -149,7 +151,6 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
-            Logging.log(ex);
             this.rmv.showError(R.string.failedLoading);
             return layout;
         }
@@ -169,8 +170,9 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
                 @Override
                 public void onException(@NonNull Exception ex) {
+                    Log.e(TAG, "Failed creating game.", ex);
                     DialogUtils.dismissDialog(getActivity());
-                    showToast(Toaster.build().message(R.string.failedCreatingGame).ex(ex));
+                    showToast(Toaster.build().message(R.string.failedCreatingGame));
                 }
             });
         });
@@ -221,7 +223,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
     @Override
     public void onException(@NonNull Exception ex) {
-        Logging.log(ex);
+        Log.e(TAG, "Failed getting games.", ex);
         if (!PyxException.solveNotRegistered(getContext(), ex))
             rmv.showError(R.string.failedLoading_reason, ex.getMessage());
     }
@@ -266,19 +268,20 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
             @Override
             public void onException(@NonNull Exception ex) {
                 DialogUtils.dismissDialog(getActivity());
+                Log.e(TAG, "Failed spectating game.", ex);
 
                 if (ex instanceof PyxException) {
                     switch (((PyxException) ex).errorCode) {
                         case "wp":
-                            showToast(Toaster.build().message(R.string.wrongPassword).ex(ex).error(false));
+                            showToast(Toaster.build().message(R.string.wrongPassword));
                             return;
                         case "gf":
-                            showToast(Toaster.build().message(R.string.gameFull).ex(ex).error(false));
+                            showToast(Toaster.build().message(R.string.gameFull));
                             return;
                     }
                 }
 
-                showToast(Toaster.build().message(R.string.failedSpectating).ex(ex));
+                showToast(Toaster.build().message(R.string.failedSpectating));
             }
         });
     }
@@ -298,20 +301,21 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
             @Override
             public void onException(@NonNull Exception ex) {
+                Log.e(TAG, "Failed joining game.", ex);
                 DialogUtils.dismissDialog(getActivity());
 
                 if (ex instanceof PyxException) {
                     switch (((PyxException) ex).errorCode) {
                         case "wp":
-                            showToast(Toaster.build().message(R.string.wrongPassword).ex(ex).error(false));
+                            showToast(Toaster.build().message(R.string.wrongPassword));
                             return;
                         case "gf":
-                            showToast(Toaster.build().message(R.string.gameFull).ex(ex).error(false));
+                            showToast(Toaster.build().message(R.string.gameFull));
                             return;
                     }
                 }
 
-                showToast(Toaster.build().message(R.string.failedJoining).ex(ex));
+                showToast(Toaster.build().message(R.string.failedJoining));
             }
         });
     }
@@ -366,7 +370,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
                 if (handler != null) handler.onParticipatingGame(perm);
             }
         } else {
-            showToast(Toaster.build().message(R.string.failedJoining).ex(new NullPointerException("Couldn't find game for " + perm.gid)));
+            showToast(Toaster.build().message(R.string.failedJoining));
         }
     }
 
@@ -400,8 +404,9 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
 
                 @Override
                 public void onException(@NonNull Exception ex) {
+                    Log.e(TAG, "Failed getting games.", ex);
                     if (!PyxException.solveNotRegistered(getContext(), ex))
-                        showToast(Toaster.build().message(R.string.failedLoading).ex(ex));
+                        showToast(Toaster.build().message(R.string.failedLoading));
                 }
             });
         }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,7 +12,6 @@ import androidx.annotation.Nullable;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.preferences.json.JsonStoring;
 import com.gianlu.pretendyourexyzzy.PK;
@@ -34,6 +34,7 @@ import okhttp3.ResponseBody;
 public class PyxDiscoveryApi {
     private static final HttpUrl WELCOME_MSG_URL = HttpUrl.parse("https://pyx-discovery.gianlu.xyz/WelcomeMessage");
     private static final HttpUrl DISCOVERY_API_LIST = HttpUrl.parse("https://pyx-discovery.gianlu.xyz/ListAll");
+    private static final String TAG = PyxDiscoveryApi.class.getSimpleName();
     private static PyxDiscoveryApi instance;
     private final OkHttpClient client;
     private final ExecutorService executor = Executors.newCachedThreadPool();
@@ -62,7 +63,7 @@ public class PyxDiscoveryApi {
             if (array.length() > 0) Pyx.Server.parseAndSave(array);
         } catch (IOException | JSONException ex) {
             if (JsonStoring.intoPrefs().isJsonArrayEmpty(PK.API_SERVERS)) throw ex;
-            else Logging.log("Failed loading servers, but list isn't empty.", ex);
+            else Log.e(TAG, "Failed loading servers, but list isn't empty.", ex);
         }
     }
 

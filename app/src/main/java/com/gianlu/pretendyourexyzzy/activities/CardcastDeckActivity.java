@@ -92,7 +92,7 @@ public class CardcastDeckActivity extends ActivityWithDialog {
         code = getIntent().getStringExtra("code");
         name = getIntent().getStringExtra("title");
         if (code == null || name == null) {
-            Toaster.with(this).message(R.string.failedLoading).ex(new NullPointerException("code or name is null!")).show();
+            Toaster.with(this).message(R.string.failedLoading).show();
             onBackPressed();
             return;
         }

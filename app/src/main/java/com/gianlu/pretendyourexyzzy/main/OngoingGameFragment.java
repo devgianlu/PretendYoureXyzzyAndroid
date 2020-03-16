@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,7 +26,6 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.MessageView;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.tutorial.BaseTutorial;
@@ -67,6 +67,7 @@ import java.util.List;
 import okhttp3.HttpUrl;
 
 public class OngoingGameFragment extends FragmentWithDialog implements OngoingGameHelper.Listener, PlayersAdapter.Listener, TutorialManager.Listener, AnotherGameManager.Listener, AnotherGameManager.OnPlayerStateChanged {
+    private static final String TAG = OngoingGameFragment.class.getSimpleName();
     private OnLeftGame onLeftGame;
     private ProgressBar loading;
     private GameLayout gameLayout;
@@ -145,10 +146,12 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
 
                 @Override
                 public void onException(@NonNull Exception ex) {
-                    if (ex instanceof PyxException && ((PyxException) ex).errorCode.equals("nitg"))
+                    if (ex instanceof PyxException && ((PyxException) ex).errorCode.equals("nitg")) {
                         onDone();
-                    else
-                        showToast(Toaster.build().message(R.string.failedLeaving).ex(ex));
+                    } else {
+                        Log.e(TAG, "Failed leaving game.", ex);
+                        showToast(Toaster.build().message(R.string.failedLeaving));
+                    }
                 }
             });
     }
@@ -189,7 +192,6 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
             cardcast = Cardcast.get();
             manager = new AnotherGameManager(perm, pyx, gameLayout, this);
         } catch (LevelMismatchException ex) {
-            Logging.log(ex);
             loading.setVisibility(View.GONE);
             gameLayout.setVisibility(View.GONE);
             message.error(R.string.failedLoading);
@@ -340,7 +342,8 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
 
             @Override
             public void onException(@NonNull Exception ex) {
-                showToast(Toaster.build().message(R.string.failedAddingCardcast).ex(ex));
+                Log.e(TAG, "Failed adding Cardcast deck.", ex);
+                showToast(Toaster.build().message(R.string.failedAddingCardcast));
             }
         });
     }
@@ -391,12 +394,14 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
 
             @Override
             public void onException(@NonNull Exception ex) {
+                Log.e(TAG, "Failed adding Cardcast deck.", ex);
+
                 if (ex instanceof RegisteredPyx.PartialCardcastAddFail) {
-                    showToast(Toaster.build().message(R.string.addStarredDecksFailedPartial).ex(ex).extra(((RegisteredPyx.PartialCardcastAddFail) ex).getCodes()));
+                    showToast(Toaster.build().message(R.string.addStarredDecksFailedPartial).extra(((RegisteredPyx.PartialCardcastAddFail) ex).getCodes()));
                     return;
                 }
 
-                showToast(Toaster.build().message(R.string.failedAddingCardcast).ex(ex));
+                showToast(Toaster.build().message(R.string.failedAddingCardcast));
             }
         });
     }
@@ -450,7 +455,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
 
     @Override
     public void onFailedLoadingGame(@NonNull Exception ex) {
-        Logging.log(ex);
+        Log.e(TAG, "Failed loading game.", ex);
         loading.setVisibility(View.GONE);
         gameLayout.setVisibility(View.GONE);
         message.error(R.string.failedLoading_reason, ex.getMessage());
