@@ -281,21 +281,10 @@ public class OverloadedApi {
                 .continueWith(executorService, new NonNullContinuation<OverloadedToken, UserData>() {
                     @Override
                     public UserData then(@NonNull OverloadedToken token) throws OverloadedException, JSONException {
-                        try {
-                            JSONObject obj = serverRequest(new Request.Builder()
-                                    .url(overloadedServerUrl("User/Register"))
-                                    .post(Util.EMPTY_REQUEST));
-                            return new UserData(obj.getJSONObject("userData"));
-                        } catch (OverloadedServerException ex) {
-                            if (ex.code == 403) {
-                                JSONObject obj = serverRequest(new Request.Builder()
-                                        .url(overloadedServerUrl("User/Data"))
-                                        .post(Util.EMPTY_REQUEST));
-                                return new UserData(obj);
-                            } else {
-                                throw ex;
-                            }
-                        }
+                        JSONObject obj = serverRequest(new Request.Builder()
+                                .url(overloadedServerUrl("User/Register"))
+                                .post(Util.EMPTY_REQUEST));
+                        return new UserData(obj.getJSONObject("userData"));
                     }
                 });
 
@@ -467,7 +456,10 @@ public class OverloadedApi {
                 return;
             }
 
-            if (type == Event.Type.PING) return;
+            if (type == Event.Type.PING) {
+                webSocket.send("_");
+                return;
+            }
 
             dispatchEvent(new Event(type, obj));
         }
@@ -553,5 +545,4 @@ public class OverloadedApi {
             return expiration <= System.currentTimeMillis();
         }
     }
-
 }
