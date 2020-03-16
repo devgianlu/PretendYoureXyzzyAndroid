@@ -146,6 +146,7 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                 if (link) {
                     AuthCredential credential = signInHelper.extractCredential(data);
                     if (credential == null) {
+                        Logging.log("Couldn't extract credentials: " + data, true);
                         showToast(Toaster.build().message(R.string.failedSigningIn));
                         return;
                     }

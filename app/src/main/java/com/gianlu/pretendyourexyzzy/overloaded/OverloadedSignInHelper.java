@@ -120,6 +120,7 @@ public final class OverloadedSignInHelper {
 
         AuthCredential credential = currentFlow.provider.extractCredential(data);
         if (credential == null) {
+            Logging.log("Couldn't extract credentials: " + data, true);
             callback.onSignInFailed();
             return;
         }
