@@ -4,7 +4,6 @@ import com.bumptech.glide.Glide;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.pretendyourexyzzy.api.BaseCardUrlLoader;
 import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import java.io.InputStream;
 
@@ -22,7 +21,6 @@ public class ThisApplication extends AnalyticsApplication {
     public void onCreate() {
         super.onCreate();
         Glide.get(this).getRegistry().prepend(BaseCard.class, InputStream.class, new BaseCardUrlLoader.Factory());
-        if (OverloadedUtils.isSignedIn()) OverloadedApi.init(this);
     }
 
     @Override

@@ -77,7 +77,7 @@ public class OverloadedApi {
     }
 
     public static void init(@NonNull Context context) {
-        chatInstance = new OverloadedChatApi(context, instance);
+        if (chatInstance == null) chatInstance = new OverloadedChatApi(context, instance);
     }
 
     @NonNull

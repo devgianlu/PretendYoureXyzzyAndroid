@@ -42,6 +42,7 @@ import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.tutorial.LoginTutorial;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputLayout;
@@ -54,6 +55,7 @@ import java.util.List;
 import java.util.Objects;
 
 import me.toptas.fancyshowcase.FocusShape;
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
 
@@ -78,6 +80,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private ShimmerFrameLayout inputLoading;
     private TextView overloadedStatus;
     private SwitchMaterial overloadedToggle;
+    private Task<Integer> chatSummaryTask = null;
 
     @Override
     protected void onStart() {
@@ -368,6 +371,14 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     private void goToMain() {
+        if (chatSummaryTask != null && !chatSummaryTask.isComplete()) {
+            chatSummaryTask.addOnCompleteListener(this, task -> {
+                chatSummaryTask = null;
+                goToMain();
+            });
+            return;
+        }
+
         Intent intent = new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("shouldRequest", launchGameShouldRequest);
         if (launchGame != null) intent.putExtra("game", launchGame);
@@ -444,6 +455,9 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 overloadedStatus.setText(getString(R.string.loggedInAs, data.username));
                 overloadedToggle.setEnabled(true);
                 overloadedToggle.setChecked(Prefs.getBoolean(PK.OVERLOADED_LAST_ENABLED, false));
+
+                OverloadedApi.init(this);
+                chatSummaryTask = OverloadedApi.chat().getSummary();
                 break;
             case NOT_SIGNED_IN:
                 overloadedLoading.hideShimmer();

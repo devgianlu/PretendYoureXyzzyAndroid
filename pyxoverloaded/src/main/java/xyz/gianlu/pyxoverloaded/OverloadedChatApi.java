@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
+import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
 import org.json.JSONArray;
@@ -47,8 +48,9 @@ public class OverloadedChatApi implements Closeable {
         this.db = new ChatDatabaseHelper(context);
     }
 
-    public void getSummary() {
-        loggingCallbacks(Tasks.call(api.executorService, () -> {
+    @NonNull
+    public Task<Integer> getSummary() {
+        return loggingCallbacks(Tasks.call(api.executorService, () -> {
             Long since = db.getLastLastSeen();
             JSONObject obj = api.serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Chat/Summary"))

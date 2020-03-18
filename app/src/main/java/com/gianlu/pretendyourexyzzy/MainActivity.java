@@ -55,9 +55,8 @@ import org.json.JSONException;
 
 import java.util.Objects;
 
-import xyz.gianlu.pyxoverloaded.OverloadedApi;
-
 public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction {
+    private static final String TAG = MainActivity.class.getSimpleName();
     private final Object fragmentsLock = new Object();
     private BottomNavigationManager navigation;
     private NamesFragment namesFragment;
@@ -83,8 +82,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         super.onPostCreate(savedInstanceState);
         if (drawerManager != null) drawerManager.syncTogglerState();
     }
-
-    private static final String TAG = MainActivity.class.getSimpleName();
 
     @NonNull
     private <F extends Fragment> F getOrAdd(@NonNull FragmentTransaction transaction, @NonNull Item item, @NonNull CreateFragment<F> provider) {
@@ -344,10 +341,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         gamesFragment = getOrAdd(transaction, Item.GAMES, GamesFragment::getInstance);
         cardcastFragment = getOrAdd(transaction, Item.CARDCAST, CardcastFragment::getInstance);
 
-        if (OverloadedUtils.isSignedIn()) {
+        if (OverloadedUtils.isSignedIn())
             overloadedFragment = getOrAdd(transaction, Item.OVERLOADED, OverloadedFragment::getInstance);
-            OverloadedApi.chat().getSummary();
-        }
 
         if (pyx.config().globalChatEnabled())
             globalChatFragment = getOrAdd(transaction, Item.GLOBAL_CHAT, ChatFragment::getGlobalInstance);
