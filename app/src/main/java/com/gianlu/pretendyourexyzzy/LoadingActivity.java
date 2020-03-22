@@ -81,6 +81,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private TextView overloadedStatus;
     private SwitchMaterial overloadedToggle;
     private Task<Integer> chatSummaryTask = null;
+    private boolean waitingOverloaded = false;
 
     @Override
     protected void onStart() {
@@ -371,11 +372,18 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     private void goToMain() {
-        if (chatSummaryTask != null && !chatSummaryTask.isComplete()) {
-            chatSummaryTask.addOnCompleteListener(this, task -> {
-                chatSummaryTask = null;
+        if (billingHelper.isLoading()) {
+            if (waitingOverloaded) {
                 goToMain();
-            });
+                waitingOverloaded = false;
+            } else {
+                waitingOverloaded = true;
+            }
+            return;
+        }
+
+        if (chatSummaryTask != null && !chatSummaryTask.isComplete()) {
+            chatSummaryTask.addOnCompleteListener(this, task -> goToMain());
             return;
         }
 
@@ -503,6 +511,11 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             Prefs.putBoolean(PK.OVERLOADED_LAST_ENABLED, false);
             registerNickname.setEnabled(true);
         }
+    }
+
+    @Override
+    public void loadingComplete() {
+        if (waitingOverloaded) goToMain();
     }
 
     @Override

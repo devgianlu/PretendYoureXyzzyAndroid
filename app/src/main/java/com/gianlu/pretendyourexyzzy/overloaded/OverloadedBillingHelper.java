@@ -22,6 +22,7 @@ import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
+import com.google.android.gms.tasks.OnCompleteListener;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -41,6 +42,8 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     private volatile UserData userData;
     private volatile ExceptionWithType exception;
     private Status lastStatus;
+    private OnCompleteListener<Status> loadListener = null;
+    private boolean calledComplete = false;
 
     public OverloadedBillingHelper(@NonNull Context context, @NonNull Listener listener) {
         this.context = context;
@@ -161,62 +164,72 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         });
     }
 
+    private void updateOverloadedStatus(@NonNull Status status, @Nullable UserData data) {
+        lastStatus = status;
+        listener.updateOverloadedStatus(status, data);
+
+        if (!calledComplete && !isLoading()) {
+            calledComplete = true;
+            listener.loadingComplete();
+        }
+    }
+
     private synchronized void checkUpdateUi() {
         if (OverloadedUtils.isSignedIn()) {
             if (exception != null && exception.type == ExceptionWithType.Type.OVERLOADED) {
-                listener.updateOverloadedStatus(lastStatus = Status.ERROR, null);
+                updateOverloadedStatus(lastStatus = Status.ERROR, null);
                 return;
             }
 
             if (userData == null) {
-                listener.updateOverloadedStatus(lastStatus = Status.LOADING, null);
+                updateOverloadedStatus(lastStatus = Status.LOADING, null);
                 return;
             }
 
             switch (userData.purchaseStatus) {
                 case OK:
                     if (userData.hasUsername())
-                        listener.updateOverloadedStatus(lastStatus = Status.SIGNED_IN, userData);
+                        updateOverloadedStatus(lastStatus = Status.SIGNED_IN, userData);
                     else
-                        listener.updateOverloadedStatus(lastStatus = Status.LOADING, userData);
+                        updateOverloadedStatus(lastStatus = Status.LOADING, userData);
                     break;
                 case NONE:
                     if (exception != null && exception.type == ExceptionWithType.Type.BILLING) {
-                        listener.updateOverloadedStatus(lastStatus = Status.ERROR, null);
+                        updateOverloadedStatus(lastStatus = Status.ERROR, null);
                         return;
                     }
 
                     if (infiniteSku == null) {
-                        listener.updateOverloadedStatus(lastStatus = Status.LOADING, null);
+                        updateOverloadedStatus(lastStatus = Status.LOADING, null);
                         getSkuDetails();
                         return;
                     }
 
-                    listener.updateOverloadedStatus(lastStatus = Status.NOT_BOUGHT, userData);
+                    updateOverloadedStatus(lastStatus = Status.NOT_BOUGHT, userData);
                     break;
                 case PENDING:
-                    listener.updateOverloadedStatus(lastStatus = Status.PURCHASE_PENDING, userData);
+                    updateOverloadedStatus(lastStatus = Status.PURCHASE_PENDING, userData);
                     break;
                 default:
-                    listener.updateOverloadedStatus(lastStatus = Status.LOADING, null);
+                    updateOverloadedStatus(lastStatus = Status.LOADING, null);
                     break;
             }
         } else {
             if (exception != null && exception.type == ExceptionWithType.Type.BILLING) {
-                listener.updateOverloadedStatus(lastStatus = Status.ERROR, null);
+                updateOverloadedStatus(lastStatus = Status.ERROR, null);
                 return;
             }
 
             if (billingClient == null || !billingClient.isReady()) {
-                listener.updateOverloadedStatus(lastStatus = Status.LOADING, null);
+                updateOverloadedStatus(lastStatus = Status.LOADING, null);
             } else {
                 if (infiniteSku == null) {
-                    listener.updateOverloadedStatus(lastStatus = Status.LOADING, null);
+                    updateOverloadedStatus(lastStatus = Status.LOADING, null);
                     getSkuDetails();
                     return;
                 }
 
-                listener.updateOverloadedStatus(lastStatus = Status.NOT_SIGNED_IN, null);
+                updateOverloadedStatus(lastStatus = Status.NOT_SIGNED_IN, null);
             }
         }
     }
@@ -373,6 +386,10 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         return lastStatus;
     }
 
+    public boolean isLoading() {
+        return lastStatus == null || lastStatus == Status.LOADING;
+    }
+
     public enum Status {
         LOADING, NOT_BOUGHT, PURCHASE_PENDING, SIGNED_IN, NOT_SIGNED_IN, ERROR
     }
@@ -381,6 +398,8 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         void updateOverloadedStatus(@NonNull Status status, UserData data);
 
         void updateOverloadedMode(boolean enabled, UserData data);
+
+        void loadingComplete();
     }
 
     private static class ExceptionWithType extends Exception {

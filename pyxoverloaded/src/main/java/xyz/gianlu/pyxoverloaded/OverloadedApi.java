@@ -28,6 +28,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -242,9 +243,13 @@ public class OverloadedApi {
         });
     }
 
+    JSONObject serverRequest(@NonNull Request.Builder reqBuilder) throws OverloadedException {
+        return serverRequest(reqBuilder, true);
+    }
+
     @NonNull
     @WorkerThread
-    JSONObject serverRequest(@NonNull Request.Builder reqBuilder) throws OverloadedException {
+    private JSONObject serverRequest(@NonNull Request.Builder reqBuilder, boolean retry) throws OverloadedException {
         if (lastToken == null || lastToken.expired()) {
             if (user == null && updateUser())
                 throw new NotSignedInException();
@@ -266,7 +271,10 @@ public class OverloadedApi {
             if (str.isEmpty()) return new JSONObject();
             else return new JSONObject(str);
         } catch (IOException | JSONException ex) {
-            throw new OverloadedServerException(req, ex);
+            if (retry && ex instanceof SocketTimeoutException)
+                return serverRequest(reqBuilder, false);
+            else
+                throw new OverloadedServerException(req, ex);
         }
     }
 
