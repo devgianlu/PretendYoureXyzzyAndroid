@@ -256,6 +256,12 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    int countTotalUnread() {
+        int count = 0;
+        for (Chat chat : getChats()) count += countSinceLastSeen(chat.id);
+        return count;
+    }
+
     synchronized void updateLastMessage(@NonNull String chatId, @NonNull ChatMessage msg) {
         lastMessageCache.put(chatId, msg);
 

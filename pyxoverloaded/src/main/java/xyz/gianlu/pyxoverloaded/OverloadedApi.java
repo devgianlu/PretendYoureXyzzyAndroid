@@ -86,7 +86,7 @@ public class OverloadedApi {
         return instance;
     }
 
-    @NonNull
+    @Nullable
     public static OverloadedChatApi chat() {
         return chatInstance;
     }

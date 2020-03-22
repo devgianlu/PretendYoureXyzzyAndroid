@@ -8,6 +8,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
 import com.google.android.gms.tasks.Task;
@@ -19,6 +20,7 @@ import org.json.JSONObject;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -42,6 +44,7 @@ public class OverloadedChatApi implements Closeable {
     private static final String TAG = OverloadedApi.class.getSimpleName();
     private final OverloadedApi api;
     private final ChatDatabaseHelper db;
+    private final List<UnreadCountListener> unreadCountListeners = Collections.synchronizedList(new ArrayList<>());
 
     OverloadedChatApi(@NonNull Context context, @NonNull OverloadedApi api) {
         this.api = api;
@@ -193,15 +196,21 @@ public class OverloadedChatApi implements Closeable {
             ChatMessage msg = new ChatMessage(event.obj);
             db.addMessage(chatId, msg);
             db.updateLastMessage(chatId, msg);
+            dispatchUnreadCountUpdate();
         }
     }
 
     public void updateLastSeen(@NonNull String chatId, @NonNull ChatMessage msg) {
         db.updateLastSeen(chatId, msg.timestamp + 1);
+        dispatchUnreadCountUpdate();
     }
 
     public int countSinceLastSeen(@NonNull String chatId) {
         return db.countSinceLastSeen(chatId);
+    }
+
+    public int countTotalUnread() {
+        return db.countTotalUnread();
     }
 
     @Nullable
@@ -214,8 +223,29 @@ public class OverloadedChatApi implements Closeable {
         return db.getLastMessage(chatId);
     }
 
+    private void dispatchUnreadCountUpdate() {
+        synchronized (unreadCountListeners) {
+            Handler handler = new Handler(Looper.getMainLooper());
+            for (UnreadCountListener listener : unreadCountListeners)
+                handler.post(listener::mayUpdateUnreadCount);
+        }
+    }
+
+    public void addUnreadCountListener(@NonNull UnreadCountListener listener) {
+        unreadCountListeners.add(listener);
+    }
+
+    public void removeUnreadCountListener(@NonNull UnreadCountListener listener) {
+        unreadCountListeners.remove(listener);
+    }
+
     @Override
     public void close() {
         db.close();
+    }
+
+    @UiThread
+    public interface UnreadCountListener {
+        void mayUpdateUnreadCount();
     }
 }

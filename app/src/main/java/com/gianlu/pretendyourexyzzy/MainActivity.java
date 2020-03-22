@@ -55,7 +55,10 @@ import org.json.JSONException;
 
 import java.util.Objects;
 
-public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction {
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
+
+public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction, OverloadedChatApi.UnreadCountListener {
     private static final String TAG = MainActivity.class.getSimpleName();
     private final Object fragmentsLock = new Object();
     private BottomNavigationManager navigation;
@@ -494,6 +497,20 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         return false;
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        OverloadedApi.chat().addUnreadCountListener(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        OverloadedApi.chat().removeUnreadCountListener(this);
+    }
+
     private void inflateNavigation(@NonNull Layout layout) {
         if (navigation == null) return;
         navigation.clear();
@@ -509,6 +526,17 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
             navigation.add(item);
         }
+
+        mayUpdateUnreadCount();
+    }
+
+    @Override
+    public void mayUpdateUnreadCount() {
+        if (!OverloadedUtils.isSignedIn()) return;
+
+        int count = OverloadedApi.chat().countTotalUnread();
+        if (count == 0) navigation.removeBadge(Item.OVERLOADED);
+        else navigation.setBadge(Item.OVERLOADED, count);
     }
 
     private enum Item {
@@ -571,6 +599,14 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         void add(@NonNull Item item) {
             view.getMenu().add(Menu.NONE, item.id, Menu.NONE, item.text).setIcon(item.icon);
+        }
+
+        void setBadge(@NonNull Item item, int number) {
+            view.getOrCreateBadge(item.id).setNumber(number);
+        }
+
+        void removeBadge(@NonNull Item item) {
+            view.removeBadge(item.id);
         }
 
         void clear() {
