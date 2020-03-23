@@ -5,8 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
@@ -14,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.ui.Toaster;
@@ -21,13 +20,13 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.ChatAdapter;
 import com.gianlu.pretendyourexyzzy.main.chats.ChatController;
 import com.gianlu.pretendyourexyzzy.main.chats.PyxChat;
+import com.google.android.material.textfield.TextInputLayout;
 
 public class ChatFragment extends FragmentWithDialog implements ChatAdapter.Listener, ChatController.Listener {
     private static final String TAG = ChatFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
     private ChatAdapter adapter;
-    private ImageButton send;
-    private EditText message;
+    private TextInputLayout input;
     private ChatController controller;
 
     @NonNull
@@ -89,35 +88,30 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
             return layout;
         }
 
-        message = layout.findViewById(R.id.chatFragment_message);
-        send = layout.findViewById(R.id.chatFragment_send);
-        send.setOnClickListener(v -> {
-            String msg = message.getText().toString();
+        input = layout.findViewById(R.id.chatFragment_input);
+        input.setEndIconOnClickListener(v -> {
+            String msg = CommonUtils.getText(input);
             if (msg.isEmpty() || controller == null) return;
 
-            send.setEnabled(false);
-            message.setEnabled(false);
+            input.setEnabled(false);
             controller.send(msg, getActivity(), new ChatController.SendCallback() {
                 @Override
                 public void onSuccessful() {
-                    message.setText(null);
-                    send.setEnabled(true);
-                    message.setEnabled(true);
+                    CommonUtils.setText(input, null);
+                    input.setEnabled(true);
                 }
 
                 @Override
                 public void unknownCommand() {
                     showToast(Toaster.build().message(R.string.unknownChatCommand));
-                    send.setEnabled(true);
-                    message.setEnabled(true);
+                    input.setEnabled(true);
                 }
 
                 @Override
                 public void onFailed(@NonNull Exception ex) {
                     Log.e(TAG, "Failed sending message.", ex);
                     showToast(Toaster.build().message(R.string.failedSendMessage));
-                    send.setEnabled(true);
-                    message.setEnabled(true);
+                    input.setEnabled(true);
                 }
             });
         });
