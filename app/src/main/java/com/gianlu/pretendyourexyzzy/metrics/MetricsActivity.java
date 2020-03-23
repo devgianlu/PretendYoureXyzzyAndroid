@@ -37,6 +37,7 @@ public class MetricsActivity extends ActivityWithDialog implements BreadcrumbsVi
     private static final String TAG_SESSION = SessionHistoryFragment.class.getName();
     private static final String TAG_GAME = GameHistoryFragment.class.getName();
     private static final String TAG_ROUND = GameRoundDialog.class.getName();
+    private static final String TAG = MetricsActivity.class.getSimpleName();
     private RegisteredPyx pyx;
     private BreadcrumbsView breadcrumbs;
 
@@ -48,8 +49,6 @@ public class MetricsActivity extends ActivityWithDialog implements BreadcrumbsVi
         context.startActivity(new Intent(context, MetricsActivity.class)
                 .putExtra("game", game));
     }
-
-    private static final String TAG = MetricsActivity.class.getSimpleName();
 
     private void loadUserHistory() {
         breadcrumbs.clear();

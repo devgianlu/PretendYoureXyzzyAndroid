@@ -21,13 +21,6 @@ public class Deck {
     public final String cardcastCode;
     private CardcastDeckInfo cardcastDeck;
 
-    @NonNull
-    public static List<Deck> list(JSONArray array) throws JSONException {
-        List<Deck> list = new ArrayList<>(array.length());
-        for (int i = 0; i < array.length(); i++) list.add(new Deck(array.getJSONObject(i)));
-        return list;
-    }
-
     public Deck(JSONObject obj) throws JSONException {
         weight = obj.getInt("w");
         id = obj.getInt("cid");
@@ -37,6 +30,13 @@ public class Deck {
         baseDeck = obj.getBoolean("bd");
         whiteCards = obj.getInt("wcid");
         cardcastCode = getCardcastCode(id);
+    }
+
+    @NonNull
+    public static List<Deck> list(JSONArray array) throws JSONException {
+        List<Deck> list = new ArrayList<>(array.length());
+        for (int i = 0; i < array.length(); i++) list.add(new Deck(array.getJSONObject(i)));
+        return list;
     }
 
     public static int countWhiteCards(List<Deck> decks) {

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class StarredCardsManager {
+    private static final String TAG = StarredCardsManager.class.getSimpleName();
     private static StarredCardsManager instance;
     private final JsonStoring storing;
     private final List<StarredCard> list;
@@ -44,8 +45,6 @@ public class StarredCardsManager {
         saveCards();
         return !a;
     }
-
-    private static final String TAG = StarredCardsManager.class.getSimpleName();
 
     public void removeCard(@NonNull StarredCard card) {
         list.remove(card);

@@ -34,6 +34,7 @@ import xyz.gianlu.pyxoverloaded.model.ChatMessage;
 import xyz.gianlu.pyxoverloaded.model.ChatMessages;
 
 public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.EventListener {
+    private static final String TAG = ChatsFragment.class.getSimpleName();
     private ChatBottomSheet lastChatSheet;
     private ChatsAdapter adapter;
     private RecyclerMessageView rmv;
@@ -46,8 +47,6 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         fragment.setArguments(args);
         return fragment;
     }
-
-    private static final String TAG = ChatsFragment.class.getSimpleName();
 
     @Override
     public void onEvent(@NonNull OverloadedApi.Event event) throws JSONException {
@@ -135,6 +134,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
 
                 @Override
                 public void onLocalMessages(@NonNull ChatMessages messages) {
+                    // We trust remote only here
                 }
 
                 @Override
@@ -178,6 +178,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
 
         @Override
         protected void onUpdateViewHolder(@NonNull ViewHolder holder, int position, @NonNull Chat payload) {
+            // No update performed
         }
 
         @Override

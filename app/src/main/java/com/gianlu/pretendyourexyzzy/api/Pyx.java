@@ -62,6 +62,7 @@ import okhttp3.ResponseBody;
 public class Pyx implements Closeable {
     protected final static int AJAX_TIMEOUT = 5;
     protected final static int POLLING_TIMEOUT = 30;
+    private static final String TAG = Pyx.class.getSimpleName();
     public final Server server;
     protected final LifecycleAwareHandler handler;
     protected final OkHttpClient client;
@@ -108,8 +109,6 @@ public class Pyx implements Closeable {
     protected final PyxResponse request(@NonNull Op operation, PyxRequest.Param... params) throws IOException, JSONException, PyxException {
         return request(operation, false, params);
     }
-
-    private static final String TAG = Pyx.class.getSimpleName();
 
     @NonNull
     @WorkerThread
@@ -444,6 +443,7 @@ public class Pyx implements Closeable {
     }
 
     public static class Server {
+        private static final String TAG = Server.class.getSimpleName();
         private static List<Server> allServers = null;
         public final HttpUrl url;
         public final String name;
@@ -455,8 +455,6 @@ public class Pyx implements Closeable {
         private transient HttpUrl pollingUrl;
         private transient HttpUrl configUrl;
         private transient HttpUrl statsUrl;
-
-        private static final String TAG = Server.class.getSimpleName();
 
         public Server(@NonNull HttpUrl url, @Nullable HttpUrl metricsUrl, @NonNull String name, @NonNull Params params, boolean editable) {
             this.url = url;

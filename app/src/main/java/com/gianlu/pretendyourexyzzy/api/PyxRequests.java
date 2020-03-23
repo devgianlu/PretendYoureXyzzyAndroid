@@ -68,6 +68,7 @@ public final class PyxRequests {
         return games;
     };
     private static final Pyx.Processor<WhoisResult> WHOIS_RESULT_PROCESSOR = (response, obj) -> new WhoisResult(obj);
+    private static final String TAG = PyxRequests.class.getSimpleName();
 
     @Nullable
     private static String findSessionId(@NonNull Response response) {
@@ -178,8 +179,6 @@ public final class PyxRequests {
                 new PyxRequest.Param("cid", String.valueOf(cardId)),
                 new PyxRequest.Param("m", customText));
     }
-
-    private static final String TAG = PyxRequests.class.getSimpleName();
 
     @NonNull
     public static PyxRequestWithResult<List<Deck>> listCardcastDecks(int gid, @NonNull final Cardcast cardcast) {

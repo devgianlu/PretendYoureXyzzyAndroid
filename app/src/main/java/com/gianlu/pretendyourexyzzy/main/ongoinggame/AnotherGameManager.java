@@ -38,6 +38,7 @@ import java.util.Objects;
 import static com.gianlu.commonutils.CommonUtils.optString;
 
 public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Listener, SensitiveGameData.Listener {
+    private static final String TAG = AnotherGameManager.class.getSimpleName();
     private final GamePermalink permalink;
     private final RegisteredPyx pyx;
     private final GameLayout gameLayout;
@@ -57,8 +58,6 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         this.gameData = new SensitiveGameData(pyx, this);
         this.listener = listener;
     }
-
-    private static final String TAG = AnotherGameManager.class.getSimpleName();
 
     @Override
     public void onPollMessage(@NonNull PollMessage msg) throws JSONException {

@@ -25,6 +25,7 @@ import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionHistory;
 
 public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<SessionHistory> {
+    private static final String TAG = SessionHistoryFragment.class.getSimpleName();
     private ProgressBar loading;
     private SuperTextView gamesLabel;
     private RecyclerView games;
@@ -111,8 +112,6 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
             judgedRounds.setAdapter(new RoundsAdapter(getContext(), result.judgedRounds, (RoundsAdapter.Listener) getContext()));
         }
     }
-
-    private static final String TAG = SessionHistoryFragment.class.getSimpleName();
 
     @Override
     public void onException(@NonNull Exception ex) {

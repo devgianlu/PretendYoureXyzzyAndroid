@@ -39,6 +39,7 @@ import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public final class AskUsernameDialog extends DialogFragment {
+    private static final String TAG = AskUsernameDialog.class.getSimpleName();
     private Listener listener;
 
     @NonNull
@@ -63,8 +64,6 @@ public final class AskUsernameDialog extends DialogFragment {
         super.onDetach();
         listener = null;
     }
-
-    private static final String TAG = AskUsernameDialog.class.getSimpleName();
 
     @NotNull
     @Override

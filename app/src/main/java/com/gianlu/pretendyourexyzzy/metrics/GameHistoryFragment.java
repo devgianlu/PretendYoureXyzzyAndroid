@@ -20,6 +20,7 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.GameHistory;
 
 public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<GameHistory> {
+    private static final String TAG = GameHistoryFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
 
     @NonNull
@@ -80,8 +81,6 @@ public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
 
         rmv.loadListData(new RoundsAdapter(getContext(), result, (RoundsAdapter.Listener) getContext()));
     }
-
-    private static final String TAG = GameHistoryFragment.class.getSimpleName();
 
     @Override
     public void onException(@NonNull Exception ex) {

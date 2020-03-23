@@ -23,6 +23,7 @@ import com.gianlu.pretendyourexyzzy.api.models.CardcastDeckInfo;
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 
 public class InfoFragment extends FragmentWithDialog implements Cardcast.OnResult<CardcastDeckInfo> {
+    private static final String TAG = InfoFragment.class.getSimpleName();
     private LinearLayout container;
     private ProgressBar loading;
     private MessageView message;
@@ -81,8 +82,6 @@ public class InfoFragment extends FragmentWithDialog implements Cardcast.OnResul
         TextView blackCards = container.findViewById(R.id.cardcastDeckInfo_blackCards);
         blackCards.setText(String.valueOf(result.calls));
     }
-
-    private static final String TAG = InfoFragment.class.getSimpleName();
 
     @Override
     public void onException(@NonNull Exception ex) {

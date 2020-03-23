@@ -50,6 +50,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import org.jetbrains.annotations.NotNull;
 
 public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<GamesList>, GamesAdapter.Listener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, Pyx.OnEventListener, TutorialManager.Listener {
+    private static final String TAG = GamesFragment.class.getSimpleName();
     private GamesList lastResult;
     private RecyclerMessageView rmv;
     private OnParticipateGame handler;
@@ -137,8 +138,6 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         searchView.setQuery(null, true);
         return false;
     }
-
-    private static final String TAG = GamesFragment.class.getSimpleName();
 
     @Nullable
     @Override

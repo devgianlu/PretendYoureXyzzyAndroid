@@ -22,7 +22,6 @@ import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
-import com.google.android.gms.tasks.OnCompleteListener;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -42,7 +41,6 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     private volatile UserData userData;
     private volatile ExceptionWithType exception;
     private Status lastStatus;
-    private OnCompleteListener<Status> loadListener = null;
     private boolean calledComplete = false;
 
     public OverloadedBillingHelper(@NonNull Context context, @NonNull Listener listener) {

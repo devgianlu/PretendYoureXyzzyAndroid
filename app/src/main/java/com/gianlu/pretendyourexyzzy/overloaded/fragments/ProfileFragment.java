@@ -47,6 +47,7 @@ import xyz.gianlu.pyxoverloaded.model.Chat;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
 public class ProfileFragment extends FragmentWithDialog implements OverloadedApi.EventListener {
+    private static final String TAG = ProfileFragment.class.getSimpleName();
     private ImagesListView achievements;
     private ImagesListView linkedAccounts;
     private RecyclerMessageView friends;
@@ -60,8 +61,6 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
         fragment.setArguments(args);
         return fragment;
     }
-
-    private static final String TAG = ProfileFragment.class.getSimpleName();
 
     @Override
     public void onResume() {

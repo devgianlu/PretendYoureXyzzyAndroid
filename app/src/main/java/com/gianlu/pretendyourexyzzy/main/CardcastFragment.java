@@ -34,6 +34,7 @@ import java.util.List;
 
 public class CardcastFragment extends Fragment implements Cardcast.OnDecks, CardcastDecksAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
     private final static int LIMIT = 12;
+    private static final String TAG = CardcastFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
     private Cardcast cardcast;
     private SearchView searchView;
@@ -172,8 +173,6 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
         else
             rmv.loadListData(new CardcastDecksAdapter(getContext(), cardcast, search, decks, LIMIT, this));
     }
-
-    private static final String TAG = CardcastFragment.class.getSimpleName();
 
     @Override
     public void onException(@NonNull Exception ex) {

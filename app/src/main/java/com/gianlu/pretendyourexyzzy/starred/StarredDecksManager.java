@@ -20,10 +20,10 @@ import java.util.List;
 import java.util.Objects;
 
 public class StarredDecksManager {
+    private static final String TAG = StarredDecksManager.class.getSimpleName();
     private static StarredDecksManager instance;
     private final JsonStoring storing;
     private final List<StarredDeck> list;
-    private static final String TAG = StarredDecksManager.class.getSimpleName();
 
     private StarredDecksManager() {
         storing = JsonStoring.intoPrefs();

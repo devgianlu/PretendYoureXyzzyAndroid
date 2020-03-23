@@ -473,6 +473,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 overloadedToggle.setEnabled(true);
                 overloadedToggle.setChecked(false);
                 break;
+            default:
+                throw new IllegalStateException("Unknown status: " + status);
         }
 
         overloadedStatus.setVisibility(status == OverloadedBillingHelper.Status.LOADING ? View.GONE : View.VISIBLE);
