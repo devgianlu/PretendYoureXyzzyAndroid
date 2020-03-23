@@ -11,6 +11,7 @@ import com.google.android.gms.games.event.Event;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -19,8 +20,15 @@ public final class OverloadedUtils {
     private OverloadedUtils() {
     }
 
+    @NonNull
+    public static List<String> toAchievementsIds(@NonNull Collection<Achievement> achievements) {
+        List<String> list = new ArrayList<>(achievements.size());
+        for (Achievement ach : achievements) list.add(ach.getAchievementId());
+        return list;
+    }
+
     @Nullable
-    private static Achievement findAchievement(@NonNull Iterable<Achievement> achievements, @NonNull String id) {
+    public static Achievement findAchievement(@NonNull Iterable<Achievement> achievements, @NonNull String id) {
         for (Achievement ach : achievements)
             if (ach.getAchievementId().equals(id))
                 return ach;
@@ -44,7 +52,7 @@ public final class OverloadedUtils {
 
     @NonNull
     public static List<Achievement> getBestAchievements(@NonNull Iterable<Achievement> achievements) {
-        List<Achievement> best = new ArrayList<>(3);
+        List<Achievement> best = new ArrayList<>(5);
         Achievement ach = findAchievement(achievements, GPGamesHelper.ACH_CARDCAST);
         if (ach != null && ach.getState() == Achievement.STATE_UNLOCKED) best.add(ach);
         ach = findBestAchievementOf(achievements, GPGamesHelper.ACHS_PEOPLE_GAME);

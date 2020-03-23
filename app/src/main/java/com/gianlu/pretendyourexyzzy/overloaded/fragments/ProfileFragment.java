@@ -49,6 +49,7 @@ import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 public class ProfileFragment extends FragmentWithDialog implements OverloadedApi.EventListener {
     private static final String TAG = ProfileFragment.class.getSimpleName();
     private ImagesListView achievements;
+    private List<String> lastAchievements;
     private ImagesListView linkedAccounts;
     private RecyclerMessageView friends;
     private FriendsAdapter friendsAdapter;
@@ -62,6 +63,21 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
         return fragment;
     }
 
+    private boolean achievementsChanged(@NonNull List<Achievement> newAchievements) {
+        if (lastAchievements == null || newAchievements.size() != lastAchievements.size())
+            return true;
+
+        for (Achievement a : newAchievements)
+            if (lastAchievements.indexOf(a.getAchievementId()) == -1)
+                return true;
+
+        for (String a : lastAchievements)
+            if (OverloadedUtils.findAchievement(newAchievements, a) == null)
+                return true;
+
+        return false;
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -69,12 +85,16 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
         GPGamesHelper.loadAchievements(requireContext(), getActivity(), new GPGamesHelper.LoadIterable<Achievement>() {
             @Override
             public void onLoaded(@NonNull Iterable<Achievement> result) {
-                AchievementImageLoader il = new AchievementImageLoader(requireContext());
+                List<Achievement> list = OverloadedUtils.getUnlockedAchievements(result);
+                if (achievementsChanged(list)) {
+                    lastAchievements = OverloadedUtils.toAchievementsIds(list);
 
-                CommonUtils.showViewAndLabel(achievements);
-                achievements.removeAllViews();
-                for (Achievement ach : OverloadedUtils.getUnlockedAchievements(result))
-                    achievements.addItem(ach, il);
+                    AchievementImageLoader il = new AchievementImageLoader(requireContext());
+                    CommonUtils.showViewAndLabel(achievements);
+                    achievements.removeAllViews();
+                    for (Achievement ach : list)
+                        achievements.addItem(ach, il);
+                }
             }
 
             @Override
