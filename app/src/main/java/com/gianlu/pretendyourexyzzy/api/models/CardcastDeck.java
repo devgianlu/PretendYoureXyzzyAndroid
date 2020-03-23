@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class CardcastDeck {
@@ -25,7 +26,7 @@ public class CardcastDeck {
     public final List<CardcastCard> sampleCalls;
     public final List<CardcastCard> sampleResponses;
 
-    public CardcastDeck(JSONObject obj) throws JSONException, ParseException {
+    CardcastDeck(JSONObject obj) throws JSONException, ParseException {
         code = obj.getString("code");
         name = obj.getString("name");
         category = Cardcast.Category.parse(obj.getString("category"));
@@ -37,25 +38,28 @@ public class CardcastDeck {
         rating = (float) obj.getDouble("rating");
 
         SimpleDateFormat parser = Cardcast.getDefaultDateParser();
-        createdAt = parser.parse(obj.getString("created_at")).getTime();
-        updatedAt = parser.parse(obj.getString("updated_at")).getTime();
+        Date createdAtDate = parser.parse(obj.getString("created_at"));
+        if (createdAtDate != null) createdAt = createdAtDate.getTime();
+        else createdAt = 0;
+
+        Date updatedAtDate = parser.parse(obj.getString("updated_at"));
+        if (updatedAtDate != null) updatedAt = updatedAtDate.getTime();
+        else updatedAt = 0;
 
         JSONArray sampleCallsArray = obj.optJSONArray("sample_calls");
-        if (sampleCallsArray != null)
-            sampleCalls = CardcastCard.toCardsList(code, sampleCallsArray);
-        else sampleCalls = null;
+        if (sampleCallsArray == null) sampleCalls = null;
+        else sampleCalls = CardcastCard.toCardsList(code, sampleCallsArray);
 
         JSONArray sampleResponsesArray = obj.optJSONArray("sample_responses");
-        if (sampleResponsesArray != null)
-            sampleResponses = CardcastCard.toCardsList(code, sampleResponsesArray);
-        else sampleResponses = null;
+        if (sampleResponsesArray == null) sampleResponses = null;
+        else sampleResponses = CardcastCard.toCardsList(code, sampleResponsesArray);
     }
 
-    public class Author {
+    public static class Author {
         public final String id;
         public final String username;
 
-        public Author(JSONObject obj) throws JSONException {
+        Author(JSONObject obj) throws JSONException {
             id = obj.getString("id");
             username = obj.getString("username");
         }

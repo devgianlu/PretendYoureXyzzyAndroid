@@ -213,7 +213,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                         // TODO: Show user profile
                         return true;
                     case R.id.overloadedUserItemMenu_openChat:
-                        OverloadedApi.chat().startChat(username, getActivity(), new ChatCallback() {
+                        OverloadedApi.chat(context).startChat(username, getActivity(), new ChatCallback() {
                             @Override
                             public void onChat(@NonNull Chat chat) {
                                 ChatBottomSheet sheet = new ChatBottomSheet();

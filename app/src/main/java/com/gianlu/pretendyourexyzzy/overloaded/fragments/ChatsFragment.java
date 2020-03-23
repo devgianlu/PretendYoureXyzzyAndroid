@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
 import xyz.gianlu.pyxoverloaded.callback.ChatMessagesCallback;
 import xyz.gianlu.pyxoverloaded.callback.ChatsCallback;
 import xyz.gianlu.pyxoverloaded.model.Chat;
@@ -38,6 +39,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
     private ChatBottomSheet lastChatSheet;
     private ChatsAdapter adapter;
     private RecyclerMessageView rmv;
+    private OverloadedChatApi chatApi;
 
     @NonNull
     public static ChatsFragment get(@NonNull Context context) {
@@ -54,7 +56,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
             String chatId = event.obj.getString("chatId");
             ChatMessage msg = new ChatMessage(event.obj);
             if (lastChatSheet != null && lastChatSheet.isVisible() && lastChatSheet.getSetupPayload().id.equals(chatId))
-                OverloadedApi.chat().updateLastSeen(chatId, msg);
+                chatApi.updateLastSeen(chatId, msg);
 
             if (adapter != null) adapter.refresh(chatId);
         }
@@ -79,7 +81,8 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         rmv.dividerDecoration(RecyclerView.VERTICAL);
         rmv.startLoading();
 
-        OverloadedApi.chat().listChats(getActivity(), new ChatsCallback() {
+        chatApi = OverloadedApi.chat(requireContext());
+        chatApi.listChats(getActivity(), new ChatsCallback() {
             @Override
             public void onRemoteChats(@NonNull List<Chat> chats) {
                 if (adapter != null) adapter.itemsChanged(chats);
@@ -126,7 +129,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
                 }
             }
 
-            OverloadedApi.chat().getMessages(chatId, 0, getActivity(), new ChatMessagesCallback() {
+            chatApi.getMessages(chatId, 0, getActivity(), new ChatMessagesCallback() {
                 @Override
                 public void onRemoteMessages(@NonNull ChatMessages messages) {
                     itemChangedOrAdded(messages.chat);
@@ -154,7 +157,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
             Chat chat = objs.get(position);
             holder.username.setText(chat.getOtherUsername());
 
-            ChatMessage lastMsg = chat.lastMessage();
+            ChatMessage lastMsg = chatApi.getLastMessage(chat.id);
             if (lastMsg == null) {
                 holder.lastMsg.setVisibility(View.GONE);
             } else {
@@ -162,7 +165,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
                 holder.lastMsg.setText(lastMsg.text);
             }
 
-            int unread = OverloadedApi.chat().countSinceLastSeen(chat.id);
+            int unread = chatApi.countSinceLastSeen(chat.id);
             if (unread == 0) {
                 holder.unread.setVisibility(View.GONE);
             } else {
@@ -191,10 +194,10 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         @Override
         public Comparator<Chat> getComparatorFor(Void sorting) {
             return (o1, o2) -> {
-                ChatMessage m1 = o1.lastMessage();
+                ChatMessage m1 = chatApi.getLastMessage(o1.id);
                 if (m1 == null) return 0;
 
-                ChatMessage m2 = o2.lastMessage();
+                ChatMessage m2 = chatApi.getLastMessage(o2.id);
                 if (m2 == null) return 0;
 
                 return (int) (m2.timestamp - m1.timestamp);

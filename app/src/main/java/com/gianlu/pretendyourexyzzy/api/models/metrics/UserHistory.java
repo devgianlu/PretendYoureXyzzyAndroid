@@ -15,7 +15,7 @@ public class UserHistory extends ArrayList<UserHistory.Session> {
         for (int i = 0; i < array.length(); i++) add(new Session(array.getJSONObject(i)));
     }
 
-    public class Session {
+    public static class Session {
         public final String id;
         public final long loginTimestamp;
 

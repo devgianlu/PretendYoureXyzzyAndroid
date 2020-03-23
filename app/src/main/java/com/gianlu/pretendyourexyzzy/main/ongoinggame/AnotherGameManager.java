@@ -188,7 +188,10 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 if (gameData.amHost()) {
                     boolean hasCardcast = false;
                     for (int deckId : gameData.options.cardSets) {
-                        if (deckId < 0) hasCardcast = true; // Cardcast deck ids are always negative
+                        if (deckId < 0) {
+                            hasCardcast = true; // Cardcast deck ids are always negative
+                            break;
+                        }
                     }
 
                     if (hasCardcast)

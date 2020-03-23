@@ -15,7 +15,7 @@ public class AutoCompleteResults extends ArrayList<AutoCompleteResults.Item> {
             add(new Item(array.getJSONObject(i)));
     }
 
-    public class Item {
+    public static class Item {
         public final String term;
         public final String preview;
 

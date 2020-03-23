@@ -38,7 +38,7 @@ public class SessionHistory {
             judgedRounds.add(new SimpleRound(judgedArray.getJSONObject(i)));
     }
 
-    public class Game {
+    public static class Game {
         public final String id;
         public final long timestamp;
 

@@ -22,6 +22,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.auth.UserInfo;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -81,13 +82,15 @@ public class OverloadedApi {
         if (chatInstance == null) chatInstance = new OverloadedChatApi(context, instance);
     }
 
+    @Contract(pure = true)
     @NonNull
     public static OverloadedApi get() {
         return instance;
     }
 
-    @Nullable
-    public static OverloadedChatApi chat() {
+    @NonNull
+    public static OverloadedChatApi chat(@NonNull Context context) {
+        init(context);
         return chatInstance;
     }
 

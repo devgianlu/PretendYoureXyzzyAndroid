@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Locale;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
 import xyz.gianlu.pyxoverloaded.callback.ChatMessageCallback;
 import xyz.gianlu.pyxoverloaded.callback.ChatMessagesCallback;
 import xyz.gianlu.pyxoverloaded.model.Chat;
@@ -51,6 +52,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
     private RecyclerMessageView rmv;
     private TextInputLayout send;
     private ChatMessagesAdapter adapter;
+    private OverloadedChatApi chatApi;
 
     @Override
     protected void onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ModalBottomSheetHeaderView header, @NonNull Chat payload) {
@@ -64,11 +66,11 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         send = parent.findViewById(R.id.chatSheet_input);
         send.setEndIconOnClickListener(v -> {
             String text = CommonUtils.getText(send);
-            if (text.isEmpty() || (text = text.trim()).isEmpty())
+            if (text.isEmpty() || (text = text.trim()).isEmpty() || chatApi == null)
                 return;
 
             send.setEnabled(false);
-            OverloadedApi.chat().sendMessage(payload.id, text, getActivity(), new ChatMessageCallback() {
+            chatApi.sendMessage(payload.id, text, getActivity(), new ChatMessageCallback() {
                 @Override
                 public void onMessage(@NonNull ChatMessage msg) {
                     CommonUtils.setText(send, "");
@@ -95,12 +97,13 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
 
         isLoading(false);
 
-        OverloadedApi.chat().getMessages(payload.id, 0, getActivity(), new ChatMessagesCallback() {
+        chatApi = OverloadedApi.chat(requireContext());
+        chatApi.getMessages(payload.id, 0, getActivity(), new ChatMessagesCallback() {
             @Override
             public void onRemoteMessages(@NonNull ChatMessages messages) {
                 update(Update.messages(messages));
                 if (!messages.isEmpty()) {
-                    OverloadedApi.chat().updateLastSeen(chatId(), messages.get(0));
+                    chatApi.updateLastSeen(chatId(), messages.get(0));
 
                     Fragment fragment = getParentFragment();
                     if (fragment != null) fragment.onActivityResult(RC_REFRESH_LIST, 0, null);
@@ -156,7 +159,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
             String chatId = event.obj.getString("chatId");
             if (chatId().equals(chatId)) {
                 ChatMessage msg = new ChatMessage(event.obj);
-                if (isVisible()) OverloadedApi.chat().updateLastSeen(chatId(), msg);
+                if (isVisible() && chatApi != null) chatApi.updateLastSeen(chatId(), msg);
                 update(Update.message(msg));
             }
         }

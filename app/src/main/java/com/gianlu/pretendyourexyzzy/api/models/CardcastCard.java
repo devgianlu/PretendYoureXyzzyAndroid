@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class CardcastCard extends BaseCard {
@@ -23,8 +24,11 @@ public class CardcastCard extends BaseCard {
     public CardcastCard(String deckCode, JSONObject obj) throws ParseException, JSONException {
         this.deckCode = deckCode;
         id = obj.getString("id");
-        createdAt = Cardcast.getDefaultDateParser().parse(obj.getString("created_at")).getTime();
         nsfw = obj.getBoolean("nsfw");
+
+        Date createdAtDate = Cardcast.getDefaultDateParser().parse(obj.getString("created_at"));
+        if (createdAtDate != null) createdAt = createdAtDate.getTime();
+        else createdAt = 0;
 
         text = new ArrayList<>();
         JSONArray textArray = obj.getJSONArray("text");

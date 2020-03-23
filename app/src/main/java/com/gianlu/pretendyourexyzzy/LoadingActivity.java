@@ -464,8 +464,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 overloadedToggle.setEnabled(true);
                 overloadedToggle.setChecked(Prefs.getBoolean(PK.OVERLOADED_LAST_ENABLED, false));
 
-                OverloadedApi.init(this);
-                chatSummaryTask = OverloadedApi.chat().getSummary();
+                chatSummaryTask = OverloadedApi.chat(this).getSummary();
                 break;
             case NOT_SIGNED_IN:
                 overloadedLoading.hideShimmer();

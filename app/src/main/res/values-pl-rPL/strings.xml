@@ -104,7 +104,6 @@
     <string name="failedStartGame">Failed starting the game!</string>
     <string name="blackCards">Czarne karty</string>
     <string name="whiteCards">Białe karty</string>
-    <string name="status">Status</string>
     <string name="required">Wymagane</string>
     <string name="provided">Zapewnione</string>
     <string name="cannotStartGame">Nie udało się uruchomić gry</string>

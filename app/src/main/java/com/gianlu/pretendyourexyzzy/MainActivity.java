@@ -501,14 +501,14 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     protected void onStart() {
         super.onStart();
 
-        OverloadedApi.chat().addUnreadCountListener(this);
+        OverloadedApi.chat(this).addUnreadCountListener(this);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
-        OverloadedApi.chat().removeUnreadCountListener(this);
+        OverloadedApi.chat(this).removeUnreadCountListener(this);
     }
 
     private void inflateNavigation(@NonNull Layout layout) {
@@ -534,7 +534,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     public void mayUpdateUnreadCount() {
         if (!OverloadedUtils.isSignedIn()) return;
 
-        int count = OverloadedApi.chat().countTotalUnread();
+        int count = OverloadedApi.chat(this).countTotalUnread();
         if (count == 0) navigation.removeBadge(Item.OVERLOADED);
         else navigation.setBadge(Item.OVERLOADED, count);
     }

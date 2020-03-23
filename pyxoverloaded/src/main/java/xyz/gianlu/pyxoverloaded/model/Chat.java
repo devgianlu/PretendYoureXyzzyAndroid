@@ -3,7 +3,6 @@ package xyz.gianlu.pyxoverloaded.model;
 import android.database.Cursor;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.Filterable;
@@ -52,16 +51,6 @@ public class Chat implements Filterable<NotFilterable> {
     @Override
     public int hashCode() {
         return id.hashCode();
-    }
-
-    @Nullable
-    public Long lastSeen() {
-        return OverloadedApi.chat().getLastSeen(id);
-    }
-
-    @Nullable
-    public ChatMessage lastMessage() {
-        return OverloadedApi.chat().getLastMessage(id);
     }
 
     @NonNull

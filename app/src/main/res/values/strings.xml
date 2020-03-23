@@ -105,7 +105,6 @@
     <string name="failedStartGame">Failed starting the game!</string>
     <string name="blackCards">Black cards</string>
     <string name="whiteCards">White cards</string>
-    <string name="status">Status</string>
     <string name="required">Required</string>
     <string name="provided">Provided</string>
     <string name="cannotStartGame">Cannot start the game</string>
@@ -245,7 +244,6 @@
     <string name="loggedIn">Logged in</string>
     <string name="login">Login</string>
     <string name="failedSigningIn">Failed signing in!</string>
-    <string name="buyOverloaded">Buy Overloaded</string>
     <string name="overloaded_requiresSignIn">Overloaded requires sign in</string>
     <string name="overloaded_requiresSignIn_desc">Before joining Overloaded, you must sign in with one of the following providers!</string>
     <string name="google">Google</string>
@@ -260,7 +258,6 @@
     <string name="failedLinkingAccount">Failed linking account!</string>
     <string name="purchaseVerified">Purchase verified!</string>
     <string name="overloadedStatus_purchasePending">Your payment is still pending, check back later!</string>
-    <string name="overloadedStatus_ok">OvErLoAdEd</string>
     <string name="username">Username</string>
     <string name="askOverloadedUsername_title">Choose your Overloaded username</string>
     <string name="askOverloadedUsername_desc">Please choose a username for your Overloaded account. You can still use a different username for PYX.</string>
