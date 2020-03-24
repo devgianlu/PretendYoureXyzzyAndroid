@@ -1,11 +1,15 @@
 package com.gianlu.pretendyourexyzzy.overloaded;
 
+import android.content.Context;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -60,34 +64,51 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         header.setBackgroundColorRes(MaterialColors.getShuffledInstance().next());
     }
 
+    private void send() {
+        String text = CommonUtils.getText(send);
+        if (text.isEmpty() || (text = text.trim()).isEmpty() || chatApi == null)
+            return;
+
+        send.setEnabled(false);
+        chatApi.sendMessage(getSetupPayload().id, text, getActivity(), new ChatMessageCallback() {
+            @Override
+            public void onMessage(@NonNull ChatMessage msg) {
+                CommonUtils.setText(send, "");
+                send.setEnabled(true);
+            }
+
+            @Override
+            public void onFailed(@NotNull Exception ex) {
+                Log.e(TAG, "Failed sending message.", ex);
+                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSendMessage).extra(getSetupPayload().id));
+                send.setEnabled(true);
+            }
+        });
+    }
+
     @Override
     protected boolean onCreateNoScrollBody(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, @NonNull Chat payload) {
         inflater.inflate(R.layout.sheet_overloaded_chat, parent, true);
         send = parent.findViewById(R.id.chatSheet_input);
-        send.setEndIconOnClickListener(v -> {
-            String text = CommonUtils.getText(send);
-            if (text.isEmpty() || (text = text.trim()).isEmpty() || chatApi == null)
-                return;
-
-            send.setEnabled(false);
-            chatApi.sendMessage(payload.id, text, getActivity(), new ChatMessageCallback() {
-                @Override
-                public void onMessage(@NonNull ChatMessage msg) {
-                    CommonUtils.setText(send, "");
-                    send.setEnabled(true);
-                }
-
-                @Override
-                public void onFailed(@NotNull Exception ex) {
-                    Log.e(TAG, "Failed sending message.", ex);
-                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSendMessage).extra(payload.id));
-                    send.setEnabled(true);
-                }
-            });
-        });
+        send.setEndIconOnClickListener(v -> send());
         send.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
             if (rmv != null)
                 rmv.setPadding(rmv.getPaddingLeft(), rmv.getPaddingTop(), rmv.getPaddingRight(), v.getHeight());
+        });
+
+        EditText sendEditText = CommonUtils.getEditText(send);
+        sendEditText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEND) {
+                send();
+                return true;
+            }
+
+            return false;
+        });
+        sendEditText.setShowSoftInputOnFocus(false);
+        sendEditText.setOnFocusChangeListener((v, hasFocus) -> {
+            InputMethodManager im = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (im != null) im.showSoftInput(v, InputMethodManager.SHOW_FORCED);
         });
 
         rmv = parent.findViewById(R.id.chatSheet_list);

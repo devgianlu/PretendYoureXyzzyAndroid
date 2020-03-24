@@ -16,14 +16,16 @@
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/typeAMessage"
         android:layout_gravity="bottom"
+        android:layout_marginTop="4dp"
+        android:hint="@string/typeAMessage"
         app:endIconDrawable="@drawable/baseline_send_24"
         app:endIconMode="custom">
 
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
-            android:inputType="textAutoCorrect"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:imeOptions="actionSend"
+            android:inputType="textAutoCorrect" />
     </com.google.android.material.textfield.TextInputLayout>
 </FrameLayout>
