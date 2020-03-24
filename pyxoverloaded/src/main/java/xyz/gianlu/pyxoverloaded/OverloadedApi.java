@@ -78,7 +78,7 @@ public class OverloadedApi {
         });
     }
 
-    public static void init(@NonNull Context context) {
+    private static void init(@NonNull Context context) {
         if (chatInstance == null) chatInstance = new OverloadedChatApi(context, instance);
     }
 
@@ -96,6 +96,7 @@ public class OverloadedApi {
 
     public static void close() {
         chatInstance.close();
+        instance.webSocket.close();
     }
 
     public void loggedOutFromPyxServer() {
@@ -250,6 +251,8 @@ public class OverloadedApi {
         return userDataCached != null && userDataCached.hasUsername() && userDataCached.purchaseStatus == UserData.PurchaseStatus.OK;
     }
 
+    @NonNull
+    @WorkerThread
     JSONObject serverRequest(@NonNull Request.Builder reqBuilder) throws OverloadedException {
         return serverRequest(reqBuilder, true);
     }
@@ -477,6 +480,10 @@ public class OverloadedApi {
             }
 
             dispatchEvent(new Event(type, obj));
+        }
+
+        void close() {
+            if (client != null) client.close(1000, null);
         }
     }
 
