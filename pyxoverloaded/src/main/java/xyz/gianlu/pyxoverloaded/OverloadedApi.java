@@ -246,6 +246,10 @@ public class OverloadedApi {
         });
     }
 
+    public boolean isFullyRegistered() {
+        return userDataCached != null && userDataCached.hasUsername() && userDataCached.purchaseStatus == UserData.PurchaseStatus.OK;
+    }
+
     JSONObject serverRequest(@NonNull Request.Builder reqBuilder) throws OverloadedException {
         return serverRequest(reqBuilder, true);
     }

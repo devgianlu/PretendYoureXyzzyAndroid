@@ -15,6 +15,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+
 public final class OverloadedUtils {
 
     private OverloadedUtils() {
@@ -86,7 +88,7 @@ public final class OverloadedUtils {
     }
 
     public static boolean isSignedIn() {
-        return FirebaseAuth.getInstance().getCurrentUser() != null;
+        return FirebaseAuth.getInstance().getCurrentUser() != null && OverloadedApi.get().isFullyRegistered();
     }
 
     @NonNull

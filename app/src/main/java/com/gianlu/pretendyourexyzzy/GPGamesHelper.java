@@ -56,9 +56,6 @@ public final class GPGamesHelper {
 
     @Contract("null -> false")
     private static boolean checkAccount(@Nullable GoogleSignInAccount account) {
-        if (!OverloadedUtils.isSignedIn())
-            return false;
-
         if (account == null)
             return false;
 
