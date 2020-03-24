@@ -18,7 +18,7 @@ public final class FriendStatus {
     public final boolean mutual;
     public String serverId;
 
-    FriendStatus(@NotNull String username, @NotNull JSONObject obj) throws JSONException {
+    private FriendStatus(@NotNull String username, @NotNull JSONObject obj) throws JSONException {
         this.username = username;
         mutual = obj.getBoolean("mutual");
         serverId = CommonUtils.optString(obj, "loggedServer");
@@ -43,5 +43,10 @@ public final class FriendStatus {
 
     public void update(@Nullable String serverId) {
         this.serverId = serverId;
+    }
+
+    @Override
+    public String toString() {
+        return "FriendStatus{" + "username='" + username + '\'' + ", mutual=" + mutual + '}';
     }
 }

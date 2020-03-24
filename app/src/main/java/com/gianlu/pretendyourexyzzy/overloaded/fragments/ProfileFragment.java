@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -221,19 +222,23 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                 CommonUtils.setText(holder.status, R.string.notMutual);
             }
 
-            holder.itemView.setOnClickListener(v -> showPopup(holder.itemView.getContext(), holder.itemView, friend.username));
+            holder.itemView.setOnClickListener(v -> showPopup(holder.itemView.getContext(), holder.itemView, friend));
         }
 
-        private void showPopup(@NonNull Context context, @NonNull View anchor, @NonNull String username) {
+        private void showPopup(@NonNull Context context, @NonNull View anchor, @NonNull FriendStatus friend) {
             PopupMenu popup = new PopupMenu(context, anchor);
             popup.inflate(R.menu.item_overloaded_user);
+
+            Menu menu = popup.getMenu();
+            if (!friend.mutual) menu.removeItem(R.id.overloadedUserItemMenu_openChat);
+
             popup.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.overloadedUserItemMenu_showProfile:
                         // TODO: Show user profile
                         return true;
                     case R.id.overloadedUserItemMenu_openChat:
-                        OverloadedApi.chat(context).startChat(username, getActivity(), new ChatCallback() {
+                        OverloadedApi.chat(context).startChat(friend.username, getActivity(), new ChatCallback() {
                             @Override
                             public void onChat(@NonNull Chat chat) {
                                 ChatBottomSheet sheet = new ChatBottomSheet();
@@ -243,22 +248,23 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                             @Override
                             public void onFailed(@NonNull Exception ex) {
                                 Log.e(TAG, "Failed opening chat.", ex);
-                                showToast(Toaster.build().message(R.string.failedCreatingChat).extra(username));
+                                showToast(Toaster.build().message(R.string.failedCreatingChat).extra(friend));
                             }
                         });
                         return true;
                     case R.id.overloadedUserItemMenu_removeFriend:
-                        OverloadedApi.get().removeFriend(username, null, new FriendsStatusCallback() {
+                        OverloadedApi.get().removeFriend(friend.username, null, new FriendsStatusCallback() {
                             @Override
                             public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
-                                showToast(Toaster.build().message(R.string.removedFriend).extra(username));
-                                if (friendsAdapter != null) friendsAdapter.removeUser(username);
+                                showToast(Toaster.build().message(R.string.removedFriend).extra(friend));
+                                if (friendsAdapter != null)
+                                    friendsAdapter.removeUser(friend.username);
                             }
 
                             @Override
                             public void onFailed(@NotNull Exception ex) {
                                 Log.e(TAG, "Failed removing friend.", ex);
-                                showToast(Toaster.build().message(R.string.failedRemovingFriend).extra(username));
+                                showToast(Toaster.build().message(R.string.failedRemovingFriend).extra(friend));
                             }
                         });
                         return true;
