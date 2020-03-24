@@ -48,6 +48,7 @@ import okhttp3.WebSocketListener;
 import okhttp3.internal.Util;
 import xyz.gianlu.pyxoverloaded.callback.BooleanCallback;
 import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
+import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
 import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.callback.UsersCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
@@ -190,7 +191,7 @@ public class OverloadedApi {
 
     @NonNull
     public Task<Void> loggedIntoPyxServer(@NonNull HttpUrl serverUrl, @NonNull String nickname, @Nullable String idCode) {
-        return loggingCallbacks(userData(false).continueWith(executorService, new NonNullContinuation<UserData, Void>() {
+        return loggingCallbacks(userData(true).continueWith(executorService, new NonNullContinuation<UserData, Void>() {
             @Override
             public Void then(@NonNull UserData userData) throws Exception {
                 if (!userData.username.equals(nickname))
@@ -366,6 +367,18 @@ public class OverloadedApi {
                     .post(singletonJsonBody("username", username)));
             return friendsStatusCached = FriendStatus.parse(obj);
         }), activity, callback::onFriendsStatus, callback::onFailed);
+    }
+
+    public void deleteAccount(@Nullable Activity activity, @NotNull SuccessCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("User/Delete"))
+                    .post(Util.EMPTY_REQUEST));
+            return null;
+        }), activity, a -> {
+            logout();
+            callback.onSuccessful();
+        }, callback::onFailed);
     }
 
     void dispatchLocalEvent(@NonNull Event.Type type, @NonNull JSONObject obj) {

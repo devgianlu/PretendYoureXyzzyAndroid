@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Objects;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
 import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
@@ -139,7 +140,7 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
 
     public static class OverloadedFragment extends BasePreferenceFragment implements OverloadedChooseProviderDialog.Listener {
         private static final int RC_SIGN_IN = 3;
-        private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
+        private OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
         private boolean link;
 
         @Override
@@ -271,6 +272,29 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                     onBackPressed();
                 });
                 addPreference(logout);
+
+                MaterialStandardPreference delete = new MaterialStandardPreference(context);
+                delete.setTitle(R.string.deleteAccount);
+                delete.setIcon(R.drawable.baseline_delete_forever_24);
+                delete.setOnClickListener(v -> {
+                    showProgress(R.string.loading);
+                    OverloadedApi.get().deleteAccount(getActivity(), new SuccessCallback() {
+                        @Override
+                        public void onSuccessful() {
+                            dismissDialog();
+                            showToast(Toaster.build().message(R.string.accountDeleted));
+                            onBackPressed();
+                        }
+
+                        @Override
+                        public void onFailed(@NonNull Exception ex) {
+                            Log.e(TAG, "Failed deleting account.", ex);
+                            dismissDialog();
+                            showToast(Toaster.build().message(R.string.failedDeletingAccount));
+                        }
+                    });
+                });
+                addPreference(delete);
             } else {
                 MaterialStandardPreference login = new MaterialStandardPreference(context);
                 login.setTitle(R.string.login);

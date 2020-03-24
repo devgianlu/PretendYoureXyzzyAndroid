@@ -22,6 +22,7 @@ import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -79,7 +80,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             }
         });
 
-        if (OverloadedUtils.isSignedIn()) {
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             if (!Prefs.getBoolean(PK.OVERLOADED_FINISHED_SETUP, false))
                 listener.showProgress(R.string.verifyingPurchase);
 
@@ -173,7 +174,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     }
 
     private synchronized void checkUpdateUi() {
-        if (OverloadedUtils.isSignedIn()) {
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             if (exception != null && exception.type == ExceptionWithType.Type.OVERLOADED) {
                 updateOverloadedStatus(lastStatus = Status.ERROR, null);
                 return;
@@ -233,7 +234,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     }
 
     public void onResume() {
-        if (!OverloadedUtils.isSignedIn()) {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             userData = null;
             exception = null;
             checkUpdateUi();
@@ -314,7 +315,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         return (btn, isChecked) -> {
             // infiniteSku and userData have already been loaded
             if (isChecked) {
-                if (OverloadedUtils.isSignedIn() && userData != null) {
+                if (FirebaseAuth.getInstance().getCurrentUser() != null && userData != null) {
                     switch (userData.purchaseStatus) {
                         case NONE:
                             btn.setChecked(false);
