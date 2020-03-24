@@ -49,6 +49,25 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         this.listener = listener;
     }
 
+    @Nullable
+    private Purchase tryGetLatestPurchase() {
+        List<Purchase> purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP).getPurchasesList();
+        if (purchases == null || purchases.isEmpty()) return null;
+
+        Purchase latestPurchase = null;
+        for (Purchase p : purchases) {
+            if (!p.getSku().equals("overloaded.infinite") || !p.getPackageName().equals(BuildConfig.APPLICATION_ID))
+                continue;
+
+            if (latestPurchase == null)
+                latestPurchase = p;
+            else if (latestPurchase.getPurchaseTime() < p.getPurchaseTime())
+                latestPurchase = p;
+        }
+
+        return latestPurchase;
+    }
+
     public void onStart() {
         billingClient = BillingClient.newBuilder(context).enablePendingPurchases().setListener(this).build();
         billingClient.startConnection(new BillingClientStateListener() {
@@ -113,17 +132,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                             return;
                         }
 
-                        Purchase latestPurchase = null;
-                        for (Purchase p : purchases) {
-                            if (!p.getSku().equals("overloaded.infinite") || !p.getPackageName().equals(BuildConfig.APPLICATION_ID))
-                                continue;
-
-                            if (latestPurchase == null)
-                                latestPurchase = p;
-                            else if (latestPurchase.getPurchaseTime() < p.getPurchaseTime())
-                                latestPurchase = p;
-                        }
-
+                        Purchase latestPurchase = tryGetLatestPurchase();
                         if (latestPurchase == null) {
                             listener.dismissDialog();
                             return;
@@ -286,12 +295,36 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         if (result.getResponseCode() == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
             listener.showProgress(R.string.verifyingPurchase);
             OverloadedApi.get().userData(activity, new UserDataCallback() {
-                @Override
-                public void onUserData(@NonNull UserData status) {
-                    userData = status;
+
+                private void applyData(UserData data) {
+                    userData = data;
                     exception = null;
                     checkUpdateUi();
                     listener.dismissDialog();
+                }
+
+                @Override
+                public void onUserData(@NonNull UserData data) {
+                    if (data.purchaseStatus == UserData.PurchaseStatus.NONE) {
+                        Purchase purchase = tryGetLatestPurchase();
+                        if (purchase != null) {
+                            OverloadedApi.get().verifyPurchase(purchase.getPurchaseToken(), activity, new UserDataCallback() {
+                                @Override
+                                public void onUserData(@NonNull UserData data) {
+                                    applyData(data);
+                                }
+
+                                @Override
+                                public void onFailed(@NonNull Exception ex) {
+                                    Log.e(TAG, "Failed verifying purchase.", ex);
+                                    listener.dismissDialog();
+                                }
+                            });
+                            return;
+                        }
+                    }
+
+                    applyData(data);
                 }
 
                 @Override
