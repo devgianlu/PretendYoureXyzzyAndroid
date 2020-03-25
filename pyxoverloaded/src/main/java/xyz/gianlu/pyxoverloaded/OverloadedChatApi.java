@@ -115,6 +115,7 @@ public class OverloadedChatApi implements Closeable {
                     .url(overloadedServerUrl("Chat/List"))
                     .post(Util.EMPTY_REQUEST));
 
+            List<Chat> local = new ArrayList<>(list);
             JSONArray array = obj.getJSONArray("chats");
             List<Chat> chats = new ArrayList<>(array.length());
             for (int i = 0; i < array.length(); i++) {
@@ -123,9 +124,13 @@ public class OverloadedChatApi implements Closeable {
                 chats.add(chat);
                 db.putChat(chat);
 
+                local.remove(chat);
+
                 JSONObject lastMsgObj = chatObj.optJSONObject("lastMsg");
                 if (lastMsgObj != null) db.updateLastMessage(chat.id, new ChatMessage(lastMsgObj));
             }
+
+            for (Chat chat : local) db.removeChat(chat);
 
             return chats;
         }), activity, callback::onRemoteChats, callback::onFailed);

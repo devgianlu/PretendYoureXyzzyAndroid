@@ -124,6 +124,20 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    synchronized void removeChat(@NonNull Chat chat) {
+        chatsCache.remove(chat.id);
+
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            db.delete("chats", "id=?", new String[]{chat.id});
+            db.delete("messages", "chat_id=?", new String[]{chat.id});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
     @Nullable
     synchronized Chat getChat(@NonNull String chatId) {
         Chat chat = chatsCache.get(chatId);
