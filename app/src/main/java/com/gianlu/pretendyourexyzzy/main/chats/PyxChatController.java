@@ -16,36 +16,30 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
 
-public class PyxChat implements ChatController {
+class PyxChatController {
     private final int gid;
     private RegisteredPyx pyx;
     private Pyx.OnEventListener eventListener;
 
-    private PyxChat(int gid) {
+    private PyxChatController(int gid) {
         this.gid = gid;
     }
 
     @NonNull
-    public static PyxChat globalController() {
-        return new PyxChat(-1);
+    static PyxChatController globalController() {
+        return new PyxChatController(-1);
     }
 
     @NonNull
-    public static PyxChat gameController(int gid) {
-        return new PyxChat(gid);
+    static PyxChatController gameController(int gid) {
+        return new PyxChatController(gid);
     }
 
-    @Override
-    public void init() throws InitException {
-        try {
-            pyx = RegisteredPyx.get();
-        } catch (LevelMismatchException ex) {
-            throw new InitException(ex);
-        }
+    void init() throws LevelMismatchException {
+        pyx = RegisteredPyx.get();
     }
 
-    @Override
-    public void listener(@NonNull Listener listener) {
+    void listener(@NonNull Listener listener) {
         if (pyx == null) throw new IllegalStateException();
 
         pyx.polling().addListener(eventListener = new Pyx.OnEventListener() {
@@ -58,7 +52,7 @@ public class PyxChat implements ChatController {
                     if (!msg.wall && BlockedUsers.isBlocked(msg.sender))
                         return;
 
-                    listener.onChatMessage(new ChatMessage(msg.sender, msg.message, msg.wall, msg.emote, msg.timestamp));
+                    listener.onChatMessage(msg);
                 }
             }
 
@@ -69,8 +63,7 @@ public class PyxChat implements ChatController {
         });
     }
 
-    @Override
-    public void send(@NonNull String msg, @Nullable Activity activity, @NonNull SendCallback callback) {
+    void send(@NonNull String msg, @Nullable Activity activity, @NonNull SendCallback callback) {
         if (pyx == null) throw new IllegalStateException();
 
         boolean emote;
@@ -123,13 +116,28 @@ public class PyxChat implements ChatController {
         }
     }
 
-    @Override
-    public void onDestroy() {
+    void onDestroy() {
         if (pyx != null && eventListener != null) pyx.polling().removeListener(eventListener);
     }
 
-    @Override
-    public void showUserInfo(@NonNull FragmentActivity activity, @NonNull String sender) {
+    void showUserInfo(@NonNull FragmentActivity activity, @NonNull String sender) {
         UserInfoDialog.loadAndShow(pyx, activity, sender);
+    }
+
+    void readAllMessages() {
+        if (gid == -1) pyx.resetGlobalUnread();
+        else pyx.resetGameUnread();
+    }
+
+    interface SendCallback {
+        void onSuccessful();
+
+        void unknownCommand();
+
+        void onFailed(@NonNull Exception ex);
+    }
+
+    interface Listener {
+        void onChatMessage(@NonNull PollMessage msg);
     }
 }

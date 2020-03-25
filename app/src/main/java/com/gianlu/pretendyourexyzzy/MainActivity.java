@@ -21,7 +21,6 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
-import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.drawer.BaseDrawerItem;
 import com.gianlu.commonutils.drawer.DrawerManager;
 import com.gianlu.commonutils.logs.LogsHelper;
@@ -58,7 +57,7 @@ import java.util.Objects;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
 
-public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction, OverloadedChatApi.UnreadCountListener {
+public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction, OverloadedChatApi.UnreadCountListener, RegisteredPyx.UnreadCountListener {
     private static final String TAG = MainActivity.class.getSimpleName();
     private final Object fragmentsLock = new Object();
     private BottomNavigationManager navigation;
@@ -324,6 +323,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                     break;
                 case PYX_CHAT:
                     setTitle(getString(R.string.chat) + " - " + getString(R.string.app_name));
+                    if (chatsFragment != null) chatsFragment.onSelectedFragment();
                     break;
                 case OVERLOADED:
                     setTitle(getString(R.string.overloaded) + " - " + getString(R.string.app_name));
@@ -331,7 +331,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             }
 
             switchTo(item);
-
             return true;
         });
         navigation.setOnNavigationItemReselectedListener(item -> {
@@ -393,6 +392,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         if (currentFragment != null) navigation.setSelectedItem(currentFragment);
 
+        pyx.addUnreadCountListener(this);
+
         GamePermalink perm = (GamePermalink) getIntent().getSerializableExtra("game");
         if (perm != null) {
             gamesFragment.launchGame(perm, getIntent().getStringExtra("password"), getIntent().getBooleanExtra("shouldRequest", true));
@@ -441,7 +442,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     @Override
     public void changeGameOptions(int gid, @NonNull Game.Options options) {
         try {
-            showDialog(DialogUtils.progressDialog(this, R.string.loading));
+            showProgress(R.string.loading);
             pyx.request(PyxRequests.changeGameOptions(gid, options), this, new Pyx.OnSuccess() {
                 @Override
                 public void onDone() {
@@ -508,6 +509,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         super.onDestroy();
 
         OverloadedApi.chat(this).removeUnreadCountListener(this);
+        if (pyx != null) pyx.removeUnreadCountListener(this);
     }
 
     private void inflateNavigation(@NonNull Layout layout) {
@@ -534,6 +536,12 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         int count = OverloadedApi.chat(this).countTotalUnread();
         if (count == 0) navigation.removeBadge(Item.OVERLOADED);
         else navigation.setBadge(Item.OVERLOADED, count);
+    }
+
+    @Override
+    public void onPyxUnread(int count) {
+        if (count == 0) navigation.removeBadge(Item.PYX_CHAT);
+        else navigation.setBadge(Item.PYX_CHAT, count);
     }
 
     private enum Item {

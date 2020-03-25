@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.adapters;
+package com.gianlu.pretendyourexyzzy.main.chats;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -11,17 +11,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.main.chats.ChatController.ChatMessage;
+import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
-    private final List<ChatMessage> messages;
+class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
+    private final List<PollMessage> messages;
     private final LayoutInflater inflater;
     private final Listener listener;
 
-    public ChatAdapter(@NonNull Context context, @NonNull Listener listener) {
+    ChatAdapter(@NonNull Context context, @NonNull Listener listener) {
         this.listener = listener;
         this.messages = new ArrayList<>();
         this.inflater = LayoutInflater.from(context);
@@ -41,8 +41,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ChatMessage message = messages.get(position);
-        holder.text.setHtml(SuperTextView.makeBold(message.sender) + ": " + message.text);
+        PollMessage message = messages.get(position);
+        holder.text.setHtml(SuperTextView.makeBold(message.sender) + ": " + message.message);
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onChatItemSelected(message.sender);
         });
@@ -58,7 +58,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     }
 
     @UiThread
-    public void newMessage(@NonNull ChatMessage msg) {
+    void newMessage(@NonNull PollMessage msg) {
         synchronized (messages) {
             messages.add(msg);
         }

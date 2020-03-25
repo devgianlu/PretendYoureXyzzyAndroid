@@ -6,6 +6,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+import androidx.annotation.WorkerThread;
 
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
@@ -24,6 +26,7 @@ import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,6 +48,9 @@ public class RegisteredPyx extends FirstLoadedPyx {
     private static final String TAG = RegisteredPyx.class.getSimpleName();
     private final User user;
     private final PollingThread pollingThread;
+    private final List<UnreadCountListener> unreadCountListeners = new ArrayList<>(3);
+    private int gameUnreadCount = 0;
+    private int globalUnreadCount = 0;
 
     RegisteredPyx(Server server, LifecycleAwareHandler handler, OkHttpClient client, FirstLoadAndConfig firstLoad, User user) {
         super(server, handler, client, firstLoad);
@@ -157,6 +163,48 @@ public class RegisteredPyx extends FirstLoadedPyx {
         });
     }
 
+    public void addUnreadCountListener(@NonNull UnreadCountListener listener) {
+        unreadCountListeners.add(listener);
+    }
+
+    public void removeUnreadCountListener(@NonNull UnreadCountListener listener) {
+        unreadCountListeners.remove(listener);
+    }
+
+    public void resetGlobalUnread() {
+        globalUnreadCount = 0;
+        handler.post(null, () -> {
+            for (UnreadCountListener listener : new ArrayList<>(unreadCountListeners))
+                listener.onPyxUnread(gameUnreadCount + globalUnreadCount);
+        });
+    }
+
+    public void resetGameUnread() {
+        gameUnreadCount = 0;
+        handler.post(null, () -> {
+            for (UnreadCountListener listener : new ArrayList<>(unreadCountListeners))
+                listener.onPyxUnread(gameUnreadCount + globalUnreadCount);
+        });
+    }
+
+    @WorkerThread
+    private void handleEvent(@NonNull PollMessage message) {
+        if (message.event == PollMessage.Event.CHAT) {
+            if (message.gid != -1) gameUnreadCount++;
+            else globalUnreadCount++;
+
+            handler.post(null, () -> {
+                for (UnreadCountListener listener : new ArrayList<>(unreadCountListeners))
+                    listener.onPyxUnread(gameUnreadCount + globalUnreadCount);
+            });
+        }
+    }
+
+    @UiThread
+    public interface UnreadCountListener {
+        void onPyxUnread(int count);
+    }
+
     public static class PartialCardcastAddFail extends Exception {
         private final List<String> codes;
 
@@ -214,11 +262,16 @@ public class RegisteredPyx extends FirstLoadedPyx {
             }
         }
 
-        private void dispatchDone(List<PollMessage> messages) {
+        @WorkerThread
+        private void dispatchDone(@NotNull List<PollMessage> messages) {
+            for (PollMessage msg : messages)
+                handleEvent(msg);
+
             exCount.set(0);
             handler.post(null, new NotifyMessage(messages));
         }
 
+        @WorkerThread
         private void dispatchEx(@NonNull Exception ex) {
             exCount.getAndIncrement();
             if (exCount.get() > 5) {

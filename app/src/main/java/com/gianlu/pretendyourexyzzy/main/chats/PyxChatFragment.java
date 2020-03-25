@@ -18,15 +18,16 @@ import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.adapters.ChatAdapter;
+import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
+import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.google.android.material.textfield.TextInputLayout;
 
-public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.Listener, ChatController.Listener {
+public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.Listener, PyxChatController.Listener {
     private static final String TAG = PyxChatFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
     private ChatAdapter adapter;
     private TextInputLayout input;
-    private ChatController controller;
+    private PyxChatController controller;
 
     @NonNull
     public static PyxChatFragment getGameInstance(int gid, @NonNull Context context) {
@@ -49,6 +50,12 @@ public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.L
         return fragment;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (controller != null) controller.readAllMessages();
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -68,10 +75,10 @@ public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.L
 
         switch (type) {
             case GLOBAL:
-                controller = PyxChat.globalController();
+                controller = PyxChatController.globalController();
                 break;
             case GAME:
-                controller = PyxChat.gameController(args.getInt("gid", -1));
+                controller = PyxChatController.gameController(args.getInt("gid", -1));
                 break;
             default:
                 this.rmv.showError(R.string.failedLoading);
@@ -84,7 +91,7 @@ public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.L
 
         try {
             controller.init();
-        } catch (ChatController.InitException ex) {
+        } catch (LevelMismatchException ex) {
             this.rmv.showError(R.string.failedLoading);
             return layout;
         }
@@ -95,7 +102,7 @@ public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.L
             if (msg.isEmpty() || controller == null) return;
 
             input.setEnabled(false);
-            controller.send(msg, getActivity(), new ChatController.SendCallback() {
+            controller.send(msg, getActivity(), new PyxChatController.SendCallback() {
                 @Override
                 public void onSuccessful() {
                     CommonUtils.setText(input, null);
@@ -151,10 +158,13 @@ public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.L
     }
 
     @Override
-    public void onChatMessage(@NonNull ChatController.ChatMessage msg) {
-        if (!isAdded()) return;
+    public void onChatMessage(@NonNull PollMessage msg) {
         adapter.newMessage(msg);
-        rmv.list().scrollToPosition(adapter.getItemCount() - 1);
+        if (isAdded()) rmv.list().scrollToPosition(adapter.getItemCount() - 1);
+    }
+
+    public void onSelectedFragment() {
+        if (controller != null) controller.readAllMessages();
     }
 
     private enum Type {

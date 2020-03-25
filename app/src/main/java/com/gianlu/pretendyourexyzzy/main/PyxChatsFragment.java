@@ -47,7 +47,22 @@ public class PyxChatsFragment extends Fragment {
 
         TabLayout tabs = layout.findViewById(R.id.pyxChatsFragment_tabs);
         pager = layout.findViewById(R.id.pyxChatsFragment_pager);
+        pager.setOffscreenPageLimit(2);
         tabs.setupWithViewPager(pager);
+        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                onSelectedFragment();
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+        });
 
         if (globalEnabled) globalFragment = PyxChatFragment.getGlobalInstance(requireContext());
         pager.setAdapter(new PagerAdapter(getChildFragmentManager(), globalFragment));
@@ -83,5 +98,12 @@ public class PyxChatsFragment extends Fragment {
             else
                 pager.setAdapter(new PagerAdapter(getChildFragmentManager(), gameFragment));
         }
+    }
+
+    public void onSelectedFragment() {
+        PagerAdapter adapter = ((PagerAdapter) pager.getAdapter());
+        if (adapter == null) return;
+
+        ((PyxChatFragment) adapter.getItem(pager.getCurrentItem())).onSelectedFragment();
     }
 }
