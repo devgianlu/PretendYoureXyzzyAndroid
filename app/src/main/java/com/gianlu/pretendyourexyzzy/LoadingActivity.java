@@ -392,6 +392,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         if (launchGame != null) intent.putExtra("game", launchGame);
         if (launchGamePassword != null) intent.putExtra("password", launchGamePassword);
         startActivity(intent);
+        waitingOverloaded = false;
     }
 
     @Override

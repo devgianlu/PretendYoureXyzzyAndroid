@@ -71,7 +71,8 @@ public class OverloadedFragment extends FragmentWithDialog {
         GPGamesHelper.loadAchievements(requireContext(), getActivity(), new GPGamesHelper.LoadIterable<Achievement>() {
             @Override
             public void onLoaded(@NonNull Iterable<Achievement> result) {
-                AchievementImageLoader il = new AchievementImageLoader(requireContext());
+                if (getContext() == null) return;
+                AchievementImageLoader il = new AchievementImageLoader(getContext());
 
                 achievements.removeAllViews();
                 List<Achievement> list = OverloadedUtils.getBestAchievements(result);
@@ -121,7 +122,6 @@ public class OverloadedFragment extends FragmentWithDialog {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.fragment_overloaded, container, false);
-
         achievements = layout.findViewById(R.id.overloaded_achievements);
         cardsPlayed = layout.findViewById(R.id.overloaded_cardsPlayed);
         roundsPlayed = layout.findViewById(R.id.overloaded_roundsPlayed);

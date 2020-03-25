@@ -78,6 +78,16 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     protected void onResume() {
         super.onResume();
         if (drawerManager != null) drawerManager.syncTogglerState();
+
+        if (overloadedFragment != null && !OverloadedUtils.isSignedIn()) {
+            navigation.remove(Item.OVERLOADED);
+            synchronized (fragmentsLock) {
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.remove(overloadedFragment);
+                transaction.commitAllowingStateLoss();
+                overloadedFragment = null;
+            }
+        }
     }
 
     @Override
@@ -595,6 +605,10 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         BottomNavigationManager(@NonNull BottomNavigationView view) {
             this.view = view;
+        }
+
+        void remove(@NonNull Item item) {
+            view.getMenu().removeItem(item.id);
         }
 
         void add(@NonNull Item item) {
