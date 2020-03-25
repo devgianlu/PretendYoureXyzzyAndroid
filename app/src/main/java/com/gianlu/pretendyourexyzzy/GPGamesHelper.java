@@ -137,6 +137,7 @@ public final class GPGamesHelper {
 
             long score = (long) (((float) wonEvent.getValue() / (float) playedEvent.getValue()) * 100 * 10000);
             leaderboardsClient.submitScore(LEAD_WIN_RATE, score);
+            buffer.release();
         });
     }
 

@@ -1,5 +1,6 @@
-package com.gianlu.pretendyourexyzzy.main;
+package com.gianlu.pretendyourexyzzy.main.chats;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,32 +19,32 @@ import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.ChatAdapter;
-import com.gianlu.pretendyourexyzzy.main.chats.ChatController;
-import com.gianlu.pretendyourexyzzy.main.chats.PyxChat;
 import com.google.android.material.textfield.TextInputLayout;
 
-public class ChatFragment extends FragmentWithDialog implements ChatAdapter.Listener, ChatController.Listener {
-    private static final String TAG = ChatFragment.class.getSimpleName();
+public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.Listener, ChatController.Listener {
+    private static final String TAG = PyxChatFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
     private ChatAdapter adapter;
     private TextInputLayout input;
     private ChatController controller;
 
     @NonNull
-    public static ChatFragment getGameInstance(int gid) {
-        ChatFragment fragment = new ChatFragment();
+    public static PyxChatFragment getGameInstance(int gid, @NonNull Context context) {
+        PyxChatFragment fragment = new PyxChatFragment();
         Bundle args = new Bundle();
         args.putSerializable("type", Type.GAME);
+        args.putString("title", context.getString(R.string.gameChat));
         args.putInt("gid", gid);
         fragment.setArguments(args);
         return fragment;
     }
 
     @NonNull
-    public static ChatFragment getGlobalInstance() {
-        ChatFragment fragment = new ChatFragment();
+    public static PyxChatFragment getGlobalInstance(@NonNull Context context) {
+        PyxChatFragment fragment = new PyxChatFragment();
         Bundle args = new Bundle();
         args.putSerializable("type", Type.GLOBAL);
+        args.putString("title", context.getString(R.string.globalChat));
         fragment.setArguments(args);
         return fragment;
     }
@@ -51,7 +52,7 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.fragment_chat, container, false);
+        LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.fragment_pyx_chat, container, false);
         this.rmv = layout.findViewById(R.id.chatFragment_recyclerViewLayout);
         this.rmv.disableSwipeRefresh();
         LinearLayoutManager llm = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);

@@ -37,7 +37,6 @@ import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.main.CardcastFragment;
-import com.gianlu.pretendyourexyzzy.main.ChatFragment;
 import com.gianlu.pretendyourexyzzy.main.DrawerItem;
 import com.gianlu.pretendyourexyzzy.main.GamesFragment;
 import com.gianlu.pretendyourexyzzy.main.NamesFragment;
@@ -45,6 +44,7 @@ import com.gianlu.pretendyourexyzzy.main.OnLeftGame;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.main.OverloadedFragment;
+import com.gianlu.pretendyourexyzzy.main.PyxChatsFragment;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsActivity;
@@ -65,9 +65,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     private NamesFragment namesFragment;
     private GamesFragment gamesFragment;
     private CardcastFragment cardcastFragment;
-    private ChatFragment gameChatFragment;
     private OngoingGameFragment ongoingGameFragment;
-    private ChatFragment globalChatFragment;
+    private PyxChatsFragment chatsFragment;
     private OverloadedFragment overloadedFragment;
     private RegisteredPyx pyx;
     private DrawerManager<User, DrawerItem> drawerManager;
@@ -214,13 +213,9 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                         if (ongoingGameFragment != null)
                             transaction.add(R.id.main_container, ongoingGameFragment, item.tag);
                         break;
-                    case GAME_CHAT:
-                        if (gameChatFragment != null)
-                            transaction.add(R.id.main_container, gameChatFragment, item.tag);
-                        break;
-                    case GLOBAL_CHAT:
-                        if (globalChatFragment != null)
-                            transaction.add(R.id.main_container, globalChatFragment, item.tag);
+                    case PYX_CHAT:
+                        if (chatsFragment != null)
+                            transaction.add(R.id.main_container, chatsFragment, item.tag);
                         break;
                     case OVERLOADED:
                         if (overloadedFragment != null)
@@ -249,16 +244,30 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             ongoingGameFragment = OngoingGameFragment.getInstance(game);
             addOrReplace(transaction, ongoingGameFragment, Item.ONGOING_GAME);
 
-            if (pyx.config().gameChatEnabled()) {
-                gameChatFragment = ChatFragment.getGameInstance(game.gid);
-                addOrReplace(transaction, gameChatFragment, Item.GAME_CHAT);
-            }
+            toggleGameChat(transaction, game.gid);
 
             try {
                 transaction.commitNow();
                 navigation.setSelectedItem(Item.ONGOING_GAME);
             } catch (IllegalStateException ex) {
                 AnalyticsApplication.crashlyticsLog(ex.getMessage() + " at #onParticipatingGame(GamePermalink)");
+            }
+        }
+    }
+
+    private void toggleGameChat(@NonNull FragmentTransaction transaction, @Nullable Integer gid) {
+        if (chatsFragment == null && pyx.config().globalChatEnabled())
+            chatsFragment = getOrAdd(transaction, Item.PYX_CHAT, () -> PyxChatsFragment.get(pyx));
+
+        if (gid != null && pyx.config().gameChatEnabled()) {
+            if (chatsFragment == null)
+                chatsFragment = getOrAdd(transaction, Item.PYX_CHAT, () -> PyxChatsFragment.get(pyx));
+
+            chatsFragment.toggleGameChat(gid);
+        } else {
+            if (chatsFragment != null) {
+                if (pyx.config().globalChatEnabled()) chatsFragment.toggleGameChat(null);
+                else transaction.remove(chatsFragment);
             }
         }
     }
@@ -313,11 +322,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 case ONGOING_GAME:
                     setTitle(getString(R.string.gameLabel) + " - " + getString(R.string.app_name));
                     break;
-                case GAME_CHAT:
-                    setTitle(getString(R.string.gameChat) + " - " + getString(R.string.app_name));
-                    break;
-                case GLOBAL_CHAT:
-                    setTitle(getString(R.string.globalChat) + " - " + getString(R.string.app_name));
+                case PYX_CHAT:
+                    setTitle(getString(R.string.chat) + " - " + getString(R.string.app_name));
                     break;
                 case OVERLOADED:
                     setTitle(getString(R.string.overloaded) + " - " + getString(R.string.app_name));
@@ -336,11 +342,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 case GAMES:
                     if (gamesFragment != null) gamesFragment.scrollToTop();
                     break;
-                case GAME_CHAT:
-                    if (gameChatFragment != null) gameChatFragment.scrollToTop();
-                    break;
-                case GLOBAL_CHAT:
-                    if (globalChatFragment != null) globalChatFragment.scrollToTop();
+                case PYX_CHAT:
+                    if (chatsFragment != null) chatsFragment.scrollToTop();
                     break;
             }
         });
@@ -357,27 +360,22 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         if (OverloadedUtils.isSignedIn())
             overloadedFragment = getOrAdd(transaction, Item.OVERLOADED, OverloadedFragment::getInstance);
 
-        if (pyx.config().globalChatEnabled())
-            globalChatFragment = getOrAdd(transaction, Item.GLOBAL_CHAT, ChatFragment::getGlobalInstance);
-
-        transaction.commitNow();
-
         Item currentFragment = null;
         if (savedInstanceState != null) {
             currentGame = (GamePermalink) savedInstanceState.getSerializable("currentGame");
             currentFragment = (Item) savedInstanceState.getSerializable("currentFragment");
         }
 
-        ongoingGameFragment = (OngoingGameFragment) getSupportFragmentManager().findFragmentByTag(Item.ONGOING_GAME.tag);
-        gameChatFragment = (ChatFragment) getSupportFragmentManager().findFragmentByTag(Item.GAME_CHAT.tag);
+        toggleGameChat(transaction, currentGame == null ? null : currentGame.gid);
+        transaction.commitNow();
 
+        ongoingGameFragment = (OngoingGameFragment) getSupportFragmentManager().findFragmentByTag(Item.ONGOING_GAME.tag);
         if (currentGame == null) {
             inflateNavigation(Layout.LOBBY);
             if (currentFragment == null) navigation.setSelectedItem(Item.GAMES);
 
-            if (gameChatFragment != null || ongoingGameFragment != null) {
+            if (ongoingGameFragment != null) {
                 transaction = getSupportFragmentManager().beginTransaction();
-                if (gameChatFragment != null) transaction.remove(gameChatFragment);
                 if (ongoingGameFragment != null) transaction.remove(ongoingGameFragment);
                 transaction.commitNow();
             }
@@ -386,12 +384,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 transaction = getSupportFragmentManager().beginTransaction();
                 ongoingGameFragment = OngoingGameFragment.getInstance(currentGame);
                 addOrReplace(transaction, ongoingGameFragment, Item.ONGOING_GAME);
-
-                if (pyx.config().gameChatEnabled()) {
-                    gameChatFragment = ChatFragment.getGameInstance(currentGame.gid);
-                    addOrReplace(transaction, gameChatFragment, Item.GAME_CHAT);
-                }
-
                 transaction.commitNow();
             }
 
@@ -412,7 +404,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     public void onLeftGame() {
         currentGame = null;
         ongoingGameFragment = null;
-        gameChatFragment = null;
         AnalyticsApplication.sendAnalytics(Utils.ACTION_LEFT_GAME);
 
         inflateNavigation(Layout.LOBBY);
@@ -422,13 +413,11 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             FragmentManager manager = getSupportFragmentManager();
             FragmentTransaction transaction = manager.beginTransaction();
 
+            toggleGameChat(transaction, null);
+
             try {
                 Fragment ongoingGame = manager.findFragmentByTag(Item.ONGOING_GAME.tag);
                 if (ongoingGame != null) transaction.remove(ongoingGame);
-
-                Fragment gameChat = manager.findFragmentByTag(Item.GAME_CHAT.tag);
-                if (gameChat != null) transaction.remove(gameChat);
-
                 transaction.commit();
             } catch (IllegalStateException ex) {
                 Log.d(TAG, "Failed fragments transaction on left game.", ex);
@@ -527,9 +516,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         for (int i = 0; i < layout.items.length; i++) {
             Item item = layout.items[i];
-            if (item == Item.GAME_CHAT && !pyx.config().gameChatEnabled())
-                continue;
-            else if (item == Item.GLOBAL_CHAT && !pyx.config().globalChatEnabled())
+            if (item == Item.PYX_CHAT && !(pyx.config().gameChatEnabled() || pyx.config().globalChatEnabled()))
                 continue;
             else if (item == Item.OVERLOADED && !OverloadedUtils.isSignedIn())
                 continue;
@@ -550,10 +537,9 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     private enum Item {
-        GLOBAL_CHAT(R.string.globalChat, R.drawable.baseline_chat_24), GAME_CHAT(R.string.gameChat, R.drawable.baseline_chat_bubble_outline_24),
         CARDCAST(R.string.cardcast, R.drawable.baseline_cast_24), GAMES(R.string.games, R.drawable.baseline_games_24),
         PLAYERS(R.string.playersLabel, R.drawable.baseline_people_24), ONGOING_GAME(R.string.ongoingGame, R.drawable.baseline_casino_24),
-        OVERLOADED(R.string.overloaded, R.drawable.baseline_videogame_asset_24);
+        OVERLOADED(R.string.overloaded, R.drawable.baseline_videogame_asset_24), PYX_CHAT(R.string.chat, R.drawable.baseline_chat_bubble_outline_24);
 
         private final int text;
         private final int icon;
@@ -578,8 +564,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     private enum Layout {
-        LOBBY(Item.PLAYERS, Item.GLOBAL_CHAT, Item.GAMES, Item.CARDCAST, Item.OVERLOADED),
-        ONGOING(Item.PLAYERS, Item.GLOBAL_CHAT, Item.CARDCAST, Item.ONGOING_GAME, Item.GAME_CHAT);
+        LOBBY(Item.PLAYERS, Item.PYX_CHAT, Item.GAMES, Item.CARDCAST, Item.OVERLOADED),
+        ONGOING(Item.PLAYERS, Item.PYX_CHAT, Item.CARDCAST, Item.OVERLOADED, Item.ONGOING_GAME);
 
         static {
             for (Layout l : values())
