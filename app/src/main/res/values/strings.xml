@@ -307,4 +307,11 @@
     <string name="failedDeletingAccount">Failed deleting account!</string>
     <string name="accountDeleted">Account successfully deleted!</string>
     <string name="chat">Chat</string>
+    <string name="tooManySpecialCharacters">You used too many special characters in that message.</string>
+    <string name="cannotRepeatMessage">You can\'t repeat the same message multiple times in a row.</string>
+    <string name="chattingTooFast">You are chatting too fast. Wait a few seconds and try again.</string>
+    <string name="tryCapsLockOff">Try turning caps lock off.</string>
+    <string name="mustUseMoreUniqueWords">You must use more unique words in your message.</string>
+    <string name="chatMessageTooLong">Messages cannot be longer than 200 characters.</string>
+    <string name="tooLessWords">You must use more words in a message that long.</string>
 </resources>

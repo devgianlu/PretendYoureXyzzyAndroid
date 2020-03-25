@@ -19,6 +19,7 @@ import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
+import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -119,14 +120,45 @@ public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.L
                 @Override
                 public void onFailed(@NonNull Exception ex) {
                     Log.e(TAG, "Failed sending message.", ex);
-                    showToast(Toaster.build().message(R.string.failedSendMessage));
                     input.setEnabled(true);
+
+                    int stringRes;
+                    if (ex instanceof PyxException) {
+                        switch (((PyxException) ex).errorCode) {
+                            case "rm":
+                                stringRes = R.string.cannotRepeatMessage;
+                                break;
+                            case "tmsc":
+                                stringRes = R.string.tooManySpecialCharacters;
+                                break;
+                            case "tf":
+                                stringRes = R.string.chattingTooFast;
+                                break;
+                            case "CL":
+                                stringRes = R.string.tryCapsLockOff;
+                                break;
+                            case "rW":
+                                stringRes = R.string.mustUseMoreUniqueWords;
+                                break;
+                            case "mtl":
+                                stringRes = R.string.chatMessageTooLong;
+                                break;
+                            case "nes":
+                                stringRes = R.string.tooLessWords;
+                                break;
+                            default:
+                                stringRes = R.string.failedSendMessage;
+                        }
+                    } else {
+                        stringRes = R.string.failedSendMessage;
+                    }
+
+                    showToast(Toaster.build().message(stringRes));
                 }
             });
         });
 
         controller.listener(this);
-
         return layout;
     }
 
