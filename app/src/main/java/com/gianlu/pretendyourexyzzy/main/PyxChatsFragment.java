@@ -101,9 +101,23 @@ public class PyxChatsFragment extends Fragment {
     }
 
     public void onSelectedFragment() {
-        PagerAdapter adapter = ((PagerAdapter) pager.getAdapter());
-        if (adapter == null) return;
+        PagerAdapter adapter;
+        if (pager == null || (adapter = (PagerAdapter) pager.getAdapter()) == null)
+            return;
 
-        ((PyxChatFragment) adapter.getItem(pager.getCurrentItem())).onSelectedFragment();
+        for (int i = 0; i < adapter.getCount(); i++) {
+            PyxChatFragment fragment = ((PyxChatFragment) adapter.getItem(pager.getCurrentItem()));
+            if (i == pager.getCurrentItem()) fragment.onSelectedFragment();
+            else fragment.onDeselectedFragment();
+        }
+    }
+
+    public void onDeselectedFragment() {
+        PagerAdapter adapter;
+        if (pager == null || (adapter = (PagerAdapter) pager.getAdapter()) == null)
+            return;
+
+        for (int i = 0; i < adapter.getCount(); i++)
+            ((PyxChatFragment) adapter.getItem(i)).onDeselectedFragment();
     }
 }

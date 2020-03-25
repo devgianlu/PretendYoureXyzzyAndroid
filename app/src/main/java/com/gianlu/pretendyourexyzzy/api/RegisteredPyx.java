@@ -48,13 +48,12 @@ public class RegisteredPyx extends FirstLoadedPyx {
     private static final String TAG = RegisteredPyx.class.getSimpleName();
     private final User user;
     private final PollingThread pollingThread;
-    private final List<UnreadCountListener> unreadCountListeners = new ArrayList<>(3);
-    private int gameUnreadCount = 0;
-    private int globalUnreadCount = 0;
+    private final PyxChatHelper chatHelper;
 
     RegisteredPyx(Server server, LifecycleAwareHandler handler, OkHttpClient client, FirstLoadAndConfig firstLoad, User user) {
         super(server, handler, client, firstLoad);
         this.user = user;
+        this.chatHelper = new PyxChatHelper(handler);
         this.pollingThread = new PollingThread();
         this.pollingThread.start();
 
@@ -65,6 +64,11 @@ public class RegisteredPyx extends FirstLoadedPyx {
     @NonNull
     public static RegisteredPyx get() throws LevelMismatchException {
         return InstanceHolder.holder().get(InstanceHolder.Level.REGISTERED);
+    }
+
+    @NonNull
+    public PyxChatHelper chat() {
+        return chatHelper;
     }
 
     @Override
@@ -163,48 +167,6 @@ public class RegisteredPyx extends FirstLoadedPyx {
         });
     }
 
-    public void addUnreadCountListener(@NonNull UnreadCountListener listener) {
-        unreadCountListeners.add(listener);
-    }
-
-    public void removeUnreadCountListener(@NonNull UnreadCountListener listener) {
-        unreadCountListeners.remove(listener);
-    }
-
-    public void resetGlobalUnread() {
-        globalUnreadCount = 0;
-        handler.post(null, () -> {
-            for (UnreadCountListener listener : new ArrayList<>(unreadCountListeners))
-                listener.onPyxUnread(gameUnreadCount + globalUnreadCount);
-        });
-    }
-
-    public void resetGameUnread() {
-        gameUnreadCount = 0;
-        handler.post(null, () -> {
-            for (UnreadCountListener listener : new ArrayList<>(unreadCountListeners))
-                listener.onPyxUnread(gameUnreadCount + globalUnreadCount);
-        });
-    }
-
-    @WorkerThread
-    private void handleEvent(@NonNull PollMessage message) {
-        if (message.event == PollMessage.Event.CHAT) {
-            if (message.gid != -1) gameUnreadCount++;
-            else globalUnreadCount++;
-
-            handler.post(null, () -> {
-                for (UnreadCountListener listener : new ArrayList<>(unreadCountListeners))
-                    listener.onPyxUnread(gameUnreadCount + globalUnreadCount);
-            });
-        }
-    }
-
-    @UiThread
-    public interface UnreadCountListener {
-        void onPyxUnread(int count);
-    }
-
     public static class PartialCardcastAddFail extends Exception {
         private final List<String> codes;
 
@@ -264,11 +226,17 @@ public class RegisteredPyx extends FirstLoadedPyx {
 
         @WorkerThread
         private void dispatchDone(@NotNull List<PollMessage> messages) {
-            for (PollMessage msg : messages)
-                handleEvent(msg);
-
             exCount.set(0);
             handler.post(null, new NotifyMessage(messages));
+        }
+
+        @UiThread
+        private void dispatchedAllMessages(@NonNull List<PollMessage> messages) {
+            executor.execute(() -> {
+                for (PollMessage msg : messages)
+                    if (msg.event == PollMessage.Event.CHAT)
+                        chatHelper.handleChatEvent(msg);
+            });
         }
 
         @WorkerThread
@@ -336,6 +304,9 @@ public class RegisteredPyx extends FirstLoadedPyx {
                         }
                     }
                 }
+
+                // We need to make sure that the UI has been updated
+                dispatchedAllMessages(messages);
             }
         }
     }

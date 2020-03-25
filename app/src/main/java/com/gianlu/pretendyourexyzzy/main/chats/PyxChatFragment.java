@@ -28,6 +28,7 @@ public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.L
     private ChatAdapter adapter;
     private TextInputLayout input;
     private PyxChatController controller;
+    private boolean selected = false;
 
     @NonNull
     public static PyxChatFragment getGameInstance(int gid, @NonNull Context context) {
@@ -53,7 +54,7 @@ public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.L
     @Override
     public void onResume() {
         super.onResume();
-        if (controller != null) controller.readAllMessages();
+        if (controller != null) controller.readAllMessages(System.currentTimeMillis());
     }
 
     @Nullable
@@ -90,7 +91,7 @@ public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.L
         onItemCountChanged(0);
 
         try {
-            controller.init();
+            adapter.addAll(controller.init());
         } catch (LevelMismatchException ex) {
             this.rmv.showError(R.string.failedLoading);
             return layout;
@@ -161,10 +162,16 @@ public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.L
     public void onChatMessage(@NonNull PollMessage msg) {
         adapter.newMessage(msg);
         if (isAdded()) rmv.list().scrollToPosition(adapter.getItemCount() - 1);
+        if (selected && controller != null) controller.readAllMessages(msg.timestamp);
     }
 
     public void onSelectedFragment() {
-        if (controller != null) controller.readAllMessages();
+        selected = true;
+        if (controller != null) controller.readAllMessages(System.currentTimeMillis());
+    }
+
+    public void onDeselectedFragment() {
+        selected = false;
     }
 
     private enum Type {

@@ -28,6 +28,7 @@ import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.api.PyxChatHelper;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
@@ -57,7 +58,7 @@ import java.util.Objects;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
 
-public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction, OverloadedChatApi.UnreadCountListener, RegisteredPyx.UnreadCountListener {
+public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction, OverloadedChatApi.UnreadCountListener, PyxChatHelper.UnreadCountListener {
     private static final String TAG = MainActivity.class.getSimpleName();
     private final Object fragmentsLock = new Object();
     private BottomNavigationManager navigation;
@@ -323,11 +324,15 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                     break;
                 case PYX_CHAT:
                     setTitle(getString(R.string.chat) + " - " + getString(R.string.app_name));
-                    if (chatsFragment != null) chatsFragment.onSelectedFragment();
                     break;
                 case OVERLOADED:
                     setTitle(getString(R.string.overloaded) + " - " + getString(R.string.app_name));
                     break;
+            }
+
+            if (chatsFragment != null) {
+                if (item == Item.PYX_CHAT) chatsFragment.onSelectedFragment();
+                else chatsFragment.onDeselectedFragment();
             }
 
             switchTo(item);
@@ -392,7 +397,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         if (currentFragment != null) navigation.setSelectedItem(currentFragment);
 
-        pyx.addUnreadCountListener(this);
+        pyx.chat().addUnreadCountListener(this);
 
         GamePermalink perm = (GamePermalink) getIntent().getSerializableExtra("game");
         if (perm != null) {
@@ -509,7 +514,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         super.onDestroy();
 
         OverloadedApi.chat(this).removeUnreadCountListener(this);
-        if (pyx != null) pyx.removeUnreadCountListener(this);
+        if (pyx != null) pyx.chat().removeUnreadCountListener(this);
     }
 
     private void inflateNavigation(@NonNull Layout layout) {

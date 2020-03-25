@@ -44,7 +44,7 @@ class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         PollMessage message = messages.get(position);
         holder.text.setHtml(SuperTextView.makeBold(message.sender) + ": " + message.message);
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) listener.onChatItemSelected(message.sender);
+            listener.onChatItemSelected(message.sender);
         });
 
         if (message.emote) CommonUtils.setTextColor(holder.text, R.color.purple);
@@ -64,7 +64,16 @@ class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         }
 
         notifyItemInserted(messages.size() - 1);
-        if (listener != null) listener.onItemCountChanged(messages.size());
+        listener.onItemCountChanged(messages.size());
+    }
+
+    public void addAll(@NonNull List<PollMessage> list) {
+        synchronized (messages) {
+            messages.addAll(list);
+        }
+
+        notifyItemRangeInserted(messages.size() - list.size(), list.size());
+        listener.onItemCountChanged(messages.size());
     }
 
     public interface Listener {

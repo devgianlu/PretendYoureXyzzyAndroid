@@ -16,6 +16,8 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
 
+import java.util.List;
+
 class PyxChatController {
     private final int gid;
     private RegisteredPyx pyx;
@@ -35,8 +37,10 @@ class PyxChatController {
         return new PyxChatController(gid);
     }
 
-    void init() throws LevelMismatchException {
+    @NonNull
+    List<PollMessage> init() throws LevelMismatchException {
         pyx = RegisteredPyx.get();
+        return gid == -1 ? pyx.chat().getMessagesForGlobal() : pyx.chat().getMessagesForGame(gid);
     }
 
     void listener(@NonNull Listener listener) {
@@ -124,9 +128,9 @@ class PyxChatController {
         UserInfoDialog.loadAndShow(pyx, activity, sender);
     }
 
-    void readAllMessages() {
-        if (gid == -1) pyx.resetGlobalUnread();
-        else pyx.resetGameUnread();
+    void readAllMessages(long timestamp) {
+        if (gid == -1) pyx.chat().resetGlobalUnread(timestamp);
+        else pyx.chat().resetGameUnread(timestamp);
     }
 
     interface SendCallback {
