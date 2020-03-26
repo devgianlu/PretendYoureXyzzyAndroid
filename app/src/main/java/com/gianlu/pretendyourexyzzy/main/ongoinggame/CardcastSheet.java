@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.main.ongoinggame;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.text.Html;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.Log;
@@ -10,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,15 +25,17 @@ import com.gianlu.commonutils.bottomsheet.ModalBottomSheetHeaderView;
 import com.gianlu.commonutils.bottomsheet.ThemedModalBottomSheet;
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.misc.MessageView;
+import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
-import com.gianlu.pretendyourexyzzy.adapters.DecksAdapter;
+import com.gianlu.pretendyourexyzzy.activities.CardcastDeckActivity;
 import com.gianlu.pretendyourexyzzy.api.Cardcast;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
+import com.gianlu.pretendyourexyzzy.api.models.CardcastDeck;
 import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameHelper;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -39,7 +43,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
-public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> implements DecksAdapter.Listener {
+public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> {
     private static final String TAG = CardcastSheet.class.getSimpleName();
     private OngoingGameHelper.Listener listener;
     private RegisteredPyx pyx;
@@ -77,7 +81,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
 
     @Override
     protected void onReceivedUpdate(@NonNull List<Deck> decks) {
-        list.setAdapter(new DecksAdapter(requireContext(), decks, CardcastSheet.this, listener));
+        list.setAdapter(new DecksAdapter(requireContext(), decks, listener));
 
         count.setVisibility(View.VISIBLE);
         count.setText(Utils.buildDeckCountString(decks.size(), Deck.countBlackCards(decks), Deck.countWhiteCards(decks)));
@@ -152,8 +156,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
         return true;
     }
 
-    @Override
-    public void shouldUpdateItemCount(int count) {
+    private void shouldUpdateItemCount(int count) {
         if (count == 0) {
             message.info(R.string.noCardSets);
             list.setVisibility(View.GONE);
@@ -163,8 +166,7 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
         }
     }
 
-    @Override
-    public void removeDeck(@NonNull Deck deck) {
+    private void removeDeck(@NonNull Deck deck) {
         if (deck.cardcastCode == null) return;
 
         pyx.request(PyxRequests.removeCardcastDeck(getSetupPayload(), deck.cardcastCode), getActivity(), new Pyx.OnSuccess() {
@@ -184,5 +186,90 @@ public class CardcastSheet extends ThemedModalBottomSheet<Integer, List<Deck>> i
     @Override
     protected int getCustomTheme(@NonNull Integer payload) {
         return R.style.AppTheme;
+    }
+
+    private class DecksAdapter extends RecyclerView.Adapter<DecksAdapter.ViewHolder> {
+        private final List<Deck> sets;
+        private final LayoutInflater inflater;
+        private final OngoingGameHelper.Listener ongoingGameListener;
+
+        DecksAdapter(@NonNull Context context, List<Deck> sets, OngoingGameHelper.Listener ongoingGameListener) {
+            this.sets = sets;
+            this.inflater = LayoutInflater.from(context);
+            this.ongoingGameListener = ongoingGameListener;
+
+            setHasStableIds(true);
+            shouldUpdateItemCount(getItemCount());
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new ViewHolder(parent);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return sets.get(position).id;
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
+            final Deck item = sets.get(position);
+            holder.name.setText(Html.fromHtml(item.name));
+            holder.whiteCards.setText(String.valueOf(item.whiteCards));
+            holder.blackCards.setText(String.valueOf(item.blackCards));
+
+            final CardcastDeck deck = item.cardcastDeck();
+            if (deck != null) {
+                holder.author.setHtml(R.string.byLowercase, deck.author.username);
+                holder.code.setText(deck.code);
+                holder.itemView.setOnClickListener(v -> CardcastDeckActivity.startActivity(holder.itemView.getContext(), deck));
+
+                if (ongoingGameListener != null && ongoingGameListener.canModifyCardcastDecks()) {
+                    holder.remove.setVisibility(View.VISIBLE);
+                    holder.remove.setOnClickListener(v -> {
+                        removeDeck(item);
+                        remove(holder.getAdapterPosition());
+                    });
+                } else {
+                    holder.remove.setVisibility(View.GONE);
+                }
+            } else {
+                holder.remove.setVisibility(View.GONE);
+            }
+        }
+
+        private void remove(int pos) {
+            if (pos == -1) return;
+            sets.remove(pos);
+            notifyItemRemoved(pos);
+            shouldUpdateItemCount(getItemCount());
+        }
+
+        @Override
+        public int getItemCount() {
+            return sets.size();
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            final TextView name;
+            final TextView whiteCards;
+            final TextView blackCards;
+            final SuperTextView author;
+            final TextView code;
+            final ImageButton remove;
+
+            ViewHolder(ViewGroup parent) {
+                super(inflater.inflate(R.layout.item_cardset, parent, false));
+
+                name = itemView.findViewById(R.id.cardSetItem_name);
+                whiteCards = itemView.findViewById(R.id.cardSetItem_whiteCards);
+                blackCards = itemView.findViewById(R.id.cardSetItem_blackCards);
+                author = itemView.findViewById(R.id.cardSetItem_author);
+                code = itemView.findViewById(R.id.cardSetItem_code);
+                remove = itemView.findViewById(R.id.cardSetItem_remove);
+            }
+        }
     }
 }

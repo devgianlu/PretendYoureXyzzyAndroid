@@ -3,22 +3,27 @@ package com.gianlu.pretendyourexyzzy.starred;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.activities.CardcastDeckActivity;
-import com.gianlu.pretendyourexyzzy.adapters.StarredDecksAdapter;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameHelper;
 
-public class StarredDecksActivity extends ActivityWithDialog implements StarredDecksAdapter.Listener {
+import java.util.List;
+
+public class StarredDecksActivity extends ActivityWithDialog {
     private RecyclerMessageView rmv;
     private StarredDecksManager starredDecks;
 
@@ -71,18 +76,56 @@ public class StarredDecksActivity extends ActivityWithDialog implements StarredD
 
         rmv.disableSwipeRefresh();
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
-        rmv.loadListData(new StarredDecksAdapter(this, starredDecks.getDecks(), this));
+        rmv.loadListData(new StarredDecksAdapter(this, starredDecks.getDecks()));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        rmv.loadListData(new StarredDecksAdapter(this, starredDecks.getDecks(), this));
+        rmv.loadListData(new StarredDecksAdapter(this, starredDecks.getDecks()));
     }
 
-    @Override
-    public void onDeckSelected(@NonNull StarredDecksManager.StarredDeck deck) {
-        CardcastDeckActivity.startActivity(this, deck.code, deck.name);
+    private class StarredDecksAdapter extends RecyclerView.Adapter<StarredDecksAdapter.ViewHolder> {
+        private final List<StarredDecksManager.StarredDeck> decks;
+        private final LayoutInflater inflater;
+
+        StarredDecksAdapter(@NonNull Context context, List<StarredDecksManager.StarredDeck> decks) {
+            this.decks = decks;
+            this.inflater = LayoutInflater.from(context);
+        }
+
+        @Override
+        @NonNull
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new ViewHolder(parent);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            final StarredDecksManager.StarredDeck deck = decks.get(position);
+
+            holder.name.setText(deck.name);
+            holder.code.setText(deck.code);
+            holder.itemView.setOnClickListener(view -> CardcastDeckActivity.startActivity(StarredDecksActivity.this, deck.code, deck.name));
+
+            CommonUtils.setRecyclerViewTopMargin(holder);
+        }
+
+        @Override
+        public int getItemCount() {
+            return decks.size();
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            final TextView name;
+            final TextView code;
+
+            ViewHolder(ViewGroup parent) {
+                super(inflater.inflate(R.layout.item_starred_deck, parent, false));
+
+                name = itemView.findViewById(R.id.starredDeckItem_name);
+                code = itemView.findViewById(R.id.starredDeckItem_code);
+            }
+        }
     }
 }

@@ -12,6 +12,7 @@ import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SearchView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,19 +21,27 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.DialogUtils;
+import com.gianlu.commonutils.misc.InfiniteRecyclerView;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
+import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.activities.CardcastDeckActivity;
-import com.gianlu.pretendyourexyzzy.adapters.CardcastDecksAdapter;
 import com.gianlu.pretendyourexyzzy.api.Cardcast;
+import com.gianlu.pretendyourexyzzy.api.models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.api.models.CardcastDeck;
 import com.gianlu.pretendyourexyzzy.api.models.CardcastDecks;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
-public class CardcastFragment extends Fragment implements Cardcast.OnDecks, CardcastDecksAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
+import me.zhanghai.android.materialratingbar.MaterialRatingBar;
+
+public class CardcastFragment extends Fragment implements Cardcast.OnDecks, MenuItem.OnActionExpandListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
     private final static int LIMIT = 12;
     private static final String TAG = CardcastFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
@@ -171,18 +180,13 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
         if (decks.isEmpty())
             rmv.showInfo(R.string.searchNoDecks);
         else
-            rmv.loadListData(new CardcastDecksAdapter(getContext(), cardcast, search, decks, LIMIT, this));
+            rmv.loadListData(new CardcastDecksAdapter(getContext(), cardcast, search, decks, LIMIT));
     }
 
     @Override
     public void onException(@NonNull Exception ex) {
         Log.e(TAG, "Search failed.", ex);
         rmv.showError(R.string.failedLoading_reason, ex.getMessage());
-    }
-
-    @Override
-    public void onDeckSelected(@NonNull CardcastDeck deck) {
-        CardcastDeckActivity.startActivity(getContext(), deck);
     }
 
     @Override
@@ -214,5 +218,98 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Card
         search = new Cardcast.Search(null, search.categories, search.direction, search.sort, search.nsfw);
         refreshAdapter();
         return false;
+    }
+
+    private class CardcastDecksAdapter extends InfiniteRecyclerView.InfiniteAdapter<CardcastDecksAdapter.ViewHolder, CardcastDeck> {
+        private final LayoutInflater inflater;
+        private final Cardcast cardcast;
+        private final Cardcast.Search search;
+        private final int limit;
+        private final Random random = ThreadLocalRandom.current();
+
+        CardcastDecksAdapter(Context context, Cardcast cardcast, Cardcast.Search search, CardcastDecks items, int limit) {
+            super(context, new Config<CardcastDeck>().items(items).undeterminedPages().noSeparators());
+            this.inflater = LayoutInflater.from(context);
+            this.cardcast = cardcast;
+            this.search = search;
+            this.limit = limit;
+        }
+
+        @Nullable
+        @Override
+        protected Date getDateFromItem(CardcastDeck item) {
+            return null;
+        }
+
+        @Override
+        protected void userBindViewHolder(@NonNull ViewHolder holder, @NonNull ItemEnclosure<CardcastDeck> item, int position) {
+            final CardcastDeck deck = item.getItem();
+
+            holder.name.setText(deck.name);
+            CommonUtils.setText(holder.author, R.string.byLowercase, deck.author.username);
+            holder.nsfw.setVisibility(deck.hasNsfwCards ? View.VISIBLE : View.GONE);
+
+            if (deck.sampleCalls != null && !deck.sampleCalls.isEmpty()
+                    && deck.sampleResponses != null && !deck.sampleResponses.isEmpty()) {
+                CardcastCard exampleBlackCard = deck.sampleCalls.get(random.nextInt(deck.sampleCalls.size()));
+                CardcastCard exampleWhiteCard = deck.sampleResponses.get(random.nextInt(deck.sampleResponses.size()));
+                holder.example.setHtml(Utils.composeCardcastDeckSentence(exampleBlackCard, exampleWhiteCard));
+                holder.example.setVisibility(View.VISIBLE);
+            } else {
+                holder.example.setVisibility(View.GONE);
+            }
+
+            holder.rating.setRating(deck.rating);
+            holder.rating.setEnabled(false);
+            holder.blackCards.setText(String.valueOf(deck.calls));
+            holder.whiteCards.setText(String.valueOf(deck.responses));
+
+            holder.itemView.setOnClickListener(view -> CardcastDeckActivity.startActivity(getContext(), deck));
+
+            CommonUtils.setRecyclerViewTopMargin(holder);
+        }
+
+        @NonNull
+        @Override
+        protected RecyclerView.ViewHolder createViewHolder(@NonNull ViewGroup parent) {
+            return new ViewHolder(parent);
+        }
+
+        @Override
+        protected void moreContent(int page, @NonNull ContentProvider<CardcastDeck> provider) {
+            cardcast.getDecks(search, limit, limit * page, null, new Cardcast.OnDecks() {
+                @Override
+                public void onDone(@NonNull Cardcast.Search search, @NonNull CardcastDecks decks) {
+                    provider.onMoreContent(decks);
+                }
+
+                @Override
+                public void onException(@NonNull Exception ex) {
+                    provider.onFailed(ex);
+                }
+            });
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            final SuperTextView example;
+            final TextView name;
+            final TextView author;
+            final View nsfw;
+            final MaterialRatingBar rating;
+            final TextView blackCards;
+            final TextView whiteCards;
+
+            ViewHolder(ViewGroup parent) {
+                super(inflater.inflate(R.layout.item_cardcast_deck, parent, false));
+
+                example = itemView.findViewById(R.id.cardcastDeckItem_example);
+                name = itemView.findViewById(R.id.cardcastDeckItem_name);
+                author = itemView.findViewById(R.id.cardcastDeckItem_author);
+                nsfw = itemView.findViewById(R.id.cardcastDeckItem_nsfw);
+                rating = itemView.findViewById(R.id.cardcastDeckItem_rating);
+                blackCards = itemView.findViewById(R.id.cardcastDeckItem_blackCards);
+                whiteCards = itemView.findViewById(R.id.cardcastDeckItem_whiteCards);
+            }
+        }
     }
 }
