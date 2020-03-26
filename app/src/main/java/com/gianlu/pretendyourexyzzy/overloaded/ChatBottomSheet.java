@@ -119,7 +119,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         isLoading(false);
 
         chatApi = OverloadedApi.chat(requireContext());
-        chatApi.getMessages(payload.id, 0, getActivity(), new ChatMessagesCallback() {
+        chatApi.getMessages(payload.id, getActivity(), new ChatMessagesCallback() {
             @Override
             public void onRemoteMessages(@NonNull ChatMessages messages) {
                 update(Update.messages(messages));

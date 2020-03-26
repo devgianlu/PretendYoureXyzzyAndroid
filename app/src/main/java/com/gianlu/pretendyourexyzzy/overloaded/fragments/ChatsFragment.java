@@ -129,7 +129,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
                 }
             }
 
-            chatApi.getMessages(chatId, 0, getActivity(), new ChatMessagesCallback() {
+            chatApi.getMessages(chatId, getActivity(), new ChatMessagesCallback() {
                 @Override
                 public void onRemoteMessages(@NonNull ChatMessages messages) {
                     itemChangedOrAdded(messages.chat);

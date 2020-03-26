@@ -156,8 +156,8 @@ public class OverloadedChatApi implements Closeable {
         }, callback::onFailed);
     }
 
-    public void getMessages(@NonNull String chatId, int offset, @Nullable Activity activity, @NonNull ChatMessagesCallback callback) {
-        ChatMessages list = db.getMessages(chatId, 128, offset);
+    public void getMessages(@NonNull String chatId, @Nullable Activity activity, @NonNull ChatMessagesCallback callback) {
+        ChatMessages list = db.getMessages(chatId);
         if (list != null && !list.isEmpty())
             new Handler(Looper.getMainLooper()).post(() -> callback.onLocalMessages(list));
 
@@ -168,8 +168,6 @@ public class OverloadedChatApi implements Closeable {
             JSONObject body = new JSONObject();
             body.put("chatId", chatId);
             body.put("since", lastSeen);
-            body.put("limit", 128);
-            body.put("offset", offset);
 
             JSONObject obj = api.serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Chat/Messages"))

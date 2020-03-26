@@ -60,21 +60,17 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
     }
 
     @Nullable
-    synchronized ChatMessages getMessages(@NonNull String chatId, int limit, int offset) {
+    synchronized ChatMessages getMessages(@NonNull String chatId) {
         Chat chat = getChat(chatId);
         if (chat == null) return null;
 
         SQLiteDatabase db = getReadableDatabase();
         db.beginTransaction();
-        try (Cursor cursor = db.query("messages", null, "chat_id=?", new String[]{chatId}, null, null, "timestamp DESC", String.valueOf(offset + limit))) {
-            if (cursor == null)
+        try (Cursor cursor = db.query("messages", null, "chat_id=?", new String[]{chatId}, null, null, "timestamp DESC", "128")) {
+            if (cursor == null || !cursor.moveToFirst())
                 return null;
 
-            if (!cursor.moveToFirst()) return null;
-            if (offset != 0 && !cursor.move(offset))
-                return null;
-
-            ChatMessages list = new ChatMessages(limit, chat);
+            ChatMessages list = new ChatMessages(128, chat);
             do {
                 list.add(new ChatMessage(cursor));
             } while (cursor.moveToNext());
