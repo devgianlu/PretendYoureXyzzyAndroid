@@ -60,13 +60,34 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
     }
 
     @Nullable
+    synchronized ChatMessages getMessagesPaginate(@NonNull String chatId, long startFrom) {
+        Chat chat = getChat(chatId);
+        if (chat == null) return null;
+
+        SQLiteDatabase db = getReadableDatabase();
+        db.beginTransaction();
+        try (Cursor cursor = db.rawQuery("SELECT * FROM messages WHERE chat_id=? AND timestamp < ? ORDER BY timestamp DESC LIMIT 128", new String[]{chatId, String.valueOf(startFrom)})) {
+            if (cursor == null || !cursor.moveToFirst())
+                return null;
+
+            ChatMessages list = new ChatMessages(128, chat);
+            do {
+                list.add(new ChatMessage(cursor));
+            } while (cursor.moveToNext());
+            return list;
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    @Nullable
     synchronized ChatMessages getMessages(@NonNull String chatId) {
         Chat chat = getChat(chatId);
         if (chat == null) return null;
 
         SQLiteDatabase db = getReadableDatabase();
         db.beginTransaction();
-        try (Cursor cursor = db.query("messages", null, "chat_id=?", new String[]{chatId}, null, null, "timestamp DESC", "128")) {
+        try (Cursor cursor = db.rawQuery("SELECT * FROM messages WHERE chat_id=? ORDER BY timestamp DESC LIMIT 128", new String[]{chatId})) {
             if (cursor == null || !cursor.moveToFirst())
                 return null;
 
@@ -141,7 +162,7 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getReadableDatabase();
         db.beginTransaction();
-        try (Cursor cursor = db.query("chats", null, "id=?", new String[]{chatId}, null, null, null, null)) {
+        try (Cursor cursor = db.rawQuery("SELECT * FROM chats WHERE id=?", new String[]{chatId})) {
             if (cursor == null || !cursor.moveToNext()) return null;
 
             chat = new Chat(cursor);
@@ -181,7 +202,7 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getReadableDatabase();
         db.beginTransaction();
-        try (Cursor cursor = db.query("chats", null, "oneParticipant=? OR otherParticipant=?", new String[]{username, username}, null, null, null, "1")) {
+        try (Cursor cursor = db.rawQuery("SELECT * FROM chats WHERE oneParticipant=? OR otherParticipant=? LIMIT 1", new String[]{username, username})) {
             if (cursor == null || !cursor.moveToNext())
                 return null;
 
@@ -199,7 +220,7 @@ class ChatDatabaseHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getReadableDatabase();
         db.beginTransaction();
-        try (Cursor cursor = db.query("chats", null, null, null, null, null, null, null)) {
+        try (Cursor cursor = db.rawQuery("SELECT * FROM chats", null)) {
             if (cursor == null || !cursor.moveToNext())
                 return Collections.emptyList();
 

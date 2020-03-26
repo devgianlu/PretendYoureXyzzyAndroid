@@ -156,6 +156,11 @@ public class OverloadedChatApi implements Closeable {
         }, callback::onFailed);
     }
 
+    @Nullable
+    public List<ChatMessage> getLocalMessages(@NonNull String chatId, long since) {
+        return db.getMessagesPaginate(chatId, since);
+    }
+
     public void getMessages(@NonNull String chatId, @Nullable Activity activity, @NonNull ChatMessagesCallback callback) {
         ChatMessages list = db.getMessages(chatId);
         if (list != null && !list.isEmpty())

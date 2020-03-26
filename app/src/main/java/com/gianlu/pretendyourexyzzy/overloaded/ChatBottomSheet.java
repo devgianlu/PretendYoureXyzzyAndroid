@@ -116,6 +116,22 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         rmv.loadListData(adapter = new ChatMessagesAdapter(), false);
         rmv.startLoading();
 
+        rmv.list().addOnScrollListener(new RecyclerView.OnScrollListener() {
+            volatile boolean isLoading = false;
+            boolean willLoadMore = true;
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView view, int dx, int dy) {
+                if (!isLoading && willLoadMore && adapter != null && !view.canScrollVertically(-1) && dy < 0) {
+                    isLoading = true;
+                    List<ChatMessage> list = chatApi.getLocalMessages(payload.id, adapter.olderTimestamp());
+                    if (list != null && !list.isEmpty()) update(Update.messages(list));
+                    else willLoadMore = false;
+                    isLoading = false;
+                }
+            }
+        });
+
         isLoading(false);
 
         chatApi = OverloadedApi.chat(requireContext());
@@ -290,6 +306,10 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
 
             RecyclerView list = getList();
             if (list != null) list.scrollToPosition(0);
+        }
+
+        long olderTimestamp() {
+            return objs.isEmpty() ? 0 : objs.get(objs.size() - 1).timestamp;
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
