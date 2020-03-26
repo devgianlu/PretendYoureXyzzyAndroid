@@ -114,10 +114,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
         OverloadedApi.get().friendsStatus(getActivity(), new FriendsStatusCallback() {
             @Override
             public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
-                if (result.isEmpty())
-                    friends.showInfo(R.string.noFriends);
-                else
-                    friends.loadListData(friendsAdapter = new FriendsAdapter(requireContext(), result.values()));
+                friends.loadListData(friendsAdapter = new FriendsAdapter(requireContext(), result.values()), false);
             }
 
             @Override
@@ -127,6 +124,11 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                 friends.showError(R.string.failedLoading);
             }
         });
+    }
+
+    private void updatedItemCount(int count) {
+        if (count == 0) friends.showInfo(R.string.noFriends);
+        else friends.showList();
     }
 
     @Override
@@ -153,7 +155,6 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
 
         friends = layout.findViewById(R.id.overloadedProfileFragment_friends);
         friends.linearLayoutManager(RecyclerView.VERTICAL, false);
-
         return layout;
     }
 
@@ -161,10 +162,23 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
     public void onEvent(@NonNull OverloadedApi.Event event) throws JSONException {
         if (friendsAdapter == null) return;
 
-        if (event.type == OverloadedApi.Event.Type.USER_JOINED_SERVER) {
-            friendsAdapter.userJoined(event.obj.getString("nick"), event.obj.getString("server"));
-        } else if (event.type == OverloadedApi.Event.Type.USER_LEFT_SERVER) {
-            friendsAdapter.userLeft(event.obj.getString("nick"));
+        switch (event.type) {
+            case USER_JOINED_SERVER:
+                friendsAdapter.userJoined(event.obj.getString("nick"), event.obj.getString("server"));
+                break;
+            case USER_LEFT_SERVER:
+                friendsAdapter.userLeft(event.obj.getString("nick"));
+                break;
+            case ADDED_FRIEND:
+                friendsAdapter.friendAdded(new FriendStatus(event.obj));
+                break;
+            case REMOVED_FRIEND:
+                friendsAdapter.friendRemoved(event.obj.getString("username"));
+                break;
+            case ADDED_AS_FRIEND:
+            case REMOVED_AS_FRIEND:
+                friendsAdapter.update(event.obj.getString("username"));
+                break;
         }
     }
 
@@ -175,6 +189,8 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
         FriendsAdapter(@NonNull Context context, Collection<FriendStatus> friends) {
             this.inflater = LayoutInflater.from(context);
             this.friends = new ArrayList<>(friends);
+
+            updatedItemCount(friends.size());
         }
 
         @NonNull
@@ -183,12 +199,31 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
             return new ViewHolder(parent);
         }
 
+        void friendRemoved(@NonNull String username) {
+            for (int i = 0; i < friends.size(); i++) {
+                if (Objects.equals(friends.get(i).username, username)) {
+                    friends.remove(i);
+                    notifyItemRemoved(i);
+                    break;
+                }
+            }
+
+            updatedItemCount(friends.size());
+        }
+
+        void friendAdded(@NonNull FriendStatus status) {
+            friends.add(status);
+            notifyItemInserted(friends.size() - 1);
+            updatedItemCount(friends.size());
+        }
+
         void userLeft(@NonNull String nickname) {
             for (int i = 0; i < friends.size(); i++) {
                 FriendStatus friend = friends.get(i);
                 if (Objects.equals(friend.username, nickname)) {
-                    friend.update(null);
+                    friend.updateLoggedServer(null);
                     notifyItemChanged(i);
+                    break;
                 }
             }
         }
@@ -197,8 +232,24 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
             for (int i = 0; i < friends.size(); i++) {
                 FriendStatus friend = friends.get(i);
                 if (Objects.equals(friend.username, nickname)) {
-                    friend.update(serverId);
+                    friend.updateLoggedServer(serverId);
                     notifyItemChanged(i);
+                    break;
+                }
+            }
+        }
+
+        void update(@NonNull String username) {
+            Map<String, FriendStatus> map = OverloadedApi.get().friendsStatusCache();
+            FriendStatus status;
+            if (map == null || (status = map.get(username)) == null)
+                return;
+
+            for (int i = 0; i < friends.size(); i++) {
+                if (Objects.equals(friends.get(i).username, username)) {
+                    friends.set(i, status);
+                    notifyItemChanged(i);
+                    break;
                 }
             }
         }

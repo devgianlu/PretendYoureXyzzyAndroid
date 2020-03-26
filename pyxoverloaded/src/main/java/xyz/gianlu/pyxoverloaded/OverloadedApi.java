@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -33,6 +34,7 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -190,7 +192,7 @@ public class OverloadedApi {
     }
 
     @NonNull
-    public Task<Void> loggedIntoPyxServer(@NonNull HttpUrl serverUrl, @NonNull String nickname, @Nullable String idCode) {
+    public Task<Void> loggedIntoPyxServer(@NonNull HttpUrl serverUrl, @NonNull String nickname) {
         return loggingCallbacks(userData(true).continueWith(executorService, new NonNullContinuation<UserData, Void>() {
             @Override
             public Void then(@NonNull UserData userData) throws Exception {
@@ -200,7 +202,6 @@ public class OverloadedApi {
                 JSONObject params = new JSONObject();
                 params.put("serverUrl", serverUrl.toString());
                 params.put("nickname", nickname);
-                if (idCode != null) params.put("idCode", idCode);
                 serverRequest(new Request.Builder()
                         .url(overloadedServerUrl("Pyx/Login"))
                         .post(jsonBody(params)));
@@ -356,6 +357,8 @@ public class OverloadedApi {
             JSONObject obj = serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/RemoveFriend"))
                     .post(singletonJsonBody("username", username)));
+
+            dispatchLocalEvent(Event.Type.REMOVED_FRIEND, CommonUtils.singletonJsonObject("username", username));
             return friendsStatusCached = FriendStatus.parse(obj);
         }), activity, callback::onFriendsStatus, callback::onFailed);
     }
@@ -365,7 +368,11 @@ public class OverloadedApi {
             JSONObject obj = serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/AddFriend"))
                     .post(singletonJsonBody("username", username)));
-            return friendsStatusCached = FriendStatus.parse(obj);
+
+            Map<String, FriendStatus> map = FriendStatus.parse(obj);
+            FriendStatus status = map.get(username);
+            if (status != null) dispatchLocalEvent(Event.Type.ADDED_FRIEND, status.toJSON());
+            return friendsStatusCached = map;
         }), activity, callback::onFriendsStatus, callback::onFailed);
     }
 
@@ -407,6 +414,32 @@ public class OverloadedApi {
         return userDataCached;
     }
 
+    @WorkerThread
+    private void handleEvent(@NonNull OverloadedApi.Event event) throws JSONException {
+        if (event.type == Event.Type.ADDED_AS_FRIEND) {
+            if (friendsStatusCached == null) return;
+
+            FriendStatus status = new FriendStatus(event.obj);
+            for (String username : new ArrayList<>(friendsStatusCached.keySet())) {
+                if (Objects.equals(status.username, username)) {
+                    friendsStatusCached.put(username, status);
+                    break;
+                }
+            }
+        } else if (event.type == Event.Type.REMOVED_AS_FRIEND) {
+            if (friendsStatusCached == null) return;
+
+            String removedUsername = event.obj.getString("username");
+            for (String username : new ArrayList<>(friendsStatusCached.keySet())) {
+                if (Objects.equals(removedUsername, username)) {
+                    FriendStatus status = friendsStatusCached.get(username);
+                    if (status != null) friendsStatusCached.put(username, status.notMutual());
+                    break;
+                }
+            }
+        }
+    }
+
     @UiThread
     public interface EventListener {
         void onEvent(@NonNull Event event) throws JSONException;
@@ -428,7 +461,8 @@ public class OverloadedApi {
         }
 
         public enum Type {
-            USER_LEFT_SERVER("uls"), USER_JOINED_SERVER("ujs"), CHAT_MESSAGE("cm"), PING("p");
+            USER_LEFT_SERVER("uls"), USER_JOINED_SERVER("ujs"), CHAT_MESSAGE("cm"), PING("p"),
+            ADDED_FRIEND("adf"), REMOVED_FRIEND("rmf"), ADDED_AS_FRIEND("adaf"), REMOVED_AS_FRIEND("rmaf");
 
             private final String code;
 
@@ -452,8 +486,12 @@ public class OverloadedApi {
         private final Handler handler = new Handler(Looper.getMainLooper());
         public WebSocket client;
 
+        @WorkerThread
         void dispatchEvent(@NonNull Event event) {
+            Log.v(TAG, event.type + " -> " + event.obj.toString());
+
             try {
+                instance.handleEvent(event);
                 chatInstance.handleEvent(event);
             } catch (JSONException ex) {
                 Log.e(TAG, "Failed handling event in worker: " + event, ex);
@@ -500,7 +538,7 @@ public class OverloadedApi {
         }
     }
 
-    public static class OverloadedException extends Exception {
+    static class OverloadedException extends Exception {
         OverloadedException() {
         }
 
@@ -510,10 +548,6 @@ public class OverloadedApi {
 
         OverloadedException(String message, Throwable cause) {
             super(message, cause);
-        }
-
-        OverloadedException(Throwable cause) {
-            super(cause);
         }
     }
 
@@ -576,7 +610,7 @@ public class OverloadedApi {
             return new OverloadedToken(result.getToken(), result.getExpirationTimestamp());
         }
 
-        public boolean expired() {
+        boolean expired() {
             return expiration <= System.currentTimeMillis();
         }
     }

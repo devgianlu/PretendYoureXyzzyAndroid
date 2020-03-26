@@ -56,7 +56,7 @@ public class FirstLoadedPyx extends Pyx {
                         Prefs.putString(PK.LAST_PERSISTENT_ID, user.persistentId);
                         if (OverloadedUtils.isSignedIn()) {
                             try {
-                                Tasks.await(OverloadedApi.get().loggedIntoPyxServer(server.url, nickname, user.idCode));
+                                Tasks.await(OverloadedApi.get().loggedIntoPyxServer(server.url, nickname));
                             } catch (ExecutionException | InterruptedException ex) {
                                 Log.d(TAG, "Failed sending logged into pyx.", ex);
                             }
@@ -78,7 +78,7 @@ public class FirstLoadedPyx extends Pyx {
         InstanceHolder.holder().set(pyx);
 
         if (OverloadedUtils.isSignedIn() && !internal)
-            OverloadedApi.get().loggedIntoPyxServer(server.url, user.nickname, user.idCode);
+            OverloadedApi.get().loggedIntoPyxServer(server.url, user.nickname);
 
         return pyx;
     }
