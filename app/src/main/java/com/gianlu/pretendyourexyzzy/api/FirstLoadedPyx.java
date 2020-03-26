@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.api;
 
 import android.app.Activity;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,6 +26,7 @@ import okhttp3.OkHttpClient;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
 public class FirstLoadedPyx extends Pyx {
+    private static final String TAG = FirstLoadedPyx.class.getSimpleName();
     private final FirstLoadAndConfig firstLoadAndConfig;
 
     FirstLoadedPyx(Server server, LifecycleAwareHandler handler, OkHttpClient client, FirstLoadAndConfig firstLoadAndConfig) {
@@ -55,11 +57,12 @@ public class FirstLoadedPyx extends Pyx {
                         if (OverloadedUtils.isSignedIn()) {
                             try {
                                 Tasks.await(OverloadedApi.get().loggedIntoPyxServer(server.url, nickname, user.idCode));
-                            } catch (ExecutionException | InterruptedException ignored) {
+                            } catch (ExecutionException | InterruptedException ex) {
+                                Log.d(TAG, "Failed sending logged into pyx.", ex);
                             }
                         }
 
-                        RegisteredPyx pyx = upgrade(user);
+                        RegisteredPyx pyx = upgrade(user, true);
                         post(() -> listener.onDone(pyx));
                     } catch (JSONException | PyxException | IOException ex) {
                         post(() -> listener.onException(ex));
@@ -70,9 +73,17 @@ public class FirstLoadedPyx extends Pyx {
     }
 
     @NonNull
-    public RegisteredPyx upgrade(@NonNull User user) {
+    private RegisteredPyx upgrade(@NonNull User user, boolean internal) {
         RegisteredPyx pyx = new RegisteredPyx(server, handler, client, firstLoadAndConfig, user);
         InstanceHolder.holder().set(pyx);
+
+        if (OverloadedUtils.isSignedIn() && !internal)
+            OverloadedApi.get().loggedIntoPyxServer(server.url, user.nickname, user.idCode);
+
         return pyx;
+    }
+
+    public void upgrade(@NonNull User user) {
+        upgrade(user, false);
     }
 }

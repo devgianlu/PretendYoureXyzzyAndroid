@@ -303,7 +303,7 @@ public class OverloadedApi {
                         JSONObject obj = serverRequest(new Request.Builder()
                                 .url(overloadedServerUrl("User/Register"))
                                 .post(Util.EMPTY_REQUEST));
-                        return new UserData(obj.getJSONObject("userData"));
+                        return userDataCached = new UserData(obj.getJSONObject("userData"));
                     }
                 });
 
@@ -315,7 +315,7 @@ public class OverloadedApi {
             JSONObject obj = serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/VerifyPurchase"))
                     .post(singletonJsonBody("purchaseToken", purchaseToken)));
-            return new UserData(obj.getJSONObject("userData"));
+            return userDataCached = new UserData(obj.getJSONObject("userData"));
         }), activity, callback::onUserData, callback::onFailed);
     }
 
@@ -333,7 +333,7 @@ public class OverloadedApi {
             JSONObject obj = serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/SetUsername"))
                     .post(singletonJsonBody("username", username)));
-            return new UserData(obj.getJSONObject("userData"));
+            return userDataCached = new UserData(obj.getJSONObject("userData"));
         }), activity, callback::onUserData, callback::onFailed);
     }
 
