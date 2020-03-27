@@ -38,6 +38,8 @@ public final class Utils {
     public static final String ACTION_SENT_MSG = "sent_message";
     public static final String ACTION_OPEN_URBAN_DICT = "opened_urban_dict_sheet";
     public static final String ACTION_UNKNOWN_EVENT = "unknown_server_event";
+    public static final String ACTION_BLOCK_USER = "block_user";
+    public static final String ACTION_UNBLOCK_USER = "unblock_user";
 
     private Utils() {
     }
