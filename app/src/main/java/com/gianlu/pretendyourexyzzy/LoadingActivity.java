@@ -51,7 +51,9 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import me.toptas.fancyshowcase.FocusShape;
@@ -438,6 +440,18 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             return;
 
         switch (status) {
+            case MAINTENANCE:
+                overloadedLoading.hideShimmer();
+                overloadedStatus.setText(getString(R.string.overloadedStatus_maintenance, new SimpleDateFormat("HH:mm", Locale.getDefault()).format(billingHelper.maintenanceEstimatedEnd())));
+                overloadedToggle.setEnabled(false);
+                overloadedToggle.setChecked(false);
+                break;
+            case TWO_CLIENTS_ERROR:
+                overloadedLoading.hideShimmer();
+                overloadedStatus.setText(R.string.overloadedStatus_twoDevices);
+                overloadedToggle.setEnabled(false);
+                overloadedToggle.setChecked(false);
+                break;
             case ERROR:
                 overloadedLoading.hideShimmer();
                 overloadedStatus.setText(R.string.overloadedStatus_error);

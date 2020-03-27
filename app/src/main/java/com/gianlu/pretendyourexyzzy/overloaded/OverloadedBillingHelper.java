@@ -182,10 +182,21 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         }
     }
 
+    public long maintenanceEstimatedEnd() {
+        Throwable ex;
+        return exception != null && exception.type == ExceptionWithType.Type.OVERLOADED
+                && (ex = exception.getCause()) instanceof OverloadedApi.MaintenanceException ? ((OverloadedApi.MaintenanceException) ex).estimatedEnd : -1;
+    }
+
     private synchronized void checkUpdateUi() {
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             if (exception != null && exception.type == ExceptionWithType.Type.OVERLOADED) {
-                updateOverloadedStatus(lastStatus = Status.ERROR, null);
+                if (exception.getCause() instanceof OverloadedApi.MaintenanceException)
+                    updateOverloadedStatus(lastStatus = Status.MAINTENANCE, null);
+                else if (exception.getCause() instanceof OverloadedApi.TwoDevicesException)
+                    updateOverloadedStatus(lastStatus = Status.TWO_CLIENTS_ERROR, null);
+                else
+                    updateOverloadedStatus(lastStatus = Status.ERROR, null);
                 return;
             }
 
@@ -423,7 +434,8 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     }
 
     public enum Status {
-        LOADING, NOT_BOUGHT, PURCHASE_PENDING, SIGNED_IN, NOT_SIGNED_IN, ERROR
+        LOADING, NOT_BOUGHT, PURCHASE_PENDING, SIGNED_IN, NOT_SIGNED_IN, ERROR,
+        MAINTENANCE, TWO_CLIENTS_ERROR
     }
 
     public interface Listener extends DialogUtils.ShowStuffInterface {

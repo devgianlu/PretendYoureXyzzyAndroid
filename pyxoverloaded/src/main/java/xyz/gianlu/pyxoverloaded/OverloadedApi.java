@@ -273,6 +273,14 @@ public class OverloadedApi {
 
         Request req = reqBuilder.addHeader("Authorization", "FirebaseToken " + lastToken.token).build();
         try (Response resp = client.newCall(req).execute()) {
+            if (resp.code() == 503) {
+                String estimatedEnd = resp.header("X-Estimated-End");
+                if (estimatedEnd != null)
+                    throw new MaintenanceException(Long.parseLong(estimatedEnd));
+            } else if (resp.code() == 409) {
+                throw new TwoDevicesException();
+            }
+
             if (resp.code() < 200 || resp.code() > 299)
                 throw OverloadedServerException.forStatusCode(resp);
 
@@ -551,6 +559,19 @@ public class OverloadedApi {
         }
     }
 
+    public static class MaintenanceException extends OverloadedException {
+        public final long estimatedEnd;
+
+        MaintenanceException(long estimatedEnd) {
+            this.estimatedEnd = estimatedEnd;
+        }
+    }
+
+    public static class TwoDevicesException extends OverloadedException {
+        TwoDevicesException() {
+        }
+    }
+
     private static class OverloadedServerException extends OverloadedException {
         final int code;
 
@@ -561,7 +582,6 @@ public class OverloadedApi {
 
         OverloadedServerException(@NonNull Request request, @NonNull Throwable ex) {
             super(request.toString(), ex);
-
             this.code = -1;
         }
 
