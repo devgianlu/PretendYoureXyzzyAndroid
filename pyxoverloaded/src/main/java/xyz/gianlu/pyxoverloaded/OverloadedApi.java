@@ -13,6 +13,7 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.preferences.Prefs;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -39,6 +40,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -102,6 +104,17 @@ public class OverloadedApi {
         instance.webSocket.close();
     }
 
+    @NonNull
+    private static String getDeviceId() {
+        String id = Prefs.getString("overloadedDeviceId", null);
+        if (id == null) {
+            id = CommonUtils.randomString(8, ThreadLocalRandom.current(), "abcdefghijklmnopqrstuvwxyz1234567890");
+            Prefs.putString("overloadedDeviceId", id);
+        }
+
+        return id;
+    }
+
     public void loggedOutFromPyxServer() {
         loggingCallbacks(Tasks.call(executorService, () -> {
             serverRequest(new Request.Builder()
@@ -123,6 +136,7 @@ public class OverloadedApi {
             }
 
             webSocket.client = client.newWebSocket(new Request.Builder().get()
+                    .header("X-Device-Id", getDeviceId())
                     .header("Authorization", "FirebaseToken " + lastToken.token)
                     .url(overloadedServerUrl("Events")).build(), webSocket);
             return null;
@@ -271,7 +285,8 @@ public class OverloadedApi {
                 throw new NotSignedInException();
         }
 
-        Request req = reqBuilder.addHeader("Authorization", "FirebaseToken " + lastToken.token).build();
+        Request req = reqBuilder.addHeader("Authorization", "FirebaseToken " + lastToken.token)
+                .addHeader("X-Device-Id", getDeviceId()).build();
         try (Response resp = client.newCall(req).execute()) {
             if (resp.code() == 503) {
                 String estimatedEnd = resp.header("X-Estimated-End");
