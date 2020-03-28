@@ -1,6 +1,5 @@
 package com.gianlu.pretendyourexyzzy.overloaded;
 
-import android.content.Context;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -8,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -104,11 +102,6 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
             }
 
             return false;
-        });
-        sendEditText.setShowSoftInputOnFocus(false);
-        sendEditText.setOnFocusChangeListener((v, hasFocus) -> {
-            InputMethodManager im = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (im != null) im.showSoftInput(v, InputMethodManager.SHOW_FORCED);
         });
 
         rmv = parent.findViewById(R.id.chatSheet_list);

@@ -385,7 +385,10 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         }
 
         if (chatSummaryTask != null && !chatSummaryTask.isComplete()) {
-            chatSummaryTask.addOnCompleteListener(this, task -> goToMain());
+            chatSummaryTask.addOnCompleteListener(this, task -> {
+                goToMain();
+                chatSummaryTask = null;
+            });
             return;
         }
 
