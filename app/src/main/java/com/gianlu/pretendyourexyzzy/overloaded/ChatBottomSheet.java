@@ -118,7 +118,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
                 if (!isLoading && willLoadMore && adapter != null && !view.canScrollVertically(-1) && dy < 0) {
                     isLoading = true;
                     List<ChatMessage> list = chatApi.getLocalMessages(payload.id, adapter.olderTimestamp());
-                    if (list != null && !list.isEmpty()) update(Update.messages(list));
+                    if (list != null && !list.isEmpty()) update(Update.loadedMore(list));
                     else willLoadMore = false;
                     isLoading = false;
                 }
@@ -198,23 +198,30 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
     static class Update {
         final List<ChatMessage> messages;
         final ChatMessage message;
+        final boolean loadingMore;
 
-        Update(@Nullable List<ChatMessage> messages, @Nullable ChatMessage message) {
+        Update(@Nullable List<ChatMessage> messages, @Nullable ChatMessage message, boolean loadingMore) {
             this.messages = messages;
             this.message = message;
+            this.loadingMore = loadingMore;
 
             if (messages == null && message == null)
                 throw new IllegalArgumentException();
         }
 
         @NonNull
+        static Update loadedMore(@NonNull List<ChatMessage> messages) {
+            return new Update(messages, null, true);
+        }
+
+        @NonNull
         static Update messages(@NonNull List<ChatMessage> messages) {
-            return new Update(messages, null);
+            return new Update(messages, null, false);
         }
 
         @NonNull
         static Update message(@NonNull ChatMessage msg) {
-            return new Update(null, msg);
+            return new Update(null, msg, false);
         }
     }
 
@@ -294,11 +301,17 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         }
 
         void handleUpdate(@NonNull Update update) {
-            if (update.messages != null) itemsChanged(update.messages);
-            else itemChangedOrAdded(update.message);
+            if (update.messages != null) {
+                if (update.loadingMore) itemsAdded(update.messages);
+                else itemsChanged(update.messages);
+            } else {
+                itemChangedOrAdded(update.message);
+            }
 
-            RecyclerView list = getList();
-            if (list != null) list.scrollToPosition(0);
+            if (!update.loadingMore) {
+                RecyclerView list = getList();
+                if (list != null) list.scrollToPosition(0);
+            }
         }
 
         long olderTimestamp() {
