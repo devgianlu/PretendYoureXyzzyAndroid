@@ -18,18 +18,22 @@ import java.util.List;
 import java.util.Objects;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.signal.OverloadedUserAddress;
 
 public class Chat implements Filterable<NotFilterable> {
-    public final String id;
+    public final int id;
     public final List<String> participants;
+    public final String address;
 
     public Chat(@NonNull JSONObject obj) throws JSONException {
-        id = obj.getString("id");
+        id = obj.getInt("id");
+        address = obj.getString("address");
         participants = CommonUtils.toStringsList(obj.getJSONArray("participants"), false);
     }
 
     public Chat(@NonNull Cursor cursor) {
-        id = cursor.getString(cursor.getColumnIndex("id"));
+        id = cursor.getInt(cursor.getColumnIndex("id"));
+        address = cursor.getString(cursor.getColumnIndex("address"));
         participants = Arrays.asList(cursor.getString(cursor.getColumnIndex("oneParticipant")), cursor.getString(cursor.getColumnIndex("otherParticipant")));
     }
 
@@ -40,17 +44,22 @@ public class Chat implements Filterable<NotFilterable> {
         return chats;
     }
 
+    @NonNull
+    public OverloadedUserAddress deviceAddress(int deviceId) {
+        return new OverloadedUserAddress(address + ":" + deviceId);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Chat chat = (Chat) o;
-        return id.equals(chat.id);
+        return id == chat.id;
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return id;
     }
 
     @NonNull

@@ -45,8 +45,8 @@ import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
 import xyz.gianlu.pyxoverloaded.callback.ChatMessageCallback;
 import xyz.gianlu.pyxoverloaded.callback.ChatMessagesCallback;
 import xyz.gianlu.pyxoverloaded.model.Chat;
-import xyz.gianlu.pyxoverloaded.model.ChatMessage;
 import xyz.gianlu.pyxoverloaded.model.ChatMessages;
+import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
 
 public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomSheet.Update> implements OverloadedApi.EventListener {
     public static final int RC_REFRESH_LIST = 5;
@@ -70,7 +70,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         send.setEnabled(false);
         chatApi.sendMessage(getSetupPayload().id, text, getActivity(), new ChatMessageCallback() {
             @Override
-            public void onMessage(@NonNull ChatMessage msg) {
+            public void onMessage(@NonNull PlainChatMessage msg) {
                 CommonUtils.setText(send, "");
                 send.setEnabled(true);
             }
@@ -117,7 +117,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
             public void onScrolled(@NonNull RecyclerView view, int dx, int dy) {
                 if (!isLoading && willLoadMore && adapter != null && !view.canScrollVertically(-1) && dy < 0) {
                     isLoading = true;
-                    List<ChatMessage> list = chatApi.getLocalMessages(payload.id, adapter.olderTimestamp());
+                    List<PlainChatMessage> list = chatApi.getLocalMessages(payload.id, adapter.olderTimestamp());
                     if (list != null && !list.isEmpty()) update(Update.loadedMore(list));
                     else willLoadMore = false;
                     isLoading = false;
@@ -178,17 +178,16 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         return false;
     }
 
-    @NonNull
-    private String chatId() {
+    private int chatId() {
         return getSetupPayload().id;
     }
 
     @Override
     public void onEvent(@NonNull OverloadedApi.Event event) throws JSONException {
         if (event.type == OverloadedApi.Event.Type.CHAT_MESSAGE) {
-            String chatId = event.obj.getString("chatId");
-            if (chatId().equals(chatId)) {
-                ChatMessage msg = new ChatMessage(event.obj);
+            int chatId = event.data.getInt("chatId");
+            if (chatId() == chatId) {
+                PlainChatMessage msg = PlainChatMessage.fromLocal(event.data);
                 if (isVisible() && chatApi != null) chatApi.updateLastSeen(chatId(), msg);
                 update(Update.message(msg));
             }
@@ -196,11 +195,11 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
     }
 
     static class Update {
-        final List<ChatMessage> messages;
-        final ChatMessage message;
+        final List<PlainChatMessage> messages;
+        final PlainChatMessage message;
         final boolean loadingMore;
 
-        Update(@Nullable List<ChatMessage> messages, @Nullable ChatMessage message, boolean loadingMore) {
+        Update(@Nullable List<PlainChatMessage> messages, @Nullable PlainChatMessage message, boolean loadingMore) {
             this.messages = messages;
             this.message = message;
             this.loadingMore = loadingMore;
@@ -210,22 +209,22 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         }
 
         @NonNull
-        static Update loadedMore(@NonNull List<ChatMessage> messages) {
+        static Update loadedMore(@NonNull List<PlainChatMessage> messages) {
             return new Update(messages, null, true);
         }
 
         @NonNull
-        static Update messages(@NonNull List<ChatMessage> messages) {
+        static Update messages(@NonNull List<PlainChatMessage> messages) {
             return new Update(messages, null, false);
         }
 
         @NonNull
-        static Update message(@NonNull ChatMessage msg) {
+        static Update message(@NonNull PlainChatMessage msg) {
             return new Update(null, msg, false);
         }
     }
 
-    private class ChatMessagesAdapter extends OrderedRecyclerViewAdapter<ChatMessagesAdapter.ViewHolder, ChatMessage, Void, NotFilterable> {
+    private class ChatMessagesAdapter extends OrderedRecyclerViewAdapter<ChatMessagesAdapter.ViewHolder, PlainChatMessage, Void, NotFilterable> {
         private final LayoutInflater inflater;
         private final int dp64;
 
@@ -242,7 +241,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         }
 
         @Override
-        protected boolean matchQuery(@NonNull ChatMessage item, @Nullable String query) {
+        protected boolean matchQuery(@NonNull PlainChatMessage item, @Nullable String query) {
             return true;
         }
 
@@ -261,8 +260,8 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         }
 
         @Override
-        protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull ChatMessage payload) {
-            ChatMessage msg = objs.get(position);
+        protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull PlainChatMessage payload) {
+            PlainChatMessage msg = objs.get(position);
 
             if (needsHeader(position)) {
                 holder.header.setVisibility(View.VISIBLE);
@@ -284,7 +283,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         }
 
         @Override
-        protected void onUpdateViewHolder(@NonNull ViewHolder holder, int position, @NonNull ChatMessage payload) {
+        protected void onUpdateViewHolder(@NonNull ViewHolder holder, int position, @NonNull PlainChatMessage payload) {
             onSetupViewHolder(holder, position, payload);
         }
 
@@ -296,7 +295,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
 
         @NonNull
         @Override
-        public Comparator<ChatMessage> getComparatorFor(Void sorting) {
+        public Comparator<PlainChatMessage> getComparatorFor(Void sorting) {
             return (o1, o2) -> (int) (o2.timestamp - o1.timestamp);
         }
 

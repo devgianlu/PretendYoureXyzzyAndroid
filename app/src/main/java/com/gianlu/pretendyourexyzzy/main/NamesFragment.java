@@ -235,9 +235,9 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
         if (adapter == null) return;
 
         if (event.type == OverloadedApi.Event.Type.USER_LEFT_SERVER)
-            adapter.overloadedUserLeft(event.obj.getString("nick"));
+            adapter.overloadedUserLeft(event.data.getString("nick"));
         else if (event.type == OverloadedApi.Event.Type.USER_JOINED_SERVER)
-            adapter.overloadedUserJoined(event.obj.getString("nick"));
+            adapter.overloadedUserJoined(event.data.getString("nick"));
     }
 
     @Override

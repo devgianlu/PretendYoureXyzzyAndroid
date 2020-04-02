@@ -2,13 +2,10 @@ package xyz.gianlu.pyxoverloaded.model;
 
 import androidx.annotation.NonNull;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
+import java.util.Collection;
 
-public class ChatMessages extends ArrayList<ChatMessage> {
+public class ChatMessages extends ArrayList<PlainChatMessage> {
     public final Chat chat;
 
     public ChatMessages(int initialCapacity, @NonNull Chat chat) {
@@ -16,11 +13,8 @@ public class ChatMessages extends ArrayList<ChatMessage> {
         this.chat = chat;
     }
 
-    @NonNull
-    public static ChatMessages parse(@NonNull JSONObject obj) throws JSONException {
-        JSONArray array = obj.getJSONArray("messages");
-        ChatMessages chats = new ChatMessages(array.length(), new Chat(obj));
-        for (int i = 0; i < array.length(); i++) chats.add(new ChatMessage(array.getJSONObject(i)));
-        return chats;
+    public ChatMessages(@NonNull Collection<PlainChatMessage> collection, @NonNull Chat chat) {
+        super(collection);
+        this.chat = chat;
     }
 }

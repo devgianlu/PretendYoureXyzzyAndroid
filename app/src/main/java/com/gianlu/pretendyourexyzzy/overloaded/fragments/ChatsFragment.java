@@ -31,8 +31,8 @@ import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
 import xyz.gianlu.pyxoverloaded.callback.ChatMessagesCallback;
 import xyz.gianlu.pyxoverloaded.callback.ChatsCallback;
 import xyz.gianlu.pyxoverloaded.model.Chat;
-import xyz.gianlu.pyxoverloaded.model.ChatMessage;
 import xyz.gianlu.pyxoverloaded.model.ChatMessages;
+import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
 
 public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.EventListener {
     private static final String TAG = ChatsFragment.class.getSimpleName();
@@ -53,9 +53,9 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
     @Override
     public void onEvent(@NonNull OverloadedApi.Event event) throws JSONException {
         if (event.type == OverloadedApi.Event.Type.CHAT_MESSAGE) {
-            String chatId = event.obj.getString("chatId");
-            ChatMessage msg = new ChatMessage(event.obj);
-            if (lastChatSheet != null && lastChatSheet.isVisible() && lastChatSheet.getSetupPayload().id.equals(chatId))
+            int chatId = event.data.getInt("chatId");
+            PlainChatMessage msg = PlainChatMessage.fromLocal(event.data);
+            if (lastChatSheet != null && lastChatSheet.isVisible() && lastChatSheet.getSetupPayload().id == chatId)
                 chatApi.updateLastSeen(chatId, msg);
 
             if (adapter != null) adapter.refresh(chatId);
@@ -86,12 +86,12 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
             @Override
             public void onRemoteChats(@NonNull List<Chat> chats) {
                 if (adapter != null) adapter.itemsChanged(chats);
-                else rmv.loadListData(adapter = new ChatsAdapter(requireContext(), chats));
+                else rmv.loadListData(adapter = new ChatsAdapter(requireContext(), chats), false);
             }
 
             @Override
             public void onLocalChats(@NonNull List<Chat> chats) {
-                rmv.loadListData(adapter = new ChatsAdapter(requireContext(), chats));
+                rmv.loadListData(adapter = new ChatsAdapter(requireContext(), chats), false);
             }
 
             @Override
@@ -120,10 +120,10 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
             return new ViewHolder(parent);
         }
 
-        void refresh(@NonNull String chatId) {
+        void refresh(int chatId) {
             for (int i = 0; i < objs.size(); i++) {
                 Chat chat = objs.get(i);
-                if (chat.id.equals(chatId)) {
+                if (chat.id == chatId) {
                     notifyItemChanged(i);
                     return;
                 }
@@ -157,7 +157,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
             Chat chat = objs.get(position);
             holder.username.setText(chat.getOtherUsername());
 
-            ChatMessage lastMsg = chatApi.getLastMessage(chat.id);
+            PlainChatMessage lastMsg = chatApi.getLastMessage(chat.id);
             if (lastMsg == null) {
                 holder.lastMsg.setVisibility(View.GONE);
             } else {
@@ -194,10 +194,10 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         @Override
         public Comparator<Chat> getComparatorFor(Void sorting) {
             return (o1, o2) -> {
-                ChatMessage m1 = chatApi.getLastMessage(o1.id);
+                PlainChatMessage m1 = chatApi.getLastMessage(o1.id);
                 if (m1 == null) return 0;
 
-                ChatMessage m2 = chatApi.getLastMessage(o2.id);
+                PlainChatMessage m2 = chatApi.getLastMessage(o2.id);
                 if (m2 == null) return 0;
 
                 return (int) (m2.timestamp - m1.timestamp);

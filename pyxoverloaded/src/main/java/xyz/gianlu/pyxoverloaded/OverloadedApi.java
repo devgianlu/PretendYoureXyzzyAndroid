@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Base64;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -29,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.whispersystems.libsignal.state.PreKeyRecord;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -57,6 +59,8 @@ import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.callback.UsersCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
+import xyz.gianlu.pyxoverloaded.signal.PrefsIdentityKeyStore;
+import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
 import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
 import static xyz.gianlu.pyxoverloaded.TaskUtils.loggingCallbacks;
@@ -106,13 +110,33 @@ public class OverloadedApi {
 
     @NonNull
     private static String getDeviceId() {
-        String id = Prefs.getString("overloadedDeviceId", null);
+        String id = Prefs.getString(OverloadedPK.OVERLOADED_DEVICE_ID, null);
         if (id == null) {
             id = CommonUtils.randomString(8, ThreadLocalRandom.current(), "abcdefghijklmnopqrstuvwxyz1234567890");
-            Prefs.putString("overloadedDeviceId", id);
+            Prefs.putString(OverloadedPK.OVERLOADED_DEVICE_ID, id);
         }
 
         return id;
+    }
+
+    void sharePreKeys() {
+        loggingCallbacks(Tasks.call(executorService, () -> {
+            JSONObject body = new JSONObject();
+            body.put("registrationId", PrefsIdentityKeyStore.get().getLocalRegistrationId());
+            body.put("deviceId", SignalProtocolHelper.getLocalDeviceId());
+            body.put("identityKey", Base64.encodeToString(PrefsIdentityKeyStore.get().getIdentityKeyPair().getPublicKey().serialize(), Base64.NO_WRAP));
+            body.put("signedPreKey", Utils.toServerJson(SignalProtocolHelper.getLocalSignedPreKey()));
+
+            JSONArray preKeysArray = new JSONArray();
+            List<PreKeyRecord> preKeys = SignalProtocolHelper.generateSomePreKeys();
+            for (PreKeyRecord key : preKeys) preKeysArray.put(Utils.toServerJson(key));
+            body.put("preKeys", preKeysArray);
+
+            serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Chat/ShareKeys"))
+                    .post(jsonBody(body)));
+            return null;
+        }), "share-pre-keys");
     }
 
     public void loggedOutFromPyxServer() {
@@ -288,6 +312,8 @@ public class OverloadedApi {
         Request req = reqBuilder.addHeader("Authorization", "FirebaseToken " + lastToken.token)
                 .addHeader("X-Device-Id", getDeviceId()).build();
         try (Response resp = client.newCall(req).execute()) {
+            Log.v(TAG, String.format("%s -> %d", req.url().encodedPath(), resp.code()));
+
             if (resp.code() == 503) {
                 String estimatedEnd = resp.header("X-Estimated-End");
                 if (estimatedEnd != null)
@@ -411,8 +437,8 @@ public class OverloadedApi {
         }, callback::onFailed);
     }
 
-    void dispatchLocalEvent(@NonNull Event.Type type, @NonNull JSONObject obj) {
-        webSocket.dispatchEvent(new Event(type, obj));
+    void dispatchLocalEvent(@NonNull Event.Type type, @NonNull JSONObject data) {
+        webSocket.dispatchEvent(new Event(type, data));
     }
 
     public void addEventListener(@NonNull EventListener listener) {
@@ -442,7 +468,7 @@ public class OverloadedApi {
         if (event.type == Event.Type.ADDED_AS_FRIEND) {
             if (friendsStatusCached == null) return;
 
-            FriendStatus status = new FriendStatus(event.obj);
+            FriendStatus status = new FriendStatus(event.data);
             for (String username : new ArrayList<>(friendsStatusCached.keySet())) {
                 if (Objects.equals(status.username, username)) {
                     friendsStatusCached.put(username, status);
@@ -452,7 +478,7 @@ public class OverloadedApi {
         } else if (event.type == Event.Type.REMOVED_AS_FRIEND) {
             if (friendsStatusCached == null) return;
 
-            String removedUsername = event.obj.getString("username");
+            String removedUsername = event.data.getString("username");
             for (String username : new ArrayList<>(friendsStatusCached.keySet())) {
                 if (Objects.equals(removedUsername, username)) {
                     FriendStatus status = friendsStatusCached.get(username);
@@ -460,6 +486,8 @@ public class OverloadedApi {
                     break;
                 }
             }
+        } else if (event.type == Event.Type.SHARE_KEYS_LOW) {
+            if (chatInstance != null) sharePreKeys();
         }
     }
 
@@ -470,21 +498,22 @@ public class OverloadedApi {
 
     public static class Event {
         public final Type type;
-        public final JSONObject obj;
+        public final JSONObject data;
 
-        Event(@NonNull Type type, @NonNull JSONObject obj) {
+        Event(@NonNull Type type, @NonNull JSONObject data) {
             this.type = type;
-            this.obj = obj;
+            this.data = data;
         }
 
         @NotNull
         @Override
         public String toString() {
-            return "Event{type=" + type + ", obj=" + obj + '}';
+            return "Event{type=" + type + ", data=" + data + '}';
         }
 
         public enum Type {
-            USER_LEFT_SERVER("uls"), USER_JOINED_SERVER("ujs"), CHAT_MESSAGE("cm"), PING("p"),
+            USER_LEFT_SERVER("uls"), USER_JOINED_SERVER("ujs"), ENCRYPTED_CHAT_MESSAGE("ecm"),
+            PING("p"), SHARE_KEYS_LOW("skl"), CHAT_MESSAGE("cm"),
             ADDED_FRIEND("adf"), REMOVED_FRIEND("rmf"), ADDED_AS_FRIEND("adaf"), REMOVED_AS_FRIEND("rmaf");
 
             private final String code;
@@ -511,7 +540,7 @@ public class OverloadedApi {
 
         @WorkerThread
         void dispatchEvent(@NonNull Event event) {
-            Log.v(TAG, event.type + " -> " + event.obj.toString());
+            Log.v(TAG, event.type + " -> " + event.data.toString());
 
             try {
                 instance.handleEvent(event);
@@ -533,11 +562,12 @@ public class OverloadedApi {
 
         @Override
         public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
-            JSONObject obj;
+            JSONObject data;
             Event.Type type;
             try {
-                obj = new JSONObject(text);
+                JSONObject obj = new JSONObject(text);
                 type = Event.Type.parse(obj.getString("type"));
+                data = obj.optJSONObject("data");
             } catch (JSONException ex) {
                 Log.e(TAG, "Failed parsing event: " + text, ex);
                 return;
@@ -553,7 +583,7 @@ public class OverloadedApi {
                 return;
             }
 
-            dispatchEvent(new Event(type, obj));
+            dispatchEvent(new Event(type, data == null ? new JSONObject() : data));
         }
 
         void close() {

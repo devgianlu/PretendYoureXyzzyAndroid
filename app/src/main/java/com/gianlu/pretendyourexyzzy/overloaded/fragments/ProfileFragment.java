@@ -164,20 +164,20 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
 
         switch (event.type) {
             case USER_JOINED_SERVER:
-                friendsAdapter.userJoined(event.obj.getString("nick"), event.obj.getString("server"));
+                friendsAdapter.userJoined(event.data.getString("nick"), event.data.getString("server"));
                 break;
             case USER_LEFT_SERVER:
-                friendsAdapter.userLeft(event.obj.getString("nick"));
+                friendsAdapter.userLeft(event.data.getString("nick"));
                 break;
             case ADDED_FRIEND:
-                friendsAdapter.friendAdded(new FriendStatus(event.obj));
+                friendsAdapter.friendAdded(new FriendStatus(event.data));
                 break;
             case REMOVED_FRIEND:
-                friendsAdapter.friendRemoved(event.obj.getString("username"));
+                friendsAdapter.friendRemoved(event.data.getString("username"));
                 break;
             case ADDED_AS_FRIEND:
             case REMOVED_AS_FRIEND:
-                friendsAdapter.update(event.obj.getString("username"));
+                friendsAdapter.update(event.data.getString("username"));
                 break;
         }
     }
@@ -212,7 +212,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
         }
 
         void friendAdded(@NonNull FriendStatus status) {
-            friends.add(status);
+            if (!friends.contains(status)) friends.add(status);
             notifyItemInserted(friends.size() - 1);
             updatedItemCount(friends.size());
         }

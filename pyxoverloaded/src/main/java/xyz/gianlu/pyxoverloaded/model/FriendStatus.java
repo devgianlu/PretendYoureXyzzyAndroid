@@ -71,6 +71,19 @@ public final class FriendStatus {
         return obj;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FriendStatus status = (FriendStatus) o;
+        return username.equals(status.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return username.hashCode();
+    }
+
     @NonNull
     public FriendStatus notMutual() {
         return new FriendStatus(username, false, null);
