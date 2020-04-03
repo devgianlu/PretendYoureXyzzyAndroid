@@ -65,6 +65,11 @@ public class OverloadedChatApi implements Closeable {
         }
     }
 
+    @Nullable
+    public PlainChatMessage getPlainMessage(long msgId) {
+        return db.getMessage(msgId);
+    }
+
     @NonNull
     public Task<Integer> getSummary() {
         return loggingCallbacks(Tasks.call(api.executorService, () -> {
@@ -138,7 +143,8 @@ public class OverloadedChatApi implements Closeable {
                 EncryptedChatMessage ecm = new EncryptedChatMessage(lastMsgObj);
 
                 try {
-                    PlainChatMessage msg = EncryptedChatMessage.decrypt(OverloadedChatApi.this, ecm);
+                    PlainChatMessage msg = ecm.decrypt(OverloadedChatApi.this);
+                    db.putMessage(remoteChat.id, msg);
                     db.updateLastMessage(remoteChat.id, msg);
                 } catch (EncryptedChatMessage.DecryptionException ex) {
                     Log.e(TAG, "Failed decrypting message.", ex);
@@ -177,7 +183,8 @@ public class OverloadedChatApi implements Closeable {
                     EncryptedChatMessage ecm = new EncryptedChatMessage(lastMsgObj);
 
                     try {
-                        PlainChatMessage msg = EncryptedChatMessage.decrypt(OverloadedChatApi.this, ecm);
+                        PlainChatMessage msg = ecm.decrypt(OverloadedChatApi.this);
+                        db.putMessage(chat.id, msg);
                         db.updateLastMessage(chat.id, msg);
                     } catch (EncryptedChatMessage.DecryptionException ex) {
                         Log.e(TAG, "Failed decrypting message.", ex);
@@ -306,13 +313,13 @@ public class OverloadedChatApi implements Closeable {
 
             PlainChatMessage msg;
             try {
-                msg = EncryptedChatMessage.decrypt(this, new EncryptedChatMessage(event.data));
+                msg = new EncryptedChatMessage(event.data).decrypt(this);
             } catch (EncryptedChatMessage.DecryptionException ex) {
                 Log.e(TAG, "Failed decrypting message.", ex);
                 return;
             }
 
-            db.addMessage(chatId, msg);
+            db.putMessage(chatId, msg);
             db.updateLastMessage(chatId, msg);
             dispatchUnreadCountUpdate();
 

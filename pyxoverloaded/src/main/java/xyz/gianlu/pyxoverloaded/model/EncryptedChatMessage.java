@@ -28,12 +28,12 @@ import xyz.gianlu.pyxoverloaded.signal.PrefsSessionStore;
 import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
 public class EncryptedChatMessage {
-    private final long id;
-    private final byte[] encrypted;
-    private final int type;
-    private final String from;
-    private final OverloadedUserAddress sourceAddress;
-    private final long timestamp;
+    public final byte[] encrypted;
+    public final int type;
+    public final OverloadedUserAddress sourceAddress;
+    public final long id;
+    public final String from;
+    public final long timestamp;
 
     public EncryptedChatMessage(@NonNull JSONObject obj) throws JSONException {
         id = obj.getLong("id");
@@ -44,34 +44,34 @@ public class EncryptedChatMessage {
         timestamp = obj.getLong("timestamp");
     }
 
-    @Contract("_, _ -> new")
     @WorkerThread
     @NonNull
-    public static PlainChatMessage decrypt(@NonNull OverloadedChatApi api, @NonNull EncryptedChatMessage msg) throws DecryptionException {
-        if (!PrefsSessionStore.get().containsSession(msg.sourceAddress.toSignalAddress())) {
+    public static List<PlainChatMessage> decrypt(@NonNull OverloadedChatApi api, @NonNull List<EncryptedChatMessage> encrypted) throws DecryptionException {
+        List<PlainChatMessage> list = new ArrayList<>(encrypted.size());
+        for (EncryptedChatMessage msg : encrypted) list.add(msg.decrypt(api));
+        return list;
+    }
+
+    @Contract("_, -> new")
+    @WorkerThread
+    @NonNull
+    public PlainChatMessage decrypt(@NonNull OverloadedChatApi api) throws DecryptionException {
+        PlainChatMessage out = api.getPlainMessage(id);
+        if (out != null) return out;
+
+        if (!PrefsSessionStore.get().containsSession(sourceAddress.toSignalAddress())) {
             try {
-                api.getKeySync(msg.sourceAddress);
+                api.getKeySync(sourceAddress);
             } catch (ExecutionException | InterruptedException ex) {
                 throw new DecryptionException("Failed obtaining keys.", ex);
             }
         }
 
-        String plainText;
         try {
-            plainText = SignalProtocolHelper.decrypt(msg.sourceAddress, msg.type, msg.encrypted);
+            return SignalProtocolHelper.decrypt(this);
         } catch (InvalidVersionException | InvalidMessageException | LegacyMessageException | DuplicateMessageException | InvalidKeyIdException | UntrustedIdentityException | InvalidKeyException | NoSessionException ex) {
             throw new DecryptionException(ex);
         }
-
-        return new PlainChatMessage(msg.id, plainText, msg.timestamp, msg.from);
-    }
-
-    @WorkerThread
-    @NonNull
-    public static List<PlainChatMessage> decrypt(@NonNull OverloadedChatApi api, @NonNull List<EncryptedChatMessage> encrypted) throws DecryptionException {
-        List<PlainChatMessage> list = new ArrayList<>(encrypted.size());
-        for (EncryptedChatMessage msg : encrypted) list.add(decrypt(api, msg));
-        return list;
     }
 
     public static class DecryptionException extends Throwable {

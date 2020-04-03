@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.gianlu.commonutils.preferences.Prefs;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.whispersystems.libsignal.DuplicateMessageException;
 import org.whispersystems.libsignal.IdentityKeyPair;
@@ -30,7 +31,10 @@ import org.whispersystems.libsignal.util.KeyHelper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
+
+import xyz.gianlu.pyxoverloaded.model.EncryptedChatMessage;
+import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
 
 public class SignalProtocolHelper {
     private static final int LOCAL_SIGNED_PRE_KEY_ID = 0;
@@ -40,7 +44,7 @@ public class SignalProtocolHelper {
         int id = Prefs.getInt(SignalPK.SIGNAL_DEVICE_ID, -1);
         if (id != -1) return id;
 
-        id = ThreadLocalRandom.current().nextInt();
+        id = new Random(System.currentTimeMillis()).nextInt();
         Prefs.putInt(SignalPK.SIGNAL_DEVICE_ID, id);
         Log.d(TAG, "Generated local device ID: " + id);
         return id;
@@ -100,22 +104,19 @@ public class SignalProtocolHelper {
         sessionBuilder.process(bundle);
     }
 
+    @Contract("_ -> new")
     @NonNull
-    public static String decrypt(@NonNull OverloadedUserAddress address, int type, @NonNull byte[] serialized) throws InvalidVersionException, InvalidMessageException, LegacyMessageException, DuplicateMessageException, InvalidKeyIdException, UntrustedIdentityException, InvalidKeyException, NoSessionException {
-        SessionCipher sessionCipher = new SessionCipher(PrefsSessionStore.get(), PrefsPreKeysStore.get(), PrefsPreKeysStore.get(), PrefsIdentityKeyStore.get(), address.toSignalAddress());
-
-        String decrypted;
-        if (type == CiphertextMessage.PREKEY_TYPE) {
-            PreKeySignalMessage msg = new PreKeySignalMessage(serialized);
-            decrypted = new String(sessionCipher.decrypt(msg));
-        } else if (type == CiphertextMessage.WHISPER_TYPE) {
-            SignalMessage msg = new SignalMessage(serialized);
-            decrypted = new String(sessionCipher.decrypt(msg));
+    public static PlainChatMessage decrypt(@NonNull EncryptedChatMessage ecm) throws InvalidVersionException, InvalidMessageException, LegacyMessageException, DuplicateMessageException, InvalidKeyIdException, UntrustedIdentityException, InvalidKeyException, NoSessionException {
+        SessionCipher sessionCipher = new SessionCipher(PrefsSessionStore.get(), PrefsPreKeysStore.get(), PrefsPreKeysStore.get(), PrefsIdentityKeyStore.get(), ecm.sourceAddress.toSignalAddress());
+        if (ecm.type == CiphertextMessage.PREKEY_TYPE) {
+            PreKeySignalMessage msg = new PreKeySignalMessage(ecm.encrypted);
+            return new PlainChatMessage(ecm.id, new String(sessionCipher.decrypt(msg)), ecm.timestamp, ecm.from);
+        } else if (ecm.type == CiphertextMessage.WHISPER_TYPE) {
+            SignalMessage msg = new SignalMessage(ecm.encrypted);
+            return new PlainChatMessage(ecm.id, new String(sessionCipher.decrypt(msg)), ecm.timestamp, ecm.from);
         } else {
-            throw new IllegalStateException("Unknown type: " + type);
+            throw new IllegalStateException("Unknown type: " + ecm.type);
         }
-
-        return decrypted;
     }
 
     @NotNull
