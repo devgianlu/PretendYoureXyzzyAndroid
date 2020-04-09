@@ -16,7 +16,7 @@ import java.util.Objects;
 
 import xyz.gianlu.pyxoverloaded.R;
 
-public final class UserData {
+public class UserData {
     public final PurchaseStatus purchaseStatus;
     public final String purchaseToken;
     public final String username;
@@ -29,6 +29,7 @@ public final class UserData {
         this.friends = CommonUtils.toStringsList(obj.getJSONArray("friends"), false);
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "UserData{" +

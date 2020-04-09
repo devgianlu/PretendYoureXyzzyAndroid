@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 
 import org.jetbrains.annotations.NotNull;
 
-public class SignalDatabaseHelper extends SQLiteOpenHelper {
+public final class SignalDatabaseHelper extends SQLiteOpenHelper {
     private static SignalDatabaseHelper instance = null;
 
     private SignalDatabaseHelper(@NonNull Context context) {

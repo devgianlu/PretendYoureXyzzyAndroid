@@ -59,7 +59,7 @@ import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.callback.UsersCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
-import xyz.gianlu.pyxoverloaded.signal.PrefsIdentityKeyStore;
+import xyz.gianlu.pyxoverloaded.signal.DbSignalStore;
 import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
 import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
@@ -122,9 +122,9 @@ public class OverloadedApi {
     void sharePreKeys() {
         loggingCallbacks(Tasks.call(executorService, () -> {
             JSONObject body = new JSONObject();
-            body.put("registrationId", PrefsIdentityKeyStore.get().getLocalRegistrationId());
+            body.put("registrationId", DbSignalStore.get().getLocalRegistrationId());
             body.put("deviceId", SignalProtocolHelper.getLocalDeviceId());
-            body.put("identityKey", Base64.encodeToString(PrefsIdentityKeyStore.get().getIdentityKeyPair().getPublicKey().serialize(), Base64.NO_WRAP));
+            body.put("identityKey", Base64.encodeToString(DbSignalStore.get().getIdentityKeyPair().getPublicKey().serialize(), Base64.NO_WRAP));
             body.put("signedPreKey", Utils.toServerJson(SignalProtocolHelper.getLocalSignedPreKey()));
 
             JSONArray preKeysArray = new JSONArray();
@@ -274,7 +274,7 @@ public class OverloadedApi {
     }
 
     @NonNull
-    private Task<UserData> userData(boolean preferCache) {
+    Task<UserData> userData(boolean preferCache) {
         if (preferCache && userDataCached != null)
             return Tasks.forResult(userDataCached);
 

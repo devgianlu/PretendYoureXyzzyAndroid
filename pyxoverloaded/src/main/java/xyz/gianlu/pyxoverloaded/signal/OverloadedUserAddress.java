@@ -2,6 +2,7 @@ package xyz.gianlu.pyxoverloaded.signal;
 
 import androidx.annotation.NonNull;
 
+import org.jetbrains.annotations.NotNull;
 import org.whispersystems.libsignal.SignalProtocolAddress;
 
 public class OverloadedUserAddress {
@@ -20,5 +21,11 @@ public class OverloadedUserAddress {
     @NonNull
     public SignalProtocolAddress toSignalAddress() {
         return new SignalProtocolAddress(uid, deviceId);
+    }
+
+    @NotNull
+    @Override
+    public String toString() {
+        return "OverloadedUserAddress{" + "uid='" + uid + '\'' + ", deviceId=" + deviceId + '}';
     }
 }

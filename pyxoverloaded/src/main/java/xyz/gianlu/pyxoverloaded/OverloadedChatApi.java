@@ -38,8 +38,9 @@ import xyz.gianlu.pyxoverloaded.model.Chat;
 import xyz.gianlu.pyxoverloaded.model.ChatMessages;
 import xyz.gianlu.pyxoverloaded.model.EncryptedChatMessage;
 import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
+import xyz.gianlu.pyxoverloaded.model.UserData;
+import xyz.gianlu.pyxoverloaded.signal.DbSignalStore;
 import xyz.gianlu.pyxoverloaded.signal.OverloadedUserAddress;
-import xyz.gianlu.pyxoverloaded.signal.PrefsSessionStore;
 import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
 import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
@@ -199,7 +200,10 @@ public class OverloadedChatApi implements Closeable {
     }
 
     public void sendMessage(int chatId, @NonNull String text, @Nullable Activity activity, @NonNull ChatMessageCallback callback) {
-        callbacks(Tasks.call(api.executorService, () -> {
+        callbacks(api.userData(true).continueWith(api.executorService, (task) -> {
+            UserData data = task.getResult();
+            if (data == null) throw new IllegalStateException();
+
             Chat chat = db.getChat(chatId);
             if (chat == null) throw new IllegalStateException();
 
@@ -207,7 +211,7 @@ public class OverloadedChatApi implements Closeable {
             body.put("chatId", chat.id);
             body.put("sourceDeviceId", SignalProtocolHelper.getLocalDeviceId());
 
-            List<Integer> devices = PrefsSessionStore.get().getSubDeviceSessions(chat.address);
+            List<Integer> devices = DbSignalStore.get().getSubDeviceSessions(chat.address);
             if (devices.isEmpty()) throw new IllegalStateException();
 
             JSONArray encryptedMessages = new JSONArray();
@@ -225,7 +229,9 @@ public class OverloadedChatApi implements Closeable {
                     .url(overloadedServerUrl("Chat/Send"))
                     .post(jsonBody(body)));
 
-            return new PlainChatMessage(obj.getInt("id"), text, obj.getLong("timestamp"), api.userDataCached().username);
+            PlainChatMessage msg = new PlainChatMessage(obj.getInt("id"), text, obj.getLong("timestamp"), data.username);
+            db.putMessage(chatId, msg);
+            return msg;
         }), activity, message -> {
             callback.onMessage(message);
 

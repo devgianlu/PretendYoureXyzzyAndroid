@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public final class FriendStatus {
+public class FriendStatus {
     public final String username;
     public final boolean mutual;
     public String serverId;

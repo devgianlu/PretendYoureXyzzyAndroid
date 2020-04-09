@@ -19,7 +19,6 @@ import org.whispersystems.libsignal.LegacyMessageException;
 import org.whispersystems.libsignal.NoSessionException;
 import org.whispersystems.libsignal.SessionBuilder;
 import org.whispersystems.libsignal.SessionCipher;
-import org.whispersystems.libsignal.SignalProtocolAddress;
 import org.whispersystems.libsignal.UntrustedIdentityException;
 import org.whispersystems.libsignal.protocol.CiphertextMessage;
 import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
@@ -36,9 +35,12 @@ import java.util.Random;
 import xyz.gianlu.pyxoverloaded.model.EncryptedChatMessage;
 import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
 
-public class SignalProtocolHelper {
+public final class SignalProtocolHelper {
     private static final int LOCAL_SIGNED_PRE_KEY_ID = 0;
     private static final String TAG = SignalProtocolHelper.class.getSimpleName();
+
+    private SignalProtocolHelper() {
+    }
 
     public static int getLocalDeviceId() {
         int id = Prefs.getInt(SignalPK.SIGNAL_DEVICE_ID, -1);
@@ -62,9 +64,9 @@ public class SignalProtocolHelper {
     @NonNull
     public static SignedPreKeyRecord getLocalSignedPreKey() {
         SignedPreKeyRecord signedPreKey = null;
-        if (PrefsPreKeysStore.get().containsSignedPreKey(LOCAL_SIGNED_PRE_KEY_ID)) {
+        if (DbSignalStore.get().containsSignedPreKey(LOCAL_SIGNED_PRE_KEY_ID)) {
             try {
-                signedPreKey = PrefsPreKeysStore.get().loadSignedPreKey(LOCAL_SIGNED_PRE_KEY_ID);
+                signedPreKey = DbSignalStore.get().loadSignedPreKey(LOCAL_SIGNED_PRE_KEY_ID);
             } catch (InvalidKeyIdException ex) {
                 Log.e(TAG, "Failed loading signed pre key.", ex);
             }
@@ -72,9 +74,9 @@ public class SignalProtocolHelper {
 
         if (signedPreKey == null) {
             try {
-                IdentityKeyPair identityKeyPair = PrefsIdentityKeyStore.get().getIdentityKeyPair();
+                IdentityKeyPair identityKeyPair = DbSignalStore.get().getIdentityKeyPair();
                 signedPreKey = KeyHelper.generateSignedPreKey(identityKeyPair, LOCAL_SIGNED_PRE_KEY_ID);
-                PrefsPreKeysStore.get().storeSignedPreKey(LOCAL_SIGNED_PRE_KEY_ID, signedPreKey);
+                DbSignalStore.get().storeSignedPreKey(LOCAL_SIGNED_PRE_KEY_ID, signedPreKey);
             } catch (InvalidKeyException ex) {
                 Log.e(TAG, "Failed generating signed pre key.", ex);
                 throw new IllegalStateException(ex);
@@ -92,7 +94,7 @@ public class SignalProtocolHelper {
 
         List<PreKeyRecord> preKeys = KeyHelper.generatePreKeys(lastPreKeyId, 50);
         Prefs.putInt(SignalPK.SIGNAL_LAST_PRE_KEY_ID, lastPreKeyId + preKeys.size());
-        for (PreKeyRecord key : preKeys) PrefsPreKeysStore.get().storePreKey(key.getId(), key);
+        for (PreKeyRecord key : preKeys) DbSignalStore.get().storePreKey(key.getId(), key);
         return preKeys;
     }
 
@@ -100,14 +102,14 @@ public class SignalProtocolHelper {
      * Creates a session from scratch (to send a message)
      */
     public static void createSession(@NonNull OverloadedUserAddress address, @NonNull PreKeyBundle bundle) throws UntrustedIdentityException, InvalidKeyException {
-        SessionBuilder sessionBuilder = new SessionBuilder(PrefsSessionStore.get(), PrefsPreKeysStore.get(), PrefsPreKeysStore.get(), PrefsIdentityKeyStore.get(), address.toSignalAddress());
+        SessionBuilder sessionBuilder = new SessionBuilder(DbSignalStore.get(), address.toSignalAddress());
         sessionBuilder.process(bundle);
     }
 
     @Contract("_ -> new")
     @NonNull
     public static PlainChatMessage decrypt(@NonNull EncryptedChatMessage ecm) throws InvalidVersionException, InvalidMessageException, LegacyMessageException, DuplicateMessageException, InvalidKeyIdException, UntrustedIdentityException, InvalidKeyException, NoSessionException {
-        SessionCipher sessionCipher = new SessionCipher(PrefsSessionStore.get(), PrefsPreKeysStore.get(), PrefsPreKeysStore.get(), PrefsIdentityKeyStore.get(), ecm.sourceAddress.toSignalAddress());
+        SessionCipher sessionCipher = new SessionCipher(DbSignalStore.get(), ecm.sourceAddress.toSignalAddress());
         if (ecm.type == CiphertextMessage.PREKEY_TYPE) {
             PreKeySignalMessage msg = new PreKeySignalMessage(ecm.encrypted);
             return new PlainChatMessage(ecm.id, new String(sessionCipher.decrypt(msg)), ecm.timestamp, ecm.from);
@@ -119,14 +121,9 @@ public class SignalProtocolHelper {
         }
     }
 
-    @NotNull
-    public static CiphertextMessage encrypt(@NonNull OverloadedUserAddress address, @NonNull String msg) throws UntrustedIdentityException {
-        return encrypt(address.toSignalAddress(), msg);
-    }
-
     @NonNull
-    private static CiphertextMessage encrypt(@NonNull SignalProtocolAddress address, @NonNull String msg) throws UntrustedIdentityException {
-        SessionCipher sessionCipher = new SessionCipher(PrefsSessionStore.get(), PrefsPreKeysStore.get(), PrefsPreKeysStore.get(), PrefsIdentityKeyStore.get(), address);
+    public static CiphertextMessage encrypt(@NonNull OverloadedUserAddress address, @NonNull String msg) throws UntrustedIdentityException {
+        SessionCipher sessionCipher = new SessionCipher(DbSignalStore.get(), address.toSignalAddress());
         return sessionCipher.encrypt(msg.getBytes(StandardCharsets.UTF_8));
     }
 }

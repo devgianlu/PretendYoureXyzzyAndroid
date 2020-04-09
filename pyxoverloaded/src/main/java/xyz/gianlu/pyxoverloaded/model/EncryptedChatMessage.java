@@ -1,6 +1,7 @@
 package xyz.gianlu.pyxoverloaded.model;
 
 import android.util.Base64;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,11 +24,12 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
+import xyz.gianlu.pyxoverloaded.signal.DbSignalStore;
 import xyz.gianlu.pyxoverloaded.signal.OverloadedUserAddress;
-import xyz.gianlu.pyxoverloaded.signal.PrefsSessionStore;
 import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
 public class EncryptedChatMessage {
+    private static final String TAG = EncryptedChatMessage.class.getSimpleName();
     public final byte[] encrypted;
     public final int type;
     public final OverloadedUserAddress sourceAddress;
@@ -59,9 +61,10 @@ public class EncryptedChatMessage {
         PlainChatMessage out = api.getPlainMessage(id);
         if (out != null) return out;
 
-        if (!PrefsSessionStore.get().containsSession(sourceAddress.toSignalAddress())) {
+        if (!DbSignalStore.get().containsSession(sourceAddress.toSignalAddress())) {
             try {
                 api.getKeySync(sourceAddress);
+                Log.d(TAG, "Retrieved key for " + sourceAddress);
             } catch (ExecutionException | InterruptedException ex) {
                 throw new DecryptionException("Failed obtaining keys.", ex);
             }
