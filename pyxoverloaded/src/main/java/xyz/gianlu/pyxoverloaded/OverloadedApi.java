@@ -617,8 +617,8 @@ public class OverloadedApi {
         }
     }
 
-    private static class OverloadedServerException extends OverloadedException {
-        final int code;
+    public static class OverloadedServerException extends OverloadedException {
+        public final int code;
 
         private OverloadedServerException(String msg, int code) {
             super(msg);

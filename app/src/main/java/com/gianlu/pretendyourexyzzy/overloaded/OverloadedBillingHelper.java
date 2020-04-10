@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
 import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
@@ -145,9 +146,15 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                 @Override
                 public void onFailed(@NonNull Exception ex) {
                     listener.dismissDialog();
-                    userData = null;
-                    exception = new ExceptionWithType(ExceptionWithType.Type.OVERLOADED, ex);
-                    Log.e(TAG, "Failed getting user data.", ex);
+
+                    if (ex instanceof OverloadedServerException && ((OverloadedServerException) ex).code == 403) {
+                        FirebaseAuth.getInstance().signOut();
+                    } else {
+                        userData = null;
+                        exception = new ExceptionWithType(ExceptionWithType.Type.OVERLOADED, ex);
+                        Log.e(TAG, "Failed getting user data.", ex);
+                    }
+
                     checkUpdateUi();
                 }
             });
@@ -306,36 +313,20 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         if (result.getResponseCode() == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
             listener.showProgress(R.string.verifyingPurchase);
             OverloadedApi.get().userData(activity, new UserDataCallback() {
-
-                private void applyData(UserData data) {
-                    userData = data;
-                    exception = null;
-                    checkUpdateUi();
-                    listener.dismissDialog();
-                }
-
                 @Override
                 public void onUserData(@NonNull UserData data) {
                     if (data.purchaseStatus == UserData.PurchaseStatus.NONE) {
                         Purchase purchase = tryGetLatestPurchase();
                         if (purchase != null) {
-                            OverloadedApi.get().verifyPurchase(purchase.getPurchaseToken(), activity, new UserDataCallback() {
-                                @Override
-                                public void onUserData(@NonNull UserData data) {
-                                    applyData(data);
-                                }
-
-                                @Override
-                                public void onFailed(@NonNull Exception ex) {
-                                    Log.e(TAG, "Failed verifying purchase.", ex);
-                                    listener.dismissDialog();
-                                }
-                            });
+                            OverloadedApi.get().verifyPurchase(purchase.getPurchaseToken(), null, OverloadedBillingHelper.this);
                             return;
                         }
                     }
 
-                    applyData(data);
+                    userData = data;
+                    exception = null;
+                    checkUpdateUi();
+                    listener.dismissDialog();
                 }
 
                 @Override
