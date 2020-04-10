@@ -314,6 +314,5 @@
     <string name="mustUseMoreUniqueWords">You must use more unique words in your message.</string>
     <string name="chatMessageTooLong">Messages cannot be longer than 200 characters.</string>
     <string name="tooLessWords">You must use more words in a message that long.</string>
-    <string name="overloadedStatus_maintenance">Server is under maintenance. We expect to be online at %s.</string>
-    <string name="overloadedStatus_twoDevices">You can\'t use Overloaded from two devices simultaneosly. Close one app and retry in a minute.</string>
+    <string name="overloadedStatus_twoDevices">You can\'t use Overloaded from two devices simultaneously. Close one app and retry in a minute.</string>
 </resources>

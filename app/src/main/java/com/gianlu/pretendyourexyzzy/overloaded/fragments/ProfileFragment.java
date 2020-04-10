@@ -121,7 +121,10 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
             public void onFailed(@NotNull Exception ex) {
                 friendsAdapter = null;
                 Log.e(TAG, "Failed getting friends status.", ex);
-                friends.showError(R.string.failedLoading);
+                if (ex instanceof OverloadedApi.MaintenanceException)
+                    friends.showError(((OverloadedApi.MaintenanceException) ex).messageString(requireContext()));
+                else
+                    friends.showError(R.string.failedLoading);
             }
         });
     }

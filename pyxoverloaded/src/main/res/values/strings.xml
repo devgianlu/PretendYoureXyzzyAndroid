@@ -3,4 +3,5 @@
     <string name="ok">OK</string>
     <string name="none">None</string>
     <string name="pending">Pending</string>
+    <string name="overloadedStatus_maintenance">Server is under maintenance. We expect to be online at %s.</string>
 </resources>

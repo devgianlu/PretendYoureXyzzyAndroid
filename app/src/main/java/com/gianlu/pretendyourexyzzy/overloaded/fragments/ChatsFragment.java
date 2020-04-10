@@ -97,7 +97,10 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
             @Override
             public void onFailed(@NonNull Exception ex) {
                 Log.e(TAG, "Failed getting chats.", ex);
-                rmv.showError(R.string.failedLoading);
+                if (ex instanceof OverloadedApi.MaintenanceException)
+                    rmv.showError(((OverloadedApi.MaintenanceException) ex).messageString(requireContext()));
+                else
+                    rmv.showError(R.string.failedLoading);
             }
         });
 

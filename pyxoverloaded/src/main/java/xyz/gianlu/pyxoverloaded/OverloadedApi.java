@@ -34,8 +34,10 @@ import org.whispersystems.libsignal.state.PreKeyRecord;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -79,6 +81,7 @@ public class OverloadedApi {
     private volatile OverloadedToken lastToken;
     private volatile UserData userDataCached = null;
     private volatile Map<String, FriendStatus> friendsStatusCached = null;
+    private MaintenanceException lastMaintenanceException = null;
 
     private OverloadedApi() {
         FirebaseAuth.getInstance().addAuthStateListener(fa -> {
@@ -317,7 +320,7 @@ public class OverloadedApi {
             if (resp.code() == 503) {
                 String estimatedEnd = resp.header("X-Estimated-End");
                 if (estimatedEnd != null)
-                    throw new MaintenanceException(Long.parseLong(estimatedEnd));
+                    throw lastMaintenanceException = new MaintenanceException(Long.parseLong(estimatedEnd));
             } else if (resp.code() == 409) {
                 throw new TwoDevicesException();
             }
@@ -491,6 +494,17 @@ public class OverloadedApi {
         }
     }
 
+    public boolean isUnderMaintenance() {
+        if (lastMaintenanceException == null) return false;
+
+        if (lastMaintenanceException.estimatedEnd < System.currentTimeMillis()) {
+            lastMaintenanceException = null;
+            return false;
+        }
+
+        return true;
+    }
+
     @UiThread
     public interface EventListener {
         void onEvent(@NonNull Event event) throws JSONException;
@@ -609,6 +623,16 @@ public class OverloadedApi {
 
         MaintenanceException(long estimatedEnd) {
             this.estimatedEnd = estimatedEnd;
+        }
+
+        @NonNull
+        public static String messageString(@NonNull Context context, long estimatedEnd) {
+            return context.getString(R.string.overloadedStatus_maintenance, new SimpleDateFormat("HH:mm", Locale.getDefault()).format(estimatedEnd));
+        }
+
+        @NonNull
+        public String messageString(@NonNull Context context) {
+            return messageString(context, estimatedEnd);
         }
     }
 
