@@ -5,13 +5,10 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.gianlu.commonutils.CommonUtils;
-
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.List;
 import java.util.Objects;
 
 import xyz.gianlu.pyxoverloaded.R;
@@ -20,13 +17,11 @@ public class UserData {
     public final PurchaseStatus purchaseStatus;
     public final String purchaseToken;
     public final String username;
-    public final List<String> friends;
 
     public UserData(@NotNull JSONObject obj) throws JSONException {
         this.username = obj.getString("username");
         this.purchaseStatus = PurchaseStatus.parse(obj.getString("purchaseStatus"));
         this.purchaseToken = obj.getString("purchaseToken");
-        this.friends = CommonUtils.toStringsList(obj.getJSONArray("friends"), false);
     }
 
     @NotNull

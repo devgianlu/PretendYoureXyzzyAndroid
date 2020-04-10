@@ -315,4 +315,7 @@
     <string name="chatMessageTooLong">Messages cannot be longer than 200 characters.</string>
     <string name="tooLessWords">You must use more words in a message that long.</string>
     <string name="overloadedStatus_twoDevices">You can\'t use Overloaded from two devices simultaneously. Close one app and retry in a minute.</string>
+    <string name="acceptRequest">Accept request</string>
+    <string name="rejectRequest">Reject request</string>
+    <string name="friendRequest">Friend request</string>
 </resources>

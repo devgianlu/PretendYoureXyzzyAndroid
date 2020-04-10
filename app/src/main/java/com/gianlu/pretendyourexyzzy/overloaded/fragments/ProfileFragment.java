@@ -173,13 +173,9 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                 friendsAdapter.userLeft(event.data.getString("nick"));
                 break;
             case ADDED_FRIEND:
-                friendsAdapter.friendAdded(new FriendStatus(event.data));
-                break;
-            case REMOVED_FRIEND:
-                friendsAdapter.friendRemoved(event.data.getString("username"));
-                break;
-            case ADDED_AS_FRIEND:
             case REMOVED_AS_FRIEND:
+            case REMOVED_FRIEND:
+            case ADDED_AS_FRIEND:
                 friendsAdapter.update(event.data.getString("username"));
                 break;
         }
@@ -200,24 +196,6 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             return new ViewHolder(parent);
-        }
-
-        void friendRemoved(@NonNull String username) {
-            for (int i = 0; i < friends.size(); i++) {
-                if (Objects.equals(friends.get(i).username, username)) {
-                    friends.remove(i);
-                    notifyItemRemoved(i);
-                    break;
-                }
-            }
-
-            updatedItemCount(friends.size());
-        }
-
-        void friendAdded(@NonNull FriendStatus status) {
-            if (!friends.contains(status)) friends.add(status);
-            notifyItemInserted(friends.size() - 1);
-            updatedItemCount(friends.size());
         }
 
         void userLeft(@NonNull String nickname) {
@@ -244,15 +222,30 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
 
         void update(@NonNull String username) {
             Map<String, FriendStatus> map = OverloadedApi.get().friendsStatusCache();
-            FriendStatus status;
-            if (map == null || (status = map.get(username)) == null)
-                return;
+            if (map == null) return;
 
-            for (int i = 0; i < friends.size(); i++) {
-                if (Objects.equals(friends.get(i).username, username)) {
-                    friends.set(i, status);
-                    notifyItemChanged(i);
-                    break;
+            FriendStatus status = map.get(username);
+            if (status == null) {
+                for (int i = 0; i < friends.size(); i++) {
+                    if (Objects.equals(friends.get(i).username, username)) {
+                        friends.remove(i);
+                        notifyItemRemoved(i);
+                        break;
+                    }
+                }
+
+                updatedItemCount(friends.size());
+            } else if (!friends.contains(status)) {
+                friends.add(status);
+                notifyItemInserted(friends.size() - 1);
+                updatedItemCount(friends.size());
+            } else {
+                for (int i = 0; i < friends.size(); i++) {
+                    if (Objects.equals(friends.get(i).username, username)) {
+                        friends.set(i, status);
+                        notifyItemChanged(i);
+                        break;
+                    }
                 }
             }
         }
@@ -262,18 +255,23 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
             FriendStatus friend = friends.get(position);
             holder.name.setText(friend.username);
 
-            if (friend.mutual) {
-                if (friend.serverId != null) {
-                    CommonUtils.setTextColor(holder.status, R.color.green);
-                    Pyx.Server server = Pyx.Server.fromOverloadedId(friend.serverId);
-                    CommonUtils.setText(holder.status, R.string.friendOnlineOn, server == null ? friend.serverId : server.name);
-                } else {
-                    CommonUtils.setTextColor(holder.status, R.color.red);
-                    CommonUtils.setText(holder.status, R.string.friendOffline);
-                }
-            } else {
+            if (friend.request) {
                 CommonUtils.setTextColorFromAttr(holder.status, android.R.attr.textColorSecondary);
-                CommonUtils.setText(holder.status, R.string.notMutual);
+                CommonUtils.setText(holder.status, R.string.friendRequest);
+            } else {
+                if (friend.mutual) {
+                    if (friend.serverId != null) {
+                        CommonUtils.setTextColor(holder.status, R.color.green);
+                        Pyx.Server server = Pyx.Server.fromOverloadedId(friend.serverId);
+                        CommonUtils.setText(holder.status, R.string.friendOnlineOn, server == null ? friend.serverId : server.name);
+                    } else {
+                        CommonUtils.setTextColor(holder.status, R.color.red);
+                        CommonUtils.setText(holder.status, R.string.friendOffline);
+                    }
+                } else {
+                    CommonUtils.setTextColorFromAttr(holder.status, android.R.attr.textColorSecondary);
+                    CommonUtils.setText(holder.status, R.string.notMutual);
+                }
             }
 
             holder.itemView.setOnClickListener(v -> showPopup(holder.itemView.getContext(), holder.itemView, friend));
@@ -285,6 +283,12 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
 
             Menu menu = popup.getMenu();
             if (!friend.mutual) menu.removeItem(R.id.overloadedUserItemMenu_openChat);
+            if (!friend.request) {
+                menu.removeItem(R.id.overloadedUserItemMenu_rejectRequest);
+                menu.removeItem(R.id.overloadedUserItemMenu_acceptRequest);
+            } else {
+                menu.removeItem(R.id.overloadedUserItemMenu_removeFriend);
+            }
 
             popup.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
@@ -306,13 +310,12 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                             }
                         });
                         return true;
+                    case R.id.overloadedUserItemMenu_rejectRequest:
                     case R.id.overloadedUserItemMenu_removeFriend:
                         OverloadedApi.get().removeFriend(friend.username, null, new FriendsStatusCallback() {
                             @Override
                             public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
                                 showToast(Toaster.build().message(R.string.removedFriend).extra(friend));
-                                if (friendsAdapter != null)
-                                    friendsAdapter.removeUser(friend.username);
                             }
 
                             @Override
@@ -322,22 +325,26 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                             }
                         });
                         return true;
+                    case R.id.overloadedUserItemMenu_acceptRequest:
+                        OverloadedApi.get().addFriend(friend.username, null, new FriendsStatusCallback() {
+                            @Override
+                            public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
+                                showToast(Toaster.build().message(R.string.friendAdded).extra(friend));
+                            }
+
+                            @Override
+                            public void onFailed(@NotNull Exception ex) {
+                                Log.e(TAG, "Failed adding friend.", ex);
+                                showToast(Toaster.build().message(R.string.failedAddingFriend).extra(friend));
+                            }
+                        });
+                        return true;
                     default:
                         return false;
                 }
             });
 
             CommonUtils.showPopupOffset(popup, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, context.getResources().getDisplayMetrics()), 0);
-        }
-
-        private void removeUser(@NonNull String username) {
-            for (int i = 0; i < friends.size(); i++) {
-                if (Objects.equals(friends.get(i).username, username)) {
-                    friends.remove(i);
-                    notifyItemRemoved(i);
-                    return;
-                }
-            }
         }
 
         @Override

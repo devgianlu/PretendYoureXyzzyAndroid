@@ -6,43 +6,49 @@ import androidx.annotation.Nullable;
 import com.gianlu.commonutils.CommonUtils;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public class FriendStatus {
     public final String username;
     public final boolean mutual;
+    public final boolean request;
     public String serverId;
 
     public FriendStatus(@NotNull JSONObject obj) throws JSONException {
         username = obj.getString("username");
         mutual = obj.getBoolean("mutual");
         serverId = CommonUtils.optString(obj, "loggedServer");
+        request = false;
     }
 
-    private FriendStatus(@NotNull String username, @NotNull JSONObject obj) throws JSONException {
-        this.username = username;
-        mutual = obj.getBoolean("mutual");
-        serverId = CommonUtils.optString(obj, "loggedServer");
-    }
-
-    private FriendStatus(@NonNull String username, boolean mutual, @Nullable String serverId) {
+    private FriendStatus(@NonNull String username, boolean mutual, boolean request, @Nullable String serverId) {
         this.username = username;
         this.mutual = mutual;
+        this.request = request;
         this.serverId = serverId;
+
+        if (request && mutual) throw new IllegalStateException();
     }
 
     @NonNull
     public static Map<String, FriendStatus> parse(@NonNull JSONObject obj) throws JSONException {
-        Map<String, FriendStatus> map = new HashMap<>();
-        Iterator<String> iter = obj.keys();
-        while (iter.hasNext()) {
-            String username = iter.next();
-            map.put(username, new FriendStatus(username, obj.getJSONObject(username)));
+        JSONArray friendsArray = obj.getJSONArray("friends");
+        JSONArray requestsArray = obj.getJSONArray("requests");
+
+        Map<String, FriendStatus> map = new HashMap<>(friendsArray.length() + requestsArray.length());
+        for (int i = 0; i < requestsArray.length(); i++) {
+            String username = requestsArray.getString(i);
+            map.put(username, new FriendStatus(username, false, true, null));
+        }
+
+        for (int i = 0; i < friendsArray.length(); i++) {
+            FriendStatus status = new FriendStatus(friendsArray.getJSONObject(i));
+            map.put(status.username, status);
         }
 
         return map;
@@ -57,6 +63,7 @@ public class FriendStatus {
         this.serverId = serverId;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "FriendStatus{" + "username='" + username + '\'' + ", mutual=" + mutual + '}';
@@ -85,7 +92,7 @@ public class FriendStatus {
     }
 
     @NonNull
-    public FriendStatus notMutual() {
-        return new FriendStatus(username, false, null);
+    public FriendStatus asRequest() {
+        return new FriendStatus(username, false, true, null);
     }
 }

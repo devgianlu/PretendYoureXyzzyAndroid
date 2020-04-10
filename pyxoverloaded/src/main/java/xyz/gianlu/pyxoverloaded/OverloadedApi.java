@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -410,8 +409,9 @@ public class OverloadedApi {
                     .url(overloadedServerUrl("User/RemoveFriend"))
                     .post(singletonJsonBody("username", username)));
 
+            Map<String, FriendStatus> map = friendsStatusCached = FriendStatus.parse(obj);
             dispatchLocalEvent(Event.Type.REMOVED_FRIEND, CommonUtils.singletonJsonObject("username", username));
-            return friendsStatusCached = FriendStatus.parse(obj);
+            return map;
         }), activity, callback::onFriendsStatus, callback::onFailed);
     }
 
@@ -421,10 +421,10 @@ public class OverloadedApi {
                     .url(overloadedServerUrl("User/AddFriend"))
                     .post(singletonJsonBody("username", username)));
 
-            Map<String, FriendStatus> map = FriendStatus.parse(obj);
+            Map<String, FriendStatus> map = friendsStatusCached = FriendStatus.parse(obj);
             FriendStatus status = map.get(username);
             if (status != null) dispatchLocalEvent(Event.Type.ADDED_FRIEND, status.toJSON());
-            return friendsStatusCached = map;
+            return map;
         }), activity, callback::onFriendsStatus, callback::onFailed);
     }
 
@@ -472,23 +472,12 @@ public class OverloadedApi {
             if (friendsStatusCached == null) return;
 
             FriendStatus status = new FriendStatus(event.data);
-            for (String username : new ArrayList<>(friendsStatusCached.keySet())) {
-                if (Objects.equals(status.username, username)) {
-                    friendsStatusCached.put(username, status);
-                    break;
-                }
-            }
+            if (status.mutual) friendsStatusCached.put(status.username, status);
+            else friendsStatusCached.put(status.username, status.asRequest());
         } else if (event.type == Event.Type.REMOVED_AS_FRIEND) {
             if (friendsStatusCached == null) return;
 
-            String removedUsername = event.data.getString("username");
-            for (String username : new ArrayList<>(friendsStatusCached.keySet())) {
-                if (Objects.equals(removedUsername, username)) {
-                    FriendStatus status = friendsStatusCached.get(username);
-                    if (status != null) friendsStatusCached.put(username, status.notMutual());
-                    break;
-                }
-            }
+            friendsStatusCached.remove(event.data.getString("username"));
         } else if (event.type == Event.Type.SHARE_KEYS_LOW) {
             if (chatInstance != null) sharePreKeys();
         }

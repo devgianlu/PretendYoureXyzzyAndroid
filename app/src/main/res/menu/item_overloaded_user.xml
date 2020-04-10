@@ -9,4 +9,10 @@
     <item
         android:id="@+id/overloadedUserItemMenu_removeFriend"
         android:title="@string/removeFriend" />
+    <item
+        android:id="@+id/overloadedUserItemMenu_acceptRequest"
+        android:title="@string/acceptRequest" />
+    <item
+        android:id="@+id/overloadedUserItemMenu_rejectRequest"
+        android:title="@string/rejectRequest" />
 </menu>
