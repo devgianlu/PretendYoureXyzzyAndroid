@@ -82,7 +82,7 @@ public class GameCardView extends MaterialCardView {
         setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, getResources().getDisplayMetrics()));
 
         text = findViewById(R.id.pyxCard_text);
-        FontsManager.set(FontsManager.ROBOTO_MEDIUM, text);
+        FontsManager.set(R.font.roboto_medium, text);
 
         watermark = findViewById(R.id.pyxCard_watermark);
         numPick = findViewById(R.id.pyxCard_numPick);
