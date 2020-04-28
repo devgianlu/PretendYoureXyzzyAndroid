@@ -92,6 +92,7 @@ dependencies {
     implementation project(':CommonUtils')
     implementation 'com.github.paolorotolo:appintro:v5.1.0'
     implementation 'me.zhanghai.android.materialratingbar:library:1.4.0'
+    implementation 'com.google.android.material:material:1.2.0-alpha06'
 
     implementation 'com.squareup.okhttp3:okhttp:4.5.0'
 
@@ -102,7 +103,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-games:19.0.0'
     implementation 'com.google.android.gms:play-services-auth:18.0.0'
 
-    standardImplementation 'com.google.firebase:firebase-perf:19.0.5'
+    standardImplementation 'com.google.firebase:firebase-perf:19.0.7'
 }
 
 task printVersionName {
