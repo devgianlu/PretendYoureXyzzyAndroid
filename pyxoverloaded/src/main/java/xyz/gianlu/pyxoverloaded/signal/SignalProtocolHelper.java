@@ -32,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Random;
 
+import xyz.gianlu.pyxoverloaded.Utils;
 import xyz.gianlu.pyxoverloaded.model.EncryptedChatMessage;
 import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
 
@@ -77,6 +78,7 @@ public final class SignalProtocolHelper {
                 IdentityKeyPair identityKeyPair = DbSignalStore.get().getIdentityKeyPair();
                 signedPreKey = KeyHelper.generateSignedPreKey(identityKeyPair, LOCAL_SIGNED_PRE_KEY_ID);
                 DbSignalStore.get().storeSignedPreKey(LOCAL_SIGNED_PRE_KEY_ID, signedPreKey);
+                Log.d(TAG, "Generated signed pre key: " + Base64.encodeToString(signedPreKey.getKeyPair().getPublicKey().serialize(), Base64.NO_WRAP));
             } catch (InvalidKeyException ex) {
                 Log.e(TAG, "Failed generating signed pre key.", ex);
                 throw new IllegalStateException(ex);
@@ -95,6 +97,7 @@ public final class SignalProtocolHelper {
         List<PreKeyRecord> preKeys = KeyHelper.generatePreKeys(lastPreKeyId, 50);
         Prefs.putInt(SignalPK.SIGNAL_LAST_PRE_KEY_ID, lastPreKeyId + preKeys.size());
         for (PreKeyRecord key : preKeys) DbSignalStore.get().storePreKey(key.getId(), key);
+        Log.d(TAG, "Generate some prekeys from " + lastPreKeyId);
         return preKeys;
     }
 
@@ -104,26 +107,35 @@ public final class SignalProtocolHelper {
     public static void createSession(@NonNull OverloadedUserAddress address, @NonNull PreKeyBundle bundle) throws UntrustedIdentityException, InvalidKeyException {
         SessionBuilder sessionBuilder = new SessionBuilder(DbSignalStore.get(), address.toSignalAddress());
         sessionBuilder.process(bundle);
+
+        Log.d(TAG, "Created session for " + address);
     }
 
     @Contract("_ -> new")
     @NonNull
     public static PlainChatMessage decrypt(@NonNull EncryptedChatMessage ecm) throws InvalidVersionException, InvalidMessageException, LegacyMessageException, DuplicateMessageException, InvalidKeyIdException, UntrustedIdentityException, InvalidKeyException, NoSessionException {
         SessionCipher sessionCipher = new SessionCipher(DbSignalStore.get(), ecm.sourceAddress.toSignalAddress());
+
+        PlainChatMessage pcm;
         if (ecm.type == CiphertextMessage.PREKEY_TYPE) {
             PreKeySignalMessage msg = new PreKeySignalMessage(ecm.encrypted);
-            return new PlainChatMessage(ecm.id, new String(sessionCipher.decrypt(msg)), ecm.timestamp, ecm.from);
+            pcm = new PlainChatMessage(ecm.id, new String(sessionCipher.decrypt(msg)), ecm.timestamp, ecm.from);
         } else if (ecm.type == CiphertextMessage.WHISPER_TYPE) {
             SignalMessage msg = new SignalMessage(ecm.encrypted);
-            return new PlainChatMessage(ecm.id, new String(sessionCipher.decrypt(msg)), ecm.timestamp, ecm.from);
+            pcm = new PlainChatMessage(ecm.id, new String(sessionCipher.decrypt(msg)), ecm.timestamp, ecm.from);
         } else {
             throw new IllegalStateException("Unknown type: " + ecm.type);
         }
+
+        Log.d(TAG, "Decrypted message for " + ecm.sourceAddress + " with type " + Utils.typeToString(ecm.type));
+        return pcm;
     }
 
     @NonNull
-    public static CiphertextMessage encrypt(@NonNull OverloadedUserAddress address, @NonNull String msg) throws UntrustedIdentityException {
+    public static CiphertextMessage encrypt(@NonNull OverloadedUserAddress address, @NonNull String text) throws UntrustedIdentityException {
         SessionCipher sessionCipher = new SessionCipher(DbSignalStore.get(), address.toSignalAddress());
-        return sessionCipher.encrypt(msg.getBytes(StandardCharsets.UTF_8));
+        CiphertextMessage msg = sessionCipher.encrypt(text.getBytes(StandardCharsets.UTF_8));
+        Log.d(TAG, "Encrypted message for " + address + " with type " + Utils.typeToString(msg.getType()));
+        return msg;
     }
 }
