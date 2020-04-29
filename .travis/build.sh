@@ -4,5 +4,5 @@ set -ev
 if [[ -z "${TRAVIS_TAG}" ]]; then
     ./gradlew build connectedCheck
 else
-    ./gradlew assembleRelease publish --stacktrace --info
+    ./gradlew assembleRelease publish --stacktrace
 fi
