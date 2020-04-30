@@ -59,8 +59,6 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         this.listener = listener;
     }
 
-    private static final String TAG = AnotherGameManager.class.getSimpleName();
-
     @Override
     public void onPollMessage(@NonNull PollMessage msg) throws JSONException {
         Log.v(TAG, msg.event + " -> " + msg.obj.toString());

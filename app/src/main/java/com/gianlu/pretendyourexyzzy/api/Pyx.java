@@ -110,8 +110,6 @@ public class Pyx implements Closeable {
         return request(operation, false, params);
     }
 
-    private static final String TAG = Pyx.class.getSimpleName();
-
     @NonNull
     @WorkerThread
     private PyxResponse request(@NonNull Op operation, boolean retried, PyxRequest.Param... params) throws IOException, JSONException, PyxException {
@@ -457,8 +455,6 @@ public class Pyx implements Closeable {
         private transient HttpUrl pollingUrl;
         private transient HttpUrl configUrl;
         private transient HttpUrl statsUrl;
-
-        private static final String TAG = Server.class.getSimpleName();
 
         public Server(@NonNull HttpUrl url, @Nullable HttpUrl metricsUrl, @NonNull String name, @NonNull Params params, boolean editable) {
             this.url = url;

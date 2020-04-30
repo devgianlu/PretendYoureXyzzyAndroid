@@ -113,8 +113,6 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
         }
     }
 
-    private static final String TAG = SessionHistoryFragment.class.getSimpleName();
-
     @Override
     public void onException(@NonNull Exception ex) {
         Log.e(TAG, "Failed loading history.", ex);

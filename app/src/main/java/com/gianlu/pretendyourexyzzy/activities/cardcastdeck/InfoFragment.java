@@ -83,8 +83,6 @@ public class InfoFragment extends FragmentWithDialog implements Cardcast.OnResul
         blackCards.setText(String.valueOf(result.calls));
     }
 
-    private static final String TAG = InfoFragment.class.getSimpleName();
-
     @Override
     public void onException(@NonNull Exception ex) {
         Log.e(TAG, "Failed loading cards info.", ex);
