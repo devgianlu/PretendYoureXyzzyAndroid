@@ -149,6 +149,8 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         return false;
     }
 
+    private static final String TAG = GamesFragment.class.getSimpleName();
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

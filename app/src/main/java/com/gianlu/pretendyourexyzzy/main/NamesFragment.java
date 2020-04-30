@@ -134,7 +134,6 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
-            Log.e(TAG, "LevelMismatchException", ex);
             rmv.showError(R.string.failedLoading);
             return rmv;
         }

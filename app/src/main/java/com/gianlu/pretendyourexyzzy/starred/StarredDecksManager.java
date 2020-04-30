@@ -24,6 +24,7 @@ public class StarredDecksManager {
     private static StarredDecksManager instance;
     private final JsonStoring storing;
     private final List<StarredDeck> list;
+    private static final String TAG = StarredDecksManager.class.getSimpleName();
 
     private StarredDecksManager() {
         storing = JsonStoring.intoPrefs();

@@ -180,6 +180,8 @@ public final class PyxRequests {
                 new PyxRequest.Param("m", customText));
     }
 
+    private static final String TAG = PyxRequests.class.getSimpleName();
+
     @NonNull
     public static PyxRequestWithResult<List<Deck>> listCardcastDecks(int gid, @NonNull final Cardcast cardcast) {
         return new PyxRequestWithResult<>(Pyx.Op.LIST_CARDCAST_CARD_SETS, (response, obj) -> {

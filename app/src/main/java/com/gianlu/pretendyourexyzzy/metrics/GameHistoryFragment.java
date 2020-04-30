@@ -82,6 +82,8 @@ public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
         rmv.loadListData(new RoundsAdapter(getContext(), result, (RoundsAdapter.Listener) getContext()));
     }
 
+    private static final String TAG = GameHistoryFragment.class.getSimpleName();
+
     @Override
     public void onException(@NonNull Exception ex) {
         Log.e(TAG, "Failed loading history.", ex);

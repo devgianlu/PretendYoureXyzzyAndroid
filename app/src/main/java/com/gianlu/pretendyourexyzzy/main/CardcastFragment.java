@@ -183,6 +183,8 @@ public class CardcastFragment extends Fragment implements Cardcast.OnDecks, Menu
             rmv.loadListData(new CardcastDecksAdapter(getContext(), cardcast, search, decks, LIMIT));
     }
 
+    private static final String TAG = CardcastFragment.class.getSimpleName();
+
     @Override
     public void onException(@NonNull Exception ex) {
         Log.e(TAG, "Search failed.", ex);

@@ -1,3 +1,4 @@
-### Fixed
-- Fixed rounds played event
-- Fixed crash reporting and analytics (Google Play only)
+### Changed
+- Using Android logging
+- Allow app to be moved to the external storage
+- Updated third-part libraries
