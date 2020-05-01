@@ -26,7 +26,6 @@ import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.auth.UserInfo;
 
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -324,15 +323,18 @@ public class OverloadedApi {
                 throw new TwoDevicesException();
             }
 
-            if (resp.code() < 200 || resp.code() > 299)
-                throw OverloadedServerException.forStatusCode(resp);
-
             ResponseBody body = resp.body();
             if (body == null) throw new IllegalStateException();
 
+            JSONObject obj;
             String str = body.string();
-            if (str.isEmpty()) return new JSONObject();
-            else return new JSONObject(str);
+            if (str.isEmpty()) obj = new JSONObject();
+            else obj = new JSONObject(str);
+
+            if (resp.code() < 200 || resp.code() > 299)
+                throw OverloadedServerException.forStatusCode(resp, obj);
+
+            return obj;
         } catch (IOException | JSONException ex) {
             if (retry && ex instanceof SocketTimeoutException)
                 return serverRequest(reqBuilder, false);
@@ -403,7 +405,7 @@ public class OverloadedApi {
         }), activity, callback::onFriendsStatus, callback::onFailed);
     }
 
-    public void removeFriend(@NotNull String username, @Nullable Activity activity, @NotNull FriendsStatusCallback callback) {
+    public void removeFriend(@NonNull String username, @Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
             JSONObject obj = serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/RemoveFriend"))
@@ -415,7 +417,7 @@ public class OverloadedApi {
         }), activity, callback::onFriendsStatus, callback::onFailed);
     }
 
-    public void addFriend(@NotNull String username, @Nullable Activity activity, @NotNull FriendsStatusCallback callback) {
+    public void addFriend(@NonNull String username, @Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
             JSONObject obj = serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/AddFriend"))
@@ -428,7 +430,7 @@ public class OverloadedApi {
         }), activity, callback::onFriendsStatus, callback::onFailed);
     }
 
-    public void deleteAccount(@Nullable Activity activity, @NotNull SuccessCallback callback) {
+    public void deleteAccount(@Nullable Activity activity, @NonNull SuccessCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
             serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/Delete"))
@@ -508,7 +510,7 @@ public class OverloadedApi {
             this.data = data;
         }
 
-        @NotNull
+        @NonNull
         @Override
         public String toString() {
             return "Event{type=" + type + ", data=" + data + '}';
@@ -521,7 +523,7 @@ public class OverloadedApi {
 
             private final String code;
 
-            Type(@NotNull String code) {
+            Type(@NonNull String code) {
                 this.code = code;
             }
 
@@ -564,7 +566,7 @@ public class OverloadedApi {
         }
 
         @Override
-        public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
+        public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
             JSONObject data;
             Event.Type type;
             try {
@@ -632,29 +634,23 @@ public class OverloadedApi {
 
     public static class OverloadedServerException extends OverloadedException {
         public final int code;
+        public final JSONObject obj;
 
-        private OverloadedServerException(String msg, int code) {
+        private OverloadedServerException(String msg, int code, @NonNull JSONObject obj) {
             super(msg);
             this.code = code;
+            this.obj = obj;
         }
 
         OverloadedServerException(@NonNull Request request, @NonNull Throwable ex) {
             super(request.toString(), ex);
             this.code = -1;
+            this.obj = null;
         }
 
         @SuppressLint("DefaultLocale")
-        static OverloadedServerException forStatusCode(@NonNull Response resp) {
-            try {
-                ResponseBody body = resp.body();
-                String bodyStr;
-                if (body == null || (bodyStr = body.string()).isEmpty())
-                    return new OverloadedServerException(String.format("%s -> %d: %s", resp.request(), resp.code(), resp.message()), resp.code());
-
-                return new OverloadedServerException(String.format("%s -> %d: %s", resp.request(), resp.code(), bodyStr), resp.code());
-            } catch (IOException ex) {
-                throw new IllegalStateException(ex);
-            }
+        static OverloadedServerException forStatusCode(@NonNull Response resp, @NonNull JSONObject obj) {
+            return new OverloadedServerException(String.format("%s -> %d", resp.request(), resp.code()), resp.code(), obj);
         }
     }
 

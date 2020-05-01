@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Base64;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -18,9 +17,6 @@ import com.google.android.gms.tasks.Tasks;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.whispersystems.libsignal.InvalidKeyException;
-import org.whispersystems.libsignal.UntrustedIdentityException;
-import org.whispersystems.libsignal.protocol.CiphertextMessage;
 
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -32,14 +28,13 @@ import okhttp3.Request;
 import okhttp3.internal.Util;
 import xyz.gianlu.pyxoverloaded.callback.ChatCallback;
 import xyz.gianlu.pyxoverloaded.callback.ChatMessageCallback;
-import xyz.gianlu.pyxoverloaded.callback.ChatMessagesCallback;
 import xyz.gianlu.pyxoverloaded.callback.ChatsCallback;
 import xyz.gianlu.pyxoverloaded.model.Chat;
-import xyz.gianlu.pyxoverloaded.model.ChatMessages;
 import xyz.gianlu.pyxoverloaded.model.EncryptedChatMessage;
 import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 import xyz.gianlu.pyxoverloaded.signal.DbSignalStore;
+import xyz.gianlu.pyxoverloaded.signal.OutgoingMessageEnvelope;
 import xyz.gianlu.pyxoverloaded.signal.OverloadedUserAddress;
 import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
@@ -50,25 +45,13 @@ import static xyz.gianlu.pyxoverloaded.Utils.overloadedServerUrl;
 
 public class OverloadedChatApi implements Closeable {
     private static final String TAG = OverloadedApi.class.getSimpleName();
+    public final ChatDatabaseHelper db;
     private final OverloadedApi api;
-    private final ChatDatabaseHelper db;
     private final List<UnreadCountListener> unreadCountListeners = Collections.synchronizedList(new ArrayList<>());
 
     OverloadedChatApi(@NonNull Context context, @NonNull OverloadedApi api) {
         this.api = api;
         this.db = new ChatDatabaseHelper(context);
-    }
-
-    private static void parseAndStoreDevices(@NonNull JSONArray keys) throws JSONException, InvalidKeyException, UntrustedIdentityException {
-        for (int i = 0; i < keys.length(); i++) {
-            JSONObject deviceObj = keys.getJSONObject(i);
-            SignalProtocolHelper.createSession(new OverloadedUserAddress(deviceObj.getString("address")), Utils.parsePreKeyBundle(deviceObj));
-        }
-    }
-
-    @Nullable
-    public PlainChatMessage getPlainMessage(long msgId) {
-        return db.getMessage(msgId);
     }
 
     @NonNull
@@ -102,16 +85,8 @@ public class OverloadedChatApi implements Closeable {
                 for (int j = 0; j < messagesArray.length(); j++)
                     encryptedMessages.add(new EncryptedChatMessage(messagesArray.getJSONObject(j)));
 
-                List<PlainChatMessage> decrypted;
-                try {
-                    decrypted = EncryptedChatMessage.decrypt(OverloadedChatApi.this, encryptedMessages);
-                } catch (EncryptedChatMessage.DecryptionException ex) {
-                    throw new IllegalStateException(ex);
-                }
-
-                ChatMessages messages = new ChatMessages(decrypted, chat);
-                db.putMessages(messages);
-                if (!messages.isEmpty()) db.updateLastMessage(chatId, messages.get(0));
+                EncryptedChatMessage.decrypt(OverloadedChatApi.this, chatId, encryptedMessages);
+                // TODO: Dispatch messages
             }
 
             return summary.length();
@@ -126,32 +101,13 @@ public class OverloadedChatApi implements Closeable {
         callbacks(Tasks.call(api.executorService, () -> {
             JSONObject body = new JSONObject();
             body.put("username", username);
-            body.put("needsKeys", true); // FIXME
 
             JSONObject obj = api.serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Chat/Start"))
                     .post(jsonBody(body)));
 
-            JSONObject chatObj = obj.getJSONObject("chat");
-            Chat remoteChat = new Chat(chatObj);
+            Chat remoteChat = new Chat(obj);
             db.putChat(remoteChat);
-
-            JSONArray keysArray = obj.optJSONArray("keys");
-            if (keysArray != null) parseAndStoreDevices(keysArray);
-
-            JSONObject lastMsgObj = chatObj.optJSONObject("lastMsg");
-            if (lastMsgObj != null) {
-                EncryptedChatMessage ecm = new EncryptedChatMessage(lastMsgObj);
-
-                try {
-                    PlainChatMessage msg = ecm.decrypt(OverloadedChatApi.this);
-                    db.putMessage(remoteChat.id, msg);
-                    db.updateLastMessage(remoteChat.id, msg);
-                } catch (EncryptedChatMessage.DecryptionException ex) {
-                    Log.e(TAG, "Failed decrypting message.", ex);
-                }
-            }
-
             return remoteChat;
         }), activity, remoteChat -> {
             if (chat == null) callback.onChat(remoteChat);
@@ -176,27 +132,30 @@ public class OverloadedChatApi implements Closeable {
                 Chat chat = new Chat(chatObj);
                 chats.add(chat);
                 db.putChat(chat);
-
                 local.remove(chat);
-
-                JSONObject lastMsgObj = chatObj.optJSONObject("lastMsg");
-                if (lastMsgObj != null) {
-                    EncryptedChatMessage ecm = new EncryptedChatMessage(lastMsgObj);
-
-                    try {
-                        PlainChatMessage msg = ecm.decrypt(OverloadedChatApi.this);
-                        db.putMessage(chat.id, msg);
-                        db.updateLastMessage(chat.id, msg);
-                    } catch (EncryptedChatMessage.DecryptionException ex) {
-                        Log.e(TAG, "Failed decrypting message.", ex);
-                    }
-                }
             }
 
             for (Chat chat : local) db.removeChat(chat);
 
             return chats;
         }), activity, callback::onRemoteChats, callback::onFailed);
+    }
+
+    @WorkerThread
+    private boolean handleMismatchedDevices(@NonNull Chat chat, @NonNull JSONObject obj) throws JSONException, ExecutionException, InterruptedException {
+        JSONArray extra = obj.optJSONArray("extra");
+        if (extra == null) return false;
+
+        for (int i = 0; i < extra.length(); i++)
+            DbSignalStore.get().deleteSession(chat.deviceAddress(extra.getInt(i)).toSignalAddress());
+
+        JSONArray missing = obj.optJSONArray("missing");
+        if (missing == null) return false;
+
+        for (int i = 0; i < missing.length(); i++)
+            getKeySync(chat.deviceAddress(missing.getInt(i)));
+
+        return true;
     }
 
     public void sendMessage(int chatId, @NonNull String text, @Nullable Activity activity, @NonNull ChatMessageCallback callback) {
@@ -207,31 +166,31 @@ public class OverloadedChatApi implements Closeable {
             Chat chat = db.getChat(chatId);
             if (chat == null) throw new IllegalStateException();
 
-            JSONObject body = new JSONObject();
-            body.put("chatId", chat.id);
-            body.put("sourceDeviceId", SignalProtocolHelper.getLocalDeviceId());
+            for (int i = 0; i < 3; i++) {
+                List<OutgoingMessageEnvelope> outgoing = SignalProtocolHelper.encrypt(chat, text);
+                JSONArray encryptedMessages = new JSONArray();
+                for (OutgoingMessageEnvelope msg : outgoing) encryptedMessages.put(msg.toJson());
 
-            List<Integer> devices = DbSignalStore.get().getSubDeviceSessions(chat.address);
-            if (devices.isEmpty()) throw new IllegalStateException();
+                JSONObject body = new JSONObject();
+                body.put("chatId", chat.id);
+                body.put("deviceId", SignalProtocolHelper.getLocalDeviceId());
+                body.put("messages", encryptedMessages);
 
-            JSONArray encryptedMessages = new JSONArray();
-            for (Integer deviceId : devices) {
-                CiphertextMessage msg = SignalProtocolHelper.encrypt(chat.deviceAddress(deviceId), text);
-                JSONObject msgObj = new JSONObject();
-                msgObj.put("encrypted", Base64.encodeToString(msg.serialize(), Base64.NO_WRAP));
-                msgObj.put("type", msg.getType());
-                msgObj.put("destDeviceId", deviceId);
-                encryptedMessages.put(msgObj);
+                try {
+                    api.serverRequest(new Request.Builder()
+                            .url(overloadedServerUrl("Chat/Send"))
+                            .post(jsonBody(body)));
+
+                    return db.putMessage(chatId, text, System.currentTimeMillis(), data.username);
+                } catch (OverloadedApi.OverloadedServerException ex) {
+                    if (ex.code == 400 && ex.obj != null) {
+                        if (!handleMismatchedDevices(chat, ex.obj))
+                            throw ex;
+                    }
+                }
             }
-            body.put("messages", encryptedMessages);
 
-            JSONObject obj = api.serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Chat/Send"))
-                    .post(jsonBody(body)));
-
-            PlainChatMessage msg = new PlainChatMessage(obj.getInt("id"), text, obj.getLong("timestamp"), data.username);
-            db.putMessage(chatId, msg);
-            return msg;
+            throw new IllegalStateException();
         }), activity, message -> {
             callback.onMessage(message);
 
@@ -243,51 +202,29 @@ public class OverloadedChatApi implements Closeable {
         }, callback::onFailed);
     }
 
+    public void decryptAck(long ackId) {
+        loggingCallbacks(Tasks.call(api.executorService, () -> {
+            JSONObject body = new JSONObject();
+            body.put("ackId", ackId);
+            body.put("deviceId", SignalProtocolHelper.getLocalDeviceId());
+
+            api.serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Chat/Ack"))
+                    .post(jsonBody(body)));
+
+            return null;
+        }), "message-ack: " + ackId);
+    }
+
     @Nullable
     public List<PlainChatMessage> getLocalMessages(int chatId, long since) {
         return db.getMessagesPaginate(chatId, since);
     }
 
-    public void getMessages(int chatId, @Nullable Activity activity, @NonNull ChatMessagesCallback callback) {
-        ChatMessages list = db.getMessages(chatId);
-        if (list != null && !list.isEmpty())
-            new Handler(Looper.getMainLooper()).post(() -> callback.onLocalMessages(list));
-
-        callbacks(Tasks.call(api.executorService, () -> {
-            Long lastSeen = db.getLastSeen(chatId);
-            if (lastSeen == null) lastSeen = 0L;
-
-            JSONObject body = new JSONObject();
-            body.put("chatId", chatId);
-            body.put("since", lastSeen);
-
-            JSONObject obj = api.serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Chat/Messages"))
-                    .post(jsonBody(body)));
-
-            JSONArray messagesArray = obj.getJSONArray("messages");
-            List<EncryptedChatMessage> encryptedMessages = new ArrayList<>(messagesArray.length());
-            for (int i = 0; i < messagesArray.length(); i++)
-                encryptedMessages.add(new EncryptedChatMessage(messagesArray.getJSONObject(i)));
-
-            List<PlainChatMessage> decrypted;
-            try {
-                decrypted = EncryptedChatMessage.decrypt(OverloadedChatApi.this, encryptedMessages);
-            } catch (EncryptedChatMessage.DecryptionException ex) {
-                throw new IllegalStateException(ex);
-            }
-
-            ChatMessages remoteList = new ChatMessages(decrypted, new Chat(obj));
-            db.putMessages(remoteList);
-            return remoteList;
-        }), activity, remoteList -> {
-            if (list != null) {
-                list.addAll(0, remoteList); // This are newer, right?
-                callback.onRemoteMessages(list);
-            } else {
-                callback.onRemoteMessages(remoteList);
-            }
-        }, callback::onFailed);
+    @NonNull
+    public List<PlainChatMessage> getLocalMessages(int chatId) {
+        List<PlainChatMessage> msg = db.getMessages(chatId);
+        return msg == null ? Collections.emptyList() : msg;
     }
 
     public void getKeySync(@NonNull OverloadedUserAddress address) throws ExecutionException, InterruptedException {
@@ -303,11 +240,11 @@ public class OverloadedChatApi implements Closeable {
             JSONObject keyObj = obj.getJSONObject("key");
             SignalProtocolHelper.createSession(new OverloadedUserAddress(keyObj.getString("address")), Utils.parsePreKeyBundle(keyObj));
             return null;
-        }), "get-keys"));
+        }), "get-keys-" + address.toString()));
     }
 
     private void dispatchDecryptedMessage(int chatId, @NonNull PlainChatMessage msg) throws JSONException {
-        JSONObject obj = msg.toJson();
+        JSONObject obj = msg.toLocalJson();
         obj.put("chatId", chatId);
         api.dispatchLocalEvent(OverloadedApi.Event.Type.CHAT_MESSAGE, obj);
     }
@@ -319,16 +256,13 @@ public class OverloadedChatApi implements Closeable {
 
             PlainChatMessage msg;
             try {
-                msg = new EncryptedChatMessage(event.data).decrypt(this);
+                msg = new EncryptedChatMessage(event.data).decrypt(this, chatId);
             } catch (EncryptedChatMessage.DecryptionException ex) {
                 Log.e(TAG, "Failed decrypting message.", ex);
                 return;
             }
 
-            db.putMessage(chatId, msg);
-            db.updateLastMessage(chatId, msg);
             dispatchUnreadCountUpdate();
-
             dispatchDecryptedMessage(chatId, msg);
         }
     }
@@ -344,11 +278,6 @@ public class OverloadedChatApi implements Closeable {
 
     public int countTotalUnread() {
         return db.countTotalUnread();
-    }
-
-    @Nullable
-    public Long getLastSeen(int chatId) {
-        return db.getLastSeen(chatId);
     }
 
     @Nullable

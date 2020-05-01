@@ -10,7 +10,6 @@ import org.whispersystems.libsignal.IdentityKey;
 import org.whispersystems.libsignal.InvalidKeyException;
 import org.whispersystems.libsignal.ecc.Curve;
 import org.whispersystems.libsignal.ecc.ECPublicKey;
-import org.whispersystems.libsignal.protocol.CiphertextMessage;
 import org.whispersystems.libsignal.state.PreKeyBundle;
 import org.whispersystems.libsignal.state.PreKeyRecord;
 import org.whispersystems.libsignal.state.SignedPreKeyRecord;
@@ -76,21 +75,5 @@ public final class Utils {
     @NonNull
     static RequestBody jsonBody(@NonNull JSONObject obj) {
         return RequestBody.create(obj.toString().getBytes(), MediaType.get("application/json"));
-    }
-
-    @NonNull
-    public static String typeToString(int type) {
-        switch (type) {
-            case CiphertextMessage.WHISPER_TYPE:
-                return "WHISPER";
-            case CiphertextMessage.PREKEY_TYPE:
-                return "PREKEY";
-            case CiphertextMessage.SENDERKEY_TYPE:
-                return "SENDERKEY";
-            case CiphertextMessage.SENDERKEY_DISTRIBUTION_TYPE:
-                return "SENDERKEY_DISTRIBUTION";
-            default:
-                throw new IllegalArgumentException("Unknown type: " + type);
-        }
     }
 }

@@ -16,27 +16,20 @@ import java.util.Objects;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
 public class PlainChatMessage implements Filterable<NotFilterable> {
-    public final long id;
+    public final long rowId;
     public final String text;
     public final long timestamp;
     public final String from;
 
-    private PlainChatMessage(@NonNull JSONObject obj) throws JSONException {
-        id = obj.getLong("id");
-        text = obj.getString("text");
-        timestamp = obj.getLong("timestamp");
-        from = obj.getString("from");
-    }
-
     public PlainChatMessage(@NonNull Cursor cursor) {
-        id = cursor.getLong(cursor.getColumnIndex("id"));
+        rowId = cursor.getLong(cursor.getColumnIndex("rowid"));
         text = cursor.getString(cursor.getColumnIndex("text"));
         timestamp = cursor.getLong(cursor.getColumnIndex("timestamp"));
         from = cursor.getString(cursor.getColumnIndex("from"));
     }
 
-    public PlainChatMessage(long id, String text, long timestamp, String from) {
-        this.id = id;
+    public PlainChatMessage(long rowId, String text, long timestamp, String from) {
+        this.rowId = rowId;
         this.text = text;
         this.timestamp = timestamp;
         this.from = from;
@@ -45,7 +38,7 @@ public class PlainChatMessage implements Filterable<NotFilterable> {
     @Contract("_ -> new")
     @NonNull
     public static PlainChatMessage fromLocal(@NonNull JSONObject obj) throws JSONException {
-        return new PlainChatMessage(obj);
+        return new PlainChatMessage(obj.getLong("rowId"), obj.getString("text"), obj.getLong("timestamp"), obj.getString("from"));
     }
 
     @Override
@@ -53,18 +46,18 @@ public class PlainChatMessage implements Filterable<NotFilterable> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PlainChatMessage that = (PlainChatMessage) o;
-        return id == that.id;
+        return rowId == that.rowId;
     }
 
     @Override
     public int hashCode() {
-        return (int) (id ^ (id >>> 32));
+        return (int) (rowId ^ (rowId >>> 32));
     }
 
     @NonNull
-    public JSONObject toJson() throws JSONException {
+    public JSONObject toLocalJson() throws JSONException {
         JSONObject obj = new JSONObject();
-        obj.put("id", id);
+        obj.put("rowId", rowId);
         obj.put("text", text);
         obj.put("timestamp", timestamp);
         obj.put("from", from);

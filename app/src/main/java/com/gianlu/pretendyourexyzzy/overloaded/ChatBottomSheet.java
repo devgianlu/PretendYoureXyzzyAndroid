@@ -13,7 +13,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
@@ -43,9 +42,7 @@ import java.util.Locale;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
 import xyz.gianlu.pyxoverloaded.callback.ChatMessageCallback;
-import xyz.gianlu.pyxoverloaded.callback.ChatMessagesCallback;
 import xyz.gianlu.pyxoverloaded.model.Chat;
-import xyz.gianlu.pyxoverloaded.model.ChatMessages;
 import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
 
 public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomSheet.Update> implements OverloadedApi.EventListener {
@@ -128,30 +125,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         isLoading(false);
 
         chatApi = OverloadedApi.chat(requireContext());
-        chatApi.getMessages(payload.id, getActivity(), new ChatMessagesCallback() {
-            @Override
-            public void onRemoteMessages(@NonNull ChatMessages messages) {
-                update(Update.messages(messages));
-                if (!messages.isEmpty()) {
-                    chatApi.updateLastSeen(chatId(), messages.get(0));
-
-                    Fragment fragment = getParentFragment();
-                    if (fragment != null) fragment.onActivityResult(RC_REFRESH_LIST, 0, null);
-                }
-            }
-
-            @Override
-            public void onLocalMessages(@NonNull ChatMessages messages) {
-                update(Update.messages(messages));
-            }
-
-            @Override
-            public void onFailed(@NotNull Exception ex) {
-                Log.e(TAG, "Failed getting messages.", ex);
-                rmv.showError(R.string.failedLoading);
-            }
-        });
-
+        adapter.handleUpdate(Update.messages(chatApi.getLocalMessages(payload.id)));
         OverloadedApi.get().addEventListener(this);
         return true;
     }

@@ -20,7 +20,6 @@ import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
 import java.util.Comparator;
@@ -28,10 +27,8 @@ import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
-import xyz.gianlu.pyxoverloaded.callback.ChatMessagesCallback;
 import xyz.gianlu.pyxoverloaded.callback.ChatsCallback;
 import xyz.gianlu.pyxoverloaded.model.Chat;
-import xyz.gianlu.pyxoverloaded.model.ChatMessages;
 import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
 
 public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.EventListener {
@@ -132,22 +129,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
                 }
             }
 
-            chatApi.getMessages(chatId, getActivity(), new ChatMessagesCallback() {
-                @Override
-                public void onRemoteMessages(@NonNull ChatMessages messages) {
-                    itemChangedOrAdded(messages.chat);
-                }
-
-                @Override
-                public void onLocalMessages(@NonNull ChatMessages messages) {
-                    // We trust remote only here
-                }
-
-                @Override
-                public void onFailed(@NotNull Exception ex) {
-                    Log.e(TAG, "Failed getting messages.", ex);
-                }
-            });
+            // TODO: Create new chat for message
         }
 
         @Override
