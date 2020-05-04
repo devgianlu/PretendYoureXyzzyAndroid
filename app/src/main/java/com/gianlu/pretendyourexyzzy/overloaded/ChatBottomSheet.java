@@ -31,7 +31,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -165,11 +164,10 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
     }
 
     @Override
-    public void onEvent(@NonNull OverloadedApi.Event event) throws JSONException {
-        if (event.type == OverloadedApi.Event.Type.CHAT_MESSAGE) {
-            int chatId = event.data.getInt("chatId");
-            if (chatId() == chatId) {
-                PlainChatMessage msg = PlainChatMessage.fromLocal(event.data);
+    public void onEvent(@NonNull OverloadedApi.Event event) {
+        if (event.type == OverloadedApi.Event.Type.CHAT_MESSAGE && event.obj != null) {
+            PlainChatMessage msg = (PlainChatMessage) event.obj;
+            if (chatId() == msg.chatId) {
                 if (isVisible() && chatApi != null) chatApi.updateLastSeen(chatId(), msg);
                 update(Update.message(msg));
             }

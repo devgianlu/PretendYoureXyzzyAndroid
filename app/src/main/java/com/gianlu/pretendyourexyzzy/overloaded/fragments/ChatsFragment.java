@@ -20,8 +20,6 @@ import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
 
-import org.json.JSONException;
-
 import java.util.Comparator;
 import java.util.List;
 
@@ -48,9 +46,9 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
     }
 
     @Override
-    public void onEvent(@NonNull OverloadedApi.Event event) throws JSONException {
-        if (event.type == OverloadedApi.Event.Type.CHAT_MESSAGE) {
-            int chatId = event.data.getInt("chatId");
+    public void onEvent(@NonNull OverloadedApi.Event event) {
+        if (event.type == OverloadedApi.Event.Type.CHAT_MESSAGE && event.obj != null) {
+            int chatId = ((PlainChatMessage) event.obj).chatId;
             if (adapter != null) adapter.refresh(chatId);
         }
     }
@@ -124,7 +122,26 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
                 }
             }
 
-            // TODO: Create new chat for message
+            chatApi.listChats(null, new ChatsCallback() {
+                @Override
+                public void onRemoteChats(@NonNull List<Chat> chats) {
+                    for (Chat chat : chats) {
+                        if (chat.id == chatId) {
+                            itemChangedOrAdded(chat);
+                            return;
+                        }
+                    }
+                }
+
+                @Override
+                public void onLocalChats(@NonNull List<Chat> chats) {
+                }
+
+                @Override
+                public void onFailed(@NonNull Exception ex) {
+                    Log.e(TAG, "Failed getting chats to refresh adapter.", ex);
+                }
+            });
         }
 
         @Override

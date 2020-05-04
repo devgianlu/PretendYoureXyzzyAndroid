@@ -167,16 +167,22 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
 
         switch (event.type) {
             case USER_JOINED_SERVER:
-                friendsAdapter.userJoined(event.data.getString("nick"), event.data.getString("server"));
+                if (event.data != null)
+                    friendsAdapter.userJoined(event.data.getString("nick"), event.data.getString("server"));
                 break;
             case USER_LEFT_SERVER:
-                friendsAdapter.userLeft(event.data.getString("nick"));
+                if (event.data != null)
+                    friendsAdapter.userLeft(event.data.getString("nick"));
                 break;
             case ADDED_FRIEND:
             case REMOVED_AS_FRIEND:
             case REMOVED_FRIEND:
             case ADDED_AS_FRIEND:
-                friendsAdapter.update(event.data.getString("username"));
+                String username = (String) event.obj;
+                if (username == null && event.data != null)
+                    username = event.data.getString("username");
+
+                if (username != null) friendsAdapter.update(username);
                 break;
         }
     }

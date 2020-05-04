@@ -26,6 +26,7 @@ import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.auth.UserInfo;
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,13 +46,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 
 import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okhttp3.internal.Util;
+import okio.BufferedSink;
+import okio.GzipSink;
+import okio.Okio;
 import xyz.gianlu.pyxoverloaded.callback.BooleanCallback;
 import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
 import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
@@ -73,7 +80,7 @@ public class OverloadedApi {
     private static final String TAG = OverloadedApi.class.getSimpleName();
     private static OverloadedChatApi chatInstance;
     final ExecutorService executorService = Executors.newCachedThreadPool();
-    private final OkHttpClient client = new OkHttpClient();
+    private final OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new GzipRequestInterceptor()).build();
     private final WebSocketHolder webSocket = new WebSocketHolder();
     private FirebaseUser user;
     private volatile OverloadedToken lastToken;
@@ -412,7 +419,7 @@ public class OverloadedApi {
                     .post(singletonJsonBody("username", username)));
 
             Map<String, FriendStatus> map = friendsStatusCached = FriendStatus.parse(obj);
-            dispatchLocalEvent(Event.Type.REMOVED_FRIEND, CommonUtils.singletonJsonObject("username", username));
+            dispatchLocalEvent(Event.Type.REMOVED_FRIEND, username);
             return map;
         }), activity, callback::onFriendsStatus, callback::onFailed);
     }
@@ -424,8 +431,7 @@ public class OverloadedApi {
                     .post(singletonJsonBody("username", username)));
 
             Map<String, FriendStatus> map = friendsStatusCached = FriendStatus.parse(obj);
-            FriendStatus status = map.get(username);
-            if (status != null) dispatchLocalEvent(Event.Type.ADDED_FRIEND, status.toJSON());
+            dispatchLocalEvent(Event.Type.ADDED_FRIEND, username);
             return map;
         }), activity, callback::onFriendsStatus, callback::onFailed);
     }
@@ -442,8 +448,8 @@ public class OverloadedApi {
         }, callback::onFailed);
     }
 
-    void dispatchLocalEvent(@NonNull Event.Type type, @NonNull JSONObject data) {
-        webSocket.dispatchEvent(new Event(type, data));
+    void dispatchLocalEvent(@NonNull Event.Type type, @NonNull Object data) {
+        webSocket.dispatchEvent(new Event(type, null, data));
     }
 
     public void addEventListener(@NonNull EventListener listener) {
@@ -504,10 +510,21 @@ public class OverloadedApi {
     public static class Event {
         public final Type type;
         public final JSONObject data;
+        public final Object obj;
 
-        Event(@NonNull Type type, @NonNull JSONObject data) {
+        Event(@NonNull Type type, @Nullable JSONObject data, @Nullable Object obj) {
             this.type = type;
             this.data = data;
+            this.obj = obj;
+
+            if (obj == null && data == null)
+                throw new IllegalStateException();
+
+            if (!type.local && obj != null)
+                throw new IllegalStateException();
+
+            if (type.local && data != null)
+                throw new IllegalStateException();
         }
 
         @NonNull
@@ -517,13 +534,15 @@ public class OverloadedApi {
         }
 
         public enum Type {
-            USER_LEFT_SERVER("uls"), USER_JOINED_SERVER("ujs"), ENCRYPTED_CHAT_MESSAGE("ecm"),
-            PING("p"), SHARE_KEYS_LOW("skl"), CHAT_MESSAGE("cm"),
-            ADDED_FRIEND("adf"), REMOVED_FRIEND("rmf"), ADDED_AS_FRIEND("adaf"), REMOVED_AS_FRIEND("rmaf");
+            USER_LEFT_SERVER(false, "uls"), USER_JOINED_SERVER(false, "ujs"), ENCRYPTED_CHAT_MESSAGE(false, "ecm"),
+            PING(false, "p"), SHARE_KEYS_LOW(false, "skl"), CHAT_MESSAGE(true, "cm"),
+            ADDED_FRIEND(true, "adf"), REMOVED_FRIEND(true, "rmf"), ADDED_AS_FRIEND(false, "adaf"), REMOVED_AS_FRIEND(false, "rmaf");
 
+            private final boolean local;
             private final String code;
 
-            Type(@NonNull String code) {
+            Type(boolean local, @NonNull String code) {
+                this.local = local;
                 this.code = code;
             }
 
@@ -588,7 +607,7 @@ public class OverloadedApi {
                 return;
             }
 
-            dispatchEvent(new Event(type, data == null ? new JSONObject() : data));
+            dispatchEvent(new Event(type, data == null ? new JSONObject() : data, null));
         }
 
         void close() {
@@ -686,6 +705,46 @@ public class OverloadedApi {
 
         boolean expired() {
             return expiration <= System.currentTimeMillis();
+        }
+    }
+
+    private static class GzipRequestInterceptor implements Interceptor {
+        @NotNull
+        @Override
+        public Response intercept(Chain chain) throws IOException {
+            Request originalRequest = chain.request();
+            if (originalRequest.body() == null || originalRequest.header("Content-Encoding") != null) {
+                return chain.proceed(originalRequest);
+            }
+
+            Request compressedRequest = originalRequest.newBuilder()
+                    .header("Content-Encoding", "gzip")
+                    .method(originalRequest.method(), gzip(originalRequest.body()))
+                    .build();
+            return chain.proceed(compressedRequest);
+        }
+
+        @NotNull
+        @Contract("_ -> new")
+        private RequestBody gzip(RequestBody body) {
+            return new RequestBody() {
+                @Override
+                public MediaType contentType() {
+                    return body.contentType();
+                }
+
+                @Override
+                public long contentLength() {
+                    return -1; // We don't know the compressed length in advance!
+                }
+
+                @Override
+                public void writeTo(@NotNull BufferedSink sink) throws IOException {
+                    BufferedSink gzipSink = Okio.buffer(new GzipSink(sink));
+                    body.writeTo(gzipSink);
+                    gzipSink.close();
+                }
+            };
         }
     }
 }

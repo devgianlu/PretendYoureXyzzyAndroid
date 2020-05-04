@@ -36,9 +36,7 @@ public class ChatDatabaseHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) { // FIXME: Could use a better strategy
-        db.execSQL("DELETE FROM chats");
-        db.execSQL("DELETE FROM messages");
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
     @Override
@@ -52,7 +50,7 @@ public class ChatDatabaseHelper extends SQLiteOpenHelper {
         db.beginTransaction();
         try (Cursor cursor = db.rawQuery("SELECT rowid, * FROM messages WHERE chat_id=? ORDER BY timestamp DESC LIMIT 1", new String[]{String.valueOf(chatId)})) {
             if (cursor == null || !cursor.moveToNext()) return null;
-            return new PlainChatMessage(cursor);
+            return new PlainChatMessage(chatId, cursor);
         } finally {
             db.endTransaction();
         }
@@ -71,7 +69,7 @@ public class ChatDatabaseHelper extends SQLiteOpenHelper {
 
             ChatMessages list = new ChatMessages(128, chat);
             do {
-                list.add(new PlainChatMessage(cursor));
+                list.add(new PlainChatMessage(chatId, cursor));
             } while (cursor.moveToNext());
             return list;
         } finally {
@@ -92,7 +90,7 @@ public class ChatDatabaseHelper extends SQLiteOpenHelper {
 
             ChatMessages list = new ChatMessages(128, chat);
             do {
-                list.add(new PlainChatMessage(cursor));
+                list.add(new PlainChatMessage(chatId, cursor));
             } while (cursor.moveToNext());
             return list;
         } finally {
@@ -112,7 +110,7 @@ public class ChatDatabaseHelper extends SQLiteOpenHelper {
             values.put("`from`", from);
             long rowId = db.insertWithOnConflict("messages", null, values, SQLiteDatabase.CONFLICT_IGNORE);
             db.setTransactionSuccessful();
-            return new PlainChatMessage(rowId, text, timestamp, from);
+            return new PlainChatMessage(chatId, rowId, text, timestamp, from);
         } finally {
             db.endTransaction();
         }

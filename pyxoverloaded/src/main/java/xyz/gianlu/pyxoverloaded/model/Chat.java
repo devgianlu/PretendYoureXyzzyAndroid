@@ -8,11 +8,9 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.Filterable;
 import com.gianlu.commonutils.adapters.NotFilterable;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -35,13 +33,6 @@ public class Chat implements Filterable<NotFilterable> {
         id = cursor.getInt(cursor.getColumnIndex("id"));
         address = cursor.getString(cursor.getColumnIndex("address"));
         participants = Arrays.asList(cursor.getString(cursor.getColumnIndex("oneParticipant")), cursor.getString(cursor.getColumnIndex("otherParticipant")));
-    }
-
-    @NonNull
-    public static List<Chat> parse(@NonNull JSONArray array) throws JSONException {
-        List<Chat> chats = new ArrayList<>(array.length());
-        for (int i = 0; i < array.length(); i++) chats.add(new Chat(array.getJSONObject(i)));
-        return chats;
     }
 
     @NonNull

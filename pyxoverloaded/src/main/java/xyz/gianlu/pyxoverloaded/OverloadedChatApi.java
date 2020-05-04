@@ -85,8 +85,8 @@ public class OverloadedChatApi implements Closeable {
                 for (int j = 0; j < messagesArray.length(); j++)
                     encryptedMessages.add(new EncryptedChatMessage(messagesArray.getJSONObject(j)));
 
-                EncryptedChatMessage.decrypt(OverloadedChatApi.this, chatId, encryptedMessages);
-                // TODO: Dispatch messages
+                List<PlainChatMessage> messages = EncryptedChatMessage.decrypt(OverloadedChatApi.this, chatId, encryptedMessages);
+                for (PlainChatMessage msg : messages) dispatchDecryptedMessage(msg);
             }
 
             return summary.length();
@@ -142,7 +142,7 @@ public class OverloadedChatApi implements Closeable {
     }
 
     @WorkerThread
-    private boolean handleMismatchedDevices(@NonNull Chat chat, @NonNull JSONObject obj) throws JSONException, ExecutionException, InterruptedException {
+    private boolean handleMismatchedDevices(@NonNull Chat chat, @NonNull JSONObject obj) throws JSONException, InterruptedException {
         JSONArray extra = obj.optJSONArray("extra");
         if (extra == null) return false;
 
@@ -152,8 +152,15 @@ public class OverloadedChatApi implements Closeable {
         JSONArray missing = obj.optJSONArray("missing");
         if (missing == null) return false;
 
-        for (int i = 0; i < missing.length(); i++)
-            getKeySync(chat.deviceAddress(missing.getInt(i)));
+        for (int i = 0; i < missing.length(); i++) {
+            OverloadedUserAddress address = chat.deviceAddress(missing.getInt(i));
+
+            try {
+                getKeySync(address);
+            } catch (ExecutionException ex) {
+                Log.e(TAG, "Failed getting prekey for " + address, ex);
+            }
+        }
 
         return true;
     }
@@ -166,6 +173,7 @@ public class OverloadedChatApi implements Closeable {
             Chat chat = db.getChat(chatId);
             if (chat == null) throw new IllegalStateException();
 
+            Exception lastEx = null;
             for (int i = 0; i < 3; i++) {
                 List<OutgoingMessageEnvelope> outgoing = SignalProtocolHelper.encrypt(chat, text);
                 JSONArray encryptedMessages = new JSONArray();
@@ -183,6 +191,8 @@ public class OverloadedChatApi implements Closeable {
 
                     return db.putMessage(chatId, text, System.currentTimeMillis(), data.username);
                 } catch (OverloadedApi.OverloadedServerException ex) {
+                    lastEx = ex;
+
                     if (ex.code == 400 && ex.obj != null) {
                         if (!handleMismatchedDevices(chat, ex.obj))
                             throw ex;
@@ -190,15 +200,10 @@ public class OverloadedChatApi implements Closeable {
                 }
             }
 
-            throw new IllegalStateException();
+            throw lastEx;
         }), activity, message -> {
             callback.onMessage(message);
-
-            try {
-                dispatchDecryptedMessage(chatId, message);
-            } catch (JSONException ex) {
-                Log.e(TAG, "Failed dispatching message sent.", ex);
-            }
+            dispatchDecryptedMessage(message);
         }, callback::onFailed);
     }
 
@@ -243,15 +248,13 @@ public class OverloadedChatApi implements Closeable {
         }), "get-keys-" + address.toString()));
     }
 
-    private void dispatchDecryptedMessage(int chatId, @NonNull PlainChatMessage msg) throws JSONException {
-        JSONObject obj = msg.toLocalJson();
-        obj.put("chatId", chatId);
-        api.dispatchLocalEvent(OverloadedApi.Event.Type.CHAT_MESSAGE, obj);
+    private void dispatchDecryptedMessage(@NonNull PlainChatMessage msg) {
+        api.dispatchLocalEvent(OverloadedApi.Event.Type.CHAT_MESSAGE, msg);
     }
 
     @WorkerThread
     void handleEvent(@NonNull OverloadedApi.Event event) throws JSONException {
-        if (event.type == OverloadedApi.Event.Type.ENCRYPTED_CHAT_MESSAGE) {
+        if (event.type == OverloadedApi.Event.Type.ENCRYPTED_CHAT_MESSAGE && event.data != null) {
             int chatId = event.data.getInt("chatId");
 
             PlainChatMessage msg;
@@ -263,7 +266,7 @@ public class OverloadedChatApi implements Closeable {
             }
 
             dispatchUnreadCountUpdate();
-            dispatchDecryptedMessage(chatId, msg);
+            dispatchDecryptedMessage(msg);
         }
     }
 

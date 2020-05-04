@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import com.gianlu.commonutils.adapters.Filterable;
 import com.gianlu.commonutils.adapters.NotFilterable;
 
-import org.jetbrains.annotations.Contract;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -16,29 +15,26 @@ import java.util.Objects;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
 public class PlainChatMessage implements Filterable<NotFilterable> {
+    public final int chatId;
     public final long rowId;
     public final String text;
     public final long timestamp;
     public final String from;
 
-    public PlainChatMessage(@NonNull Cursor cursor) {
+    public PlainChatMessage(int chatId, @NonNull Cursor cursor) {
+        this.chatId = chatId;
         rowId = cursor.getLong(cursor.getColumnIndex("rowid"));
         text = cursor.getString(cursor.getColumnIndex("text"));
         timestamp = cursor.getLong(cursor.getColumnIndex("timestamp"));
         from = cursor.getString(cursor.getColumnIndex("from"));
     }
 
-    public PlainChatMessage(long rowId, String text, long timestamp, String from) {
+    public PlainChatMessage(int chatId, long rowId, String text, long timestamp, String from) {
+        this.chatId = chatId;
         this.rowId = rowId;
         this.text = text;
         this.timestamp = timestamp;
         this.from = from;
-    }
-
-    @Contract("_ -> new")
-    @NonNull
-    public static PlainChatMessage fromLocal(@NonNull JSONObject obj) throws JSONException {
-        return new PlainChatMessage(obj.getLong("rowId"), obj.getString("text"), obj.getLong("timestamp"), obj.getString("from"));
     }
 
     @Override

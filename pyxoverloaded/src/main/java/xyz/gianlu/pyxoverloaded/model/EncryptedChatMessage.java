@@ -4,7 +4,6 @@ import android.util.Base64;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +19,7 @@ import org.whispersystems.libsignal.NoSessionException;
 import org.whispersystems.libsignal.UntrustedIdentityException;
 import org.whispersystems.libsignal.protocol.CiphertextMessage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
@@ -60,15 +60,19 @@ public class EncryptedChatMessage {
         }
     }
 
+    @NotNull
     @WorkerThread
-    public static void decrypt(@NonNull OverloadedChatApi api, int chatId, @NonNull List<EncryptedChatMessage> encrypted) {
+    public static List<PlainChatMessage> decrypt(@NonNull OverloadedChatApi api, int chatId, @NonNull List<EncryptedChatMessage> encrypted) {
+        List<PlainChatMessage> list = new ArrayList<>(encrypted.size());
         for (EncryptedChatMessage msg : encrypted) {
             try {
-                msg.decrypt(api, chatId);
+                list.add(msg.decrypt(api, chatId));
             } catch (DecryptionException ex) {
                 Log.e(TAG, String.format("Failed decrypting message %s.", msg), ex);
             }
         }
+
+        return list;
     }
 
     @WorkerThread
@@ -95,10 +99,6 @@ public class EncryptedChatMessage {
     public static class DecryptionException extends Throwable {
         DecryptionException(@NonNull Throwable cause) {
             super(cause);
-        }
-
-        DecryptionException(@Nullable String message, @Nullable Throwable cause) {
-            super(message, cause);
         }
     }
 }
