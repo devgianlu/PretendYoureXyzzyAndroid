@@ -24,7 +24,6 @@ import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
 public class ChatDatabaseHelper extends SQLiteOpenHelper {
     private final Map<Integer, Chat> chatsCache = new HashMap<>(64);
     private final Map<Integer, Long> lastSeenCache = new HashMap<>(64);
-    private final Map<Integer, PlainChatMessage> lastMessageCache = new HashMap<>(64);
 
     ChatDatabaseHelper(Context context) {
         super(context, "chat.db", null, 1);

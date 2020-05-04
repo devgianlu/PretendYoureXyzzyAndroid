@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
@@ -125,7 +126,14 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         isLoading(false);
 
         chatApi = OverloadedApi.chat(requireContext());
-        adapter.handleUpdate(Update.messages(chatApi.getLocalMessages(payload.id)));
+        List<PlainChatMessage> messages = chatApi.getLocalMessages(payload.id);
+        if (!messages.isEmpty()) {
+            chatApi.updateLastSeen(chatId(), messages.get(0));
+            Fragment fragment = getParentFragment();
+            if (fragment != null) fragment.onActivityResult(RC_REFRESH_LIST, 0, null);
+        }
+
+        adapter.handleUpdate(Update.messages(messages));
         OverloadedApi.get().addEventListener(this);
         return true;
     }

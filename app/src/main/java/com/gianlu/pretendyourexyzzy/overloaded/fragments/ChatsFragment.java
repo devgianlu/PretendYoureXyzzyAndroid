@@ -51,10 +51,6 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
     public void onEvent(@NonNull OverloadedApi.Event event) throws JSONException {
         if (event.type == OverloadedApi.Event.Type.CHAT_MESSAGE) {
             int chatId = event.data.getInt("chatId");
-            PlainChatMessage msg = PlainChatMessage.fromLocal(event.data);
-            if (lastChatSheet != null && lastChatSheet.isVisible() && lastChatSheet.getSetupPayload().id == chatId)
-                chatApi.updateLastSeen(chatId, msg);
-
             if (adapter != null) adapter.refresh(chatId);
         }
     }
@@ -62,7 +58,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == ChatBottomSheet.RC_REFRESH_LIST) {
-            if (adapter != null && lastChatSheet != null && lastChatSheet.isVisible())
+            if (adapter != null && lastChatSheet != null && lastChatSheet.isAdded())
                 adapter.refresh(lastChatSheet.getSetupPayload().id);
             return;
         }
@@ -102,7 +98,6 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         });
 
         OverloadedApi.get().addEventListener(this);
-
         return rmv;
     }
 
