@@ -5,6 +5,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,7 +29,6 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.typography.FontsManager;
 import com.gianlu.pretendyourexyzzy.R;
@@ -38,6 +38,7 @@ import com.google.android.material.card.MaterialCardView;
 
 public class GameCardView extends MaterialCardView {
     public static final int WIDTH_DIP = 156;
+    private static final String TAG = GameCardView.class.getSimpleName();
     public final ImageButton primaryAction;
     public final SuperTextView text;
     private final CardListener listener;
@@ -82,7 +83,7 @@ public class GameCardView extends MaterialCardView {
         setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, getResources().getDisplayMetrics()));
 
         text = findViewById(R.id.pyxCard_text);
-        FontsManager.set(FontsManager.ROBOTO_MEDIUM, text);
+        FontsManager.set(R.font.roboto_medium, text);
 
         watermark = findViewById(R.id.pyxCard_watermark);
         numPick = findViewById(R.id.pyxCard_numPick);
@@ -186,7 +187,7 @@ public class GameCardView extends MaterialCardView {
                 text.setTextSize(13);
                 text.setTextColor(ContextCompat.getColor(getContext(), R.color.red));
                 text.setText(R.string.failedLoadingImage);
-                Logging.log(ex);
+                Log.e(TAG, "Failed loading image.", ex);
                 return false;
             }
 

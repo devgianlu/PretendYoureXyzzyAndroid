@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,7 +24,7 @@ import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.drawer.BaseDrawerItem;
 import com.gianlu.commonutils.drawer.DrawerManager;
-import com.gianlu.commonutils.logging.Logging;
+import com.gianlu.commonutils.logs.LogsHelper;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
@@ -53,6 +54,7 @@ import org.json.JSONException;
 import java.util.Objects;
 
 public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction {
+    private static final String TAG = MainActivity.class.getSimpleName();
     private final Object fragmentsLock = new Object();
     private BottomNavigationManager navigation;
     private NamesFragment namesFragment;
@@ -91,7 +93,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
-            Toaster.with(this).message(R.string.failedLoading).ex(ex).show();
             startActivity(new Intent(this, LoadingActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
             return;
@@ -402,7 +403,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
                 transaction.commit();
             } catch (IllegalStateException ex) {
-                Logging.log("Failed fragments transaction on left game.", ex);
+                Log.d(TAG, "Failed fragments transaction on left game.", ex);
             }
         }
     }
@@ -434,12 +435,14 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 @Override
                 public void onException(@NonNull Exception ex) {
                     dismissDialog();
-                    Toaster.with(MainActivity.this).message(R.string.failedChangingOptions).ex(ex).show();
+                    Log.e(TAG, "Failed changing game options.", ex);
+                    Toaster.with(MainActivity.this).message(R.string.failedChangingOptions).show();
                 }
             });
         } catch (JSONException ex) {
             dismissDialog();
-            Toaster.with(this).message(R.string.failedChangingOptions).ex(ex).show();
+            Log.e(TAG, "Failed parsing game options.", ex);
+            Toaster.with(this).message(R.string.failedChangingOptions).show();
         }
     }
 
@@ -469,7 +472,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 startActivity(new Intent(this, PreferenceActivity.class));
                 return true;
             case REPORT:
-                Logging.sendEmail(this, null);
+                LogsHelper.sendEmail(this, null);
                 return true;
         }
 

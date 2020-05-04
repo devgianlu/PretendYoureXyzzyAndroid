@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,7 +19,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.NamesAdapter;
@@ -36,6 +36,7 @@ import org.json.JSONException;
 import java.util.List;
 
 public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>, NamesAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener {
+    private static final String TAG = NamesFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
     private int names = -1;
     private RegisteredPyx pyx;
@@ -111,7 +112,6 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
-            Logging.log(ex);
             rmv.showError(R.string.failedLoading);
             return rmv;
         }
@@ -145,7 +145,6 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
         });
 
         pyx.request(PyxRequests.getNamesList(), null, this);
-
         return rmv;
     }
 
@@ -172,7 +171,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
 
     @Override
     public void onException(@NonNull Exception ex) {
-        Logging.log(ex);
+        Log.e(TAG, "Failed loading names.", ex);
         if (!PyxException.solveNotRegistered(getContext(), ex))
             rmv.showError(R.string.failedLoading_reason, ex.getMessage());
     }

@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.activities.cardcastdeck;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.MessageView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.Cardcast;
@@ -82,9 +82,11 @@ public class InfoFragment extends FragmentWithDialog implements Cardcast.OnResul
         blackCards.setText(String.valueOf(result.calls));
     }
 
+    private static final String TAG = InfoFragment.class.getSimpleName();
+
     @Override
     public void onException(@NonNull Exception ex) {
-        Logging.log(ex);
+        Log.e(TAG, "Failed loading cards info.", ex);
         loading.setVisibility(View.GONE);
         container.setVisibility(View.GONE);
         message.error(R.string.failedLoading_reason, ex.getMessage());

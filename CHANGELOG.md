@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.3] - 28-04-2020
+### Changed
+- Using Android logging
+- Allow app to be moved to the external storage
+- Updated third-part libraries
+
+
+## [3.1.2] - 05-02-2020
+### Fixed
+- Fixed rounds played event
+- Fixed crash reporting and analytics (Google Play only)
+
+
+## [3.1.1] - 30-01-2020
+### Fixed
+- Fixed crash when opening app for the first time
+
+
+## [3.1.0] - 29-01-2020
+### Added
+- Google Play Games integration
+
+### Fixed
+- Fixed payments being refunded automatically
+
+
 ## [3.0.3] - 26-12-2019
 ### Changed
 - Fixed crash with invalid SSL certificates

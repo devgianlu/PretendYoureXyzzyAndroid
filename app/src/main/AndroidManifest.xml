@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.gianlu.pretendyourexyzzy">
+    package="com.gianlu.pretendyourexyzzy"
+    android:installLocation="auto">
 
     <!-- ... -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -117,11 +118,6 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.FullDark" />
 
-        <!-- Logs activity -->
-        <activity
-            android:name="com.gianlu.commonutils.logging.LogsActivity"
-            android:theme="@style/AppTheme.FullDark" />
-
         <!-- GameRound images provider -->
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -131,17 +127,6 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
-        </provider>
-
-        <!-- Logs provider -->
-        <provider
-            android:name="com.gianlu.commonutils.logging.LogsProvider"
-            android:authorities="com.gianlu.pretendyourexyzzy.logs"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/logs_paths" />
         </provider>
     </application>
 </manifest>

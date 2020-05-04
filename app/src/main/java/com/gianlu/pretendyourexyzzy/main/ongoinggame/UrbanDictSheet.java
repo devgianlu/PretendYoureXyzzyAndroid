@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.main.ongoinggame;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ import com.gianlu.pretendyourexyzzy.api.urbandictionary.UrbanDictApi;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> implements DefinitionsAdapter.Listener {
+    private static final String TAG = UrbanDictSheet.class.getSimpleName();
     private RecyclerView list;
     private MessageView message;
 
@@ -55,7 +57,8 @@ public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> 
 
             @Override
             public void onException(@NonNull Exception ex) {
-                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading).ex(ex));
+                Log.e(TAG, "Failed getting definition.", ex);
+                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
                 dismissAllowingStateLoss();
             }
         });
@@ -94,7 +97,7 @@ public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> 
         try {
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(definition.permalink)));
         } catch (ActivityNotFoundException ex) {
-            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.missingWebBrowser).ex(ex));
+            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.missingWebBrowser));
         }
     }
 }

@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.api;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -9,7 +10,6 @@ import androidx.annotation.Nullable;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.ThisApplication;
@@ -40,6 +40,7 @@ import okhttp3.ResponseBody;
 import okhttp3.internal.Util;
 
 public class RegisteredPyx extends FirstLoadedPyx {
+    private static final String TAG = RegisteredPyx.class.getSimpleName();
     private final User user;
     private final PollingThread pollingThread;
 
@@ -86,7 +87,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
 
             @Override
             public void onException(@NonNull Exception ex) {
-                Logging.log(ex);
+                Log.e(TAG, "Failed logging out.", ex);
             }
         });
 
@@ -120,7 +121,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
                         try {
                             requestSync(PyxRequests.addCardcastDeck(gid, code));
                         } catch (JSONException | PyxException | IOException ex) {
-                            Logging.log(ex);
+                            Log.e(TAG, "Failed adding cardcast decks.", ex);
                             failed.add(code);
                         }
                     }
@@ -201,7 +202,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
                 } catch (IOException | JSONException | PyxException ex) {
                     dispatchEx(ex);
                 } catch (IllegalArgumentException ex) {
-                    Logging.log(String.format("IAE! {server: %s}", server.url), ex);
+                    Log.w(TAG, String.format("IAE! {server: %s}", server.url), ex);
                     Bundle bundle = new Bundle();
                     bundle.putString("server", server.url.toString());
                     bundle.putString("msg", ex.getMessage());
@@ -222,7 +223,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
                 handler.post(null, new NotifyException());
             }
 
-            Logging.log(ex);
+            Log.w(TAG, "Polling exception.", ex);
         }
 
         public void addListener(@NonNull OnEventListener listener) {

@@ -5,6 +5,7 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -19,7 +20,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
-import com.gianlu.commonutils.logging.Logging;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.preferences.Prefs;
@@ -60,6 +60,7 @@ import me.toptas.fancyshowcase.FocusShape;
 
 public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener {
     private static final int GOOGLE_SIGN_IN_CODE = 3;
+    private static final String TAG = LoadingActivity.class.getSimpleName();
     private Intent goTo;
     private boolean finished = false;
     private ProgressBar loading;
@@ -135,8 +136,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                         if (Objects.equals(pair.key(), "game")) {
                             try {
                                 launchGame = new GamePermalink(Integer.parseInt(pair.value("")), new JSONObject()); // A bit hacky
-                            } catch (NumberFormatException ex) {
-                                Logging.log(ex);
+                            } catch (NumberFormatException ignored) {
                             }
                         } else if (Objects.equals(pair.key(), "password")) {
                             launchGamePassword = pair.value("");
@@ -162,7 +162,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
             @Override
             public void onException(@NonNull Exception ex) {
-                Logging.log(ex);
+                Log.e(TAG, "Failed loading welcome message.", ex);
                 welcomeMessage.setVisibility(View.GONE);
             }
         });
@@ -174,7 +174,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private void googleSignedIn(GoogleSignInAccount account) {
         if (account == null) return;
 
-        Logging.log("Successfully logged in Google Play as " + Utils.getAccountName(account), false);
+        Log.i(TAG, "Successfully logged in Google Play as " + Utils.getAccountName(account));
     }
 
     private void signInSilently() {
@@ -201,6 +201,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == GOOGLE_SIGN_IN_CODE) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            if (result == null) return;
+
             if (result.isSuccess()) {
                 googleSignedIn(result.getSignInAccount());
             } else {
@@ -209,7 +211,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
                 String msg = result.getStatus().getStatusMessage();
                 if (msg != null && !msg.isEmpty())
-                    Toaster.with(this).message(msg).error(false).show();
+                    Toaster.with(this).message(msg).show();
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
@@ -299,7 +301,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
                 @Override
                 public void onException(@NonNull Exception ex) {
-                    Logging.log(ex);
+                    Log.e(TAG, "Failed registering on server.", ex);
 
                     loading.setVisibility(View.GONE);
                     register.setVisibility(View.VISIBLE);
@@ -324,7 +326,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                         }
                     }
 
-                    Toaster.with(LoadingActivity.this).message(R.string.failedLoading).ex(ex).show();
+                    Log.e(TAG, "Failed registering user on server.", ex);
+                    Toaster.with(LoadingActivity.this).message(R.string.failedLoading).show();
                 }
             });
         });
@@ -359,7 +362,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         }
 
-        Toaster.with(this).message(R.string.failedLoading).ex(ex).show();
+        Log.e(TAG, "Failed loading server.", ex);
+        Toaster.with(this).message(R.string.failedLoading).show();
         changeServerDialog(false);
     }
 
@@ -401,6 +405,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     @Override
     protected void onResume() {
         super.onResume();
-        GPGamesHelper.setPopupView(this, (View) register.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        if (register != null)
+            GPGamesHelper.setPopupView(this, (View) register.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
     }
 }

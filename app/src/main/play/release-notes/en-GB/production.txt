@@ -1,3 +1,4 @@
 ### Changed
-- Fixed crash with invalid SSL certificates
-- Fixed crash due to invalid dialog
+- Using Android logging
+- Allow app to be moved to the external storage
+- Updated third-part libraries
