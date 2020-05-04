@@ -97,7 +97,7 @@ public final class DbSignalStore implements SignalProtocolStore {
             values.put("deviceId", address.getDeviceId());
             values.put("serialized", identityKey.serialize());
 
-            long result = db.insertWithOnConflict("identityKeys", null, values, SQLiteDatabase.CONFLICT_IGNORE);
+            long result = db.insertWithOnConflict("identityKeys", null, values, SQLiteDatabase.CONFLICT_REPLACE);
             db.setTransactionSuccessful();
             return result != -1;
         } finally {

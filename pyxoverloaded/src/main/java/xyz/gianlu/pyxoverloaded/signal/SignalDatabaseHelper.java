@@ -27,10 +27,10 @@ public final class SignalDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(@NotNull SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS preKeys (id INTEGER, serialized BLOB)");
-        db.execSQL("CREATE TABLE IF NOT EXISTS signedPreKeys (id INTEGER, serialized BLOB)");
-        db.execSQL("CREATE TABLE IF NOT EXISTS identityKeys (name TEXT, deviceId INTEGER, serialized BLOB)");
-        db.execSQL("CREATE TABLE IF NOT EXISTS sessions (name TEXT, deviceId INTEGER, serialized BLOB)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS preKeys (id INTEGER NOT NULL UNIQUE PRIMARY KEY, serialized BLOB NOT NULL)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS signedPreKeys (id INTEGER NOT NULL UNIQUE PRIMARY KEY, serialized BLOB NOT NULL)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS identityKeys (name TEXT NOT NULL, deviceId INTEGER NOT NULL, serialized BLOB NOT NULL, PRIMARY KEY (name, deviceId))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS sessions (name TEXT NOT NULL, deviceId INTEGER NOT NULL, serialized BLOB NOT NULL, PRIMARY KEY (name, deviceId))");
     }
 
     @Override

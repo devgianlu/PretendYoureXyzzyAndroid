@@ -21,10 +21,8 @@ import org.whispersystems.libsignal.UntrustedIdentityException;
 import org.whispersystems.libsignal.protocol.CiphertextMessage;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
-import xyz.gianlu.pyxoverloaded.signal.DbSignalStore;
 import xyz.gianlu.pyxoverloaded.signal.OverloadedUserAddress;
 import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
@@ -76,15 +74,6 @@ public class EncryptedChatMessage {
     @WorkerThread
     @NonNull
     public PlainChatMessage decrypt(@NonNull OverloadedChatApi api, int chatId) throws DecryptionException {
-        if (!DbSignalStore.get().containsSession(sourceAddress.toSignalAddress())) {
-            try {
-                api.getKeySync(sourceAddress);
-                Log.d(TAG, "Retrieved key for " + sourceAddress);
-            } catch (ExecutionException | InterruptedException ex) {
-                throw new DecryptionException("Failed obtaining keys.", ex);
-            }
-        }
-
         String text;
         try {
             text = SignalProtocolHelper.decrypt(this);
