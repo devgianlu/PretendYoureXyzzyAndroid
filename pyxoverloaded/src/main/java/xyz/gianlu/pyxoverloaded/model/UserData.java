@@ -34,12 +34,8 @@ public class UserData {
                 '}';
     }
 
-    public boolean hasUsername() {
-        return username != null && !username.isEmpty();
-    }
-
     public enum PurchaseStatus {
-        NONE("none"), OK("ok"), PENDING("pending");
+        OK("ok"), PENDING("pending");
 
         private final String val;
 
@@ -63,9 +59,6 @@ public class UserData {
         public String toString(@NonNull Context context) {
             int res;
             switch (this) {
-                case NONE:
-                    res = R.string.none;
-                    break;
                 case OK:
                     res = R.string.ok;
                     break;

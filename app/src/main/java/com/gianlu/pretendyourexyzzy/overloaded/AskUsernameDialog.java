@@ -18,11 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.misc.LoadableContentView;
-import com.gianlu.commonutils.preferences.Prefs;
-import com.gianlu.commonutils.ui.Toaster;
-import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.PlayGamesAuthProvider;
@@ -35,8 +31,6 @@ import java.util.TimerTask;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.callback.BooleanCallback;
-import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
-import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public final class AskUsernameDialog extends DialogFragment {
     private static final String TAG = AskUsernameDialog.class.getSimpleName();
@@ -132,24 +126,8 @@ public final class AskUsernameDialog extends DialogFragment {
                     @Override
                     public void onResult(boolean result) {
                         if (result) {
-                            OverloadedApi.get().setUsername(username, getActivity(), new UserDataCallback() {
-                                @Override
-                                public void onUserData(@NonNull UserData status) {
-                                    Prefs.putBoolean(PK.OVERLOADED_FINISHED_SETUP, true);
-
-                                    loadable.notLoading(false);
-                                    DialogUtils.showToast(getActivity(), Toaster.build().message(R.string.usernameSetSuccessfully));
-                                    dismissAllowingStateLoss();
-                                    if (listener != null) listener.overloadedSetupFinished(status);
-                                }
-
-                                @Override
-                                public void onFailed(@NonNull Exception ex) {
-                                    input.setError(getString(R.string.failedSettingUsername));
-                                    loadable.notLoading(true);
-                                    Log.e(TAG, "Failed setting username.", ex);
-                                }
-                            });
+                            if (listener != null) listener.onUsernameSelected(username);
+                            dismissAllowingStateLoss();
                         } else {
                             input.setError(getString(R.string.overloaded_usernameAlreadyInUse));
                             loadable.notLoading(true);
@@ -158,7 +136,7 @@ public final class AskUsernameDialog extends DialogFragment {
 
                     @Override
                     public void onFailed(@NonNull Exception ex) {
-                        input.setError(getString(R.string.failedSettingUsername));
+                        input.setError(getString(R.string.failedCheckingUsername));
                         loadable.notLoading(true);
                         Log.e(TAG, "Failed checking username unique.", ex);
                     }
@@ -172,6 +150,6 @@ public final class AskUsernameDialog extends DialogFragment {
     }
 
     public interface Listener {
-        void overloadedSetupFinished(@NonNull UserData status);
+        void onUsernameSelected(@NonNull String username);
     }
 }

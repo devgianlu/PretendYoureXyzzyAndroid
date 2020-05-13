@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Base64;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -30,7 +29,6 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.whispersystems.libsignal.state.PreKeyRecord;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -66,8 +64,6 @@ import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.callback.UsersCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
-import xyz.gianlu.pyxoverloaded.signal.DbSignalStore;
-import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
 import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
 import static xyz.gianlu.pyxoverloaded.TaskUtils.loggingCallbacks;
@@ -85,6 +81,7 @@ public class OverloadedApi {
     private FirebaseUser user;
     private volatile OverloadedToken lastToken;
     private volatile UserData userDataCached = null;
+    private Task<UserData> userDataTask = null;
     private volatile Map<String, FriendStatus> friendsStatusCached = null;
     private MaintenanceException lastMaintenanceException = null;
 
@@ -127,177 +124,9 @@ public class OverloadedApi {
         return id;
     }
 
-    void sharePreKeys() {
-        loggingCallbacks(Tasks.call(executorService, () -> {
-            JSONObject body = new JSONObject();
-            body.put("registrationId", DbSignalStore.get().getLocalRegistrationId());
-            body.put("deviceId", SignalProtocolHelper.getLocalDeviceId());
-            body.put("identityKey", Base64.encodeToString(DbSignalStore.get().getIdentityKeyPair().getPublicKey().serialize(), Base64.NO_WRAP));
-            body.put("signedPreKey", Utils.toServerJson(SignalProtocolHelper.getLocalSignedPreKey()));
-
-            JSONArray preKeysArray = new JSONArray();
-            List<PreKeyRecord> preKeys = SignalProtocolHelper.generateSomePreKeys();
-            for (PreKeyRecord key : preKeys) preKeysArray.put(Utils.toServerJson(key));
-            body.put("preKeys", preKeysArray);
-
-            serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Chat/ShareKeys"))
-                    .post(jsonBody(body)));
-            return null;
-        }), "share-pre-keys");
-    }
-
-    public void loggedOutFromPyxServer() {
-        loggingCallbacks(Tasks.call(executorService, () -> {
-            serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Pyx/Logout"))
-                    .post(Util.EMPTY_REQUEST));
-            return true;
-        }), "logoutFromPyx");
-    }
-
-    public void openWebSocket() {
-        loggingCallbacks(Tasks.call(executorService, (Callable<Void>) () -> {
-            if (lastToken == null || lastToken.expired()) {
-                if (user == null && updateUser())
-                    throw new NotSignedInException();
-
-                updateTokenSync();
-                if (lastToken == null)
-                    throw new NotSignedInException();
-            }
-
-            webSocket.client = client.newWebSocket(new Request.Builder().get()
-                    .header("X-Device-Id", getDeviceId())
-                    .header("Authorization", "FirebaseToken " + lastToken.token)
-                    .url(overloadedServerUrl("Events")).build(), webSocket);
-            return null;
-        }), "openWebSocket");
-    }
-
-    public void listUsers(@NonNull HttpUrl serverUrl, @Nullable Activity activity, @NonNull UsersCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Pyx/ListOnline"))
-                    .post(singletonJsonBody("serverUrl", serverUrl.toString())));
-
-            JSONArray array = obj.getJSONArray("users");
-            List<String> list = new ArrayList<>(array.length());
-            for (int i = 0; i < array.length(); i++) list.add(array.getString(i));
-            return list;
-        }), activity, callback::onUsers, callback::onFailed);
-    }
-
-    private boolean updateUser() {
-        user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) {
-            return true;
-        } else {
-            user.reload();
-            return false;
-        }
-    }
-
-    @Nullable
-    public FirebaseUser firebaseUser() {
-        if (user == null && updateUser()) return null;
-        else return user;
-    }
-
-    public boolean hasLinkedProvider(@NonNull String id) {
-        if (user == null && updateUser())
-            return false;
-
-        for (UserInfo info : user.getProviderData()) {
-            if (info.getProviderId().equals(id))
-                return true;
-        }
-
-        return false;
-    }
-
-    @Nullable
-    public UserInfo getProviderUserInfo(@NonNull String id) {
-        if (user == null && updateUser())
-            return null;
-
-        for (UserInfo info : user.getProviderData())
-            if (info.getProviderId().equals(id))
-                return info;
-
-        return null;
-    }
-
-    public void link(@NonNull AuthCredential credential, @NonNull OnCompleteListener<Void> listener) {
-        if (user == null && updateUser())
-            return;
-
-        user.linkWithCredential(credential)
-                .continueWithTask(task -> user.reload())
-                .addOnCompleteListener(listener);
-    }
-
-    @NonNull
-    public Task<Void> loggedIntoPyxServer(@NonNull HttpUrl serverUrl, @NonNull String nickname) {
-        return loggingCallbacks(userData(true).continueWith(executorService, new NonNullContinuation<UserData, Void>() {
-            @Override
-            public Void then(@NonNull UserData userData) throws Exception {
-                if (!userData.username.equals(nickname))
-                    return null;
-
-                JSONObject params = new JSONObject();
-                params.put("serverUrl", serverUrl.toString());
-                params.put("nickname", nickname);
-                serverRequest(new Request.Builder()
-                        .url(overloadedServerUrl("Pyx/Login"))
-                        .post(jsonBody(params)));
-                return null;
-            }
-        }), "logIntoPyx");
-    }
-
-    public void userData(@Nullable Activity activity, boolean preferCache, @NonNull UserDataCallback callback) {
-        callbacks(userData(preferCache), activity, callback::onUserData, callback::onFailed);
-    }
-
-    @WorkerThread
-    private void updateTokenSync() {
-        if (user == null && updateUser()) throw new IllegalStateException();
-
-        try {
-            lastToken = Tasks.await(user.getIdToken(true).continueWith(new NonNullContinuation<GetTokenResult, OverloadedToken>() {
-                @Override
-                public OverloadedToken then(@NonNull GetTokenResult result) {
-                    return OverloadedToken.from(result);
-                }
-            }));
-        } catch (ExecutionException | InterruptedException ex) {
-            Log.e(TAG, "Failed updating token.", ex);
-            lastToken = null;
-        }
-    }
-
-    public void userData(@Nullable Activity activity, @NonNull UserDataCallback callback) {
-        userData(activity, false, callback);
-    }
-
-    @NonNull
-    Task<UserData> userData(boolean preferCache) {
-        if (preferCache && userDataCached != null)
-            return Tasks.forResult(userDataCached);
-
-        return Tasks.call(executorService, () -> {
-            JSONObject obj = serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("User/Data"))
-                    .post(Util.EMPTY_REQUEST));
-
-            return userDataCached = new UserData(obj);
-        });
-    }
-
-    public boolean isFullyRegistered() {
-        return userDataCached != null && userDataCached.hasUsername() && userDataCached.purchaseStatus == UserData.PurchaseStatus.OK;
-    }
+    /////////////////////////////////////////
+    //////////////// Internal ///////////////
+    /////////////////////////////////////////
 
     @NonNull
     @WorkerThread
@@ -350,7 +179,170 @@ public class OverloadedApi {
         }
     }
 
-    public void registerUser(@NonNull FirebaseUser user, @Nullable Activity activity, @NonNull UserDataCallback callback) {
+
+    /////////////////////////////////////////
+    /////////////// Pyx server //////////////
+    /////////////////////////////////////////
+
+    /**
+     * Report that user has logged out from PYX server.
+     */
+    public void loggedOutFromPyxServer() {
+        loggingCallbacks(Tasks.call(executorService, () -> {
+            serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Pyx/Logout"))
+                    .post(Util.EMPTY_REQUEST));
+            return true;
+        }), "logoutFromPyx");
+    }
+
+    /**
+     * Report that user has logged into a PYX server.
+     *
+     * @param serverUrl The server URL
+     * @param nickname  The nickname used
+     * @return The ongoing {@link Task}
+     */
+    @NonNull
+    public Task<Void> loggedIntoPyxServer(@NonNull HttpUrl serverUrl, @NonNull String nickname) {
+        return loggingCallbacks(userData(true).continueWith(executorService, new NonNullContinuation<UserData, Void>() {
+            @Override
+            public Void then(@NonNull UserData userData) throws Exception {
+                if (!userData.username.equals(nickname))
+                    return null;
+
+                JSONObject params = new JSONObject();
+                params.put("serverUrl", serverUrl.toString());
+                params.put("nickname", nickname);
+                serverRequest(new Request.Builder()
+                        .url(overloadedServerUrl("Pyx/Login"))
+                        .post(jsonBody(params)));
+                return null;
+            }
+        }), "logIntoPyx");
+    }
+
+
+    /////////////////////////////////////////
+    //////////// User & providers ///////////
+    /////////////////////////////////////////
+
+    /**
+     * @return The current {@link FirebaseUser} instance or {@code null} if not logged in.
+     */
+    @Nullable
+    public FirebaseUser firebaseUser() {
+        if (user == null && updateUser()) return null;
+        else return user;
+    }
+
+    /**
+     * @return Whether the use is registered and has payed regularly.
+     */
+    public boolean isFullyRegistered() {
+        return userDataCached != null && userDataCached.purchaseStatus == UserData.PurchaseStatus.OK;
+    }
+
+    /**
+     * Checks if the current user has this provided linked to his profile.
+     *
+     * @param id The provider ID
+     * @return Whether the provider is linked
+     */
+    public boolean hasLinkedProvider(@NonNull String id) {
+        if (user == null && updateUser())
+            return false;
+
+        for (UserInfo info : user.getProviderData()) {
+            if (info.getProviderId().equals(id))
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Gets the user info of the given provider.
+     *
+     * @param id The provider ID
+     * @return An {@link UserInfo} for the given provider
+     */
+    @Nullable
+    public UserInfo getProviderUserInfo(@NonNull String id) {
+        if (user == null && updateUser())
+            return null;
+
+        for (UserInfo info : user.getProviderData())
+            if (info.getProviderId().equals(id))
+                return info;
+
+        return null;
+    }
+
+    /**
+     * Updates the Firebase token <b>synchronously</b>.
+     */
+    @WorkerThread
+    private void updateTokenSync() {
+        if (user == null && updateUser()) throw new IllegalStateException();
+
+        try {
+            lastToken = Tasks.await(user.getIdToken(true).continueWith(new NonNullContinuation<GetTokenResult, OverloadedToken>() {
+                @Override
+                public OverloadedToken then(@NonNull GetTokenResult result) {
+                    return OverloadedToken.from(result);
+                }
+            }));
+        } catch (ExecutionException | InterruptedException ex) {
+            Log.e(TAG, "Failed updating token.", ex);
+            lastToken = null;
+        }
+    }
+
+    /**
+     * Updates te local {@link FirebaseUser} instance.
+     *
+     * @return Whether the user is <b>not</b> logged
+     */
+    private boolean updateUser() {
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            return true;
+        } else {
+            user.reload();
+            return false;
+        }
+    }
+
+    /**
+     * Links the current profile with another provider.
+     *
+     * @param credential The credentials of the new provider
+     * @param listener   A listener for completion
+     */
+    public void link(@NonNull AuthCredential credential, @NonNull OnCompleteListener<Void> listener) {
+        if (user == null && updateUser())
+            return;
+
+        user.linkWithCredential(credential)
+                .continueWithTask(task -> user.reload())
+                .addOnCompleteListener(listener);
+    }
+
+
+    /////////////////////////////////////////
+    ////////////// Public API ///////////////
+    /////////////////////////////////////////
+
+    /**
+     * Registers the user on the server. This can be used to update the purchase token only if the user is already registered.
+     *
+     * @param username      The username, may be {@code null}
+     * @param purchaseToken The purchase token
+     * @param activity      The caller {@link Activity}
+     * @param callback      The callback containing the latest {@link UserData}
+     */
+    public void registerUser(@Nullable String username, @NonNull String purchaseToken, @Nullable Activity activity, @NonNull UserDataCallback callback) {
         Task<UserData> task = user.getIdToken(true)
                 .continueWith(new NonNullContinuation<GetTokenResult, OverloadedToken>() {
                     @Override
@@ -361,9 +353,13 @@ public class OverloadedApi {
                 .continueWith(executorService, new NonNullContinuation<OverloadedToken, UserData>() {
                     @Override
                     public UserData then(@NonNull OverloadedToken token) throws OverloadedException, JSONException {
+                        JSONObject body = new JSONObject();
+                        if (username != null) body.put("username", username);
+                        body.put("purchaseToken", purchaseToken);
+
                         JSONObject obj = serverRequest(new Request.Builder()
                                 .url(overloadedServerUrl("User/Register"))
-                                .post(Util.EMPTY_REQUEST));
+                                .post(jsonBody(body)));
                         return userDataCached = new UserData(obj.getJSONObject("userData"));
                     }
                 });
@@ -371,15 +367,13 @@ public class OverloadedApi {
         callbacks(task, activity, callback::onUserData, callback::onFailed);
     }
 
-    public void verifyPurchase(@NonNull String purchaseToken, @Nullable Activity activity, @NonNull UserDataCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("User/VerifyPurchase"))
-                    .post(singletonJsonBody("purchaseToken", purchaseToken)));
-            return userDataCached = new UserData(obj.getJSONObject("userData"));
-        }), activity, callback::onUserData, callback::onFailed);
-    }
-
+    /**
+     * Checks whether the provided username is unique.
+     *
+     * @param username The username to check
+     * @param activity The caller {@link Activity}
+     * @param callback The callback containing the boolean response
+     */
     public void isUsernameUnique(@NonNull String username, @Nullable Activity activity, @NonNull BooleanCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
             JSONObject obj = serverRequest(new Request.Builder()
@@ -389,53 +383,54 @@ public class OverloadedApi {
         }), activity, callback::onResult, callback::onFailed);
     }
 
-    public void setUsername(@NonNull String username, @Nullable Activity activity, @NonNull UserDataCallback callback) {
+    /**
+     * Gets all online users on the specified server.
+     *
+     * @param serverUrl The server URL
+     * @param activity  The caller {@link Activity}
+     * @param callback  The callback containing the list of users
+     */
+    public void listUsers(@NonNull HttpUrl serverUrl, @Nullable Activity activity, @NonNull UsersCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
             JSONObject obj = serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("User/SetUsername"))
-                    .post(singletonJsonBody("username", username)));
-            return userDataCached = new UserData(obj.getJSONObject("userData"));
-        }), activity, callback::onUserData, callback::onFailed);
+                    .url(overloadedServerUrl("Pyx/ListOnline"))
+                    .post(singletonJsonBody("serverUrl", serverUrl.toString())));
+
+            JSONArray array = obj.getJSONArray("users");
+            List<String> list = new ArrayList<>(array.length());
+            for (int i = 0; i < array.length(); i++) list.add(array.getString(i));
+            return list;
+        }), activity, callback::onUsers, callback::onFailed);
     }
 
-    @Nullable
-    public Map<String, FriendStatus> friendsStatusCache() {
-        return friendsStatusCached;
+    /**
+     * Opens/creates the websocket connection with the server.
+     */
+    public void openWebSocket() {
+        loggingCallbacks(Tasks.call(executorService, (Callable<Void>) () -> {
+            if (lastToken == null || lastToken.expired()) {
+                if (user == null && updateUser())
+                    throw new NotSignedInException();
+
+                updateTokenSync();
+                if (lastToken == null)
+                    throw new NotSignedInException();
+            }
+
+            webSocket.client = client.newWebSocket(new Request.Builder().get()
+                    .header("X-Device-Id", getDeviceId())
+                    .header("Authorization", "FirebaseToken " + lastToken.token)
+                    .url(overloadedServerUrl("Events")).build(), webSocket);
+            return null;
+        }), "openWebSocket");
     }
 
-    public void friendsStatus(@Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("User/FriendsStatus"))
-                    .post(Util.EMPTY_REQUEST));
-            return friendsStatusCached = FriendStatus.parse(obj);
-        }), activity, callback::onFriendsStatus, callback::onFailed);
-    }
-
-    public void removeFriend(@NonNull String username, @Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("User/RemoveFriend"))
-                    .post(singletonJsonBody("username", username)));
-
-            Map<String, FriendStatus> map = friendsStatusCached = FriendStatus.parse(obj);
-            dispatchLocalEvent(Event.Type.REMOVED_FRIEND, username);
-            return map;
-        }), activity, callback::onFriendsStatus, callback::onFailed);
-    }
-
-    public void addFriend(@NonNull String username, @Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("User/AddFriend"))
-                    .post(singletonJsonBody("username", username)));
-
-            Map<String, FriendStatus> map = friendsStatusCached = FriendStatus.parse(obj);
-            dispatchLocalEvent(Event.Type.ADDED_FRIEND, username);
-            return map;
-        }), activity, callback::onFriendsStatus, callback::onFailed);
-    }
-
+    /**
+     * Deletes the current account (from the server too) and signs out.
+     *
+     * @param activity The caller {@link Activity}
+     * @param callback The callback for completion
+     */
     public void deleteAccount(@Nullable Activity activity, @NonNull SuccessCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
             serverRequest(new Request.Builder()
@@ -448,6 +443,136 @@ public class OverloadedApi {
         }, callback::onFailed);
     }
 
+    /**
+     * Logs out the current user and closes the websocket connection.
+     */
+    public void logout() {
+        FirebaseAuth.getInstance().signOut();
+        updateUser();
+
+        if (webSocket.client != null) {
+            webSocket.client.close(1000, null);
+            webSocket.client = null;
+        }
+    }
+
+    /**
+     * @return Whether the server is under maintenance.
+     */
+    public boolean isUnderMaintenance() {
+        if (lastMaintenanceException == null) return false;
+
+        if (lastMaintenanceException.estimatedEnd < System.currentTimeMillis()) {
+            lastMaintenanceException = null;
+            return false;
+        }
+
+        return true;
+    }
+
+
+    /////////////////////////////////////////
+    /////////////// User data ///////////////
+    /////////////////////////////////////////
+
+    public void userData(@Nullable Activity activity, boolean preferCache, @NonNull UserDataCallback callback) {
+        callbacks(userData(preferCache), activity, callback::onUserData, callback::onFailed);
+    }
+
+    public void userData(@Nullable Activity activity, @NonNull UserDataCallback callback) {
+        userData(activity, false, callback);
+    }
+
+    @NonNull
+    Task<UserData> userData(boolean preferCache) {
+        if (preferCache && userDataCached != null)
+            return Tasks.forResult(userDataCached);
+
+        if (userDataTask != null && !userDataTask.isComplete()) // Reuse task if already running
+            return userDataTask;
+
+        return userDataTask = Tasks.call(executorService, () -> {
+            JSONObject obj = serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("User/Data"))
+                    .post(Util.EMPTY_REQUEST));
+
+            return userDataCached = new UserData(obj);
+        });
+    }
+
+    @Nullable
+    public UserData userDataCached() {
+        return userDataCached;
+    }
+
+
+    /////////////////////////////////////////
+    //////////////// Friends ////////////////
+    /////////////////////////////////////////
+
+    @Nullable
+    public Map<String, FriendStatus> friendsStatusCache() {
+        return friendsStatusCached;
+    }
+
+    /**
+     * Gets the list of friends and their status (includes friends requests).
+     *
+     * @param activity The caller {@link Activity}
+     * @param callback The callback containing the list of friends
+     */
+    public void friendsStatus(@Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject obj = serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("User/FriendsStatus"))
+                    .post(Util.EMPTY_REQUEST));
+            return friendsStatusCached = FriendStatus.parse(obj);
+        }), activity, callback::onFriendsStatus, callback::onFailed);
+    }
+
+    /**
+     * Removes a friend or denies a friend request.
+     *
+     * @param username The target username
+     * @param activity The caller {@link Activity}
+     * @param callback The callback containing the status of the removed friend
+     */
+    public void removeFriend(@NonNull String username, @Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject obj = serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("User/RemoveFriend"))
+                    .post(singletonJsonBody("username", username)));
+
+            Map<String, FriendStatus> map = friendsStatusCached = FriendStatus.parse(obj);
+            dispatchLocalEvent(Event.Type.REMOVED_FRIEND, username);
+            return map;
+        }), activity, callback::onFriendsStatus, callback::onFailed);
+    }
+
+    /**
+     * Adds a friend or makes a friend request.
+     *
+     * @param username The target username
+     * @param activity The caller {@link Activity}
+     * @param callback The callback containing the status of the removed friend
+     */
+    public void addFriend(@NonNull String username, @Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject obj = serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("User/AddFriend"))
+                    .post(singletonJsonBody("username", username)));
+
+            Map<String, FriendStatus> map = friendsStatusCached = FriendStatus.parse(obj);
+            dispatchLocalEvent(Event.Type.ADDED_FRIEND, username);
+            return map;
+        }), activity, callback::onFriendsStatus, callback::onFailed);
+    }
+
+
+    /////////////////////////////////////////
+    //////////////// Events /////////////////
+    /////////////////////////////////////////
+
     void dispatchLocalEvent(@NonNull Event.Type type, @NonNull Object data) {
         webSocket.dispatchEvent(new Event(type, null, data));
     }
@@ -458,20 +583,6 @@ public class OverloadedApi {
 
     public void removeEventListener(@NonNull EventListener listener) {
         webSocket.listeners.remove(listener);
-    }
-
-    public void logout() {
-        if (webSocket.client != null) {
-            webSocket.client.close(1000, null);
-            webSocket.client = null;
-        }
-
-        updateUser();
-    }
-
-    @Nullable
-    public UserData userDataCached() {
-        return userDataCached;
     }
 
     @WorkerThread
@@ -487,19 +598,8 @@ public class OverloadedApi {
 
             friendsStatusCached.remove(event.data.getString("username"));
         } else if (event.type == Event.Type.SHARE_KEYS_LOW) {
-            if (chatInstance != null) sharePreKeys();
+            if (chatInstance != null) chatInstance.sharePreKeys();
         }
-    }
-
-    public boolean isUnderMaintenance() {
-        if (lastMaintenanceException == null) return false;
-
-        if (lastMaintenanceException.estimatedEnd < System.currentTimeMillis()) {
-            lastMaintenanceException = null;
-            return false;
-        }
-
-        return true;
     }
 
     @UiThread

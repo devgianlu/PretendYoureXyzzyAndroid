@@ -67,7 +67,6 @@
     <string name="players"><![CDATA[<b>Players:</b>]]> %1$d/%2$d</string>
     <string name="spectators"><![CDATA[<b>Spectators:</b>]]> %1$d/%2$d</string>
     <string name="noMessages">There are no messages.</string>
-    <string name="message">Message</string>
     <string name="failedSendMessage">Failed sending the message!</string>
     <string name="logout">Logout</string>
     <string name="spectate">Spectate</string>
@@ -256,18 +255,13 @@
     <string name="overloaded_linkAccount_desc">Link another account to your current profile</string>
     <string name="accountLinked">Account linked!</string>
     <string name="failedLinkingAccount">Failed linking account!</string>
-    <string name="purchaseVerified">Purchase verified!</string>
     <string name="overloadedStatus_purchasePending">Your payment is still pending, check back later!</string>
     <string name="username">Username</string>
     <string name="askOverloadedUsername_title">Choose your Overloaded username</string>
     <string name="askOverloadedUsername_desc">Please choose a username for your Overloaded account. You can still use a different username for PYX.</string>
     <string name="done">Done</string>
-    <string name="failedSettingUsername">Failed setting username!</string>
-    <string name="usernameSetSuccessfully">Username set successfully!</string>
     <string name="overloaded_usernameAlreadyInUse">This username is already in use.</string>
     <string name="overloaded_invalidUsername">The username must contain only upper and lower case letters, numbers, or underscores, must be 3 to 30 characters long, and must not start with a number.</string>
-    <string name="verifyingPurchase">Verifying purchase…</string>
-    <string name="failedVerifyingPurchase">Failed verifying purchase!</string>
     <string name="chats">Chats</string>
     <string name="profile">Profile</string>
     <string name="overloaded_noChats">There are no chats!</string>
@@ -278,7 +272,6 @@
     <string name="overloadedDifferentUsername_title">Different usernames</string>
     <string name="overloadedDifferentUsername_message">You cannot use a different username for PYX when using Overloaded. Do you want to change it now?</string>
     <string name="change">Change</string>
-    <string name="overloaded_notBought">You\'re almost there, tap to buy</string>
     <string name="overloadedStatus_error">An error occurred! Please try again.</string>
     <string name="overloadedHeader_cardsPlayed"><![CDATA[<b>Cards played</b><br>]]>%s</string>
     <string name="overloadedHeader_roundsPlayed"><![CDATA[<b>Rounds played</b><br>]]>%s</string>
@@ -318,4 +311,5 @@
     <string name="acceptRequest">Accept request</string>
     <string name="rejectRequest">Reject request</string>
     <string name="friendRequest">Friend request</string>
+    <string name="failedCheckingUsername">Failed checking username!</string>
 </resources>

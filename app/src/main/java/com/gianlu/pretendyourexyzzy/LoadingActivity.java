@@ -59,7 +59,7 @@ import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
 
-public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, AskUsernameDialog.Listener, OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener {
+public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener, AskUsernameDialog.Listener {
     private static final int RC_SIGN_IN = 3;
     private static final String TAG = LoadingActivity.class.getSimpleName();
     private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
@@ -119,7 +119,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         serverLoading = findViewById(R.id.loading_serverLoading);
         overloadedLoading = findViewById(R.id.loading_overloadedLoading);
         overloadedToggle = findViewById(R.id.loading_overloadedToggle);
-        overloadedToggle.setOnCheckedChangeListener(billingHelper.toggleOverloaded(this));
+        overloadedToggle.setOnCheckedChangeListener(billingHelper.toggleOverloaded());
         overloadedStatus = findViewById(R.id.loading_overloadedStatus);
         currentServer = findViewById(R.id.loading_currentServer);
         registerNickname = findViewById(R.id.loading_registerNickname);
@@ -203,8 +203,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                     public void onSignInSuccessful() {
                         dismissDialog();
                         showToast(Toaster.build().message(R.string.signInSuccessful));
-                        if (billingHelper.wasBuying)
-                            billingHelper.startBillingFlow(LoadingActivity.this);
+                        billingHelper.startBillingFlow(LoadingActivity.this);
                     }
 
                     @Override
@@ -265,7 +264,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         } else {
             inputLoading.hideShimmer();
             serverLoading.hideShimmer();
-            if (billingHelper.lastStatus() != OverloadedBillingHelper.Status.LOADING)
+            if (billingHelper.getStatus() != OverloadedBillingHelper.Status.LOADING)
                 overloadedLoading.hideShimmer();
         }
     }
@@ -283,7 +282,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         return id.isEmpty() ? null : id;
     }
 
-    private void showRegisterUi(final FirstLoadedPyx pyx) {
+    private void showRegisterUi(@NotNull FirstLoadedPyx pyx) {
         toggleLoading(false);
         registerNickname.setErrorEnabled(false);
         registerIdCode.setErrorEnabled(false);
@@ -372,7 +371,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     private void goToMain() {
-        if (billingHelper.isLoading()) {
+        if (billingHelper.getStatus() == OverloadedBillingHelper.Status.LOADING) {
             if (waitingOverloaded) {
                 goToMain();
                 waitingOverloaded = false;
@@ -382,6 +381,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             return;
         }
 
+        waitingOverloaded = false;
         if (chatSummaryTask != null && !chatSummaryTask.isComplete()) {
             chatSummaryTask.addOnCompleteListener(this, task -> {
                 goToMain();
@@ -440,6 +440,11 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         if (overloadedLoading == null || overloadedStatus == null || overloadedToggle == null)
             return;
 
+        if (status != OverloadedBillingHelper.Status.LOADING && waitingOverloaded) {
+            goToMain();
+            return;
+        }
+
         switch (status) {
             case MAINTENANCE:
                 overloadedLoading.hideShimmer();
@@ -466,12 +471,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 overloadedLoading.hideShimmer();
                 overloadedStatus.setText(R.string.overloadedStatus_purchasePending);
                 overloadedToggle.setEnabled(false);
-                overloadedToggle.setChecked(false);
-                break;
-            case NOT_BOUGHT:
-                overloadedLoading.hideShimmer();
-                overloadedStatus.setText(R.string.overloaded_notBought);
-                overloadedToggle.setEnabled(true);
                 overloadedToggle.setChecked(false);
                 break;
             case SIGNED_IN:
@@ -531,18 +530,13 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     @Override
-    public void loadingComplete() {
-        if (waitingOverloaded) goToMain();
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         billingHelper.onDestroy();
     }
 
     @Override
-    public void overloadedSetupFinished(@NotNull UserData status) {
-        billingHelper.updatePurchase(status);
+    public void onUsernameSelected(@NonNull String username) {
+        billingHelper.onUsernameSelected(username);
     }
 }

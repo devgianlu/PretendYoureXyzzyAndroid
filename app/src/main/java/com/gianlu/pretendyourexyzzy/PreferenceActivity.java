@@ -140,7 +140,7 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
 
     public static class OverloadedFragment extends BasePreferenceFragment implements OverloadedChooseProviderDialog.Listener {
         private static final int RC_SIGN_IN = 3;
-        private OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
+        private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
         private boolean link;
 
         @Override
@@ -267,7 +267,6 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                 logout.setTitle(R.string.logout);
                 logout.setIcon(R.drawable.outline_exit_to_app_24);
                 logout.setOnClickListener(v -> {
-                    FirebaseAuth.getInstance().signOut();
                     OverloadedApi.get().logout();
                     onBackPressed();
                 });

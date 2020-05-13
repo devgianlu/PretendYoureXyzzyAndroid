@@ -43,9 +43,7 @@ class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         PollMessage message = messages.get(position);
         holder.text.setHtml(SuperTextView.makeBold(message.sender) + ": " + message.message);
-        holder.itemView.setOnClickListener(v -> {
-            listener.onChatItemSelected(message.sender);
-        });
+        holder.itemView.setOnClickListener(v -> listener.onChatItemSelected(message.sender));
 
         if (message.emote) CommonUtils.setTextColor(holder.text, R.color.purple);
         else if (message.wall) CommonUtils.setTextColor(holder.text, R.color.red);

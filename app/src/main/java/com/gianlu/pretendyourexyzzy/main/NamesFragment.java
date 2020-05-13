@@ -231,7 +231,7 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
 
     @Override
     public void onEvent(@NonNull OverloadedApi.Event event) throws JSONException {
-        if (adapter == null) return;
+        if (adapter == null || event.data == null) return;
 
         if (event.type == OverloadedApi.Event.Type.USER_LEFT_SERVER)
             adapter.overloadedUserLeft(event.data.getString("nick"));

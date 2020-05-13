@@ -66,7 +66,6 @@
     <string name="players"><![CDATA[<b>Giocatori:</b>]]> %1$d/%2$d</string>
     <string name="spectators"><![CDATA[<b>Spettatori:</b>]]> %1$d/%2$d</string>
     <string name="noMessages">Non ci sono messaggi.</string>
-    <string name="message">Messaggio</string>
     <string name="failedSendMessage">Impossibile caricare il messaggio!</string>
     <string name="logout">Esci</string>
     <string name="spectate">Guarda</string>

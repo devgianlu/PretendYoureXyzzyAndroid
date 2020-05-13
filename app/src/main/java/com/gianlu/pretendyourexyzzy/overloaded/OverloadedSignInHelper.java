@@ -28,10 +28,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import xyz.gianlu.pyxoverloaded.OverloadedApi;
-import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
-import xyz.gianlu.pyxoverloaded.model.UserData;
-
 public final class OverloadedSignInHelper {
     public static final List<SignInProvider> SIGN_IN_PROVIDERS;
     private static final String CLIENT_ID = "596428580538-idv220mduj2clinjoq11sd0n60dgbjr4.apps.googleusercontent.com";
@@ -80,14 +76,14 @@ public final class OverloadedSignInHelper {
             @Override
             AuthCredential extractCredential(@NonNull Intent data) {
                 GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-                if (result.isSuccess()) {
+                if (result != null && result.isSuccess()) {
                     String serverCode;
                     GoogleSignInAccount account = result.getSignInAccount();
                     if (account != null && (serverCode = account.getServerAuthCode()) != null)
                         return PlayGamesAuthProvider.getCredential(serverCode);
                 }
 
-                Log.e(TAG, "Failed authenticating with Google Play Games: " + result.getStatus());
+                Log.e(TAG, "Failed authenticating with Google Play Games: " + (result == null ? null : result.getStatus()));
                 return null;
             }
         });
@@ -95,6 +91,9 @@ public final class OverloadedSignInHelper {
 
     private Flow currentFlow = null;
 
+    /**
+     * @return A list of provider IDs available for sign in
+     */
     @NonNull
     public static List<String> providerIds() {
         List<String> list = new ArrayList<>(SIGN_IN_PROVIDERS.size());
@@ -102,6 +101,13 @@ public final class OverloadedSignInHelper {
         return Collections.unmodifiableList(list);
     }
 
+    /**
+     * Starts the billing flow
+     *
+     * @param activity The caller {@link Activity}
+     * @param provider The selected provider for sign in
+     * @return The {@link Intent} to start the flow
+     */
     @NonNull
     public Intent startFlow(@NonNull Activity activity, @NonNull SignInProvider provider) {
         currentFlow = new Flow();
@@ -110,12 +116,24 @@ public final class OverloadedSignInHelper {
         return currentFlow.client.getSignInIntent();
     }
 
+    /**
+     * Extracts the credentials from the result data
+     *
+     * @param data The data provided through the {@link Intent}
+     * @return The {@link AuthCredential} object or {@code null}
+     */
     @Nullable
     public AuthCredential extractCredential(@NonNull Intent data) {
         if (currentFlow == null) throw new IllegalStateException();
         return currentFlow.provider.extractCredential(data);
     }
 
+    /**
+     * Extracts the credentials from the result data and uses it to sign in into Firebase.
+     *
+     * @param data     The data provided through the {@link Intent}
+     * @param callback The callback for the sign in result
+     */
     public void processSignInData(@NonNull Intent data, @NonNull SignInCallback callback) {
         if (currentFlow == null) throw new IllegalStateException();
 
@@ -133,19 +151,7 @@ public final class OverloadedSignInHelper {
                         FirebaseUser loggedUser;
                         if (result != null && (loggedUser = result.getUser()) != null) {
                             Log.i(TAG, "Successfully logged in Firebase as " + loggedUser.getUid());
-                            OverloadedApi.get().registerUser(loggedUser, null, new UserDataCallback() {
-                                @Override
-                                public void onUserData(@NonNull UserData data) {
-                                    callback.onSignInSuccessful();
-                                }
-
-                                @Override
-                                public void onFailed(@NonNull Exception ex) {
-                                    Log.e(TAG, "Failed registering user.", ex);
-                                    FirebaseAuth.getInstance().signOut();
-                                    callback.onSignInFailed();
-                                }
-                            });
+                            callback.onSignInSuccessful();
                             return;
                         }
                     }

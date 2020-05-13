@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Base64;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -17,6 +18,7 @@ import com.google.android.gms.tasks.Tasks;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.whispersystems.libsignal.state.PreKeyRecord;
 
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -54,6 +56,65 @@ public class OverloadedChatApi implements Closeable {
         this.db = new ChatDatabaseHelper(context);
     }
 
+    ///////////////////////////////
+    //////////// Keys /////////////
+    ///////////////////////////////
+
+    /**
+     * Collects the necessary keys and sends them to the server.
+     */
+    void sharePreKeys() {
+        loggingCallbacks(Tasks.call(api.executorService, () -> {
+            JSONObject body = new JSONObject();
+            body.put("registrationId", DbSignalStore.get().getLocalRegistrationId());
+            body.put("deviceId", SignalProtocolHelper.getLocalDeviceId());
+            body.put("identityKey", Base64.encodeToString(DbSignalStore.get().getIdentityKeyPair().getPublicKey().serialize(), Base64.NO_WRAP));
+            body.put("signedPreKey", Utils.toServerJson(SignalProtocolHelper.getLocalSignedPreKey()));
+
+            JSONArray preKeysArray = new JSONArray();
+            List<PreKeyRecord> preKeys = SignalProtocolHelper.generateSomePreKeys();
+            for (PreKeyRecord key : preKeys) preKeysArray.put(Utils.toServerJson(key));
+            body.put("preKeys", preKeysArray);
+
+            api.serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Chat/ShareKeys"))
+                    .post(jsonBody(body)));
+            return null;
+        }), "share-pre-keys");
+    }
+
+    /**
+     * Gets a pre key bundle from the server <b>synchronously</b> and creates a new session.
+     *
+     * @param address The {@link OverloadedUserAddress} of the key
+     */
+    @WorkerThread
+    private void getKeySync(@NonNull OverloadedUserAddress address) throws ExecutionException, InterruptedException {
+        Tasks.await(loggingCallbacks(Tasks.call(api.executorService, () -> {
+            JSONObject body = new JSONObject();
+            body.put("address", address.uid);
+            body.put("deviceId", address.deviceId);
+
+            JSONObject obj = api.serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Chat/GetKeys"))
+                    .post(jsonBody(body)));
+
+            JSONObject keyObj = obj.getJSONObject("key");
+            SignalProtocolHelper.createSession(new OverloadedUserAddress(keyObj.getString("address")), Utils.parsePreKeyBundle(keyObj));
+            return null;
+        }), "get-keys-" + address.toString()));
+    }
+
+
+    ///////////////////////////////
+    //////////// Chats ////////////
+    ///////////////////////////////
+
+    /**
+     * Gets a summary of unread messages (and related chats), also checks if the server needs some keys.
+     *
+     * @return The ongoing {@link Task}
+     */
     @NonNull
     public Task<Integer> getSummary() {
         return loggingCallbacks(Tasks.call(api.executorService, () -> {
@@ -67,7 +128,7 @@ public class OverloadedChatApi implements Closeable {
                     .post(jsonBody(body)));
 
             if (obj.optBoolean("shareKeys", false))
-                api.sharePreKeys();
+                sharePreKeys();
 
             JSONArray summary = obj.getJSONArray("summary");
             for (int i = 0; i < summary.length(); i++) {
@@ -93,6 +154,13 @@ public class OverloadedChatApi implements Closeable {
         }), "chat-summary");
     }
 
+    /**
+     * Starts a chat with the specified user.
+     *
+     * @param username The recipient username
+     * @param activity The caller {@link Activity}
+     * @param callback The callback containing the chat info
+     */
     public void startChat(@NonNull String username, @Nullable Activity activity, @NonNull ChatCallback callback) {
         Chat chat = db.findChatWith(username);
         if (chat != null)
@@ -114,6 +182,12 @@ public class OverloadedChatApi implements Closeable {
         }, callback::onFailed);
     }
 
+    /**
+     * Gets a list of all the user's chats
+     *
+     * @param activity The caller {@link Activity}
+     * @param callback The callback containing all the chats
+     */
     public void listChats(@Nullable Activity activity, @NonNull ChatsCallback callback) {
         List<Chat> list = db.getChats();
         if (!list.isEmpty())
@@ -141,30 +215,19 @@ public class OverloadedChatApi implements Closeable {
         }), activity, callback::onRemoteChats, callback::onFailed);
     }
 
-    @WorkerThread
-    private boolean handleMismatchedDevices(@NonNull Chat chat, @NonNull JSONObject obj) throws JSONException, InterruptedException {
-        JSONArray extra = obj.optJSONArray("extra");
-        if (extra == null) return false;
 
-        for (int i = 0; i < extra.length(); i++)
-            DbSignalStore.get().deleteSession(chat.deviceAddress(extra.getInt(i)).toSignalAddress());
+    ///////////////////////////////
+    /////////// Sending ///////////
+    ///////////////////////////////
 
-        JSONArray missing = obj.optJSONArray("missing");
-        if (missing == null) return false;
-
-        for (int i = 0; i < missing.length(); i++) {
-            OverloadedUserAddress address = chat.deviceAddress(missing.getInt(i));
-
-            try {
-                getKeySync(address);
-            } catch (ExecutionException ex) {
-                Log.e(TAG, "Failed getting prekey for " + address, ex);
-            }
-        }
-
-        return true;
-    }
-
+    /**
+     * Sends a message on the specified chat after encrypting it.
+     *
+     * @param chatId   The chat ID
+     * @param text     The plaintext message
+     * @param activity The caller {@link Activity}
+     * @param callback The callback containing the decrypted message (for local dispatching)
+     */
     public void sendMessage(int chatId, @NonNull String text, @Nullable Activity activity, @NonNull ChatMessageCallback callback) {
         callbacks(api.userData(true).continueWith(api.executorService, (task) -> {
             UserData data = task.getResult();
@@ -207,6 +270,134 @@ public class OverloadedChatApi implements Closeable {
         }, callback::onFailed);
     }
 
+    @WorkerThread
+    private boolean handleMismatchedDevices(@NonNull Chat chat, @NonNull JSONObject obj) throws JSONException, InterruptedException {
+        JSONArray extra = obj.optJSONArray("extra");
+        if (extra == null) return false;
+
+        for (int i = 0; i < extra.length(); i++)
+            DbSignalStore.get().deleteSession(chat.deviceAddress(extra.getInt(i)).toSignalAddress());
+
+        JSONArray missing = obj.optJSONArray("missing");
+        if (missing == null) return false;
+
+        for (int i = 0; i < missing.length(); i++) {
+            OverloadedUserAddress address = chat.deviceAddress(missing.getInt(i));
+
+            try {
+                getKeySync(address);
+            } catch (ExecutionException ex) {
+                Log.e(TAG, "Failed getting prekey for " + address, ex);
+            }
+        }
+
+        return true;
+    }
+
+
+    ///////////////////////////////
+    /////// Local messages ////////
+    ///////////////////////////////
+
+    /**
+     * Gets a list of locally stored messages (128 max) from the given time.
+     *
+     * @param chatId The chat ID
+     * @param since  The lower time bound
+     * @return A list of chat messages
+     */
+    @Nullable
+    public List<PlainChatMessage> getLocalMessages(int chatId, long since) {
+        return db.getMessagesPaginate(chatId, since);
+    }
+
+    /**
+     * Gets a list of locally stored messages (128 most recent ones).
+     *
+     * @param chatId The chat ID
+     * @return A list of chat messages
+     */
+    @NonNull
+    public List<PlainChatMessage> getLocalMessages(int chatId) {
+        List<PlainChatMessage> msg = db.getMessages(chatId);
+        return msg == null ? Collections.emptyList() : msg;
+    }
+
+
+    ///////////////////////////////
+    //////// Last message /////////
+    ///////////////////////////////
+
+    /**
+     * Gets the last message of the given chat.
+     *
+     * @param chatId The chat ID
+     * @return A {@link PlainChatMessage} or {@code null} if the chat is empty
+     */
+    @Nullable
+    public PlainChatMessage getLastMessage(int chatId) {
+        return db.getLastMessage(chatId);
+    }
+
+    /**
+     * Updates the last seen message for the given chat.
+     *
+     * @param chatId The chat ID
+     * @param msg    The last seen message
+     */
+    public void updateLastSeen(int chatId, @NonNull PlainChatMessage msg) {
+        db.updateLastSeen(chatId, msg.timestamp + 1);
+        dispatchUnreadCountUpdate();
+    }
+
+    /**
+     * Counts the number of unread messages for the given chat.
+     *
+     * @param chatId The chat ID
+     * @return The count of unread messages
+     */
+    public int countSinceLastSeen(int chatId) {
+        return db.countSinceLastSeen(chatId);
+    }
+
+
+    ///////////////////////////////
+    /////////// Unread ////////////
+    ///////////////////////////////
+
+    private void dispatchUnreadCountUpdate() {
+        synchronized (unreadCountListeners) {
+            Handler handler = new Handler(Looper.getMainLooper());
+            for (UnreadCountListener listener : unreadCountListeners)
+                handler.post(listener::mayUpdateUnreadCount);
+        }
+    }
+
+    /**
+     * @return The total number of unread messages across chats
+     */
+    public int countTotalUnread() {
+        return db.countTotalUnread();
+    }
+
+    public void addUnreadCountListener(@NonNull UnreadCountListener listener) {
+        unreadCountListeners.add(listener);
+    }
+
+    public void removeUnreadCountListener(@NonNull UnreadCountListener listener) {
+        unreadCountListeners.remove(listener);
+    }
+
+
+    ///////////////////////////////
+    ////// Receive & decrypt //////
+    ///////////////////////////////
+
+    /**
+     * Sends an acknowledgment to the server (that it has received the message).
+     *
+     * @param ackId The ack ID
+     */
     public void decryptAck(long ackId) {
         loggingCallbacks(Tasks.call(api.executorService, () -> {
             JSONObject body = new JSONObject();
@@ -219,33 +410,6 @@ public class OverloadedChatApi implements Closeable {
 
             return null;
         }), "message-ack: " + ackId);
-    }
-
-    @Nullable
-    public List<PlainChatMessage> getLocalMessages(int chatId, long since) {
-        return db.getMessagesPaginate(chatId, since);
-    }
-
-    @NonNull
-    public List<PlainChatMessage> getLocalMessages(int chatId) {
-        List<PlainChatMessage> msg = db.getMessages(chatId);
-        return msg == null ? Collections.emptyList() : msg;
-    }
-
-    public void getKeySync(@NonNull OverloadedUserAddress address) throws ExecutionException, InterruptedException {
-        Tasks.await(loggingCallbacks(Tasks.call(api.executorService, () -> {
-            JSONObject body = new JSONObject();
-            body.put("address", address.uid);
-            body.put("deviceId", address.deviceId);
-
-            JSONObject obj = api.serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Chat/GetKeys"))
-                    .post(jsonBody(body)));
-
-            JSONObject keyObj = obj.getJSONObject("key");
-            SignalProtocolHelper.createSession(new OverloadedUserAddress(keyObj.getString("address")), Utils.parsePreKeyBundle(keyObj));
-            return null;
-        }), "get-keys-" + address.toString()));
     }
 
     private void dispatchDecryptedMessage(@NonNull PlainChatMessage msg) {
@@ -268,40 +432,6 @@ public class OverloadedChatApi implements Closeable {
             dispatchUnreadCountUpdate();
             dispatchDecryptedMessage(msg);
         }
-    }
-
-    public void updateLastSeen(int chatId, @NonNull PlainChatMessage msg) {
-        db.updateLastSeen(chatId, msg.timestamp + 1);
-        dispatchUnreadCountUpdate();
-    }
-
-    public int countSinceLastSeen(int chatId) {
-        return db.countSinceLastSeen(chatId);
-    }
-
-    public int countTotalUnread() {
-        return db.countTotalUnread();
-    }
-
-    @Nullable
-    public PlainChatMessage getLastMessage(int chatId) {
-        return db.getLastMessage(chatId);
-    }
-
-    private void dispatchUnreadCountUpdate() {
-        synchronized (unreadCountListeners) {
-            Handler handler = new Handler(Looper.getMainLooper());
-            for (UnreadCountListener listener : unreadCountListeners)
-                handler.post(listener::mayUpdateUnreadCount);
-        }
-    }
-
-    public void addUnreadCountListener(@NonNull UnreadCountListener listener) {
-        unreadCountListeners.add(listener);
-    }
-
-    public void removeUnreadCountListener(@NonNull UnreadCountListener listener) {
-        unreadCountListeners.remove(listener);
     }
 
     @Override
