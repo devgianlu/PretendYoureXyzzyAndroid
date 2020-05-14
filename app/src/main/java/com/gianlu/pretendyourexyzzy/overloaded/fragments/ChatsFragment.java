@@ -17,6 +17,7 @@ import com.gianlu.commonutils.adapters.NotFilterable;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
+import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
 
@@ -156,9 +157,8 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
 
             PlainChatMessage lastMsg = chatApi.getLastMessage(chat.id);
             if (lastMsg == null) {
-                holder.lastMsg.setVisibility(View.GONE);
+                holder.lastMsg.setHtml(SuperTextView.makeItalic(getString(R.string.beTheFirstToSendAMessage)));
             } else {
-                holder.lastMsg.setVisibility(View.VISIBLE);
                 holder.lastMsg.setText(lastMsg.text);
             }
 
@@ -203,7 +203,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
 
         class ViewHolder extends RecyclerView.ViewHolder {
             final TextView username;
-            final TextView lastMsg;
+            final SuperTextView lastMsg;
             final TextView unread;
 
             ViewHolder(@NonNull ViewGroup parent) {

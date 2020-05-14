@@ -12,8 +12,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
-import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.preferences.Prefs;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -41,7 +39,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadLocalRandom;
 
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
@@ -64,6 +61,7 @@ import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.callback.UsersCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
+import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
 import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
 import static xyz.gianlu.pyxoverloaded.TaskUtils.loggingCallbacks;
@@ -113,17 +111,6 @@ public class OverloadedApi {
         instance.webSocket.close();
     }
 
-    @NonNull
-    private static String getDeviceId() {
-        String id = Prefs.getString(OverloadedPK.OVERLOADED_DEVICE_ID, null);
-        if (id == null) {
-            id = CommonUtils.randomString(8, ThreadLocalRandom.current(), "abcdefghijklmnopqrstuvwxyz1234567890");
-            Prefs.putString(OverloadedPK.OVERLOADED_DEVICE_ID, id);
-        }
-
-        return id;
-    }
-
     /////////////////////////////////////////
     //////////////// Internal ///////////////
     /////////////////////////////////////////
@@ -147,7 +134,7 @@ public class OverloadedApi {
         }
 
         Request req = reqBuilder.addHeader("Authorization", "FirebaseToken " + lastToken.token)
-                .addHeader("X-Device-Id", getDeviceId()).build();
+                .addHeader("X-Device-Id", String.valueOf(SignalProtocolHelper.getLocalDeviceId())).build();
         try (Response resp = client.newCall(req).execute()) {
             Log.v(TAG, String.format("%s -> %d", req.url().encodedPath(), resp.code()));
 
@@ -418,7 +405,7 @@ public class OverloadedApi {
             }
 
             webSocket.client = client.newWebSocket(new Request.Builder().get()
-                    .header("X-Device-Id", getDeviceId())
+                    .header("X-Device-Id", String.valueOf(SignalProtocolHelper.getLocalDeviceId()))
                     .header("Authorization", "FirebaseToken " + lastToken.token)
                     .url(overloadedServerUrl("Events")).build(), webSocket);
             return null;
@@ -664,7 +651,7 @@ public class OverloadedApi {
 
         @WorkerThread
         void dispatchEvent(@NonNull Event event) {
-            Log.v(TAG, event.type + " -> " + event.data.toString());
+            Log.v(TAG, event.type + " -> " + (event.data == null ? event.obj : event.data));
 
             try {
                 instance.handleEvent(event);

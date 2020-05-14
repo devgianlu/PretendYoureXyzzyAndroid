@@ -67,7 +67,6 @@ public class OverloadedChatApi implements Closeable {
         loggingCallbacks(Tasks.call(api.executorService, () -> {
             JSONObject body = new JSONObject();
             body.put("registrationId", DbSignalStore.get().getLocalRegistrationId());
-            body.put("deviceId", SignalProtocolHelper.getLocalDeviceId());
             body.put("identityKey", Base64.encodeToString(DbSignalStore.get().getIdentityKeyPair().getPublicKey().serialize(), Base64.NO_WRAP));
             body.put("signedPreKey", Utils.toServerJson(SignalProtocolHelper.getLocalSignedPreKey()));
 
@@ -121,7 +120,6 @@ public class OverloadedChatApi implements Closeable {
             Long since = db.getLastLastSeen();
             JSONObject body = new JSONObject();
             body.put("since", since == null ? 0 : since);
-            body.put("signalDeviceId", SignalProtocolHelper.getLocalDeviceId());
 
             JSONObject obj = api.serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Chat/Summary"))
@@ -244,7 +242,6 @@ public class OverloadedChatApi implements Closeable {
 
                 JSONObject body = new JSONObject();
                 body.put("chatId", chat.id);
-                body.put("deviceId", SignalProtocolHelper.getLocalDeviceId());
                 body.put("messages", encryptedMessages);
 
                 try {
@@ -402,7 +399,6 @@ public class OverloadedChatApi implements Closeable {
         loggingCallbacks(Tasks.call(api.executorService, () -> {
             JSONObject body = new JSONObject();
             body.put("ackId", ackId);
-            body.put("deviceId", SignalProtocolHelper.getLocalDeviceId());
 
             api.serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Chat/Ack"))

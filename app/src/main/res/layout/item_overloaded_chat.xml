@@ -31,7 +31,7 @@
             android:textSize="14sp" />
     </LinearLayout>
 
-    <TextView
+    <com.gianlu.commonutils.misc.SuperTextView
         android:id="@+id/overloadedChatItem_lastMsg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
