@@ -42,7 +42,6 @@ import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.tutorial.LoginTutorial;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputLayout;
@@ -80,12 +79,13 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private ShimmerFrameLayout inputLoading;
     private TextView overloadedStatus;
     private SwitchMaterial overloadedToggle;
-    private Task<Integer> chatSummaryTask = null;
     private boolean waitingOverloaded = false;
 
     @Override
     protected void onStart() {
         super.onStart();
+
+        OverloadedApi.chat(this);
         billingHelper.onStart();
     }
 
@@ -382,13 +382,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         }
 
         waitingOverloaded = false;
-        if (chatSummaryTask != null && !chatSummaryTask.isComplete()) {
-            chatSummaryTask.addOnCompleteListener(this, task -> {
-                goToMain();
-                chatSummaryTask = null;
-            });
-            return;
-        }
 
         Intent intent = new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("shouldRequest", launchGameShouldRequest);
@@ -478,8 +471,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 overloadedStatus.setText(getString(R.string.loggedInAs, data.username));
                 overloadedToggle.setEnabled(true);
                 overloadedToggle.setChecked(Prefs.getBoolean(PK.OVERLOADED_LAST_ENABLED, false));
-
-                chatSummaryTask = OverloadedApi.chat(this).getSummary();
                 break;
             case NOT_SIGNED_IN:
                 overloadedLoading.hideShimmer();

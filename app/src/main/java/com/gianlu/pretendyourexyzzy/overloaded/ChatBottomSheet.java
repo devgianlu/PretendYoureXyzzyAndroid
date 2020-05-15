@@ -55,7 +55,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
 
     @Override
     protected void onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ModalBottomSheetHeaderView header, @NonNull Chat payload) {
-        header.setTitle(payload.getOtherUsername());
+        header.setTitle(payload.recipient);
         header.setBackgroundColorRes(MaterialColors.getShuffledInstance().next());
     }
 

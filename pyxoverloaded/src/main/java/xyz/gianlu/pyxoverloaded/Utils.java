@@ -73,6 +73,13 @@ public final class Utils {
     }
 
     @NonNull
+    static RequestBody singletonJsonBody(@NonNull String key, int value) throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put(key, value);
+        return jsonBody(obj);
+    }
+
+    @NonNull
     static RequestBody jsonBody(@NonNull JSONObject obj) {
         return RequestBody.create(obj.toString().getBytes(), MediaType.get("application/json"));
     }

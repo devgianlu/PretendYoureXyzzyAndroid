@@ -312,4 +312,7 @@
     <string name="rejectRequest">Reject request</string>
     <string name="friendRequest">Friend request</string>
     <string name="failedCheckingUsername">Failed checking username!</string>
+    <string name="deleteChat">Delete chat</string>
+    <string name="chatDeleted">Chat deleted</string>
+    <string name="failedDeletingChat">Failed deleting chat!</string>
 </resources>

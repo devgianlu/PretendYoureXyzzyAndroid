@@ -12,7 +12,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
-import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
 import org.json.JSONArray;
@@ -27,10 +26,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import okhttp3.Request;
-import okhttp3.internal.Util;
 import xyz.gianlu.pyxoverloaded.callback.ChatCallback;
 import xyz.gianlu.pyxoverloaded.callback.ChatMessageCallback;
-import xyz.gianlu.pyxoverloaded.callback.ChatsCallback;
 import xyz.gianlu.pyxoverloaded.model.Chat;
 import xyz.gianlu.pyxoverloaded.model.EncryptedChatMessage;
 import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
@@ -110,49 +107,6 @@ public class OverloadedChatApi implements Closeable {
     ///////////////////////////////
 
     /**
-     * Gets a summary of unread messages (and related chats), also checks if the server needs some keys.
-     *
-     * @return The ongoing {@link Task}
-     */
-    @NonNull
-    public Task<Integer> getSummary() {
-        return loggingCallbacks(Tasks.call(api.executorService, () -> {
-            Long since = db.getLastLastSeen();
-            JSONObject body = new JSONObject();
-            body.put("since", since == null ? 0 : since);
-
-            JSONObject obj = api.serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Chat/Summary"))
-                    .post(jsonBody(body)));
-
-            if (obj.optBoolean("shareKeys", false))
-                sharePreKeys();
-
-            JSONArray summary = obj.getJSONArray("summary");
-            for (int i = 0; i < summary.length(); i++) {
-                JSONObject chatObj = summary.getJSONObject(i);
-
-                int chatId = chatObj.getInt("chatId");
-                Chat chat = db.getChat(chatId);
-                if (chat == null) {
-                    chat = new Chat(chatObj.getJSONObject("chat"));
-                    db.putChat(chat);
-                }
-
-                JSONArray messagesArray = chatObj.getJSONArray("messages");
-                List<EncryptedChatMessage> encryptedMessages = new ArrayList<>(messagesArray.length());
-                for (int j = 0; j < messagesArray.length(); j++)
-                    encryptedMessages.add(new EncryptedChatMessage(messagesArray.getJSONObject(j)));
-
-                List<PlainChatMessage> messages = EncryptedChatMessage.decrypt(OverloadedChatApi.this, chatId, encryptedMessages);
-                for (PlainChatMessage msg : messages) dispatchDecryptedMessage(msg);
-            }
-
-            return summary.length();
-        }), "chat-summary");
-    }
-
-    /**
      * Starts a chat with the specified user.
      *
      * @param username The recipient username
@@ -172,9 +126,7 @@ public class OverloadedChatApi implements Closeable {
                     .url(overloadedServerUrl("Chat/Start"))
                     .post(jsonBody(body)));
 
-            Chat remoteChat = new Chat(obj);
-            db.putChat(remoteChat);
-            return remoteChat;
+            return db.putChat(obj.getString("address"), username);
         }), activity, remoteChat -> {
             if (chat == null) callback.onChat(remoteChat);
         }, callback::onFailed);
@@ -183,34 +135,32 @@ public class OverloadedChatApi implements Closeable {
     /**
      * Gets a list of all the user's chats
      *
-     * @param activity The caller {@link Activity}
-     * @param callback The callback containing all the chats
+     * @return A list of {@link Chat}s
      */
-    public void listChats(@Nullable Activity activity, @NonNull ChatsCallback callback) {
-        List<Chat> list = db.getChats();
-        if (!list.isEmpty())
-            new Handler(Looper.getMainLooper()).post(() -> callback.onLocalChats(list));
+    @NonNull
+    public List<Chat> listChats() {
+        return db.getChats();
+    }
 
-        callbacks(Tasks.call(api.executorService, () -> {
-            JSONObject obj = api.serverRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Chat/List"))
-                    .post(Util.EMPTY_REQUEST));
+    /**
+     * Deletes all the local messages for this chat.
+     *
+     * @param chat The {@link Chat} to delete
+     */
+    public void deleteChat(@NonNull Chat chat) {
+        db.removeChat(chat);
+        dispatchUnreadCountUpdate();
+    }
 
-            List<Chat> local = new ArrayList<>(list);
-            JSONArray array = obj.getJSONArray("chats");
-            List<Chat> chats = new ArrayList<>(array.length());
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject chatObj = array.getJSONObject(i);
-                Chat chat = new Chat(chatObj);
-                chats.add(chat);
-                db.putChat(chat);
-                local.remove(chat);
-            }
-
-            for (Chat chat : local) db.removeChat(chat);
-
-            return chats;
-        }), activity, callback::onRemoteChats, callback::onFailed);
+    /**
+     * Gets a chat for the given chat ID.
+     *
+     * @param chatId The chat ID
+     * @return The {@link Chat} object or {@code null}
+     */
+    @Nullable
+    public Chat getChat(int chatId) {
+        return db.getChat(chatId);
     }
 
 
@@ -241,7 +191,7 @@ public class OverloadedChatApi implements Closeable {
                 for (OutgoingMessageEnvelope msg : outgoing) encryptedMessages.put(msg.toJson());
 
                 JSONObject body = new JSONObject();
-                body.put("chatId", chat.id);
+                body.put("address", chat.address);
                 body.put("messages", encryptedMessages);
 
                 try {
@@ -415,11 +365,9 @@ public class OverloadedChatApi implements Closeable {
     @WorkerThread
     void handleEvent(@NonNull OverloadedApi.Event event) throws JSONException {
         if (event.type == OverloadedApi.Event.Type.ENCRYPTED_CHAT_MESSAGE && event.data != null) {
-            int chatId = event.data.getInt("chatId");
-
             PlainChatMessage msg;
             try {
-                msg = new EncryptedChatMessage(event.data).decrypt(this, chatId);
+                msg = new EncryptedChatMessage(event.data).decrypt(this);
             } catch (EncryptedChatMessage.DecryptionException ex) {
                 Log.e(TAG, "Failed decrypting message.", ex);
                 return;

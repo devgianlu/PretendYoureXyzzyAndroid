@@ -19,9 +19,6 @@ import org.whispersystems.libsignal.NoSessionException;
 import org.whispersystems.libsignal.UntrustedIdentityException;
 import org.whispersystems.libsignal.protocol.CiphertextMessage;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
 import xyz.gianlu.pyxoverloaded.signal.OverloadedUserAddress;
 import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
@@ -60,32 +57,21 @@ public class EncryptedChatMessage {
         }
     }
 
-    @NotNull
-    @WorkerThread
-    public static List<PlainChatMessage> decrypt(@NonNull OverloadedChatApi api, int chatId, @NonNull List<EncryptedChatMessage> encrypted) {
-        List<PlainChatMessage> list = new ArrayList<>(encrypted.size());
-        for (EncryptedChatMessage msg : encrypted) {
-            try {
-                list.add(msg.decrypt(api, chatId));
-            } catch (DecryptionException ex) {
-                Log.e(TAG, String.format("Failed decrypting message %s.", msg), ex);
-            }
-        }
-
-        return list;
-    }
-
     @WorkerThread
     @NonNull
-    public PlainChatMessage decrypt(@NonNull OverloadedChatApi api, int chatId) throws DecryptionException {
+    public PlainChatMessage decrypt(@NonNull OverloadedChatApi api) throws DecryptionException {
         String text;
         try {
             text = SignalProtocolHelper.decrypt(this);
-        } catch (InvalidVersionException | InvalidMessageException | LegacyMessageException | DuplicateMessageException | InvalidKeyIdException | UntrustedIdentityException | InvalidKeyException | NoSessionException ex) {
+        } catch (InvalidVersionException | InvalidMessageException | LegacyMessageException | InvalidKeyIdException | UntrustedIdentityException | InvalidKeyException | NoSessionException ex) {
+            throw new DecryptionException(ex);
+        } catch (DuplicateMessageException ex) {
+            Log.w(TAG, "Received duplicate message. Acknowledging anyway. " + this, ex);
+            api.decryptAck(ackId);
             throw new DecryptionException(ex);
         }
 
-        PlainChatMessage msg = api.db.putMessage(chatId, text, timestamp, from);
+        PlainChatMessage msg = api.db.putMessage(text, timestamp, sourceAddress.uid, from);
         api.decryptAck(ackId);
         return msg;
     }

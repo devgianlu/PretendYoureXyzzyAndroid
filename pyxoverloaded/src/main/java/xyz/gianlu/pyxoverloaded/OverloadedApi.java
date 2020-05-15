@@ -404,6 +404,7 @@ public class OverloadedApi {
                     throw new NotSignedInException();
             }
 
+            if (webSocket.client != null) webSocket.client.cancel();
             webSocket.client = client.newWebSocket(new Request.Builder().get()
                     .header("X-Device-Id", String.valueOf(SignalProtocolHelper.getLocalDeviceId()))
                     .header("Authorization", "FirebaseToken " + lastToken.token)
@@ -694,7 +695,18 @@ public class OverloadedApi {
                 return;
             }
 
-            dispatchEvent(new Event(type, data == null ? new JSONObject() : data, null));
+            try {
+                dispatchEvent(new Event(type, data == null ? new JSONObject() : data, null));
+            } catch (Exception ex) {
+                Log.e(TAG, "Failed dispatching event.", ex);
+            }
+        }
+
+        @Override
+        public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @org.jetbrains.annotations.Nullable Response response) {
+            Log.e(TAG, "Failure in WebSocket connection.", t);
+
+            // TODO: Reconnect
         }
 
         void close() {

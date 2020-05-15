@@ -3,7 +3,7 @@ package com.gianlu.pretendyourexyzzy.overloaded.fragments;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +11,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.NotFilterable;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
@@ -26,7 +28,6 @@ import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
-import xyz.gianlu.pyxoverloaded.callback.ChatsCallback;
 import xyz.gianlu.pyxoverloaded.model.Chat;
 import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
 
@@ -74,27 +75,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         rmv.startLoading();
 
         chatApi = OverloadedApi.chat(requireContext());
-        chatApi.listChats(getActivity(), new ChatsCallback() {
-            @Override
-            public void onRemoteChats(@NonNull List<Chat> chats) {
-                if (adapter != null) adapter.itemsChanged(chats);
-                else rmv.loadListData(adapter = new ChatsAdapter(requireContext(), chats), false);
-            }
-
-            @Override
-            public void onLocalChats(@NonNull List<Chat> chats) {
-                rmv.loadListData(adapter = new ChatsAdapter(requireContext(), chats), false);
-            }
-
-            @Override
-            public void onFailed(@NonNull Exception ex) {
-                Log.e(TAG, "Failed getting chats.", ex);
-                if (ex instanceof OverloadedApi.MaintenanceException)
-                    rmv.showError(((OverloadedApi.MaintenanceException) ex).messageString(requireContext()));
-                else
-                    rmv.showError(R.string.failedLoading);
-            }
-        });
+        rmv.loadListData(adapter = new ChatsAdapter(requireContext(), chatApi.listChats()), false);
 
         OverloadedApi.get().addEventListener(this);
         return rmv;
@@ -123,26 +104,8 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
                 }
             }
 
-            chatApi.listChats(null, new ChatsCallback() {
-                @Override
-                public void onRemoteChats(@NonNull List<Chat> chats) {
-                    for (Chat chat : chats) {
-                        if (chat.id == chatId) {
-                            itemChangedOrAdded(chat);
-                            return;
-                        }
-                    }
-                }
-
-                @Override
-                public void onLocalChats(@NonNull List<Chat> chats) {
-                }
-
-                @Override
-                public void onFailed(@NonNull Exception ex) {
-                    Log.e(TAG, "Failed getting chats to refresh adapter.", ex);
-                }
-            });
+            Chat chat = OverloadedApi.chat(requireContext()).getChat(chatId);
+            if (chat != null) itemChangedOrAdded(chat);
         }
 
         @Override
@@ -153,7 +116,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         @Override
         protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull Chat payload) {
             Chat chat = objs.get(position);
-            holder.username.setText(chat.getOtherUsername());
+            holder.username.setText(chat.recipient);
 
             PlainChatMessage lastMsg = chatApi.getLastMessage(chat.id);
             if (lastMsg == null) {
@@ -174,6 +137,32 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
                 lastChatSheet = new ChatBottomSheet();
                 lastChatSheet.show(ChatsFragment.this, chat);
             });
+
+            holder.itemView.setOnLongClickListener(v -> {
+                showPopup(holder.itemView.getContext(), holder.itemView, chat);
+                return true;
+            });
+        }
+
+        private void showPopup(@NonNull Context context, @NonNull View anchor, @NonNull Chat chat) {
+            PopupMenu popup = new PopupMenu(context, anchor);
+            popup.inflate(R.menu.item_chat);
+
+            popup.setOnMenuItemClickListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.chatItemMenu_showProfile:
+                        // TODO: Show user profile
+                        return true;
+                    case R.id.chatItemMenu_delete:
+                        OverloadedApi.chat(context).deleteChat(chat);
+                        removeItem(chat);
+                        return true;
+                    default:
+                        return false;
+                }
+            });
+
+            CommonUtils.showPopupOffset(popup, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, context.getResources().getDisplayMetrics()), 0);
         }
 
         @Override

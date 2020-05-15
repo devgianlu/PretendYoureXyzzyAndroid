@@ -9,6 +9,11 @@ public class OverloadedUserAddress {
     public final String uid;
     public final int deviceId;
 
+    public OverloadedUserAddress(@NotNull String uid, int deviceId) {
+        this.uid = uid;
+        this.deviceId = deviceId;
+    }
+
     public OverloadedUserAddress(@NonNull String address) {
         int index;
         if ((index = address.indexOf(':')) == -1)
