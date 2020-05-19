@@ -1,4 +1,2 @@
-### Changed
-- Using Android logging
-- Allow app to be moved to the external storage
-- Updated third-part libraries
+### Removed
+- Cardcast has been shutdown, a replacement will be available soon
