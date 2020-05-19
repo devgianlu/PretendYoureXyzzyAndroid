@@ -1,14 +1,12 @@
 package com.gianlu.pretendyourexyzzy.api;
 
 import android.os.Build;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
-import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GameCards;
@@ -22,8 +20,6 @@ import com.gianlu.pretendyourexyzzy.api.models.WhoisResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -68,6 +64,7 @@ public final class PyxRequests {
         return games;
     };
     private static final Pyx.Processor<WhoisResult> WHOIS_RESULT_PROCESSOR = (response, obj) -> new WhoisResult(obj);
+    private static final String TAG = PyxRequests.class.getSimpleName();
 
     @Nullable
     private static String findSessionId(@NonNull Response response) {
@@ -177,35 +174,6 @@ public final class PyxRequests {
                 new PyxRequest.Param("gid", String.valueOf(gid)),
                 new PyxRequest.Param("cid", String.valueOf(cardId)),
                 new PyxRequest.Param("m", customText));
-    }
-
-    private static final String TAG = PyxRequests.class.getSimpleName();
-
-    @NonNull
-    public static PyxRequestWithResult<List<Deck>> listCardcastDecks(int gid, @NonNull final Cardcast cardcast) {
-        return new PyxRequestWithResult<>(Pyx.Op.LIST_CARDCAST_CARD_SETS, (response, obj) -> {
-            List<Deck> cards = new ArrayList<>();
-            JSONArray array = obj.getJSONArray("css");
-            for (int i = 0; i < array.length(); i++) {
-                Deck set = new Deck(array.getJSONObject(i));
-                cards.add(set);
-
-                try {
-                    set.cardcastDeck(cardcast.getDeckInfoHitCache(set.cardcastCode));
-                } catch (IOException | ParseException | JSONException ex) {
-                    Log.w(TAG, ex);
-                }
-            }
-
-            return cards;
-        }, new PyxRequest.Param("gid", String.valueOf(gid)));
-    }
-
-    @NonNull
-    public static PyxRequest addCardcastDeck(int gid, String code) {
-        return new PyxRequest(Pyx.Op.ADD_CARDCAST_CARD_SET,
-                new PyxRequest.Param("gid", String.valueOf(gid)),
-                new PyxRequest.Param("cci", code));
     }
 
     @NonNull

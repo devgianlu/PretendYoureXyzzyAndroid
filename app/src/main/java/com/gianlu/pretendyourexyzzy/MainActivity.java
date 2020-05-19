@@ -43,17 +43,15 @@ import com.gianlu.pretendyourexyzzy.main.GamesFragment;
 import com.gianlu.pretendyourexyzzy.main.NamesFragment;
 import com.gianlu.pretendyourexyzzy.main.OnLeftGame;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
-import com.gianlu.pretendyourexyzzy.main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsActivity;
-import com.gianlu.pretendyourexyzzy.starred.StarredDecksActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONException;
 
 import java.util.Objects;
 
-public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction {
+public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction {
     private static final String TAG = MainActivity.class.getSimpleName();
     private final Object fragmentsLock = new Object();
     private BottomNavigationManager navigation;
@@ -88,8 +86,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
 
-        OngoingGameHelper.setup(this);
-
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
@@ -105,7 +101,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.USER_METRICS, R.drawable.baseline_person_24, getString(R.string.metrics)));
 
         drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.STARRED_CARDS, R.drawable.baseline_star_24, getString(R.string.starredCards)))
-                .addMenuItem(new BaseDrawerItem<>(DrawerItem.STARRED_CARDCAST_DECKS, R.drawable.baseline_bookmarks_24, getString(R.string.starredCardcastDecks)))
                 .addMenuItemSeparator()
                 .addMenuItem(new BaseDrawerItem<>(DrawerItem.PREFERENCES, R.drawable.baseline_settings_24, getString(R.string.preferences)))
                 .addMenuItem(new BaseDrawerItem<>(DrawerItem.REPORT, R.drawable.baseline_report_problem_24, getString(R.string.report)))
@@ -138,7 +133,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             }
 
             switchTo(item);
-
             return true;
         });
         navigation.setOnNavigationItemReselectedListener(item -> {
@@ -268,23 +262,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean canModifyCardcastDecks() {
-        return ongoingGameFragment != null && ongoingGameFragment.canModifyCardcastDecks();
-    }
-
-    @Override
-    public void addCardcastDeck(@NonNull String code) {
-        if (!canModifyCardcastDecks()) return;
-        ongoingGameFragment.addCardcastDeck(code);
-    }
-
-    @Override
-    public void addCardcastStarredDecks() {
-        if (!canModifyCardcastDecks()) return;
-        ongoingGameFragment.addCardcastStarredDecks();
     }
 
     private void setKeepScreenOn(boolean on) {
@@ -461,9 +438,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 return true;
             case STARRED_CARDS:
                 StarredCardsActivity.startActivity(this);
-                return true;
-            case STARRED_CARDCAST_DECKS:
-                StarredDecksActivity.startActivity(this);
                 return true;
             case USER_METRICS:
                 MetricsActivity.startActivity(this);

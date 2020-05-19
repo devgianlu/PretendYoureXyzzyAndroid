@@ -96,21 +96,6 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
-        <!-- Starred decks activity -->
-        <activity
-            android:name=".starred.StarredDecksActivity"
-            android:configChanges="uiMode"
-            android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.FullDark" />
-
-        <!-- Cardcast deck activity -->
-        <activity
-            android:name=".activities.CardcastDeckActivity"
-            android:configChanges="uiMode"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-
         <!-- Preferences activity -->
         <activity
             android:name=".PreferenceActivity"

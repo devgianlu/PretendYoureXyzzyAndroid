@@ -7,6 +7,4 @@
     <color name="colorSecondary">#4fc7ff</color>
     <color name="colorSecondaryVariant">#03a0f0</color>
     <color name="colorOnSecondary">@color/white</color>
-
-    <color name="cardcastSheetFabBg">@color/colorPrimaryVariant</color>
 </resources>

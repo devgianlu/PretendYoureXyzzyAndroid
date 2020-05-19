@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.gianlu.pretendyourexyzzy.api.NameValuePair;
-import com.gianlu.pretendyourexyzzy.api.models.CardcastCard;
 import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
@@ -113,16 +112,6 @@ public final class Utils {
 
         builder.append(white).append(" white card");
         if (white != 1) builder.append("s");
-
-        return builder.toString();
-    }
-
-    @NonNull
-    public static String composeCardcastDeckSentence(CardcastCard blackCard, CardcastCard whiteCard) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(blackCard.text.get(0));
-        builder.append("<u>").append(whiteCard.text.get(0)).append("</u>");
-        if (blackCard.text.size() > 1) builder.append(blackCard.text.get(1));
 
         return builder.toString();
     }

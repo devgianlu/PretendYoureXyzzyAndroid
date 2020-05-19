@@ -14,7 +14,6 @@ import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
-import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoadAndConfig;
 import com.gianlu.pretendyourexyzzy.api.models.GameCards;
 import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
@@ -104,49 +103,6 @@ public class RegisteredPyx extends FirstLoadedPyx {
                     GameCards cards = requestSync(PyxRequests.getGameCards(gid));
                     GameInfoAndCards result = new GameInfoAndCards(info, cards);
                     post(() -> listener.onDone(result));
-                } catch (JSONException | PyxException | IOException ex) {
-                    post(() -> listener.onException(ex));
-                }
-            }
-        });
-    }
-
-    public final void addCardcastDecksAndList(int gid, @NonNull List<String> codes, @NonNull Cardcast cardcast, @Nullable Activity activity, @NonNull OnResult<List<Deck>> listener) {
-        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
-            @Override
-            public void run() {
-                try {
-                    List<String> failed = new ArrayList<>();
-                    for (String code : codes) {
-                        try {
-                            requestSync(PyxRequests.addCardcastDeck(gid, code));
-                        } catch (JSONException | PyxException | IOException ex) {
-                            Log.e(TAG, "Failed adding cardcast decks.", ex);
-                            failed.add(code);
-                        }
-                    }
-
-                    if (!failed.isEmpty()) {
-                        post(() -> listener.onException(new PartialCardcastAddFail(failed)));
-                    }
-
-                    List<Deck> sets = requestSync(PyxRequests.listCardcastDecks(gid, cardcast));
-                    post(() -> listener.onDone(sets));
-                } catch (JSONException | PyxException | IOException ex) {
-                    post(() -> listener.onException(ex));
-                }
-            }
-        });
-    }
-
-    public final void addCardcastDeckAndList(int gid, @NonNull String code, @NonNull Cardcast cardcast, @Nullable Activity activity, @NonNull OnResult<List<Deck>> listener) {
-        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
-            @Override
-            public void run() {
-                try {
-                    requestSync(PyxRequests.addCardcastDeck(gid, code));
-                    final List<Deck> sets = requestSync(PyxRequests.listCardcastDecks(gid, cardcast));
-                    post(() -> listener.onDone(sets));
                 } catch (JSONException | PyxException | IOException ex) {
                     post(() -> listener.onException(ex));
                 }
