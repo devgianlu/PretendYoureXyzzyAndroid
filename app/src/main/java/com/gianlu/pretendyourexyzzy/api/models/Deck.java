@@ -1,7 +1,6 @@
 package com.gianlu.pretendyourexyzzy.api.models;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,8 +17,6 @@ public class Deck {
     public final int blackCards;
     public final int whiteCards;
     public final boolean baseDeck;
-    public final String cardcastCode;
-    private CardcastDeckInfo cardcastDeck;
 
     @NonNull
     public static List<Deck> list(JSONArray array) throws JSONException {
@@ -36,7 +33,6 @@ public class Deck {
         blackCards = obj.getInt("bcid");
         baseDeck = obj.getBoolean("bd");
         whiteCards = obj.getInt("wcid");
-        cardcastCode = getCardcastCode(id);
     }
 
     public static int countWhiteCards(List<Deck> decks) {
@@ -49,25 +45,5 @@ public class Deck {
         int count = 0;
         for (Deck deck : decks) count += deck.blackCards;
         return count;
-    }
-
-    @Nullable
-    private static String getCardcastCode(int id) {
-        if (id < 0) {
-            String codeTmp = "00000";
-            codeTmp += Integer.toString(-id, 36);
-            return codeTmp.substring(codeTmp.length() - 5);
-        }
-
-        return null;
-    }
-
-    public void cardcastDeck(CardcastDeckInfo cardcastDeck) {
-        this.cardcastDeck = cardcastDeck;
-    }
-
-    @Nullable
-    public CardcastDeckInfo cardcastDeck() {
-        return cardcastDeck;
     }
 }

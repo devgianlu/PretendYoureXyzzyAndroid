@@ -23,7 +23,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.MessageView;
@@ -34,14 +33,12 @@ import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.adapters.PlayersAdapter;
-import com.gianlu.pretendyourexyzzy.api.Cardcast;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.NameValuePair;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
-import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
@@ -50,11 +47,9 @@ import com.gianlu.pretendyourexyzzy.dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.GameRoundDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.main.ongoinggame.AnotherGameManager;
-import com.gianlu.pretendyourexyzzy.main.ongoinggame.CardcastSheet;
 import com.gianlu.pretendyourexyzzy.main.ongoinggame.GameLayout;
 import com.gianlu.pretendyourexyzzy.main.ongoinggame.UrbanDictSheet;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
-import com.gianlu.pretendyourexyzzy.starred.StarredDecksManager;
 import com.gianlu.pretendyourexyzzy.tutorial.CreateGameTutorial;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.tutorial.HowToPlayTutorial;
@@ -66,15 +61,13 @@ import java.util.List;
 
 import okhttp3.HttpUrl;
 
-public class OngoingGameFragment extends FragmentWithDialog implements OngoingGameHelper.Listener, PlayersAdapter.Listener, TutorialManager.Listener, AnotherGameManager.Listener, AnotherGameManager.OnPlayerStateChanged {
+public class OngoingGameFragment extends FragmentWithDialog implements PlayersAdapter.Listener, TutorialManager.Listener, AnotherGameManager.Listener, AnotherGameManager.OnPlayerStateChanged {
     private static final String TAG = OngoingGameFragment.class.getSimpleName();
     private OnLeftGame onLeftGame;
     private ProgressBar loading;
     private GameLayout gameLayout;
     private GamePermalink perm;
     private RegisteredPyx pyx;
-    private Cardcast cardcast;
-    private CardcastSheet cardcastSheet;
     private MessageView message;
     private TutorialManager tutorialManager;
     private AnotherGameManager manager;
@@ -189,7 +182,6 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
 
         try {
             pyx = RegisteredPyx.get();
-            cardcast = Cardcast.get();
             manager = new AnotherGameManager(perm, pyx, gameLayout, this);
         } catch (LevelMismatchException ex) {
             loading.setVisibility(View.GONE);
@@ -244,10 +236,6 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
             case R.id.ongoingGame_lastRound:
                 String roundId = manager == null ? null : manager.getLastRoundMetricsId();
                 if (roundId != null) showDialog(GameRoundDialog.get(roundId));
-                return true;
-            case R.id.ongoingGame_cardcast:
-                cardcastSheet = CardcastSheet.get();
-                cardcastSheet.show(getActivity(), perm.gid);
                 return true;
             case R.id.ongoingGame_definition:
                 showDialog(Dialogs.askDefinitionWord(getContext(), text -> UrbanDictSheet.get().show(getActivity(), text)));
@@ -324,30 +312,6 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
         DialogUtils.showDialog(getActivity(), Dialogs.gameOptions(getContext(), options, pyx.firstLoad()));
     }
 
-    @Override
-    public void addCardcastDeck(@NonNull String code) {
-        if (code.length() != 5) {
-            showToast(Toaster.build().message(R.string.invalidCardcastCode).extra(code));
-            return;
-        }
-
-        pyx.addCardcastDeckAndList(perm.gid, code, cardcast, getActivity(), new Pyx.OnResult<List<Deck>>() {
-            @Override
-            public void onDone(@NonNull List<Deck> result) {
-                showToast(Toaster.build().message(R.string.cardcastAdded));
-                AnalyticsApplication.sendAnalytics(Utils.ACTION_ADDED_CARDCAST);
-
-                if (cardcastSheet != null) cardcastSheet.update(result);
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                Log.e(TAG, "Failed adding Cardcast deck.", ex);
-                showToast(Toaster.build().message(R.string.failedAddingCardcast));
-            }
-        });
-    }
-
     public void goBack() {
         if (isVisible() && DialogUtils.hasVisibleDialog(getActivity())) {
             DialogUtils.dismissDialog(getActivity());
@@ -363,47 +327,6 @@ public class OngoingGameFragment extends FragmentWithDialog implements OngoingGa
                 .setNegativeButton(android.R.string.no, null);
 
         DialogUtils.showDialog(getActivity(), builder);
-    }
-
-    @Override
-    public boolean canModifyCardcastDecks() {
-        return manager != null && manager.amHost() && manager.isStatus(Game.Status.LOBBY);
-    }
-
-    @Override
-    public void addCardcastStarredDecks() {
-        if (getContext() == null) return;
-        List<StarredDecksManager.StarredDeck> starredDecks = StarredDecksManager.get().getDecks();
-        if (starredDecks.isEmpty()) {
-            showToast(Toaster.build().message(R.string.noStarredDecks));
-            return;
-        }
-
-        List<String> codes = new ArrayList<>();
-        for (StarredDecksManager.StarredDeck deck : starredDecks)
-            codes.add(deck.code);
-
-        pyx.addCardcastDecksAndList(perm.gid, codes, cardcast, getActivity(), new Pyx.OnResult<List<Deck>>() {
-            @Override
-            public void onDone(@NonNull List<Deck> result) {
-                showToast(Toaster.build().message(R.string.starredDecksAdded));
-                AnalyticsApplication.sendAnalytics(Utils.ACTION_ADDED_CARDCAST);
-
-                if (cardcastSheet != null) cardcastSheet.update(result);
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                Log.e(TAG, "Failed adding Cardcast deck.", ex);
-
-                if (ex instanceof RegisteredPyx.PartialCardcastAddFail) {
-                    showToast(Toaster.build().message(R.string.addStarredDecksFailedPartial).extra(((RegisteredPyx.PartialCardcastAddFail) ex).getCodes()));
-                    return;
-                }
-
-                showToast(Toaster.build().message(R.string.failedAddingCardcast));
-            }
-        });
     }
 
     @Override
