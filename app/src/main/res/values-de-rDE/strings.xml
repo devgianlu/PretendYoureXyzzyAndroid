@@ -204,4 +204,5 @@
     <string name="googlePlayGames">Google Play Games</string>
     <string name="loggedIn">Logged in</string>
     <string name="login">Login</string>
+    <string name="cardcastGoneMessage">Cardcast has been shutdown. We are working on a replacement which will be available soon ( https://github.com/ajanata/PretendYoureXyzzy/issues/240 ).</string>
 </resources>
