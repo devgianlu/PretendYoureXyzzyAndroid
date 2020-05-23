@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.gianlu.pretendyourexyzzy"
-    android:installLocation="auto">
+    android:installLocation="auto"
+    tools:ignore="LockedOrientationActivity">
 
     <!-- ... -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -91,6 +93,22 @@
         <!-- Starred cards activity -->
         <activity
             android:name=".starred.StarredCardsActivity"
+            android:configChanges="uiMode"
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <!-- Custom decks activity -->
+        <activity
+            android:name=".customdecks.CustomDecksActivity"
+            android:configChanges="uiMode"
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.FullDark" />
+
+        <!-- Edit custom decks activity -->
+        <activity
+            android:name=".customdecks.EditCustomDeckActivity"
             android:configChanges="uiMode"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"

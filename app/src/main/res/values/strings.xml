@@ -206,4 +206,14 @@
     <string name="loggedIn">Logged in</string>
     <string name="login">Login</string>
     <string name="cardcastGoneMessage">Cardcast has been shutdown. We are working on a replacement which will be available soon ( https://github.com/ajanata/PretendYoureXyzzy/issues/240 ).</string>
+    <string name="customDecks">Custom decks</string>
+    <string name="importDeck">Import deck</string>
+    <string name="noCustomDecks">You have no custom decks. Create one right away!</string>
+    <string name="editCustomDeck">Edit custom deck</string>
+    <string name="createCustomDeck">Create custom deck</string>
+    <string name="info">Info</string>
+    <string name="description">Description</string>
+    <string name="watermark">Watermark</string>
+    <string name="invalidWatermark">The watermark must be 5 characters long including only uppercase letters and numbers.</string>
+    <string name="emptyDeckName">Deck name must not be empty.</string>
 </resources>

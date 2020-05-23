@@ -34,6 +34,7 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.api.models.User;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksActivity;
 import com.gianlu.pretendyourexyzzy.dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.main.CardcastFragment;
@@ -101,6 +102,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.USER_METRICS, R.drawable.baseline_person_24, getString(R.string.metrics)));
 
         drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.STARRED_CARDS, R.drawable.baseline_star_24, getString(R.string.starredCards)))
+                .addMenuItem(new BaseDrawerItem<>(DrawerItem.CUSTOM_DECKS, R.drawable.baseline_bookmarks_24, getString(R.string.customDecks)))
                 .addMenuItemSeparator()
                 .addMenuItem(new BaseDrawerItem<>(DrawerItem.PREFERENCES, R.drawable.baseline_settings_24, getString(R.string.preferences)))
                 .addMenuItem(new BaseDrawerItem<>(DrawerItem.REPORT, R.drawable.baseline_report_problem_24, getString(R.string.report)))
@@ -438,6 +440,9 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 return true;
             case STARRED_CARDS:
                 StarredCardsActivity.startActivity(this);
+                return true;
+            case CUSTOM_DECKS:
+                startActivity(new Intent(this, CustomDecksActivity.class));
                 return true;
             case USER_METRICS:
                 MetricsActivity.startActivity(this);
