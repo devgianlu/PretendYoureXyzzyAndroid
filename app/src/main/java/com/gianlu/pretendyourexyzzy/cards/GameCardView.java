@@ -32,8 +32,9 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.typography.FontsManager;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
-import com.gianlu.pretendyourexyzzy.api.models.Card;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.UnknownCard;
 import com.google.android.material.card.MaterialCardView;
 
 public class GameCardView extends MaterialCardView {
@@ -155,7 +156,7 @@ public class GameCardView extends MaterialCardView {
         int foreground = card.black() ? Color.WHITE : Color.BLACK;
         int background = card.black() ? Color.BLACK : getWhiteBackground();
 
-        if (card instanceof Card && ((Card) card).isWinner())
+        if (card instanceof GameCard && ((GameCard) card).isWinner())
             setCardBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorAccent));
         else
             setCardBackgroundColor(background);
@@ -227,17 +228,18 @@ public class GameCardView extends MaterialCardView {
     }
 
     private void setupActions() {
-        if (!card.unknown()) {
-            if (primary == Action.SELECT) {
-                setOnClickListener(new CallActionListenerOnClick(Action.SELECT));
+        if (card instanceof UnknownCard)
+            return;
 
-                setupAction(secondary, primaryAction);
-                setupAction(null, secondaryAction);
-            } else {
-                setupAction(primary, primaryAction);
-                setupAction(secondary, secondaryAction);
-                checkRoomForSelectImage();
-            }
+        if (primary == Action.SELECT) {
+            setOnClickListener(new CallActionListenerOnClick(Action.SELECT));
+
+            setupAction(secondary, primaryAction);
+            setupAction(null, secondaryAction);
+        } else {
+            setupAction(primary, primaryAction);
+            setupAction(secondary, secondaryAction);
+            checkRoomForSelectImage();
         }
     }
 
@@ -250,7 +252,7 @@ public class GameCardView extends MaterialCardView {
         setVisibility(VISIBLE);
         setupColors();
 
-        if (card.unknown()) {
+        if (card instanceof UnknownCard) {
             showUnknown();
         } else {
             setupActions();

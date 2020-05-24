@@ -216,4 +216,5 @@
     <string name="watermark">Watermark</string>
     <string name="invalidWatermark">The watermark must be 5 characters long including only uppercase letters and numbers.</string>
     <string name="emptyDeckName">Deck name must not be empty.</string>
+    <string name="customDeckNameNotUnique">You already have a deck with this name.</string>
 </resources>

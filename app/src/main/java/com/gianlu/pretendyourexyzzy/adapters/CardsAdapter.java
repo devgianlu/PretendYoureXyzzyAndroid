@@ -9,9 +9,9 @@ import androidx.annotation.UiThread;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
-import com.gianlu.pretendyourexyzzy.api.models.Card;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.UnknownCard;
 import com.gianlu.pretendyourexyzzy.cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.cards.PyxCardsGroupView;
 
@@ -25,6 +25,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     private final Listener listener;
     private final boolean forGrid;
     private boolean isSelectable;
+    private RecyclerView list;
 
     public CardsAdapter(@Nullable GameCardView.Action primary, @Nullable GameCardView.Action secondary, @NonNull Listener listener) {
         this.primary = primary;
@@ -52,13 +53,23 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         return cards;
     }
 
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        list = recyclerView;
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
+        list = null;
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new ViewHolder(parent.getContext());
     }
 
-    @Override
+
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
         holder.cards.setCards(cards.get(position), primary, secondary, isSelectable, forGrid, holder);
     }
@@ -77,7 +88,6 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         for (int i = 0; i < cards.size(); i++) {
             CardsGroup group = cards.get(i);
             if (group.hasCard(winnerCardId)) {
-                RecyclerView list = listener != null ? listener.getCardsRecyclerView() : null;
                 if (list != null && list.getLayoutManager() instanceof LinearLayoutManager) { // Scroll only if item is not visible
                     LinearLayoutManager llm = (LinearLayoutManager) list.getLayoutManager();
                     int start = llm.findFirstCompletelyVisibleItemPosition();
@@ -136,7 +146,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
             for (CardsGroup group : cards) {
                 if (group.isUnknwon()) {
                     for (int i = 1; i < blackCard.numPick(); i++)
-                        group.add(Card.newBlankCard());
+                        group.add(new UnknownCard());
                 }
             }
         }
@@ -183,9 +193,6 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     }
 
     public interface Listener {
-        @Nullable
-        RecyclerView getCardsRecyclerView();
-
         void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card);
     }
 

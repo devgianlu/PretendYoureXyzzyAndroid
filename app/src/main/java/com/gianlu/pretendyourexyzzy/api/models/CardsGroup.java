@@ -2,6 +2,10 @@ package com.gianlu.pretendyourexyzzy.api.models;
 
 import androidx.annotation.NonNull;
 
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.UnknownCard;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -10,12 +14,21 @@ import java.util.List;
 
 public class CardsGroup extends ArrayList<BaseCard> {
 
-    public CardsGroup(JSONArray array) throws JSONException {
-        for (int j = 0; j < array.length(); j++)
-            add(new Card(array.getJSONObject(j)));
+    private CardsGroup() {
     }
 
-    private CardsGroup() {
+    @NonNull
+    public static CardsGroup gameCards(@NonNull JSONArray array) throws JSONException {
+        CardsGroup group = new CardsGroup();
+        for (int i = 0; i < array.length(); i++) group.add(GameCard.parse(array.getJSONObject(i)));
+        return group;
+    }
+
+    @NonNull
+    public static List<CardsGroup> list(@NonNull JSONArray array) throws JSONException {
+        List<CardsGroup> list = new ArrayList<>();
+        for (int i = 0; i < array.length(); i++) list.add(gameCards(array.getJSONArray(i)));
+        return list;
     }
 
     @NonNull
@@ -28,26 +41,19 @@ public class CardsGroup extends ArrayList<BaseCard> {
     @NonNull
     public static CardsGroup unknown(int pick) {
         CardsGroup group = new CardsGroup();
-        for (int i = 0; i < pick; i++) group.add(Card.newBlankCard());
+        for (int i = 0; i < pick; i++) group.add(new UnknownCard());
         return group;
     }
 
     @NonNull
-    public static List<CardsGroup> list(@NonNull JSONArray array) throws JSONException {
-        List<CardsGroup> list = new ArrayList<>();
-        for (int i = 0; i < array.length(); i++) list.add(new CardsGroup(array.getJSONArray(i)));
-        return list;
-    }
-
-    @NonNull
-    public static CardsGroup from(List<BaseCard> cards) {
+    public static CardsGroup from(List<? extends BaseCard> cards) {
         CardsGroup group = new CardsGroup();
         group.addAll(cards);
         return group;
     }
 
     public boolean isUnknwon() {
-        return !isEmpty() && get(0).unknown(); // Assuming that if one cards is unknown, also the others are
+        return !isEmpty() && get(0) instanceof UnknownCard; // Assuming that if one cards is unknown, also the others are
     }
 
     public boolean hasCard(int id) {
@@ -60,8 +66,8 @@ public class CardsGroup extends ArrayList<BaseCard> {
 
     public void setWinner() {
         for (BaseCard card : this)
-            if (card instanceof Card)
-                ((Card) card).setWinner();
+            if (card instanceof GameCard)
+                ((GameCard) card).setWinner();
     }
 
     @Override

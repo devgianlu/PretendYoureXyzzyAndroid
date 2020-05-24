@@ -6,10 +6,14 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 
-public final class WhiteCardsFragment extends FragmentWithDialog { // TODO
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+
+public final class WhiteCardsFragment extends AbsCardsFragment { // TODO
 
     @NonNull
     public static WhiteCardsFragment get(@NonNull Context context, @Nullable Integer id) {
@@ -19,5 +23,11 @@ public final class WhiteCardsFragment extends FragmentWithDialog { // TODO
         if (id != null) args.putInt("id", id);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @NotNull
+    @Override
+    protected List<? extends BaseCard> getCards(int id) {
+        return db.loadWhiteCards(id);
     }
 }

@@ -9,10 +9,14 @@ import android.database.sqlite.SQLiteOpenHelper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public final class CustomDecksDatabase extends SQLiteOpenHelper {
+    private static final int CARD_TYPE_BLACK = 0;
+    private static final int CARD_TYPE_WHITE = 1;
     private static CustomDecksDatabase instance;
 
     private CustomDecksDatabase(@Nullable Context context) {
@@ -28,10 +32,22 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS decks (id INTEGER PRIMARY KEY UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, description TEXT NOT NULL)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS cards (id INTEGER PRIMARY KEY UNIQUE, deck_id INTEGER NOT NULL, type INTEGER NOT NULL, text TEXT NOT NULL)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    }
+
+    public boolean isNameUnique(@NonNull String name) {
+        SQLiteDatabase db = getReadableDatabase();
+        db.beginTransaction();
+        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM decks WHERE name=?", new String[]{name})) {
+            if (cursor == null || !cursor.moveToNext()) return false;
+            else return cursor.getInt(0) == 0;
+        } finally {
+            db.endTransaction();
+        }
     }
 
     @NonNull
@@ -94,7 +110,37 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
     }
 
-    public static class CustomDeck {
+    @NonNull
+    public List<CustomCard> loadCards(int deckId, int type) {
+        CustomDeck deck = getDeck(deckId);
+        if (deck == null) throw new IllegalStateException();
+
+        SQLiteDatabase db = getReadableDatabase();
+        db.beginTransaction();
+        try (Cursor cursor = db.rawQuery("SELECT * FROM cards WHERE type=? AND deck_id=?", new String[]{String.valueOf(type), String.valueOf(deckId)})) {
+            if (cursor == null) return new ArrayList<>(0);
+
+            List<CustomCard> list = new ArrayList<>(cursor.getCount());
+            while (cursor.moveToNext()) {
+                list.add(new CustomCard(deck, cursor));
+            }
+            return list;
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    @NonNull
+    public List<CustomCard> loadBlackCards(int deckId) {
+        return loadCards(deckId, CARD_TYPE_BLACK);
+    }
+
+    @NonNull
+    public List<CustomCard> loadWhiteCards(int deckId) {
+        return loadCards(deckId, CARD_TYPE_WHITE);
+    }
+
+    public static final class CustomDeck {
         public final int id;
         public final String name;
         public final String watermark;
@@ -112,6 +158,65 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             this.name = name;
             this.description = description;
             this.watermark = watermark;
+        }
+    }
+
+    public static final class CustomCard extends BaseCard {
+        private final String text; // TODO: Store text differently
+        private final String watermark;
+        private final int type;
+        private final int id;
+
+        private CustomCard(@NonNull CustomDeck deck, @NonNull Cursor cursor) {
+            watermark = deck.watermark;
+            text = cursor.getString(cursor.getColumnIndex("text"));
+            type = cursor.getInt(cursor.getColumnIndex("type"));
+            id = cursor.getInt(cursor.getColumnIndex("id"));
+        }
+
+        @NonNull
+        @Override
+        public String text() {
+            return text;
+        }
+
+        @NonNull
+        @Override
+        public String watermark() {
+            return watermark;
+        }
+
+        @Override
+        public int numPick() {
+            return !black() ? -1 : text.split("____").length - 1;
+        }
+
+        @Override
+        public int numDraw() {
+            return !black() ? -1 : 0;
+        }
+
+        @Override
+        public int id() {
+            return id;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            CustomCard that = (CustomCard) o;
+            return id == that.id;
+        }
+
+        @Override
+        public int hashCode() {
+            return id;
+        }
+
+        @Override
+        public boolean black() {
+            return type == CARD_TYPE_BLACK;
         }
     }
 }

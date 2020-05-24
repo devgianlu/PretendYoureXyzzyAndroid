@@ -16,7 +16,10 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
 import com.google.android.material.textfield.TextInputLayout;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Pattern;
 
@@ -25,7 +28,8 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
     private TextInputLayout name;
     private TextInputLayout watermark;
     private TextInputLayout desc;
-    private CustomDecksDatabase.CustomDeck deck;
+    private CustomDecksDatabase db;
+    private CustomDeck deck;
 
     @NonNull
     public static GeneralInfoFragment get(@NonNull Context context, @Nullable Integer id) {
@@ -54,17 +58,14 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
         CustomDecksDatabase db = CustomDecksDatabase.get(requireContext());
         if (deck == null) {
             deck = db.putDeckInfo(nameStr, watermarkStr, descStr);
-            if (deck == null) {
-                // TODO: Failed adding, probably same name
-            }
+            return deck != null;
         } else {
             db.updateDeckInfo(deck.id, nameStr, watermarkStr, descStr);
+            return true;
         }
-
-        return true;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.fragment_edit_custom_deck_info, container, false);
@@ -84,6 +85,9 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
                 if (str.isEmpty()) {
                     name.setErrorEnabled(true);
                     name.setError(getString(R.string.emptyDeckName));
+                } else if ((deck == null || !deck.name.equals(str)) && db != null && !db.isNameUnique(str)) {
+                    name.setErrorEnabled(true);
+                    name.setError(getString(R.string.customDeckNameNotUnique));
                 } else {
                     name.setErrorEnabled(false);
                 }
@@ -112,9 +116,11 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
         });
         desc = layout.findViewById(R.id.editCustomDeckInfo_desc);
 
+        db = CustomDecksDatabase.get(requireContext());
+
         int id = requireArguments().getInt("id", -1);
         if (id == -1) deck = null;
-        else deck = CustomDecksDatabase.get(requireContext()).getDeck(id);
+        else deck = db.getDeck(id);
 
         if (deck != null) {
             CommonUtils.setText(name, deck.name);

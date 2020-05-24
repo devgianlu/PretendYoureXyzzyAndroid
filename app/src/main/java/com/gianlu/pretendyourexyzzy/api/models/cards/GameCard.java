@@ -1,5 +1,4 @@
-package com.gianlu.pretendyourexyzzy.api.models;
-
+package com.gianlu.pretendyourexyzzy.api.models.cards;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Card extends BaseCard {
+public final class GameCard extends BaseCard {
     private static final Pattern CARD_NUM_PATTERN = Pattern.compile("<span class=\"cardnum\">(\\d*)\\s?[/\\\\]\\s?(\\d*)</span>");
     public final int id;
     public final String text;
@@ -25,15 +24,17 @@ public class Card extends BaseCard {
     private final String originalWatermark;
     public boolean winner = false;
 
-    public Card(JSONObject obj) throws JSONException {
-        id = obj.getInt("cid");
+    private GameCard(int id, @NonNull String originalText, @NonNull String originalWatermark, @NonNull JSONObject obj) throws JSONException {
+        this.id = id;
+        this.originalText = originalText.replace(" - ", "\n");
+        this.originalWatermark = originalWatermark;
 
         numPick = obj.optInt("PK", -1);
         numDraw = obj.optInt("D", -1);
         writeIn = obj.optBoolean("wi", false);
 
-        String textTmp = originalText = obj.getString("T").replace(" - ", "\n");
-        String watermarkTmp = originalWatermark = obj.getString("W");
+        String textTmp = this.originalText;
+        String watermarkTmp = this.originalWatermark;
         Matcher matcher = CARD_NUM_PATTERN.matcher(textTmp);
         if (matcher.find()) {
             text = textTmp.replace(matcher.group(), "").trim();
@@ -44,38 +45,33 @@ public class Card extends BaseCard {
         }
     }
 
-    private Card() {
-        this.id = -1;
-        this.text = this.originalText = "";
-        this.watermark = this.originalWatermark = "";
-        this.numPick = -1;
-        this.numDraw = -1;
-        this.writeIn = false;
+    @NonNull
+    public static BaseCard parse(@NonNull JSONObject obj) throws JSONException {
+        int id = obj.getInt("cid");
+        String text = obj.getString("T");
+        String watermark = obj.getString("W");
+        if (id == -1 && text.isEmpty() && watermark.isEmpty()) return new UnknownCard();
+        else return new GameCard(id, text, watermark, obj);
     }
 
     @NonNull
-    public static List<Card> list(JSONArray array) throws JSONException {
-        List<Card> list = new ArrayList<>(array.length());
-        for (int i = 0; i < array.length(); i++) list.add(new Card(array.getJSONObject(i)));
+    public static List<BaseCard> list(JSONArray array) throws JSONException {
+        List<BaseCard> list = new ArrayList<>(array.length());
+        for (int i = 0; i < array.length(); i++) list.add(parse(array.getJSONObject(i)));
         return list;
-    }
-
-    @NonNull
-    public static Card newBlankCard() {
-        return new Card();
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Card card = (Card) o;
+        GameCard card = (GameCard) o;
         return id == card.id;
     }
 
     @Override
-    public boolean unknown() {
-        return id == -1 && watermark.isEmpty() && originalText.isEmpty();
+    public int hashCode() {
+        return id;
     }
 
     @Override
@@ -83,7 +79,6 @@ public class Card extends BaseCard {
         return numPick != -1;
     }
 
-    @Override
     @NonNull
     public JSONObject toJson() throws JSONException {
         return new JSONObject()
