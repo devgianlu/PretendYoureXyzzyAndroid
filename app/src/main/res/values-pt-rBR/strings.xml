@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- Game messages -->
-    <string name="game_spectator">You\'re a spectator. Just watch!</string>
-    <string name="game_youJudge">You\'re the Card Czar! Waiting for other players…</string>
-    <string name="game_selectWinningCard">Select the winning card(s):</string>
-    <string name="game_youRoundWinner_long">You won this round! A new round will begin shortly…</string>
-    <string name="game_youRoundWinner_short">You won this round!</string>
-    <string name="game_youGameHost">You\'re the game host! Start the game when you\'re ready.</string>
-    <string name="game_waitingForRoundToEnd">Waiting for the current round to end…</string>
-    <string name="game_waitingForStart">Waiting for the game to start…</string>
-    <string name="game_isJudging">%s is judging…</string>
-    <string name="game_waitingForPlayers">Waiting for other players…</string>
+    <string name="game_spectator">Você é um espectador. Apenas assista!</string>
+    <string name="game_youJudge">Você é o \"Czar\" das cartas! Aguardando outros jogadores…</string>
+    <string name="game_selectWinningCard">Selecione a(s) carta(s) vencedora(s):</string>
+    <string name="game_youRoundWinner_long">Você venceu esta rodada! Uma nova rodada começará em breve…</string>
+    <string name="game_youRoundWinner_short">Você venceu esta rodada!</string>
+    <string name="game_youGameHost">Você é o anfitrião do jogo! Comece quando estiver pronto.</string>
+    <string name="game_waitingForRoundToEnd">Aguardando a rodada atual acabar…</string>
+    <string name="game_waitingForStart">Esperando a partida começar…</string>
+    <string name="game_isJudging">%s está escolhendo…</string>
+    <string name="game_waitingForPlayers">Aguardando outros jogadores…</string>
     <string name="game_playerSkipped">%s has been skipped.</string>
     <string name="game_pickCards">Select %d card(s) to play. Your hand:</string>
     <string name="game_judgeSkipped">Judge %s has been skipped.</string>
