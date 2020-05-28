@@ -12,8 +12,10 @@ import androidx.appcompat.app.ActionBar;
 import androidx.viewpager.widget.ViewPager;
 
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.PagerAdapter;
+import com.gianlu.pretendyourexyzzy.customdecks.edit.AbsCardsFragment;
 import com.gianlu.pretendyourexyzzy.customdecks.edit.BlackCardsFragment;
 import com.gianlu.pretendyourexyzzy.customdecks.edit.GeneralInfoFragment;
 import com.gianlu.pretendyourexyzzy.customdecks.edit.WhiteCardsFragment;
@@ -22,6 +24,8 @@ import com.google.android.material.tabs.TabLayout;
 public class EditCustomDeckActivity extends ActivityWithDialog {
     private GeneralInfoFragment generalInfoFragment;
     private ViewPager pager;
+    private AbsCardsFragment whiteCardsFragment;
+    private AbsCardsFragment blackCardsFragment;
 
     public static void startActivityNew(@NonNull Context context) {
         context.startActivity(new Intent(context, EditCustomDeckActivity.class)
@@ -70,11 +74,52 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
             }
         });
 
+        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (position != 0 && generalInfoFragment != null && !generalInfoFragment.isSaved()) {
+                    if (!save()) {
+                        pager.removeOnPageChangeListener(this);
+                        pager.setCurrentItem(0);
+                        Toaster.with(EditCustomDeckActivity.this).message(R.string.completeDeckInfoFirst).show();
+                        pager.addOnPageChangeListener(this);
+                    }
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+        });
         pager.setAdapter(new PagerAdapter(getSupportFragmentManager(),
                 generalInfoFragment = GeneralInfoFragment.get(this, id),
-                BlackCardsFragment.get(this, id),
-                WhiteCardsFragment.get(this, id)));
+                blackCardsFragment = BlackCardsFragment.get(this, id),
+                whiteCardsFragment = WhiteCardsFragment.get(this, id)));
         tabs.setupWithViewPager(pager);
+    }
+
+    private boolean save() {
+        if (generalInfoFragment == null) return false;
+
+        if (generalInfoFragment.save()) {
+            Integer deckId = generalInfoFragment.getDeckId();
+            if (deckId == null) return false;
+
+            if (whiteCardsFragment != null) whiteCardsFragment.setDeckId(deckId);
+            if (blackCardsFragment != null) blackCardsFragment.setDeckId(deckId);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @NonNull
+    public String getWatermark() {
+        return generalInfoFragment == null ? "" : generalInfoFragment.getWatermark();
     }
 
     @Override
@@ -84,7 +129,7 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
                 onBackPressed();
                 return true;
             case R.id.editCustomDeck_done:
-                if (generalInfoFragment != null && generalInfoFragment.save()) {
+                if (save()) {
                     onBackPressed();
                 } else if (pager != null) {
                     pager.setCurrentItem(0);

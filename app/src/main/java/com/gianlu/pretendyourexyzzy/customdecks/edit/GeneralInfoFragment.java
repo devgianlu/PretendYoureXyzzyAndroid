@@ -41,6 +41,20 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
         return fragment;
     }
 
+    @NotNull
+    public String getWatermark() {
+        return watermark == null ? "" : CommonUtils.getText(watermark);
+    }
+
+    @Nullable
+    public Integer getDeckId() {
+        return deck == null ? null : deck.id;
+    }
+
+    public boolean isSaved() {
+        return deck != null;
+    }
+
     public boolean save() {
         if (name == null || watermark == null || desc == null || getContext() == null)
             return false;

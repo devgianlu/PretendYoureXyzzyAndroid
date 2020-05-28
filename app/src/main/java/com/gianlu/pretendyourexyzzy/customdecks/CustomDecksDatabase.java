@@ -5,11 +5,16 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +22,7 @@ import java.util.List;
 public final class CustomDecksDatabase extends SQLiteOpenHelper {
     private static final int CARD_TYPE_BLACK = 0;
     private static final int CARD_TYPE_WHITE = 1;
+    private static final String TAG = CustomDecksDatabase.class.getSimpleName();
     private static CustomDecksDatabase instance;
 
     private CustomDecksDatabase(@Nullable Context context) {
@@ -140,6 +146,45 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         return loadCards(deckId, CARD_TYPE_WHITE);
     }
 
+    @Nullable
+    public CustomCard putCard(int deckId, boolean black, @NonNull String[] text) {
+        CustomDeck deck = getDeck(deckId);
+        if (deck == null) return null;
+
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            int type = black ? CARD_TYPE_BLACK : CARD_TYPE_WHITE;
+
+            ContentValues values = new ContentValues();
+            values.put("deck_id", deckId);
+            values.put("type", type);
+            values.put("text", CommonUtils.toJSONArray(text).toString());
+            long id = db.insert("cards", null, values);
+            db.setTransactionSuccessful();
+
+            if (id == -1) return null;
+            else return new CustomCard(text, deck.watermark, type, (int) id);
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    @NonNull
+    public CustomCard updateCard(@NonNull CustomCard old, @NonNull String[] text) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            ContentValues values = new ContentValues();
+            values.put("text", CommonUtils.toJSONArray(text).toString());
+            db.update("cards", values, "id=?", new String[]{String.valueOf(old.id())});
+            db.setTransactionSuccessful();
+            return new CustomCard(old, text);
+        } finally {
+            db.endTransaction();
+        }
+    }
+
     public static final class CustomDeck {
         public final int id;
         public final String name;
@@ -162,22 +207,50 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     }
 
     public static final class CustomCard extends BaseCard {
-        private final String text; // TODO: Store text differently
+        private final String[] text;
         private final String watermark;
         private final int type;
         private final int id;
+        private transient String sentence = null;
+
+        private CustomCard(String[] text, String watermark, int type, int id) {
+            this.text = text;
+            this.watermark = watermark;
+            this.type = type;
+            this.id = id;
+        }
+
+        private CustomCard(@NonNull CustomCard card, @NonNull String[] text) {
+            this.text = text;
+            this.watermark = card.watermark;
+            this.type = card.type;
+            this.id = card.id;
+        }
 
         private CustomCard(@NonNull CustomDeck deck, @NonNull Cursor cursor) {
             watermark = deck.watermark;
-            text = cursor.getString(cursor.getColumnIndex("text"));
+
             type = cursor.getInt(cursor.getColumnIndex("type"));
             id = cursor.getInt(cursor.getColumnIndex("id"));
+
+            try {
+                text = CommonUtils.toStringArray(new JSONArray(cursor.getString(cursor.getColumnIndex("text"))));
+            } catch (JSONException ex) {
+                Log.e(TAG, "Failed parsing text.", ex);
+                throw new IllegalStateException(ex);
+            }
+        }
+
+        @NonNull
+        public static BaseCard createTemp(String[] text, String watermark, boolean black) {
+            return new CustomCard(text, watermark, black ? CARD_TYPE_BLACK : CARD_TYPE_WHITE, Integer.MIN_VALUE);
         }
 
         @NonNull
         @Override
         public String text() {
-            return text;
+            if (sentence == null) sentence = CommonUtils.join(text, " ____ ");
+            return sentence;
         }
 
         @NonNull
@@ -188,7 +261,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
         @Override
         public int numPick() {
-            return !black() ? -1 : text.split("____").length - 1;
+            return !black() ? -1 : text.length - 1;
         }
 
         @Override

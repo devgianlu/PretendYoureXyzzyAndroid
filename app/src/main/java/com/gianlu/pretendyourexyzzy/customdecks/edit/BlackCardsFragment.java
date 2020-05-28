@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public final class BlackCardsFragment extends AbsCardsFragment { // TODO
+public final class BlackCardsFragment extends AbsCardsFragment {
 
     @NonNull
     public static BlackCardsFragment get(@NonNull Context context, @Nullable Integer id) {

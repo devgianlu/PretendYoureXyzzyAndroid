@@ -24,7 +24,7 @@ public final class GameCard extends BaseCard {
     private final String originalWatermark;
     public boolean winner = false;
 
-    private GameCard(int id, @NonNull String originalText, @NonNull String originalWatermark, @NonNull JSONObject obj) throws JSONException {
+    private GameCard(int id, @NonNull String originalText, @NonNull String originalWatermark, @NonNull JSONObject obj) {
         this.id = id;
         this.originalText = originalText.replace(" - ", "\n");
         this.originalWatermark = originalWatermark;

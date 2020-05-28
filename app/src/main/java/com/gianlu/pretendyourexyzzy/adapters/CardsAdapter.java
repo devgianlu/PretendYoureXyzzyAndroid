@@ -69,7 +69,6 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         return new ViewHolder(parent.getContext());
     }
 
-
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
         holder.cards.setCards(cards.get(position), primary, secondary, isSelectable, forGrid, holder);
     }
@@ -81,6 +80,15 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
 
     public void setSelectable(boolean selectable) {
         isSelectable = selectable;
+    }
+
+    public int indexOfGroup(int cardId) {
+        for (int i = 0; i < cards.size(); i++) {
+            if (cards.get(i).hasCard(cardId))
+                return i;
+        }
+
+        return -1;
     }
 
     @UiThread
@@ -126,6 +134,12 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public void addCardsAsSingleton(@NonNull List<? extends BaseCard> cards) {
         for (BaseCard card : cards) this.cards.add(CardsGroup.singleton(card));
         notifyItemRangeInserted(this.cards.size() - cards.size(), cards.size());
+    }
+
+    @UiThread
+    public void updateCard(int index, @NonNull BaseCard card) {
+        this.cards.set(index, CardsGroup.singleton(card));
+        notifyItemChanged(index);
     }
 
     @UiThread
