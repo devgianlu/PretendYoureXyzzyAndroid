@@ -30,6 +30,9 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
     private TextInputLayout desc;
     private CustomDecksDatabase db;
     private CustomDeck deck;
+    private String importName;
+    private String importDesc;
+    private String importWatermark;
 
     @NonNull
     public static GeneralInfoFragment get(@NonNull Context context, @Nullable Integer id) {
@@ -41,9 +44,14 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
         return fragment;
     }
 
+    @NonNull
+    public String getName() {
+        return importName != null ? importName : (name == null ? "" : CommonUtils.getText(name));
+    }
+
     @NotNull
     public String getWatermark() {
-        return watermark == null ? "" : CommonUtils.getText(watermark);
+        return importWatermark != null ? importWatermark : (watermark == null ? "" : CommonUtils.getText(watermark));
     }
 
     @Nullable
@@ -55,28 +63,34 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
         return deck != null;
     }
 
-    public boolean save() {
-        if (name == null || watermark == null || desc == null || getContext() == null)
+    private boolean save(@NonNull Context context, @NonNull String name, @NonNull String watermark, @NonNull String description) {
+        if (name.trim().isEmpty())
             return false;
 
-        String nameStr = CommonUtils.getText(name);
-        if (nameStr.trim().isEmpty())
+        if (!VALID_WATERMARK_PATTERN.matcher(watermark).matches())
             return false;
 
-        String watermarkStr = CommonUtils.getText(watermark);
-        if (!VALID_WATERMARK_PATTERN.matcher(watermarkStr).matches())
-            return false;
-
-        String descStr = CommonUtils.getText(desc);
-
-        CustomDecksDatabase db = CustomDecksDatabase.get(requireContext());
+        CustomDecksDatabase db = CustomDecksDatabase.get(context);
         if (deck == null) {
-            deck = db.putDeckInfo(nameStr, watermarkStr, descStr);
+            deck = db.putDeckInfo(name, watermark, description);
             return deck != null;
         } else {
-            db.updateDeckInfo(deck.id, nameStr, watermarkStr, descStr);
+            db.updateDeckInfo(deck.id, name, watermark, description);
             return true;
         }
+    }
+
+    public boolean save(@NonNull Context context) {
+        if (importName != null && importDesc != null && importWatermark != null) {
+            boolean result = save(context, importName, importWatermark, importDesc);
+            importName = importDesc = importWatermark = null;
+            return result;
+        }
+
+        if (name == null || watermark == null || desc == null)
+            return false;
+
+        return save(context, CommonUtils.getText(name), CommonUtils.getText(watermark), CommonUtils.getText(desc));
     }
 
     @NotNull
@@ -132,16 +146,35 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
 
         db = CustomDecksDatabase.get(requireContext());
 
-        int id = requireArguments().getInt("id", -1);
-        if (id == -1) deck = null;
-        else deck = db.getDeck(id);
+        if (deck == null) {
+            int id = requireArguments().getInt("id", -1);
+            if (id == -1) deck = null;
+            else deck = db.getDeck(id);
+        }
 
         if (deck != null) {
             CommonUtils.setText(name, deck.name);
             CommonUtils.setText(watermark, deck.watermark);
             CommonUtils.setText(desc, deck.description);
+        } else {
+            if (importName != null) CommonUtils.setText(name, importName);
+            if (importWatermark != null) CommonUtils.setText(watermark, importWatermark);
+            if (importDesc != null) CommonUtils.setText(desc, importDesc);
+            importName = importDesc = importWatermark = null;
         }
 
         return layout;
+    }
+
+    public void set(@NonNull String name, @NonNull String watermark, @NonNull String description) {
+        if (this.name != null && this.watermark != null && this.desc != null) {
+            CommonUtils.setText(this.name, name);
+            CommonUtils.setText(this.watermark, watermark);
+            CommonUtils.setText(this.desc, description);
+        } else {
+            importName = name;
+            importDesc = description;
+            importWatermark = watermark;
+        }
     }
 }

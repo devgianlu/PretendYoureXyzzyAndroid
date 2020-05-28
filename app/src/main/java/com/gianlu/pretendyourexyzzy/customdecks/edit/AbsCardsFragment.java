@@ -6,6 +6,7 @@ import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,10 +38,14 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbsCardsFragment extends FragmentWithDialog implements CardsAdapter.Listener {
+    private static final String TAG = AbsCardsFragment.class.getSimpleName();
     protected CustomDecksDatabase db;
     private Integer id;
     private CardsAdapter adapter;
@@ -113,8 +118,10 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
         rmv.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         rmv.list().addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
 
-        id = requireArguments().getInt("id", -1);
-        if (id == -1) id = null;
+        if (id == null) {
+            id = requireArguments().getInt("id", -1);
+            if (id == -1) id = null;
+        }
 
         db = CustomDecksDatabase.get(requireContext());
         List<? extends BaseCard> cards = loadCards();
@@ -220,6 +227,25 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
     @Override
     public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
         showCreateCardDialog((CustomCard) card);
+    }
+
+    public void importCards(@NonNull Context context, @Nullable JSONArray array) {
+        if (array == null || id == null) return;
+
+        List<CustomCard> cards = new ArrayList<>(array.length());
+        CustomDecksDatabase db = CustomDecksDatabase.get(context);
+        for (int i = 0; i < array.length(); i++) {
+            try {
+                String[] text = CommonUtils.toStringArray(array.getJSONObject(i).getJSONArray("text"));
+                CustomCard card = db.putCard(id, isBlack(), text);
+                if (card != null) cards.add(card);
+                else Log.w(TAG, "Failed saving card to database.");
+            } catch (JSONException ex) {
+                Log.w(TAG, "Failed importing card at " + i, ex);
+            }
+        }
+
+        if (adapter != null) adapter.addCardsAsSingleton(cards);
     }
 
     private static class ParseResult {

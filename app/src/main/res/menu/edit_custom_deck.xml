@@ -6,4 +6,10 @@
         android:icon="@drawable/baseline_done_24"
         android:title="@string/save"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/editCustomDeck_delete"
+        android:icon="@drawable/baseline_delete_24"
+        android:title="@string/delete"
+        app:showAsAction="ifRoom" />
 </menu>

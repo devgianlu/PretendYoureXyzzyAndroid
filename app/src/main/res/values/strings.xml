@@ -228,4 +228,7 @@
     <string name="customCardEmpty">Please enter the card text.</string>
     <string name="missingPlaceholderBlack">Missing placeholder in black card: it\'ll be added at the end.</string>
     <string name="strangeCustomCardFormat">The format of this card looks strange: make sure to follow the instructions.</string>
+    <string name="importCustomDeck">Import custom deck</string>
+    <string name="delete">Delete</string>
+    <string name="deleteDeckConfirmation">Are you sure you want to delete \"%s\"?</string>
 </resources>

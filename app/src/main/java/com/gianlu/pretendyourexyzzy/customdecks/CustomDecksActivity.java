@@ -1,6 +1,9 @@
 package com.gianlu.pretendyourexyzzy.customdecks;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -8,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,9 +21,15 @@ import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 public class CustomDecksActivity extends ActivityWithDialog {
+    private static final int RC_IMPORT_JSON = 2;
+    private static final String TAG = CustomDecksActivity.class.getSimpleName();
     private RecyclerMessageView rmv;
     private CustomDecksDatabase db;
 
@@ -64,10 +74,30 @@ public class CustomDecksActivity extends ActivityWithDialog {
                 EditCustomDeckActivity.startActivityNew(this);
                 return true;
             case R.id.customDecks_import:
-                // TODO: Import and show deck activity
+                startActivityForResult(Intent.createChooser(new Intent(Intent.ACTION_GET_CONTENT).setType("*/*"), "Pick JSON file..."), RC_IMPORT_JSON);
                 return true;
             default:
                 return false;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == RC_IMPORT_JSON) {
+            if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
+                try {
+                    InputStream in = getContentResolver().openInputStream(data.getData());
+                    if (in == null) return;
+
+                    File tmpFile = new File(getCacheDir(), CommonUtils.randomString(6, "abcdefghijklmnopqrstuvwxyz"));
+                    CommonUtils.copy(in, new FileOutputStream(tmpFile));
+                    EditCustomDeckActivity.startActivityImport(this, tmpFile);
+                } catch (IOException ex) {
+                    Log.e(TAG, "Failed importing JSON file: " + data, ex);
+                }
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 

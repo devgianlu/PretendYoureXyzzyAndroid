@@ -185,6 +185,18 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
     }
 
+    public void deleteDeckAndCards(int deckId) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            db.delete("decks", "id=?", new String[]{String.valueOf(deckId)});
+            db.delete("cards", "deck_id=?", new String[]{String.valueOf(deckId)});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
     public static final class CustomDeck {
         public final int id;
         public final String name;
