@@ -13,4 +13,6 @@
     <color name="urbanPrimary">#134FE6</color>
     <color name="urbanPrimaryDark">#1D2439</color>
     <color name="urbanAccent">#EFFF00</color>
+
+    <color name="customDecksSheetFabBg">@color/colorSecondary</color>
 </resources>

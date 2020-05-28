@@ -54,7 +54,7 @@ public class CustomDecksActivity extends ActivityWithDialog {
         super.onResume();
         List<CustomDeck> decks = db.getDecks();
         rmv.loadListData(new CustomDecksAdapter(decks), false);
-        if (decks.isEmpty()) rmv.showInfo(R.string.noCustomDecks);
+        if (decks.isEmpty()) rmv.showInfo(R.string.noCustomDecks_create);
         else rmv.showList();
     }
 

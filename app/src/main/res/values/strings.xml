@@ -208,7 +208,8 @@
     <string name="cardcastGoneMessage">Cardcast has been shutdown. We are working on a replacement which will be available soon ( https://github.com/ajanata/PretendYoureXyzzy/issues/240 ).</string>
     <string name="customDecks">Custom decks</string>
     <string name="importDeck">Import deck</string>
-    <string name="noCustomDecks">You have no custom decks. Create one right away!</string>
+    <string name="noCustomDecks_create">You have no custom decks. Create one right away!</string>
+    <string name="noCustomDecks_game">There are no custom decks in this game.</string>
     <string name="editCustomDeck">Edit custom deck</string>
     <string name="createCustomDeck">Create custom deck</string>
     <string name="info">Info</string>
@@ -231,4 +232,10 @@
     <string name="importCustomDeck">Import custom deck</string>
     <string name="delete">Delete</string>
     <string name="deleteDeckConfirmation">Are you sure you want to delete \"%s\"?</string>
+    <string name="failedRemovingCustomDeck">Failed removing custom deck!</string>
+    <string name="removedCustomDeck">Removed custom deck.</string>
+    <string name="addCustomDeck">Add custom deck</string>
+    <string name="failedAddingCustomDeck">Failed adding custom deck!</string>
+    <string name="customDeckAdded">Custom deck added!</string>
+    <string name="noCustomDecksToAdd">You have no custom decks to add.</string>
 </resources>

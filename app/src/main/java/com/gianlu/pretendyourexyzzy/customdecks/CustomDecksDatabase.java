@@ -15,6 +15,7 @@ import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -216,6 +217,26 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             this.description = description;
             this.watermark = watermark;
         }
+
+        @NonNull
+        public JSONObject craftJson(@NonNull CustomDecksDatabase db) throws JSONException {
+            JSONObject obj = new JSONObject();
+            obj.put("name", name);
+            obj.put("description", description);
+            obj.put("watermark", watermark);
+
+            List<CustomCard> calls = db.loadBlackCards(id);
+            JSONArray callsArray = new JSONArray();
+            for (CustomCard card : calls) callsArray.put(card.craftJson());
+            obj.put("calls", callsArray);
+
+            List<CustomCard> responses = db.loadWhiteCards(id);
+            JSONArray responsesArray = new JSONArray();
+            for (CustomCard card : responses) responsesArray.put(card.craftJson());
+            obj.put("responses", responsesArray);
+
+            return obj;
+        }
     }
 
     public static final class CustomCard extends BaseCard {
@@ -256,6 +277,13 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         @NonNull
         public static BaseCard createTemp(String[] text, String watermark, boolean black) {
             return new CustomCard(text, watermark, black ? CARD_TYPE_BLACK : CARD_TYPE_WHITE, Integer.MIN_VALUE);
+        }
+
+        @NonNull
+        JSONObject craftJson() throws JSONException {
+            JSONObject obj = new JSONObject();
+            obj.put("text", CommonUtils.toJSONArray(text));
+            return obj;
         }
 
         @NonNull

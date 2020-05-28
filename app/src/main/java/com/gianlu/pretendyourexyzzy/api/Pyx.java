@@ -380,9 +380,9 @@ public class Pyx implements Closeable {
         CREATE_GAME("cg"),
         START_GAME("sg"),
         CHANGE_GAME_OPTIONS("cgo"),
-        LIST_CARDCAST_CARD_SETS("clc"),
-        ADD_CARDCAST_CARD_SET("cac"),
-        REMOVE_CARDCAST_CARD_SET("crc"),
+        LIST_CUSTOM_CARD_SETS("lcs"),
+        ADD_CUSTOM_CARD_SET("acs"),
+        REMOVE_CUSTOM_CARD_SET("rcs"),
         WHOIS("Wi");
 
         private final String val;
@@ -415,8 +415,6 @@ public class Pyx implements Closeable {
     @UiThread
     public interface OnEventListener {
         void onPollMessage(@NonNull PollMessage message) throws JSONException;
-
-        void onStoppedPolling();
     }
 
     public static class NoServersException extends Exception {

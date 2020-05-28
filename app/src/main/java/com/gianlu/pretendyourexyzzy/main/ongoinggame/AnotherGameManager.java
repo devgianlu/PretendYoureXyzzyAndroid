@@ -112,8 +112,8 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             case GAME_WHITE_RESHUFFLE:
             case KICKED:
             case BANNED:
-            case CARDCAST_ADD_CARDSET:
-            case CARDCAST_REMOVE_CARDSET:
+            case ADD_CARDSET:
+            case REMOVE_CARDSET:
             case CHAT:
             case PLAYER_LEAVE:
             case NEW_PLAYER:
@@ -283,12 +283,6 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     public void playerIsSpectator() {
         gameLayout.showTable(false);
         event(UiEvent.SPECTATOR_TEXT);
-    }
-
-    @Override
-    public void onStoppedPolling() {
-        destroy();
-        listener.justLeaveGame();
     }
 
     public void reset() {
