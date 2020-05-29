@@ -36,15 +36,12 @@ import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
-import com.gianlu.pretendyourexyzzy.main.CardcastFragment;
-import com.gianlu.pretendyourexyzzy.main.ChatFragment;
 import com.gianlu.pretendyourexyzzy.main.CustomDecksFragment;
 import com.gianlu.pretendyourexyzzy.main.DrawerItem;
 import com.gianlu.pretendyourexyzzy.main.GamesFragment;
 import com.gianlu.pretendyourexyzzy.main.NamesFragment;
 import com.gianlu.pretendyourexyzzy.main.OnLeftGame;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
-import com.gianlu.pretendyourexyzzy.main.OngoingGameHelper;
 import com.gianlu.pretendyourexyzzy.main.OverloadedFragment;
 import com.gianlu.pretendyourexyzzy.main.PyxChatsFragment;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
@@ -59,7 +56,7 @@ import java.util.Objects;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
 
-public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, OngoingGameHelper.Listener, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction, OverloadedChatApi.UnreadCountListener, PyxChatHelper.UnreadCountListener {
+public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction, OverloadedChatApi.UnreadCountListener, PyxChatHelper.UnreadCountListener {
     private static final String TAG = MainActivity.class.getSimpleName();
     private final Object fragmentsLock = new Object();
     private BottomNavigationManager navigation;
@@ -264,8 +261,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
 
-        OngoingGameHelper.setup(this);
-
         try {
             pyx = RegisteredPyx.get();
         } catch (LevelMismatchException ex) {
@@ -342,7 +337,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         namesFragment = getOrAdd(transaction, Item.PLAYERS, NamesFragment::getInstance);
         gamesFragment = getOrAdd(transaction, Item.GAMES, GamesFragment::getInstance);
-        cardcastFragment = getOrAdd(transaction, Item.CARDCAST, CardcastFragment::getInstance);
+        customDecksFragment = getOrAdd(transaction, Item.CUSTOM_DECKS, CustomDecksFragment::getInstance);
 
         if (OverloadedUtils.isSignedIn())
             overloadedFragment = getOrAdd(transaction, Item.OVERLOADED, OverloadedFragment::getInstance);
@@ -557,8 +552,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     private enum Layout {
-        LOBBY(Item.PLAYERS, Item.PYX_CHAT, Item.GAMES, Item.CUSTOM_DECKS),
-        ONGOING(Item.PLAYERS, Item.PYX_CHAT, Item.CUSTOM_DECKS, Item.CARDCAST, Item.ONGOING_GAME);
+        LOBBY(Item.PLAYERS, Item.PYX_CHAT, Item.GAMES, Item.CUSTOM_DECKS, Item.OVERLOADED),
+        ONGOING(Item.PLAYERS, Item.PYX_CHAT, Item.CUSTOM_DECKS, Item.OVERLOADED, Item.ONGOING_GAME);
 
         static {
             for (Layout l : values())

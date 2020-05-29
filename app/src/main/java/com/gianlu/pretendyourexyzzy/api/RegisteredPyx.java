@@ -6,8 +6,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.UiThread;
-import androidx.annotation.WorkerThread;
 
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
@@ -25,7 +23,6 @@ import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -227,7 +224,11 @@ public class RegisteredPyx extends FirstLoadedPyx {
                 }
 
                 // We need to make sure that the UI has been updated
-                dispatchedAllMessages(messages);
+                executor.execute(() -> {
+                    for (PollMessage msg : messages)
+                        if (msg.event == PollMessage.Event.CHAT)
+                            chatHelper.handleChatEvent(msg);
+                });
             }
         }
     }

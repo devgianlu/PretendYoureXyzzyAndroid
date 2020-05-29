@@ -202,33 +202,6 @@ public final class PyxRequests {
     }
 
     @NonNull
-    public static PyxRequestWithResult<List<Deck>> listCardcastDecks(int gid, @NonNull final Cardcast cardcast) {
-        return new PyxRequestWithResult<>(Pyx.Op.LIST_CARDCAST_CARD_SETS, (response, obj) -> {
-            List<Deck> cards = new ArrayList<>();
-            JSONArray array = obj.getJSONArray("css");
-            for (int i = 0; i < array.length(); i++) {
-                Deck set = new Deck(array.getJSONObject(i));
-                cards.add(set);
-
-                try {
-                    set.cardcastDeck(cardcast.getDeckInfoHitCache(set.cardcastCode));
-                } catch (IOException | ParseException | JSONException ex) {
-                    Log.w(TAG, ex);
-                }
-            }
-
-            return cards;
-        }, new PyxRequest.Param("gid", String.valueOf(gid)));
-    }
-
-    @NonNull
-    public static PyxRequest addCardcastDeck(int gid, String code) {
-        return new PyxRequest(Pyx.Op.ADD_CARDCAST_CARD_SET,
-                new PyxRequest.Param("gid", String.valueOf(gid)),
-                new PyxRequest.Param("cci", code));
-    }
-
-    @NonNull
     public static PyxRequestWithResult<GamesList> getGamesList() {
         return new PyxRequestWithResult<>(Pyx.Op.GET_GAMES_LIST, GAMES_LIST_PROCESSOR);
     }
@@ -237,5 +210,4 @@ public final class PyxRequests {
     public static PyxRequestWithResult<WhoisResult> whois(String name) {
         return new PyxRequestWithResult<>(Pyx.Op.WHOIS, WHOIS_RESULT_PROCESSOR, new PyxRequest.Param("n", name));
     }
-
 }

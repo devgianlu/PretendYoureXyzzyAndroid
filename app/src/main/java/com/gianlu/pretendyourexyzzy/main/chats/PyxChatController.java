@@ -59,11 +59,6 @@ class PyxChatController {
                     listener.onChatMessage(msg);
                 }
             }
-
-            @Override
-            public void onStoppedPolling() {
-                // Not interested
-            }
         });
     }
 

@@ -54,7 +54,7 @@ import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
 import xyz.gianlu.pyxoverloaded.callback.UsersCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
-public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<List<Name>>, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, OverloadedApi.EventListener {
+public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<List<Name>>, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, OverloadedApi.EventListener, Pyx.OnEventListener {
     private static final String TAG = NamesFragment.class.getSimpleName();
     private final List<String> overloadedUsers = new ArrayList<>();
     private RecyclerMessageView rmv;
@@ -208,12 +208,6 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (pyx != null) pyx.polling().removeListener(this);
-    }
-
-    @Override
     public void onPollMessage(@NonNull PollMessage msg) throws JSONException {
         switch (msg.event) {
             case NEW_PLAYER:
@@ -244,6 +238,7 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
     public void onDestroy() {
         super.onDestroy();
         OverloadedApi.get().removeEventListener(this);
+        if (pyx != null) pyx.polling().removeListener(this);
     }
 
     public enum Sorting {

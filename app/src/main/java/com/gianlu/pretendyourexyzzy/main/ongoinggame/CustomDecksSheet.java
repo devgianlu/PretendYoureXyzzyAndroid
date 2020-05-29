@@ -21,6 +21,7 @@ import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.misc.MessageView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.adapters.DecksAdapter;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
@@ -183,6 +184,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
                         return;
                     }
 
+                    ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK);
                     pyx.request(PyxRequests.addCustomDeckJson(getSetupPayload(), json), getActivity(), new Pyx.OnSuccess() {
                         @Override
                         public void onDone() {
