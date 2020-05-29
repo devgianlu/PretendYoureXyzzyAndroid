@@ -1,25 +1,28 @@
-package com.gianlu.pretendyourexyzzy.customdecks;
+package com.gianlu.pretendyourexyzzy.main;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.dialogs.ActivityWithDialog;
+import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
+import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,30 +30,45 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-public class CustomDecksActivity extends ActivityWithDialog {
+public class CustomDecksFragment extends FragmentWithDialog {
     private static final int RC_IMPORT_JSON = 2;
-    private static final String TAG = CustomDecksActivity.class.getSimpleName();
+    private static final String TAG = CustomDecksFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
     private CustomDecksDatabase db;
 
+    @NonNull
+    public static CustomDecksFragment getInstance() {
+        return new CustomDecksFragment();
+    }
+
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        rmv = new RecyclerMessageView(this);
-        setContentView(rmv);
-        setTitle(R.string.customDecks);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.fragment_custom_decks, container, false);
+        db = CustomDecksDatabase.get(requireContext());
 
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
-
-        db = CustomDecksDatabase.get(this);
-
+        rmv = layout.findViewById(R.id.customDecks_list);
         rmv.disableSwipeRefresh();
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
+
+        FloatingActionsMenu fab = layout.findViewById(R.id.customDecks_fab);
+        FloatingActionButton importDeck = layout.findViewById(R.id.customDecksFab_import);
+        importDeck.setOnClickListener(v -> {
+            startActivityForResult(Intent.createChooser(new Intent(Intent.ACTION_GET_CONTENT).setType("*/*"), "Pick JSON file..."), RC_IMPORT_JSON);
+            fab.collapse();
+        });
+
+        FloatingActionButton addDeck = layout.findViewById(R.id.customDecksFab_add);
+        addDeck.setOnClickListener(v -> {
+            EditCustomDeckActivity.startActivityNew(requireContext());
+            fab.collapse();
+        });
+
+        return layout;
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         List<CustomDeck> decks = db.getDecks();
         rmv.loadListData(new CustomDecksAdapter(decks), false);
@@ -59,39 +77,16 @@ public class CustomDecksActivity extends ActivityWithDialog {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.custom_decks, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
-            case R.id.customDecks_add:
-                EditCustomDeckActivity.startActivityNew(this);
-                return true;
-            case R.id.customDecks_import:
-                startActivityForResult(Intent.createChooser(new Intent(Intent.ACTION_GET_CONTENT).setType("*/*"), "Pick JSON file..."), RC_IMPORT_JSON);
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == RC_IMPORT_JSON) {
             if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
                 try {
-                    InputStream in = getContentResolver().openInputStream(data.getData());
+                    InputStream in = requireContext().getContentResolver().openInputStream(data.getData());
                     if (in == null) return;
 
-                    File tmpFile = new File(getCacheDir(), CommonUtils.randomString(6, "abcdefghijklmnopqrstuvwxyz"));
+                    File tmpFile = new File(requireContext().getCacheDir(), CommonUtils.randomString(6, "abcdefghijklmnopqrstuvwxyz"));
                     CommonUtils.copy(in, new FileOutputStream(tmpFile));
-                    EditCustomDeckActivity.startActivityImport(this, tmpFile);
+                    EditCustomDeckActivity.startActivityImport(requireContext(), tmpFile);
                 } catch (IOException ex) {
                     Log.e(TAG, "Failed importing JSON file: " + data, ex);
                 }
@@ -107,7 +102,7 @@ public class CustomDecksActivity extends ActivityWithDialog {
 
         CustomDecksAdapter(@NonNull List<CustomDeck> decks) {
             this.decks = decks;
-            this.inflater = LayoutInflater.from(CustomDecksActivity.this);
+            this.inflater = LayoutInflater.from(getContext());
             setHasStableIds(true);
         }
 
@@ -127,10 +122,7 @@ public class CustomDecksActivity extends ActivityWithDialog {
             CustomDeck deck = decks.get(position);
             holder.name.setText(deck.name);
             holder.watermark.setText(deck.watermark);
-            holder.itemView.setOnClickListener(view -> {
-                EditCustomDeckActivity.startActivityEdit(CustomDecksActivity.this, deck);
-            });
-
+            holder.itemView.setOnClickListener(view -> EditCustomDeckActivity.startActivityEdit(holder.itemView.getContext(), deck));
             CommonUtils.setRecyclerViewTopMargin(holder);
         }
 

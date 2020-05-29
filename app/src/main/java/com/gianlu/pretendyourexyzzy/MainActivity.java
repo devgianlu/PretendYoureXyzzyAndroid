@@ -34,11 +34,10 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.api.models.User;
-import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksActivity;
 import com.gianlu.pretendyourexyzzy.dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
-import com.gianlu.pretendyourexyzzy.main.CardcastFragment;
 import com.gianlu.pretendyourexyzzy.main.ChatFragment;
+import com.gianlu.pretendyourexyzzy.main.CustomDecksFragment;
 import com.gianlu.pretendyourexyzzy.main.DrawerItem;
 import com.gianlu.pretendyourexyzzy.main.GamesFragment;
 import com.gianlu.pretendyourexyzzy.main.NamesFragment;
@@ -58,7 +57,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     private BottomNavigationManager navigation;
     private NamesFragment namesFragment;
     private GamesFragment gamesFragment;
-    private CardcastFragment cardcastFragment;
+    private CustomDecksFragment customDecksFragment;
     private ChatFragment gameChatFragment;
     private OngoingGameFragment ongoingGameFragment;
     private ChatFragment globalChatFragment;
@@ -102,7 +101,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.USER_METRICS, R.drawable.baseline_person_24, getString(R.string.metrics)));
 
         drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.STARRED_CARDS, R.drawable.baseline_star_24, getString(R.string.starredCards)))
-                .addMenuItem(new BaseDrawerItem<>(DrawerItem.CUSTOM_DECKS, R.drawable.baseline_bookmarks_24, getString(R.string.customDecks)))
                 .addMenuItemSeparator()
                 .addMenuItem(new BaseDrawerItem<>(DrawerItem.PREFERENCES, R.drawable.baseline_settings_24, getString(R.string.preferences)))
                 .addMenuItem(new BaseDrawerItem<>(DrawerItem.REPORT, R.drawable.baseline_report_problem_24, getString(R.string.report)))
@@ -120,8 +118,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 case GAMES:
                     setTitle(getString(R.string.games) + " - " + getString(R.string.app_name));
                     break;
-                case CARDCAST:
-                    setTitle(getString(R.string.cardcast) + " - " + getString(R.string.app_name));
+                case CUSTOM_DECKS:
+                    setTitle(getString(R.string.customDecks) + " - " + getString(R.string.app_name));
                     break;
                 case ONGOING_GAME:
                     setTitle(getString(R.string.gameLabel) + " - " + getString(R.string.app_name));
@@ -161,7 +159,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         namesFragment = (NamesFragment) getOrAdd(transaction, Item.PLAYERS, NamesFragment::getInstance);
         gamesFragment = (GamesFragment) getOrAdd(transaction, Item.GAMES, GamesFragment::getInstance);
-        cardcastFragment = (CardcastFragment) getOrAdd(transaction, Item.CARDCAST, CardcastFragment::getInstance);
+        customDecksFragment = (CustomDecksFragment) getOrAdd(transaction, Item.CUSTOM_DECKS, CustomDecksFragment::getInstance);
 
         if (pyx.config().globalChatEnabled())
             globalChatFragment = (ChatFragment) getOrAdd(transaction, Item.GLOBAL_CHAT, ChatFragment::getGlobalInstance);
@@ -307,8 +305,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                     case GAMES:
                         transaction.add(R.id.main_container, gamesFragment, item.tag);
                         break;
-                    case CARDCAST:
-                        transaction.add(R.id.main_container, cardcastFragment, item.tag);
+                    case CUSTOM_DECKS:
+                        transaction.add(R.id.main_container, customDecksFragment, item.tag);
                         break;
                     case ONGOING_GAME:
                         if (ongoingGameFragment != null)
@@ -441,9 +439,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             case STARRED_CARDS:
                 StarredCardsActivity.startActivity(this);
                 return true;
-            case CUSTOM_DECKS:
-                startActivity(new Intent(this, CustomDecksActivity.class));
-                return true;
             case USER_METRICS:
                 MetricsActivity.startActivity(this);
                 return true;
@@ -475,7 +470,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
     private enum Item {
         GLOBAL_CHAT(R.string.globalChat, R.drawable.baseline_chat_24), GAME_CHAT(R.string.gameChat, R.drawable.baseline_chat_bubble_outline_24),
-        CARDCAST(R.string.cardcast, R.drawable.baseline_cast_24), GAMES(R.string.games, R.drawable.baseline_games_24),
+        CUSTOM_DECKS(R.string.customDecks, R.drawable.baseline_bookmarks_24), GAMES(R.string.games, R.drawable.baseline_games_24),
         PLAYERS(R.string.playersLabel, R.drawable.baseline_people_24), ONGOING_GAME(R.string.ongoingGame, R.drawable.baseline_casino_24);
 
         private final int text;
@@ -501,8 +496,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     private enum Layout {
-        LOBBY(Item.PLAYERS, Item.GLOBAL_CHAT, Item.GAMES, Item.CARDCAST),
-        ONGOING(Item.PLAYERS, Item.GLOBAL_CHAT, Item.CARDCAST, Item.ONGOING_GAME, Item.GAME_CHAT);
+        LOBBY(Item.PLAYERS, Item.GLOBAL_CHAT, Item.GAMES, Item.CUSTOM_DECKS),
+        ONGOING(Item.PLAYERS, Item.GLOBAL_CHAT, Item.CUSTOM_DECKS, Item.ONGOING_GAME, Item.GAME_CHAT);
 
         private final Item[] items;
 

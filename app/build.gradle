@@ -93,6 +93,7 @@ dependencies {
     implementation 'com.github.AppIntro:AppIntro:6.0.0'
     implementation 'me.zhanghai.android.materialratingbar:library:1.4.0'
     implementation 'com.google.android.material:material:1.2.0-alpha06'
+    implementation 'com.getbase:floatingactionbutton:1.10.1'
 
     implementation 'com.squareup.okhttp3:okhttp:4.6.0'
     implementation 'org.conscrypt:conscrypt-android:2.2.1'

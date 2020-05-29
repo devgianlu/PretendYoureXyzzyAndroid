@@ -98,14 +98,6 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
-        <!-- Custom decks activity -->
-        <activity
-            android:name=".customdecks.CustomDecksActivity"
-            android:configChanges="uiMode"
-            android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.FullDark" />
-
         <!-- Edit custom decks activity -->
         <activity
             android:name=".customdecks.EditCustomDeckActivity"

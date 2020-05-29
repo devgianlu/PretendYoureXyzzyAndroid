@@ -109,7 +109,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.fragment_custom_cards_fragment, container, false);
+        CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.fragment_custom_cards, container, false);
         FloatingActionButton add = layout.findViewById(R.id.customCardsFragment_add);
         add.setOnClickListener((v) -> showCreateCardDialog(null));
 
