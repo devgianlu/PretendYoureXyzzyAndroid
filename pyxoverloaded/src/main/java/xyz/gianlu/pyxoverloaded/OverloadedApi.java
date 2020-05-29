@@ -493,6 +493,27 @@ public class OverloadedApi {
         return userDataCached;
     }
 
+    /**
+     * Sets an user property to the specified value.
+     *
+     * @param key      The property key
+     * @param value    The new property value
+     * @param activity The caller {@link Activity}
+     * @param callback The callback for success
+     */
+    public void setUserProperty(@NonNull UserData.PropertyKey key, @Nullable String value, @Nullable Activity activity, @NonNull SuccessCallback callback) {
+        callbacks(Tasks.call(executorService, (Callable<Void>) () -> {
+            JSONObject body = new JSONObject();
+            body.put("key", key.val);
+            if (value != null) body.put("value", value);
+
+            serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("User/SetProperty"))
+                    .post(jsonBody(body)));
+            return null;
+        }), activity, aVoid -> callback.onSuccessful(), callback::onFailed);
+    }
+
 
     /////////////////////////////////////////
     //////////////// Friends ////////////////

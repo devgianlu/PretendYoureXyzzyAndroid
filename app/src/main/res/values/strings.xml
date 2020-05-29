@@ -308,4 +308,6 @@
     <string name="deleteChat">Delete chat</string>
     <string name="chatDeleted">Chat deleted</string>
     <string name="failedDeletingChat">Failed deleting chat!</string>
+    <string name="publicStarredCards">Public starred cards</string>
+    <string name="publicCustomDecks">Public custom decks</string>
 </resources>
