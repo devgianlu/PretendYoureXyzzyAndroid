@@ -29,4 +29,10 @@
         <attr name="emptyText" format="string" />
         <attr name="imageSize" format="dimension" />
     </declare-styleable>
+
+    <!-- Fab label style -->
+    <style name="FabLabel">
+        <item name="android:background">@drawable/fab_label_layout</item>
+        <item name="android:textColor">?colorSurface</item>
+    </style>
 </resources>

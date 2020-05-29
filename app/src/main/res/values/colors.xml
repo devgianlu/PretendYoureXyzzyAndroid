@@ -14,6 +14,6 @@
     <color name="urbanPrimaryDark">#1D2439</color>
     <color name="urbanAccent">#EFFF00</color>
 
-    <color name="cardcastSheetFabBg">@color/colorSecondary</color>
+    <color name="customDecksSheetFabBg">@color/colorSecondary</color>
     <color name="overloadedHeaderBg">#ffffff</color>
 </resources>

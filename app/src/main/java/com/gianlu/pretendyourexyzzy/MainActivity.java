@@ -37,6 +37,8 @@ import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.main.CardcastFragment;
+import com.gianlu.pretendyourexyzzy.main.ChatFragment;
+import com.gianlu.pretendyourexyzzy.main.CustomDecksFragment;
 import com.gianlu.pretendyourexyzzy.main.DrawerItem;
 import com.gianlu.pretendyourexyzzy.main.GamesFragment;
 import com.gianlu.pretendyourexyzzy.main.NamesFragment;
@@ -48,7 +50,6 @@ import com.gianlu.pretendyourexyzzy.main.PyxChatsFragment;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsActivity;
-import com.gianlu.pretendyourexyzzy.starred.StarredDecksActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONException;
@@ -64,7 +65,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     private BottomNavigationManager navigation;
     private NamesFragment namesFragment;
     private GamesFragment gamesFragment;
-    private CardcastFragment cardcastFragment;
+    private CustomDecksFragment customDecksFragment;
     private OngoingGameFragment ongoingGameFragment;
     private PyxChatsFragment chatsFragment;
     private OverloadedFragment overloadedFragment;
@@ -148,23 +149,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public boolean canModifyCardcastDecks() {
-        return ongoingGameFragment != null && ongoingGameFragment.canModifyCardcastDecks();
-    }
-
-    @Override
-    public void addCardcastDeck(@NonNull String code) {
-        if (!canModifyCardcastDecks()) return;
-        ongoingGameFragment.addCardcastDeck(code);
-    }
-
-    @Override
-    public void addCardcastStarredDecks() {
-        if (!canModifyCardcastDecks()) return;
-        ongoingGameFragment.addCardcastStarredDecks();
-    }
-
     private void setKeepScreenOn(boolean on) {
         if (on) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -206,8 +190,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                     case GAMES:
                         transaction.add(R.id.main_container, gamesFragment, item.tag);
                         break;
-                    case CARDCAST:
-                        transaction.add(R.id.main_container, cardcastFragment, item.tag);
+                    case CUSTOM_DECKS:
+                        transaction.add(R.id.main_container, customDecksFragment, item.tag);
                         break;
                     case ONGOING_GAME:
                         if (ongoingGameFragment != null)
@@ -298,7 +282,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.USER_METRICS, R.drawable.baseline_person_24, getString(R.string.metrics)));
 
         drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.STARRED_CARDS, R.drawable.baseline_star_24, getString(R.string.starredCards)))
-                .addMenuItem(new BaseDrawerItem<>(DrawerItem.STARRED_CARDCAST_DECKS, R.drawable.baseline_bookmarks_24, getString(R.string.starredCardcastDecks)))
                 .addMenuItemSeparator()
                 .addMenuItem(new BaseDrawerItem<>(DrawerItem.PREFERENCES, R.drawable.baseline_settings_24, getString(R.string.preferences)))
                 .addMenuItem(new BaseDrawerItem<>(DrawerItem.REPORT, R.drawable.baseline_report_problem_24, getString(R.string.report)))
@@ -316,8 +299,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 case GAMES:
                     setTitle(getString(R.string.games) + " - " + getString(R.string.app_name));
                     break;
-                case CARDCAST:
-                    setTitle(getString(R.string.cardcast) + " - " + getString(R.string.app_name));
+                case CUSTOM_DECKS:
+                    setTitle(getString(R.string.customDecks) + " - " + getString(R.string.app_name));
                     break;
                 case ONGOING_GAME:
                     setTitle(getString(R.string.gameLabel) + " - " + getString(R.string.app_name));
@@ -485,9 +468,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             case STARRED_CARDS:
                 StarredCardsActivity.startActivity(this);
                 return true;
-            case STARRED_CARDCAST_DECKS:
-                StarredDecksActivity.startActivity(this);
-                return true;
             case USER_METRICS:
                 MetricsActivity.startActivity(this);
                 return true;
@@ -550,7 +530,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     private enum Item {
-        CARDCAST(R.string.cardcast, R.drawable.baseline_cast_24), GAMES(R.string.games, R.drawable.baseline_games_24),
+        CUSTOM_DECKS(R.string.customDecks, R.drawable.baseline_bookmarks_24), GAMES(R.string.games, R.drawable.baseline_games_24),
         PLAYERS(R.string.playersLabel, R.drawable.baseline_people_24), ONGOING_GAME(R.string.ongoingGame, R.drawable.baseline_casino_24),
         OVERLOADED(R.string.overloaded, R.drawable.baseline_videogame_asset_24), PYX_CHAT(R.string.chat, R.drawable.baseline_chat_bubble_outline_24);
 
@@ -577,8 +557,8 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     private enum Layout {
-        LOBBY(Item.PLAYERS, Item.PYX_CHAT, Item.GAMES, Item.CARDCAST, Item.OVERLOADED),
-        ONGOING(Item.PLAYERS, Item.PYX_CHAT, Item.CARDCAST, Item.OVERLOADED, Item.ONGOING_GAME);
+        LOBBY(Item.PLAYERS, Item.PYX_CHAT, Item.GAMES, Item.CUSTOM_DECKS),
+        ONGOING(Item.PLAYERS, Item.PYX_CHAT, Item.CUSTOM_DECKS, Item.CARDCAST, Item.ONGOING_GAME);
 
         static {
             for (Layout l : values())

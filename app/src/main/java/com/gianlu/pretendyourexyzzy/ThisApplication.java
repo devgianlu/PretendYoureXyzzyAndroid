@@ -3,7 +3,7 @@ package com.gianlu.pretendyourexyzzy;
 import com.bumptech.glide.Glide;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.pretendyourexyzzy.api.BaseCardUrlLoader;
-import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 
 import java.io.InputStream;
 

@@ -19,17 +19,19 @@ import com.gianlu.pretendyourexyzzy.LoadingActivity;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
-import com.github.paolorotolo.appintro.AppIntro;
-import com.github.paolorotolo.appintro.AppIntroBaseFragment;
-import com.github.paolorotolo.appintro.AppIntroFragment;
-import com.github.paolorotolo.appintro.model.SliderPage;
+import com.github.appintro.AppIntro;
+import com.github.appintro.AppIntroBaseFragment;
+import com.github.appintro.AppIntroFragment;
+import com.github.appintro.model.SliderPage;
+
+import org.jetbrains.annotations.NotNull;
 
 public class TutorialActivity extends AppIntro {
 
     @NonNull
     private static SliderPage getDefault() {
         SliderPage page = new SliderPage();
-        page.setDescTypefaceFontRes(R.font.roboto_thin);
+        page.setDescriptionTypefaceFontRes(R.font.roboto_thin);
         page.setTitleTypefaceFontRes(R.font.roboto_medium);
         return page;
     }
@@ -51,8 +53,8 @@ public class TutorialActivity extends AppIntro {
         if (bar != null) bar.hide();
 
         showStatusBar(false);
-        showSkipButton(true);
-        setProgressButtonEnabled(true);
+        setSkipButtonEnabled(true);
+        setIndicatorEnabled(true);
 
         addSlide(newSlide(R.string.tutorial_firstTitle, R.string.tutorial_firstDesc, R.drawable.ic_launcher));
         addSlide(newSlide(R.string.tutorial_secondTitle, R.string.tutorial_secondDesc, 0));
@@ -80,18 +82,10 @@ public class TutorialActivity extends AppIntro {
 
     public static class NoImageAppIntroFragment extends AppIntroBaseFragment {
 
-        static NoImageAppIntroFragment newInstance(SliderPage sliderPage) {
+        @NotNull
+        static NoImageAppIntroFragment newInstance(@NotNull SliderPage sliderPage) {
             NoImageAppIntroFragment slide = new NoImageAppIntroFragment();
-            Bundle args = new Bundle();
-            args.putString(ARG_TITLE, sliderPage.getTitleString());
-            args.putString(ARG_TITLE_TYPEFACE, sliderPage.getTitleTypeface());
-            args.putString(ARG_DESC, sliderPage.getDescriptionString());
-            args.putString(ARG_DESC_TYPEFACE, sliderPage.getDescTypeface());
-            args.putInt(ARG_BG_COLOR, sliderPage.getBgColor());
-            args.putInt(ARG_TITLE_COLOR, sliderPage.getTitleColor());
-            args.putInt(ARG_DESC_COLOR, sliderPage.getDescColor());
-            slide.setArguments(args);
-
+            slide.setArguments(sliderPage.toBundle());
             return slide;
         }
 
@@ -106,7 +100,7 @@ public class TutorialActivity extends AppIntro {
 
         @Override
         protected int getLayoutId() {
-            return com.github.paolorotolo.appintro.R.layout.appintro_fragment_intro;
+            return com.github.appintro.R.layout.appintro_fragment_intro;
         }
     }
 }

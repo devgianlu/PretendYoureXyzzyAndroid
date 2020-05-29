@@ -17,11 +17,11 @@
         android:visibility="gone" />
 
     <ImageView
-        android:id="@+id/cardcastSheet_icon"
+        android:id="@+id/customDecksSheet_icon"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginEnd="16dp"
-        android:src="@drawable/baseline_cast_24"
+        android:src="@drawable/baseline_bookmarks_24"
         android:tint="?colorOnPrimary" />
 
     <LinearLayout
@@ -33,12 +33,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:text="@string/cardcast"
+            android:text="@string/customDecks"
             android:textColor="?colorOnPrimary"
             android:textSize="30sp" />
 
         <TextView
-            android:id="@+id/cardcastSheet_count"
+            android:id="@+id/customDecks_count"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="?colorOnPrimary"

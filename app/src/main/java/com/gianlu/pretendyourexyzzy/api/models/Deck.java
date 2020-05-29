@@ -1,7 +1,8 @@
 package com.gianlu.pretendyourexyzzy.api.models;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+
+import com.gianlu.commonutils.CommonUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -14,12 +15,11 @@ public class Deck {
     public final int weight;
     public final int id;
     public final String description;
+    public final String watermark;
     public final String name;
     public final int blackCards;
     public final int whiteCards;
     public final boolean baseDeck;
-    public final String cardcastCode;
-    private CardcastDeckInfo cardcastDeck;
 
     public Deck(JSONObject obj) throws JSONException {
         weight = obj.getInt("w");
@@ -29,7 +29,20 @@ public class Deck {
         blackCards = obj.getInt("bcid");
         baseDeck = obj.getBoolean("bd");
         whiteCards = obj.getInt("wcid");
-        cardcastCode = getCardcastCode(id);
+        watermark = CommonUtils.optString(obj, "W");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Deck deck = (Deck) o;
+        return id == deck.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
     }
 
     @NonNull
@@ -49,25 +62,5 @@ public class Deck {
         int count = 0;
         for (Deck deck : decks) count += deck.blackCards;
         return count;
-    }
-
-    @Nullable
-    private static String getCardcastCode(int id) {
-        if (id < 0) {
-            String codeTmp = "00000";
-            codeTmp += Integer.toString(-id, 36);
-            return codeTmp.substring(codeTmp.length() - 5);
-        }
-
-        return null;
-    }
-
-    public void cardcastDeck(CardcastDeckInfo cardcastDeck) {
-        this.cardcastDeck = cardcastDeck;
-    }
-
-    @Nullable
-    public CardcastDeckInfo cardcastDeck() {
-        return cardcastDeck;
     }
 }

@@ -18,14 +18,14 @@ import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
-import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
-import com.gianlu.pretendyourexyzzy.api.models.Card;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
 import com.gianlu.pretendyourexyzzy.api.models.GameInfoAndCards;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
 import com.gianlu.pretendyourexyzzy.dialogs.Dialogs;
 
 import org.json.JSONException;
@@ -93,7 +93,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 gameStateChange(msg);
                 break;
             case HAND_DEAL:
-                dealCards(Card.list(msg.obj.getJSONArray("h")));
+                dealCards(GameCard.list(msg.obj.getJSONArray("h")));
                 break;
             case KICKED_FROM_GAME_IDLE:
                 destroy();
@@ -112,8 +112,8 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             case GAME_WHITE_RESHUFFLE:
             case KICKED:
             case BANNED:
-            case CARDCAST_ADD_CARDSET:
-            case CARDCAST_REMOVE_CARDSET:
+            case ADD_CARDSET:
+            case REMOVE_CARDSET:
             case CHAT:
             case PLAYER_LEAVE:
             case NEW_PLAYER:
@@ -166,7 +166,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         }
     }
 
-    private void dealCards(List<Card> cards) {
+    private void dealCards(List<? extends BaseCard> cards) {
         gameLayout.addHand(cards);
     }
 
@@ -182,7 +182,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             case PLAYING:
                 gameLayout.countFrom(msg.obj.getInt("Pt"));
                 gameLayout.clearTable();
-                gameLayout.setBlackCard(new Card(msg.obj.getJSONObject("bc")));
+                gameLayout.setBlackCard(GameCard.parse(msg.obj.getJSONObject("bc")));
                 updateGameInfo();
 
                 if (gameData.amHost()) {
@@ -286,12 +286,6 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         event(UiEvent.SPECTATOR_TEXT);
     }
 
-    @Override
-    public void onStoppedPolling() {
-        destroy();
-        listener.justLeaveGame();
-    }
-
     public void reset() {
         pyx.polling().removeListener(this);
         gameLayout.resetTimer();
@@ -349,7 +343,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         if (gameData.amJudge()) {
             listener.showDialog(Dialogs.confirmation(context, () -> judgeCardInternal(card)));
         } else {
-            if (card.writeIn()) {
+            if (((GameCard) card).writeIn()) {
                 listener.showDialog(Dialogs.askText(context, text -> playCardInternal(card, text)));
             } else {
                 listener.showDialog(Dialogs.confirmation(context, () -> playCardInternal(card, null)));

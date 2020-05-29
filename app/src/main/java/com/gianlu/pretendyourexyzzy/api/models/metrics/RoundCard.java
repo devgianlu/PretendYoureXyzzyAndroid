@@ -5,7 +5,7 @@ import android.text.Html;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,32 +52,11 @@ public class RoundCard extends BaseCard implements Serializable {
 
     @Override
     public int id() {
-        return 0;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return false;
-    }
-
-    @Override
-    public boolean unknown() {
-        return false;
+        return -1;
     }
 
     @Override
     public boolean black() {
         return Objects.equals(color, "black");
-    }
-
-    @Override
-    public boolean writeIn() {
-        return false;
-    }
-
-    @Nullable
-    @Override
-    public JSONObject toJson() {
-        return null;
     }
 }

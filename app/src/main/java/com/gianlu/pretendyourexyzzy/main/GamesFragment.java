@@ -186,10 +186,8 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
             });
         });
 
-        pyx.request(PyxRequests.getGamesList(), null, this);
-
         pyx.polling().addListener(this);
-
+        pyx.request(PyxRequests.getGamesList(), null, this);
         return layout;
     }
 
@@ -202,6 +200,12 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     public void onResume() {
         super.onResume();
         updateActivityTitle();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (pyx != null) pyx.polling().removeListener(this);
     }
 
     public void scrollToTop() {
@@ -411,10 +415,6 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
                 }
             });
         }
-    }
-
-    @Override
-    public void onStoppedPolling() {
     }
 
     @Override

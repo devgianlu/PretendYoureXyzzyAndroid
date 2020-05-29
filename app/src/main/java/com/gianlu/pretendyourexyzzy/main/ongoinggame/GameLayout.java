@@ -23,9 +23,9 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.adapters.PlayersAdapter;
-import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
-import com.gianlu.pretendyourexyzzy.api.models.Card;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
 import com.gianlu.pretendyourexyzzy.cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.dialogs.CardImageZoomDialog;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsManager;
@@ -82,6 +82,11 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
         startGame.setOnClickListener(v -> {
             if (listener != null) listener.startGame();
         });
+    }
+
+    @NonNull
+    public RecyclerView getCardsRecyclerView() {
+        return whiteCardsList;
     }
 
     public void countFrom(int ms) {
@@ -144,7 +149,7 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
         addHand(cards);
     }
 
-    public void setBlackCard(@Nullable Card card) {
+    public void setBlackCard(@Nullable BaseCard card) {
         blackCard.setCard(card);
     }
 
@@ -179,12 +184,6 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
         if (card != null) tableAdapter.addBlankCards(card);
     }
 
-    @NonNull
-    @Override
-    public RecyclerView getCardsRecyclerView() {
-        return whiteCardsList;
-    }
-
     @Override
     public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
         if (action == GameCardView.Action.SELECT) {
@@ -193,7 +192,7 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
             AnalyticsApplication.sendAnalytics(Utils.ACTION_STARRED_CARD_ADD);
 
             BaseCard bc = blackCard();
-            if (bc != null && starredCards.addCard(new StarredCardsManager.StarredCard(bc, group)))
+            if (bc != null && starredCards.addCard(new StarredCardsManager.StarredCard((GameCard) bc, group)))
                 Toaster.with(getContext()).message(R.string.addedCardToStarred).show();
         } else if (action == GameCardView.Action.SELECT_IMG) {
             listener.showDialog(CardImageZoomDialog.get(card));

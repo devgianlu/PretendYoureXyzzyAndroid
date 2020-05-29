@@ -125,16 +125,6 @@ public final class Utils {
         return builder.toString();
     }
 
-    @NonNull
-    public static String composeCardcastDeckSentence(CardcastCard blackCard, CardcastCard whiteCard) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(blackCard.text.get(0));
-        builder.append("<u>").append(whiteCard.text.get(0)).append("</u>");
-        if (blackCard.text.size() > 1) builder.append(blackCard.text.get(1));
-
-        return builder.toString();
-    }
-
     @Nullable
     public static Game findGame(List<Game> games, int gid) {
         for (Game game : games)
