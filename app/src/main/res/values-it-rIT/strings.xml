@@ -122,7 +122,6 @@
     <string name="invalidNumber">Numero non valido!</string>
     <string name="outOfRange">Il valore è fuori dal raggio! Minimo: %1$d. Massimo: %2$d</string>
     <string name="cardSetsLabel">Set di carte</string>
-    <string name="cardcast">Cardcast</string>
     <string name="add">Aggiungi</string>
     <string name="notEnoughPlayers">Non abbastanza giocatori!</string>
     <string name="cannotStartGame_solution">Per favore, verifica i requisiti delle carte da aggiungere.</string>
