@@ -27,10 +27,10 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
     private RecyclerView list;
     private LinearLayout cards;
     private MessageView message;
-    private StarredCardsManager starredCards;
+
 
     public static void startActivity(@NonNull Context context) {
-        if (StarredCardsManager.get().hasAnyCard())
+        if (StarredCardsDatabase.get(context).hasAnyCard())
             context.startActivity(new Intent(context, StarredCardsActivity.class));
         else
             Toaster.with(context).message(R.string.noStarredCards).show();
@@ -47,11 +47,9 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
 
-        starredCards = StarredCardsManager.get();
-
         list = findViewById(R.id.starredCards_list);
         list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        list.setAdapter(new CardsAdapter(false, starredCards.getCards(), GameCardView.Action.SELECT, GameCardView.Action.DELETE, true, this));
+        list.setAdapter(new CardsAdapter(false, StarredCardsDatabase.get(this).getCards(), GameCardView.Action.SELECT, GameCardView.Action.DELETE, true, this));
 
         message = findViewById(R.id.starredCards_message);
         cards = findViewById(R.id.starredCards_cards);
@@ -59,7 +57,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
         message.info(R.string.selectAStarredCard);
     }
 
-    private void showCards(@NonNull StarredCardsManager.StarredCard card) {
+    private void showCards(@NonNull StarredCardsDatabase.StarredCard card) {
         message.hide();
 
         cards.removeAllViews();
@@ -78,15 +76,15 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
         params.setMargins(0, paddings[1], paddings[2], paddings[3]);
     }
 
-    private void deleteCard(@NonNull StarredCardsManager.StarredCard card) {
-        starredCards.removeCard(card);
+    private void deleteCard(@NonNull StarredCardsDatabase.StarredCard card) {
+        StarredCardsDatabase.get(this).remove(card);
         if (list.getAdapter() != null && list.getAdapter().getItemCount() == 0) onBackPressed();
     }
 
     @Override
     public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
-        if (card instanceof StarredCardsManager.StarredCard) {
-            StarredCardsManager.StarredCard starred = (StarredCardsManager.StarredCard) card;
+        if (card instanceof StarredCardsDatabase.StarredCard) {
+            StarredCardsDatabase.StarredCard starred = (StarredCardsDatabase.StarredCard) card;
             switch (action) {
                 case SELECT:
                     showCards(starred);

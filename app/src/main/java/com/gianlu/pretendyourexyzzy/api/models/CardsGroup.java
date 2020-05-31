@@ -76,4 +76,15 @@ public class CardsGroup extends ArrayList<BaseCard> {
         for (BaseCard card : this) result = 31 * result + card.hashCode();
         return result;
     }
+
+    @NonNull
+    public JSONArray toJson() throws JSONException {
+        JSONArray array = new JSONArray();
+        for (BaseCard whiteCard : this) {
+            if (whiteCard instanceof GameCard)
+                array.put(((GameCard) whiteCard).toJson());
+        }
+
+        return array;
+    }
 }

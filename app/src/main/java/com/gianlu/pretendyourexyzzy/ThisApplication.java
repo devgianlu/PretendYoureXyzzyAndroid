@@ -4,6 +4,7 @@ import com.bumptech.glide.Glide;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.pretendyourexyzzy.api.BaseCardUrlLoader;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 
 import java.io.InputStream;
 
@@ -23,6 +24,8 @@ public class ThisApplication extends AnalyticsApplication {
         super.onCreate();
         Glide.get(this).getRegistry().prepend(BaseCard.class, InputStream.class, new BaseCardUrlLoader.Factory());
         SignalDatabaseHelper.init(this);
+
+        StarredCardsDatabase.migrateFromPrefs(this);
     }
 
     @Override
