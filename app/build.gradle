@@ -1,5 +1,5 @@
 plugins {
-    id 'com.github.triplet.play' version '2.5.0'
+    id 'com.github.triplet.play' version '2.6.2'
 }
 
 apply plugin: 'com.android.application'
@@ -83,7 +83,7 @@ dependencies {
     implementation 'me.zhanghai.android.materialratingbar:library:1.4.0'
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
     implementation 'org.apmem.tools:layouts:1.10@aar'
-    implementation 'com.google.android.material:material:1.2.0-alpha06'
+    implementation 'com.google.android.material:material:1.2.0-beta01'
     implementation 'com.getbase:floatingactionbutton:1.10.1'
 
     implementation 'com.squareup.okhttp3:okhttp:4.6.0'
