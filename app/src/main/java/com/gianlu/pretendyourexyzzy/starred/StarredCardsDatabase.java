@@ -48,8 +48,8 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         Prefs.putLong(PK.STARRED_CARDS_REVISION, revision);
     }
 
-    @Deprecated
-    public static void migrateFromPrefs(@NonNull Context context) { // FIXME
+    @SuppressWarnings("deprecation")
+    public static void migrateFromPrefs(@NonNull Context context) {
         if (!Prefs.has(PK.STARRED_CARDS)) return;
 
         StarredCardsDatabase db = get(context);
@@ -57,8 +57,22 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             JSONArray json = JsonStoring.intoPrefs().getJsonArray(PK.STARRED_CARDS);
             if (json == null) return;
 
-            db.loadUpdate(json, System.currentTimeMillis());
-            Log.i(TAG, String.format("Migrated %s cards.", json.length()));
+            boolean ok = true;
+            for (int i = 0; i < json.length(); i++) {
+                JSONObject obj = json.getJSONObject(i);
+                GameCard black = (GameCard) GameCard.parse(obj.getJSONObject("bc"));
+                CardsGroup whites = CardsGroup.gameCards(obj.getJSONArray("wc"));
+                if (whites.isEmpty()) {
+                    ok = false;
+                    continue;
+                }
+
+                if (!db.putCard(black, whites))
+                    ok = false;
+            }
+
+            if (ok) Prefs.remove(PK.STARRED_CARDS);
+            Log.i(TAG, String.format("Migrated %s cards, ok: %b.", json.length(), ok));
         } catch (JSONException ex) {
             Log.e(TAG, "Failed migrating cards.", ex);
         }
@@ -73,12 +87,12 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    public boolean putCard(@NonNull GameCard blackCard, @NonNull CardsGroup whiteCards) {
+    public boolean putCard(@NonNull ContentCard blackCard, @NonNull CardsGroup whiteCards) {
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         try {
             ContentValues values = new ContentValues();
-            values.put("blackCard", ContentCard.toJson(blackCard).toString());
+            values.put("blackCard", blackCard.toJson().toString());
             values.put("whiteCards", ContentCard.toJson(whiteCards).toString());
             long id = db.insert("cards", null, values);
             db.setTransactionSuccessful();
@@ -90,6 +104,10 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         } finally {
             db.endTransaction();
         }
+    }
+
+    public boolean putCard(@NonNull GameCard blackCard, @NonNull CardsGroup whiteCards) {
+        return putCard(ContentCard.from(blackCard), whiteCards);
     }
 
     public void remove(@NonNull StarredCard card) {

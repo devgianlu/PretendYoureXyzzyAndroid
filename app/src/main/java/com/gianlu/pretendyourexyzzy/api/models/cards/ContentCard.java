@@ -52,6 +52,11 @@ public final class ContentCard extends BaseCard {
     }
 
     @NonNull
+    public static ContentCard from(@NonNull GameCard card) {
+        return new ContentCard(card.originalText, card.originalWatermark, card.black());
+    }
+
+    @NonNull
     @Override
     public String text() {
         return text;
