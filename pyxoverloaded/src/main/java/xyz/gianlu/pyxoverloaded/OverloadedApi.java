@@ -607,6 +607,21 @@ public class OverloadedApi {
         }), activity, (OnSuccessListener<Void>) aVoid -> callback.onSuccessful(), callback::onFailed);
     }
 
+    public void patchStarredCards(long revision, @NonNull PatchOp op, @NonNull JSONObject item, @Nullable Activity activity, @NonNull SuccessCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject body = new JSONObject();
+            body.put("revision", revision);
+            body.put("patch", new JSONObject()
+                    .put("type", op.name())
+                    .put("item", item));
+
+            serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Sync/UpdateStarredCards"))
+                    .post(jsonBody(body)));
+            return null;
+        }), activity, (OnSuccessListener<Void>) aVoid -> callback.onSuccessful(), callback::onFailed);
+    }
+
     /////////////////////////////////////////
     //////////////// Events /////////////////
     /////////////////////////////////////////
@@ -638,6 +653,10 @@ public class OverloadedApi {
         } else if (event.type == Event.Type.SHARE_KEYS_LOW) {
             if (chatInstance != null) chatInstance.sharePreKeys();
         }
+    }
+
+    public enum PatchOp {
+        ADD, REM
     }
 
     @UiThread

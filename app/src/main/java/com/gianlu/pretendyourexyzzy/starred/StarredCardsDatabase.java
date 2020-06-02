@@ -26,6 +26,9 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
+
 public final class StarredCardsDatabase extends SQLiteOpenHelper {
     private static final String TAG = StarredCardsDatabase.class.getSimpleName();
     private static StarredCardsDatabase instance = null;
@@ -87,6 +90,23 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
+    private void sendPatch(@NonNull OverloadedApi.PatchOp op, @NonNull ContentCard blackCard, @NonNull CardsGroup whiteCards) throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put("bc", blackCard.toJson());
+        obj.put("wc", ContentCard.toJson(whiteCards));
+        OverloadedApi.get().patchStarredCards(getRevision(), op, obj, null, new SuccessCallback() {
+            @Override
+            public void onSuccessful() {
+                Log.i(TAG, "Performed path on server: " + getRevision());
+            }
+
+            @Override
+            public void onFailed(@NonNull Exception ex) {
+                Log.e(TAG, "Failed performing patch on server: " + op, ex);
+            }
+        });
+    }
+
     public boolean putCard(@NonNull ContentCard blackCard, @NonNull CardsGroup whiteCards) {
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
@@ -97,6 +117,13 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             long id = db.insert("cards", null, values);
             db.setTransactionSuccessful();
             setRevision(System.currentTimeMillis());
+
+            try {
+                sendPatch(OverloadedApi.PatchOp.ADD, blackCard, whiteCards);
+            } catch (JSONException ex) {
+                Log.e(TAG, "Failed sending add patch.", ex);
+            }
+
             return id != -1;
         } catch (JSONException ex) {
             Log.e(TAG, "Failed adding card.", ex);
@@ -117,6 +144,13 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             db.delete("cards", "id=?", new String[]{String.valueOf(card.id)});
             db.setTransactionSuccessful();
             setRevision(System.currentTimeMillis());
+
+            try {
+                sendPatch(OverloadedApi.PatchOp.REM, card.blackCard, card.whiteCards);
+            } catch (JSONException ex) {
+                Log.e(TAG, "Failed sending remove patch.", ex);
+            }
+
         } finally {
             db.endTransaction();
         }
