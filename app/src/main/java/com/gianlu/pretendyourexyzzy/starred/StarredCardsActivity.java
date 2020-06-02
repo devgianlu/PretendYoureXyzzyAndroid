@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -20,14 +21,17 @@ import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.cards.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.dialogs.CardImageZoomDialog;
+import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
 
 import java.util.Objects;
 
-public class StarredCardsActivity extends ActivityWithDialog implements CardsAdapter.Listener {
+import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
+
+public class StarredCardsActivity extends ActivityWithDialog implements CardsAdapter.Listener, OverloadedSyncApi.SyncStatusListener {
     private RecyclerView list;
     private LinearLayout cards;
     private MessageView message;
-
+    private TextView syncStatus;
 
     public static void startActivity(@NonNull Context context) {
         if (StarredCardsDatabase.get(context).hasAnyCard())
@@ -53,8 +57,21 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
 
         message = findViewById(R.id.starredCards_message);
         cards = findViewById(R.id.starredCards_cards);
+        syncStatus = findViewById(R.id.starredCards_sync);
 
         message.info(R.string.selectAStarredCard);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        OverloadedSyncApi.get().addSyncListener(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        OverloadedSyncApi.get().removeSyncListener(this);
     }
 
     private void showCards(@NonNull StarredCardsDatabase.StarredCard card) {
@@ -103,5 +120,11 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
                     break;
             }
         }
+    }
+
+    @Override
+    public void syncStatusUpdated(@NonNull OverloadedSyncApi.SyncProduct product, boolean isSyncing, boolean error) {
+        if (syncStatus != null && product == OverloadedSyncApi.SyncProduct.STARRED_CARDS)
+            SyncUtils.updateSyncText(syncStatus, product, isSyncing, error);
     }
 }

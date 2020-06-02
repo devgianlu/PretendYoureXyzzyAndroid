@@ -26,7 +26,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
 
 public final class StarredCardsDatabase extends SQLiteOpenHelper {
@@ -90,11 +90,11 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    private void sendPatch(@NonNull OverloadedApi.PatchOp op, @NonNull ContentCard blackCard, @NonNull CardsGroup whiteCards) throws JSONException {
+    private void sendPatch(@NonNull OverloadedSyncApi.PatchOp op, @NonNull ContentCard blackCard, @NonNull CardsGroup whiteCards) throws JSONException {
         JSONObject obj = new JSONObject();
         obj.put("bc", blackCard.toJson());
         obj.put("wc", ContentCard.toJson(whiteCards));
-        OverloadedApi.get().patchStarredCards(getRevision(), op, obj, null, new SuccessCallback() {
+        OverloadedSyncApi.get().patchStarredCards(getRevision(), op, obj, null, new SuccessCallback() {
             @Override
             public void onSuccessful() {
                 Log.i(TAG, "Performed path on server: " + getRevision());
@@ -119,7 +119,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             setRevision(System.currentTimeMillis());
 
             try {
-                sendPatch(OverloadedApi.PatchOp.ADD, blackCard, whiteCards);
+                sendPatch(OverloadedSyncApi.PatchOp.ADD, blackCard, whiteCards);
             } catch (JSONException ex) {
                 Log.e(TAG, "Failed sending add patch.", ex);
             }
@@ -146,7 +146,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             setRevision(System.currentTimeMillis());
 
             try {
-                sendPatch(OverloadedApi.PatchOp.REM, card.blackCard, card.whiteCards);
+                sendPatch(OverloadedSyncApi.PatchOp.REM, card.blackCard, card.whiteCards);
             } catch (JSONException ex) {
                 Log.e(TAG, "Failed sending remove patch.", ex);
             }
