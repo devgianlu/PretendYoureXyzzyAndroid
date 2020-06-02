@@ -9,9 +9,9 @@ import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.preferences.Prefs;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Tasks;
 
+import org.jetbrains.annotations.Contract;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,8 +21,8 @@ import java.util.EnumMap;
 import java.util.List;
 
 import okhttp3.Request;
-import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
 import xyz.gianlu.pyxoverloaded.callback.SyncCallback;
+import xyz.gianlu.pyxoverloaded.callback.UpdateSyncCallback;
 
 import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
 import static xyz.gianlu.pyxoverloaded.Utils.jsonBody;
@@ -89,7 +89,7 @@ public class OverloadedSyncApi {
         });
     }
 
-    public void updateStarredCards(long revision, @NonNull JSONArray update, @Nullable Activity activity, @NonNull SuccessCallback callback) {
+    public void updateStarredCards(long revision, @NonNull JSONArray update, @Nullable Activity activity, @NonNull UpdateSyncCallback callback) {
         callbacks(Tasks.call(api.executorService, () -> {
             dispatchSyncUpdate(SyncProduct.STARRED_CARDS, true, false);
 
@@ -97,13 +97,13 @@ public class OverloadedSyncApi {
             body.put("revision", revision);
             body.put("update", update);
 
-            api.serverRequest(new Request.Builder()
+            JSONObject obj = api.serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Sync/UpdateStarredCards"))
                     .post(jsonBody(body)));
-            return null;
-        }), activity, (OnSuccessListener<Void>) v -> {
+            return new UpdateResponse(obj);
+        }), activity, result -> {
             Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, System.currentTimeMillis());
-            callback.onSuccessful();
+            callback.onResult(result);
             dispatchSyncUpdate(SyncProduct.STARRED_CARDS, false, false);
         }, ex -> {
             callback.onFailed(ex);
@@ -111,7 +111,11 @@ public class OverloadedSyncApi {
         });
     }
 
-    public void patchStarredCards(long revision, @NonNull PatchOp op, @NonNull JSONObject item, @Nullable Activity activity, @NonNull SuccessCallback callback) {
+    @Contract("_, _, null, null, _, _ -> fail")
+    public void patchStarredCards(long revision, @NonNull PatchOp op, @Nullable Long remoteId, @Nullable JSONObject item, @Nullable Activity activity, @NonNull UpdateSyncCallback callback) {
+        if (remoteId == null && item == null)
+            throw new IllegalArgumentException();
+
         callbacks(Tasks.call(api.executorService, () -> {
             dispatchSyncUpdate(SyncProduct.STARRED_CARDS, true, false);
 
@@ -119,15 +123,16 @@ public class OverloadedSyncApi {
             body.put("revision", revision);
             body.put("patch", new JSONObject()
                     .put("type", op.name())
+                    .put("remoteId", remoteId)
                     .put("item", item));
 
-            api.serverRequest(new Request.Builder()
+            JSONObject obj = api.serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Sync/UpdateStarredCards"))
                     .post(jsonBody(body)));
-            return null;
-        }), activity, (OnSuccessListener<Void>) v -> {
+            return new UpdateResponse(obj);
+        }), activity, result -> {
             Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, System.currentTimeMillis());
-            callback.onSuccessful();
+            callback.onResult(result);
             dispatchSyncUpdate(SyncProduct.STARRED_CARDS, false, false);
         }, ex -> {
             callback.onFailed(ex);
@@ -154,6 +159,24 @@ public class OverloadedSyncApi {
         SyncStatus(boolean isSyncing, boolean error) {
             this.isSyncing = isSyncing;
             this.error = error;
+        }
+    }
+
+    public static class UpdateResponse {
+        public final Long remoteId;
+        public final long[] remoteIds;
+
+        public UpdateResponse(@NonNull JSONObject obj) throws JSONException {
+            remoteId = CommonUtils.optLong(obj, "remoteId");
+
+            if (!obj.has("remoteIds") || obj.isNull("remoteIds")) {
+                remoteIds = null;
+            } else {
+                JSONArray array = obj.getJSONArray("remoteIds");
+                remoteIds = new long[array.length()];
+                for (int i = 0; i < array.length(); i++)
+                    remoteIds[i] = array.getLong(i);
+            }
         }
     }
 

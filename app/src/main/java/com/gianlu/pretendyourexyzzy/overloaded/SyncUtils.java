@@ -10,8 +10,6 @@ import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 
-import org.json.JSONArray;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -19,8 +17,8 @@ import java.util.Locale;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedPK;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
-import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
 import xyz.gianlu.pyxoverloaded.callback.SyncCallback;
+import xyz.gianlu.pyxoverloaded.callback.UpdateSyncCallback;
 
 public final class SyncUtils {
     private static final String TAG = SyncUtils.class.getSimpleName();
@@ -60,11 +58,14 @@ public final class SyncUtils {
             @Override
             public void onResult(@NonNull OverloadedSyncApi.SyncResponse result) {
                 if (result.needsUpdate) {
-                    JSONArray update = StarredCardsDatabase.get(context).getUpdate();
-                    OverloadedSyncApi.get().updateStarredCards(ourRevision, update, null, new SuccessCallback() {
+                    StarredCardsDatabase.UpdatePair update = StarredCardsDatabase.get(context).getUpdate();
+                    OverloadedSyncApi.get().updateStarredCards(ourRevision, update.update, null, new UpdateSyncCallback() {
                         @Override
-                        public void onSuccessful() {
-                            Log.i(TAG, "Updated starred cards on server, count: " + update.length());
+                        public void onResult(@NonNull OverloadedSyncApi.UpdateResponse result) {
+                            if (result.remoteIds == null) return;
+
+                            update.setRemoteIds(result.remoteIds);
+                            Log.i(TAG, "Updated starred cards on server, count: " + result.remoteIds.length);
                         }
 
                         @Override
