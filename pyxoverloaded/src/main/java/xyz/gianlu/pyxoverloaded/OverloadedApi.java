@@ -12,8 +12,10 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthCredential;
@@ -57,6 +59,7 @@ import okio.Okio;
 import xyz.gianlu.pyxoverloaded.callback.BooleanCallback;
 import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
 import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
+import xyz.gianlu.pyxoverloaded.callback.SyncCallback;
 import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.callback.UsersCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
@@ -579,6 +582,32 @@ public class OverloadedApi {
 
 
     /////////////////////////////////////////
+    ///////////// Starred cards /////////////
+    /////////////////////////////////////////
+
+    public void syncStarredCards(long localRevision, @Nullable Activity activity, @NonNull SyncCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject obj = serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Sync/StarredCards"))
+                    .post(singletonJsonBody("revision", localRevision)));
+            return new SyncResponse(obj);
+        }), activity, callback::onResult, callback::onFailed);
+    }
+
+    public void updateStarredCards(long revision, @NonNull JSONArray update, @Nullable Activity activity, @NonNull SuccessCallback callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject body = new JSONObject();
+            body.put("revision", revision);
+            body.put("update", update);
+
+            serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Sync/UpdateStarredCards"))
+                    .post(jsonBody(body)));
+            return null;
+        }), activity, (OnSuccessListener<Void>) aVoid -> callback.onSuccessful(), callback::onFailed);
+    }
+
+    /////////////////////////////////////////
     //////////////// Events /////////////////
     /////////////////////////////////////////
 
@@ -614,6 +643,18 @@ public class OverloadedApi {
     @UiThread
     public interface EventListener {
         void onEvent(@NonNull Event event) throws JSONException;
+    }
+
+    public static class SyncResponse {
+        public final boolean needsUpdate;
+        public final JSONArray update;
+        public final Long revision;
+
+        private SyncResponse(@NonNull JSONObject resp) throws JSONException {
+            needsUpdate = resp.getBoolean("needsUpdate");
+            update = resp.optJSONArray("update");
+            revision = CommonUtils.optLong(resp, "revision");
+        }
     }
 
     public static class Event {
