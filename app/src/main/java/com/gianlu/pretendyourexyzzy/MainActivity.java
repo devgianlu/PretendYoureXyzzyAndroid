@@ -47,14 +47,18 @@ import com.gianlu.pretendyourexyzzy.main.PyxChatsFragment;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsActivity;
+import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.Objects;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
+import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
+import xyz.gianlu.pyxoverloaded.callback.SyncCallback;
 
 public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction, OverloadedChatApi.UnreadCountListener, PyxChatHelper.UnreadCountListener {
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -480,8 +484,9 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     @Override
     protected void onStart() {
         super.onStart();
-
         OverloadedApi.chat(this).addUnreadCountListener(this);
+        if (OverloadedApi.get().isFullyRegistered() && !OverloadedApi.get().isUnderMaintenance())
+            runSync();
     }
 
     @Override
@@ -490,6 +495,39 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
         OverloadedApi.chat(this).removeUnreadCountListener(this);
         if (pyx != null) pyx.chat().removeUnreadCountListener(this);
+    }
+
+    private void runSync() {
+        long ourRevision = StarredCardsDatabase.getRevision();
+        OverloadedApi.get().syncStarredCards(ourRevision, null, new SyncCallback() {
+            @Override
+            public void onResult(@NonNull OverloadedApi.SyncResponse result) {
+                if (result.needsUpdate) {
+                    JSONArray update = StarredCardsDatabase.get(MainActivity.this).getUpdate();
+                    OverloadedApi.get().updateStarredCards(ourRevision, update, null, new SuccessCallback() {
+                        @Override
+                        public void onSuccessful() {
+                            Log.i(TAG, "Updated starred cards on server, count: " + update.length());
+                        }
+
+                        @Override
+                        public void onFailed(@NonNull Exception ex) {
+                            Log.e(TAG, "Failed updating starred cards.", ex);
+                        }
+                    });
+                } else if (result.update != null && result.revision != null) {
+                    StarredCardsDatabase.get(MainActivity.this).loadUpdate(result.update, result.revision);
+                    Log.i(TAG, String.format("Received starred cards from server, count: %d, revision: %d", result.update.length(), result.revision));
+                } else {
+                    Log.d(TAG, "Starred cards are up-to-date: " + ourRevision);
+                }
+            }
+
+            @Override
+            public void onFailed(@NonNull Exception ex) {
+                Log.e(TAG, "Failed syncing starred cards.", ex);
+            }
+        });
     }
 
     private void inflateNavigation(@NonNull Layout layout) {

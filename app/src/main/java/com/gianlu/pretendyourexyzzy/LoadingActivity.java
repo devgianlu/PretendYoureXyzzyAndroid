@@ -47,6 +47,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputLayout;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.security.SecureRandom;
@@ -146,7 +147,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                         if (Objects.equals(pair.key(), "game")) {
                             try {
                                 launchGame = new GamePermalink(Integer.parseInt(pair.value("")), new JSONObject()); // A bit hacky
-                            } catch (NumberFormatException ignored) {
+                            } catch (NumberFormatException | JSONException ignored) {
                             }
                         } else if (Objects.equals(pair.key(), "password")) {
                             launchGamePassword = pair.value("");

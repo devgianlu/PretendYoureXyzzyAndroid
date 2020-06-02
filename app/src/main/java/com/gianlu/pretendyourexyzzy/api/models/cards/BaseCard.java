@@ -21,8 +21,6 @@ public abstract class BaseCard implements Serializable {
 
     public abstract int numDraw();
 
-    public abstract int id();
-
     public abstract boolean black();
 
     @Nullable

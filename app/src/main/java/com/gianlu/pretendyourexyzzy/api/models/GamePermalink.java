@@ -18,7 +18,7 @@ public class GamePermalink implements Serializable {
         this.gamePermalink = CommonUtils.optString(obj, "gp");
     }
 
-    public GamePermalink(int gid, JSONObject obj) {
+    public GamePermalink(int gid, JSONObject obj) throws JSONException {
         this.gid = gid;
         this.gamePermalink = CommonUtils.optString(obj, "gp");
     }

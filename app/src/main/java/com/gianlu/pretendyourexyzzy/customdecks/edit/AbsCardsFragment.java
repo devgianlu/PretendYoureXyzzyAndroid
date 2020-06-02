@@ -154,7 +154,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
                 if (oldCard != null) {
                     CustomCard card = db.updateCard(oldCard, result.output);
                     if (adapter != null) {
-                        int index = adapter.indexOfGroup(oldCard.id());
+                        int index = adapter.indexOfGroup(oldCard.id, CustomCard.class, (c, id) -> c.id == id);
                         if (index != -1) adapter.updateCard(index, card);
                     }
 

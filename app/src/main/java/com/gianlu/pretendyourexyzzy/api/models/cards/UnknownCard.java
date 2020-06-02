@@ -31,11 +31,6 @@ public final class UnknownCard extends BaseCard {
     }
 
     @Override
-    public int id() {
-        return -1;
-    }
-
-    @Override
     public boolean black() {
         return false;
     }

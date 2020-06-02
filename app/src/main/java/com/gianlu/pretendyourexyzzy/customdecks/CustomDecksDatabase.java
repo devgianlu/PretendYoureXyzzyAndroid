@@ -178,7 +178,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         try {
             ContentValues values = new ContentValues();
             values.put("text", CommonUtils.toJSONArray(text).toString());
-            db.update("cards", values, "id=?", new String[]{String.valueOf(old.id())});
+            db.update("cards", values, "id=?", new String[]{String.valueOf(old.id)});
             db.setTransactionSuccessful();
             return new CustomCard(old, text);
         } finally {
@@ -240,10 +240,10 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     }
 
     public static final class CustomCard extends BaseCard {
+        public final int id;
         private final String[] text;
         private final String watermark;
         private final int type;
-        private final int id;
         private transient String sentence = null;
 
         private CustomCard(String[] text, String watermark, int type, int id) {
@@ -307,11 +307,6 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         @Override
         public int numDraw() {
             return !black() ? -1 : 0;
-        }
-
-        @Override
-        public int id() {
-            return id;
         }
 
         @Override

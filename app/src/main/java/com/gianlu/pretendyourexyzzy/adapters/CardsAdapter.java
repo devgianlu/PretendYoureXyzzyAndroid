@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.UnknownCard;
 import com.gianlu.pretendyourexyzzy.cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.cards.PyxCardsGroupView;
@@ -82,20 +83,11 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         isSelectable = selectable;
     }
 
-    public int indexOfGroup(int cardId) {
-        for (int i = 0; i < cards.size(); i++) {
-            if (cards.get(i).hasCard(cardId))
-                return i;
-        }
-
-        return -1;
-    }
-
     @UiThread
     public void notifyWinningCard(int winnerCardId) {
         for (int i = 0; i < cards.size(); i++) {
             CardsGroup group = cards.get(i);
-            if (group.hasCard(winnerCardId)) {
+            if (GameCard.hasCard(group, winnerCardId)) {
                 if (list != null && list.getLayoutManager() instanceof LinearLayoutManager) { // Scroll only if item is not visible
                     LinearLayoutManager llm = (LinearLayoutManager) list.getLayoutManager();
                     int start = llm.findFirstCompletelyVisibleItemPosition();
@@ -104,7 +96,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
                         list.getLayoutManager().smoothScrollToPosition(list, null, i);
                 }
 
-                group.setWinner();
+                GameCard.setWinner(group);
                 notifyItemChanged(i);
                 break;
             }
@@ -204,6 +196,23 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
         }
 
         return faceUp;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <C extends BaseCard> int indexOfGroup(int id, @NonNull Class<C> clazz, @NonNull Indexer<C> indexer) {
+        for (int i = 0; i < cards.size(); i++) {
+            CardsGroup group = cards.get(i);
+            for (BaseCard card : group) {
+                if (card.getClass() == clazz && indexer.matches((C) card, id))
+                    return i;
+            }
+        }
+
+        return -1;
+    }
+
+    public interface Indexer<C extends BaseCard> {
+        boolean matches(@NonNull C card, int id);
     }
 
     public interface Listener {

@@ -15,6 +15,7 @@ import com.gianlu.commonutils.preferences.json.JsonStoring;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.ContentCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
 
 import org.jetbrains.annotations.NotNull;
@@ -39,8 +40,16 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         return instance;
     }
 
-    @SuppressWarnings("deprecation")
-    public static void migrateFromPrefs(@NonNull Context context) {
+    public static long getRevision() {
+        return Prefs.getLong(PK.STARRED_CARDS_REVISION, 0);
+    }
+
+    public static void setRevision(long revision) {
+        Prefs.putLong(PK.STARRED_CARDS_REVISION, revision);
+    }
+
+    @Deprecated
+    public static void migrateFromPrefs(@NonNull Context context) { // FIXME
         if (!Prefs.has(PK.STARRED_CARDS)) return;
 
         StarredCardsDatabase db = get(context);
@@ -48,15 +57,8 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             JSONArray json = JsonStoring.intoPrefs().getJsonArray(PK.STARRED_CARDS);
             if (json == null) return;
 
-            boolean ok = true;
-            for (int i = 0; i < json.length(); i++) {
-                StarredCard card = new StarredCard(json.getJSONObject(i));
-                if (!db.putCard(card.blackCard, card.whiteCards))
-                    ok = false;
-            }
-
-            if (ok) Prefs.remove(PK.STARRED_CARDS);
-            Log.i(TAG, String.format("Migrated %s cards, ok: %b.", json.length(), ok));
+            db.loadUpdate(json, System.currentTimeMillis());
+            Log.i(TAG, String.format("Migrated %s cards.", json.length()));
         } catch (JSONException ex) {
             Log.e(TAG, "Failed migrating cards.", ex);
         }
@@ -76,10 +78,11 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         db.beginTransaction();
         try {
             ContentValues values = new ContentValues();
-            values.put("blackCard", blackCard.toJson().toString());
-            values.put("whiteCards", whiteCards.toJson().toString());
+            values.put("blackCard", ContentCard.toJson(blackCard).toString());
+            values.put("whiteCards", ContentCard.toJson(whiteCards).toString());
             long id = db.insert("cards", null, values);
             db.setTransactionSuccessful();
+            setRevision(System.currentTimeMillis());
             return id != -1;
         } catch (JSONException ex) {
             Log.e(TAG, "Failed adding card.", ex);
@@ -95,6 +98,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         try {
             db.delete("cards", "id=?", new String[]{String.valueOf(card.id)});
             db.setTransactionSuccessful();
+            setRevision(System.currentTimeMillis());
         } finally {
             db.endTransaction();
         }
@@ -133,23 +137,54 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         }
     }
 
+    @NonNull
+    public JSONArray getUpdate() {
+        JSONArray array = new JSONArray();
+        for (StarredCard card : getCards()) {
+            try {
+                JSONObject obj = new JSONObject();
+                obj.put("bc", card.blackCard.toJson());
+                obj.put("wc", ContentCard.toJson(card.whiteCards));
+                array.put(obj);
+            } catch (JSONException ignored) {
+            }
+        }
+        return array;
+    }
+
+    public void loadUpdate(@NonNull JSONArray update, long revision) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            db.execSQL("DELETE FROM cards");
+
+            for (int i = 0; i < update.length(); i++) {
+                JSONObject obj = update.getJSONObject(i);
+                ContentValues values = new ContentValues();
+                values.put("blackCard", obj.getJSONObject("bc").toString());
+                values.put("whiteCards", obj.getJSONArray("wc").toString());
+                db.insert("cards", null, values);
+            }
+
+            db.setTransactionSuccessful();
+            setRevision(revision);
+        } catch (JSONException ex) {
+            Log.e(TAG, "Failed adding card.", ex);
+        } finally {
+            db.endTransaction();
+        }
+    }
+
     public static class StarredCard extends BaseCard {
-        public final GameCard blackCard;
+        public final ContentCard blackCard;
         public final CardsGroup whiteCards;
         public final int id;
         private String cachedSentence;
 
         private StarredCard(@NonNull Cursor cursor) throws JSONException {
             id = cursor.getInt(cursor.getColumnIndex("id"));
-            blackCard = (GameCard) GameCard.parse(new JSONObject(cursor.getString(cursor.getColumnIndex("blackCard"))));
-            whiteCards = CardsGroup.gameCards(new JSONArray(cursor.getString(cursor.getColumnIndex("whiteCards"))));
-        }
-
-        @Deprecated
-        private StarredCard(JSONObject obj) throws JSONException {
-            blackCard = (GameCard) GameCard.parse(obj.getJSONObject("bc"));
-            id = obj.getInt("id");
-            whiteCards = CardsGroup.gameCards(obj.getJSONArray("wc"));
+            blackCard = ContentCard.parse(new JSONObject(cursor.getString(cursor.getColumnIndex("blackCard"))), true);
+            whiteCards = ContentCard.parse(new JSONArray(cursor.getString(cursor.getColumnIndex("whiteCards"))), false);
         }
 
         @NonNull
@@ -201,11 +236,6 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         @Override
         public int numDraw() {
             return -1;
-        }
-
-        @Override
-        public int id() {
-            return id;
         }
 
         @Override
