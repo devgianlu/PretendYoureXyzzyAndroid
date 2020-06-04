@@ -64,10 +64,11 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
                 return new ParseResult(ParseResult.Result.WARN, output, R.string.missingPlaceholderBlack);
             }
 
-            for (int i = 0; i < output.length; i++) {
-                output[i] = output[i].trim();
-                if (output[i].indexOf('_') != -1)
+            for (String s : output) {
+                if (s.indexOf('_') != -1) {
                     warn = true;
+                    break;
+                }
             }
 
             if (warn)
@@ -148,11 +149,11 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
             button.setEnabled(false);
             button.setOnClickListener(v -> {
                 ParseResult result = parseInputText(CommonUtils.getText(text), isBlack());
-                if (result.result == ParseResult.Result.ERROR || result.output == null)
+                if (result.result == ParseResult.Result.ERROR || result.output == null || id == null)
                     return;
 
                 if (oldCard != null) {
-                    CustomCard card = db.updateCard(oldCard, result.output);
+                    CustomCard card = db.updateCard(id, oldCard, result.output);
                     if (adapter != null) {
                         int index = adapter.indexOfGroup(oldCard.id, CustomCard.class, (c, id) -> c.id == id);
                         if (index != -1) adapter.updateCard(index, card);
@@ -160,9 +161,6 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
 
                     di.dismiss();
                 } else {
-                    if (id == null)
-                        return;
-
                     CustomCard card = db.putCard(id, isBlack(), result.output);
                     if (card != null) {
                         if (adapter != null) adapter.addCard(card);

@@ -484,6 +484,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         OverloadedApi.chat(this).addUnreadCountListener(this);
         if (OverloadedApi.get().isFullyRegistered() && !OverloadedApi.get().isUnderMaintenance()) {
             SyncUtils.syncStarredCards(this);
+            SyncUtils.syncCustomDecks(this);
         }
     }
 

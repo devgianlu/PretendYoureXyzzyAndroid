@@ -83,7 +83,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(@NotNull SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS cards (id INTEGER UNIQUE PRIMARY KEY NOT NULL, blackCard TEXT NOT NULL, whiteCards TEXT NOT NULL, remoteId INTEGER)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS cards (id INTEGER UNIQUE PRIMARY KEY NOT NULL, blackCard TEXT NOT NULL, whiteCards TEXT NOT NULL, remoteId INTEGER UNIQUE)");
     }
 
     @Override
@@ -240,6 +240,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
                 ContentValues values = new ContentValues();
                 values.put("blackCard", obj.getJSONObject("bc").toString());
                 values.put("whiteCards", obj.getJSONArray("wc").toString());
+                values.put("remoteId", obj.getLong("remoteId"));
                 db.insert("cards", null, values);
             }
 

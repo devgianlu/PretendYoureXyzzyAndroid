@@ -6,8 +6,8 @@ import androidx.annotation.UiThread;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 
 @UiThread
-public interface SyncCallback {
-    void onResult(@NonNull OverloadedSyncApi.SyncResponse result);
+public interface StarredCardsSyncCallback {
+    void onResult(@NonNull OverloadedSyncApi.StarredCardsSyncResponse result);
 
     void onFailed(@NonNull Exception ex);
 }

@@ -178,7 +178,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
                     String json;
                     CustomDeck deck = customDecks.get(which);
                     try {
-                        json = deck.craftJson(CustomDecksDatabase.get(requireContext())).toString();
+                        json = deck.craftPyxJson(CustomDecksDatabase.get(requireContext())).toString();
                     } catch (JSONException ex) {
                         Log.e(TAG, "Failed crating JSON for deck: " + deck.id, ex);
                         return;

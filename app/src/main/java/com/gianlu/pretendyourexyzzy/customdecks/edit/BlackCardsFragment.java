@@ -28,6 +28,6 @@ public final class BlackCardsFragment extends AbsCardsFragment {
     @NotNull
     @Override
     protected List<? extends BaseCard> getCards(int id) {
-        return db.loadBlackCards(id);
+        return db.getBlackCards(id);
     }
 }
