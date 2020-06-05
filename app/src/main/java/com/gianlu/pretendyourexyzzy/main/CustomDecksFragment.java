@@ -23,6 +23,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
+import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,11 +31,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-public class CustomDecksFragment extends FragmentWithDialog {
+import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
+
+public class CustomDecksFragment extends FragmentWithDialog implements OverloadedSyncApi.SyncStatusListener {
     private static final int RC_IMPORT_JSON = 2;
     private static final String TAG = CustomDecksFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
     private CustomDecksDatabase db;
+    private TextView syncStatus;
 
     @NonNull
     public static CustomDecksFragment getInstance() {
@@ -47,6 +51,7 @@ public class CustomDecksFragment extends FragmentWithDialog {
         CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.fragment_custom_decks, container, false);
         db = CustomDecksDatabase.get(requireContext());
 
+        syncStatus = layout.findViewById(R.id.customDecks_sync);
         rmv = layout.findViewById(R.id.customDecks_list);
         rmv.disableSwipeRefresh();
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
@@ -65,6 +70,12 @@ public class CustomDecksFragment extends FragmentWithDialog {
         });
 
         return layout;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        OverloadedSyncApi.get().addSyncListener(this);
     }
 
     @Override
@@ -94,6 +105,12 @@ public class CustomDecksFragment extends FragmentWithDialog {
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    @Override
+    public void syncStatusUpdated(@NonNull OverloadedSyncApi.SyncProduct product, boolean isSyncing, boolean error) {
+        if (syncStatus != null && product == OverloadedSyncApi.SyncProduct.CUSTOM_DECKS)
+            SyncUtils.updateSyncText(syncStatus, product, isSyncing, error);
     }
 
     private class CustomDecksAdapter extends RecyclerView.Adapter<CustomDecksAdapter.ViewHolder> {

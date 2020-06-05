@@ -311,10 +311,10 @@
     <string name="publicStarredCards">Public starred cards</string>
     <string name="publicCustomDecks">Public custom decks</string>
     <string name="overloadedSyncing">Syncing…</string>
-    <string name="overloadedSync_notLoggedIn">Not syncing, Overloaded not logged in.</string>
-    <string name="overloadedSync_maintenance">Not syncing, Overloaded under maintenance.</string>
-    <string name="overloadedSync_errorNeverSynced">Sync error, never synced before.</string>
-    <string name="overloadedSync_neverSynced">Never synced.</string>
-    <string name="overloadedSync_synced">Last synced at %s.</string>
-    <string name="overloadedSync_errorSynced">Sync error, last synced at %s.</string>
+    <string name="overloadedSync_notLoggedIn">Not syncing, Overloaded not logged in</string>
+    <string name="overloadedSync_maintenance">Not syncing, Overloaded under maintenance</string>
+    <string name="overloadedSync_errorNeverSynced">Sync error, never synced before</string>
+    <string name="overloadedSync_neverSynced">Never synced</string>
+    <string name="overloadedSync_synced">Last synced at %s</string>
+    <string name="overloadedSync_errorSynced">Sync error, last synced at %s</string>
 </resources>

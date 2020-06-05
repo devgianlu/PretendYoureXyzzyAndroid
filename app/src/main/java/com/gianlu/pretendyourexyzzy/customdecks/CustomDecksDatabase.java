@@ -43,7 +43,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onCreate(SQLiteDatabase db) {
+    public void onCreate(@NotNull SQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS decks (id INTEGER PRIMARY KEY UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, description TEXT NOT NULL, revision INTEGER NOT NULL, remoteId INTEGER UNIQUE)");
         db.execSQL("CREATE TABLE IF NOT EXISTS cards (id INTEGER PRIMARY KEY UNIQUE, deck_id INTEGER NOT NULL, type INTEGER NOT NULL, text TEXT NOT NULL, remoteId INTEGER UNIQUE)");
     }
@@ -81,6 +81,36 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             db.endTransaction();
         }
     }
+
+    public void deleteDeckAndCards(int deckId, boolean remote) {
+        CustomDeck deck = getDeck(deckId);
+        if (deck == null) return;
+
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            db.delete("decks", "id=?", new String[]{String.valueOf(deckId)});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+
+        db.beginTransaction();
+        try {
+            db.delete("cards", "deck_id=?", new String[]{String.valueOf(deckId)});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+
+        if (remote && deck.remoteId != null)
+            sendPatch(-1, deck.remoteId, CustomDecksPatchOp.REM_DECK, null, null, null);
+    }
+
+
+    //////////////////////////////////
+    ///////////// Decks //////////////
+    //////////////////////////////////
 
     @NonNull
     public List<CustomDeck> getDecks() {
@@ -174,6 +204,83 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             db.endTransaction();
         }
     }
+
+    public void loadDeckUpdate(@NonNull JSONObject update, boolean isNew) {
+        Integer deckId;
+        try {
+            JSONObject deck = update.getJSONObject("deck");
+            long remoteId = deck.getLong("remoteId");
+            deckId = getDeckIdByRemoteId(remoteId);
+
+            if (isNew || deckId == null) {
+                if (deckId != null) deleteDeckAndCards(deckId, false);
+
+                SQLiteDatabase db = getWritableDatabase();
+                db.beginTransaction();
+                try {
+                    ContentValues values = new ContentValues();
+                    values.put("name", deck.getString("name"));
+                    values.put("description", deck.getString("desc"));
+                    values.put("watermark", deck.getString("watermark"));
+                    values.put("revision", deck.getLong("rev"));
+                    values.put("remoteId", remoteId);
+                    deckId = (int) db.insert("decks", null, values);
+                    if (deckId == -1) {
+                        Log.e(TAG, "Failed inserting custom deck.");
+                        return;
+                    }
+
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+            } else {
+                SQLiteDatabase db = getWritableDatabase();
+                db.beginTransaction();
+                try {
+                    ContentValues values = new ContentValues();
+                    values.put("name", deck.getString("name"));
+                    values.put("description", deck.getString("desc"));
+                    values.put("watermark", deck.getString("watermark"));
+                    values.put("revision", deck.getLong("rev"));
+                    values.put("remoteId", remoteId);
+                    db.update("decks", values, "id=?", new String[]{String.valueOf(deckId)});
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+            }
+        } catch (JSONException ex) {
+            Log.e(TAG, "Failed parsing deck update.", ex);
+            return;
+        }
+
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            JSONArray cards = update.getJSONArray("cards");
+            for (int i = 0; i < cards.length(); i++) {
+                JSONObject card = cards.getJSONObject(i);
+
+                ContentValues values = new ContentValues();
+                values.put("deck_id", deckId);
+                values.put("text", card.getString("text"));
+                values.put("type", card.getLong("type"));
+                db.insert("cards", null, values);
+            }
+
+            db.setTransactionSuccessful();
+        } catch (JSONException ex) {
+            Log.e(TAG, "Failed parsing cards update.", ex);
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+
+    //////////////////////////////////
+    ///////////// Cards //////////////
+    //////////////////////////////////
 
     @NonNull
     public List<CustomCard> getCards(int deckId) {
@@ -316,30 +423,10 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         return card;
     }
 
-    public void deleteDeckAndCards(int deckId, boolean remote) {
-        CustomDeck deck = getDeck(deckId);
-        if (deck == null) return;
 
-        SQLiteDatabase db = getWritableDatabase();
-        db.beginTransaction();
-        try {
-            db.delete("decks", "id=?", new String[]{String.valueOf(deckId)});
-            db.setTransactionSuccessful();
-        } finally {
-            db.endTransaction();
-        }
-
-        db.beginTransaction();
-        try {
-            db.delete("cards", "deck_id=?", new String[]{String.valueOf(deckId)});
-            db.setTransactionSuccessful();
-        } finally {
-            db.endTransaction();
-        }
-
-        if (remote && deck.remoteId != null)
-            sendPatch(-1, deck.remoteId, CustomDecksPatchOp.REM_DECK, null, null, null);
-    }
+    //////////////////////////////////
+    /////////// Remote IDs ///////////
+    //////////////////////////////////
 
     public void resetRemoteIds(int deckId) {
         SQLiteDatabase db = getWritableDatabase();
@@ -409,78 +496,6 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         try (Cursor cursor = db.rawQuery("SELECT id FROM decks WHERE remoteId=?", new String[]{String.valueOf(remoteId)})) {
             if (cursor == null || !cursor.moveToNext()) return null;
             else return cursor.getInt(0);
-        } finally {
-            db.endTransaction();
-        }
-    }
-
-    public void loadDeckUpdate(@NonNull JSONObject update, boolean isNew) {
-        Integer deckId;
-        try {
-            JSONObject deck = update.getJSONObject("deck");
-            long remoteId = deck.getLong("remoteId");
-            deckId = getDeckIdByRemoteId(remoteId);
-
-            if (isNew || deckId == null) {
-                if (deckId != null) deleteDeckAndCards(deckId, false);
-
-                SQLiteDatabase db = getWritableDatabase();
-                db.beginTransaction();
-                try {
-                    ContentValues values = new ContentValues();
-                    values.put("name", deck.getString("name"));
-                    values.put("description", deck.getString("desc"));
-                    values.put("watermark", deck.getString("watermark"));
-                    values.put("revision", deck.getLong("rev"));
-                    values.put("remoteId", remoteId);
-                    deckId = (int) db.insert("decks", null, values);
-                    if (deckId == -1) {
-                        Log.e(TAG, "Failed inserting custom deck.");
-                        return;
-                    }
-
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
-            } else {
-                SQLiteDatabase db = getWritableDatabase();
-                db.beginTransaction();
-                try {
-                    ContentValues values = new ContentValues();
-                    values.put("name", deck.getString("name"));
-                    values.put("description", deck.getString("desc"));
-                    values.put("watermark", deck.getString("watermark"));
-                    values.put("revision", deck.getLong("rev"));
-                    values.put("remoteId", remoteId);
-                    db.update("decks", values, "id=?", new String[]{String.valueOf(deckId)});
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
-            }
-        } catch (JSONException ex) {
-            Log.e(TAG, "Failed parsing deck update.", ex);
-            return;
-        }
-
-        SQLiteDatabase db = getWritableDatabase();
-        db.beginTransaction();
-        try {
-            JSONArray cards = update.getJSONArray("cards");
-            for (int i = 0; i < cards.length(); i++) {
-                JSONObject card = cards.getJSONObject(i);
-
-                ContentValues values = new ContentValues();
-                values.put("deck_id", deckId);
-                values.put("text", card.getString("text"));
-                values.put("type", card.getLong("type"));
-                db.insert("cards", null, values);
-            }
-
-            db.setTransactionSuccessful();
-        } catch (JSONException ex) {
-            Log.e(TAG, "Failed parsing cards update.", ex);
         } finally {
             db.endTransaction();
         }
