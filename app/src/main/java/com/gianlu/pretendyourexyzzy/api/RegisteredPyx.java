@@ -89,7 +89,6 @@ public class RegisteredPyx extends FirstLoadedPyx {
         request(PyxRequests.logout(), null, new OnSuccess() {
             @Override
             public void onDone() {
-                if (pollingThread != null) pollingThread.safeStop();
             }
 
             @Override
@@ -98,6 +97,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
             }
         });
 
+        if (pollingThread != null) pollingThread.safeStop();
         if (OverloadedUtils.isSignedIn()) OverloadedApi.get().loggedOutFromPyxServer();
         InstanceHolder.holder().invalidate();
         Prefs.remove(PK.LAST_JSESSIONID);

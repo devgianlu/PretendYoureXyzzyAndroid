@@ -184,7 +184,7 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
                 builder.setTitle(R.string.delete).setMessage(getString(R.string.deleteDeckConfirmation, getName()))
                         .setPositiveButton(android.R.string.yes, (dialog, which) -> {
                             if (id == null) return;
-                            CustomDecksDatabase.get(EditCustomDeckActivity.this).deleteDeckAndCards(id);
+                            CustomDecksDatabase.get(EditCustomDeckActivity.this).deleteDeckAndCards(id, true);
                             onBackPressed();
                         }).setNegativeButton(android.R.string.no, null);
 

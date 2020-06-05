@@ -19,16 +19,18 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedPK;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
-import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.CustomDeckSyncResponse;
-import xyz.gianlu.pyxoverloaded.callback.CustomDecksSyncCallback;
-import xyz.gianlu.pyxoverloaded.callback.StarredCardsSyncCallback;
-import xyz.gianlu.pyxoverloaded.callback.UpdateSyncCallback;
+import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.CustomDecksSyncResponse;
+import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.CustomDecksUpdateResponse;
+import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsSyncResponse;
+import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsUpdateResponse;
+import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 
 public final class SyncUtils {
     private static final String TAG = SyncUtils.class.getSimpleName();
@@ -64,15 +66,18 @@ public final class SyncUtils {
 
     public static void syncStarredCards(@NonNull Context context) {
         long ourRevision = StarredCardsDatabase.getRevision();
-        OverloadedSyncApi.get().syncStarredCards(ourRevision, null, new StarredCardsSyncCallback() {
+        OverloadedSyncApi.get().syncStarredCards(ourRevision, null, new GeneralCallback<StarredCardsSyncResponse>() {
             @Override
-            public void onResult(@NonNull OverloadedSyncApi.StarredCardsSyncResponse result) {
+            public void onResult(@NonNull StarredCardsSyncResponse result) {
                 if (result.needsUpdate) {
                     StarredCardsDatabase.UpdatePair update = StarredCardsDatabase.get(context).getUpdate();
-                    OverloadedSyncApi.get().updateStarredCards(ourRevision, update.update, null, new UpdateSyncCallback() {
+                    OverloadedSyncApi.get().updateStarredCards(ourRevision, update.update, null, new GeneralCallback<StarredCardsUpdateResponse>() {
                         @Override
-                        public void onResult(@NonNull OverloadedSyncApi.UpdateResponse result) {
-                            if (result.remoteIds == null) return;
+                        public void onResult(@NonNull StarredCardsUpdateResponse result) {
+                            if (result.remoteIds == null) {
+                                Log.e(TAG, "Received invalid response when syncing starred cards.");
+                                return;
+                            }
 
                             update.setRemoteIds(result.remoteIds);
                             Log.i(TAG, "Updated starred cards on server, count: " + result.remoteIds.length);
@@ -101,24 +106,18 @@ public final class SyncUtils {
     public static void syncCustomDecks(@NonNull Context context) {
         CustomDecksDatabase db = CustomDecksDatabase.get(context);
 
-        int[] decksIds;
-        JSONObject revisions = new JSONObject();
-        JSONArray local = new JSONArray();
+        List<CustomDeck> sendLater = new LinkedList<>();
+        JSONArray syncItems = new JSONArray();
         try {
             List<CustomDeck> decks = db.getDecks();
-            decksIds = new int[decks.size()];
-            for (int i = 0; i < decks.size(); i++) {
-                CustomDeck deck = decks.get(i);
-                decksIds[i] = deck.id;
-
+            for (CustomDeck deck : decks) {
                 if (deck.remoteId != null) {
-                    revisions.put(String.valueOf(deck.remoteId), deck.revision);
-                } else {
                     JSONObject obj = new JSONObject();
+                    obj.put("id", deck.remoteId);
                     obj.put("rev", deck.revision);
-                    obj.put("deck", new JSONObject().put("name", deck.name).put("desc", deck.description).put("watermark", deck.watermark));
-                    obj.put("cards", CustomCard.toSyncJson(db.getCards(deck.id)));
-                    local.put(obj);
+                    syncItems.put(obj);
+                } else {
+                    sendLater.add(deck);
                 }
             }
         } catch (JSONException ex) {
@@ -126,18 +125,22 @@ public final class SyncUtils {
             return;
         }
 
-        OverloadedSyncApi.get().syncCustomDecks(revisions, local, null, new CustomDecksSyncCallback() {
+        Log.d(TAG, String.format("Sending %d sync items for custom decks.", syncItems.length()));
+        OverloadedSyncApi.get().syncCustomDecks(syncItems, null, new GeneralCallback<List<CustomDecksSyncResponse>>() {
             @Override
-            public void onResult(@NonNull List<CustomDeckSyncResponse> result) {
-                if (result.size() != decksIds.length) {
-                    Log.e(TAG, String.format("IDs number doesn't match, local: %d, remote: %d", decksIds.length, result.size()));
-                    return;
+            public void onResult(@NonNull List<CustomDecksSyncResponse> result) {
+                for (CustomDecksSyncResponse resp : result) {
+                    if (resp.needsUpdate) {
+                        CustomDeck deck = db.getDeckByRemoteId(resp.remoteId);
+                        if (deck != null) sendCustomDeckUpdate(db, deck);
+                    } else if (resp.update != null) {
+                        db.loadDeckUpdate(resp.update, resp.isNew);
+                        Log.d(TAG, "Loaded update for custom deck: " + resp.remoteId);
+                    }
                 }
 
-                for (int i = 0; i < result.size(); i++)
-                    updateCustomDeck(db, decksIds[i], result.get(i));
-
-                Log.d(TAG, String.format("Received %d updates.", result.size()));
+                for (CustomDeck deck : sendLater)
+                    sendCustomDeckUpdate(db, deck);
             }
 
             @Override
@@ -147,40 +150,54 @@ public final class SyncUtils {
         });
     }
 
-    private static void updateCustomDeck(@NonNull CustomDecksDatabase db, int deckId, @NonNull CustomDeckSyncResponse result) {
-        if (result.needsUpdate) {
-            CustomDeck deck = db.getDeck(deckId);
-            if (deck == null) return;
+    private static void sendCustomDeckUpdate(@NonNull CustomDecksDatabase db, @NonNull CustomDeck deck) {
+        int[] cardsIds;
+        JSONObject update;
+        try {
+            update = new JSONObject();
+            update.put("deck", deck.toSyncJson());
 
-            JSONObject update;
-            try {
-                update = new JSONObject();
-                update.put("deck", deck.toSyncJson());
-                update.put("cards", CustomCard.toSyncJson(db.getCards(deck.id)));
-            } catch (JSONException ex) {
-                Log.e(TAG, "Failed creating deck update.", ex);
-                return;
+            List<CustomCard> cards = db.getCards(deck.id);
+            update.put("cards", CustomCard.toSyncJson(cards));
+
+            cardsIds = new int[cards.size()];
+            for (int i = 0; i < cardsIds.length; i++)
+                cardsIds[i] = cards.get(i).id;
+        } catch (JSONException ex) {
+            Log.e(TAG, "Failed creating custom deck update.", ex);
+            return;
+        }
+
+        Log.d(TAG, "Sending update for custom deck: " + deck);
+        OverloadedSyncApi.get().updateCustomDeck(deck.revision, update, null, new GeneralCallback<CustomDecksUpdateResponse>() {
+            @Override
+            public void onResult(@NonNull CustomDecksUpdateResponse result) {
+                if (result.cardsIds == null || result.deckId == null) {
+                    Log.e(TAG, "Received invalid response after updating custom deck.");
+                    return;
+                }
+
+                db.setDeckRemoteId(deck.id, result.deckId);
+
+                if (result.cardsIds.length != cardsIds.length) {
+                    Log.e(TAG, String.format("Custom decks cards IDs number doesn't match, local: %d, remote: %d", cardsIds.length, result.cardsIds.length));
+                    return;
+                }
+
+                for (int i = 0; i < cardsIds.length; i++)
+                    db.setCardRemoteId(cardsIds[i], result.cardsIds[i]);
+
+                Log.i(TAG, "Sent custom deck update successfully: " + deck);
             }
 
-            OverloadedSyncApi.get().updateCustomDeck(deck.revision, update, null, new UpdateSyncCallback() {
-                @Override
-                public void onResult(@NonNull OverloadedSyncApi.UpdateResponse result) {
-                    if (result.remoteId == null) return;
+            @Override
+            public void onFailed(@NonNull Exception ex) {
+                if (ex instanceof OverloadedApi.OverloadedServerException && ((OverloadedApi.OverloadedServerException) ex).code == 403)
+                    db.resetRemoteIds(deck.id);
 
-                    db.setRemoteId(deckId, result.remoteId);
-                    Log.i(TAG, "Sent deck update successfully: " + deckId);
-                }
-
-                @Override
-                public void onFailed(@NonNull Exception ex) {
-                    Log.e(TAG, "Failed sending deck update: " + deckId, ex);
-                }
-            });
-        } else if (result.update != null) {
-            db.loadDeckUpdate(result.update);
-        } else {
-            db.setRemoteId(deckId, result.remoteId);
-        }
+                Log.e(TAG, "Failed sending custom deck update: " + deck, ex);
+            }
+        });
     }
 
     public static void updateSyncText(@NonNull TextView view, @NonNull OverloadedSyncApi.SyncProduct product, boolean isSyncing, boolean error) {

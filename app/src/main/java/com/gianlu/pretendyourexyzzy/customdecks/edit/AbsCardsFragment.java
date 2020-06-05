@@ -143,6 +143,15 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(oldCard == null ? R.string.add : R.string.save, null);
 
+        if (oldCard != null) {
+            builder.setNeutralButton(R.string.remove, (dialog, which) -> {
+                if (id != null) {
+                    db.removeCard(id, oldCard.id);
+                    if (adapter != null) adapter.removeCard(oldCard);
+                }
+            });
+        }
+
         final AlertDialog dialog = builder.create();
         dialog.setOnShowListener(di -> {
             Button button = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
@@ -154,7 +163,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
 
                 if (oldCard != null) {
                     CustomCard card = db.updateCard(id, oldCard, result.output);
-                    if (adapter != null) {
+                    if (adapter != null && card != null) {
                         int index = adapter.indexOfGroup(oldCard.id, CustomCard.class, (c, id) -> c.id == id);
                         if (index != -1) adapter.updateCard(index, card);
                     }
