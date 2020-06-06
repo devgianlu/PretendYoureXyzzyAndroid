@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
+import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsPatchOp;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsUpdateResponse;
 import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 
@@ -91,21 +92,23 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    private void sendPatch(@NonNull OverloadedSyncApi.StarredCardsPatchOp op, long localId, @Nullable Long remoteId, @NonNull ContentCard blackCard, @NonNull CardsGroup whiteCards) throws JSONException {
+    private void sendPatch(@NonNull StarredCardsPatchOp op, long localId, @Nullable Long remoteId, @Nullable ContentCard blackCard, @Nullable CardsGroup whiteCards) throws JSONException {
         JSONObject obj;
-        if (remoteId != null && op == OverloadedSyncApi.StarredCardsPatchOp.REM) {
+        if (op == StarredCardsPatchOp.REM && remoteId != null) {
             obj = null;
-        } else {
+        } else if (op == StarredCardsPatchOp.ADD && blackCard != null && whiteCards != null) {
             obj = new JSONObject();
             obj.put("bc", blackCard.toJson());
             obj.put("wc", ContentCard.toJson(whiteCards));
+        } else {
+            throw new IllegalArgumentException();
         }
 
         OverloadedSyncApi.get().patchStarredCards(getRevision(), op, remoteId, obj, null, new GeneralCallback<StarredCardsUpdateResponse>() {
             @Override
             public void onResult(@NonNull StarredCardsUpdateResponse result) {
                 Log.i(TAG, "Performed patch on server: " + getRevision());
-                if (op == OverloadedSyncApi.StarredCardsPatchOp.ADD && result.remoteId != null)
+                if (op == StarredCardsPatchOp.ADD && result.remoteId != null)
                     setRemoteId(localId, result.remoteId);
             }
 
@@ -140,7 +143,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             setRevision(System.currentTimeMillis());
 
             try {
-                sendPatch(OverloadedSyncApi.StarredCardsPatchOp.ADD, id, null, blackCard, whiteCards);
+                sendPatch(StarredCardsPatchOp.ADD, id, null, blackCard, whiteCards);
             } catch (JSONException ex) {
                 Log.e(TAG, "Failed sending add patch.", ex);
             }
@@ -167,7 +170,8 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             setRevision(System.currentTimeMillis());
 
             try {
-                sendPatch(OverloadedSyncApi.StarredCardsPatchOp.REM, card.id, card.remoteId, card.blackCard, card.whiteCards);
+                if (card.remoteId != null)
+                    sendPatch(StarredCardsPatchOp.REM, card.id, card.remoteId, null, null);
             } catch (JSONException ex) {
                 Log.e(TAG, "Failed sending remove patch.", ex);
             }

@@ -123,7 +123,7 @@ public class OverloadedSyncApi {
             dispatchSyncUpdate(SyncProduct.STARRED_CARDS, true, false);
 
             JSONObject body = new JSONObject();
-            body.put("revision", revision);
+            body.put("rev", revision);
             body.put("patch", new JSONObject()
                     .put("type", op.name())
                     .put("remoteId", remoteId)
