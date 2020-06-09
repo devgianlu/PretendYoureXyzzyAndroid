@@ -46,6 +46,7 @@ import java.util.List;
 
 public abstract class AbsCardsFragment extends FragmentWithDialog implements CardsAdapter.Listener {
     private static final String TAG = AbsCardsFragment.class.getSimpleName();
+    private static final int MAX_CARD_TEXT_LENGTH = 128;
     protected CustomDecksDatabase db;
     private Integer id;
     private CardsAdapter adapter;
@@ -53,8 +54,8 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
     @NonNull
     private static ParseResult parseInputText(@NonNull String text, boolean black) {
         text = text.trim();
-        if (text.isEmpty())
-            return new ParseResult(ParseResult.Result.ERROR, null, R.string.customCardEmpty);
+        if (text.isEmpty() || text.length() > MAX_CARD_TEXT_LENGTH)
+            return new ParseResult(ParseResult.Result.ERROR, null, R.string.customCardTextInvalid);
 
         if (black) {
             boolean warn = false;
