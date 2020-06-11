@@ -7,9 +7,6 @@ import androidx.annotation.NonNull;
 import com.gianlu.commonutils.adapters.Filterable;
 import com.gianlu.commonutils.adapters.NotFilterable;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.Objects;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
@@ -48,16 +45,6 @@ public class PlainChatMessage implements Filterable<NotFilterable> {
     @Override
     public int hashCode() {
         return (int) (rowId ^ (rowId >>> 32));
-    }
-
-    @NonNull
-    public JSONObject toLocalJson() throws JSONException {
-        JSONObject obj = new JSONObject();
-        obj.put("rowId", rowId);
-        obj.put("text", text);
-        obj.put("timestamp", timestamp);
-        obj.put("from", from);
-        return obj;
     }
 
     @Override

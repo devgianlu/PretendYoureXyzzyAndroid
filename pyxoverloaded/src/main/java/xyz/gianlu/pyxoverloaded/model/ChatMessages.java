@@ -2,19 +2,12 @@ package xyz.gianlu.pyxoverloaded.model;
 
 import androidx.annotation.NonNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.LinkedList;
 
-public class ChatMessages extends ArrayList<PlainChatMessage> {
+public class ChatMessages extends LinkedList<PlainChatMessage> {
     public final Chat chat;
 
-    public ChatMessages(int initialCapacity, @NonNull Chat chat) {
-        super(initialCapacity);
-        this.chat = chat;
-    }
-
-    public ChatMessages(@NonNull Collection<PlainChatMessage> collection, @NonNull Chat chat) {
-        super(collection);
+    public ChatMessages(@NonNull Chat chat) {
         this.chat = chat;
     }
 }

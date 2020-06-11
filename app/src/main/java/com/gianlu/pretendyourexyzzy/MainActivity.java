@@ -383,6 +383,11 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             gamesFragment.launchGame(perm, getIntent().getStringExtra("password"), getIntent().getBooleanExtra("shouldRequest", true));
             getIntent().removeExtra("gid");
         }
+
+        if (OverloadedApi.get().isFullyRegistered() && !OverloadedApi.get().isUnderMaintenance()) {
+            SyncUtils.syncStarredCards(this);
+            SyncUtils.syncCustomDecks(this);
+        }
     }
 
     @Override
@@ -482,10 +487,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     protected void onStart() {
         super.onStart();
         OverloadedApi.chat(this).addUnreadCountListener(this);
-        if (OverloadedApi.get().isFullyRegistered() && !OverloadedApi.get().isUnderMaintenance()) {
-            SyncUtils.syncStarredCards(this);
-            SyncUtils.syncCustomDecks(this);
-        }
     }
 
     @Override

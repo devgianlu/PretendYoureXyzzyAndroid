@@ -11,8 +11,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
@@ -106,16 +104,6 @@ public class OverloadedFragment extends FragmentWithDialog {
                 onLoaded(Collections.emptyList());
             }
         });
-
-        resumeCurrentFragment();
-    }
-
-    private void resumeCurrentFragment() {
-        FragmentStatePagerAdapter adapter = (FragmentStatePagerAdapter) pager.getAdapter();
-        if (adapter != null) {
-            Fragment fragment = adapter.getItem(pager.getCurrentItem());
-            if (fragment.isAdded() && fragment.isVisible()) fragment.onResume();
-        }
     }
 
     @Nullable

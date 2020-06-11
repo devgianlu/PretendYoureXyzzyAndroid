@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +67,7 @@ public class ChatDatabaseHelper extends SQLiteOpenHelper {
             if (cursor == null || !cursor.moveToFirst())
                 return null;
 
-            ChatMessages list = new ChatMessages(128, chat);
+            ChatMessages list = new ChatMessages(chat);
             do {
                 list.add(new PlainChatMessage(chatId, cursor));
             } while (cursor.moveToNext());
@@ -87,7 +88,7 @@ public class ChatDatabaseHelper extends SQLiteOpenHelper {
             if (cursor == null || !cursor.moveToFirst())
                 return null;
 
-            ChatMessages list = new ChatMessages(128, chat);
+            ChatMessages list = new ChatMessages(chat);
             do {
                 list.add(new PlainChatMessage(chatId, cursor));
             } while (cursor.moveToNext());
@@ -209,7 +210,7 @@ public class ChatDatabaseHelper extends SQLiteOpenHelper {
             if (cursor == null || !cursor.moveToNext())
                 return new ArrayList<>(0);
 
-            List<Chat> list = new ArrayList<>(32);
+            List<Chat> list = new LinkedList<>();
             do {
                 Chat chat = new Chat(cursor);
                 if (!chatsCache.containsKey(chat.id)) chatsCache.put(chat.id, chat);

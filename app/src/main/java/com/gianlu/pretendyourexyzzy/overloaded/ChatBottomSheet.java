@@ -115,7 +115,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
                 if (!isLoading && willLoadMore && adapter != null && !view.canScrollVertically(-1) && dy < 0) {
                     isLoading = true;
                     List<PlainChatMessage> list = chatApi.getLocalMessages(payload.id, adapter.olderTimestamp());
-                    if (list != null && !list.isEmpty()) update(Update.loadedMore(list));
+                    if (list != null && !list.isEmpty()) postUpdate(Update.loadedMore(list));
                     else willLoadMore = false;
                     isLoading = false;
                 }
@@ -276,7 +276,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         @NonNull
         @Override
         public Comparator<PlainChatMessage> getComparatorFor(Void sorting) {
-            return (o1, o2) -> (int) (o2.timestamp - o1.timestamp);
+            return (o1, o2) -> Long.compare(o2.timestamp, o1.timestamp);
         }
 
         void handleUpdate(@NonNull Update update) {
