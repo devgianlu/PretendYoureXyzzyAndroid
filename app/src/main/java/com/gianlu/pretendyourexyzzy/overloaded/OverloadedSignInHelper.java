@@ -102,6 +102,23 @@ public final class OverloadedSignInHelper {
     }
 
     /**
+     * Performs a silent sign-in for the specified provider.
+     *
+     * @param activity   The caller {@link Activity}
+     * @param providerId The provider ID
+     * @return The sign-in task
+     */
+    @NonNull
+    public static Task<GoogleSignInAccount> signInSilently(@NonNull Activity activity, @NonNull String providerId) {
+        for (SignInProvider provider : SIGN_IN_PROVIDERS) {
+            if (provider.id.equals(providerId))
+                return GoogleSignIn.getClient(activity, provider.googleSignInOptions()).silentSignIn();
+        }
+
+        throw new IllegalArgumentException("Unknown provider: " + providerId);
+    }
+
+    /**
      * Starts the billing flow
      *
      * @param activity The caller {@link Activity}

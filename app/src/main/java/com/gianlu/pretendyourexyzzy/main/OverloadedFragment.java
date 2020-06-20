@@ -50,12 +50,15 @@ public class OverloadedFragment extends FragmentWithDialog {
 
     private static void setEventCount(@NonNull Iterable<Event> events, @NonNull String eventId, @NonNull SuperTextView view, @StringRes int titleRes) {
         Event event = OverloadedUtils.findEvent(events, eventId);
-        if (event == null) {
+        setEventCount(event == null ? null : event.getValue(), view, titleRes);
+    }
+
+    public static void setEventCount(@Nullable Long value, @NonNull SuperTextView view, @StringRes int titleRes) {
+        if (value == null) {
             view.setVisibility(View.GONE);
         } else {
             view.setVisibility(View.VISIBLE);
             String formattedValue;
-            long value = event.getValue();
             if (value <= 10000) formattedValue = String.valueOf(value);
             else formattedValue = String.format(Locale.getDefault(), "%.2fK", value / 1000f);
             view.setHtml(titleRes, formattedValue);

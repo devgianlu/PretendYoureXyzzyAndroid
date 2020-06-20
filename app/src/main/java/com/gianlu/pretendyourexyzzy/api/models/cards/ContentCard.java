@@ -13,6 +13,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import xyz.gianlu.pyxoverloaded.model.Card;
+
 public final class ContentCard extends BaseCard {
     private final String text;
     private final String watermark;
@@ -54,6 +56,18 @@ public final class ContentCard extends BaseCard {
     @NonNull
     public static ContentCard from(@NonNull GameCard card) {
         return new ContentCard(card.originalText, card.originalWatermark, card.black());
+    }
+
+    @NonNull
+    public static ContentCard from(@NonNull Card card) {
+        return new ContentCard(card.text, card.watermark, card.black());
+    }
+
+    @NonNull
+    public static CardsGroup from(@NonNull Card[] cards) {
+        List<ContentCard> list = new ArrayList<>(cards.length);
+        for (Card card : cards) list.add(from(card));
+        return CardsGroup.from(list);
     }
 
     @NonNull

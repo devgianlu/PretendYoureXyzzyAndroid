@@ -45,10 +45,12 @@ import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.main.OverloadedFragment;
 import com.gianlu.pretendyourexyzzy.main.PyxChatsFragment;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.PlayGamesAuthProvider;
 
 import org.json.JSONException;
 
@@ -387,6 +389,11 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         if (OverloadedApi.get().isFullyRegistered() && !OverloadedApi.get().isUnderMaintenance()) {
             SyncUtils.syncStarredCards(this);
             SyncUtils.syncCustomDecks(this);
+
+            OverloadedSignInHelper.signInSilently(this, PlayGamesAuthProvider.PROVIDER_ID).addOnSuccessListener(account -> {
+                String authCode = account.getServerAuthCode();
+                if (authCode != null) OverloadedApi.get().linkGames(authCode);
+            });
         }
     }
 

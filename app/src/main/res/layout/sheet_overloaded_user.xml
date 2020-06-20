@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal">
+
+        <com.gianlu.commonutils.misc.SuperTextView
+            android:id="@+id/overloadedUserSheet_cardsPlayed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textAlignment="center" />
+
+        <com.gianlu.commonutils.misc.SuperTextView
+            android:id="@+id/overloadedUserSheet_roundsPlayed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textAlignment="center" />
+
+        <com.gianlu.commonutils.misc.SuperTextView
+            android:id="@+id/overloadedUserSheet_roundsWon"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textAlignment="center" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:fontFamily="@font/roboto_medium"
+        android:labelFor="@id/overloadedUserSheet_starredCards"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/starredCards"
+        android:textAllCaps="true"
+        android:textColor="?colorOnSurface"
+        android:textSize="14sp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/overloadedUserSheet_starredCards"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <com.gianlu.commonutils.misc.MessageView
+        android:id="@+id/overloadedUserSheet_starredCardsMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal" />
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"
+        android:fontFamily="@font/roboto_medium"
+        android:labelFor="@id/overloadedUserSheet_customDecks"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/customDecks"
+        android:textAllCaps="true"
+        android:textColor="?colorOnSurface"
+        android:textSize="14sp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/overloadedUserSheet_customDecks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <com.gianlu.commonutils.misc.MessageView
+        android:id="@+id/overloadedUserSheet_customDecksMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal" />
+</LinearLayout>

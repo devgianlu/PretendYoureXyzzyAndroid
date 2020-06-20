@@ -56,11 +56,13 @@ import okio.GzipSink;
 import okio.Okio;
 import xyz.gianlu.pyxoverloaded.callback.BooleanCallback;
 import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
+import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
 import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.callback.UsersCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
+import xyz.gianlu.pyxoverloaded.model.UserProfile;
 import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
 import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
@@ -320,6 +322,36 @@ public class OverloadedApi {
     /////////////////////////////////////////
     ////////////// Public API ///////////////
     /////////////////////////////////////////
+
+    /**
+     * Gets another user profile.
+     *
+     * @param username The target username
+     * @param activity The caller {@link Activity}
+     * @param callback The callback containing the {@link UserProfile}
+     */
+    public void getProfile(@NonNull String username, @Nullable Activity activity, @NonNull GeneralCallback<UserProfile> callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject obj = serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Profile/Get"))
+                    .post(singletonJsonBody("username", username)));
+            return new UserProfile(obj);
+        }), activity, callback::onResult, callback::onFailed);
+    }
+
+    /**
+     * Sends the server auth code for Google Play Games to server for linking.
+     *
+     * @param authCode The server auth code
+     */
+    public void linkGames(@NonNull String authCode) {
+        loggingCallbacks(Tasks.call(executorService, (Callable<Void>) () -> {
+            serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("User/LinkGames"))
+                    .post(singletonJsonBody("authCode", authCode)));
+            return null;
+        }), "link-play-games");
+    }
 
     /**
      * Registers the user on the server. This can be used to update the purchase token only if the user is already registered.

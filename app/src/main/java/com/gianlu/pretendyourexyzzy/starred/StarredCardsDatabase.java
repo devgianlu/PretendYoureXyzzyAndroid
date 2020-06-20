@@ -30,6 +30,7 @@ import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsPatchOp;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsUpdateResponse;
 import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
+import xyz.gianlu.pyxoverloaded.model.UserProfile;
 
 public final class StarredCardsDatabase extends SQLiteOpenHelper {
     private static final String TAG = StarredCardsDatabase.class.getSimpleName();
@@ -81,6 +82,43 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         } catch (JSONException ex) {
             Log.e(TAG, "Failed migrating cards.", ex);
         }
+    }
+
+    @NonNull
+    public static List<FloatingStarredCard> transform(@NonNull List<UserProfile.StarredCard> original) {
+        List<FloatingStarredCard> list = new ArrayList<>(original.size());
+        for (UserProfile.StarredCard card : original) list.add(new FloatingStarredCard(card));
+        return list;
+    }
+
+    @NonNull
+    private static String createSentence(@NonNull String blackText, @NonNull String[] whiteTexts) {
+        if (!blackText.contains("____")) {
+            StringBuilder builder = new StringBuilder(blackText);
+            for (String whiteText : whiteTexts)
+                builder.append("<br><u>").append(whiteText).append("</u>");
+            return builder.toString();
+        }
+
+        boolean firstCapital = blackText.startsWith("____");
+        StringBuilder builder = new StringBuilder(blackText);
+        for (String whiteText : whiteTexts) {
+            if (whiteText.endsWith("."))
+                whiteText = whiteText.substring(0, whiteText.length() - 1);
+
+            if (firstCapital) {
+                whiteText = Character.toUpperCase(whiteText.charAt(0)) + whiteText.substring(1);
+                firstCapital = false;
+            }
+
+            int index;
+            if ((index = builder.indexOf("____")) != -1)
+                builder.replace(index, index + 4, "<u>" + whiteText + "</u>");
+            else
+                builder.append("<br><u>").append(whiteText).append("</u>");
+        }
+
+        return builder.toString();
     }
 
     @Override
@@ -159,6 +197,10 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
 
     public boolean putCard(@NonNull GameCard blackCard, @NonNull CardsGroup whiteCards) {
         return putCard(ContentCard.from(blackCard), whiteCards);
+    }
+
+    public boolean putCard(@NonNull FloatingStarredCard card) {
+        return putCard(ContentCard.from(card.card.blackCard), ContentCard.from(card.card.whiteCards));
     }
 
     public void remove(@NonNull StarredCard card) {
@@ -258,12 +300,53 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         }
     }
 
+    public static class FloatingStarredCard extends BaseCard {
+        private final UserProfile.StarredCard card;
+        private transient String cachedSentence;
+
+        private FloatingStarredCard(@NonNull UserProfile.StarredCard card) {
+            this.card = card;
+        }
+
+        @NonNull
+        @Override
+        public String text() {
+            if (cachedSentence == null) {
+                String[] whiteTexts = new String[card.whiteCards.length];
+                for (int i = 0; i < whiteTexts.length; i++) whiteTexts[i] = card.whiteCards[i].text;
+                cachedSentence = createSentence(card.blackCard.text, whiteTexts);
+            }
+
+            return cachedSentence;
+        }
+
+        @Override
+        public String watermark() {
+            return null;
+        }
+
+        @Override
+        public int numPick() {
+            return -1;
+        }
+
+        @Override
+        public int numDraw() {
+            return -1;
+        }
+
+        @Override
+        public boolean black() {
+            return false;
+        }
+    }
+
     public static class StarredCard extends BaseCard {
         public final ContentCard blackCard;
         public final CardsGroup whiteCards;
         public final int id;
         private final Long remoteId;
-        private String cachedSentence;
+        private transient String cachedSentence;
 
         private StarredCard(@NonNull Cursor cursor) throws JSONException {
             id = cursor.getInt(cursor.getColumnIndex("id"));
@@ -276,39 +359,16 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         }
 
         @NonNull
-        private String createSentence() {
+        @Override
+        public String text() {
             if (cachedSentence == null) {
-                String blackText = blackCard.text();
-                if (!blackText.contains("____"))
-                    return blackText + "\n<u>" + whiteCards.get(0).text() + "</u>";
-
-                boolean firstCapital = blackText.startsWith("____");
-                for (BaseCard whiteCard : whiteCards) {
-                    String whiteText = whiteCard.text();
-                    if (whiteText.endsWith("."))
-                        whiteText = whiteText.substring(0, whiteText.length() - 1);
-
-                    if (firstCapital)
-                        whiteText = Character.toUpperCase(whiteText.charAt(0)) + whiteText.substring(1);
-
-                    try {
-                        blackText = blackText.replaceFirst("____", "<u>" + whiteText + "</u>");
-                    } catch (ArrayIndexOutOfBoundsException ignored) {
-                    }
-
-                    firstCapital = false;
-                }
-
-                cachedSentence = blackText;
+                String[] whiteTexts = new String[whiteCards.size()];
+                for (int i = 0; i < whiteCards.size(); i++)
+                    whiteTexts[i] = whiteCards.get(i).text();
+                cachedSentence = createSentence(blackCard.text(), whiteTexts);
             }
 
             return cachedSentence;
-        }
-
-        @NonNull
-        @Override
-        public String text() {
-            return createSentence();
         }
 
         @Override

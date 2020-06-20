@@ -318,4 +318,7 @@
     <string name="overloadedSync_errorSynced">Sync error, last synced at %s</string>
     <string name="invalidDeckName">The deck name must be between 5 and 32 characters long.</string>
     <string name="invalidDeckDesc">The deck description must be less than 256 characters longs</string>
+    <string name="failedLoadingUserProfile">Failed loading user profile!</string>
+    <string name="userNoPublicStarredCards">This user has no public starred cards!</string>
+    <string name="userNoPublicCustomDecksMessage">This user has no public custom decks!</string>
 </resources>

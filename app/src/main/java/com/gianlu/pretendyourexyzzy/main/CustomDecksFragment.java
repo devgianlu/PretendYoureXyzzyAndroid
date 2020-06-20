@@ -20,6 +20,7 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksAdapter;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
@@ -33,7 +34,7 @@ import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 
-public class CustomDecksFragment extends FragmentWithDialog implements OverloadedSyncApi.SyncStatusListener {
+public class CustomDecksFragment extends FragmentWithDialog implements OverloadedSyncApi.SyncStatusListener, CustomDecksAdapter.Listener {
     private static final int RC_IMPORT_JSON = 2;
     private static final String TAG = CustomDecksFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
@@ -82,7 +83,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
     public void onResume() {
         super.onResume();
         List<CustomDeck> decks = db.getDecks();
-        rmv.loadListData(new CustomDecksAdapter(decks), false);
+        rmv.loadListData(new CustomDecksAdapter(requireContext(), decks, this), false);
         if (decks.isEmpty()) rmv.showInfo(R.string.noCustomDecks_create);
         else rmv.showList();
     }
@@ -113,51 +114,9 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
             SyncUtils.updateSyncText(syncStatus, product, isSyncing, error);
     }
 
-    private class CustomDecksAdapter extends RecyclerView.Adapter<CustomDecksAdapter.ViewHolder> {
-        private final List<CustomDeck> decks;
-        private final LayoutInflater inflater;
-
-        CustomDecksAdapter(@NonNull List<CustomDeck> decks) {
-            this.decks = decks;
-            this.inflater = LayoutInflater.from(getContext());
-            setHasStableIds(true);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return decks.get(position).id;
-        }
-
-        @Override
-        @NonNull
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new ViewHolder(parent);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            CustomDeck deck = decks.get(position);
-            holder.name.setText(deck.name);
-            holder.watermark.setText(deck.watermark);
-            holder.itemView.setOnClickListener(view -> EditCustomDeckActivity.startActivityEdit(holder.itemView.getContext(), deck));
-            CommonUtils.setRecyclerViewTopMargin(holder);
-        }
-
-        @Override
-        public int getItemCount() {
-            return decks.size();
-        }
-
-        class ViewHolder extends RecyclerView.ViewHolder {
-            final TextView name;
-            final TextView watermark;
-
-            ViewHolder(ViewGroup parent) {
-                super(inflater.inflate(R.layout.item_custom_deck, parent, false));
-
-                name = itemView.findViewById(R.id.customDeckItem_name);
-                watermark = itemView.findViewById(R.id.customDeckItem_watermark);
-            }
-        }
+    @Override
+    public void onCustomDeckSelected(@NonNull CustomDecksDatabase.FloatingCustomDeck deck) {
+        if (deck instanceof CustomDeck)
+            EditCustomDeckActivity.startActivityEdit(requireContext(), (CustomDeck) deck);
     }
 }

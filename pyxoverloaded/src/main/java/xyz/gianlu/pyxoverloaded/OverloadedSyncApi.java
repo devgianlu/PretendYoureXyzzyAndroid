@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 
 import okhttp3.Request;
 import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
+import xyz.gianlu.pyxoverloaded.model.Card;
 
 import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
 import static xyz.gianlu.pyxoverloaded.Utils.jsonBody;
@@ -196,7 +197,7 @@ public class OverloadedSyncApi {
         });
     }
 
-    public void patchCustomDeck(long revision, long remoteId, @NonNull CustomDecksPatchOp op, @Nullable JSONObject deck, @Nullable JSONObject card, @Nullable Long cardId, @Nullable Activity activity, @NonNull GeneralCallback<CustomDecksUpdateResponse> callback) {
+    public void patchCustomDeck(long revision, @Nullable Long remoteId, @NonNull CustomDecksPatchOp op, @Nullable JSONObject deck, @Nullable JSONObject card, @Nullable Long cardId, @Nullable Activity activity, @NonNull GeneralCallback<CustomDecksUpdateResponse> callback) {
         callbacks(Tasks.call(executorService, () -> {
             dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, true, false);
 
@@ -223,6 +224,19 @@ public class OverloadedSyncApi {
         });
     }
 
+    public void getPublicCustomDeck(@NonNull String username, @NonNull String name, @Nullable Activity activity, @NonNull GeneralCallback<List<Card>> callback) {
+        callbacks(Tasks.call(() -> {
+            JSONObject body = new JSONObject();
+            body.put("username", username);
+            body.put("name", name);
+
+            JSONObject obj = api.serverRequest(new Request.Builder()
+                    .url(overloadedServerUrl("Sync/GetPublicCustomDeck"))
+                    .post(jsonBody(body)));
+            return Card.parse(obj.getJSONArray("cards"));
+        }), activity, callback::onResult, callback::onFailed);
+    }
+
     public enum SyncProduct {
         STARRED_CARDS, CUSTOM_DECKS
     }
@@ -232,7 +246,7 @@ public class OverloadedSyncApi {
     }
 
     public enum CustomDecksPatchOp {
-        ADD_CARD, REM_DECK, REM_CARD, EDIT_DECK, EDIT_CARD
+        ADD_CARD, REM_DECK, REM_CARD, ADD_DECK, EDIT_DECK, EDIT_CARD
     }
 
     public interface SyncStatusListener {

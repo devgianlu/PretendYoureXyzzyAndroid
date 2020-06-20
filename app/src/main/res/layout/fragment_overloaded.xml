@@ -10,12 +10,15 @@
         android:layout_height="wrap_content"
         android:background="@color/overloadedHeaderBg"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp">
 
         <TextView
             android:id="@+id/overloaded_username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Headline4"
             android:textColor="?colorOnSurface" />
 
@@ -24,6 +27,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             android:layout_marginBottom="4dp"
             android:orientation="horizontal"
             app:imageSize="36dp" />
@@ -31,6 +36,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
             android:orientation="horizontal"
             android:paddingTop="4dp">
 

@@ -25,6 +25,7 @@ import java.util.List;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.CustomDecksPatchOp;
 import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
+import xyz.gianlu.pyxoverloaded.model.UserProfile;
 
 public final class CustomDecksDatabase extends SQLiteOpenHelper {
     private static final int CARD_TYPE_BLACK = 0;
@@ -42,6 +43,14 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         return instance;
     }
 
+    @NonNull
+    public static List<FloatingCustomDeck> transform(@NonNull List<UserProfile.CustomDeck> original) {
+        List<FloatingCustomDeck> list = new ArrayList<>(original.size());
+        for (UserProfile.CustomDeck deck : original)
+            list.add(new FloatingCustomDeck(deck.name, deck.watermark));
+        return list;
+    }
+
     @Override
     public void onCreate(@NotNull SQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS decks (id INTEGER PRIMARY KEY UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, description TEXT NOT NULL, revision INTEGER NOT NULL, remoteId INTEGER UNIQUE)");
@@ -52,13 +61,15 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    private void sendPatch(long revision, long remoteId, @NonNull CustomDecksPatchOp op, @Nullable CustomDeck deck, @Nullable CustomCard card, @Nullable Long cardId) {
+    private void sendPatch(long revision, @Nullable Long remoteId, @NonNull CustomDecksPatchOp op, @Nullable CustomDeck deck, @Nullable CustomCard card, @Nullable Long cardId) {
         try {
             OverloadedSyncApi.get().patchCustomDeck(revision, remoteId, op, deck == null ? null : deck.toSyncJson(), card == null ? null : card.toSyncJson(), cardId, null, new GeneralCallback<OverloadedSyncApi.CustomDecksUpdateResponse>() {
                 @Override
                 public void onResult(@NonNull OverloadedSyncApi.CustomDecksUpdateResponse result) {
                     if (op == CustomDecksPatchOp.ADD_CARD && result.cardId != null && card != null)
                         setCardRemoteId(card.id, result.cardId);
+                    else if (op == CustomDecksPatchOp.ADD_DECK && result.deckId != null && deck != null)
+                        setDeckRemoteId(deck.id, result.deckId);
                 }
 
                 @Override
@@ -164,7 +175,10 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             int id = (int) db.insert("decks", null, values);
             db.setTransactionSuccessful();
             if (id == -1) return null;
-            else return new CustomDeck(id, name, watermark, desc, System.currentTimeMillis());
+
+            CustomDeck deck = new CustomDeck(id, name, watermark, desc, System.currentTimeMillis());
+            sendPatch(deck.revision, null, CustomDecksPatchOp.ADD_DECK, deck, null, null);
+            return deck;
         } finally {
             db.endTransaction();
         }
@@ -501,18 +515,32 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
     }
 
-    public static final class CustomDeck {
-        public final int id;
+    public static class FloatingCustomDeck {
         public final String name;
         public final String watermark;
+
+        FloatingCustomDeck(@NonNull String name, @NonNull String watermark) {
+            this.name = name;
+            this.watermark = watermark;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = name.hashCode();
+            result = 31 * result + watermark.hashCode();
+            return result;
+        }
+    }
+
+    public static final class CustomDeck extends FloatingCustomDeck {
+        public final int id;
         public final String description;
         public final Long remoteId;
         public final long revision;
 
         private CustomDeck(@NonNull Cursor cursor) {
+            super(cursor.getString(cursor.getColumnIndex("name")), cursor.getString(cursor.getColumnIndex("watermark")));
             id = cursor.getInt(cursor.getColumnIndex("id"));
-            name = cursor.getString(cursor.getColumnIndex("name"));
-            watermark = cursor.getString(cursor.getColumnIndex("watermark"));
             description = cursor.getString(cursor.getColumnIndex("description"));
             revision = cursor.getLong(cursor.getColumnIndex("revision"));
 
@@ -521,12 +549,16 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
 
         private CustomDeck(int id, @NonNull String name, @NonNull String watermark, @NonNull String description, long revision) {
+            super(name, watermark);
             this.id = id;
-            this.name = name;
             this.description = description;
-            this.watermark = watermark;
             this.revision = revision;
             this.remoteId = null;
+        }
+
+        @Override
+        public int hashCode() {
+            return id;
         }
 
         @NonNull
