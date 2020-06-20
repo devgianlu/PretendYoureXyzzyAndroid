@@ -38,6 +38,7 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Name;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUserProfileBottomSheet;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import org.jetbrains.annotations.NotNull;
@@ -285,6 +286,7 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
             if (!username.equals(Utils.myPyxUsername())) {
                 if (BlockedUsers.isBlocked(username)) {
                     menu.removeItem(R.id.nameItemMenu_block);
+                    menu.removeItem(R.id.nameItemMenu_showProfile);
                     menu.removeItem(R.id.nameItemMenu_addFriend);
                 } else {
                     menu.removeItem(R.id.nameItemMenu_unblock);
@@ -293,6 +295,7 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
                         if (map != null && map.containsKey(username))
                             menu.removeItem(R.id.nameItemMenu_addFriend);
                     } else {
+                        menu.removeItem(R.id.nameItemMenu_showProfile);
                         menu.removeItem(R.id.nameItemMenu_addFriend);
                     }
                 }
@@ -300,6 +303,7 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
                 menu.removeItem(R.id.nameItemMenu_unblock);
                 menu.removeItem(R.id.nameItemMenu_block);
                 menu.removeItem(R.id.nameItemMenu_addFriend);
+                menu.removeItem(R.id.nameItemMenu_showProfile);
             }
 
             popup.setOnMenuItemClickListener(item -> {
@@ -313,6 +317,9 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
                         return true;
                     case R.id.nameItemMenu_block:
                         BlockedUsers.block(username);
+                        return true;
+                    case R.id.nameItemMenu_showProfile:
+                        OverloadedUserProfileBottomSheet.get().show(NamesFragment.this, username);
                         return true;
                     case R.id.nameItemMenu_addFriend:
                         OverloadedApi.get().addFriend(username, null, new FriendsStatusCallback() {
@@ -348,7 +355,7 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
 
         @NonNull
         @Override
-        public Comparator<Name> getComparatorFor(Sorting sorting) {
+        public Comparator<Name> getComparatorFor(@NotNull Sorting sorting) {
             switch (sorting) {
                 default:
                 case AZ:

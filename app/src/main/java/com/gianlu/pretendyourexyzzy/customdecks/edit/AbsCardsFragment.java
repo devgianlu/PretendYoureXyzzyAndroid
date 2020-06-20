@@ -50,6 +50,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
     protected CustomDecksDatabase db;
     private Integer id;
     private CardsAdapter adapter;
+    private RecyclerMessageView rmv;
 
     @NonNull
     private static ParseResult parseInputText(@NonNull String text, boolean black) {
@@ -61,7 +62,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
             boolean warn = false;
             String[] output = text.split("____", -1);
             if (output.length == 1) {
-                output = new String[]{output[0], ""};
+                output = new String[]{output[0] + " ", ""};
                 return new ParseResult(ParseResult.Result.WARN, output, R.string.missingPlaceholderBlack);
             }
 
@@ -115,7 +116,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
         FloatingActionButton add = layout.findViewById(R.id.customCardsFragment_add);
         add.setOnClickListener((v) -> showCreateCardDialog(null));
 
-        RecyclerMessageView rmv = layout.findViewById(R.id.customCardsFragment_list);
+        rmv = layout.findViewById(R.id.customCardsFragment_list);
         rmv.disableSwipeRefresh();
         rmv.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         rmv.list().addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
@@ -128,10 +129,14 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
         db = CustomDecksDatabase.get(requireContext());
         List<? extends BaseCard> cards = loadCards();
         rmv.loadListData(adapter = new CardsAdapter(true, cards, GameCardView.Action.SELECT, null, true, this), false);
-        if (cards.isEmpty()) rmv.showInfo(R.string.noCustomCards);
-        else rmv.showList();
+        onItemCountChanged(cards.size());
 
         return layout;
+    }
+
+    private void onItemCountChanged(int count) {
+        if (count == 0) rmv.showInfo(R.string.noCustomCards);
+        else rmv.showList();
     }
 
     private void showCreateCardDialog(@Nullable CustomCard oldCard) {
@@ -148,7 +153,10 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
             builder.setNeutralButton(R.string.remove, (dialog, which) -> {
                 if (id != null) {
                     db.removeCard(id, oldCard.id);
-                    if (adapter != null) adapter.removeCard(oldCard);
+                    if (adapter != null) {
+                        adapter.removeCard(oldCard);
+                        onItemCountChanged(adapter.getItemCount());
+                    }
                 }
             });
         }
@@ -173,7 +181,11 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
                 } else {
                     CustomCard card = db.putCard(id, isBlack(), result.output);
                     if (card != null) {
-                        if (adapter != null) adapter.addCard(card);
+                        if (adapter != null) {
+                            adapter.addCard(card);
+                            onItemCountChanged(adapter.getItemCount());
+                        }
+
                         di.dismiss();
                     } else {
                         showToast(Toaster.build().message(R.string.failedAddingCustomCard));
