@@ -60,7 +60,7 @@ import okhttp3.ResponseBody;
 
 
 public class Pyx implements Closeable {
-    protected final static int AJAX_TIMEOUT = 5;
+    protected final static int AJAX_TIMEOUT = 10;
     protected final static int POLLING_TIMEOUT = 30;
     private static final String TAG = Pyx.class.getSimpleName();
     public final Server server;
@@ -148,8 +148,12 @@ public class Pyx implements Closeable {
                 throw new StatusCodeException(resp);
             }
         } catch (SocketTimeoutException ex) {
-            if (!retried) return request(operation, true, params);
-            else throw ex;
+            if (!retried) {
+                Log.d(TAG, "Socket timeout, retrying.", ex);
+                return request(operation, true, params);
+            } else {
+                throw ex;
+            }
         } catch (RuntimeException ex) {
             if (ex.getCause() instanceof SSLException) throw (SSLException) ex.getCause();
             else throw ex;
