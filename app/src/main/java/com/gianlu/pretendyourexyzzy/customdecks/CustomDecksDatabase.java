@@ -22,6 +22,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.CustomDecksPatchOp;
 import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
@@ -164,6 +165,8 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
     @Nullable
     public CustomDeck putDeckInfo(@NonNull String name, @NonNull String watermark, @NonNull String desc) {
+        long revision = OverloadedApi.now();
+
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         try {
@@ -171,12 +174,12 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             values.put("name", name);
             values.put("watermark", watermark);
             values.put("description", desc);
-            values.put("revision", System.currentTimeMillis());
+            values.put("revision", revision);
             int id = (int) db.insert("decks", null, values);
             db.setTransactionSuccessful();
             if (id == -1) return null;
 
-            CustomDeck deck = new CustomDeck(id, name, watermark, desc, System.currentTimeMillis());
+            CustomDeck deck = new CustomDeck(id, name, watermark, desc, revision);
             sendPatch(deck.revision, null, CustomDecksPatchOp.ADD_DECK, deck, null, null);
             return deck;
         } finally {
@@ -185,16 +188,16 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     }
 
     public void updateDeckInfo(int id, @NonNull String name, @NonNull String watermark, @NonNull String desc) {
+        long revision = OverloadedApi.now();
+
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
-
-        long revision;
         try {
             ContentValues values = new ContentValues();
             values.put("name", name);
             values.put("watermark", watermark);
             values.put("description", desc);
-            values.put("revision", revision = System.currentTimeMillis());
+            values.put("revision", revision);
             db.update("decks", values, "id=?", new String[]{String.valueOf(id)});
             db.setTransactionSuccessful();
         } finally {
@@ -347,6 +350,8 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         CustomDeck deck = getDeck(deckId);
         if (deck == null) return null;
 
+        long revision = OverloadedApi.now();
+
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
 
@@ -361,7 +366,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             long id = db.insert("cards", null, values);
 
             values = new ContentValues();
-            values.put("revision", System.currentTimeMillis());
+            values.put("revision", revision);
             db.update("decks", values, "id=?", new String[]{String.valueOf(deckId)});
 
             db.setTransactionSuccessful();
@@ -371,7 +376,6 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
 
         if (card != null) {
-            long revision = System.currentTimeMillis();
             updateDeckRevision(deckId, revision);
 
             if (deck.remoteId != null)
@@ -397,7 +401,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             db.endTransaction();
         }
 
-        long revision = System.currentTimeMillis();
+        long revision = OverloadedApi.now();
         updateDeckRevision(deckId, revision);
 
         if (deck.remoteId != null && remoteId != null)
@@ -424,7 +428,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             db.endTransaction();
         }
 
-        long revision = System.currentTimeMillis();
+        long revision = OverloadedApi.now();
         updateDeckRevision(deckId, revision);
 
         if (deck.remoteId != null) {

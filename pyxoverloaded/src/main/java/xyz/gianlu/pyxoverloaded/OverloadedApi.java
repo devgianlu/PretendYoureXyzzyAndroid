@@ -21,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.auth.UserInfo;
+import com.instacart.library.truetime.TrueTime;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -90,6 +91,19 @@ public class OverloadedApi {
             user = fa.getCurrentUser();
             Log.i(TAG, String.format("Auth state updated! {user: %s}", user));
         });
+
+        executorService.execute(() -> {
+            try {
+                TrueTime.build().initialize();
+            } catch (IOException ex) {
+                Log.e(TAG, "Failed initializing TrueTime.", ex);
+            }
+        });
+    }
+
+    public static long now() {
+        if (TrueTime.isInitialized()) return TrueTime.now().getTime();
+        else return System.currentTimeMillis();
     }
 
     private static void init(@NonNull Context context) {
@@ -482,7 +496,7 @@ public class OverloadedApi {
     public boolean isUnderMaintenance() {
         if (lastMaintenanceException == null) return false;
 
-        if (lastMaintenanceException.estimatedEnd < System.currentTimeMillis()) {
+        if (lastMaintenanceException.estimatedEnd < now()) {
             lastMaintenanceException = null;
             return false;
         }
@@ -856,7 +870,7 @@ public class OverloadedApi {
         }
 
         boolean expired() {
-            return expiration <= System.currentTimeMillis();
+            return expiration <= now();
         }
     }
 

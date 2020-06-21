@@ -84,7 +84,7 @@ public class OverloadedSyncApi {
                     .post(singletonJsonBody("rev", localRevision)));
             return new StarredCardsSyncResponse(obj);
         }), activity, result -> {
-            Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, System.currentTimeMillis());
+            Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, OverloadedApi.now());
             callback.onResult(result);
             dispatchSyncUpdate(SyncProduct.STARRED_CARDS, result.needsUpdate, false);
         }, ex -> {
@@ -106,7 +106,7 @@ public class OverloadedSyncApi {
                     .post(jsonBody(body)));
             return new StarredCardsUpdateResponse(obj);
         }), activity, result -> {
-            Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, System.currentTimeMillis());
+            Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, OverloadedApi.now());
             callback.onResult(result);
             dispatchSyncUpdate(SyncProduct.STARRED_CARDS, false, false);
         }, ex -> {
@@ -135,7 +135,7 @@ public class OverloadedSyncApi {
                     .post(jsonBody(body)));
             return new StarredCardsUpdateResponse(obj);
         }), activity, result -> {
-            Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, System.currentTimeMillis());
+            Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, OverloadedApi.now());
             callback.onResult(result);
             dispatchSyncUpdate(SyncProduct.STARRED_CARDS, false, false);
         }, ex -> {
@@ -166,7 +166,7 @@ public class OverloadedSyncApi {
                 list.add(new CustomDecksSyncResponse(items.getJSONObject(i)));
             return list;
         }), activity, result -> {
-            Prefs.putLong(OverloadedPK.CUSTOM_DECKS_LAST_SYNC, System.currentTimeMillis());
+            Prefs.putLong(OverloadedPK.CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
             callback.onResult(result);
             dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, CustomDecksSyncResponse.needsSomeUpdates(result), false);
         }, ex -> {
@@ -188,7 +188,7 @@ public class OverloadedSyncApi {
                     .post(jsonBody(body)));
             return new CustomDecksUpdateResponse(obj);
         }), activity, result -> {
-            Prefs.putLong(OverloadedPK.CUSTOM_DECKS_LAST_SYNC, System.currentTimeMillis());
+            Prefs.putLong(OverloadedPK.CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
             callback.onResult(result);
             dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, false, false);
         }, ex -> {
@@ -215,7 +215,7 @@ public class OverloadedSyncApi {
                     .post(jsonBody(body)));
             return new CustomDecksUpdateResponse(obj);
         }), activity, result -> {
-            Prefs.putLong(OverloadedPK.CUSTOM_DECKS_LAST_SYNC, System.currentTimeMillis());
+            Prefs.putLong(OverloadedPK.CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
             callback.onResult(result);
             dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, false, false);
         }, ex -> {

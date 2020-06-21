@@ -213,7 +213,7 @@ public class OverloadedChatApi implements Closeable {
                             .url(overloadedServerUrl("Chat/Send"))
                             .post(jsonBody(body)));
 
-                    return db.putMessage(chatId, text, System.currentTimeMillis(), data.username);
+                    return db.putMessage(chatId, text, OverloadedApi.now(), data.username);
                 } catch (OverloadedApi.OverloadedServerException ex) {
                     lastEx = ex;
 

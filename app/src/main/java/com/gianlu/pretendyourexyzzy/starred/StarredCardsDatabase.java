@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsPatchOp;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsUpdateResponse;
@@ -178,7 +179,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             values.put("whiteCards", ContentCard.toJson(whiteCards).toString());
             long id = db.insert("cards", null, values);
             db.setTransactionSuccessful();
-            setRevision(System.currentTimeMillis());
+            setRevision(OverloadedApi.now());
 
             try {
                 sendPatch(StarredCardsPatchOp.ADD, id, null, blackCard, whiteCards);
@@ -209,7 +210,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         try {
             db.delete("cards", "id=?", new String[]{String.valueOf(card.id)});
             db.setTransactionSuccessful();
-            setRevision(System.currentTimeMillis());
+            setRevision(OverloadedApi.now());
 
             try {
                 if (card.remoteId != null)

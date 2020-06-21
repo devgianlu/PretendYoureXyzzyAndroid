@@ -40,4 +40,6 @@ dependencies {
 
     implementation 'com.squareup.okhttp3:okhttp:4.6.0'
     implementation 'org.whispersystems:signal-protocol-android:2.8.1'
+
+    implementation 'com.github.instacart.truetime-android:library:3.4'
 }
