@@ -639,7 +639,7 @@ public class OverloadedApi {
 
             friendsStatusCached.remove(event.data.getString("username"));
         } else if (event.type == Event.Type.SHARE_KEYS_LOW) {
-            if (chatInstance != null) chatInstance.sharePreKeys();
+            if (chatInstance != null) chatInstance.shareKeys(true);
         }
     }
 

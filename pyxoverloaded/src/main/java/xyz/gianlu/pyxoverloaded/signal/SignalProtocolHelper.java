@@ -1,9 +1,13 @@
 package xyz.gianlu.pyxoverloaded.signal;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.preferences.Prefs;
 
@@ -43,10 +47,20 @@ public final class SignalProtocolHelper {
     }
 
     public static int getLocalDeviceId() {
+        return getLocalDeviceId(null);
+    }
+
+    @SuppressLint("HardwareIds")
+    public static int getLocalDeviceId(@Nullable Context context) {
         int id = Prefs.getInt(SignalPK.SIGNAL_DEVICE_ID, -1);
         if (id != -1) return id;
 
-        id = new Random(System.currentTimeMillis()).nextInt();
+        String androidId;
+        if (context != null && (androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID)) != null)
+            id = Math.abs(androidId.hashCode());
+        else
+            id = new Random(System.currentTimeMillis()).nextInt();
+
         Prefs.putInt(SignalPK.SIGNAL_DEVICE_ID, id);
         Log.d(TAG, "Generated local device ID: " + id);
         return id;
@@ -137,7 +151,7 @@ public final class SignalProtocolHelper {
             SessionCipher sessionCipher = new SessionCipher(DbSignalStore.get(), address.toSignalAddress());
             CiphertextMessage msg = sessionCipher.encrypt(text.getBytes(StandardCharsets.UTF_8));
             Log.d(TAG, "Encrypted message for " + address + " with type " + EncryptedChatMessage.typeToString(msg.getType()));
-            out.add(new OutgoingMessageEnvelope(msg, deviceId));
+            out.add(new OutgoingMessageEnvelope(msg, deviceId, sessionCipher.getRemoteRegistrationId()));
         }
         return out;
     }

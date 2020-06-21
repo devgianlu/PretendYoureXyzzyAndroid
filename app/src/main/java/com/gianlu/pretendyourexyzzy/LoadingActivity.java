@@ -85,8 +85,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     @Override
     protected void onStart() {
         super.onStart();
-
-        OverloadedApi.chat(this);
         billingHelper.onStart();
     }
 

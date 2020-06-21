@@ -22,7 +22,10 @@ public final class SignalDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public static void init(@NonNull Context context) {
-        if (instance == null) instance = new SignalDatabaseHelper(context);
+        if (instance == null) {
+            instance = new SignalDatabaseHelper(context);
+            DbSignalStore.get().getLocalRegistrationId();
+        }
     }
 
     @Override

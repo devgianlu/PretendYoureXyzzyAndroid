@@ -56,7 +56,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             private boolean retried = false;
 
             @Override
-            public void onBillingSetupFinished(BillingResult br) {
+            public void onBillingSetupFinished(@NotNull BillingResult br) {
                 if (br.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                     updateStatusFromBilling();
                 } else {
@@ -85,6 +85,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                     Purchase purchase;
                     if (data.purchaseStatus == UserData.PurchaseStatus.OK) {
                         OverloadedApi.get().openWebSocket();
+                        OverloadedApi.chat(context).shareKeysIfNeeded();
                     } else if ((purchase = getLatestPurchase()) != null) {
                         OverloadedApi.get().registerUser(null, purchase.getPurchaseToken(), null, new UserDataCallback() {
                             @Override
@@ -268,6 +269,8 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             @Override
             public void onUserData(@NonNull UserData data) {
                 if (data.purchaseStatus == UserData.PurchaseStatus.OK) {
+                    OverloadedApi.get().openWebSocket();
+                    OverloadedApi.chat(context).shareKeysIfNeeded();
                     listener.dismissDialog();
                     updateStatus(data, null);
                     return;
@@ -278,6 +281,11 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                     public void onUserData(@NonNull UserData data) {
                         listener.dismissDialog();
                         updateStatus(data, null);
+
+                        if (data.purchaseStatus == UserData.PurchaseStatus.OK) {
+                            OverloadedApi.get().openWebSocket();
+                            OverloadedApi.chat(context).shareKeysIfNeeded();
+                        }
                     }
 
                     @Override

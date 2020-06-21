@@ -11,10 +11,12 @@ import org.whispersystems.libsignal.protocol.CiphertextMessage;
 public class OutgoingMessageEnvelope {
     private final CiphertextMessage message;
     private final int deviceId;
+    private final int registrationId;
 
-    public OutgoingMessageEnvelope(@NonNull CiphertextMessage message, int deviceId) {
+    public OutgoingMessageEnvelope(@NonNull CiphertextMessage message, int deviceId, int registrationId) {
         this.message = message;
         this.deviceId = deviceId;
+        this.registrationId = registrationId;
     }
 
     @NonNull
@@ -23,6 +25,7 @@ public class OutgoingMessageEnvelope {
         obj.put("encrypted", Base64.encodeToString(message.serialize(), Base64.NO_WRAP));
         obj.put("type", message.getType());
         obj.put("destDeviceId", deviceId);
+        obj.put("destRegId", registrationId);
         return obj;
     }
 }

@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
+import com.gianlu.commonutils.preferences.Prefs;
 import com.google.android.gms.tasks.Tasks;
 
 import org.json.JSONArray;
@@ -35,6 +36,7 @@ import xyz.gianlu.pyxoverloaded.model.UserData;
 import xyz.gianlu.pyxoverloaded.signal.DbSignalStore;
 import xyz.gianlu.pyxoverloaded.signal.OutgoingMessageEnvelope;
 import xyz.gianlu.pyxoverloaded.signal.OverloadedUserAddress;
+import xyz.gianlu.pyxoverloaded.signal.SignalPK;
 import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
 import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
@@ -58,9 +60,19 @@ public class OverloadedChatApi implements Closeable {
     ///////////////////////////////
 
     /**
+     * Sends keys (without generating pre-keys) to the server if needed.
+     */
+    public void shareKeysIfNeeded() {
+        if (Prefs.getBoolean(SignalPK.SIGNAL_UPDATE_KEYS, false)) {
+            shareKeys(false);
+            Prefs.putBoolean(SignalPK.SIGNAL_UPDATE_KEYS, false);
+        }
+    }
+
+    /**
      * Collects the necessary keys and sends them to the server.
      */
-    void sharePreKeys() {
+    void shareKeys(boolean includePreKeys) {
         loggingCallbacks(Tasks.call(api.executorService, () -> {
             JSONObject body = new JSONObject();
             body.put("registrationId", DbSignalStore.get().getLocalRegistrationId());
@@ -68,8 +80,10 @@ public class OverloadedChatApi implements Closeable {
             body.put("signedPreKey", Utils.toServerJson(SignalProtocolHelper.getLocalSignedPreKey()));
 
             JSONArray preKeysArray = new JSONArray();
-            List<PreKeyRecord> preKeys = SignalProtocolHelper.generateSomePreKeys();
-            for (PreKeyRecord key : preKeys) preKeysArray.put(Utils.toServerJson(key));
+            if (includePreKeys) {
+                List<PreKeyRecord> preKeys = SignalProtocolHelper.generateSomePreKeys();
+                for (PreKeyRecord key : preKeys) preKeysArray.put(Utils.toServerJson(key));
+            }
             body.put("preKeys", preKeysArray);
 
             api.serverRequest(new Request.Builder()
@@ -185,7 +199,7 @@ public class OverloadedChatApi implements Closeable {
             if (chat == null) throw new IllegalStateException();
 
             Exception lastEx = null;
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 4; i++) {
                 List<OutgoingMessageEnvelope> outgoing = SignalProtocolHelper.encrypt(chat, text);
                 JSONArray encryptedMessages = new JSONArray();
                 for (OutgoingMessageEnvelope msg : outgoing) encryptedMessages.put(msg.toJson());
@@ -204,8 +218,15 @@ public class OverloadedChatApi implements Closeable {
                     lastEx = ex;
 
                     if (ex.code == 400 && ex.obj != null) {
-                        if (!handleMismatchedDevices(chat, ex.obj))
+                        if (ex.obj.has("stale")) {
+                            if (!handleStaleDevices(chat, ex.obj))
+                                throw ex;
+                        } else if (ex.obj.has("extra") && ex.obj.has("missing")) {
+                            if (!handleMismatchedDevices(chat, ex.obj))
+                                throw ex;
+                        } else {
                             throw ex;
+                        }
                     }
                 }
             }
@@ -215,6 +236,17 @@ public class OverloadedChatApi implements Closeable {
             callback.onMessage(message);
             dispatchDecryptedMessage(message);
         }, callback::onFailed);
+    }
+
+    @WorkerThread
+    private boolean handleStaleDevices(@NonNull Chat chat, @NonNull JSONObject obj) throws JSONException {
+        JSONArray staleDevices = obj.optJSONArray("stale");
+        if (staleDevices == null) return false;
+
+        for (int i = 0; i < staleDevices.length(); i++)
+            DbSignalStore.get().deleteSession(chat.deviceAddress(staleDevices.getInt(i)).toSignalAddress());
+
+        return true;
     }
 
     @WorkerThread

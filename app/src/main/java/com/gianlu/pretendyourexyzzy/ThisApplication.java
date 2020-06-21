@@ -10,6 +10,7 @@ import java.io.InputStream;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.signal.SignalDatabaseHelper;
+import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
 public class ThisApplication extends AnalyticsApplication {
     public static final String USER_AGENT = "PYX Android by devgianlu";
@@ -23,7 +24,11 @@ public class ThisApplication extends AnalyticsApplication {
     public void onCreate() {
         super.onCreate();
         Glide.get(this).getRegistry().prepend(BaseCard.class, InputStream.class, new BaseCardUrlLoader.Factory());
+
         SignalDatabaseHelper.init(this);
+        SignalProtocolHelper.getLocalDeviceId(this);
+
+        OverloadedApi.chat(this);
 
         StarredCardsDatabase.migrateFromPrefs(this);
     }
