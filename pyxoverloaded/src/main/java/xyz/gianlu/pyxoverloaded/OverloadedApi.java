@@ -712,7 +712,7 @@ public class OverloadedApi {
         }
     }
 
-    private static class WebSocketHolder extends WebSocketListener {
+    private class WebSocketHolder extends WebSocketListener {
         final List<EventListener> listeners = new ArrayList<>();
         private final Handler handler = new Handler(Looper.getMainLooper());
         public WebSocket client;
@@ -772,8 +772,7 @@ public class OverloadedApi {
         @Override
         public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @org.jetbrains.annotations.Nullable Response response) {
             Log.e(TAG, "Failure in WebSocket connection.", t);
-
-            // TODO: Reconnect
+            openWebSocket();
         }
 
         void close() {

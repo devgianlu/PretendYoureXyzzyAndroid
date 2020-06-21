@@ -77,11 +77,11 @@ public class OverloadedSyncApi {
     ///////////// Starred cards /////////////
     /////////////////////////////////////////
 
-    public void syncStarredCards(long localRevision, @Nullable Activity activity, @NonNull GeneralCallback<StarredCardsSyncResponse> callback) {
+    public void syncStarredCards(long revision, @Nullable Activity activity, @NonNull GeneralCallback<StarredCardsSyncResponse> callback) {
         callbacks(Tasks.call(executorService, () -> {
             JSONObject obj = api.serverRequest(new Request.Builder()
                     .url(overloadedServerUrl("Sync/StarredCards"))
-                    .post(singletonJsonBody("rev", localRevision)));
+                    .post(singletonJsonBody("rev", revision)));
             return new StarredCardsSyncResponse(obj);
         }), activity, result -> {
             Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, OverloadedApi.now());
