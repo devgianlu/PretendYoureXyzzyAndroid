@@ -20,6 +20,7 @@ import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 
 import org.jetbrains.annotations.Contract;
@@ -34,7 +35,7 @@ import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public final class OverloadedBillingHelper implements PurchasesUpdatedListener, AskUsernameDialog.Listener {
     private static final String TAG = OverloadedBillingHelper.class.getSimpleName();
-    private static final String OVERLOADED_INFINITE_SKU = "overloaded.infinite";
+    private static final Sku ACTIVE_SKU = Sku.OVERLOADED_MONTHLY_SKU;
     private final Context context;
     private final Listener listener;
     private BillingClient billingClient;
@@ -45,10 +46,6 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         this.context = context;
         this.listener = listener;
     }
-
-    ///////////////////////////////
-    ////////// Activity ///////////
-    ///////////////////////////////
 
     public void onStart() {
         billingClient = BillingClient.newBuilder(context).enablePendingPurchases().setListener(this).build();
@@ -83,11 +80,11 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                     updateStatus(data, null);
 
                     Purchase purchase;
-                    if (data.purchaseStatus == UserData.PurchaseStatus.OK) {
+                    if (data.purchaseStatus.ok) {
                         OverloadedApi.get().openWebSocket();
                         OverloadedApi.chat(context).shareKeysIfNeeded();
                     } else if ((purchase = getLatestPurchase()) != null) {
-                        OverloadedApi.get().registerUser(null, purchase.getPurchaseToken(), null, new UserDataCallback() {
+                        OverloadedApi.get().registerUser(null, purchase.getSku(), purchase.getPurchaseToken(), null, new UserDataCallback() {
                             @Override
                             public void onUserData(@NonNull UserData data) {
                                 updateStatus(data, null);
@@ -118,18 +115,22 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         }
     }
 
+    ///////////////////////////////
+    ////////// Activity ///////////
+    ///////////////////////////////
+
     public void onResume() {
         if (!isFirebaseLoggedIn()) updateStatus(null, null);
+    }
+
+    public void onDestroy() {
+        if (billingClient != null) billingClient.endConnection();
     }
 
 
     ///////////////////////////////
     /////////// Billing ///////////
     ///////////////////////////////
-
-    public void onDestroy() {
-        if (billingClient != null) billingClient.endConnection();
-    }
 
     /**
      * Get the latest purchase of Overloaded (cached).
@@ -138,12 +139,12 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
      */
     @Nullable
     private Purchase getLatestPurchase() {
-        List<Purchase> purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP).getPurchasesList();
+        List<Purchase> purchases = billingClient.queryPurchases(ACTIVE_SKU.skuType).getPurchasesList();
         if (purchases == null || purchases.isEmpty()) return null;
 
         Purchase latestPurchase = null;
         for (Purchase p : purchases) {
-            if (!OVERLOADED_INFINITE_SKU.equals(p.getSku()) || !BuildConfig.APPLICATION_ID.equals(p.getPackageName()))
+            if (!ACTIVE_SKU.sku.equals(p.getSku()) || !BuildConfig.APPLICATION_ID.equals(p.getPackageName()))
                 continue;
 
             if (latestPurchase == null || latestPurchase.getPurchaseTime() < p.getPurchaseTime())
@@ -190,11 +191,13 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
      */
     private void getSkuDetails(@NonNull SkuDetailsCallback callback) {
         billingClient.querySkuDetailsAsync(SkuDetailsParams.newBuilder()
-                .setSkusList(Collections.singletonList(OVERLOADED_INFINITE_SKU))
-                .setType(BillingClient.SkuType.INAPP).build(), (br, list) -> {
+                .setSkusList(Collections.singletonList(ACTIVE_SKU.sku))
+                .setType(ACTIVE_SKU.skuType).build(), (br, list) -> {
             int code = br.getResponseCode();
-            if (code == BillingClient.BillingResponseCode.OK) callback.onSuccess(list.get(0));
-            else callback.onFailed(code);
+            if (code == BillingClient.BillingResponseCode.OK && list != null)
+                callback.onSuccess(list.get(0));
+            else
+                callback.onFailed(code);
         });
     }
 
@@ -204,8 +207,9 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
      * @param product  The {@link SkuDetails} for this flow
      * @param activity The caller {@link Activity}
      */
-    private void startBillingFlow(@NonNull Activity activity, @NonNull SkuDetails product) {
+    private void startBillingFlow(@NonNull Activity activity, @NonNull SkuDetails product, @NonNull String uid) {
         BillingFlowParams flowParams = BillingFlowParams.newBuilder()
+                .setObfuscatedAccountId(Utils.sha1(uid))
                 .setSkuDetails(product)
                 .build();
 
@@ -228,11 +232,11 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
      *
      * @param activity The caller {@link Activity}
      */
-    public void startBillingFlow(@NonNull Activity activity) {
+    public void startBillingFlow(@NonNull Activity activity, @NonNull String uid) {
         getSkuDetails(new SkuDetailsCallback() {
             @Override
             public void onSuccess(@NonNull SkuDetails details) {
-                startBillingFlow(activity, details);
+                startBillingFlow(activity, details, uid);
             }
 
             @Override
@@ -268,7 +272,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         OverloadedApi.get().userData(null, new UserDataCallback() {
             @Override
             public void onUserData(@NonNull UserData data) {
-                if (data.purchaseStatus == UserData.PurchaseStatus.OK) {
+                if (data.purchaseStatus.ok) {
                     OverloadedApi.get().openWebSocket();
                     OverloadedApi.chat(context).shareKeysIfNeeded();
                     listener.dismissDialog();
@@ -276,13 +280,13 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                     return;
                 }
 
-                OverloadedApi.get().registerUser(null, purchase.getPurchaseToken(), null, new UserDataCallback() {
+                OverloadedApi.get().registerUser(null, purchase.getSku(), purchase.getPurchaseToken(), null, new UserDataCallback() {
                     @Override
                     public void onUserData(@NonNull UserData data) {
                         listener.dismissDialog();
                         updateStatus(data, null);
 
-                        if (data.purchaseStatus == UserData.PurchaseStatus.OK) {
+                        if (data.purchaseStatus.ok) {
                             OverloadedApi.get().openWebSocket();
                             OverloadedApi.chat(context).shareKeysIfNeeded();
                         }
@@ -314,14 +318,14 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         });
     }
 
+    private boolean isFirebaseLoggedIn() {
+        return FirebaseAuth.getInstance().getCurrentUser() != null;
+    }
+
 
     ///////////////////////////////
     ///////// Overloaded //////////
     ///////////////////////////////
-
-    private boolean isFirebaseLoggedIn() {
-        return FirebaseAuth.getInstance().getCurrentUser() != null;
-    }
 
     @Override
     public void onUsernameSelected(@NonNull String username) {
@@ -332,7 +336,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         }
 
         listener.showProgress(R.string.loading);
-        OverloadedApi.get().registerUser(username, purchase.getPurchaseToken(), null, new UserDataCallback() {
+        OverloadedApi.get().registerUser(username, purchase.getSku(), purchase.getPurchaseToken(), null, new UserDataCallback() {
             @Override
             public void onUserData(@NonNull UserData data) {
                 listener.dismissDialog();
@@ -354,7 +358,6 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             if (isChecked) {
                 Status status = getStatus();
                 switch (status) {
-                    case PURCHASE_PENDING:
                     case LOADING:
                     case ERROR:
                     case MAINTENANCE:
@@ -414,10 +417,10 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         else if (latestException != null)
             return Status.ERROR;
 
-        if (latestData.purchaseStatus == UserData.PurchaseStatus.OK)
+        if (latestData.purchaseStatus.ok)
             return Status.SIGNED_IN;
         else
-            return Status.PURCHASE_PENDING;
+            return Status.NOT_SIGNED_IN;
     }
 
     @Contract(pure = true)
@@ -425,8 +428,21 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         return latestException instanceof OverloadedApi.MaintenanceException ? ((OverloadedApi.MaintenanceException) latestException).estimatedEnd : -1;
     }
 
+    private enum Sku {
+        OVERLOADED_INFINITE_SKU("overloaded.infinite", BillingClient.SkuType.INAPP),
+        OVERLOADED_MONTHLY_SKU("overloaded.monthly", BillingClient.SkuType.SUBS);
+
+        final String sku;
+        final String skuType;
+
+        Sku(@NotNull String sku, @NotNull String skuType) {
+            this.sku = sku;
+            this.skuType = skuType;
+        }
+    }
+
     public enum Status {
-        LOADING, PURCHASE_PENDING, SIGNED_IN, NOT_SIGNED_IN, ERROR, MAINTENANCE, TWO_CLIENTS_ERROR
+        LOADING, SIGNED_IN, NOT_SIGNED_IN, ERROR, MAINTENANCE, TWO_CLIENTS_ERROR
     }
 
     public interface Listener extends DialogUtils.ShowStuffInterface {

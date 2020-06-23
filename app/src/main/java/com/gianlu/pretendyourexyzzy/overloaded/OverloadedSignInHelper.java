@@ -168,7 +168,7 @@ public final class OverloadedSignInHelper {
                         FirebaseUser loggedUser;
                         if (result != null && (loggedUser = result.getUser()) != null) {
                             Log.i(TAG, "Successfully logged in Firebase as " + loggedUser.getUid());
-                            callback.onSignInSuccessful();
+                            callback.onSignInSuccessful(loggedUser);
                             return;
                         }
                     }
@@ -180,7 +180,7 @@ public final class OverloadedSignInHelper {
     }
 
     public interface SignInCallback {
-        void onSignInSuccessful();
+        void onSignInSuccessful(@NonNull FirebaseUser user);
 
         void onSignInFailed();
     }

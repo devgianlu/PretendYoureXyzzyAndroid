@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy;
 
+import android.util.Base64;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -15,6 +17,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -40,6 +45,15 @@ public final class Utils {
     public static final String ACTION_UNBLOCK_USER = "unblock_user";
 
     private Utils() {
+    }
+
+    @NonNull
+    public static String sha1(@NonNull String str) {
+        try {
+            return Base64.encodeToString(MessageDigest.getInstance("SHA1").digest(str.getBytes(StandardCharsets.UTF_8)), Base64.NO_WRAP);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     @Nullable

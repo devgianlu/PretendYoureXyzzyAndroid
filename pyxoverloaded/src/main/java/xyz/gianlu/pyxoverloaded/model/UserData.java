@@ -20,14 +20,12 @@ import xyz.gianlu.pyxoverloaded.R;
 public class UserData {
     private static final String TAG = UserData.class.getSimpleName();
     public final PurchaseStatus purchaseStatus;
-    public final String purchaseToken;
     public final String username;
     private final Map<PropertyKey, String> properties;
 
     public UserData(@NotNull JSONObject obj) throws JSONException {
         this.username = obj.getString("username");
         this.purchaseStatus = PurchaseStatus.parse(obj.getString("purchaseStatus"));
-        this.purchaseToken = obj.getString("purchaseToken");
 
         JSONObject propertiesObj = obj.getJSONObject("properties");
         this.properties = new HashMap<>(propertiesObj.length());
@@ -64,7 +62,6 @@ public class UserData {
     public String toString() {
         return "UserData{" +
                 "purchaseStatus=" + purchaseStatus +
-                ", purchaseToken='" + purchaseToken + '\'' +
                 ", username='" + username + '\'' +
                 ", properties=" + properties +
                 '}';
@@ -90,12 +87,15 @@ public class UserData {
     }
 
     public enum PurchaseStatus {
-        OK("ok"), PENDING("pending");
+        OK("ok", true), GIFTED("gifted", true),
+        PENDING("pending", false), NONE("none", false);
 
+        public final boolean ok;
         private final String val;
 
-        PurchaseStatus(String val) {
+        PurchaseStatus(@NonNull String val, boolean ok) {
             this.val = val;
+            this.ok = ok;
         }
 
         @NonNull
@@ -119,6 +119,12 @@ public class UserData {
                     break;
                 case PENDING:
                     res = R.string.pending;
+                    break;
+                case NONE:
+                    res = R.string.none;
+                    break;
+                case GIFTED:
+                    res = R.string.gifted;
                     break;
                 default:
                     res = R.string.unknown;

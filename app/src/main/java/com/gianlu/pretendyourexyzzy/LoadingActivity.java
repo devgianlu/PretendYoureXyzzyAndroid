@@ -45,6 +45,7 @@ import com.gianlu.pretendyourexyzzy.tutorial.LoginTutorial;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseUser;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -199,10 +200,10 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 showProgress(R.string.loading);
                 signInHelper.processSignInData(data, new OverloadedSignInHelper.SignInCallback() {
                     @Override
-                    public void onSignInSuccessful() {
+                    public void onSignInSuccessful(@NonNull FirebaseUser user) {
                         dismissDialog();
                         showToast(Toaster.build().message(R.string.signInSuccessful));
-                        billingHelper.startBillingFlow(LoadingActivity.this);
+                        billingHelper.startBillingFlow(LoadingActivity.this, user.getUid());
                     }
 
                     @Override
@@ -458,12 +459,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 break;
             case LOADING:
                 overloadedLoading.showShimmer(true);
-                break;
-            case PURCHASE_PENDING:
-                overloadedLoading.hideShimmer();
-                overloadedStatus.setText(R.string.overloadedStatus_purchasePending);
-                overloadedToggle.setEnabled(false);
-                overloadedToggle.setChecked(false);
                 break;
             case SIGNED_IN:
                 overloadedLoading.hideShimmer();

@@ -38,8 +38,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
@@ -76,15 +77,15 @@ public class OverloadedApi {
     private final static OverloadedApi instance = new OverloadedApi();
     private static final String TAG = OverloadedApi.class.getSimpleName();
     private static OverloadedChatApi chatInstance;
-    final ExecutorService executorService = Executors.newCachedThreadPool();
+    final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private final OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new GzipRequestInterceptor()).build();
     private final WebSocketHolder webSocket = new WebSocketHolder();
-    private FirebaseUser user;
+    private volatile FirebaseUser user;
     private volatile OverloadedToken lastToken;
     private volatile UserData userDataCached = null;
-    private Task<UserData> userDataTask = null;
+    private volatile Task<UserData> userDataTask = null;
     private volatile Map<String, FriendStatus> friendsStatusCached = null;
-    private MaintenanceException lastMaintenanceException = null;
+    private volatile MaintenanceException lastMaintenanceException = null;
 
     private OverloadedApi() {
         FirebaseAuth.getInstance().addAuthStateListener(fa -> {
@@ -92,11 +93,17 @@ public class OverloadedApi {
             Log.i(TAG, String.format("Auth state updated! {user: %s}", user));
         });
 
-        executorService.execute(() -> {
-            try {
-                TrueTime.build().initialize();
-            } catch (IOException ex) {
-                Log.e(TAG, "Failed initializing TrueTime.", ex);
+        executorService.execute(new Runnable() {
+            int tries = 0;
+
+            @Override
+            public void run() {
+                try {
+                    TrueTime.build().initialize();
+                } catch (IOException ex) {
+                    Log.e(TAG, "Failed initializing TrueTime.", ex);
+                    if (tries++ < 3) executorService.execute(this);
+                }
             }
         });
     }
@@ -243,7 +250,7 @@ public class OverloadedApi {
      * @return Whether the use is registered and has payed regularly.
      */
     public boolean isFullyRegistered() {
-        return userDataCached != null && userDataCached.purchaseStatus == UserData.PurchaseStatus.OK;
+        return userDataCached != null && userDataCached.purchaseStatus.ok;
     }
 
     /**
@@ -371,11 +378,12 @@ public class OverloadedApi {
      * Registers the user on the server. This can be used to update the purchase token only if the user is already registered.
      *
      * @param username      The username, may be {@code null}
+     * @param sku           The product/subscription SKU
      * @param purchaseToken The purchase token
      * @param activity      The caller {@link Activity}
      * @param callback      The callback containing the latest {@link UserData}
      */
-    public void registerUser(@Nullable String username, @NonNull String purchaseToken, @Nullable Activity activity, @NonNull UserDataCallback callback) {
+    public void registerUser(@Nullable String username, @NotNull String sku, @NonNull String purchaseToken, @Nullable Activity activity, @NonNull UserDataCallback callback) {
         Task<UserData> task = user.getIdToken(true)
                 .continueWith(new NonNullContinuation<GetTokenResult, OverloadedToken>() {
                     @Override
@@ -388,6 +396,7 @@ public class OverloadedApi {
                     public UserData then(@NonNull OverloadedToken token) throws OverloadedException, JSONException {
                         JSONObject body = new JSONObject();
                         if (username != null) body.put("username", username);
+                        body.put("sku", sku);
                         body.put("purchaseToken", purchaseToken);
 
                         JSONObject obj = serverRequest(new Request.Builder()
@@ -712,74 +721,6 @@ public class OverloadedApi {
         }
     }
 
-    private class WebSocketHolder extends WebSocketListener {
-        final List<EventListener> listeners = new ArrayList<>();
-        private final Handler handler = new Handler(Looper.getMainLooper());
-        public WebSocket client;
-
-        @WorkerThread
-        void dispatchEvent(@NonNull Event event) {
-            Log.v(TAG, event.type + " -> " + (event.data == null ? event.obj : event.data));
-
-            try {
-                instance.handleEvent(event);
-                chatInstance.handleEvent(event);
-            } catch (JSONException ex) {
-                Log.e(TAG, "Failed handling event in worker: " + event, ex);
-            }
-
-            for (EventListener listener : new ArrayList<>(listeners)) {
-                handler.post(() -> {
-                    try {
-                        listener.onEvent(event);
-                    } catch (JSONException ex) {
-                        Log.e(TAG, "Failed handling event: " + event, ex);
-                    }
-                });
-            }
-        }
-
-        @Override
-        public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
-            JSONObject data;
-            Event.Type type;
-            try {
-                JSONObject obj = new JSONObject(text);
-                type = Event.Type.parse(obj.getString("type"));
-                data = obj.optJSONObject("data");
-            } catch (JSONException ex) {
-                Log.e(TAG, "Failed parsing event: " + text, ex);
-                return;
-            }
-
-            if (type == null) {
-                Log.w(TAG, "Unknown event type: " + text);
-                return;
-            }
-
-            if (type == Event.Type.PING) {
-                webSocket.send("_");
-                return;
-            }
-
-            try {
-                dispatchEvent(new Event(type, data == null ? new JSONObject() : data, null));
-            } catch (Exception ex) {
-                Log.e(TAG, "Failed dispatching event.", ex);
-            }
-        }
-
-        @Override
-        public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @org.jetbrains.annotations.Nullable Response response) {
-            Log.e(TAG, "Failure in WebSocket connection.", t);
-            openWebSocket();
-        }
-
-        void close() {
-            if (client != null) client.close(1000, null);
-        }
-    }
-
     static class OverloadedException extends Exception {
         OverloadedException() {
         }
@@ -910,6 +851,81 @@ public class OverloadedApi {
                     gzipSink.close();
                 }
             };
+        }
+    }
+
+    private class WebSocketHolder extends WebSocketListener {
+        final List<EventListener> listeners = new ArrayList<>();
+        private final Handler handler = new Handler(Looper.getMainLooper());
+        public WebSocket client;
+        private int tries = 0;
+
+        @WorkerThread
+        void dispatchEvent(@NonNull Event event) {
+            Log.v(TAG, event.type + " -> " + (event.data == null ? event.obj : event.data));
+
+            try {
+                instance.handleEvent(event);
+                chatInstance.handleEvent(event);
+            } catch (JSONException ex) {
+                Log.e(TAG, "Failed handling event in worker: " + event, ex);
+            }
+
+            for (EventListener listener : new ArrayList<>(listeners)) {
+                handler.post(() -> {
+                    try {
+                        listener.onEvent(event);
+                    } catch (JSONException ex) {
+                        Log.e(TAG, "Failed handling event: " + event, ex);
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
+            Log.d(TAG, "Opened WebSocket connection.");
+            tries = 0;
+        }
+
+        @Override
+        public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
+            JSONObject data;
+            Event.Type type;
+            try {
+                JSONObject obj = new JSONObject(text);
+                type = Event.Type.parse(obj.getString("type"));
+                data = obj.optJSONObject("data");
+            } catch (JSONException ex) {
+                Log.e(TAG, "Failed parsing event: " + text, ex);
+                return;
+            }
+
+            if (type == null) {
+                Log.w(TAG, "Unknown event type: " + text);
+                return;
+            }
+
+            if (type == Event.Type.PING) {
+                webSocket.send("_");
+                return;
+            }
+
+            try {
+                dispatchEvent(new Event(type, data == null ? new JSONObject() : data, null));
+            } catch (Exception ex) {
+                Log.e(TAG, "Failed dispatching event.", ex);
+            }
+        }
+
+        @Override
+        public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @org.jetbrains.annotations.Nullable Response response) {
+            Log.e(TAG, "Failure in WebSocket connection.", t);
+            executorService.schedule(OverloadedApi.this::openWebSocket, (tries++ + 1) * 500, TimeUnit.MILLISECONDS);
+        }
+
+        void close() {
+            if (client != null) client.close(1000, null);
         }
     }
 }

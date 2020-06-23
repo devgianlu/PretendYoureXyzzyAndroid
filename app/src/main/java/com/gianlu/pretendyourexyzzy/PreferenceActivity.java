@@ -165,7 +165,7 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                 } else {
                     signInHelper.processSignInData(data, new OverloadedSignInHelper.SignInCallback() {
                         @Override
-                        public void onSignInSuccessful() {
+                        public void onSignInSuccessful(@NonNull FirebaseUser user) {
                             showToast(Toaster.build().message(R.string.signInSuccessful));
                             onBackPressed();
                         }
