@@ -121,7 +121,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                 @Override
                 public void onFailed(@NonNull Exception ex) {
                     if (ex instanceof OverloadedServerException) {
-                        if (((OverloadedServerException) ex).httpCode == 403) {
+                        if (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NOT_REGISTERED)) {
                             FirebaseAuth.getInstance().signOut();
                             updateStatus(null, null);
                             return;
@@ -323,7 +323,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             public void onFailed(@NonNull Exception ex) {
                 listener.dismissDialog();
                 if (ex instanceof OverloadedServerException) {
-                    if (((OverloadedServerException) ex).httpCode == 403) {
+                    if (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NOT_REGISTERED)) {
                         listener.showDialog(AskUsernameDialog.get());
                         // Follows in #onUsernameSelected(String)
                         return;
@@ -417,7 +417,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
      */
     @NonNull
     public Status getStatus() {
-        if (latestException instanceof OverloadedApi.MaintenanceException)
+        if (OverloadedApi.get().isUnderMaintenance())
             return Status.MAINTENANCE;
 
         if (!isFirebaseLoggedIn()) {
@@ -443,7 +443,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
 
     @Contract(pure = true)
     public long maintenanceEstimatedEnd() {
-        return latestException instanceof OverloadedApi.MaintenanceException ? ((OverloadedApi.MaintenanceException) latestException).estimatedEnd : -1;
+        return OverloadedApi.get().isUnderMaintenance() ? OverloadedApi.get().maintenanceEnd() : -1;
     }
 
     public enum Sku {

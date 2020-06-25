@@ -162,10 +162,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                 friendsLoading.setVisibility(View.GONE);
                 friendsList.setVisibility(View.GONE);
                 friendsMessage.setVisibility(View.VISIBLE);
-                if (ex instanceof OverloadedApi.MaintenanceException)
-                    friendsMessage.error(((OverloadedApi.MaintenanceException) ex).messageString(requireContext()));
-                else
-                    friendsMessage.error(R.string.failedLoading);
+                friendsMessage.error(R.string.failedLoading);
             }
         });
     }

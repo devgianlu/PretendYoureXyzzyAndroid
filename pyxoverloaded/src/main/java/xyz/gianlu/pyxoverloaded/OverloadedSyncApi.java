@@ -23,14 +23,11 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import okhttp3.Request;
 import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 import xyz.gianlu.pyxoverloaded.model.Card;
 
+import static com.gianlu.commonutils.CommonUtils.singletonJsonObject;
 import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
-import static xyz.gianlu.pyxoverloaded.Utils.jsonBody;
-import static xyz.gianlu.pyxoverloaded.Utils.overloadedServerUrl;
-import static xyz.gianlu.pyxoverloaded.Utils.singletonJsonBody;
 
 public class OverloadedSyncApi {
     private static OverloadedSyncApi instance = null;
@@ -79,9 +76,7 @@ public class OverloadedSyncApi {
 
     public void syncStarredCards(long revision, @Nullable Activity activity, @NonNull GeneralCallback<StarredCardsSyncResponse> callback) {
         callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = api.makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Sync/StarredCards"))
-                    .post(singletonJsonBody("rev", revision)));
+            JSONObject obj = api.makePostRequest("Sync/StarredCards", singletonJsonObject("rev", revision));
             return new StarredCardsSyncResponse(obj);
         }), activity, result -> {
             Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, OverloadedApi.now());
@@ -101,9 +96,7 @@ public class OverloadedSyncApi {
             body.put("rev", revision);
             body.put("update", update);
 
-            JSONObject obj = api.makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Sync/UpdateStarredCards"))
-                    .post(jsonBody(body)));
+            JSONObject obj = api.makePostRequest("Sync/UpdateStarredCards", body);
             return new StarredCardsUpdateResponse(obj);
         }), activity, result -> {
             Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, OverloadedApi.now());
@@ -130,9 +123,7 @@ public class OverloadedSyncApi {
                     .put("remoteId", remoteId)
                     .put("item", item));
 
-            JSONObject obj = api.makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Sync/UpdateStarredCards"))
-                    .post(jsonBody(body)));
+            JSONObject obj = api.makePostRequest("Sync/UpdateStarredCards", body);
             return new StarredCardsUpdateResponse(obj);
         }), activity, result -> {
             Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, OverloadedApi.now());
@@ -156,9 +147,7 @@ public class OverloadedSyncApi {
             JSONObject body = new JSONObject();
             body.put("items", syncItems);
 
-            JSONObject obj = api.makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Sync/CustomDecks"))
-                    .post(jsonBody(body)));
+            JSONObject obj = api.makePostRequest("Sync/CustomDecks", body);
 
             JSONArray items = obj.getJSONArray("items");
             List<CustomDecksSyncResponse> list = new ArrayList<>(items.length());
@@ -183,9 +172,7 @@ public class OverloadedSyncApi {
             body.put("rev", revision);
             body.put("update", update);
 
-            JSONObject obj = api.makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Sync/UpdateCustomDecks"))
-                    .post(jsonBody(body)));
+            JSONObject obj = api.makePostRequest("Sync/UpdateCustomDecks", body);
             return new CustomDecksUpdateResponse(obj);
         }), activity, result -> {
             Prefs.putLong(OverloadedPK.CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
@@ -210,9 +197,7 @@ public class OverloadedSyncApi {
                     .put("deck", deck)
                     .put("card", card));
 
-            JSONObject obj = api.makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Sync/UpdateCustomDecks"))
-                    .post(jsonBody(body)));
+            JSONObject obj = api.makePostRequest("Sync/UpdateCustomDecks", body);
             return new CustomDecksUpdateResponse(obj);
         }), activity, result -> {
             Prefs.putLong(OverloadedPK.CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
@@ -229,10 +214,7 @@ public class OverloadedSyncApi {
             JSONObject body = new JSONObject();
             body.put("username", username);
             body.put("name", name);
-
-            JSONObject obj = api.makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Sync/GetPublicCustomDeck"))
-                    .post(jsonBody(body)));
+            JSONObject obj = api.makePostRequest("Sync/GetPublicCustomDeck", body);
             return Card.parse(obj.getJSONArray("cards"));
         }), activity, callback::onResult, callback::onFailed);
     }

@@ -31,10 +31,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -67,11 +65,11 @@ import xyz.gianlu.pyxoverloaded.model.UserData;
 import xyz.gianlu.pyxoverloaded.model.UserProfile;
 import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
+import static com.gianlu.commonutils.CommonUtils.singletonJsonObject;
 import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
 import static xyz.gianlu.pyxoverloaded.TaskUtils.loggingCallbacks;
 import static xyz.gianlu.pyxoverloaded.Utils.jsonBody;
 import static xyz.gianlu.pyxoverloaded.Utils.overloadedServerUrl;
-import static xyz.gianlu.pyxoverloaded.Utils.singletonJsonBody;
 
 public class OverloadedApi {
     private final static OverloadedApi instance = new OverloadedApi();
@@ -85,7 +83,8 @@ public class OverloadedApi {
     private volatile UserData userDataCached = null;
     private volatile Task<UserData> userDataTask = null;
     private volatile Map<String, FriendStatus> friendsStatusCached = null;
-    private volatile MaintenanceException lastMaintenanceException = null;
+    private Long maintenanceEnd = null;
+    private boolean isFirstRequest = true;
 
     private OverloadedApi() {
         FirebaseAuth.getInstance().addAuthStateListener(fa -> {
@@ -123,30 +122,53 @@ public class OverloadedApi {
         return instance;
     }
 
+    /////////////////////////////////////////
+    //////////////// Internal ///////////////
+    /////////////////////////////////////////
+
     @NonNull
     public static OverloadedChatApi chat(@NonNull Context context) {
         init(context);
         return chatInstance;
     }
 
+    /////////////////////////////////////////
+    /////////////// Pyx server //////////////
+    /////////////////////////////////////////
+
     public static void close() {
         chatInstance.close();
         instance.webSocket.close();
     }
 
-    /////////////////////////////////////////
-    //////////////// Internal ///////////////
-    /////////////////////////////////////////
-
     @NonNull
     @WorkerThread
-    JSONObject makeRequest(@NonNull Request.Builder reqBuilder) throws OverloadedException {
-        return makeRequest(reqBuilder, true);
+    JSONObject makePostRequest(@NonNull String suffix, @Nullable JSONObject json) throws OverloadedException, MaintenanceException {
+        RequestBody body;
+        if (json == null) body = Util.EMPTY_REQUEST;
+        else body = jsonBody(json);
+
+        return makeRequest(new Request.Builder()
+                .url(overloadedServerUrl(suffix))
+                .post(body), true);
     }
 
     @NonNull
     @WorkerThread
-    private JSONObject makeRequest(@NonNull Request.Builder reqBuilder, boolean retry) throws OverloadedException {
+    private synchronized JSONObject makeRequest(@NonNull Request.Builder reqBuilder, boolean retry) throws OverloadedException, MaintenanceException {
+        if (isFirstRequest || isUnderMaintenance()) {
+            for (int i = 0; i < 3; i++) {
+                try {
+                    Long maintenanceEnd = checkMaintenanceSync();
+                    isFirstRequest = false;
+                    if (maintenanceEnd != null) throw new MaintenanceException(maintenanceEnd);
+                    break;
+                } catch (JSONException | IOException ex) {
+                    Log.w(TAG, "Failed checking maintenance.", ex);
+                }
+            }
+        }
+
         if (lastToken == null || lastToken.expired()) {
             if (user == null && updateUser())
                 throw new NotSignedInException();
@@ -160,12 +182,6 @@ public class OverloadedApi {
                 .addHeader("X-Device-Id", String.valueOf(SignalProtocolHelper.getLocalDeviceId())).build();
         try (Response resp = client.newCall(req).execute()) {
             Log.v(TAG, String.format("%s -> %d", req.url().encodedPath(), resp.code()));
-
-            if (resp.code() == 503) {
-                String estimatedEnd = resp.header("X-Estimated-End");
-                if (estimatedEnd != null)
-                    throw lastMaintenanceException = new MaintenanceException(Long.parseLong(estimatedEnd));
-            }
 
             JSONObject obj;
             ResponseBody body = resp.body();
@@ -189,22 +205,20 @@ public class OverloadedApi {
         }
     }
 
-
-    /////////////////////////////////////////
-    /////////////// Pyx server //////////////
-    /////////////////////////////////////////
-
     /**
      * Report that user has logged out from PYX server.
      */
     public void loggedOutFromPyxServer() {
         loggingCallbacks(Tasks.call(executorService, () -> {
-            makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Pyx/Logout"))
-                    .post(Util.EMPTY_REQUEST));
+            makePostRequest("Pyx/Logout", null);
             return true;
         }), "logoutFromPyx");
     }
+
+
+    /////////////////////////////////////////
+    //////////// User & providers ///////////
+    /////////////////////////////////////////
 
     /**
      * Report that user has logged into a PYX server.
@@ -224,18 +238,11 @@ public class OverloadedApi {
                 JSONObject params = new JSONObject();
                 params.put("serverUrl", serverUrl.toString());
                 params.put("nickname", nickname);
-                makeRequest(new Request.Builder()
-                        .url(overloadedServerUrl("Pyx/Login"))
-                        .post(jsonBody(params)));
+                makePostRequest("Pyx/Login", params);
                 return null;
             }
         }), "logIntoPyx");
     }
-
-
-    /////////////////////////////////////////
-    //////////// User & providers ///////////
-    /////////////////////////////////////////
 
     /**
      * @return The current {@link FirebaseUser} instance or {@code null} if not logged in.
@@ -324,6 +331,11 @@ public class OverloadedApi {
         }
     }
 
+
+    /////////////////////////////////////////
+    ////////////// Public API ///////////////
+    /////////////////////////////////////////
+
     /**
      * Links the current profile with another provider.
      *
@@ -339,11 +351,6 @@ public class OverloadedApi {
                 .addOnCompleteListener(listener);
     }
 
-
-    /////////////////////////////////////////
-    ////////////// Public API ///////////////
-    /////////////////////////////////////////
-
     /**
      * Gets another user profile.
      *
@@ -353,9 +360,7 @@ public class OverloadedApi {
      */
     public void getProfile(@NonNull String username, @Nullable Activity activity, @NonNull GeneralCallback<UserProfile> callback) {
         callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Profile/Get"))
-                    .post(singletonJsonBody("username", username)));
+            JSONObject obj = makePostRequest("Profile/Get", singletonJsonObject("username", username));
             return new UserProfile(obj);
         }), activity, callback::onResult, callback::onFailed);
     }
@@ -367,9 +372,7 @@ public class OverloadedApi {
      */
     public void linkGames(@NonNull String authCode) {
         loggingCallbacks(Tasks.call(executorService, (Callable<Void>) () -> {
-            makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("User/LinkGames"))
-                    .post(singletonJsonBody("authCode", authCode)));
+            makePostRequest("User/LinkGames", singletonJsonObject("authCode", authCode));
             return null;
         }), "link-play-games");
     }
@@ -393,15 +396,13 @@ public class OverloadedApi {
                 })
                 .continueWith(executorService, new NonNullContinuation<OverloadedToken, UserData>() {
                     @Override
-                    public UserData then(@NonNull OverloadedToken token) throws OverloadedException, JSONException {
+                    public UserData then(@NonNull OverloadedToken token) throws OverloadedException, JSONException, MaintenanceException {
                         JSONObject body = new JSONObject();
                         if (username != null) body.put("username", username);
                         body.put("sku", sku);
                         body.put("purchaseToken", purchaseToken);
 
-                        JSONObject obj = makeRequest(new Request.Builder()
-                                .url(overloadedServerUrl("User/Register"))
-                                .post(jsonBody(body)));
+                        JSONObject obj = makePostRequest("User/Register", body);
                         return userDataCached = new UserData(obj.getJSONObject("userData"));
                     }
                 });
@@ -418,9 +419,7 @@ public class OverloadedApi {
      */
     public void isUsernameUnique(@NonNull String username, @Nullable Activity activity, @NonNull BooleanCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("IsUsernameUnique"))
-                    .post(singletonJsonBody("username", username)));
+            JSONObject obj = makePostRequest("IsUsernameUnique", singletonJsonObject("username", username));
             return obj.getBoolean("unique");
         }), activity, callback::onResult, callback::onFailed);
     }
@@ -434,9 +433,7 @@ public class OverloadedApi {
      */
     public void listUsers(@NonNull HttpUrl serverUrl, @Nullable Activity activity, @NonNull UsersCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Pyx/ListOnline"))
-                    .post(singletonJsonBody("serverUrl", serverUrl.toString())));
+            JSONObject obj = makePostRequest("Pyx/ListOnline", singletonJsonObject("serverUrl", serverUrl.toString()));
 
             JSONArray array = obj.getJSONArray("users");
             List<String> list = new ArrayList<>(array.length());
@@ -481,9 +478,7 @@ public class OverloadedApi {
      */
     public void deleteAccount(@Nullable Activity activity, @NonNull SuccessCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
-            makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("User/Delete"))
-                    .post(Util.EMPTY_REQUEST));
+            makePostRequest("User/Delete", null);
             return null;
         }), activity, a -> {
             logout();
@@ -504,18 +499,39 @@ public class OverloadedApi {
         }
     }
 
+    @Nullable
+    @WorkerThread
+    private Long checkMaintenanceSync() throws JSONException, IOException {
+        try (Response resp = client.newCall(new Request.Builder()
+                .url(overloadedServerUrl("IsUnderMaintenance"))
+                .get().build()).execute()) {
+            if (resp.code() != 200) throw new IOException(String.valueOf(resp.code()));
+
+            ResponseBody body = resp.body();
+            if (body == null) throw new IOException();
+
+            JSONObject obj = new JSONObject(body.string());
+            if (obj.getBoolean("enabled")) maintenanceEnd = obj.getLong("estimatedEnd");
+            else maintenanceEnd = null;
+
+            Log.i(TAG, "Updated maintenance status: " + maintenanceEnd);
+            return maintenanceEnd;
+        }
+    }
+
     /**
-     * @return Whether the server is under maintenance.
+     * @return Whether the server is under maintenance (without requesting the server).
      */
     public boolean isUnderMaintenance() {
-        if (lastMaintenanceException == null) return false;
+        return maintenanceEnd != null;
+    }
 
-        if (lastMaintenanceException.estimatedEnd < now()) {
-            lastMaintenanceException = null;
-            return false;
-        }
-
-        return true;
+    /**
+     * @return When the maintenance SHOULD end.
+     */
+    public long maintenanceEnd() {
+        if (maintenanceEnd == null) throw new IllegalStateException();
+        else return maintenanceEnd;
     }
 
 
@@ -540,10 +556,7 @@ public class OverloadedApi {
             return userDataTask;
 
         return userDataTask = Tasks.call(executorService, () -> {
-            JSONObject obj = makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("User/Data"))
-                    .post(Util.EMPTY_REQUEST));
-
+            JSONObject obj = makePostRequest("User/Data", null);
             return userDataCached = new UserData(obj);
         });
     }
@@ -566,23 +579,20 @@ public class OverloadedApi {
             JSONObject body = new JSONObject();
             body.put("key", key.val);
             if (value != null) body.put("value", value);
-
-            makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("User/SetProperty"))
-                    .post(jsonBody(body)));
+            makePostRequest("User/SetProperty", body);
             return null;
         }), activity, aVoid -> callback.onSuccessful(), callback::onFailed);
+    }
+
+    @Nullable
+    public Map<String, FriendStatus> friendsStatusCache() {
+        return friendsStatusCached;
     }
 
 
     /////////////////////////////////////////
     //////////////// Friends ////////////////
     /////////////////////////////////////////
-
-    @Nullable
-    public Map<String, FriendStatus> friendsStatusCache() {
-        return friendsStatusCached;
-    }
 
     /**
      * Gets the list of friends and their status (includes friends requests).
@@ -592,9 +602,7 @@ public class OverloadedApi {
      */
     public void friendsStatus(@Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("User/FriendsStatus"))
-                    .post(Util.EMPTY_REQUEST));
+            JSONObject obj = makePostRequest("User/FriendsStatus", null);
             return friendsStatusCached = FriendStatus.parse(obj);
         }), activity, callback::onFriendsStatus, callback::onFailed);
     }
@@ -608,9 +616,7 @@ public class OverloadedApi {
      */
     public void removeFriend(@NonNull String username, @Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("User/RemoveFriend"))
-                    .post(singletonJsonBody("username", username)));
+            JSONObject obj = makePostRequest("User/RemoveFriend", singletonJsonObject("username", username));
 
             Map<String, FriendStatus> map = friendsStatusCached = FriendStatus.parse(obj);
             dispatchLocalEvent(Event.Type.REMOVED_FRIEND, username);
@@ -627,9 +633,7 @@ public class OverloadedApi {
      */
     public void addFriend(@NonNull String username, @Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("User/AddFriend"))
-                    .post(singletonJsonBody("username", username)));
+            JSONObject obj = makePostRequest("User/AddFriend", singletonJsonObject("username", username));
 
             Map<String, FriendStatus> map = friendsStatusCached = FriendStatus.parse(obj);
             dispatchLocalEvent(Event.Type.ADDED_FRIEND, username);
@@ -637,14 +641,14 @@ public class OverloadedApi {
         }), activity, callback::onFriendsStatus, callback::onFailed);
     }
 
+    void dispatchLocalEvent(@NonNull Event.Type type, @NonNull Object data) {
+        webSocket.dispatchEvent(new Event(type, null, data));
+    }
+
 
     /////////////////////////////////////////
     //////////////// Events /////////////////
     /////////////////////////////////////////
-
-    void dispatchLocalEvent(@NonNull Event.Type type, @NonNull Object data) {
-        webSocket.dispatchEvent(new Event(type, null, data));
-    }
 
     public void addEventListener(@NonNull EventListener listener) {
         webSocket.listeners.add(listener);
@@ -674,6 +678,12 @@ public class OverloadedApi {
     @UiThread
     public interface EventListener {
         void onEvent(@NonNull Event event) throws JSONException;
+    }
+
+    public static class MaintenanceException extends Exception {
+        private MaintenanceException(long maintenanceEnd) {
+            super("Estimated end: " + maintenanceEnd);
+        }
     }
 
     public static class Event {
@@ -739,28 +749,12 @@ public class OverloadedApi {
         }
     }
 
-    public static class MaintenanceException extends OverloadedException {
-        public final long estimatedEnd;
-
-        MaintenanceException(long estimatedEnd) {
-            this.estimatedEnd = estimatedEnd;
-        }
-
-        @NonNull
-        public static String messageString(@NonNull Context context, long estimatedEnd) {
-            return context.getString(R.string.overloadedStatus_maintenance, new SimpleDateFormat("HH:mm", Locale.getDefault()).format(estimatedEnd));
-        }
-
-        @NonNull
-        public String messageString(@NonNull Context context) {
-            return messageString(context, estimatedEnd);
-        }
-    }
-
     public static class OverloadedServerException extends OverloadedException {
         public static final String REASON_MISMATCHED_DEVICES = "mismatchedDevices";
         public static final String REASON_STALE_DEVICES = "staleDevices";
+        public static final String REASON_NOT_REGISTERED = "notRegistered";
         public static final String REASON_DEVICE_CONFLICT = "deviceConflict";
+        public static final String REASON_DO_NOT_OWN_DECK = "doNotOwnDeck";
         public final int httpCode;
         public final String reason;
         public final JSONObject details;

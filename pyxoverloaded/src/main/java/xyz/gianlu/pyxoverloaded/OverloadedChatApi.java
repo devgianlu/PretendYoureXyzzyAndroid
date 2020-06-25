@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import okhttp3.Request;
 import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
 import xyz.gianlu.pyxoverloaded.callback.ChatCallback;
 import xyz.gianlu.pyxoverloaded.callback.ChatMessageCallback;
@@ -42,8 +41,6 @@ import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
 import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
 import static xyz.gianlu.pyxoverloaded.TaskUtils.loggingCallbacks;
-import static xyz.gianlu.pyxoverloaded.Utils.jsonBody;
-import static xyz.gianlu.pyxoverloaded.Utils.overloadedServerUrl;
 
 public class OverloadedChatApi implements Closeable {
     private static final String TAG = OverloadedApi.class.getSimpleName();
@@ -87,9 +84,7 @@ public class OverloadedChatApi implements Closeable {
             }
             body.put("preKeys", preKeysArray);
 
-            api.makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Chat/ShareKeys"))
-                    .post(jsonBody(body)));
+            api.makePostRequest("Chat/ShareKeys", body);
             return null;
         }), "share-pre-keys");
     }
@@ -106,9 +101,7 @@ public class OverloadedChatApi implements Closeable {
             body.put("address", address.uid);
             body.put("deviceId", address.deviceId);
 
-            JSONObject obj = api.makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Chat/GetKeys"))
-                    .post(jsonBody(body)));
+            JSONObject obj = api.makePostRequest("Chat/GetKeys", body);
 
             JSONObject keyObj = obj.getJSONObject("key");
             SignalProtocolHelper.createSession(new OverloadedUserAddress(keyObj.getString("address")), Utils.parsePreKeyBundle(keyObj));
@@ -136,11 +129,7 @@ public class OverloadedChatApi implements Closeable {
         callbacks(Tasks.call(api.executorService, () -> {
             JSONObject body = new JSONObject();
             body.put("username", username);
-
-            JSONObject obj = api.makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Chat/Start"))
-                    .post(jsonBody(body)));
-
+            JSONObject obj = api.makePostRequest("Chat/Start", body);
             return db.putChat(obj.getString("address"), username);
         }), activity, remoteChat -> {
             if (chat == null) callback.onChat(remoteChat);
@@ -210,10 +199,7 @@ public class OverloadedChatApi implements Closeable {
                 body.put("messages", encryptedMessages);
 
                 try {
-                    api.makeRequest(new Request.Builder()
-                            .url(overloadedServerUrl("Chat/Send"))
-                            .post(jsonBody(body)));
-
+                    api.makePostRequest("Chat/Send", body);
                     return db.putMessage(chatId, text, OverloadedApi.now(), data.username);
                 } catch (OverloadedServerException ex) {
                     lastEx = ex;
@@ -380,11 +366,7 @@ public class OverloadedChatApi implements Closeable {
         loggingCallbacks(Tasks.call(api.executorService, () -> {
             JSONObject body = new JSONObject();
             body.put("ackId", ackId);
-
-            api.makeRequest(new Request.Builder()
-                    .url(overloadedServerUrl("Chat/Ack"))
-                    .post(jsonBody(body)));
-
+            api.makePostRequest("Chat/Ack", body);
             return null;
         }), "message-ack: " + ackId);
     }

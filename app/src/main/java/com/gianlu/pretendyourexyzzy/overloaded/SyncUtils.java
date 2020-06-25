@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
 import xyz.gianlu.pyxoverloaded.OverloadedPK;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.CustomDecksSyncResponse;
@@ -192,7 +193,7 @@ public final class SyncUtils {
 
             @Override
             public void onFailed(@NonNull Exception ex) {
-                if (ex instanceof OverloadedApi.OverloadedServerException && ((OverloadedApi.OverloadedServerException) ex).httpCode == 403)
+                if (ex instanceof OverloadedServerException && ((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_DO_NOT_OWN_DECK))
                     db.resetRemoteIds(deck.id);
 
                 Log.e(TAG, "Failed sending custom deck update: " + deck, ex);
