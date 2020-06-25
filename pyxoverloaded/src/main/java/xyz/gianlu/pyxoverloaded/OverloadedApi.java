@@ -459,7 +459,12 @@ public class OverloadedApi {
                     throw new NotSignedInException();
             }
 
-            if (webSocket.client != null) webSocket.client.cancel();
+            if (webSocket.client != null) {
+                WebSocket client = webSocket.client;
+                webSocket.client = null;
+                client.cancel();
+            }
+
             webSocket.client = client.newWebSocket(new Request.Builder().get()
                     .header("X-Device-Id", String.valueOf(SignalProtocolHelper.getLocalDeviceId()))
                     .header("Authorization", "FirebaseToken " + lastToken.token)
@@ -887,7 +892,6 @@ public class OverloadedApi {
         @Override
         public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
             Log.d(TAG, "Opened WebSocket connection.");
-            tries = 0;
         }
 
         @Override
@@ -908,6 +912,8 @@ public class OverloadedApi {
                 return;
             }
 
+            tries = 0;
+
             if (type == Event.Type.PING) {
                 webSocket.send("_");
                 return;
@@ -922,6 +928,8 @@ public class OverloadedApi {
 
         @Override
         public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @org.jetbrains.annotations.Nullable Response response) {
+            if (client == null) return;
+
             Log.e(TAG, "Failure in WebSocket connection.", t);
             executorService.schedule(OverloadedApi.this::openWebSocket, (tries++ + 1) * 500, TimeUnit.MILLISECONDS);
         }
