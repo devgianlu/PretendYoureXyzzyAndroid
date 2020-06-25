@@ -321,4 +321,7 @@
     <string name="failedLoadingUserProfile">Failed loading user profile!</string>
     <string name="userNoPublicStarredCards">This user has no public starred cards!</string>
     <string name="userNoPublicCustomDecksMessage">This user has no public custom decks!</string>
+    <string name="resume">Resume</string>
+    <string name="fixPayment">Fix payment</string>
+    <string name="subscriptions">Subscriptions</string>
 </resources>

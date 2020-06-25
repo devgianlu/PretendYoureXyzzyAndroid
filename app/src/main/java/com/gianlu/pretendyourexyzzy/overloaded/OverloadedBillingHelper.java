@@ -2,6 +2,8 @@ package com.gianlu.pretendyourexyzzy.overloaded;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.widget.CompoundButton;
 
@@ -34,8 +36,8 @@ import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public final class OverloadedBillingHelper implements PurchasesUpdatedListener, AskUsernameDialog.Listener {
+    public static final Sku ACTIVE_SKU = Sku.OVERLOADED_MONTHLY_SKU;
     private static final String TAG = OverloadedBillingHelper.class.getSimpleName();
-    private static final Sku ACTIVE_SKU = Sku.OVERLOADED_MONTHLY_SKU;
     private final Context context;
     private final Listener listener;
     private BillingClient billingClient;
@@ -46,6 +48,22 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         this.context = context;
         this.listener = listener;
     }
+
+    public static void launchSubscriptions(@NotNull Context context, @Nullable String sku) {
+        String url;
+        if (sku == null)
+            url = "https://play.google.com/store/account/subscriptions";
+        else
+            url = String.format("https://play.google.com/store/account/subscriptions?sku=%s&package=%s", sku, context.getApplicationContext().getPackageName());
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+        context.startActivity(intent);
+    }
+
+    ///////////////////////////////
+    ////////// Activity ///////////
+    ///////////////////////////////
 
     public void onStart() {
         billingClient = BillingClient.newBuilder(context).enablePendingPurchases().setListener(this).build();
@@ -115,22 +133,18 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         }
     }
 
-    ///////////////////////////////
-    ////////// Activity ///////////
-    ///////////////////////////////
-
     public void onResume() {
         if (!isFirebaseLoggedIn()) updateStatus(null, null);
-    }
-
-    public void onDestroy() {
-        if (billingClient != null) billingClient.endConnection();
     }
 
 
     ///////////////////////////////
     /////////// Billing ///////////
     ///////////////////////////////
+
+    public void onDestroy() {
+        if (billingClient != null) billingClient.endConnection();
+    }
 
     /**
      * Get the latest purchase of Overloaded (cached).
@@ -139,6 +153,9 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
      */
     @Nullable
     private Purchase getLatestPurchase() {
+        if (billingClient == null || !billingClient.isReady())
+            return null;
+
         List<Purchase> purchases = billingClient.queryPurchases(ACTIVE_SKU.skuType).getPurchasesList();
         if (purchases == null || purchases.isEmpty()) return null;
 
@@ -318,14 +335,14 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         });
     }
 
-    private boolean isFirebaseLoggedIn() {
-        return FirebaseAuth.getInstance().getCurrentUser() != null;
-    }
-
 
     ///////////////////////////////
     ///////// Overloaded //////////
     ///////////////////////////////
+
+    private boolean isFirebaseLoggedIn() {
+        return FirebaseAuth.getInstance().getCurrentUser() != null;
+    }
 
     @Override
     public void onUsernameSelected(@NonNull String username) {
@@ -428,11 +445,11 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         return latestException instanceof OverloadedApi.MaintenanceException ? ((OverloadedApi.MaintenanceException) latestException).estimatedEnd : -1;
     }
 
-    private enum Sku {
+    public enum Sku {
         OVERLOADED_INFINITE_SKU("overloaded.infinite", BillingClient.SkuType.INAPP),
         OVERLOADED_MONTHLY_SKU("overloaded.monthly", BillingClient.SkuType.SUBS);
 
-        final String sku;
+        public final String sku;
         final String skuType;
 
         Sku(@NotNull String sku, @NotNull String skuType) {

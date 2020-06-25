@@ -38,6 +38,7 @@ import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.overloaded.AskUsernameDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedBillingHelper;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedBillingHelper.Status;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
@@ -58,6 +59,7 @@ import java.util.Objects;
 import me.toptas.fancyshowcase.FocusShape;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.model.UserData;
+import xyz.gianlu.pyxoverloaded.model.UserData.PurchaseStatusGranular;
 
 
 public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener, AskUsernameDialog.Listener {
@@ -80,6 +82,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     private ShimmerFrameLayout overloadedLoading;
     private ShimmerFrameLayout inputLoading;
     private TextView overloadedStatus;
+    private ImageButton overloadedWarning;
     private SwitchMaterial overloadedToggle;
     private boolean waitingOverloaded = false;
 
@@ -121,6 +124,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         overloadedToggle = findViewById(R.id.loading_overloadedToggle);
         overloadedToggle.setOnCheckedChangeListener(billingHelper.toggleOverloaded());
         overloadedStatus = findViewById(R.id.loading_overloadedStatus);
+        overloadedWarning = findViewById(R.id.loading_overloadedWarning);
         currentServer = findViewById(R.id.loading_currentServer);
         registerNickname = findViewById(R.id.loading_registerNickname);
         registerSubmit = findViewById(R.id.loading_registerSubmit);
@@ -264,7 +268,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         } else {
             inputLoading.hideShimmer();
             serverLoading.hideShimmer();
-            if (billingHelper.getStatus() != OverloadedBillingHelper.Status.LOADING)
+            if (billingHelper.getStatus() != Status.LOADING)
                 overloadedLoading.hideShimmer();
         }
     }
@@ -371,7 +375,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     private void goToMain() {
-        if (billingHelper.getStatus() == OverloadedBillingHelper.Status.LOADING) {
+        if (billingHelper.getStatus() == Status.LOADING) {
             if (waitingOverloaded) {
                 goToMain();
                 waitingOverloaded = false;
@@ -429,13 +433,20 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     @Override
-    public void updateOverloadedStatus(@NonNull OverloadedBillingHelper.Status status, UserData data) {
-        if (overloadedLoading == null || overloadedStatus == null || overloadedToggle == null)
+    public void updateOverloadedStatus(@NonNull Status status, UserData data) {
+        if (overloadedLoading == null || overloadedStatus == null || overloadedToggle == null || overloadedWarning == null)
             return;
 
-        if (status != OverloadedBillingHelper.Status.LOADING && waitingOverloaded) {
+        if (status != Status.LOADING && waitingOverloaded) {
             goToMain();
             return;
+        }
+
+        if (data != null && data.purchaseStatusGranular.message) {
+            overloadedWarning.setVisibility(View.VISIBLE);
+            overloadedWarning.setOnClickListener(v -> showOverloadedWarningDialog(OverloadedBillingHelper.ACTIVE_SKU.sku, data.purchaseStatusGranular, data.expireTime));
+        } else {
+            overloadedWarning.setVisibility(View.GONE);
         }
 
         switch (status) {
@@ -476,8 +487,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 throw new IllegalStateException("Unknown status: " + status);
         }
 
-        overloadedStatus.setVisibility(status == OverloadedBillingHelper.Status.LOADING ? View.GONE : View.VISIBLE);
-        overloadedStatus.setTextColor(status == OverloadedBillingHelper.Status.ERROR ? ContextCompat.getColor(this, R.color.red) : CommonUtils.resolveAttrAsColor(this, android.R.attr.textColorSecondary));
+        overloadedStatus.setVisibility(status == Status.LOADING ? View.GONE : View.VISIBLE);
+        overloadedStatus.setTextColor(status == Status.ERROR ? ContextCompat.getColor(this, R.color.red) : CommonUtils.resolveAttrAsColor(this, android.R.attr.textColorSecondary));
     }
 
     @Override
@@ -512,6 +523,21 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             Prefs.putBoolean(PK.OVERLOADED_LAST_ENABLED, false);
             registerNickname.setEnabled(true);
         }
+    }
+
+    private void showOverloadedWarningDialog(@NotNull String sku, @NotNull PurchaseStatusGranular status, @Nullable Long expireTimeMillis) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle(status.getName()).setMessage(status.getMessage(this, expireTimeMillis));
+
+        if (status == PurchaseStatusGranular.PAUSED) {
+            builder.setNeutralButton(R.string.resume, (dialog, which) -> OverloadedBillingHelper.launchSubscriptions(this, sku));
+        } else if (status == PurchaseStatusGranular.ACCOUNT_HOLD || status == PurchaseStatusGranular.GRACE_PERIOD) {
+            builder.setNeutralButton(R.string.fixPayment, (dialog, which) -> OverloadedBillingHelper.launchSubscriptions(this, sku));
+        } else {
+            builder.setNeutralButton(R.string.subscriptions, (dialog, which) -> OverloadedBillingHelper.launchSubscriptions(this, null));
+        }
+
+        showDialog(builder);
     }
 
     @Override
