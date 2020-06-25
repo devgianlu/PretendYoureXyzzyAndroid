@@ -192,7 +192,7 @@ public final class SyncUtils {
 
             @Override
             public void onFailed(@NonNull Exception ex) {
-                if (ex instanceof OverloadedApi.OverloadedServerException && ((OverloadedApi.OverloadedServerException) ex).code == 403)
+                if (ex instanceof OverloadedApi.OverloadedServerException && ((OverloadedApi.OverloadedServerException) ex).httpCode == 403)
                     db.resetRemoteIds(deck.id);
 
                 Log.e(TAG, "Failed sending custom deck update: " + deck, ex);

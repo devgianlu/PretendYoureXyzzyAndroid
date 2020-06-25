@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import okhttp3.Request;
+import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
 import xyz.gianlu.pyxoverloaded.callback.ChatCallback;
 import xyz.gianlu.pyxoverloaded.callback.ChatMessageCallback;
 import xyz.gianlu.pyxoverloaded.model.Chat;
@@ -86,7 +87,7 @@ public class OverloadedChatApi implements Closeable {
             }
             body.put("preKeys", preKeysArray);
 
-            api.serverRequest(new Request.Builder()
+            api.makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("Chat/ShareKeys"))
                     .post(jsonBody(body)));
             return null;
@@ -105,7 +106,7 @@ public class OverloadedChatApi implements Closeable {
             body.put("address", address.uid);
             body.put("deviceId", address.deviceId);
 
-            JSONObject obj = api.serverRequest(new Request.Builder()
+            JSONObject obj = api.makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("Chat/GetKeys"))
                     .post(jsonBody(body)));
 
@@ -136,7 +137,7 @@ public class OverloadedChatApi implements Closeable {
             JSONObject body = new JSONObject();
             body.put("username", username);
 
-            JSONObject obj = api.serverRequest(new Request.Builder()
+            JSONObject obj = api.makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("Chat/Start"))
                     .post(jsonBody(body)));
 
@@ -209,24 +210,22 @@ public class OverloadedChatApi implements Closeable {
                 body.put("messages", encryptedMessages);
 
                 try {
-                    api.serverRequest(new Request.Builder()
+                    api.makeRequest(new Request.Builder()
                             .url(overloadedServerUrl("Chat/Send"))
                             .post(jsonBody(body)));
 
                     return db.putMessage(chatId, text, OverloadedApi.now(), data.username);
-                } catch (OverloadedApi.OverloadedServerException ex) {
+                } catch (OverloadedServerException ex) {
                     lastEx = ex;
 
-                    if (ex.code == 400 && ex.obj != null) {
-                        if (ex.obj.has("stale")) {
-                            if (!handleStaleDevices(chat, ex.obj))
-                                throw ex;
-                        } else if (ex.obj.has("extra") && ex.obj.has("missing")) {
-                            if (!handleMismatchedDevices(chat, ex.obj))
-                                throw ex;
-                        } else {
+                    if (ex.reason.equals(OverloadedServerException.REASON_MISMATCHED_DEVICES) && ex.details != null) {
+                        if (!handleMismatchedDevices(chat, ex.details))
                             throw ex;
-                        }
+                    } else if (ex.reason.equals(OverloadedServerException.REASON_STALE_DEVICES) && ex.details != null) {
+                        if (!handleStaleDevices(chat, ex.details))
+                            throw ex;
+                    } else {
+                        throw ex;
                     }
                 }
             }
@@ -382,7 +381,7 @@ public class OverloadedChatApi implements Closeable {
             JSONObject body = new JSONObject();
             body.put("ackId", ackId);
 
-            api.serverRequest(new Request.Builder()
+            api.makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("Chat/Ack"))
                     .post(jsonBody(body)));
 

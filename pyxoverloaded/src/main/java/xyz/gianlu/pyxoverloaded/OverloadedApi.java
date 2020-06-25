@@ -140,13 +140,13 @@ public class OverloadedApi {
 
     @NonNull
     @WorkerThread
-    JSONObject serverRequest(@NonNull Request.Builder reqBuilder) throws OverloadedException {
-        return serverRequest(reqBuilder, true);
+    JSONObject makeRequest(@NonNull Request.Builder reqBuilder) throws OverloadedException {
+        return makeRequest(reqBuilder, true);
     }
 
     @NonNull
     @WorkerThread
-    private JSONObject serverRequest(@NonNull Request.Builder reqBuilder, boolean retry) throws OverloadedException {
+    private JSONObject makeRequest(@NonNull Request.Builder reqBuilder, boolean retry) throws OverloadedException {
         if (lastToken == null || lastToken.expired()) {
             if (user == null && updateUser())
                 throw new NotSignedInException();
@@ -165,27 +165,27 @@ public class OverloadedApi {
                 String estimatedEnd = resp.header("X-Estimated-End");
                 if (estimatedEnd != null)
                     throw lastMaintenanceException = new MaintenanceException(Long.parseLong(estimatedEnd));
-            } else if (resp.code() == 409) {
-                throw new TwoDevicesException();
             }
 
-            ResponseBody body = resp.body();
-            if (body == null) throw new IllegalStateException();
-
             JSONObject obj;
-            String str = body.string();
-            if (str.isEmpty()) obj = new JSONObject();
-            else obj = new JSONObject(str);
+            ResponseBody body = resp.body();
+            if (body == null) {
+                obj = new JSONObject();
+            } else {
+                String str = body.string();
+                if (str.isEmpty()) obj = new JSONObject();
+                else obj = new JSONObject(str);
+            }
 
             if (resp.code() < 200 || resp.code() > 299)
-                throw OverloadedServerException.forStatusCode(resp, obj);
+                throw OverloadedServerException.create(resp, obj);
 
             return obj;
         } catch (IOException | JSONException ex) {
             if (retry && ex instanceof SocketTimeoutException)
-                return serverRequest(reqBuilder, false);
+                return makeRequest(reqBuilder, false);
             else
-                throw new OverloadedServerException(req, ex);
+                throw new OverloadedException(req.toString(), ex);
         }
     }
 
@@ -199,7 +199,7 @@ public class OverloadedApi {
      */
     public void loggedOutFromPyxServer() {
         loggingCallbacks(Tasks.call(executorService, () -> {
-            serverRequest(new Request.Builder()
+            makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("Pyx/Logout"))
                     .post(Util.EMPTY_REQUEST));
             return true;
@@ -224,7 +224,7 @@ public class OverloadedApi {
                 JSONObject params = new JSONObject();
                 params.put("serverUrl", serverUrl.toString());
                 params.put("nickname", nickname);
-                serverRequest(new Request.Builder()
+                makeRequest(new Request.Builder()
                         .url(overloadedServerUrl("Pyx/Login"))
                         .post(jsonBody(params)));
                 return null;
@@ -353,7 +353,7 @@ public class OverloadedApi {
      */
     public void getProfile(@NonNull String username, @Nullable Activity activity, @NonNull GeneralCallback<UserProfile> callback) {
         callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = serverRequest(new Request.Builder()
+            JSONObject obj = makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("Profile/Get"))
                     .post(singletonJsonBody("username", username)));
             return new UserProfile(obj);
@@ -367,7 +367,7 @@ public class OverloadedApi {
      */
     public void linkGames(@NonNull String authCode) {
         loggingCallbacks(Tasks.call(executorService, (Callable<Void>) () -> {
-            serverRequest(new Request.Builder()
+            makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/LinkGames"))
                     .post(singletonJsonBody("authCode", authCode)));
             return null;
@@ -399,7 +399,7 @@ public class OverloadedApi {
                         body.put("sku", sku);
                         body.put("purchaseToken", purchaseToken);
 
-                        JSONObject obj = serverRequest(new Request.Builder()
+                        JSONObject obj = makeRequest(new Request.Builder()
                                 .url(overloadedServerUrl("User/Register"))
                                 .post(jsonBody(body)));
                         return userDataCached = new UserData(obj.getJSONObject("userData"));
@@ -418,7 +418,7 @@ public class OverloadedApi {
      */
     public void isUsernameUnique(@NonNull String username, @Nullable Activity activity, @NonNull BooleanCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = serverRequest(new Request.Builder()
+            JSONObject obj = makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("IsUsernameUnique"))
                     .post(singletonJsonBody("username", username)));
             return obj.getBoolean("unique");
@@ -434,7 +434,7 @@ public class OverloadedApi {
      */
     public void listUsers(@NonNull HttpUrl serverUrl, @Nullable Activity activity, @NonNull UsersCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = serverRequest(new Request.Builder()
+            JSONObject obj = makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("Pyx/ListOnline"))
                     .post(singletonJsonBody("serverUrl", serverUrl.toString())));
 
@@ -476,7 +476,7 @@ public class OverloadedApi {
      */
     public void deleteAccount(@Nullable Activity activity, @NonNull SuccessCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
-            serverRequest(new Request.Builder()
+            makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/Delete"))
                     .post(Util.EMPTY_REQUEST));
             return null;
@@ -535,7 +535,7 @@ public class OverloadedApi {
             return userDataTask;
 
         return userDataTask = Tasks.call(executorService, () -> {
-            JSONObject obj = serverRequest(new Request.Builder()
+            JSONObject obj = makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/Data"))
                     .post(Util.EMPTY_REQUEST));
 
@@ -562,7 +562,7 @@ public class OverloadedApi {
             body.put("key", key.val);
             if (value != null) body.put("value", value);
 
-            serverRequest(new Request.Builder()
+            makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/SetProperty"))
                     .post(jsonBody(body)));
             return null;
@@ -587,7 +587,7 @@ public class OverloadedApi {
      */
     public void friendsStatus(@Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = serverRequest(new Request.Builder()
+            JSONObject obj = makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/FriendsStatus"))
                     .post(Util.EMPTY_REQUEST));
             return friendsStatusCached = FriendStatus.parse(obj);
@@ -603,7 +603,7 @@ public class OverloadedApi {
      */
     public void removeFriend(@NonNull String username, @Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = serverRequest(new Request.Builder()
+            JSONObject obj = makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/RemoveFriend"))
                     .post(singletonJsonBody("username", username)));
 
@@ -622,7 +622,7 @@ public class OverloadedApi {
      */
     public void addFriend(@NonNull String username, @Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
         callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = serverRequest(new Request.Builder()
+            JSONObject obj = makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("User/AddFriend"))
                     .post(singletonJsonBody("username", username)));
 
@@ -752,30 +752,32 @@ public class OverloadedApi {
         }
     }
 
-    public static class TwoDevicesException extends OverloadedException {
-        TwoDevicesException() {
-        }
-    }
-
     public static class OverloadedServerException extends OverloadedException {
-        public final int code;
-        public final JSONObject obj;
+        public static final String REASON_MISMATCHED_DEVICES = "mismatchedDevices";
+        public static final String REASON_STALE_DEVICES = "staleDevices";
+        public static final String REASON_DEVICE_CONFLICT = "deviceConflict";
+        public final int httpCode;
+        public final String reason;
+        public final JSONObject details;
 
-        private OverloadedServerException(String msg, int code, @NonNull JSONObject obj) {
+        private OverloadedServerException(@NotNull String msg, int httpCode, @NonNull String reason, @Nullable JSONObject details) {
             super(msg);
-            this.code = code;
-            this.obj = obj;
+            this.httpCode = httpCode;
+            this.reason = reason;
+            this.details = details;
         }
 
-        OverloadedServerException(@NonNull Request request, @NonNull Throwable ex) {
-            super(request.toString(), ex);
-            this.code = -1;
-            this.obj = null;
-        }
-
+        @NotNull
+        @Contract("_, _ -> new")
         @SuppressLint("DefaultLocale")
-        static OverloadedServerException forStatusCode(@NonNull Response resp, @NonNull JSONObject obj) {
-            return new OverloadedServerException(String.format("%s -> %d", resp.request(), resp.code()), resp.code(), obj);
+        private static OverloadedServerException create(@NonNull Response resp, @NonNull JSONObject obj) {
+            try {
+                String reason = obj.getString("reason");
+                JSONObject details = obj.optJSONObject("details");
+                return new OverloadedServerException(String.format("%s -> %s (%d)", resp.request(), reason, resp.code()), resp.code(), reason, details);
+            } catch (JSONException ex) {
+                throw new IllegalStateException(ex);
+            }
         }
     }
 

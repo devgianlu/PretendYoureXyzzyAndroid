@@ -79,7 +79,7 @@ public class OverloadedSyncApi {
 
     public void syncStarredCards(long revision, @Nullable Activity activity, @NonNull GeneralCallback<StarredCardsSyncResponse> callback) {
         callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = api.serverRequest(new Request.Builder()
+            JSONObject obj = api.makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("Sync/StarredCards"))
                     .post(singletonJsonBody("rev", revision)));
             return new StarredCardsSyncResponse(obj);
@@ -101,7 +101,7 @@ public class OverloadedSyncApi {
             body.put("rev", revision);
             body.put("update", update);
 
-            JSONObject obj = api.serverRequest(new Request.Builder()
+            JSONObject obj = api.makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("Sync/UpdateStarredCards"))
                     .post(jsonBody(body)));
             return new StarredCardsUpdateResponse(obj);
@@ -130,7 +130,7 @@ public class OverloadedSyncApi {
                     .put("remoteId", remoteId)
                     .put("item", item));
 
-            JSONObject obj = api.serverRequest(new Request.Builder()
+            JSONObject obj = api.makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("Sync/UpdateStarredCards"))
                     .post(jsonBody(body)));
             return new StarredCardsUpdateResponse(obj);
@@ -156,7 +156,7 @@ public class OverloadedSyncApi {
             JSONObject body = new JSONObject();
             body.put("items", syncItems);
 
-            JSONObject obj = api.serverRequest(new Request.Builder()
+            JSONObject obj = api.makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("Sync/CustomDecks"))
                     .post(jsonBody(body)));
 
@@ -183,7 +183,7 @@ public class OverloadedSyncApi {
             body.put("rev", revision);
             body.put("update", update);
 
-            JSONObject obj = api.serverRequest(new Request.Builder()
+            JSONObject obj = api.makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("Sync/UpdateCustomDecks"))
                     .post(jsonBody(body)));
             return new CustomDecksUpdateResponse(obj);
@@ -210,7 +210,7 @@ public class OverloadedSyncApi {
                     .put("deck", deck)
                     .put("card", card));
 
-            JSONObject obj = api.serverRequest(new Request.Builder()
+            JSONObject obj = api.makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("Sync/UpdateCustomDecks"))
                     .post(jsonBody(body)));
             return new CustomDecksUpdateResponse(obj);
@@ -230,7 +230,7 @@ public class OverloadedSyncApi {
             body.put("username", username);
             body.put("name", name);
 
-            JSONObject obj = api.serverRequest(new Request.Builder()
+            JSONObject obj = api.makeRequest(new Request.Builder()
                     .url(overloadedServerUrl("Sync/GetPublicCustomDeck"))
                     .post(jsonBody(body)));
             return Card.parse(obj.getJSONArray("cards"));

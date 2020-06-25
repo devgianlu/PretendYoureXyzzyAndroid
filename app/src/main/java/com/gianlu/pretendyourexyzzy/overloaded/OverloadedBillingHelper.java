@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
 import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
@@ -119,8 +120,8 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
 
                 @Override
                 public void onFailed(@NonNull Exception ex) {
-                    if (ex instanceof OverloadedApi.OverloadedServerException) {
-                        if (((OverloadedApi.OverloadedServerException) ex).code == 403) {
+                    if (ex instanceof OverloadedServerException) {
+                        if (((OverloadedServerException) ex).httpCode == 403) {
                             FirebaseAuth.getInstance().signOut();
                             updateStatus(null, null);
                             return;
@@ -321,8 +322,8 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             @Override
             public void onFailed(@NonNull Exception ex) {
                 listener.dismissDialog();
-                if (ex instanceof OverloadedApi.OverloadedServerException) {
-                    if (((OverloadedApi.OverloadedServerException) ex).code == 403) {
+                if (ex instanceof OverloadedServerException) {
+                    if (((OverloadedServerException) ex).httpCode == 403) {
                         listener.showDialog(AskUsernameDialog.get());
                         // Follows in #onUsernameSelected(String)
                         return;
@@ -429,7 +430,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         if (latestData == null && latestException == null)
             return Status.LOADING;
 
-        if (latestException instanceof OverloadedApi.TwoDevicesException)
+        if (latestException instanceof OverloadedServerException && ((OverloadedServerException) latestException).reason.equals(OverloadedServerException.REASON_DEVICE_CONFLICT))
             return Status.TWO_CLIENTS_ERROR;
         else if (latestException != null)
             return Status.ERROR;
