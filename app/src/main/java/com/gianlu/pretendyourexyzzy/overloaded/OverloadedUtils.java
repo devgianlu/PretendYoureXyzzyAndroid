@@ -88,7 +88,7 @@ public final class OverloadedUtils {
     }
 
     public static boolean isSignedIn() {
-        return FirebaseAuth.getInstance().getCurrentUser() != null && OverloadedApi.get().isFullyRegistered() && !OverloadedApi.get().isUnderMaintenance();
+        return FirebaseAuth.getInstance().getCurrentUser() != null && OverloadedApi.get().isFullyRegistered();
     }
 
     @NonNull

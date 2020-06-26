@@ -4,11 +4,13 @@ import androidx.annotation.NonNull;
 
 import com.gianlu.commonutils.CommonUtils;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class UserProfile {
@@ -58,6 +60,32 @@ public class UserProfile {
             List<CustomDeck> list = new ArrayList<>(array.length());
             for (int i = 0; i < array.length(); i++)
                 list.add(new CustomDeck(array.getJSONObject(i)));
+            return list;
+        }
+    }
+
+    public static class CustomDeckWithCards extends CustomDeck {
+        public final List<Card> cards;
+
+        public CustomDeckWithCards(@NonNull JSONObject obj) throws JSONException {
+            super(obj);
+            cards = Card.parse(obj.getJSONArray("cards"));
+        }
+
+        @NotNull
+        public List<Card> blackCards() {
+            LinkedList<Card> list = new LinkedList<>();
+            for (Card card : cards)
+                if (card.black()) list.add(card);
+            return list;
+        }
+
+
+        @NotNull
+        public List<Card> whiteCards() {
+            LinkedList<Card> list = new LinkedList<>();
+            for (Card card : cards)
+                if (!card.black()) list.add(card);
             return list;
         }
     }

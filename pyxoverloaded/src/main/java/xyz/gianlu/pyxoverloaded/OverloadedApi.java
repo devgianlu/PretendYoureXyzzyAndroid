@@ -68,7 +68,6 @@ import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 import static com.gianlu.commonutils.CommonUtils.singletonJsonObject;
 import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
 import static xyz.gianlu.pyxoverloaded.TaskUtils.loggingCallbacks;
-import static xyz.gianlu.pyxoverloaded.Utils.jsonBody;
 import static xyz.gianlu.pyxoverloaded.Utils.overloadedServerUrl;
 
 public class OverloadedApi {
@@ -145,8 +144,10 @@ public class OverloadedApi {
     @WorkerThread
     JSONObject makePostRequest(@NonNull String suffix, @Nullable JSONObject json) throws OverloadedException, MaintenanceException {
         RequestBody body;
-        if (json == null) body = Util.EMPTY_REQUEST;
-        else body = jsonBody(json);
+        if (json == null)
+            body = Util.EMPTY_REQUEST;
+        else
+            body = RequestBody.create(json.toString().getBytes(), MediaType.get("application/json"));
 
         return makeRequest(new Request.Builder()
                 .url(overloadedServerUrl(suffix))
@@ -257,7 +258,7 @@ public class OverloadedApi {
      * @return Whether the use is registered and has payed regularly.
      */
     public boolean isFullyRegistered() {
-        return userDataCached != null && userDataCached.purchaseStatus.ok;
+        return !isUnderMaintenance() && userDataCached != null && userDataCached.purchaseStatus.ok;
     }
 
     /**

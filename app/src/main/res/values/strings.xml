@@ -214,7 +214,8 @@
     <string name="watermark">Watermark</string>
     <string name="invalidWatermark">The watermark must be 5 characters long including only uppercase letters and numbers.</string>
     <string name="customDeckNameNotUnique">You already have a deck with this name.</string>
-    <string name="noCustomCards">There are no custom cards! Create some by pressing the add button.</string>
+    <string name="noCustomCards">There are no custom cards!</string>
+    <string name="noCustomCardsCreateOne">There are no custom cards! Create some by pressing the add button.</string>
     <string name="createCard">Create card</string>
     <string name="cardText">Card text</string>
     <string name="createCustomCardInfo_white">White cards contain responses to black cards. No placeholders are needed.</string>
@@ -325,4 +326,5 @@
     <string name="fixPayment">Fix payment</string>
     <string name="subscriptions">Subscriptions</string>
     <string name="noMetricsSessions">There are no sessions to display.</string>
+    <string name="editCustomDeck_watermarkDetails">This code will be displayed on the cards of your deck. It is not an unique code.</string>
 </resources>

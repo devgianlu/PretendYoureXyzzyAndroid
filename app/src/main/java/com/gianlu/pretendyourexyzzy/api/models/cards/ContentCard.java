@@ -71,6 +71,13 @@ public final class ContentCard extends BaseCard {
     }
 
     @NonNull
+    public static List<ContentCard> from(@NonNull List<Card> cards) {
+        List<ContentCard> list = new ArrayList<>(cards.size());
+        for (Card card : cards) list.add(from(card));
+        return list;
+    }
+
+    @NonNull
     @Override
     public String text() {
         return text;

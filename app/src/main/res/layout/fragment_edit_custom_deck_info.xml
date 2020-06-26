@@ -19,12 +19,13 @@
             android:inputType="textShortMessage" />
     </com.google.android.material.textfield.TextInputLayout>
 
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/editCustomDeckInfo_watermark"
         style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="2dp"
         android:hint="@string/watermark">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -35,11 +36,19 @@
             android:textAllCaps="true" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:justificationMode="inter_word"
+        android:text="@string/editCustomDeck_watermarkDetails" />
+
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/editCustomDeckInfo_desc"
         style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
         android:hint="@string/description"
         android:minHeight="128dp">
 

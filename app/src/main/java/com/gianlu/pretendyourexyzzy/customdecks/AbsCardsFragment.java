@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.customdecks.edit;
+package com.gianlu.pretendyourexyzzy.customdecks;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -31,9 +31,8 @@ import com.gianlu.pretendyourexyzzy.adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.cards.GameCardView;
-import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomCard;
-import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
+import com.gianlu.pretendyourexyzzy.customdecks.edit.BlackCardsFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
@@ -48,7 +47,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
     private static final String TAG = AbsCardsFragment.class.getSimpleName();
     private static final int MAX_CARD_TEXT_LENGTH = 128;
     protected CustomDecksDatabase db;
-    private Integer id;
+    protected Integer id;
     private CardsAdapter adapter;
     private RecyclerMessageView rmv;
 
@@ -87,13 +86,9 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
     }
 
     @NonNull
-    protected abstract List<? extends BaseCard> getCards(int id);
+    protected abstract List<? extends BaseCard> getCards();
 
-    @NonNull
-    private List<? extends BaseCard> loadCards() {
-        if (id == null) return new ArrayList<>(0);
-        else return getCards(id);
-    }
+    protected abstract boolean editable();
 
     public void setDeckId(int deckId) {
         id = deckId;
@@ -113,8 +108,14 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.fragment_custom_cards, container, false);
+
         FloatingActionButton add = layout.findViewById(R.id.customCardsFragment_add);
-        add.setOnClickListener((v) -> showCreateCardDialog(null));
+        if (editable()) {
+            add.setVisibility(View.VISIBLE);
+            add.setOnClickListener((v) -> showCreateCardDialog(null));
+        } else {
+            add.setVisibility(View.GONE);
+        }
 
         rmv = layout.findViewById(R.id.customCardsFragment_list);
         rmv.disableSwipeRefresh();
@@ -127,15 +128,16 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
         }
 
         db = CustomDecksDatabase.get(requireContext());
-        List<? extends BaseCard> cards = loadCards();
-        rmv.loadListData(adapter = new CardsAdapter(true, cards, GameCardView.Action.SELECT, null, true, this), false);
+        List<? extends BaseCard> cards = getCards();
+        rmv.loadListData(adapter = new CardsAdapter(true, cards, editable() ? GameCardView.Action.SELECT : null, null, true, this), false);
         onItemCountChanged(cards.size());
 
         return layout;
     }
 
     private void onItemCountChanged(int count) {
-        if (count == 0) rmv.showInfo(R.string.noCustomCards);
+        if (count == 0)
+            rmv.showInfo(editable() ? R.string.noCustomCardsCreateOne : R.string.noCustomCards);
         else rmv.showList();
     }
 
@@ -246,7 +248,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
 
     @Override
     public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
-        showCreateCardDialog((CustomCard) card);
+        if (editable()) showCreateCardDialog((CustomCard) card);
     }
 
     public void importCards(@NonNull Context context, @Nullable JSONArray array) {

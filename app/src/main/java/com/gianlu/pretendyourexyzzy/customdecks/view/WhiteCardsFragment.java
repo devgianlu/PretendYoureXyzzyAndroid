@@ -1,41 +1,42 @@
-package com.gianlu.pretendyourexyzzy.customdecks.edit;
+package com.gianlu.pretendyourexyzzy.customdecks.view;
 
 import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.ContentCard;
 import com.gianlu.pretendyourexyzzy.customdecks.AbsCardsFragment;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public final class WhiteCardsFragment extends AbsCardsFragment {
+import xyz.gianlu.pyxoverloaded.model.Card;
 
-    @NonNull
-    public static WhiteCardsFragment get(@NonNull Context context, @Nullable Integer id) {
+public final class WhiteCardsFragment extends AbsCardsFragment {
+    private List<ContentCard> cards;
+
+    @NotNull
+    public static WhiteCardsFragment get(@NotNull Context context, @NotNull List<Card> cards) {
         WhiteCardsFragment fragment = new WhiteCardsFragment();
+        fragment.cards = ContentCard.from(cards);
         Bundle args = new Bundle();
         args.putString("title", context.getString(R.string.whiteCards));
-        if (id != null) args.putInt("id", id);
         fragment.setArguments(args);
         return fragment;
     }
 
-    @NotNull
+    @NonNull
     @Override
     protected List<? extends BaseCard> getCards() {
-        if (id == null) return new ArrayList<>(0);
-        else return db.getWhiteCards(id);
+        return cards;
     }
 
     @Override
     protected boolean editable() {
-        return true;
+        return false;
     }
 }

@@ -25,6 +25,7 @@ import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksAdapter;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
+import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.main.OverloadedFragment;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -134,6 +135,6 @@ public final class OverloadedUserProfileBottomSheet extends ThemedModalBottomShe
 
     @Override
     public void onCustomDeckSelected(@NonNull CustomDecksDatabase.FloatingCustomDeck deck) {
-        // TODO: Do something when the deck is selected
+        ViewCustomDeckActivity.startActivity(requireContext(), getSetupPayload(), deck.name);
     }
 }

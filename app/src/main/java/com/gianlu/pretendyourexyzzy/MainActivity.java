@@ -386,7 +386,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             getIntent().removeExtra("gid");
         }
 
-        if (OverloadedApi.get().isFullyRegistered() && !OverloadedApi.get().isUnderMaintenance()) {
+        if (OverloadedApi.get().isFullyRegistered()) {
             SyncUtils.syncStarredCards(this);
             SyncUtils.syncCustomDecks(this);
 

@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
-import xyz.gianlu.pyxoverloaded.model.Card;
+import xyz.gianlu.pyxoverloaded.model.UserProfile;
 
 import static com.gianlu.commonutils.CommonUtils.singletonJsonObject;
 import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
@@ -209,13 +209,13 @@ public class OverloadedSyncApi {
         });
     }
 
-    public void getPublicCustomDeck(@NonNull String username, @NonNull String name, @Nullable Activity activity, @NonNull GeneralCallback<List<Card>> callback) {
-        callbacks(Tasks.call(() -> {
+    public void getPublicCustomDeck(@NonNull String username, @NonNull String name, @Nullable Activity activity, @NonNull GeneralCallback<UserProfile.CustomDeckWithCards> callback) {
+        callbacks(Tasks.call(api.executorService /* Using main executor because this is not sensible to concurrency */, () -> {
             JSONObject body = new JSONObject();
             body.put("username", username);
             body.put("name", name);
             JSONObject obj = api.makePostRequest("Sync/GetPublicCustomDeck", body);
-            return Card.parse(obj.getJSONArray("cards"));
+            return new UserProfile.CustomDeckWithCards(obj);
         }), activity, callback::onResult, callback::onFailed);
     }
 

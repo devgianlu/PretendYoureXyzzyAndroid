@@ -15,8 +15,6 @@ import org.whispersystems.libsignal.state.PreKeyRecord;
 import org.whispersystems.libsignal.state.SignedPreKeyRecord;
 
 import okhttp3.HttpUrl;
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
 import xyz.gianlu.pyxoverloaded.signal.OverloadedUserAddress;
 
 public final class Utils {
@@ -63,31 +61,5 @@ public final class Utils {
     @NonNull
     static HttpUrl overloadedServerUrl(@NonNull String path) {
         return HttpUrl.get("http://192.168.1.25:8080/" + path); // FIXME
-    }
-
-    @NonNull
-    static RequestBody singletonJsonBody(@NonNull String key, String value) throws JSONException {
-        JSONObject obj = new JSONObject();
-        obj.put(key, value);
-        return jsonBody(obj);
-    }
-
-    @NonNull
-    static RequestBody singletonJsonBody(@NonNull String key, int value) throws JSONException {
-        JSONObject obj = new JSONObject();
-        obj.put(key, value);
-        return jsonBody(obj);
-    }
-
-    @NonNull
-    static RequestBody singletonJsonBody(@NonNull String key, long value) throws JSONException {
-        JSONObject obj = new JSONObject();
-        obj.put(key, value);
-        return jsonBody(obj);
-    }
-
-    @NonNull
-    static RequestBody jsonBody(@NonNull JSONObject obj) {
-        return RequestBody.create(obj.toString().getBytes(), MediaType.get("application/json"));
     }
 }
