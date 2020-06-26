@@ -21,11 +21,10 @@ public class ManageServersActivity extends ActivityWithDialog implements Servers
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        rmv = new RecyclerMessageView(this);
-        setContentView(rmv);
+        setContentView(R.layout.activity_dialog_manage_servers);
         setTitle(R.string.manageServers);
 
+        rmv = findViewById(R.id.manageServers_list);
         rmv.disableSwipeRefresh();
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
         rmv.dividerDecoration(RecyclerView.VERTICAL);

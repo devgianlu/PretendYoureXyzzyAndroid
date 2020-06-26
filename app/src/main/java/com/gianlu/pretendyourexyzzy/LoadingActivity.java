@@ -8,6 +8,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -235,9 +236,10 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         if (dismissible)
             builder.setNegativeButton(android.R.string.cancel, null);
 
-        RecyclerMessageView rmv = new RecyclerMessageView(this);
-        builder.setView(rmv);
+        LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.activity_dialog_manage_servers, null, false);
+        builder.setView(layout);
 
+        RecyclerMessageView rmv = layout.findViewById(R.id.manageServers_list);
         rmv.disableSwipeRefresh();
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
         rmv.dividerDecoration(RecyclerView.VERTICAL);

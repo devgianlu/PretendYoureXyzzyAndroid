@@ -26,6 +26,7 @@ import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.adapters.DecksAdapter;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Deck;
@@ -122,7 +123,12 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
             @Override
             public void onException(@NonNull Exception ex) {
                 Log.e(TAG, "Failed getting custom decks.", ex);
-                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
+
+                if (ex instanceof PyxException && ((PyxException) ex).errorCode.equals("bo"))
+                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDecksNotSupported));
+                else
+                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
+
                 dismissAllowingStateLoss();
             }
         });

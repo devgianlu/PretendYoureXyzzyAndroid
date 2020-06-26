@@ -327,4 +327,5 @@
     <string name="subscriptions">Subscriptions</string>
     <string name="noMetricsSessions">There are no sessions to display.</string>
     <string name="editCustomDeck_watermarkDetails">This code will be displayed on the cards of your deck. It is not an unique code.</string>
+    <string name="customDecksNotSupported">This server doesn\'t support custom decks!</string>
 </resources>
