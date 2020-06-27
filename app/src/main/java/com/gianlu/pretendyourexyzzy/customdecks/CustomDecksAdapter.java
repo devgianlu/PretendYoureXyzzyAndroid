@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.customdecks;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -44,6 +45,20 @@ public final class CustomDecksAdapter extends RecyclerView.Adapter<CustomDecksAd
         holder.watermark.setText(deck.watermark);
         holder.itemView.setOnClickListener(view -> listener.onCustomDeckSelected(deck));
         CommonUtils.setRecyclerViewTopMargin(holder);
+
+        if (deck.owner == null) {
+            holder.owner.setVisibility(View.GONE);
+        } else {
+            holder.owner.setVisibility(View.VISIBLE);
+            CommonUtils.setText(holder.owner, R.string.deckBy, deck.owner);
+        }
+
+        int whiteCards = deck.whiteCardsCount();
+        int blackCards = deck.blackCardsCount();
+        if (whiteCards != -1 && blackCards != -1)
+            CommonUtils.setText(holder.cards, R.string.cardsCountBlackWhite, blackCards, whiteCards);
+        else
+            CommonUtils.setText(holder.cards, R.string.cardsCount, deck.cardsCount());
     }
 
     @Override
@@ -58,12 +73,16 @@ public final class CustomDecksAdapter extends RecyclerView.Adapter<CustomDecksAd
     class ViewHolder extends RecyclerView.ViewHolder {
         final TextView name;
         final TextView watermark;
+        final TextView cards;
+        final TextView owner;
 
         ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.item_custom_deck, parent, false));
 
             name = itemView.findViewById(R.id.customDeckItem_name);
             watermark = itemView.findViewById(R.id.customDeckItem_watermark);
+            cards = itemView.findViewById(R.id.customDeckItem_cards);
+            owner = itemView.findViewById(R.id.customDeckItem_owner);
         }
     }
 }

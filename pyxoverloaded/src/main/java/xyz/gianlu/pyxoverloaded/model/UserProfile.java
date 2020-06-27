@@ -48,11 +48,13 @@ public class UserProfile {
         public final String name;
         public final String desc;
         public final String watermark;
+        public final int count;
 
         private CustomDeck(@NonNull JSONObject obj) throws JSONException {
             name = obj.getString("name");
             desc = obj.getString("desc");
             watermark = obj.getString("watermark");
+            count = obj.getInt("count");
         }
 
         @NonNull

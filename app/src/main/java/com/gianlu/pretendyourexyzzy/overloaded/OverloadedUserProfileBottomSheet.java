@@ -114,7 +114,7 @@ public final class OverloadedUserProfileBottomSheet extends ThemedModalBottomShe
         } else {
             customDecks.setVisibility(View.VISIBLE);
             customDecksMessage.setVisibility(View.GONE);
-            customDecks.setAdapter(new CustomDecksAdapter(requireContext(), CustomDecksDatabase.transform(payload.customDecks), this));
+            customDecks.setAdapter(new CustomDecksAdapter(requireContext(), CustomDecksDatabase.transform(getSetupPayload(), payload.customDecks), this));
         }
     }
 

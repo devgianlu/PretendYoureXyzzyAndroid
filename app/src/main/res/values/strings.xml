@@ -328,4 +328,7 @@
     <string name="noMetricsSessions">There are no sessions to display.</string>
     <string name="editCustomDeck_watermarkDetails">This code will be displayed on the cards of your deck. It is not an unique code.</string>
     <string name="customDecksNotSupported">This server doesn\'t support custom decks!</string>
+    <string name="cardsCountBlackWhite">%d black, %d white</string>
+    <string name="cardsCount">%d cards</string>
+    <string name="deckBy">By %s</string>
 </resources>

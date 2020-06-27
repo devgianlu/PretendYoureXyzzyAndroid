@@ -45,10 +45,10 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     }
 
     @NonNull
-    public static List<FloatingCustomDeck> transform(@NonNull List<UserProfile.CustomDeck> original) {
+    public static List<FloatingCustomDeck> transform(@NotNull String owner, @NonNull List<UserProfile.CustomDeck> original) {
         List<FloatingCustomDeck> list = new ArrayList<>(original.size());
         for (UserProfile.CustomDeck deck : original)
-            list.add(new FloatingCustomDeck(deck.name, deck.watermark));
+            list.add(new FloatingCustomDeck(deck.name, deck.watermark, owner, deck.count));
         return list;
     }
 
@@ -338,6 +338,36 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
     }
 
+    private int countCards(int deckId) {
+        SQLiteDatabase db = getReadableDatabase();
+        db.beginTransaction();
+        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM cards WHERE deck_id=?", new String[]{String.valueOf(deckId)})) {
+            if (cursor == null || !cursor.moveToNext()) return 0;
+            else return cursor.getInt(0);
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    private int countCards(int deckId, int type) {
+        SQLiteDatabase db = getReadableDatabase();
+        db.beginTransaction();
+        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM cards WHERE type=? AND deck_id=?", new String[]{String.valueOf(type), String.valueOf(deckId)})) {
+            if (cursor == null || !cursor.moveToNext()) return 0;
+            else return cursor.getInt(0);
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    private int countBlackCards(int deckId) {
+        return countCards(deckId, CARD_TYPE_BLACK);
+    }
+
+    private int countWhiteCards(int deckId) {
+        return countCards(deckId, CARD_TYPE_WHITE);
+    }
+
     @NonNull
     public List<CustomCard> getBlackCards(int deckId) {
         return getCards(deckId, CARD_TYPE_BLACK);
@@ -525,10 +555,30 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     public static class FloatingCustomDeck {
         public final String name;
         public final String watermark;
+        public final String owner;
+        private final int count;
 
-        FloatingCustomDeck(@NonNull String name, @NonNull String watermark) {
+        FloatingCustomDeck(@NonNull String name, @NonNull String watermark, @Nullable String owner) {
+            this(name, watermark, owner, -1);
+        }
+
+        FloatingCustomDeck(@NonNull String name, @NonNull String watermark, @Nullable String owner, int count) {
             this.name = name;
             this.watermark = watermark;
+            this.owner = owner;
+            this.count = count;
+        }
+
+        public int cardsCount() {
+            return count;
+        }
+
+        public int whiteCardsCount() {
+            return -1;
+        }
+
+        public int blackCardsCount() {
+            return -1;
         }
 
         @Override
@@ -536,78 +586,6 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             int result = name.hashCode();
             result = 31 * result + watermark.hashCode();
             return result;
-        }
-    }
-
-    public static final class CustomDeck extends FloatingCustomDeck {
-        public final int id;
-        public final String description;
-        public final Long remoteId;
-        public final long revision;
-
-        private CustomDeck(@NonNull Cursor cursor) {
-            super(cursor.getString(cursor.getColumnIndex("name")), cursor.getString(cursor.getColumnIndex("watermark")));
-            id = cursor.getInt(cursor.getColumnIndex("id"));
-            description = cursor.getString(cursor.getColumnIndex("description"));
-            revision = cursor.getLong(cursor.getColumnIndex("revision"));
-
-            int remoteIdIndex = cursor.getColumnIndex("remoteId");
-            remoteId = cursor.isNull(remoteIdIndex) ? null : cursor.getLong(remoteIdIndex);
-        }
-
-        private CustomDeck(int id, @NonNull String name, @NonNull String watermark, @NonNull String description, long revision) {
-            super(name, watermark);
-            this.id = id;
-            this.description = description;
-            this.revision = revision;
-            this.remoteId = null;
-        }
-
-        @Override
-        public int hashCode() {
-            return id;
-        }
-
-        @NonNull
-        public JSONObject toSyncJson() throws JSONException {
-            JSONObject obj = new JSONObject();
-            obj.put("name", name);
-            obj.put("desc", description);
-            obj.put("watermark", watermark);
-            obj.put("id", remoteId);
-            return obj;
-        }
-
-        @NonNull
-        public JSONObject craftPyxJson(@NonNull CustomDecksDatabase db) throws JSONException {
-            JSONObject obj = new JSONObject();
-            obj.put("name", name);
-            obj.put("description", description);
-            obj.put("watermark", watermark);
-
-            List<CustomCard> calls = db.getBlackCards(id);
-            JSONArray callsArray = new JSONArray();
-            for (CustomCard card : calls) callsArray.put(card.craftJson());
-            obj.put("calls", callsArray);
-
-            List<CustomCard> responses = db.getWhiteCards(id);
-            JSONArray responsesArray = new JSONArray();
-            for (CustomCard card : responses) responsesArray.put(card.craftJson());
-            obj.put("responses", responsesArray);
-
-            return obj;
-        }
-
-        @NotNull
-        @Contract(pure = true)
-        @Override
-        public String toString() {
-            return "CustomDeck{" +
-                    "id=" + id +
-                    ", name='" + name + '\'' +
-                    ", remoteId=" + remoteId +
-                    ", revision=" + revision +
-                    '}';
         }
     }
 
@@ -711,6 +689,93 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         @Override
         public boolean black() {
             return type == CARD_TYPE_BLACK;
+        }
+    }
+
+    public final class CustomDeck extends FloatingCustomDeck {
+        public final int id;
+        public final String description;
+        public final Long remoteId;
+        public final long revision;
+
+        private CustomDeck(@NonNull Cursor cursor) {
+            super(cursor.getString(cursor.getColumnIndex("name")), cursor.getString(cursor.getColumnIndex("watermark")), null);
+            id = cursor.getInt(cursor.getColumnIndex("id"));
+            description = cursor.getString(cursor.getColumnIndex("description"));
+            revision = cursor.getLong(cursor.getColumnIndex("revision"));
+
+            int remoteIdIndex = cursor.getColumnIndex("remoteId");
+            remoteId = cursor.isNull(remoteIdIndex) ? null : cursor.getLong(remoteIdIndex);
+        }
+
+        private CustomDeck(int id, @NonNull String name, @NonNull String watermark, @NonNull String description, long revision) {
+            super(name, watermark, null);
+            this.id = id;
+            this.description = description;
+            this.revision = revision;
+            this.remoteId = null;
+        }
+
+        @Override
+        public int cardsCount() {
+            return countCards(id);
+        }
+
+        @Override
+        public int whiteCardsCount() {
+            return countWhiteCards(id);
+        }
+
+        @Override
+        public int blackCardsCount() {
+            return countBlackCards(id);
+        }
+
+        @Override
+        public int hashCode() {
+            return id;
+        }
+
+        @NonNull
+        public JSONObject toSyncJson() throws JSONException {
+            JSONObject obj = new JSONObject();
+            obj.put("name", name);
+            obj.put("desc", description);
+            obj.put("watermark", watermark);
+            obj.put("id", remoteId);
+            return obj;
+        }
+
+        @NonNull
+        public JSONObject craftPyxJson(@NonNull CustomDecksDatabase db) throws JSONException {
+            JSONObject obj = new JSONObject();
+            obj.put("name", name);
+            obj.put("description", description);
+            obj.put("watermark", watermark);
+
+            List<CustomCard> calls = db.getBlackCards(id);
+            JSONArray callsArray = new JSONArray();
+            for (CustomCard card : calls) callsArray.put(card.craftJson());
+            obj.put("calls", callsArray);
+
+            List<CustomCard> responses = db.getWhiteCards(id);
+            JSONArray responsesArray = new JSONArray();
+            for (CustomCard card : responses) responsesArray.put(card.craftJson());
+            obj.put("responses", responsesArray);
+
+            return obj;
+        }
+
+        @NotNull
+        @Contract(pure = true)
+        @Override
+        public String toString() {
+            return "CustomDeck{" +
+                    "id=" + id +
+                    ", name='" + name + '\'' +
+                    ", remoteId=" + remoteId +
+                    ", revision=" + revision +
+                    '}';
         }
     }
 }
