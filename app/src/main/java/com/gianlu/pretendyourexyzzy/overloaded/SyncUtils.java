@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.api.models.cards.ContentCard;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomCard;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
@@ -66,22 +67,33 @@ public final class SyncUtils {
     }
 
     public static void syncStarredCards(@NonNull Context context) {
+        StarredCardsDatabase db = StarredCardsDatabase.get(context);
         long ourRevision = StarredCardsDatabase.getRevision();
         OverloadedSyncApi.get().syncStarredCards(ourRevision, null, new GeneralCallback<StarredCardsSyncResponse>() {
             @Override
             public void onResult(@NonNull StarredCardsSyncResponse result) {
                 if (result.needsUpdate) {
-                    StarredCardsDatabase.UpdatePair update = StarredCardsDatabase.get(context).getUpdate();
+                    StarredCardsDatabase.UpdatePair update = db.getUpdate();
                     OverloadedSyncApi.get().updateStarredCards(ourRevision, update.update, null, new GeneralCallback<StarredCardsUpdateResponse>() {
                         @Override
                         public void onResult(@NonNull StarredCardsUpdateResponse result) {
                             if (result.remoteIds == null) {
-                                Log.e(TAG, "Received invalid response when syncing starred cards.");
-                                return;
-                            }
+                                Log.e(TAG, "Received invalid response when syncing starred cards (no remoteIds).");
+                            } else {
+                                if (result.remoteIds.length == update.localIds.length) {
+                                    for (int i = 0; i < update.localIds.length; i++)
+                                        db.setRemoteId(update.localIds[i], result.remoteIds[i]);
 
-                            update.setRemoteIds(result.remoteIds);
-                            Log.i(TAG, "Updated starred cards on server, count: " + result.remoteIds.length);
+                                    Log.i(TAG, "Updated starred cards on server, count: " + result.remoteIds.length);
+
+                                    if (result.leftover != null && result.leftover.length() > 0) {
+                                        db.loadUpdate(result.leftover, false, null);
+                                        Log.i(TAG, "Updated leftover starred cards, count: " + result.leftover.length());
+                                    }
+                                } else {
+                                    Log.e(TAG, String.format("IDs number doesn't match, local: %d, remote: %d", update.localIds.length, result.remoteIds.length));
+                                }
+                            }
                         }
 
                         @Override
@@ -90,8 +102,40 @@ public final class SyncUtils {
                         }
                     });
                 } else if (result.update != null && result.revision != null) {
-                    StarredCardsDatabase.get(context).loadUpdate(result.update, result.revision);
+                    db.loadUpdate(result.update, true, result.revision);
                     Log.i(TAG, String.format("Received starred cards from server, count: %d, revision: %d", result.update.length(), result.revision));
+
+                    List<StarredCardsDatabase.StarredCard> leftover = db.getCards(true);
+                    if (!leftover.isEmpty()) {
+                        for (StarredCardsDatabase.StarredCard card : leftover) {
+                            JSONObject obj;
+                            try {
+                                obj = new JSONObject();
+                                obj.put("bc", card.blackCard.toJson());
+                                obj.put("wc", ContentCard.toJson(card.whiteCards));
+                            } catch (JSONException ex) {
+                                Log.e(TAG, "Failed creating starred card payload.", ex);
+                                continue;
+                            }
+
+                            OverloadedSyncApi.get().patchStarredCards(result.revision, OverloadedSyncApi.StarredCardsPatchOp.ADD, null, obj, null, new GeneralCallback<StarredCardsUpdateResponse>() {
+                                @Override
+                                public void onResult(@NonNull StarredCardsUpdateResponse result) {
+                                    if (result.remoteId != null) {
+                                        db.setRemoteId(card.id, result.remoteId);
+                                        Log.i(TAG, "Updated leftover starred card: " + result.remoteId);
+                                    } else {
+                                        Log.e(TAG, "Received invalid responses from starred cards patch (missing remoteId).");
+                                    }
+                                }
+
+                                @Override
+                                public void onFailed(@NonNull Exception ex) {
+                                    Log.e(TAG, "Failed sending patch for leftover starred card.", ex);
+                                }
+                            });
+                        }
+                    }
                 } else {
                     Log.d(TAG, "Starred cards are up-to-date: " + ourRevision);
                 }

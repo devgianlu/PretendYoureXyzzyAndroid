@@ -63,6 +63,9 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     }
 
     private void sendPatch(long revision, @Nullable Long remoteId, @NonNull CustomDecksPatchOp op, @Nullable CustomDeck deck, @Nullable CustomCard card, @Nullable Long cardId) {
+        if (!OverloadedApi.get().isFullyRegistered())
+            return;
+
         try {
             OverloadedSyncApi.get().patchCustomDeck(revision, remoteId, op, deck == null ? null : deck.toSyncJson(), card == null ? null : card.toSyncJson(), cardId, null, new GeneralCallback<OverloadedSyncApi.CustomDecksUpdateResponse>() {
                 @Override

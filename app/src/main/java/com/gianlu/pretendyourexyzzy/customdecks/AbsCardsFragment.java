@@ -45,7 +45,7 @@ import java.util.List;
 
 public abstract class AbsCardsFragment extends FragmentWithDialog implements CardsAdapter.Listener {
     private static final String TAG = AbsCardsFragment.class.getSimpleName();
-    private static final int MAX_CARD_TEXT_LENGTH = 128;
+    private static final int MAX_CARD_TEXT_LENGTH = 256;
     protected CustomDecksDatabase db;
     protected Integer id;
     private CardsAdapter adapter;

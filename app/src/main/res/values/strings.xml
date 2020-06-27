@@ -223,7 +223,7 @@
     <string name="failedAddingCustomCard">Failed adding custom card.</string>
     <string name="editCard">Edit card</string>
     <string name="completeDeckInfoFirst">Please complete the deck info first.</string>
-    <string name="customCardTextInvalid">The card text must not be empty and less than 128 characters long.</string>
+    <string name="customCardTextInvalid">The card text must not be empty and less than 256 characters long.</string>
     <string name="missingPlaceholderBlack">Missing placeholder in black card: it\'ll be added at the end.</string>
     <string name="strangeCustomCardFormat">The format of this card looks strange: make sure to follow the instructions.</string>
     <string name="importCustomDeck">Import custom deck</string>

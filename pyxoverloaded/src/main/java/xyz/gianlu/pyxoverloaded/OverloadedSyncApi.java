@@ -268,9 +268,11 @@ public class OverloadedSyncApi {
     public static class StarredCardsUpdateResponse {
         public final Long remoteId;
         public final long[] remoteIds;
+        public final JSONArray leftover;
 
         public StarredCardsUpdateResponse(@NonNull JSONObject obj) throws JSONException {
             remoteId = CommonUtils.optLong(obj, "remoteId");
+            leftover = obj.optJSONArray("leftover");
 
             if (!obj.has("remoteIds") || obj.isNull("remoteIds")) {
                 remoteIds = null;

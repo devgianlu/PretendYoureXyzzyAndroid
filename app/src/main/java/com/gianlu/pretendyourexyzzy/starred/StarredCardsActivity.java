@@ -53,7 +53,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
 
         list = findViewById(R.id.starredCards_list);
         list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        list.setAdapter(new CardsAdapter(false, StarredCardsDatabase.get(this).getCards(), GameCardView.Action.SELECT, GameCardView.Action.DELETE, true, this));
+        list.setAdapter(new CardsAdapter(false, StarredCardsDatabase.get(this).getCards(false), GameCardView.Action.SELECT, GameCardView.Action.DELETE, true, this));
 
         message = findViewById(R.id.starredCards_message);
         cards = findViewById(R.id.starredCards_cards);

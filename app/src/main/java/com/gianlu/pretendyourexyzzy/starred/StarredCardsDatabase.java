@@ -24,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
@@ -132,6 +133,9 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     }
 
     private void sendPatch(@NonNull StarredCardsPatchOp op, long localId, @Nullable Long remoteId, @Nullable ContentCard blackCard, @Nullable CardsGroup whiteCards) throws JSONException {
+        if (!OverloadedApi.get().isFullyRegistered())
+            return;
+
         JSONObject obj;
         if (op == StarredCardsPatchOp.REM && remoteId != null) {
             obj = null;
@@ -158,7 +162,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         });
     }
 
-    private void setRemoteId(long localId, long remoteId) {
+    public void setRemoteId(long localId, long remoteId) {
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         try {
@@ -224,10 +228,10 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     }
 
     @NonNull
-    public List<StarredCard> getCards() {
+    public List<StarredCard> getCards(boolean leftover) {
         SQLiteDatabase db = getReadableDatabase();
         db.beginTransaction();
-        try (Cursor cursor = db.rawQuery("SELECT * FROM cards", null)) {
+        try (Cursor cursor = db.rawQuery(leftover ? "SELECT * FROM cards WHERE remoteId IS NULL" : "SELECT * FROM cards", null)) {
             if (cursor == null) return new ArrayList<>(0);
 
             List<StarredCard> cards = new ArrayList<>(cursor.getCount());
@@ -239,6 +243,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
                 }
             }
 
+            Collections.reverse(cards);
             return cards;
         } finally {
             db.endTransaction();
@@ -259,7 +264,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     @NonNull
     public UpdatePair getUpdate() {
         JSONArray array = new JSONArray();
-        List<StarredCard> list = getCards();
+        List<StarredCard> list = getCards(false);
         long[] localIds = new long[list.size()];
         for (int i = 0; i < list.size(); i++) {
             StarredCard card = list.get(i);
@@ -267,6 +272,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
 
             try {
                 JSONObject obj = new JSONObject();
+                obj.put("remoteId", card.remoteId);
                 obj.put("bc", card.blackCard.toJson());
                 obj.put("wc", ContentCard.toJson(card.whiteCards));
                 array.put(obj);
@@ -277,11 +283,11 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         return new UpdatePair(array, localIds);
     }
 
-    public void loadUpdate(@NonNull JSONArray update, long revision) {
+    public void loadUpdate(@NonNull JSONArray update, boolean delete, @Nullable Long revision) {
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         try {
-            db.execSQL("DELETE FROM cards");
+            if (delete) db.execSQL("DELETE FROM cards WHERE remoteId IS NOT NULL");
 
             for (int i = 0; i < update.length(); i++) {
                 JSONObject obj = update.getJSONObject(i);
@@ -293,7 +299,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             }
 
             db.setTransactionSuccessful();
-            setRevision(revision);
+            if (revision != null) setRevision(revision);
         } catch (JSONException ex) {
             Log.e(TAG, "Failed adding card.", ex);
         } finally {
@@ -401,23 +407,13 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         }
     }
 
-    public class UpdatePair {
+    public static class UpdatePair {
         public final JSONArray update;
-        private final long[] localIds;
+        public final long[] localIds;
 
         private UpdatePair(@NonNull JSONArray array, @NonNull long[] localIds) {
             this.update = array;
             this.localIds = localIds;
-        }
-
-        public void setRemoteIds(@NotNull long[] remoteIds) {
-            if (remoteIds.length != localIds.length) {
-                Log.e(TAG, String.format("IDs number doesn't match, local: %d, remote: %d", localIds.length, remoteIds.length));
-                return;
-            }
-
-            for (int i = 0; i < localIds.length; i++)
-                setRemoteId(localIds[i], remoteIds[i]);
         }
     }
 }
