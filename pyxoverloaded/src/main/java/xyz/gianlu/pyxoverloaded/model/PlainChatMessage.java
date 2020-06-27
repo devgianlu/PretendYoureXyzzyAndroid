@@ -53,7 +53,6 @@ public class PlainChatMessage implements Filterable<NotFilterable> {
     }
 
     public boolean isFromMe() {
-        UserData data = OverloadedApi.get().userDataCached();
-        return data != null && Objects.equals(from, data.username);
+        return Objects.equals(from, OverloadedApi.get().username());
     }
 }

@@ -60,6 +60,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 import me.toptas.fancyshowcase.FocusShape;
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 import xyz.gianlu.pyxoverloaded.model.UserData.PurchaseStatusGranular;
 
@@ -304,6 +305,10 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
             String idCode = getIdCode();
             String nick = CommonUtils.getText(registerNickname);
+
+            if (billingHelper.getStatus() == Status.SIGNED_IN && !overloadedToggle.isChecked() && nick.equals(OverloadedApi.get().username()))
+                overloadedToggle.setChecked(true);
+
             pyx.register(nick, idCode, this, new Pyx.OnResult<RegisteredPyx>() {
                 @Override
                 public void onDone(@NonNull RegisteredPyx result) {

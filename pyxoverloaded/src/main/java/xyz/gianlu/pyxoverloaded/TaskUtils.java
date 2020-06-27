@@ -20,7 +20,7 @@ public final class TaskUtils {
     @NonNull
     public static <R> Task<R> loggingCallbacks(@NonNull Task<R> task, @NonNull String taskName) {
         task.addOnFailureListener(ex -> Log.d(TAG, String.format("Failed processing task %s!", taskName), ex))
-                .addOnSuccessListener(r -> Log.d(TAG, String.format("Task %s completed successfully, result: %s", taskName, String.valueOf(r))));
+                .addOnSuccessListener(r -> Log.d(TAG, String.format("Task %s completed successfully, result: %s", taskName, r)));
         return task;
     }
 

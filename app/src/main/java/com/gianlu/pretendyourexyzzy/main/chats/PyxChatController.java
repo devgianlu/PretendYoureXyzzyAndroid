@@ -46,18 +46,15 @@ class PyxChatController {
     void listener(@NonNull Listener listener) {
         if (pyx == null) throw new IllegalStateException();
 
-        pyx.polling().addListener(eventListener = new Pyx.OnEventListener() {
-            @Override
-            public void onPollMessage(@NonNull PollMessage msg) {
-                if (msg.sender == null || msg.message == null || msg.event != PollMessage.Event.CHAT)
+        pyx.polling().addListener(eventListener = msg -> {
+            if (msg.sender == null || msg.message == null || msg.event != PollMessage.Event.CHAT)
+                return;
+
+            if ((msg.gid == -1 && gid == -1) || (gid != -1 && msg.gid == gid)) {
+                if (!msg.wall && BlockedUsers.isBlocked(msg.sender))
                     return;
 
-                if ((msg.gid == -1 && gid == -1) || (gid != -1 && msg.gid == gid)) {
-                    if (!msg.wall && BlockedUsers.isBlocked(msg.sender))
-                        return;
-
-                    listener.onChatMessage(msg);
-                }
+                listener.onChatMessage(msg);
             }
         });
     }

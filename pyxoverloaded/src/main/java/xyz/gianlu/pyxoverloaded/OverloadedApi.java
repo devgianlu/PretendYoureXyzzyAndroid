@@ -563,6 +563,11 @@ public class OverloadedApi {
     }
 
     @Nullable
+    public String username() {
+        return userDataCached != null ? userDataCached.username : null;
+    }
+
+    @Nullable
     public UserData userDataCached() {
         return userDataCached;
     }
