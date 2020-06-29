@@ -1,6 +1,7 @@
 package xyz.gianlu.pyxoverloaded.model;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.CommonUtils;
 
@@ -49,12 +50,23 @@ public class UserProfile {
         public final String desc;
         public final String watermark;
         public final int count;
+        public final String shareCode;
 
         private CustomDeck(@NonNull JSONObject obj) throws JSONException {
             name = obj.getString("name");
             desc = obj.getString("desc");
             watermark = obj.getString("watermark");
             count = obj.getInt("count");
+            shareCode = obj.getString("shareCode");
+        }
+
+        @Nullable
+        public static CustomDeck find(@NonNull List<CustomDeck> decks, @NonNull String name) {
+            for (CustomDeck deck : decks)
+                if (deck.name.equals(name))
+                    return deck;
+
+            return null;
         }
 
         @NonNull

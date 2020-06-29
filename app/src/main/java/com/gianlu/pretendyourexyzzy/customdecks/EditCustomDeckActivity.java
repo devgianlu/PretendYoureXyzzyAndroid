@@ -124,6 +124,8 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
                 if (save()) {
                     blackCardsFragment.importCards(this, obj.optJSONArray("calls"));
                     whiteCardsFragment.importCards(this, obj.optJSONArray("responses"));
+
+                    tmpFile.delete();
                 }
             } catch (JSONException | IOException ex) {
                 Log.e(TAG, "Failed importing deck.", ex);

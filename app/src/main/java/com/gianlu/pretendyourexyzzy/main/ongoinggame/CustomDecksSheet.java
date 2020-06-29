@@ -33,7 +33,9 @@ import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.FloatingCustomDeck;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -55,10 +57,10 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         return new CustomDecksSheet();
     }
 
-    private static void removeDeck(@NonNull List<CustomDeck> list, @NonNull Deck deck) {
-        Iterator<CustomDeck> iter = list.iterator();
+    private static void removeDeck(@NonNull List<FloatingCustomDeck> list, @NonNull Deck deck) {
+        Iterator<FloatingCustomDeck> iter = list.iterator();
         while (iter.hasNext()) {
-            CustomDeck d = iter.next();
+            FloatingCustomDeck d = iter.next();
             if (d.name.equals(deck.name) && d.watermark.equals(deck.watermark)) {
                 iter.remove();
                 break;
@@ -147,7 +149,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         action.setImageResource(R.drawable.baseline_add_24);
         action.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.customDecksSheetFabBg)));
         action.setOnClickListener(v -> {
-            List<CustomDeck> customDecks;
+            List<FloatingCustomDeck> customDecks;
             if ((customDecks = getAddableCustomDecks(CustomDecksDatabase.get(requireContext()))).isEmpty())
                 DialogUtils.showToast(getContext(), Toaster.build().message(R.string.noCustomDecksToAdd));
             else
@@ -158,8 +160,8 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
     }
 
     @NonNull
-    private List<CustomDeck> getAddableCustomDecks(@NonNull CustomDecksDatabase db) {
-        List<CustomDeck> customDecks = db.getDecks();
+    private List<FloatingCustomDeck> getAddableCustomDecks(@NonNull CustomDecksDatabase db) {
+        List<FloatingCustomDeck> customDecks = db.getAllDecks();
         if (adapter != null && adapter.getItemCount() != 0) {
             for (Deck deck : adapter.getDecks())
                 removeDeck(customDecks, deck);
@@ -168,10 +170,10 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         return customDecks;
     }
 
-    private void showAddCustomDeckDialog(@NonNull List<CustomDeck> customDecks) {
+    private void showAddCustomDeckDialog(@NonNull List<FloatingCustomDeck> customDecks) {
         String[] names = new String[customDecks.size()];
         for (int i = 0; i < names.length; i++) {
-            CustomDeck deck = customDecks.get(i);
+            FloatingCustomDeck deck = customDecks.get(i);
             names[i] = deck.name + " (" + deck.watermark + ")";
         }
 
@@ -181,28 +183,46 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
                 .setItems(names, (dialog, which) -> {
                     if (pyx == null || !canModifyCustomDecks()) return;
 
-                    String json;
-                    CustomDeck deck = customDecks.get(which);
-                    try {
-                        json = deck.craftPyxJson(CustomDecksDatabase.get(requireContext())).toString();
-                    } catch (JSONException ex) {
-                        Log.e(TAG, "Failed crating JSON for deck: " + deck.id, ex);
-                        return;
+                    FloatingCustomDeck deck = customDecks.get(which);
+                    if (deck instanceof CustomDeck) {
+                        String json;
+                        try {
+                            json = ((CustomDeck) deck).craftPyxJson(CustomDecksDatabase.get(requireContext())).toString();
+                        } catch (JSONException ex) {
+                            Log.e(TAG, "Failed crating JSON for deck: " + deck.name, ex);
+                            return;
+                        }
+
+                        ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK);
+                        pyx.request(PyxRequests.addCustomDeckJson(getSetupPayload(), json), getActivity(), new Pyx.OnSuccess() {
+                            @Override
+                            public void onDone() {
+                                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDeckAdded));
+                            }
+
+                            @Override
+                            public void onException(@NonNull Exception ex) {
+                                Log.e(TAG, "Failed adding custom deck.", ex);
+                                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
+                            }
+                        });
+                    } else if (deck instanceof CustomDecksDatabase.StarredDeck) {
+                        String url = OverloadedUtils.getServeCustomDeckUrl(((CustomDecksDatabase.StarredDeck) deck).shareCode);
+
+                        ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK);
+                        pyx.request(PyxRequests.addCustomDeckUrl(getSetupPayload(), url), getActivity(), new Pyx.OnSuccess() {
+                            @Override
+                            public void onDone() {
+                                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDeckAdded));
+                            }
+
+                            @Override
+                            public void onException(@NonNull Exception ex) {
+                                Log.e(TAG, "Failed adding custom deck: " + url, ex);
+                                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
+                            }
+                        });
                     }
-
-                    ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK);
-                    pyx.request(PyxRequests.addCustomDeckJson(getSetupPayload(), json), getActivity(), new Pyx.OnSuccess() {
-                        @Override
-                        public void onDone() {
-                            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDeckAdded));
-                        }
-
-                        @Override
-                        public void onException(@NonNull Exception ex) {
-                            Log.e(TAG, "Failed adding custom deck.", ex);
-                            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
-                        }
-                    });
                 });
 
         DialogUtils.showDialog(getActivity(), builder);

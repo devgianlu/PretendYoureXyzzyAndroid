@@ -20,6 +20,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
@@ -35,7 +36,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     private static CustomDecksDatabase instance;
 
     private CustomDecksDatabase(@Nullable Context context) {
-        super(context, "custom_decks.db", null, 1);
+        super(context, "custom_decks.db", null, 2);
     }
 
     @NonNull
@@ -56,10 +57,14 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     public void onCreate(@NotNull SQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS decks (id INTEGER PRIMARY KEY UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, description TEXT NOT NULL, revision INTEGER NOT NULL, remoteId INTEGER UNIQUE)");
         db.execSQL("CREATE TABLE IF NOT EXISTS cards (id INTEGER PRIMARY KEY UNIQUE, deck_id INTEGER NOT NULL, type INTEGER NOT NULL, text TEXT NOT NULL, remoteId INTEGER UNIQUE)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS starred_decks (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (oldVersion == 1 && newVersion == 2) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS starred_decks (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL)");
+        }
     }
 
     private void sendPatch(long revision, @Nullable Long remoteId, @NonNull CustomDecksPatchOp op, @Nullable CustomDeck deck, @Nullable CustomCard card, @Nullable Long cardId) {
@@ -124,6 +129,72 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
 
     //////////////////////////////////
+    ///////// Starred decks //////////
+    //////////////////////////////////
+
+    @NonNull
+    public List<StarredDeck> getStarredDecks() {
+        SQLiteDatabase db = getReadableDatabase();
+        db.beginTransaction();
+        try (Cursor cursor = db.rawQuery("SELECT * FROM starred_decks", null)) {
+            List<StarredDeck> list = new ArrayList<>(cursor.getCount());
+            while (cursor.moveToNext()) list.add(new StarredDeck(cursor));
+            return list;
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public boolean isStarred(@NonNull String shareCode) {
+        SQLiteDatabase db = getReadableDatabase();
+        db.beginTransaction();
+        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM starred_decks WHERE shareCode=?", new String[]{shareCode})) {
+            if (!cursor.moveToNext()) return false;
+            else return cursor.getInt(0) > 0;
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public void addStarred(@NonNull String shareCode, @NonNull String name, @NonNull String watermark, @NonNull String owner, int cardsCount) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            ContentValues values = new ContentValues();
+            values.put("name", name);
+            values.put("shareCode", shareCode);
+            values.put("watermark", watermark);
+            values.put("owner", owner);
+            values.put("cards_count", cardsCount);
+            db.insert("starred_decks", null, values);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public void removeStarred(@NonNull String owner, @NonNull String shareCode) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            db.delete("starred_decks", "owner=? AND shareCode=?", new String[]{owner, shareCode});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    @NonNull
+    public List<FloatingCustomDeck> getAllDecks() {
+        List<FloatingCustomDeck> decks = new LinkedList<>();
+        decks.addAll(getDecks());
+        decks.addAll(getStarredDecks());
+        // TODO: Sort custom decks
+        return decks;
+    }
+
+
+    //////////////////////////////////
     ///////////// Decks //////////////
     //////////////////////////////////
 
@@ -133,9 +204,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         db.beginTransaction();
         try (Cursor cursor = db.rawQuery("SELECT * FROM decks", null)) {
             List<CustomDeck> list = new ArrayList<>(cursor.getCount());
-            while (cursor.moveToNext()) {
-                list.add(new CustomDeck(cursor));
-            }
+            while (cursor.moveToNext()) list.add(new CustomDeck(cursor));
             return list;
         } finally {
             db.endTransaction();
@@ -297,11 +366,6 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
     }
 
-
-    //////////////////////////////////
-    ///////////// Cards //////////////
-    //////////////////////////////////
-
     @NonNull
     public List<CustomCard> getCards(int deckId) {
         CustomDeck deck = getDeck(deckId);
@@ -319,6 +383,11 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             db.endTransaction();
         }
     }
+
+
+    //////////////////////////////////
+    ///////////// Cards //////////////
+    //////////////////////////////////
 
     @NonNull
     public List<CustomCard> getCards(int deckId, int type) {
@@ -474,11 +543,6 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         return card;
     }
 
-
-    //////////////////////////////////
-    /////////// Remote IDs ///////////
-    //////////////////////////////////
-
     public void resetRemoteIds(int deckId) {
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
@@ -501,6 +565,11 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             db.endTransaction();
         }
     }
+
+
+    //////////////////////////////////
+    /////////// Remote IDs ///////////
+    //////////////////////////////////
 
     public void setDeckRemoteId(long deckId, long remoteId) {
         SQLiteDatabase db = getWritableDatabase();
@@ -689,6 +758,16 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         @Override
         public boolean black() {
             return type == CARD_TYPE_BLACK;
+        }
+    }
+
+    public static class StarredDeck extends FloatingCustomDeck {
+        public final String shareCode;
+
+        public StarredDeck(@NonNull Cursor cursor) {
+            super(cursor.getString(cursor.getColumnIndex("name")), cursor.getString(cursor.getColumnIndex("watermark")),
+                    cursor.getString(cursor.getColumnIndex("owner")), cursor.getInt(cursor.getColumnIndex("cards_count")));
+            shareCode = cursor.getString(cursor.getColumnIndex("shareCode"));
         }
     }
 

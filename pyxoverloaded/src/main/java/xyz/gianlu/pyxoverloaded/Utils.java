@@ -59,7 +59,7 @@ public final class Utils {
     }
 
     @NonNull
-    static HttpUrl overloadedServerUrl(@NonNull String path) {
+    public static HttpUrl overloadedServerUrl(@NonNull String path) {
         return HttpUrl.get("http://192.168.1.25:8080/" + path); // FIXME
     }
 }

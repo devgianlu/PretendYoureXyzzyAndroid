@@ -331,4 +331,6 @@
     <string name="cardsCountBlackWhite">%d black, %d white</string>
     <string name="cardsCount">%d cards</string>
     <string name="deckBy">By %s</string>
+    <string name="addToStarredDecks">Add to starred decks</string>
+    <string name="removeFromStarredDecks">Remove from starred decks</string>
 </resources>

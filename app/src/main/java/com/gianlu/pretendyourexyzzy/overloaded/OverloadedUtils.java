@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.Utils;
 
 public final class OverloadedUtils {
 
@@ -94,5 +95,10 @@ public final class OverloadedUtils {
     @NonNull
     public static String getServerId(@NonNull Pyx.Server server) {
         return server.url.host() + ":" + server.url.port() + server.url.encodedPath();
+    }
+
+    @NonNull
+    public static String getServeCustomDeckUrl(@NonNull String shareCode) {
+        return Utils.overloadedServerUrl("ServeCustomDeck") + "?shareCode=" + shareCode;
     }
 }

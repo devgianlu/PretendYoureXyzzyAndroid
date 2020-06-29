@@ -15,6 +15,8 @@ import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.FloatingCust
 
 import java.util.List;
 
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+
 public final class CustomDecksAdapter extends RecyclerView.Adapter<CustomDecksAdapter.ViewHolder> {
     private final List<? extends FloatingCustomDeck> decks;
     private final Listener listener;
@@ -46,7 +48,7 @@ public final class CustomDecksAdapter extends RecyclerView.Adapter<CustomDecksAd
         holder.itemView.setOnClickListener(view -> listener.onCustomDeckSelected(deck));
         CommonUtils.setRecyclerViewTopMargin(holder);
 
-        if (deck.owner == null) {
+        if (deck.owner == null || deck.owner.equals(OverloadedApi.get().username())) {
             holder.owner.setVisibility(View.GONE);
         } else {
             holder.owner.setVisibility(View.VISIBLE);

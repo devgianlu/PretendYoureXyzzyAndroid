@@ -43,6 +43,7 @@ public final class OverloadedUserProfileBottomSheet extends ThemedModalBottomShe
     private SuperTextView cardsPlayed;
     private SuperTextView roundsPlayed;
     private SuperTextView roundsWon;
+    private UserProfile lastPayload = null;
 
     @NonNull
     public static OverloadedUserProfileBottomSheet get() {
@@ -93,6 +94,7 @@ public final class OverloadedUserProfileBottomSheet extends ThemedModalBottomShe
 
     @Override
     protected void onReceivedUpdate(@NonNull UserProfile payload) {
+        lastPayload = payload;
         isLoading(false);
 
         OverloadedFragment.setEventCount(payload.cardsPlayed, cardsPlayed, R.string.overloadedHeader_cardsPlayed);
@@ -135,6 +137,11 @@ public final class OverloadedUserProfileBottomSheet extends ThemedModalBottomShe
 
     @Override
     public void onCustomDeckSelected(@NonNull CustomDecksDatabase.FloatingCustomDeck deck) {
-        ViewCustomDeckActivity.startActivity(requireContext(), getSetupPayload(), deck.name);
+        if (lastPayload == null) return;
+
+        UserProfile.CustomDeck userDeck = UserProfile.CustomDeck.find(lastPayload.customDecks, deck.name);
+        if (userDeck == null) return;
+
+        ViewCustomDeckActivity.startActivity(requireContext(), getSetupPayload(), deck.name, userDeck.shareCode);
     }
 }
