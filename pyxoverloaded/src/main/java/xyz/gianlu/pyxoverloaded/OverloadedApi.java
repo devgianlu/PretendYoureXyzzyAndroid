@@ -494,6 +494,11 @@ public class OverloadedApi {
         FirebaseAuth.getInstance().signOut();
         updateUser();
 
+        lastToken = null;
+        userDataTask = null;
+        userDataCached = null;
+        friendsStatusCached = null;
+
         if (webSocket.client != null) {
             webSocket.client.close(1000, null);
             webSocket.client = null;

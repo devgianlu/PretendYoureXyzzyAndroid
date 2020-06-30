@@ -34,6 +34,7 @@ import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.FloatingCustomDeck;
+import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
@@ -44,6 +45,8 @@ import org.json.JSONException;
 
 import java.util.Iterator;
 import java.util.List;
+
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
 public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>> implements DecksAdapter.Listener, Pyx.OnEventListener {
     private static final String TAG = CustomDecksSheet.class.getSimpleName();
@@ -264,7 +267,18 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
 
     @Override
     public void onDeckSelected(@NonNull Deck deck) {
-        ViewCustomDeckActivity.startActivitySearch(requireContext(), deck);
+        List<CustomDeck> decks = CustomDecksDatabase.get(requireContext()).getDecks();
+        for (CustomDeck customDeck : decks) {
+            if (customDeck.name.equals(deck.name) && customDeck.watermark.equals(deck.watermark)) {
+                EditCustomDeckActivity.startActivityEdit(requireContext(), customDeck);
+                return;
+            }
+        }
+
+        if (OverloadedApi.get().isFullyRegistered())
+            ViewCustomDeckActivity.startActivitySearch(requireContext(), deck);
+        else
+            DialogUtils.showToast(requireContext(), Toaster.build().message(R.string.cannotSearchDeckWithoutOverloaded));
     }
 
     @Override
