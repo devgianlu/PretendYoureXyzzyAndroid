@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 
 public class CustomDecksFragment extends FragmentWithDialog implements OverloadedSyncApi.SyncStatusListener, CustomDecksAdapter.Listener {
@@ -56,8 +57,12 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
 
         syncStatus = layout.findViewById(R.id.customDecks_sync);
         rmv = layout.findViewById(R.id.customDecks_list);
-        rmv.disableSwipeRefresh();
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
+
+        if (OverloadedApi.get().isFullyRegistered())
+            rmv.enableSwipeRefresh(this::refreshSync, R.color.appColorBright);
+        else
+            rmv.disableSwipeRefresh();
 
         FloatingActionsMenu fab = layout.findViewById(R.id.customDecks_fab);
         FloatingActionButton importDeck = layout.findViewById(R.id.customDecksFab_import);
@@ -75,6 +80,21 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         return layout;
     }
 
+    private void refreshSync() {
+        if (getContext() == null)
+            return;
+
+        SyncUtils.syncCustomDecks(requireContext(), this::refreshList);
+        SyncUtils.syncStarredCustomDecks(requireContext(), this::refreshList);
+    }
+
+    private void refreshList() {
+        List<FloatingCustomDeck> decks = db.getAllDecks();
+        rmv.loadListData(new CustomDecksAdapter(requireContext(), decks, this), false);
+        if (decks.isEmpty()) rmv.showInfo(R.string.noCustomDecks_create);
+        else rmv.showList();
+    }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -84,10 +104,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
     @Override
     public void onResume() {
         super.onResume();
-        List<FloatingCustomDeck> decks = db.getAllDecks();
-        rmv.loadListData(new CustomDecksAdapter(requireContext(), decks, this), false);
-        if (decks.isEmpty()) rmv.showInfo(R.string.noCustomDecks_create);
-        else rmv.showList();
+        refreshList();
     }
 
     @Override
@@ -112,7 +129,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
 
     @Override
     public void syncStatusUpdated(@NonNull OverloadedSyncApi.SyncProduct product, boolean isSyncing, boolean error) {
-        if (syncStatus != null && product == OverloadedSyncApi.SyncProduct.CUSTOM_DECKS)
+        if (syncStatus != null && (product == OverloadedSyncApi.SyncProduct.CUSTOM_DECKS || product == OverloadedSyncApi.SyncProduct.STARRED_CUSTOM_DECKS))
             SyncUtils.updateSyncText(syncStatus, product, isSyncing, error);
     }
 

@@ -387,9 +387,9 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         }
 
         if (OverloadedApi.get().isFullyRegistered()) {
-            SyncUtils.syncStarredCards(this);
-            SyncUtils.syncCustomDecks(this);
-            SyncUtils.syncStarredCustomDecks(this);
+            SyncUtils.syncStarredCards(this, null);
+            SyncUtils.syncCustomDecks(this, null);
+            SyncUtils.syncStarredCustomDecks(this, null);
 
             OverloadedSignInHelper.signInSilently(this, PlayGamesAuthProvider.PROVIDER_ID).addOnSuccessListener(account -> {
                 String authCode = account.getServerAuthCode();

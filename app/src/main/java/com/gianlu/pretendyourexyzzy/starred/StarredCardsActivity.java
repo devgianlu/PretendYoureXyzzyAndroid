@@ -3,6 +3,8 @@ package com.gianlu.pretendyourexyzzy.starred;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -25,6 +27,7 @@ import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
 
 import java.util.Objects;
 
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 
 public class StarredCardsActivity extends ActivityWithDialog implements CardsAdapter.Listener, OverloadedSyncApi.SyncStatusListener {
@@ -53,13 +56,46 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
 
         list = findViewById(R.id.starredCards_list);
         list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        list.setAdapter(new CardsAdapter(false, StarredCardsDatabase.get(this).getCards(false), GameCardView.Action.SELECT, GameCardView.Action.DELETE, true, this));
 
         message = findViewById(R.id.starredCards_message);
         cards = findViewById(R.id.starredCards_cards);
         syncStatus = findViewById(R.id.starredCards_sync);
 
+        refreshList();
+    }
+
+    private void refreshList() {
+        list.setAdapter(new CardsAdapter(false, StarredCardsDatabase.get(this).getCards(false), GameCardView.Action.SELECT, GameCardView.Action.DELETE, true, this));
         message.info(R.string.selectAStarredCard);
+        cards.removeAllViews();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.starred_cards, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (!OverloadedApi.get().isFullyRegistered())
+            menu.removeItem(R.id.starredCards_refresh);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.starredCards_refresh) {
+            item.setEnabled(false);
+            SyncUtils.syncStarredCards(this, () -> {
+                item.setEnabled(true);
+                refreshList();
+            });
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

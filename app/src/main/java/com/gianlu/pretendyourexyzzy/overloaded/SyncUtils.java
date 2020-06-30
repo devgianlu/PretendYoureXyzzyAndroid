@@ -5,6 +5,7 @@ import android.util.Log;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.R;
@@ -14,6 +15,7 @@ import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomCard;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.StarredDeck;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
+import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase.StarredCard;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -65,12 +67,19 @@ public final class SyncUtils {
                 return Prefs.getLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, -1);
             case CUSTOM_DECKS:
                 return Prefs.getLong(OverloadedPK.CUSTOM_DECKS_LAST_SYNC, -1);
+            case STARRED_CUSTOM_DECKS:
+                return Prefs.getLong(OverloadedPK.STARRED_CUSTOM_DECKS_LAST_SYNC, -1);
             default:
                 throw new IllegalArgumentException("Unknown product: " + product);
         }
     }
 
-    public static void syncStarredCards(@NonNull Context context) {
+    public static void syncStarredCards(@NonNull Context context, @Nullable OnCompleteCallback callback) {
+        if (!OverloadedApi.get().isFullyRegistered()) {
+            if (callback != null) callback.onComplete();
+            return;
+        }
+
         StarredCardsDatabase db = StarredCardsDatabase.get(context);
         long ourRevision = StarredCardsDatabase.getRevision();
         OverloadedSyncApi.get().syncStarredCards(ourRevision, null, new GeneralCallback<StarredCardsSyncResponse>() {
@@ -98,63 +107,72 @@ public final class SyncUtils {
                                     Log.e(TAG, String.format("IDs number doesn't match, local: %d, remote: %d", update.localIds.length, result.remoteIds.length));
                                 }
                             }
+
+                            if (callback != null) callback.onComplete();
                         }
 
                         @Override
                         public void onFailed(@NonNull Exception ex) {
                             Log.e(TAG, "Failed updating starred cards.", ex);
+                            if (callback != null) callback.onComplete();
                         }
                     });
                 } else if (result.update != null && result.revision != null) {
                     db.loadUpdate(result.update, true, result.revision);
                     Log.i(TAG, String.format("Received starred cards from server, count: %d, revision: %d", result.update.length(), result.revision));
 
-                    List<StarredCardsDatabase.StarredCard> leftover = db.getCards(true);
-                    if (!leftover.isEmpty()) {
-                        for (StarredCardsDatabase.StarredCard card : leftover) {
-                            JSONObject obj;
-                            try {
-                                obj = new JSONObject();
-                                obj.put("bc", card.blackCard.toJson());
-                                obj.put("wc", ContentCard.toJson(card.whiteCards));
-                            } catch (JSONException ex) {
-                                Log.e(TAG, "Failed creating starred card payload.", ex);
-                                continue;
+                    List<StarredCard> leftover = db.getCards(true);
+                    for (StarredCard card : leftover) {
+                        JSONObject obj;
+                        try {
+                            obj = new JSONObject();
+                            obj.put("bc", card.blackCard.toJson());
+                            obj.put("wc", ContentCard.toJson(card.whiteCards));
+                        } catch (JSONException ex) {
+                            Log.e(TAG, "Failed creating starred card payload.", ex);
+                            continue;
+                        }
+
+                        OverloadedSyncApi.get().patchStarredCards(result.revision, OverloadedSyncApi.StarredCardsPatchOp.ADD, null, obj, null, new GeneralCallback<StarredCardsUpdateResponse>() {
+                            @Override
+                            public void onResult(@NonNull StarredCardsUpdateResponse result) {
+                                if (result.remoteId != null) {
+                                    db.setRemoteId(card.id, result.remoteId);
+                                    Log.i(TAG, "Updated leftover starred card: " + result.remoteId);
+                                } else {
+                                    Log.e(TAG, "Received invalid responses from starred cards patch (missing remoteId).");
+                                }
                             }
 
-                            OverloadedSyncApi.get().patchStarredCards(result.revision, OverloadedSyncApi.StarredCardsPatchOp.ADD, null, obj, null, new GeneralCallback<StarredCardsUpdateResponse>() {
-                                @Override
-                                public void onResult(@NonNull StarredCardsUpdateResponse result) {
-                                    if (result.remoteId != null) {
-                                        db.setRemoteId(card.id, result.remoteId);
-                                        Log.i(TAG, "Updated leftover starred card: " + result.remoteId);
-                                    } else {
-                                        Log.e(TAG, "Received invalid responses from starred cards patch (missing remoteId).");
-                                    }
-                                }
-
-                                @Override
-                                public void onFailed(@NonNull Exception ex) {
-                                    Log.e(TAG, "Failed sending patch for leftover starred card.", ex);
-                                }
-                            });
-                        }
+                            @Override
+                            public void onFailed(@NonNull Exception ex) {
+                                Log.e(TAG, "Failed sending patch for leftover starred card.", ex);
+                            }
+                        });
                     }
+
+                    if (callback != null) callback.onComplete();
                 } else {
                     Log.d(TAG, "Starred cards are up-to-date: " + ourRevision);
+                    if (callback != null) callback.onComplete();
                 }
             }
 
             @Override
             public void onFailed(@NonNull Exception ex) {
                 Log.e(TAG, "Failed syncing starred cards.", ex);
+                if (callback != null) callback.onComplete();
             }
         });
     }
 
-    public static void syncCustomDecks(@NonNull Context context) {
-        CustomDecksDatabase db = CustomDecksDatabase.get(context);
+    public static void syncCustomDecks(@NonNull Context context, @Nullable OnCompleteCallback callback) {
+        if (!OverloadedApi.get().isFullyRegistered()) {
+            if (callback != null) callback.onComplete();
+            return;
+        }
 
+        CustomDecksDatabase db = CustomDecksDatabase.get(context);
         List<CustomDeck> sendLater = new LinkedList<>();
         JSONArray syncItems = new JSONArray();
         try {
@@ -171,6 +189,7 @@ public final class SyncUtils {
             }
         } catch (JSONException ex) {
             Log.e(TAG, "Failed creating sync payload for custom decks.", ex);
+            if (callback != null) callback.onComplete();
             return;
         }
 
@@ -190,11 +209,14 @@ public final class SyncUtils {
 
                 for (CustomDeck deck : sendLater)
                     sendCustomDeckUpdate(db, deck);
+
+                if (callback != null) callback.onComplete();
             }
 
             @Override
             public void onFailed(@NonNull Exception ex) {
                 Log.e(TAG, "Failed syncing custom decks.", ex);
+                if (callback != null) callback.onComplete();
             }
         });
     }
@@ -249,7 +271,12 @@ public final class SyncUtils {
         });
     }
 
-    public static void syncStarredCustomDecks(@NonNull Context context) {
+    public static void syncStarredCustomDecks(@NonNull Context context, @Nullable OnCompleteCallback callback) {
+        if (!OverloadedApi.get().isFullyRegistered()) {
+            if (callback != null) callback.onComplete();
+            return;
+        }
+
         CustomDecksDatabase db = CustomDecksDatabase.get(context);
         long ourRevision = CustomDecksDatabase.getStaredCustomDecksRevision();
         OverloadedSyncApi.get().syncStarredCustomDecks(ourRevision, null, new GeneralCallback<StarredCustomDecksSyncResponse>() {
@@ -277,11 +304,14 @@ public final class SyncUtils {
                                     Log.e(TAG, String.format("IDs number doesn't match, local: %d, remote: %d", update.localIds.length, result.remoteIds.length));
                                 }
                             }
+
+                            if (callback != null) callback.onComplete();
                         }
 
                         @Override
                         public void onFailed(@NonNull Exception ex) {
                             Log.e(TAG, "Failed updating starred cards.", ex);
+                            if (callback != null) callback.onComplete();
                         }
                     });
                 } else if (result.update != null && result.revision != null) {
@@ -289,34 +319,36 @@ public final class SyncUtils {
                     Log.i(TAG, String.format("Received starred custom decks from server, count: %d, revision: %d", result.update.length(), result.revision));
 
                     List<StarredDeck> leftover = db.getStarredDecks(true);
-                    if (!leftover.isEmpty()) {
-                        for (StarredDeck deck : leftover) {
-                            OverloadedSyncApi.get().patchStarredCustomDecks(result.revision, StarredCustomDecksPatchOp.ADD, null, deck.shareCode, null, new GeneralCallback<StarredCustomDecksUpdateResponse>() {
-                                @Override
-                                public void onResult(@NonNull StarredCustomDecksUpdateResponse result) {
-                                    if (result.remoteId != null) {
-                                        db.setStarredDeckRemoteId(deck.id, result.remoteId);
-                                        Log.i(TAG, "Updated leftover starred custom decks: " + result.remoteId);
-                                    } else {
-                                        Log.e(TAG, "Received invalid responses from starred custom decks patch (missing remoteId).");
-                                    }
+                    for (StarredDeck deck : leftover) {
+                        OverloadedSyncApi.get().patchStarredCustomDecks(result.revision, StarredCustomDecksPatchOp.ADD, null, deck.shareCode, null, new GeneralCallback<StarredCustomDecksUpdateResponse>() {
+                            @Override
+                            public void onResult(@NonNull StarredCustomDecksUpdateResponse result) {
+                                if (result.remoteId != null) {
+                                    db.setStarredDeckRemoteId(deck.id, result.remoteId);
+                                    Log.i(TAG, "Updated leftover starred custom decks: " + result.remoteId);
+                                } else {
+                                    Log.e(TAG, "Received invalid responses from starred custom decks patch (missing remoteId).");
                                 }
+                            }
 
-                                @Override
-                                public void onFailed(@NonNull Exception ex) {
-                                    Log.e(TAG, "Failed sending patch for leftover starred card.", ex);
-                                }
-                            });
-                        }
+                            @Override
+                            public void onFailed(@NonNull Exception ex) {
+                                Log.e(TAG, "Failed sending patch for leftover starred card.", ex);
+                            }
+                        });
                     }
+
+                    if (callback != null) callback.onComplete();
                 } else {
                     Log.d(TAG, "Starred custom decks are up-to-date: " + ourRevision);
+                    if (callback != null) callback.onComplete();
                 }
             }
 
             @Override
             public void onFailed(@NonNull Exception ex) {
                 Log.e(TAG, "Failed syncing starred custom decks.", ex);
+                if (callback != null) callback.onComplete();
             }
         });
     }
@@ -342,5 +374,9 @@ public final class SyncUtils {
                     view.setText(view.getContext().getString(R.string.overloadedSync_synced, formatTime(lastSync)));
             }
         }
+    }
+
+    public interface OnCompleteCallback {
+        void onComplete();
     }
 }
