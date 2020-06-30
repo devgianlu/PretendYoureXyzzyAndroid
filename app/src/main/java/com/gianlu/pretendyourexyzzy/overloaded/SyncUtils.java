@@ -12,6 +12,7 @@ import com.gianlu.pretendyourexyzzy.api.models.cards.ContentCard;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomCard;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.StarredDeck;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 
 import org.json.JSONArray;
@@ -32,6 +33,9 @@ import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.CustomDecksSyncResponse;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.CustomDecksUpdateResponse;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsSyncResponse;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsUpdateResponse;
+import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCustomDecksPatchOp;
+import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCustomDecksSyncResponse;
+import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCustomDecksUpdateResponse;
 import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 
 public final class SyncUtils {
@@ -241,6 +245,78 @@ public final class SyncUtils {
                     db.resetRemoteIds(deck.id);
 
                 Log.e(TAG, "Failed sending custom deck update: " + deck, ex);
+            }
+        });
+    }
+
+    public static void syncStarredCustomDecks(@NonNull Context context) {
+        CustomDecksDatabase db = CustomDecksDatabase.get(context);
+        long ourRevision = CustomDecksDatabase.getStaredCustomDecksRevision();
+        OverloadedSyncApi.get().syncStarredCustomDecks(ourRevision, null, new GeneralCallback<StarredCustomDecksSyncResponse>() {
+            @Override
+            public void onResult(@NonNull StarredCustomDecksSyncResponse result) {
+                if (result.needsUpdate) {
+                    CustomDecksDatabase.UpdatePair update = db.getStarredDecksUpdate();
+                    OverloadedSyncApi.get().updateStarredCustomDecks(ourRevision, update.update, null, new GeneralCallback<StarredCustomDecksUpdateResponse>() {
+                        @Override
+                        public void onResult(@NonNull StarredCustomDecksUpdateResponse result) {
+                            if (result.remoteIds == null) {
+                                Log.e(TAG, "Received invalid response when syncing starred custom decks (no remoteIds).");
+                            } else {
+                                if (result.remoteIds.length == update.localIds.length) {
+                                    for (int i = 0; i < update.localIds.length; i++)
+                                        db.setStarredDeckRemoteId(update.localIds[i], result.remoteIds[i]);
+
+                                    Log.i(TAG, "Updated starred custom decks on server, count: " + result.remoteIds.length);
+
+                                    if (result.leftover != null && result.leftover.length() > 0) {
+                                        db.loadStarredDecksUpdate(result.leftover, false, null);
+                                        Log.i(TAG, "Updated leftover starred custom decks, count: " + result.leftover.length());
+                                    }
+                                } else {
+                                    Log.e(TAG, String.format("IDs number doesn't match, local: %d, remote: %d", update.localIds.length, result.remoteIds.length));
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onFailed(@NonNull Exception ex) {
+                            Log.e(TAG, "Failed updating starred cards.", ex);
+                        }
+                    });
+                } else if (result.update != null && result.revision != null) {
+                    db.loadStarredDecksUpdate(result.update, true, result.revision);
+                    Log.i(TAG, String.format("Received starred custom decks from server, count: %d, revision: %d", result.update.length(), result.revision));
+
+                    List<StarredDeck> leftover = db.getStarredDecks(true);
+                    if (!leftover.isEmpty()) {
+                        for (StarredDeck deck : leftover) {
+                            OverloadedSyncApi.get().patchStarredCustomDecks(result.revision, StarredCustomDecksPatchOp.ADD, null, deck.shareCode, null, new GeneralCallback<StarredCustomDecksUpdateResponse>() {
+                                @Override
+                                public void onResult(@NonNull StarredCustomDecksUpdateResponse result) {
+                                    if (result.remoteId != null) {
+                                        db.setStarredDeckRemoteId(deck.id, result.remoteId);
+                                        Log.i(TAG, "Updated leftover starred custom decks: " + result.remoteId);
+                                    } else {
+                                        Log.e(TAG, "Received invalid responses from starred custom decks patch (missing remoteId).");
+                                    }
+                                }
+
+                                @Override
+                                public void onFailed(@NonNull Exception ex) {
+                                    Log.e(TAG, "Failed sending patch for leftover starred card.", ex);
+                                }
+                            });
+                        }
+                    }
+                } else {
+                    Log.d(TAG, "Starred custom decks are up-to-date: " + ourRevision);
+                }
+            }
+
+            @Override
+            public void onFailed(@NonNull Exception ex) {
+                Log.e(TAG, "Failed syncing starred custom decks.", ex);
             }
         });
     }

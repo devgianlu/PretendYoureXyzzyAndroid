@@ -21,6 +21,7 @@ public final class PK extends CommonPK {
     public static final Prefs.Key BLOCKED_USERS = new Prefs.Key("blockedUsers");
     public static final Prefs.Key OVERLOADED_LAST_ENABLED = new Prefs.Key("overloadedLastEnabled");
     public static final Prefs.Key STARRED_CARDS_REVISION = new Prefs.Key("starredCardsRevision");
+    public static final Prefs.Key STARRED_CUSTOM_DECKS_REVISION = new Prefs.Key("starredCustomDecksRevision");
     @Deprecated
     public static final Prefs.Key STARRED_CARDS = new Prefs.Key("starredCards");
 }

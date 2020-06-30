@@ -232,8 +232,79 @@ public class OverloadedSyncApi {
         }), activity, callback::onResult, callback::onFailed);
     }
 
+
+    /////////////////////////////////////////
+    ///////// Stared custom decks ///////////
+    /////////////////////////////////////////
+
+    public void syncStarredCustomDecks(long revision, @Nullable Activity activity, @NonNull GeneralCallback<StarredCustomDecksSyncResponse> callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, true, false);
+            JSONObject obj = api.makePostRequest("Sync/StarredCustomDecks", singletonJsonObject("rev", revision));
+            return new StarredCustomDecksSyncResponse(obj);
+        }), activity, result -> {
+            Prefs.putLong(OverloadedPK.STARRED_CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
+            callback.onResult(result);
+            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, result.needsUpdate, false);
+        }, ex -> {
+            callback.onFailed(ex);
+            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, false, true);
+        });
+    }
+
+    @Contract("_, _, null, null, _, _ -> fail")
+    public void patchStarredCustomDecks(long revision, @NonNull StarredCustomDecksPatchOp op, @Nullable Long remoteId, @Nullable String shareCode, @Nullable Activity activity, @NonNull GeneralCallback<StarredCustomDecksUpdateResponse> callback) {
+        if (remoteId == null && shareCode == null)
+            throw new IllegalArgumentException();
+
+        callbacks(Tasks.call(executorService, () -> {
+            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, true, false);
+
+            JSONObject body = new JSONObject();
+            body.put("rev", revision);
+            body.put("patch", new JSONObject()
+                    .put("type", op.name())
+                    .put("remoteId", remoteId)
+                    .put("shareCode", shareCode));
+
+            JSONObject obj = api.makePostRequest("Sync/UpdateStarredCustomDecks", body);
+            return new StarredCustomDecksUpdateResponse(obj);
+        }), activity, result -> {
+            Prefs.putLong(OverloadedPK.STARRED_CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
+            callback.onResult(result);
+            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, false, false);
+        }, ex -> {
+            callback.onFailed(ex);
+            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, false, true);
+        });
+    }
+
+    public void updateStarredCustomDecks(long revision, @NonNull JSONArray update, @Nullable Activity activity, @NonNull GeneralCallback<StarredCustomDecksUpdateResponse> callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, true, false);
+
+            JSONObject body = new JSONObject();
+            body.put("rev", revision);
+            body.put("update", update);
+
+            JSONObject obj = api.makePostRequest("Sync/UpdateStarredCustomDecks", body);
+            return new StarredCustomDecksUpdateResponse(obj);
+        }), activity, result -> {
+            Prefs.putLong(OverloadedPK.STARRED_CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
+            callback.onResult(result);
+            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, false, false);
+        }, ex -> {
+            callback.onFailed(ex);
+            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, false, true);
+        });
+    }
+
     public enum SyncProduct {
-        STARRED_CARDS, CUSTOM_DECKS
+        STARRED_CARDS, CUSTOM_DECKS, STARRED_CUSTOM_DECKS
+    }
+
+    public enum StarredCustomDecksPatchOp {
+        ADD, REM
     }
 
     public enum StarredCardsPatchOp {
@@ -329,6 +400,38 @@ public class OverloadedSyncApi {
             needsUpdate = resp.getBoolean("needsUpdate");
             update = resp.optJSONArray("update");
             revision = CommonUtils.optLong(resp, "revision");
+        }
+    }
+
+    public static class StarredCustomDecksSyncResponse {
+        public final boolean needsUpdate;
+        public final JSONArray update;
+        public final Long revision;
+
+        private StarredCustomDecksSyncResponse(@NonNull JSONObject resp) throws JSONException {
+            needsUpdate = resp.getBoolean("needsUpdate");
+            update = resp.optJSONArray("update");
+            revision = CommonUtils.optLong(resp, "revision");
+        }
+    }
+
+    public static class StarredCustomDecksUpdateResponse {
+        public final Long remoteId;
+        public final long[] remoteIds;
+        public final JSONArray leftover;
+
+        public StarredCustomDecksUpdateResponse(@NonNull JSONObject obj) throws JSONException {
+            remoteId = CommonUtils.optLong(obj, "remoteId");
+            leftover = obj.optJSONArray("leftover");
+
+            if (!obj.has("remoteIds") || obj.isNull("remoteIds")) {
+                remoteIds = null;
+            } else {
+                JSONArray array = obj.getJSONArray("remoteIds");
+                remoteIds = new long[array.length()];
+                for (int i = 0; i < array.length(); i++)
+                    remoteIds[i] = array.getLong(i);
+            }
         }
     }
 }

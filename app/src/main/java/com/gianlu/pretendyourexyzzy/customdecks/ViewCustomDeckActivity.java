@@ -150,7 +150,7 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
 
                     if (ex instanceof OverloadedServerException && (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_DECK)
                             || ((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_USER))) {
-                        CustomDecksDatabase.get(ViewCustomDeckActivity.this).removeStarred(owner, shareCode);
+                        CustomDecksDatabase.get(ViewCustomDeckActivity.this).removeStarredDeck(owner, shareCode);
                         Toaster.with(ViewCustomDeckActivity.this).message(R.string.deckDoesNotExist).show();
                     } else {
                         Toaster.with(ViewCustomDeckActivity.this).message(R.string.failedLoading).show();
@@ -207,14 +207,14 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
                 if (deck == null || owner == null)
                     return false;
 
-                CustomDecksDatabase.get(this).addStarred(deck.shareCode, deck.name, deck.watermark, owner, deck.count);
+                CustomDecksDatabase.get(this).addStarredDeck(deck.shareCode, deck.name, deck.watermark, owner, deck.count);
                 supportInvalidateOptionsMenu();
                 return true;
             case R.id.viewCustomDeck_removeStar:
                 if (owner == null || shareCode == null)
                     return false;
 
-                CustomDecksDatabase.get(this).removeStarred(owner, shareCode);
+                CustomDecksDatabase.get(this).removeStarredDeck(owner, shareCode);
                 supportInvalidateOptionsMenu();
                 return true;
             default:
