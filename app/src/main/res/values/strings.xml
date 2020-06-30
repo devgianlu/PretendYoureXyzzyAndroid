@@ -333,4 +333,6 @@
     <string name="deckBy">By %s</string>
     <string name="addToStarredDecks">Add to starred decks</string>
     <string name="removeFromStarredDecks">Remove from starred decks</string>
+    <string name="deckDoesNotExist">This deck doesn\'t exist anymore.</string>
+    <string name="cannotFindCustomDeck">Cannot find this deck.</string>
 </resources>

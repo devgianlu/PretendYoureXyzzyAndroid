@@ -761,6 +761,8 @@ public class OverloadedApi {
         public static final String REASON_NOT_REGISTERED = "notRegistered";
         public static final String REASON_DEVICE_CONFLICT = "deviceConflict";
         public static final String REASON_DO_NOT_OWN_DECK = "doNotOwnDeck";
+        public static final String REASON_NO_SUCH_DECK = "noSuchDeck";
+        public static final String REASON_NO_SUCH_USER = "noSuchUser";
         public final int httpCode;
         public final String reason;
         public final JSONObject details;

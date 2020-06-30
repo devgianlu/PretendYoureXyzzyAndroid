@@ -80,10 +80,12 @@ public class UserProfile {
 
     public static class CustomDeckWithCards extends CustomDeck {
         public final List<Card> cards;
+        public final String owner;
 
         public CustomDeckWithCards(@NonNull JSONObject obj) throws JSONException {
             super(obj);
             cards = Card.parse(obj.getJSONArray("cards"));
+            owner = CommonUtils.optString(obj, "owner");
         }
 
         @NotNull

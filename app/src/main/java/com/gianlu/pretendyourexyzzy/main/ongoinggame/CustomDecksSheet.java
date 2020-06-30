@@ -34,6 +34,7 @@ import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.FloatingCustomDeck;
+import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -259,6 +260,11 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
                 DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedRemovingCustomDeck));
             }
         });
+    }
+
+    @Override
+    public void onDeckSelected(@NonNull Deck deck) {
+        ViewCustomDeckActivity.startActivitySearch(requireContext(), deck);
     }
 
     @Override

@@ -219,6 +219,19 @@ public class OverloadedSyncApi {
         }), activity, callback::onResult, callback::onFailed);
     }
 
+    public void searchPublicCustomDeck(@NonNull String name, @NonNull String watermark, @NonNull String desc, int blackCards, int whiteCards, @Nullable Activity activity, @NonNull GeneralCallback<UserProfile.CustomDeckWithCards> callback) {
+        callbacks(Tasks.call(api.executorService /* Using main executor because this is not sensible to concurrency */, () -> {
+            JSONObject body = new JSONObject();
+            body.put("name", name);
+            body.put("watermark", watermark);
+            body.put("desc", desc);
+            body.put("blackCards", blackCards);
+            body.put("whiteCards", whiteCards);
+            JSONObject obj = api.makePostRequest("Sync/SearchPublicCustomDeck", body);
+            return new UserProfile.CustomDeckWithCards(obj);
+        }), activity, callback::onResult, callback::onFailed);
+    }
+
     public enum SyncProduct {
         STARRED_CARDS, CUSTOM_DECKS
     }
