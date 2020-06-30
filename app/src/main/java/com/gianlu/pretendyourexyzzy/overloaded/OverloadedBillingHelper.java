@@ -251,15 +251,41 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
      * @param activity The caller {@link Activity}
      */
     public void startBillingFlow(@NonNull Activity activity, @NonNull String uid) {
-        getSkuDetails(new SkuDetailsCallback() {
+        SkuDetailsCallback callback = new SkuDetailsCallback() {
             @Override
             public void onSuccess(@NonNull SkuDetails details) {
+                listener.dismissDialog();
                 startBillingFlow(activity, details, uid);
             }
 
             @Override
             public void onFailed(int code) {
+                listener.dismissDialog();
                 handleBillingErrors(code);
+            }
+        };
+
+        listener.showProgress(R.string.loading);
+        OverloadedApi.get().userData(activity, new UserDataCallback() {
+            @Override
+            public void onUserData(@NonNull UserData data) {
+                if (data.purchaseStatus.ok) {
+                    updateStatus(data, null);
+
+                    OverloadedApi.get().openWebSocket();
+                    OverloadedApi.chat(context).shareKeysIfNeeded();
+                    listener.dismissDialog();
+                } else {
+                    getSkuDetails(callback);
+                }
+            }
+
+            @Override
+            public void onFailed(@NonNull Exception ex) {
+                listener.dismissDialog();
+                Log.e(TAG, "Failed getting user data, continuing flow.", ex);
+
+                getSkuDetails(callback);
             }
         });
     }
