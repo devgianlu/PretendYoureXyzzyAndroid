@@ -44,15 +44,15 @@
     <string name="tutorial_setupGame">Aqui você pode customizar suas opções de jogo. Não esqueça que você pode adicionar baralhos do \"Cardcast\" do menu aqui.</string>
     <string name="tutorial_startGame">Quando finalizar, comece a partida. Para fazê-lo são necessários ao menos 3 jogadores e um número dado de cartas.</string>
     <string name="tutorial_chooseIdCode">Coloque ou gere um código de identificação para dificultar o roubo de sua identidade.</string>
-    <string name="tutorial_blackCard">This is a block card: you have to complete the sentence with the white cards below.</string>
-    <string name="tutorial_whiteCard">Play one or multiple white cards to complete the sentence. If you don\'t know the meaning of a word, use the definition function in the upper right menu.</string>
-    <string name="tutorial_playCard">To play a card just tap it: a confirmation dialog will appear.</string>
-    <string name="tutorial_player">Once a player reaches the score goal, it wins. You can tap on players to reveal additional information.</string>
+    <string name="tutorial_blackCard">Este é um cartão-bloco: você deve completar a frase com os cartões brancos abaixo.</string>
+    <string name="tutorial_whiteCard">Jogue um ou vários cartões brancos para completar a frase. Se você não sabe o significado de uma palavra, use a função de definição no menu superior direito.</string>
+    <string name="tutorial_playCard">Para jogar uma carta, basta tocá-la: um diálogo de confirmação aparecerá.</string>
+    <string name="tutorial_player">Quando um jogador atingir o objetivo da pontuação, ele ganha. Você pode tocar nos jogadores para revelar informações adicionais.</string>
     <!-- General -->
-    <string name="app_name">Pretend You\'re Xyzzy</string>
-    <string name="nickname">Nickname</string>
-    <string name="submit">Submit</string>
-    <string name="changeServer">Change server</string>
+    <string name="app_name">Você está no Xyzzy</string>
+    <string name="nickname">Apelido</string>
+    <string name="submit">Enviar</string>
+    <string name="changeServer">Selecionar servidor</string>
     <string name="reservedNickname">Nickname is reserved!</string>
     <string name="invalidNickname">Nickname must contain only upper and lower case letters, numbers, or underscores, must be 3 to 30 characters long, and must not start with a number.</string>
     <string name="alreadyUsedNickname">Nickname is already in use.</string>
