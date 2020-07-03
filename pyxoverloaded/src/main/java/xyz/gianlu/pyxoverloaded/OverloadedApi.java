@@ -30,6 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
@@ -234,6 +235,9 @@ public class OverloadedApi {
             @Override
             public Void then(@NonNull UserData userData) throws Exception {
                 if (!userData.username.equals(nickname))
+                    return null;
+
+                if (InetAddress.getByName(serverUrl.host()).isSiteLocalAddress())
                     return null;
 
                 JSONObject params = new JSONObject();
