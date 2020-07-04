@@ -10,16 +10,18 @@ import java.util.ArrayList;
 
 public class UserHistory extends ArrayList<UserHistory.Session> {
 
-    public UserHistory(JSONObject obj) throws JSONException {
-        JSONArray array = obj.getJSONArray("Sessions");
+    public UserHistory(@NonNull JSONObject obj) throws JSONException {
+        JSONArray array = obj.optJSONArray("Sessions");
+        if (array == null) return;
+
         for (int i = 0; i < array.length(); i++) add(new Session(array.getJSONObject(i)));
     }
 
-    public class Session {
+    public static class Session {
         public final String id;
         public final long loginTimestamp;
 
-        Session(JSONObject obj) throws JSONException {
+        Session(@NonNull JSONObject obj) throws JSONException {
             id = obj.getString("SessionId");
             loginTimestamp = obj.getLong("LogInTimestamp") * 1000;
         }

@@ -205,7 +205,6 @@
     <string name="loggedIn">Logged in</string>
     <string name="login">Login</string>
     <string name="customDecks">Custom decks</string>
-    <string name="importDeck">Import deck</string>
     <string name="noCustomDecks_create">You have no custom decks. Create one right away!</string>
     <string name="noCustomDecks_game">There are no custom decks in this game.</string>
     <string name="editCustomDeck">Edit custom deck</string>
