@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,7 +22,6 @@ import java.util.List;
 public final class CustomDecksDatabase extends SQLiteOpenHelper {
     private static final int CARD_TYPE_BLACK = 0;
     private static final int CARD_TYPE_WHITE = 1;
-    private static final String TAG = CustomDecksDatabase.class.getSimpleName();
     private static CustomDecksDatabase instance;
 
     private CustomDecksDatabase(@Nullable Context context) {
@@ -44,6 +42,10 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    }
+
+    @Override
+    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
     public boolean isNameUnique(@NonNull String name) {
@@ -160,7 +162,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
             values.put("deck_id", deckId);
             values.put("type", type);
-            values.put("text", CommonUtils.toJSONArray(text).toString());
+            values.put("text", CommonUtils.join(text, "____"));
             long id = db.insert("cards", null, values);
             db.setTransactionSuccessful();
 
@@ -177,7 +179,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         db.beginTransaction();
         try {
             ContentValues values = new ContentValues();
-            values.put("text", CommonUtils.toJSONArray(text).toString());
+            values.put("text", CommonUtils.join(text, "____"));
             db.update("cards", values, "id=?", new String[]{String.valueOf(old.id())});
             db.setTransactionSuccessful();
             return new CustomCard(old, text);
@@ -240,21 +242,20 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     }
 
     public static final class CustomCard extends BaseCard {
-        private final String[] text;
+        private final String text;
         private final String watermark;
         private final int type;
         private final int id;
-        private transient String sentence = null;
 
         private CustomCard(String[] text, String watermark, int type, int id) {
-            this.text = text;
+            this.text = CommonUtils.join(text, "____");
             this.watermark = watermark;
             this.type = type;
             this.id = id;
         }
 
         private CustomCard(@NonNull CustomCard card, @NonNull String[] text) {
-            this.text = text;
+            this.text = CommonUtils.join(text, "____");
             this.watermark = card.watermark;
             this.type = card.type;
             this.id = card.id;
@@ -265,13 +266,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
             type = cursor.getInt(cursor.getColumnIndex("type"));
             id = cursor.getInt(cursor.getColumnIndex("id"));
-
-            try {
-                text = CommonUtils.toStringArray(new JSONArray(cursor.getString(cursor.getColumnIndex("text"))));
-            } catch (JSONException ex) {
-                Log.e(TAG, "Failed parsing text.", ex);
-                throw new IllegalStateException(ex);
-            }
+            text = cursor.getString(cursor.getColumnIndex("text"));
         }
 
         @NonNull
@@ -282,15 +277,14 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         @NonNull
         JSONObject craftJson() throws JSONException {
             JSONObject obj = new JSONObject();
-            obj.put("text", CommonUtils.toJSONArray(text));
+            obj.put("text", CommonUtils.toJSONArray(text.split("____", -1)));
             return obj;
         }
 
         @NonNull
         @Override
         public String text() {
-            if (sentence == null) sentence = CommonUtils.join(text, " ____ ");
-            return sentence;
+            return text;
         }
 
         @NonNull
@@ -301,7 +295,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
         @Override
         public int numPick() {
-            return !black() ? -1 : text.length - 1;
+            return !black() ? -1 : text.split("____", -1).length - 1;
         }
 
         @Override
