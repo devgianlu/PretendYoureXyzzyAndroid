@@ -47,6 +47,7 @@ import com.gianlu.pretendyourexyzzy.dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.GameRoundDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
 import com.gianlu.pretendyourexyzzy.main.ongoinggame.AnotherGameManager;
+import com.gianlu.pretendyourexyzzy.main.ongoinggame.CustomDecksSheet;
 import com.gianlu.pretendyourexyzzy.main.ongoinggame.GameLayout;
 import com.gianlu.pretendyourexyzzy.main.ongoinggame.UrbanDictSheet;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
@@ -71,6 +72,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements PlayersAd
     private MessageView message;
     private TutorialManager tutorialManager;
     private AnotherGameManager manager;
+    private CustomDecksSheet customDecksSheet;
 
     @NonNull
     public static OngoingGameFragment getInstance(@NonNull GamePermalink game) {
@@ -206,6 +208,10 @@ public class OngoingGameFragment extends FragmentWithDialog implements PlayersAd
         manager.begin();
     }
 
+    public boolean canModifyCustomDecks() {
+        return manager != null && manager.amHost() && manager.isStatus(Game.Status.LOBBY);
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (getContext() == null) return false;
@@ -220,6 +226,11 @@ public class OngoingGameFragment extends FragmentWithDialog implements PlayersAd
             case R.id.ongoingGame_options:
                 if (manager.amHost() && manager.isStatus(Game.Status.LOBBY)) editGameOptions();
                 else showGameOptions();
+                return true;
+            case R.id.ongoingGame_customDecks:
+                if (customDecksSheet != null) customDecksSheet.dismissAllowingStateLoss();
+                customDecksSheet = CustomDecksSheet.get();
+                customDecksSheet.show(this, perm.gid);
                 return true;
             case R.id.ongoingGame_spectators:
                 showSpectators();
@@ -313,6 +324,12 @@ public class OngoingGameFragment extends FragmentWithDialog implements PlayersAd
     }
 
     public void goBack() {
+        if (customDecksSheet != null && customDecksSheet.isAdded() && customDecksSheet.isVisible()) {
+            customDecksSheet.dismissAllowingStateLoss();
+            customDecksSheet = null;
+            return;
+        }
+
         if (isVisible() && DialogUtils.hasVisibleDialog(getActivity())) {
             DialogUtils.dismissDialog(getActivity());
             return;

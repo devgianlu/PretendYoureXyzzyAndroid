@@ -7,9 +7,9 @@ import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.preferences.json.JsonStoring;
 import com.gianlu.pretendyourexyzzy.PK;
-import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
-import com.gianlu.pretendyourexyzzy.api.models.Card;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class StarredCardsManager {
+    private static final String TAG = StarredCardsManager.class.getSimpleName();
     private static StarredCardsManager instance;
     private final JsonStoring storing;
     private final List<StarredCard> list;
@@ -44,8 +45,6 @@ public class StarredCardsManager {
         saveCards();
         return !a;
     }
-
-    private static final String TAG = StarredCardsManager.class.getSimpleName();
 
     public void removeCard(@NonNull StarredCard card) {
         list.remove(card);
@@ -91,13 +90,13 @@ public class StarredCardsManager {
     }
 
     public static class StarredCard extends BaseCard {
-        public final BaseCard blackCard;
+        public final GameCard blackCard;
         public final CardsGroup whiteCards;
         public final int id;
         private final long addedAt;
         private String cachedSentence;
 
-        public StarredCard(@NonNull BaseCard blackCard, @NonNull CardsGroup whiteCards) {
+        public StarredCard(@NonNull GameCard blackCard, @NonNull CardsGroup whiteCards) {
             this.blackCard = blackCard;
             this.whiteCards = whiteCards;
             this.id = ThreadLocalRandom.current().nextInt();
@@ -105,9 +104,9 @@ public class StarredCardsManager {
         }
 
         private StarredCard(JSONObject obj) throws JSONException {
-            blackCard = new Card(obj.getJSONObject("bc"));
+            blackCard = (GameCard) GameCard.parse(obj.getJSONObject("bc"));
             id = obj.getInt("id");
-            whiteCards = new CardsGroup(obj.getJSONArray("wc"));
+            whiteCards = CardsGroup.gameCards(obj.getJSONArray("wc"));
             addedAt = obj.optLong("addedAt", System.currentTimeMillis());
         }
 
@@ -177,11 +176,14 @@ public class StarredCardsManager {
             return id;
         }
 
-        @Override
         @NonNull
-        public JSONObject toJson() throws JSONException {
+        JSONObject toJson() throws JSONException {
             JSONArray array = new JSONArray();
-            for (BaseCard whiteCard : whiteCards) array.put(whiteCard.toJson());
+            for (BaseCard whiteCard : whiteCards) {
+                if (whiteCard instanceof GameCard)
+                    array.put(((GameCard) whiteCard).toJson());
+            }
+
             return new JSONObject().put("id", id)
                     .put("wc", array)
                     .put("bc", blackCard.toJson());
@@ -196,17 +198,7 @@ public class StarredCardsManager {
         }
 
         @Override
-        public boolean unknown() {
-            return false;
-        }
-
-        @Override
         public boolean black() {
-            return false;
-        }
-
-        @Override
-        public boolean writeIn() {
             return false;
         }
     }

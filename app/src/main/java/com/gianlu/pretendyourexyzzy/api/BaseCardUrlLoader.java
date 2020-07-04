@@ -8,7 +8,7 @@ import com.bumptech.glide.load.model.ModelLoaderFactory;
 import com.bumptech.glide.load.model.MultiModelLoaderFactory;
 import com.bumptech.glide.load.model.stream.BaseGlideUrlLoader;
 import com.bumptech.glide.load.model.stream.HttpGlideUrlLoader;
-import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 
 import java.io.InputStream;
 import java.util.regex.Pattern;

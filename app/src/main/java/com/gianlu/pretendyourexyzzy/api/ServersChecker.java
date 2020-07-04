@@ -157,6 +157,10 @@ public final class ServersChecker {
             public boolean blankCardsEnabled() {
                 return getOrDefault("BLANK_CARDS_ENABLED", false);
             }
+
+            public boolean customDecksEnabled() {
+                return getOrDefault("CUSTOM_DECKS_ENABLED", false);
+            }
         }
     }
 

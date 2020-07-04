@@ -13,8 +13,8 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 
 @SuppressLint("ViewConstructor")
 public class PyxCardsGroupView extends LinearLayout {

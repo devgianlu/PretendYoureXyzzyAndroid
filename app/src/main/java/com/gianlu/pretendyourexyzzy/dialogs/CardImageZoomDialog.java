@@ -25,7 +25,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.BaseCardUrlLoader;
-import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 
 public class CardImageZoomDialog extends DialogFragment {
     @NonNull

@@ -18,6 +18,13 @@
         app:showAsAction="always" />
 
     <item
+        android:id="@+id/ongoingGame_customDecks"
+        android:icon="@drawable/baseline_bookmarks_24"
+        android:orderInCategory="1"
+        android:title="@string/customDecks"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/ongoingGame_players"
         android:icon="@drawable/baseline_people_24"
         android:orderInCategory="1"

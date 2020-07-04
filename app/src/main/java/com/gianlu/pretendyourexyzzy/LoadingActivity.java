@@ -49,6 +49,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.security.SecureRandom;
@@ -136,7 +137,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                         if (Objects.equals(pair.key(), "game")) {
                             try {
                                 launchGame = new GamePermalink(Integer.parseInt(pair.value("")), new JSONObject()); // A bit hacky
-                            } catch (NumberFormatException ignored) {
+                            } catch (NumberFormatException | JSONException ignored) {
                             }
                         } else if (Objects.equals(pair.key(), "password")) {
                             launchGamePassword = pair.value("");
@@ -230,9 +231,10 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         if (dismissible)
             builder.setNegativeButton(android.R.string.cancel, null);
 
-        RecyclerMessageView rmv = new RecyclerMessageView(this);
-        builder.setView(rmv);
+        LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.activity_dialog_manage_servers, null, false);
+        builder.setView(layout);
 
+        RecyclerMessageView rmv = layout.findViewById(R.id.manageServers_list);
         rmv.disableSwipeRefresh();
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
         rmv.dividerDecoration(RecyclerView.VERTICAL);

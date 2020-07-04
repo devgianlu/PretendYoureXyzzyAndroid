@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
+import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GameCards;
@@ -59,12 +60,16 @@ public final class PyxRequests {
     private static final Pyx.Processor<GamesList> GAMES_LIST_PROCESSOR = (response, obj) -> {
         JSONArray array = obj.getJSONArray("gl");
         final GamesList games = new GamesList(obj.getInt("mg"));
-        for (int i = 0; i < array.length(); i++)
-            games.add(new Game(array.getJSONObject(i)));
+        for (int i = 0; i < array.length(); i++) games.add(new Game(array.getJSONObject(i)));
         return games;
     };
     private static final Pyx.Processor<WhoisResult> WHOIS_RESULT_PROCESSOR = (response, obj) -> new WhoisResult(obj);
-    private static final String TAG = PyxRequests.class.getSimpleName();
+    private static final Pyx.Processor<List<Deck>> DECKS_LIST_PROCESSOR = (response, obj) -> {
+        JSONArray array = obj.getJSONArray("css");
+        final List<Deck> decks = new ArrayList<>(array.length());
+        for (int i = 0; i < array.length(); i++) decks.add(new Deck(array.getJSONObject(i)));
+        return decks;
+    };
 
     @Nullable
     private static String findSessionId(@NonNull Response response) {
@@ -145,10 +150,30 @@ public final class PyxRequests {
     }
 
     @NonNull
-    public static PyxRequest removeCardcastDeck(int gid, @NonNull String code) {
-        return new PyxRequest(Pyx.Op.REMOVE_CARDCAST_CARD_SET,
+    public static PyxRequest addCustomDeckUrl(int gid, @NonNull String url) {
+        return new PyxRequest(Pyx.Op.ADD_CUSTOM_CARD_SET,
                 new PyxRequest.Param("gid", String.valueOf(gid)),
-                new PyxRequest.Param("cci", code));
+                new PyxRequest.Param("ccu", url));
+    }
+
+    @NonNull
+    public static PyxRequest addCustomDeckJson(int gid, @NonNull String json) {
+        return new PyxRequest(Pyx.Op.ADD_CUSTOM_CARD_SET,
+                new PyxRequest.Param("gid", String.valueOf(gid)),
+                new PyxRequest.Param("ccj", json));
+    }
+
+    @NonNull
+    public static PyxRequestWithResult<List<Deck>> listCustomDecks(int gid) {
+        return new PyxRequestWithResult<>(Pyx.Op.LIST_CUSTOM_CARD_SETS, DECKS_LIST_PROCESSOR,
+                new PyxRequest.Param("gid", String.valueOf(gid)));
+    }
+
+    @NonNull
+    public static PyxRequest removeCustomDeck(int gid, int id) {
+        return new PyxRequest(Pyx.Op.REMOVE_CUSTOM_CARD_SET,
+                new PyxRequest.Param("gid", String.valueOf(gid)),
+                new PyxRequest.Param("cci", String.valueOf(id)));
     }
 
     @NonNull

@@ -68,6 +68,11 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
             holder.status.setVisibility(View.GONE);
             holder.error.setVisibility(View.GONE);
             holder.details.setVisibility(View.GONE);
+
+            holder.hasGameChat.setVisibility(View.GONE);
+            holder.hasChat.setVisibility(View.GONE);
+            holder.hasBlankCards.setVisibility(View.GONE);
+            holder.hasCustomDecks.setVisibility(View.GONE);
         } else {
             holder.checking.setVisibility(View.GONE);
             holder.status.setVisibility(View.VISIBLE);
@@ -85,6 +90,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
                     holder.hasGameChat.setVisibility(stats.gameChatEnabled() ? View.VISIBLE : View.GONE);
                     holder.hasChat.setVisibility(stats.globalChatEnabled() ? View.VISIBLE : View.GONE);
                     holder.hasBlankCards.setVisibility(stats.blankCardsEnabled() ? View.VISIBLE : View.GONE);
+                    holder.hasCustomDecks.setVisibility(stats.customDecksEnabled() ? View.VISIBLE : View.GONE);
                     break;
                 case ERROR:
                     holder.statusIcon.setImageResource(R.drawable.baseline_error_outline_24);
@@ -93,6 +99,11 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
 
                     holder.error.setVisibility(View.VISIBLE);
                     holder.error.setText(server.status.ex.getLocalizedMessage());
+
+                    holder.hasGameChat.setVisibility(View.GONE);
+                    holder.hasChat.setVisibility(View.GONE);
+                    holder.hasBlankCards.setVisibility(View.GONE);
+                    holder.hasCustomDecks.setVisibility(View.GONE);
                     break;
                 case OFFLINE:
                     holder.statusIcon.setImageResource(R.drawable.baseline_clear_24);
@@ -101,6 +112,11 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
 
                     holder.error.setVisibility(View.VISIBLE);
                     holder.error.setText(server.status.ex.getLocalizedMessage());
+
+                    holder.hasGameChat.setVisibility(View.GONE);
+                    holder.hasChat.setVisibility(View.GONE);
+                    holder.hasBlankCards.setVisibility(View.GONE);
+                    holder.hasCustomDecks.setVisibility(View.GONE);
                     break;
             }
         }
@@ -140,6 +156,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
         final ImageView hasChat;
         final ImageView hasGameChat;
         final ImageView hasBlankCards;
+        final ImageView hasCustomDecks;
 
         public ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.item_server, parent, false));
@@ -156,6 +173,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
             hasGameChat = itemView.findViewById(R.id.serverItem_hasGameChat);
             hasMetrics = itemView.findViewById(R.id.serverItem_hasMetrics);
             hasBlankCards = itemView.findViewById(R.id.serverItem_hasBlankCards);
+            hasCustomDecks = itemView.findViewById(R.id.serverItem_hasCustomDecks);
         }
     }
 }

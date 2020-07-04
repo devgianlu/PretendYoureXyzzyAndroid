@@ -1,10 +1,7 @@
-package com.gianlu.pretendyourexyzzy.api.models;
+package com.gianlu.pretendyourexyzzy.api.models.cards;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.regex.Matcher;
@@ -26,13 +23,7 @@ public abstract class BaseCard implements Serializable {
 
     public abstract int id();
 
-    public abstract boolean equals(Object o);
-
-    public abstract boolean unknown();
-
     public abstract boolean black();
-
-    public abstract boolean writeIn();
 
     @Nullable
     public final String getImageUrl() {
@@ -53,13 +44,5 @@ public abstract class BaseCard implements Serializable {
         } else {
             return imageUrl;
         }
-    }
-
-    @Nullable
-    public abstract JSONObject toJson() throws JSONException;
-
-    @Override
-    public final int hashCode() {
-        return id() * 31 + text().hashCode();
     }
 }

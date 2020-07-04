@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,8 +15,8 @@ import com.gianlu.commonutils.misc.MessageView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.CardsAdapter;
-import com.gianlu.pretendyourexyzzy.api.models.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.cards.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.dialogs.CardImageZoomDialog;
@@ -58,12 +57,6 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
         cards = findViewById(R.id.starredCards_cards);
 
         message.info(R.string.selectAStarredCard);
-    }
-
-    @Nullable
-    @Override
-    public RecyclerView getCardsRecyclerView() {
-        return list;
     }
 
     private void showCards(@NonNull StarredCardsManager.StarredCard card) {
