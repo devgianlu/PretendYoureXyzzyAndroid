@@ -183,9 +183,5 @@ public class ChatFragment extends FragmentWithDialog implements ChatAdapter.List
         adapter.newMessage(message, gid);
         rmv.list().scrollToPosition(adapter.getItemCount() - 1);
     }
-
-    @Override
-    public void onStoppedPolling() {
-    }
 }
 

@@ -35,7 +35,7 @@ import org.json.JSONException;
 
 import java.util.List;
 
-public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>, NamesAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener {
+public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>, NamesAdapter.Listener, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, Pyx.OnEventListener {
     private static final String TAG = NamesFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
     private int names = -1;
@@ -121,29 +121,7 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
             pyx.request(PyxRequests.getNamesList(), null, NamesFragment.this);
         }, R.color.colorAccent);
 
-        pyx.polling().addListener(new Pyx.OnEventListener() {
-            @Override
-            public void onPollMessage(@NonNull PollMessage msg) throws JSONException {
-                switch (msg.event) {
-                    case NEW_PLAYER:
-                        if (adapter != null)
-                            adapter.itemChangedOrAdded(new Name(msg.obj.getString("n")));
-                        break;
-                    case PLAYER_LEAVE:
-                        if (adapter != null) adapter.removeItem(msg.obj.getString("n"));
-                        break;
-                    case GAME_LIST_REFRESH:
-                        adapter = null;
-                        pyx.request(PyxRequests.getNamesList(), null, NamesFragment.this);
-                        break;
-                }
-            }
-
-            @Override
-            public void onStoppedPolling() {
-            }
-        });
-
+        pyx.polling().addListener(this);
         pyx.request(PyxRequests.getNamesList(), null, this);
         return rmv;
     }
@@ -197,5 +175,28 @@ public class NamesFragment extends Fragment implements Pyx.OnResult<List<Name>>,
     public boolean onMenuItemActionCollapse(MenuItem item) {
         onClose();
         return true;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (pyx != null) pyx.polling().removeListener(this);
+    }
+
+    @Override
+    public void onPollMessage(@NonNull PollMessage msg) throws JSONException {
+        switch (msg.event) {
+            case NEW_PLAYER:
+                if (adapter != null)
+                    adapter.itemChangedOrAdded(new Name(msg.obj.getString("n")));
+                break;
+            case PLAYER_LEAVE:
+                if (adapter != null) adapter.removeItem(msg.obj.getString("n"));
+                break;
+            case GAME_LIST_REFRESH:
+                adapter = null;
+                pyx.request(PyxRequests.getNamesList(), null, NamesFragment.this);
+                break;
+        }
     }
 }

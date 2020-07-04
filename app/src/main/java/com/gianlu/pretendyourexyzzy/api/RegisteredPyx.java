@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -110,27 +109,24 @@ public class RegisteredPyx extends FirstLoadedPyx {
         });
     }
 
-    public static class PartialCardcastAddFail extends Exception {
-        private final List<String> codes;
-
-        PartialCardcastAddFail(List<String> codes) {
-            this.codes = codes;
-        }
-
-        @NonNull
-        public String getCodes() {
-            return codes.toString();
-        }
-    }
-
     public class PollingThread extends Thread {
         private final List<OnEventListener> listeners = new ArrayList<>();
-        private final AtomicInteger exCount = new AtomicInteger(0);
+        private int exCount = 0;
         private volatile boolean shouldStop = false;
 
         @Override
         public void run() {
+            int nextWait = 0;
+
             while (!shouldStop) {
+                if (nextWait > 0) {
+                    try {
+                        Thread.sleep(nextWait);
+                    } catch (InterruptedException ex) {
+                        break;
+                    }
+                }
+
                 try {
                     Request.Builder builder = new Request.Builder()
                             .post(Util.EMPTY_REQUEST)
@@ -149,14 +145,23 @@ public class RegisteredPyx extends FirstLoadedPyx {
                         if (body != null) json = body.string();
                         else throw new IOException("Body is empty!");
 
+                        nextWait = 0;
+                        exCount = 0;
+
                         if (json.startsWith("{")) {
                             raiseException(new JSONObject(json));
                         } else if (json.startsWith("[")) {
-                            dispatchDone(PollMessage.list(new JSONArray(json)));
+                            handler.post(null, new NotifyMessage(PollMessage.list(new JSONArray(json))));
                         }
                     }
-                } catch (IOException | JSONException | PyxException ex) {
-                    dispatchEx(ex);
+                } catch (JSONException | PyxException ex) {
+                    Log.w(TAG, "Polling exception.", ex);
+                } catch (IOException ex) {
+                    Log.w(TAG, "Polling IO exception.", ex);
+                    if (exCount++ > 3) {
+                        if (nextWait < 500) nextWait = 500;
+                        else nextWait *= 2;
+                    }
                 } catch (IllegalArgumentException ex) {
                     Log.w(TAG, String.format("IAE! {server: %s}", server.url), ex);
                     Bundle bundle = new Bundle();
@@ -165,21 +170,6 @@ public class RegisteredPyx extends FirstLoadedPyx {
                     ThisApplication.sendAnalytics(Utils.ACTION_UNKNOWN_EVENT, bundle);
                 }
             }
-        }
-
-        private void dispatchDone(List<PollMessage> messages) {
-            exCount.set(0);
-            handler.post(null, new NotifyMessage(messages));
-        }
-
-        private void dispatchEx(@NonNull Exception ex) {
-            exCount.getAndIncrement();
-            if (exCount.get() > 5) {
-                safeStop();
-                handler.post(null, new NotifyException());
-            }
-
-            Log.w(TAG, "Polling exception.", ex);
         }
 
         public void addListener(@NonNull OnEventListener listener) {
@@ -196,20 +186,6 @@ public class RegisteredPyx extends FirstLoadedPyx {
         public void removeListener(@NonNull OnEventListener listener) {
             synchronized (listeners) {
                 listeners.remove(listener);
-            }
-        }
-
-        private class NotifyException implements Runnable {
-
-            @Override
-            public void run() {
-                List<OnEventListener> copy;
-                synchronized (listeners) {
-                    copy = new ArrayList<>(listeners);
-                }
-
-                for (OnEventListener listener : copy)
-                    listener.onStoppedPolling();
             }
         }
 
@@ -232,7 +208,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
                         try {
                             listener.onPollMessage(message);
                         } catch (JSONException ex) {
-                            dispatchEx(ex);
+                            Log.e(TAG, "Failed handling poll message.", ex);
                         }
                     }
                 }
