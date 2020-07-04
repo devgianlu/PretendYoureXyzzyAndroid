@@ -29,6 +29,8 @@
     <string name="tutorial_firstDesc">\"Pretend You\'re Xyzzy\" é um jogo de cartas online baseado no \"Cartas Contra Humanidade\". Neste tutorial te ensinarei a jogar.</string>
     <string name="tutorial_secondTitle">As regras</string>
     <string name="tutorial_secondDesc">Toda rodada uma carta preta é jogada pelo Czar da Carta, todos os outros respondem a pergunta ou completam o espaço em branco da frase. Assim que todos jogarem, o Czar da Carta escolhe a jogada mais engraçada, o remetente responsável receberá um ponto. No próximo turno um novo jogador se torna o Czar da Carta e todo o resto retorna com 10 cartas.</string>
+    <string name="tutorial_thirdTitle">Custom decks</string>
+    <string name="tutorial_thirdDesc">This game supports custom decks (on supporting servers): you can create custom decks from the app and add them to your own game.</string>
     <string name="tutorial_fourthTitle">Mais recursos</string>
     <string name="tutorial_fourthDesc">Mais recursos estão disponíveis neste aplicativo, você irá aprendê-los ao decorrer do uso. Bom jogo!</string>
     <string name="tutorial_chooseNickname">Escolha um apelido para jogar. Este não será permanente.</string>
@@ -39,6 +41,7 @@
     <string name="tutorial_spectateGame">Os espectadores só podem ver o que está acontecendo e não podem jogar, mas podem escrever no bate-papo.</string>
     <string name="tutorial_joinGame">Entre no jogo para começar a jogar imediatamente.</string>
     <string name="tutorial_createGame">Você pode criar seu próprio jogo e definir suas próprias configurações.</string>
+    <string name="tutorial_setupGame">Here you can customize your game options. Don\'t forget you can also add custom decks from the menu up here (if supported on the server).</string>
     <string name="tutorial_startGame">Quando terminar, inicie o jogo. Para fazer isso, você deve ter pelo menos 3 jogadores e um determinado número de cartas.</string>
     <string name="tutorial_chooseIdCode">Insira ou gere um código de identificação para dificultar a personificação de alguém.</string>
     <string name="tutorial_blackCard">Este é um cartão-bloco: você deve completar a frase com os cartões brancos abaixo.</string>
