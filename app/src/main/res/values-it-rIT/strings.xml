@@ -29,9 +29,7 @@
     <string name="tutorial_firstDesc">Pretend You\'re Xyzzy è un gioco online basato su Cards Against Humanity. In questo tutorial ti spiegherò come giocare.</string>
     <string name="tutorial_secondTitle">Regole</string>
     <string name="tutorial_secondDesc">Ogni turno una carta nera viene giocata dal giudice, tutti gli altri rispondono alla domanda o completano la frase. Una volta che tutti hanno giocato, il giudice sceglie l\’accoppiamento di carte più divertente e chi lo ha proposto guadagna un punto. Nel turno successivo un nuovo giocatore diventa il giudice e si continua così.</string>
-    <string name="tutorial_thirdTitle">Cardcast</string>
-    <string name="tutorial_thirdDesc">Questo gioco supporta l\’integrazione con Cardcast: con Cardcast puoi creare mazzi personalizzati (dal sito<a>cardcastgame.com</a>) e aggiungerli al tuo gioco. Puoi anche cercare mazzi fatti da qualcun altro e usarli.</string>
-    <string name="tutorial_fourthTitle">Altre funzioni</string>
+   <string name="tutorial_fourthTitle">Altre funzioni</string>
     <string name="tutorial_fourthDesc">Nell\'app ci sono anche altre funzioni, ma le imparerai giocando!</string>
     <string name="tutorial_chooseNickname">Scegli un nome per giocare, non sarà permanente.</string>
     <string name="tutorial_changeServer">Sono disponibili più server, scegli quello che preferisci.</string>
@@ -41,7 +39,6 @@
     <string name="tutorial_spectateGame">Gli spettatori possono solo vedere cosa sta succedendo e non possono giocare, ma possono scrivere in chat.</string>
     <string name="tutorial_joinGame">Entra nella partita per iniziare subito a giocare.</string>
     <string name="tutorial_createGame">Puoi creare il tuo gioco e scegliere le tue impostazioni.</string>
-    <string name="tutorial_setupGame">Qui puoi personalizzare la tua partita. Non dimenticare che puoi anche aggiungere mazzi da Cardcast.</string>
     <string name="tutorial_startGame">Una volta che hai finito, inizia il gioco. Per farlo devi avere almeno 3 giocatori e un determinato numero di carte.</string>
     <string name="tutorial_chooseIdCode">Scegli un codice o generane uno per rendere più difficile per qualcuno impersonarti.</string>
     <string name="tutorial_blackCard">Questa è una carta nera: devi completare la frase con le carte bianche qui sotto.</string>
