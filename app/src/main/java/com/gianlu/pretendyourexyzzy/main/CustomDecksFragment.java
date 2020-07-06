@@ -3,10 +3,12 @@ package com.gianlu.pretendyourexyzzy.main;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -19,10 +21,18 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
+import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksAdapter;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.FloatingCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
+import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
+import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,11 +40,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-public class CustomDecksFragment extends FragmentWithDialog {
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
+
+public class CustomDecksFragment extends FragmentWithDialog implements OverloadedSyncApi.SyncStatusListener, CustomDecksAdapter.Listener {
     private static final int RC_IMPORT_JSON = 2;
     private static final String TAG = CustomDecksFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
     private CustomDecksDatabase db;
+    private TextView syncStatus;
 
     @NonNull
     public static CustomDecksFragment getInstance() {
@@ -47,9 +61,14 @@ public class CustomDecksFragment extends FragmentWithDialog {
         CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.fragment_custom_decks, container, false);
         db = CustomDecksDatabase.get(requireContext());
 
+        syncStatus = layout.findViewById(R.id.customDecks_sync);
         rmv = layout.findViewById(R.id.customDecks_list);
-        rmv.disableSwipeRefresh();
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
+
+        if (OverloadedApi.get().isFullyRegistered())
+            rmv.enableSwipeRefresh(this::refreshSync, R.color.appColorBright);
+        else
+            rmv.disableSwipeRefresh();
 
         FloatingActionsMenu fab = layout.findViewById(R.id.customDecks_fab);
         FloatingActionButton importDeck = layout.findViewById(R.id.customDecksFab_import);
@@ -64,16 +83,82 @@ public class CustomDecksFragment extends FragmentWithDialog {
             fab.collapse();
         });
 
+        FloatingActionButton recoverDeck = layout.findViewById(R.id.customDecksFab_recover);
+        recoverDeck.setOnClickListener(v -> {
+            EditText input = new EditText(requireContext());
+            input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5), new InputFilter.AllCaps()});
+
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+            builder.setTitle(R.string.recoverCardcastDeck).setView(input)
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(R.string.recover, (dialog, which) -> {
+                        String code = input.getText().toString();
+                        if (!code.matches("[A-Z0-9]{5}")) {
+                            showToast(Toaster.build().message(R.string.invalidDeckCode));
+                            return;
+                        }
+
+                        try {
+                            recoverCardcastDeck(code);
+                        } catch (LevelMismatchException ignored) {
+                        }
+                    });
+            showDialog(builder);
+            fab.collapse();
+        });
+
         return layout;
+    }
+
+    private void recoverCardcastDeck(@NonNull String code) throws LevelMismatchException {
+        showProgress(R.string.loading);
+        Pyx.get().recoverCardcastDeck(code, requireContext(), new Pyx.OnRecoverResult() {
+            @Override
+            public void onDone(@NonNull File tmpFile) {
+                dismissDialog();
+                EditCustomDeckActivity.startActivityImport(requireContext(), false, tmpFile);
+            }
+
+            @Override
+            public void notFound() {
+                dismissDialog();
+                showToast(Toaster.build().message(R.string.recoverDeckNotFound));
+            }
+
+            @Override
+            public void onException(@NonNull Exception ex) {
+                Log.e(TAG, "Cannot recover deck.", ex);
+                showToast(Toaster.build().message(R.string.failedRecoveringCardcastDeck));
+                dismissDialog();
+            }
+        });
+    }
+
+    private void refreshSync() {
+        if (getContext() == null)
+            return;
+
+        SyncUtils.syncCustomDecks(requireContext(), this::refreshList);
+        SyncUtils.syncStarredCustomDecks(requireContext(), this::refreshList);
+    }
+
+    private void refreshList() {
+        List<FloatingCustomDeck> decks = db.getAllDecks();
+        rmv.loadListData(new CustomDecksAdapter(requireContext(), decks, this), false);
+        if (decks.isEmpty()) rmv.showInfo(R.string.noCustomDecks_create);
+        else rmv.showList();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        OverloadedSyncApi.get().addSyncListener(this);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        List<CustomDeck> decks = db.getDecks();
-        rmv.loadListData(new CustomDecksAdapter(decks), false);
-        if (decks.isEmpty()) rmv.showInfo(R.string.noCustomDecks_create);
-        else rmv.showList();
+        refreshList();
     }
 
     @Override
@@ -86,7 +171,7 @@ public class CustomDecksFragment extends FragmentWithDialog {
 
                     File tmpFile = new File(requireContext().getCacheDir(), CommonUtils.randomString(6, "abcdefghijklmnopqrstuvwxyz"));
                     CommonUtils.copy(in, new FileOutputStream(tmpFile));
-                    EditCustomDeckActivity.startActivityImport(requireContext(), tmpFile);
+                    EditCustomDeckActivity.startActivityImport(requireContext(), true, tmpFile);
                 } catch (IOException ex) {
                     Log.e(TAG, "Failed importing JSON file: " + data, ex);
                 }
@@ -96,51 +181,17 @@ public class CustomDecksFragment extends FragmentWithDialog {
         }
     }
 
-    private class CustomDecksAdapter extends RecyclerView.Adapter<CustomDecksAdapter.ViewHolder> {
-        private final List<CustomDeck> decks;
-        private final LayoutInflater inflater;
+    @Override
+    public void syncStatusUpdated(@NonNull OverloadedSyncApi.SyncProduct product, boolean isSyncing, boolean error) {
+        if (syncStatus != null && (product == OverloadedSyncApi.SyncProduct.CUSTOM_DECKS || product == OverloadedSyncApi.SyncProduct.STARRED_CUSTOM_DECKS))
+            SyncUtils.updateSyncText(syncStatus, product, isSyncing, error);
+    }
 
-        CustomDecksAdapter(@NonNull List<CustomDeck> decks) {
-            this.decks = decks;
-            this.inflater = LayoutInflater.from(getContext());
-            setHasStableIds(true);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return decks.get(position).id;
-        }
-
-        @Override
-        @NonNull
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new ViewHolder(parent);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            CustomDeck deck = decks.get(position);
-            holder.name.setText(deck.name);
-            holder.watermark.setText(deck.watermark);
-            holder.itemView.setOnClickListener(view -> EditCustomDeckActivity.startActivityEdit(holder.itemView.getContext(), deck));
-            CommonUtils.setRecyclerViewTopMargin(holder);
-        }
-
-        @Override
-        public int getItemCount() {
-            return decks.size();
-        }
-
-        class ViewHolder extends RecyclerView.ViewHolder {
-            final TextView name;
-            final TextView watermark;
-
-            ViewHolder(ViewGroup parent) {
-                super(inflater.inflate(R.layout.item_custom_deck, parent, false));
-
-                name = itemView.findViewById(R.id.customDeckItem_name);
-                watermark = itemView.findViewById(R.id.customDeckItem_watermark);
-            }
-        }
+    @Override
+    public void onCustomDeckSelected(@NonNull FloatingCustomDeck deck) {
+        if (deck instanceof CustomDeck)
+            EditCustomDeckActivity.startActivityEdit(requireContext(), (CustomDeck) deck);
+        else if (deck instanceof CustomDecksDatabase.StarredDeck && deck.owner != null)
+            ViewCustomDeckActivity.startActivity(requireContext(), deck.owner, deck.name, ((CustomDecksDatabase.StarredDeck) deck).shareCode);
     }
 }

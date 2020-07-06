@@ -1,23 +1,23 @@
 package com.gianlu.pretendyourexyzzy;
 
 import android.content.Intent;
-import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
@@ -37,46 +37,63 @@ import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
+import com.gianlu.pretendyourexyzzy.overloaded.AskUsernameDialog;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedBillingHelper;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedBillingHelper.Status;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.tutorial.LoginTutorial;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseUser;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import me.toptas.fancyshowcase.FocusShape;
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.model.UserData;
+import xyz.gianlu.pyxoverloaded.model.UserData.PurchaseStatusGranular;
 
 
-public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener {
-    private static final int GOOGLE_SIGN_IN_CODE = 3;
+public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener, AskUsernameDialog.Listener {
+    private static final int RC_SIGN_IN = 3;
     private static final String TAG = LoadingActivity.class.getSimpleName();
-    private Intent goTo;
-    private boolean finished = false;
-    private ProgressBar loading;
-    private LinearLayout register;
+    private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
+    private final OverloadedBillingHelper billingHelper = new OverloadedBillingHelper(this, this);
     private TextInputLayout registerNickname;
     private Button registerSubmit;
     private GamePermalink launchGame = null;
     private String launchGamePassword;
-    private Button changeServer;
+    private ImageButton changeServer;
     private boolean launchGameShouldRequest;
+    private ShimmerFrameLayout serverLoading;
     private TextInputLayout registerIdCode;
     private TutorialManager tutorialManager;
     private SuperTextView welcomeMessage;
     private PyxDiscoveryApi discoveryApi;
     private TextView currentServer;
+    private ShimmerFrameLayout overloadedLoading;
+    private ShimmerFrameLayout inputLoading;
+    private TextView overloadedStatus;
+    private ImageButton overloadedWarning;
+    private SwitchMaterial overloadedToggle;
+    private boolean waitingOverloaded = false;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        billingHelper.onStart();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,11 +110,6 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
-        new Handler().postDelayed(() -> {
-            finished = true;
-            if (goTo != null) startActivity(goTo);
-        }, 1000);
-
         if (Prefs.getBoolean(PK.FIRST_RUN, true)) {
             startActivity(new Intent(this, TutorialActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
@@ -109,10 +121,14 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
 
         tutorialManager = new TutorialManager(this, Discovery.LOGIN);
 
-        loading = findViewById(R.id.loading_loading);
-        loading.getIndeterminateDrawable().setColorFilter(CommonUtils.resolveAttrAsColor(this, android.R.attr.textColorPrimary), PorterDuff.Mode.SRC_IN);
+        inputLoading = findViewById(R.id.loading_inputLoading);
+        serverLoading = findViewById(R.id.loading_serverLoading);
+        overloadedLoading = findViewById(R.id.loading_overloadedLoading);
+        overloadedToggle = findViewById(R.id.loading_overloadedToggle);
+        overloadedToggle.setOnCheckedChangeListener(billingHelper.toggleOverloaded());
+        overloadedStatus = findViewById(R.id.loading_overloadedStatus);
+        overloadedWarning = findViewById(R.id.loading_overloadedWarning);
         currentServer = findViewById(R.id.loading_currentServer);
-        register = findViewById(R.id.loading_register);
         registerNickname = findViewById(R.id.loading_registerNickname);
         registerSubmit = findViewById(R.id.loading_registerSubmit);
         registerIdCode = findViewById(R.id.loading_registerIdCode);
@@ -149,6 +165,15 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         }
 
+        String lastNickname = Prefs.getString(PK.LAST_NICKNAME, null);
+        if (lastNickname != null) CommonUtils.setText(registerNickname, lastNickname);
+
+        String lastIdCode = Prefs.getString(PK.LAST_ID_CODE, null);
+        if (lastIdCode != null) CommonUtils.setText(registerIdCode, lastIdCode);
+
+        Pyx.Server lastServer = Pyx.Server.lastServerNoThrow();
+        if (lastServer != null) currentServer.setText(lastServer.name);
+
         discoveryApi = PyxDiscoveryApi.get();
         discoveryApi.getWelcomeMessage(this, new Pyx.OnResult<String>() {
             @Override
@@ -168,51 +193,32 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             }
         });
         discoveryApi.firstLoad(this, null, this);
-
-        signInSilently();
     }
 
-    private void googleSignedIn(GoogleSignInAccount account) {
-        if (account == null) return;
-
-        Log.i(TAG, "Successfully logged in Google Play as " + Utils.getAccountName(account));
-    }
-
-    private void signInSilently() {
-        GoogleSignInOptions signInOptions = GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN;
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        if (GoogleSignIn.hasPermissions(account, signInOptions.getScopeArray())) {
-            googleSignedIn(account);
-        } else {
-            GoogleSignInClient signInClient = GoogleSignIn.getClient(this, signInOptions);
-            signInClient.silentSignIn().addOnCompleteListener(this, task -> {
-                if (task.isSuccessful()) {
-                    googleSignedIn(task.getResult());
-                } else {
-                    if (Prefs.getBoolean(PK.SHOULD_PROMPT_GOOGLE_PLAY, true)) {
-                        Intent intent = signInClient.getSignInIntent();
-                        startActivityForResult(intent, GOOGLE_SIGN_IN_CODE);
-                    }
-                }
-            });
-        }
+    @Override
+    public void onSelectedSignInProvider(@NonNull OverloadedSignInHelper.SignInProvider provider) {
+        startActivityForResult(signInHelper.startFlow(this, provider), RC_SIGN_IN);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (requestCode == GOOGLE_SIGN_IN_CODE) {
-            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            if (result == null) return;
+        if (requestCode == RC_SIGN_IN) {
+            if (data != null) {
+                showProgress(R.string.loading);
+                signInHelper.processSignInData(data, new OverloadedSignInHelper.SignInCallback() {
+                    @Override
+                    public void onSignInSuccessful(@NonNull FirebaseUser user) {
+                        dismissDialog();
+                        showToast(Toaster.build().message(R.string.signInSuccessful));
+                        billingHelper.startFlow();
+                    }
 
-            if (result.isSuccess()) {
-                googleSignedIn(result.getSignInAccount());
-            } else {
-                if (result.getStatus().getStatusCode() == GoogleSignInStatusCodes.SIGN_IN_CANCELLED)
-                    Prefs.putBoolean(PK.SHOULD_PROMPT_GOOGLE_PLAY, false);
-
-                String msg = result.getStatus().getStatusMessage();
-                if (msg != null && !msg.isEmpty())
-                    Toaster.with(this).message(msg).show();
+                    @Override
+                    public void onSignInFailed() {
+                        dismissDialog();
+                        showToast(Toaster.build().message(R.string.failedSigningIn));
+                    }
+                });
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
@@ -246,8 +252,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             @Override
             public void serverSelected(@NonNull Pyx.Server server) {
                 setServer(server);
-                loading.setVisibility(View.VISIBLE);
-                register.setVisibility(View.GONE);
+                toggleLoading(true);
                 dismissDialog();
 
                 discoveryApi.firstLoad(LoadingActivity.this, null, LoadingActivity.this);
@@ -255,6 +260,21 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         }));
 
         showDialog(builder);
+    }
+
+    private void toggleLoading(boolean val) {
+        registerSubmit.setEnabled(!val);
+        registerSubmit.setClickable(!val);
+        if (val) {
+            inputLoading.showShimmer(true);
+            serverLoading.showShimmer(true);
+            overloadedLoading.showShimmer(true);
+        } else {
+            inputLoading.hideShimmer();
+            serverLoading.hideShimmer();
+            if (billingHelper.getStatus() != Status.LOADING)
+                overloadedLoading.hideShimmer();
+        }
     }
 
     private void setServer(@NonNull Pyx.Server server) {
@@ -270,17 +290,10 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         return id.isEmpty() ? null : id;
     }
 
-    private void showRegisterUI(final FirstLoadedPyx pyx) {
-        loading.setVisibility(View.GONE);
-        register.setVisibility(View.VISIBLE);
+    private void showRegisterUi(@NotNull FirstLoadedPyx pyx) {
+        toggleLoading(false);
         registerNickname.setErrorEnabled(false);
         registerIdCode.setErrorEnabled(false);
-
-        String lastNickname = Prefs.getString(PK.LAST_NICKNAME, null);
-        if (lastNickname != null) CommonUtils.setText(registerNickname, lastNickname);
-
-        String lastIdCode = Prefs.getString(PK.LAST_ID_CODE, null);
-        if (lastIdCode != null) CommonUtils.setText(registerIdCode, lastIdCode);
 
         if (!pyx.isServerSecure() && !pyx.config().insecureIdAllowed())
             registerIdCode.setEnabled(false);
@@ -288,11 +301,14 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             registerIdCode.setEnabled(true);
 
         registerSubmit.setOnClickListener(v -> {
-            loading.setVisibility(View.VISIBLE);
-            register.setVisibility(View.GONE);
+            toggleLoading(true);
 
             String idCode = getIdCode();
             String nick = CommonUtils.getText(registerNickname);
+
+            if (billingHelper.getStatus() == Status.SIGNED_IN && !overloadedToggle.isChecked() && nick.equals(OverloadedApi.get().username()))
+                overloadedToggle.setChecked(true);
+
             pyx.register(nick, idCode, this, new Pyx.OnResult<RegisteredPyx>() {
                 @Override
                 public void onDone(@NonNull RegisteredPyx result) {
@@ -305,8 +321,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 public void onException(@NonNull Exception ex) {
                     Log.e(TAG, "Failed registering on server.", ex);
 
-                    loading.setVisibility(View.GONE);
-                    register.setVisibility(View.VISIBLE);
+                    toggleLoading(false);
 
                     if (ex instanceof PyxException) {
                         switch (((PyxException) ex).errorCode) {
@@ -348,7 +363,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
             goToMain();
         } else {
             currentServer.setText(result.server.name);
-            showRegisterUI(result);
+            showRegisterUi(result);
             tutorialManager.tryShowingTutorials(this);
         }
     }
@@ -357,9 +372,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     public void onException(@NonNull Exception ex) {
         if (ex instanceof PyxException) {
             if (Objects.equals(((PyxException) ex).errorCode, "se")) {
-                loading.setVisibility(View.GONE);
-                register.setVisibility(View.VISIBLE);
-
+                toggleLoading(false);
                 return;
             }
         }
@@ -370,12 +383,24 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     }
 
     private void goToMain() {
+        if (billingHelper.getStatus() == Status.LOADING) {
+            if (waitingOverloaded) {
+                goToMain();
+                waitingOverloaded = false;
+            } else {
+                waitingOverloaded = true;
+            }
+            return;
+        }
+
+        waitingOverloaded = false;
+
         Intent intent = new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("shouldRequest", launchGameShouldRequest);
         if (launchGame != null) intent.putExtra("game", launchGame);
         if (launchGamePassword != null) intent.putExtra("password", launchGamePassword);
-        if (finished) startActivity(intent);
-        else this.goTo = intent;
+        startActivity(intent);
+        waitingOverloaded = false;
     }
 
     @Override
@@ -397,6 +422,10 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 .roundRectRadius(8)
                 .enableAutoTextPosition()
                 .focusShape(FocusShape.ROUNDED_RECTANGLE));
+        t.add(t.forView(overloadedLoading, R.string.tutorial_overloaded)
+                .roundRectRadius(8)
+                .enableAutoTextPosition()
+                .focusShape(FocusShape.ROUNDED_RECTANGLE));
         t.add(t.forView(registerSubmit, R.string.tutorial_joinTheServer)
                 .roundRectRadius(8)
                 .enableAutoTextPosition()
@@ -407,7 +436,126 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
     @Override
     protected void onResume() {
         super.onResume();
-        if (register != null)
-            GPGamesHelper.setPopupView(this, (View) register.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        billingHelper.onResume();
+        GPGamesHelper.setPopupView(this, Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+    }
+
+    @Override
+    public void updateOverloadedStatus(@NonNull Status status, UserData data) {
+        if (overloadedLoading == null || overloadedStatus == null || overloadedToggle == null || overloadedWarning == null)
+            return;
+
+        if (status != Status.LOADING && waitingOverloaded) {
+            goToMain();
+            return;
+        }
+
+        if (data != null && data.purchaseStatusGranular.message) {
+            overloadedWarning.setVisibility(View.VISIBLE);
+            overloadedWarning.setOnClickListener(v -> showOverloadedWarningDialog(OverloadedBillingHelper.ACTIVE_SKU.sku, data.purchaseStatusGranular, data.expireTime));
+        } else {
+            overloadedWarning.setVisibility(View.GONE);
+        }
+
+        switch (status) {
+            case MAINTENANCE:
+                overloadedLoading.hideShimmer();
+                overloadedStatus.setText(getString(R.string.overloadedStatus_maintenance, new SimpleDateFormat("HH:mm", Locale.getDefault()).format(billingHelper.maintenanceEstimatedEnd())));
+                overloadedToggle.setEnabled(false);
+                overloadedToggle.setChecked(false);
+                break;
+            case TWO_CLIENTS_ERROR:
+                overloadedLoading.hideShimmer();
+                overloadedStatus.setText(R.string.overloadedStatus_twoDevices);
+                overloadedToggle.setEnabled(false);
+                overloadedToggle.setChecked(false);
+                break;
+            case ERROR:
+                overloadedLoading.hideShimmer();
+                overloadedStatus.setText(R.string.overloadedStatus_error);
+                overloadedToggle.setEnabled(false);
+                overloadedToggle.setChecked(false);
+                break;
+            case LOADING:
+                overloadedLoading.showShimmer(true);
+                break;
+            case SIGNED_IN:
+                overloadedLoading.hideShimmer();
+                overloadedStatus.setText(getString(R.string.loggedInAs, data.username));
+                overloadedToggle.setEnabled(true);
+                overloadedToggle.setChecked(Prefs.getBoolean(PK.OVERLOADED_LAST_ENABLED, false));
+                break;
+            case NOT_SIGNED_IN:
+                overloadedLoading.hideShimmer();
+                overloadedStatus.setText(R.string.overloaded_notSignedIn);
+                overloadedToggle.setEnabled(true);
+                overloadedToggle.setChecked(false);
+                break;
+            default:
+                throw new IllegalStateException("Unknown status: " + status);
+        }
+
+        overloadedStatus.setVisibility(status == Status.LOADING ? View.GONE : View.VISIBLE);
+        overloadedStatus.setTextColor(status == Status.ERROR ? ContextCompat.getColor(this, R.color.red) : CommonUtils.resolveAttrAsColor(this, android.R.attr.textColorSecondary));
+    }
+
+    @Override
+    public void updateOverloadedMode(boolean enabled, UserData data) {
+        if (registerNickname == null || overloadedToggle == null) return;
+
+        if (enabled) {
+            if (data == null) {
+                overloadedToggle.setChecked(false);
+                return;
+            }
+
+            String nickname = CommonUtils.getText(registerNickname);
+            if (Objects.equals(nickname, data.username)) {
+                registerNickname.setEnabled(false);
+                Prefs.putBoolean(PK.OVERLOADED_LAST_ENABLED, true);
+                return;
+            }
+
+            overloadedToggle.setChecked(false);
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+            builder.setTitle(R.string.overloadedDifferentUsername_title)
+                    .setMessage(R.string.overloadedDifferentUsername_message)
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(R.string.change, (dialog, which) -> {
+                        CommonUtils.setText(registerNickname, data.username);
+                        overloadedToggle.setChecked(true);
+                    });
+
+            showDialog(builder);
+        } else {
+            Prefs.putBoolean(PK.OVERLOADED_LAST_ENABLED, false);
+            registerNickname.setEnabled(true);
+        }
+    }
+
+    private void showOverloadedWarningDialog(@NotNull String sku, @NotNull PurchaseStatusGranular status, @Nullable Long expireTimeMillis) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle(status.getName()).setMessage(status.getMessage(this, expireTimeMillis));
+
+        if (status == PurchaseStatusGranular.PAUSED) {
+            builder.setNeutralButton(R.string.resume, (dialog, which) -> OverloadedBillingHelper.launchSubscriptions(this, sku));
+        } else if (status == PurchaseStatusGranular.ACCOUNT_HOLD || status == PurchaseStatusGranular.GRACE_PERIOD) {
+            builder.setNeutralButton(R.string.fixPayment, (dialog, which) -> OverloadedBillingHelper.launchSubscriptions(this, sku));
+        } else {
+            builder.setNeutralButton(R.string.subscriptions, (dialog, which) -> OverloadedBillingHelper.launchSubscriptions(this, null));
+        }
+
+        showDialog(builder);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        billingHelper.onDestroy();
+    }
+
+    @Override
+    public void onUsernameSelected(@NonNull String username) {
+        billingHelper.onUsernameSelected(username);
     }
 }

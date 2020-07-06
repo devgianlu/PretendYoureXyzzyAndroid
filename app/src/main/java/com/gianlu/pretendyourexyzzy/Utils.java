@@ -1,18 +1,25 @@
 package com.gianlu.pretendyourexyzzy;
 
+import android.util.Base64;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.NameValuePair;
+import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -25,32 +32,46 @@ public final class Utils {
     public static final String ACTION_SKIP_TUTORIAL = "skipped_tutorial";
     public static final String ACTION_DONE_TUTORIAL = "did_tutorial";
     public static final String ACTION_SENT_GAME_MSG = "sent_message_game";
-    public static final String ACTION_ADDED_CARDCAST = "added_cardcast_deck";
+    public static final String ACTION_ADDED_CUSTOM_DECK = "added_custom_deck";
     public static final String ACTION_JUDGE_CARD = "judged_card";
     public static final String ACTION_PLAY_CUSTOM_CARD = "played_custom_card";
     public static final String ACTION_PLAY_CARD = "played_card";
-    public static final String ACTION_STARRED_DECK_ADD = "added_starred_deck";
     public static final String ACTION_SHOW_ROUND = "show_round";
     public static final String ACTION_SAVE_SHARE_ROUND = "save_share_round";
     public static final String ACTION_SENT_MSG = "sent_message";
     public static final String ACTION_OPEN_URBAN_DICT = "opened_urban_dict_sheet";
     public static final String ACTION_UNKNOWN_EVENT = "unknown_server_event";
+    public static final String ACTION_BLOCK_USER = "block_user";
+    public static final String ACTION_UNBLOCK_USER = "unblock_user";
 
     private Utils() {
     }
 
     @NonNull
-    public static String getAccountName(@NonNull GoogleSignInAccount account) {
-        String name = account.getDisplayName();
+    public static String sha1(@NonNull String str) {
+        try {
+            return Base64.encodeToString(MessageDigest.getInstance("SHA1").digest(str.getBytes(StandardCharsets.UTF_8)), Base64.NO_WRAP);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
+    @Nullable
+    public static String myPyxUsername() {
+        try {
+            return RegisteredPyx.get().user().nickname;
+        } catch (LevelMismatchException ex) {
+            return null;
+        }
+    }
+
+    @NonNull
+    public static String getDisplayableName(@NonNull FirebaseUser user) {
+        String name = user.getDisplayName();
         if (name == null || name.isEmpty()) {
-            name = account.getGivenName();
-            if (name == null || name.isEmpty()) {
-                name = account.getEmail();
-                if (name == null || name.isEmpty()) {
-                    name = account.getId();
-                    if (name == null || name.isEmpty()) name = "<unknown>";
-                }
-            }
+            name = user.getEmail();
+            if (name == null || name.isEmpty())
+                name = user.getUid();
         }
 
         return name;

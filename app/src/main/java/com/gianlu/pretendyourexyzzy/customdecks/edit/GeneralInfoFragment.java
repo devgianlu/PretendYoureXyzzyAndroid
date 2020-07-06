@@ -25,6 +25,9 @@ import java.util.regex.Pattern;
 
 public final class GeneralInfoFragment extends FragmentWithDialog {
     private static final Pattern VALID_WATERMARK_PATTERN = Pattern.compile("[A-Z0-9]{5}");
+    private static final int MIN_DECK_NAME_LENGTH = 5;
+    private static final int MAX_DECK_NAME_LENGTH = 32;
+    private static final int MAX_DECK_DESC_LENGTH = 256;
     private TextInputLayout name;
     private TextInputLayout watermark;
     private TextInputLayout desc;
@@ -64,10 +67,15 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
     }
 
     private boolean save(@NonNull Context context, @NonNull String name, @NonNull String watermark, @NonNull String description) {
-        if (name.trim().isEmpty())
+        name = name.trim();
+        if (name.length() < MIN_DECK_NAME_LENGTH || name.length() > MAX_DECK_NAME_LENGTH)
             return false;
 
         if (!VALID_WATERMARK_PATTERN.matcher(watermark).matches())
+            return false;
+
+        description = description.trim();
+        if (description.length() > MAX_DECK_DESC_LENGTH)
             return false;
 
         CustomDecksDatabase db = CustomDecksDatabase.get(context);
@@ -110,9 +118,9 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
             @Override
             public void afterTextChanged(Editable s) {
                 String str = s.toString().trim();
-                if (str.isEmpty()) {
+                if (str.length() < MIN_DECK_NAME_LENGTH || str.length() > MAX_DECK_NAME_LENGTH) {
                     name.setErrorEnabled(true);
-                    name.setError(getString(R.string.emptyDeckName));
+                    name.setError(getString(R.string.invalidDeckName));
                 } else if ((deck == null || !deck.name.equals(str)) && db != null && !db.isNameUnique(str)) {
                     name.setErrorEnabled(true);
                     name.setError(getString(R.string.customDeckNameNotUnique));
@@ -143,6 +151,26 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
             }
         });
         desc = layout.findViewById(R.id.editCustomDeckInfo_desc);
+        CommonUtils.getEditText(desc).addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String str = s.toString().trim();
+                if (str.length() > MAX_DECK_DESC_LENGTH) {
+                    desc.setErrorEnabled(true);
+                    desc.setError(getString(R.string.invalidDeckDesc));
+                } else {
+                    desc.setErrorEnabled(false);
+                }
+            }
+        });
 
         db = CustomDecksDatabase.get(requireContext());
 

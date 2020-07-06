@@ -3,7 +3,10 @@ package com.gianlu.pretendyourexyzzy.starred;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -20,17 +23,21 @@ import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.cards.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.dialogs.CardImageZoomDialog;
+import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
 
 import java.util.Objects;
 
-public class StarredCardsActivity extends ActivityWithDialog implements CardsAdapter.Listener {
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
+
+public class StarredCardsActivity extends ActivityWithDialog implements CardsAdapter.Listener, OverloadedSyncApi.SyncStatusListener {
     private RecyclerView list;
     private LinearLayout cards;
     private MessageView message;
-    private StarredCardsManager starredCards;
+    private TextView syncStatus;
 
     public static void startActivity(@NonNull Context context) {
-        if (StarredCardsManager.get().hasAnyCard())
+        if (StarredCardsDatabase.get(context).hasAnyCard())
             context.startActivity(new Intent(context, StarredCardsActivity.class));
         else
             Toaster.with(context).message(R.string.noStarredCards).show();
@@ -47,19 +54,63 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
 
-        starredCards = StarredCardsManager.get();
-
         list = findViewById(R.id.starredCards_list);
         list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        list.setAdapter(new CardsAdapter(false, starredCards.getCards(), GameCardView.Action.SELECT, GameCardView.Action.DELETE, true, this));
 
         message = findViewById(R.id.starredCards_message);
         cards = findViewById(R.id.starredCards_cards);
+        syncStatus = findViewById(R.id.starredCards_sync);
 
-        message.info(R.string.selectAStarredCard);
+        refreshList();
     }
 
-    private void showCards(@NonNull StarredCardsManager.StarredCard card) {
+    private void refreshList() {
+        list.setAdapter(new CardsAdapter(false, StarredCardsDatabase.get(this).getCards(false), GameCardView.Action.SELECT, GameCardView.Action.DELETE, true, this));
+        message.info(R.string.selectAStarredCard);
+        cards.removeAllViews();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.starred_cards, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (!OverloadedApi.get().isFullyRegistered())
+            menu.removeItem(R.id.starredCards_refresh);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.starredCards_refresh) {
+            item.setEnabled(false);
+            SyncUtils.syncStarredCards(this, () -> {
+                item.setEnabled(true);
+                refreshList();
+            });
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        OverloadedSyncApi.get().addSyncListener(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        OverloadedSyncApi.get().removeSyncListener(this);
+    }
+
+    private void showCards(@NonNull StarredCardsDatabase.StarredCard card) {
         message.hide();
 
         cards.removeAllViews();
@@ -78,15 +129,15 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
         params.setMargins(0, paddings[1], paddings[2], paddings[3]);
     }
 
-    private void deleteCard(@NonNull StarredCardsManager.StarredCard card) {
-        starredCards.removeCard(card);
+    private void deleteCard(@NonNull StarredCardsDatabase.StarredCard card) {
+        StarredCardsDatabase.get(this).remove(card);
         if (list.getAdapter() != null && list.getAdapter().getItemCount() == 0) onBackPressed();
     }
 
     @Override
     public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
-        if (card instanceof StarredCardsManager.StarredCard) {
-            StarredCardsManager.StarredCard starred = (StarredCardsManager.StarredCard) card;
+        if (card instanceof StarredCardsDatabase.StarredCard) {
+            StarredCardsDatabase.StarredCard starred = (StarredCardsDatabase.StarredCard) card;
             switch (action) {
                 case SELECT:
                     showCards(starred);
@@ -105,5 +156,11 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
                     break;
             }
         }
+    }
+
+    @Override
+    public void syncStatusUpdated(@NonNull OverloadedSyncApi.SyncProduct product, boolean isSyncing, boolean error) {
+        if (syncStatus != null && product == OverloadedSyncApi.SyncProduct.STARRED_CARDS)
+            SyncUtils.updateSyncText(syncStatus, product, isSyncing, error);
     }
 }

@@ -28,7 +28,7 @@ import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
 import com.gianlu.pretendyourexyzzy.cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.dialogs.CardImageZoomDialog;
-import com.gianlu.pretendyourexyzzy.starred.StarredCardsManager;
+import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
@@ -45,7 +45,7 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
     private final TextView time;
     private final Timer timer = new Timer();
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private final StarredCardsManager starredCards;
+    private final StarredCardsDatabase starredCards;
     private PlayersAdapter.Listener playersListener;
     private CardsAdapter tableAdapter;
     private CardsAdapter handAdapter;
@@ -65,7 +65,7 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
 
         View.inflate(context, R.layout.game_layout, this);
 
-        starredCards = StarredCardsManager.get();
+        starredCards = StarredCardsDatabase.get(context);
 
         blackCard = findViewById(R.id.gameLayout_blackCard);
         instructions = findViewById(R.id.gameLayout_instructions);
@@ -192,7 +192,7 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
             AnalyticsApplication.sendAnalytics(Utils.ACTION_STARRED_CARD_ADD);
 
             BaseCard bc = blackCard();
-            if (bc != null && starredCards.addCard(new StarredCardsManager.StarredCard((GameCard) bc, group)))
+            if (bc != null && starredCards.putCard((GameCard) bc, group))
                 Toaster.with(getContext()).message(R.string.addedCardToStarred).show();
         } else if (action == GameCardView.Action.SELECT_IMG) {
             listener.showDialog(CardImageZoomDialog.get(card));

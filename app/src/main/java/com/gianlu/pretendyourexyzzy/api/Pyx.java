@@ -30,6 +30,7 @@ import com.gianlu.pretendyourexyzzy.api.models.metrics.GameRound;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionHistory;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionStats;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -37,6 +38,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
@@ -59,8 +62,9 @@ import okhttp3.ResponseBody;
 
 
 public class Pyx implements Closeable {
-    protected final static int AJAX_TIMEOUT = 5;
+    protected final static int AJAX_TIMEOUT = 10;
     protected final static int POLLING_TIMEOUT = 30;
+    private static final String TAG = Pyx.class.getSimpleName();
     public final Server server;
     protected final LifecycleAwareHandler handler;
     protected final OkHttpClient client;
@@ -108,8 +112,6 @@ public class Pyx implements Closeable {
         return request(operation, false, params);
     }
 
-    private static final String TAG = Pyx.class.getSimpleName();
-
     @NonNull
     @WorkerThread
     private PyxResponse request(@NonNull Op operation, boolean retried, PyxRequest.Param... params) throws IOException, JSONException, PyxException {
@@ -148,8 +150,12 @@ public class Pyx implements Closeable {
                 throw new StatusCodeException(resp);
             }
         } catch (SocketTimeoutException ex) {
-            if (!retried) return request(operation, true, params);
-            else throw ex;
+            if (!retried) {
+                Log.d(TAG, "Socket timeout, retrying.", ex);
+                return request(operation, true, params);
+            } else {
+                throw ex;
+            }
         } catch (RuntimeException ex) {
             if (ex.getCause() instanceof SSLException) throw (SSLException) ex.getCause();
             else throw ex;
@@ -349,6 +355,61 @@ public class Pyx implements Closeable {
         }
     }
 
+    public void recoverCardcastDeck(@NonNull String code, @NonNull Context context, @NonNull OnRecoverResult callback) {
+        executor.execute(new LifecycleAwareRunnable(handler, callback) {
+
+            @NonNull
+            private JSONObject convertCardObj(@NonNull JSONObject raw) throws JSONException {
+                String text = raw.getString("Text");
+                return new JSONObject().put("text", CommonUtils.toJSONArray(text.split("____", -1)));
+            }
+
+            @Override
+            public void run() {
+                try (Response resp = client.newCall(new Request.Builder().url("https://pretendyoure.xyz/zy/metrics/deck/" + code).build()).execute()) {
+                    if (resp.code() == 404) {
+                        post(callback::notFound);
+                        return;
+                    } else if (resp.code() != 200) {
+                        post(() -> callback.onException(new StatusCodeException(resp)));
+                        return;
+                    }
+
+                    ResponseBody body = resp.body();
+                    if (body == null) {
+                        post(() -> callback.onException(new Exception("No response body.")));
+                        return;
+                    }
+
+                    JSONObject rawObj = new JSONObject(body.string());
+
+                    JSONArray whites = new JSONArray();
+                    JSONArray rawWhites = rawObj.getJSONArray("WhiteCards");
+                    for (int i = 0; i < rawWhites.length(); i++)
+                        whites.put(convertCardObj(rawWhites.getJSONObject(i)));
+
+                    JSONArray blacks = new JSONArray();
+                    JSONArray rawBlacks = rawObj.getJSONArray("BlackCards");
+                    for (int i = 0; i < rawBlacks.length(); i++)
+                        blacks.put(convertCardObj(rawBlacks.getJSONObject(i)));
+
+                    JSONObject obj = new JSONObject();
+                    obj.put("calls", blacks).put("responses", whites);
+                    obj.put("name", rawObj.getString("Name")).put("watermark", code).put("description", "");
+
+                    File tmpFile = new File(context.getCacheDir(), CommonUtils.randomString(6, "abcdefghijklmnopqrstuvwxyz"));
+                    try (FileOutputStream out = new FileOutputStream(tmpFile)) {
+                        out.write(obj.toString().getBytes());
+                    }
+
+                    post(() -> callback.onDone(tmpFile));
+                } catch (IOException | JSONException ex) {
+                    post(() -> callback.onException(ex));
+                }
+            }
+        });
+    }
+
     @Override
     public void close() {
         client.dispatcher().executorService().shutdown();
@@ -405,6 +466,14 @@ public class Pyx implements Closeable {
         void onException(@NonNull Exception ex);
     }
 
+    public interface OnRecoverResult {
+        void onDone(@NonNull File tmpFile);
+
+        void notFound();
+
+        void onException(@NonNull Exception ex);
+    }
+
     @UiThread
     public interface OnResult<E> {
         void onDone(@NonNull E result);
@@ -441,6 +510,8 @@ public class Pyx implements Closeable {
     }
 
     public static class Server {
+        private static final String TAG = Server.class.getSimpleName();
+        private static List<Server> allServers = null;
         public final HttpUrl url;
         public final String name;
         private final boolean editable;
@@ -451,8 +522,6 @@ public class Pyx implements Closeable {
         private transient HttpUrl pollingUrl;
         private transient HttpUrl configUrl;
         private transient HttpUrl statsUrl;
-
-        private static final String TAG = Server.class.getSimpleName();
 
         public Server(@NonNull HttpUrl url, @Nullable HttpUrl metricsUrl, @NonNull String name, @NonNull Params params, boolean editable) {
             this.url = url;
@@ -543,7 +612,7 @@ public class Pyx implements Closeable {
             List<Server> all = new ArrayList<>(10);
             all.addAll(loadServers(PK.USER_SERVERS));
             all.addAll(loadServers(PK.API_SERVERS));
-            return all;
+            return allServers = all;
         }
 
         @NonNull
@@ -580,6 +649,15 @@ public class Pyx implements Closeable {
             }
 
             return null;
+        }
+
+        @Nullable
+        public static Server lastServerNoThrow() {
+            try {
+                return lastServer();
+            } catch (Exception ex) {
+                return null;
+            }
         }
 
         @NonNull
@@ -645,13 +723,24 @@ public class Pyx implements Closeable {
             }
         }
 
-        public static boolean hasServer(String name) {
+        public static boolean hasServer(@NonNull String name) {
             try {
                 return getServer(PK.USER_SERVERS, name) != null || getServer(PK.API_SERVERS, name) != null;
             } catch (JSONException ex) {
                 Log.e(TAG, "Failed parsing JSON.", ex);
                 return true;
             }
+        }
+
+        @Nullable
+        public static Server fromOverloadedId(@NonNull String serverId) {
+            if (allServers == null) loadAllServers();
+
+            for (Server server : allServers)
+                if (OverloadedUtils.getServerId(server).equals(serverId))
+                    return server;
+
+            return null;
         }
 
         @NonNull

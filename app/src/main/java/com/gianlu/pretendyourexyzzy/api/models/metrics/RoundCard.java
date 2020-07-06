@@ -51,11 +51,6 @@ public class RoundCard extends BaseCard implements Serializable {
     }
 
     @Override
-    public int id() {
-        return -1;
-    }
-
-    @Override
     public boolean black() {
         return Objects.equals(color, "black");
     }

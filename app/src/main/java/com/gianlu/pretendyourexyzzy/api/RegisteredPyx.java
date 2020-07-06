@@ -21,6 +21,7 @@ import com.gianlu.pretendyourexyzzy.api.models.GameInfoAndCards;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,15 +37,18 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.internal.Util;
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
 public class RegisteredPyx extends FirstLoadedPyx {
     private static final String TAG = RegisteredPyx.class.getSimpleName();
     private final User user;
     private final PollingThread pollingThread;
+    private final PyxChatHelper chatHelper;
 
     RegisteredPyx(Server server, LifecycleAwareHandler handler, OkHttpClient client, FirstLoadAndConfig firstLoad, User user) {
         super(server, handler, client, firstLoad);
         this.user = user;
+        this.chatHelper = new PyxChatHelper(handler);
         this.pollingThread = new PollingThread();
         this.pollingThread.start();
 
@@ -55,6 +59,11 @@ public class RegisteredPyx extends FirstLoadedPyx {
     @NonNull
     public static RegisteredPyx get() throws LevelMismatchException {
         return InstanceHolder.holder().get(InstanceHolder.Level.REGISTERED);
+    }
+
+    @NonNull
+    public PyxChatHelper chat() {
+        return chatHelper;
     }
 
     @Override
@@ -80,7 +89,6 @@ public class RegisteredPyx extends FirstLoadedPyx {
         request(PyxRequests.logout(), null, new OnSuccess() {
             @Override
             public void onDone() {
-                if (pollingThread != null) pollingThread.safeStop();
             }
 
             @Override
@@ -89,6 +97,8 @@ public class RegisteredPyx extends FirstLoadedPyx {
             }
         });
 
+        if (pollingThread != null) pollingThread.safeStop();
+        if (OverloadedUtils.isSignedIn()) OverloadedApi.get().loggedOutFromPyxServer();
         InstanceHolder.holder().invalidate();
         Prefs.remove(PK.LAST_JSESSIONID);
     }
@@ -212,6 +222,13 @@ public class RegisteredPyx extends FirstLoadedPyx {
                         }
                     }
                 }
+
+                // We need to make sure that the UI has been updated
+                executor.execute(() -> {
+                    for (PollMessage msg : messages)
+                        if (msg.event == PollMessage.Event.CHAT)
+                            chatHelper.handleChatEvent(msg);
+                });
             }
         }
     }

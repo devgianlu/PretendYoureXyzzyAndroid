@@ -65,7 +65,6 @@
     <string name="players"><![CDATA[<b>Players:</b>]]> %1$d/%2$d</string>
     <string name="spectators"><![CDATA[<b>Spectators:</b>]]> %1$d/%2$d</string>
     <string name="noMessages">There are no messages.</string>
-    <string name="message">Message</string>
     <string name="failedSendMessage">Failed sending the message!</string>
     <string name="logout">Logout</string>
     <string name="spectate">Spectate</string>
@@ -103,7 +102,6 @@
     <string name="failedStartGame">Failed starting the game!</string>
     <string name="blackCards">Czarne karty</string>
     <string name="whiteCards">Białe karty</string>
-    <string name="status">Status</string>
     <string name="required">Wymagane</string>
     <string name="provided">Zapewnione</string>
     <string name="cannotStartGame">Nie udało się uruchomić gry</string>
@@ -212,7 +210,6 @@
     <string name="description">Description</string>
     <string name="watermark">Watermark</string>
     <string name="invalidWatermark">The watermark must be 5 characters long including only uppercase letters and numbers.</string>
-    <string name="emptyDeckName">Deck name must not be empty.</string>
     <string name="customDeckNameNotUnique">You already have a deck with this name.</string>
     <string name="noCustomCards">There are no custom cards! Create some by pressing the add button.</string>
     <string name="createCard">Create card</string>
@@ -222,7 +219,6 @@
     <string name="failedAddingCustomCard">Failed adding custom card.</string>
     <string name="editCard">Edit card</string>
     <string name="completeDeckInfoFirst">Please complete the deck info first.</string>
-    <string name="customCardEmpty">Please enter the card text.</string>
     <string name="missingPlaceholderBlack">Missing placeholder in black card: it\'ll be added at the end.</string>
     <string name="strangeCustomCardFormat">The format of this card looks strange: make sure to follow the instructions.</string>
     <string name="importCustomDeck">Import custom deck</string>

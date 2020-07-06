@@ -210,5 +210,4 @@ public final class PyxRequests {
     public static PyxRequestWithResult<WhoisResult> whois(String name) {
         return new PyxRequestWithResult<>(Pyx.Op.WHOIS, WHOIS_RESULT_PROCESSOR, new PyxRequest.Param("n", name));
     }
-
 }

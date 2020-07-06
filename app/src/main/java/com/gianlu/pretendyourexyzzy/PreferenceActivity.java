@@ -3,53 +3,61 @@ package com.gianlu.pretendyourexyzzy;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.danielstone.materialaboutlibrary.items.MaterialAboutActionItem;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutItem;
+import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.preferences.BasePreferenceActivity;
 import com.gianlu.commonutils.preferences.BasePreferenceFragment;
 import com.gianlu.commonutils.preferences.MaterialAboutPreferenceItem;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.activities.TutorialActivity;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.games.Games;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper.SignInProvider;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
 import com.yarolegovich.mp.MaterialCheckboxPreference;
 import com.yarolegovich.mp.MaterialStandardPreference;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
-public class PreferenceActivity extends BasePreferenceActivity {
-    private static final int GOOGLE_SIGN_IN_CODE = 2;
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
+import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
+import xyz.gianlu.pyxoverloaded.model.UserData;
+
+public class PreferenceActivity extends BasePreferenceActivity implements OverloadedChooseProviderDialog.Listener {
+
+    private static final String TAG = PreferenceActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        View root = getWindow().getDecorView().findViewById(android.R.id.content);
-        if (root != null)
-            GPGamesHelper.setPopupView(this, root, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        GPGamesHelper.setPopupView(this, Gravity.CENTER_HORIZONTAL | Gravity.TOP);
     }
 
     @NonNull
     @Override
     protected List<MaterialAboutPreferenceItem> getPreferencesItems() {
         return Arrays.asList(new MaterialAboutPreferenceItem(R.string.general, R.drawable.baseline_settings_24, GeneralFragment.class),
-                new MaterialAboutPreferenceItem(R.string.googlePlayGames, R.drawable.baseline_videogame_asset_24, GooglePlayGamesFragment.class));
+                new MaterialAboutPreferenceItem(R.string.overloaded, R.drawable.baseline_videogame_asset_24, OverloadedFragment.class));
     }
 
     @Override
@@ -77,6 +85,12 @@ public class PreferenceActivity extends BasePreferenceActivity {
     @Override
     protected boolean disableOtherDonationsOnGooglePlay() {
         return true;
+    }
+
+    @Override
+    public void onSelectedSignInProvider(@NonNull SignInProvider provider) {
+        OverloadedFragment fragment = (OverloadedFragment) getSupportFragmentManager().findFragmentByTag(OverloadedFragment.class.getName());
+        if (fragment != null) fragment.onSelectedSignInProvider(provider);
     }
 
     public static class GeneralFragment extends BasePreferenceFragment {
@@ -124,62 +138,183 @@ public class PreferenceActivity extends BasePreferenceActivity {
         }
     }
 
-    public static class GooglePlayGamesFragment extends BasePreferenceFragment {
+    public static class OverloadedFragment extends BasePreferenceFragment implements OverloadedChooseProviderDialog.Listener {
+        private static final int RC_SIGN_IN = 3;
+        private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
+        private boolean link;
 
         @Override
         public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-            if (requestCode == GOOGLE_SIGN_IN_CODE) {
-                GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-                if (result == null) return;
+            if (requestCode == RC_SIGN_IN && data != null) {
+                if (link) {
+                    AuthCredential credential = signInHelper.extractCredential(data);
+                    if (credential == null) {
+                        Log.w(TAG, "Couldn't extract credentials: " + data);
+                        showToast(Toaster.build().message(R.string.failedSigningIn));
+                        return;
+                    }
 
-                if (result.isSuccess()) {
-                    onBackPressed();
+                    OverloadedApi.get().link(credential, task -> {
+                        if (task.isSuccessful())
+                            showToast(Toaster.build().message(R.string.accountLinked));
+                        else
+                            showToast(Toaster.build().message(R.string.failedLinkingAccount));
+
+                        onBackPressed();
+                    });
                 } else {
-                    String msg = result.getStatus().getStatusMessage();
-                    if (msg != null && !msg.isEmpty())
-                        showToast(Toaster.build().message(msg));
+                    signInHelper.processSignInData(data, new OverloadedSignInHelper.SignInCallback() {
+                        @Override
+                        public void onSignInSuccessful(@NonNull FirebaseUser user) {
+                            showToast(Toaster.build().message(R.string.signInSuccessful));
+                            onBackPressed();
+                        }
+
+                        @Override
+                        public void onSignInFailed() {
+                            showToast(Toaster.build().message(R.string.failedSigningIn));
+                            onBackPressed();
+                        }
+                    });
                 }
             } else {
                 super.onActivityResult(requestCode, resultCode, data);
             }
         }
 
-        @Override
-        protected void buildPreferences(@NonNull Context context) {
-            GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-            if (account == null) {
-                MaterialStandardPreference login = new MaterialStandardPreference(context);
-                login.setTitle(R.string.login);
-                login.setOnClickListener(v -> {
-                    GoogleSignInClient signInClient = GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
-                    startActivityForResult(signInClient.getSignInIntent(), GOOGLE_SIGN_IN_CODE);
-                });
-                addPreference(login);
-                return;
+        private boolean canLink() {
+            FirebaseUser user = OverloadedApi.get().firebaseUser();
+            if (user == null) return false;
+
+            List<String> providers = new ArrayList<>(OverloadedSignInHelper.providerIds());
+            for (UserInfo info : user.getProviderData()) {
+                Iterator<String> iterator = providers.iterator();
+                while (iterator.hasNext()) {
+                    if (Objects.equals(iterator.next(), info.getProviderId()))
+                        iterator.remove();
+                }
             }
 
-            MaterialStandardPreference loggedInAs = new MaterialStandardPreference(context);
-            loggedInAs.setTitle(R.string.loggedIn);
-            loggedInAs.setSummary(Utils.getAccountName(account));
-            loggedInAs.setClickable(false);
-            addPreference(loggedInAs);
+            return providers.size() > 0;
+        }
 
-            MaterialStandardPreference logout = new MaterialStandardPreference(context);
-            logout.setTitle(R.string.logout);
-            logout.setIcon(R.drawable.outline_exit_to_app_24);
-            logout.setOnClickListener(v -> {
-                GoogleSignInClient signInClient = GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
-                signInClient.signOut().addOnCompleteListener(task -> onBackPressed());
-            });
-            addPreference(logout);
+        @NonNull
+        private List<String> linkableProviderNames(@NonNull Context context) {
+            List<String> names = new ArrayList<>();
+            for (SignInProvider provider : OverloadedSignInHelper.SIGN_IN_PROVIDERS) {
+                if (!OverloadedApi.get().hasLinkedProvider(provider.id))
+                    names.add(context.getString(provider.nameRes));
+            }
 
-            Games.getPlayersClient(context, account).getCurrentPlayer()
-                    .addOnSuccessListener(requireActivity(), player -> loggedInAs.setSummary(player.getDisplayName()));
+            return names;
+        }
+
+        @NonNull
+        private List<String> linkableProviderIds() {
+            List<String> ids = new ArrayList<>();
+            for (SignInProvider provider : OverloadedSignInHelper.SIGN_IN_PROVIDERS) {
+                if (!OverloadedApi.get().hasLinkedProvider(provider.id))
+                    ids.add(provider.id);
+            }
+
+            return ids;
+        }
+
+        @Override
+        protected void buildPreferences(@NonNull Context context) {
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (currentUser != null) {
+                MaterialStandardPreference loggedInAs = new MaterialStandardPreference(context);
+                loggedInAs.setTitle(R.string.loggedIn);
+                loggedInAs.setSummary(Utils.getDisplayableName(currentUser));
+                loggedInAs.setClickable(false);
+                addPreference(loggedInAs);
+
+                if (canLink()) {
+                    MaterialStandardPreference linkAccount = new MaterialStandardPreference(context);
+                    linkAccount.setTitle(R.string.linkAccount);
+                    linkAccount.setSummary(CommonUtils.join(linkableProviderNames(context), ", "));
+                    linkAccount.setOnClickListener(v -> {
+                        link = true;
+                        DialogUtils.showDialog(getActivity(),
+                                OverloadedChooseProviderDialog.getLinkInstance(linkableProviderIds()),
+                                null);
+                    });
+                    addPreference(linkAccount);
+                }
+
+                MaterialStandardPreference purchaseStatus = new MaterialStandardPreference(context);
+                purchaseStatus.setTitle(R.string.purchaseStatus);
+                purchaseStatus.setClickable(false);
+                purchaseStatus.setLoading(true);
+                addPreference(purchaseStatus);
+                OverloadedApi.get().userData(getActivity(), new UserDataCallback() {
+                    @Override
+                    public void onUserData(@NonNull UserData userData) {
+                        purchaseStatus.setSummary(String.format("%s (%s)", userData.purchaseStatus.toString(context), userData.username));
+                        purchaseStatus.setLoading(false);
+                    }
+
+                    @Override
+                    public void onFailed(@NonNull Exception ex) {
+                        Log.e(TAG, "Failed getting user data.", ex);
+                        purchaseStatus.setSummary("<error>");
+                        purchaseStatus.setLoading(false);
+                    }
+                });
+
+                MaterialStandardPreference logout = new MaterialStandardPreference(context);
+                logout.setTitle(R.string.logout);
+                logout.setIcon(R.drawable.outline_exit_to_app_24);
+                logout.setOnClickListener(v -> {
+                    OverloadedApi.get().logout();
+                    onBackPressed();
+                });
+                addPreference(logout);
+
+                MaterialStandardPreference delete = new MaterialStandardPreference(context);
+                delete.setTitle(R.string.deleteAccount);
+                delete.setIcon(R.drawable.baseline_delete_forever_24);
+                delete.setOnClickListener(v -> {
+                    showProgress(R.string.loading);
+                    OverloadedApi.get().deleteAccount(getActivity(), new SuccessCallback() {
+                        @Override
+                        public void onSuccessful() {
+                            dismissDialog();
+                            showToast(Toaster.build().message(R.string.accountDeleted));
+                            onBackPressed();
+                        }
+
+                        @Override
+                        public void onFailed(@NonNull Exception ex) {
+                            Log.e(TAG, "Failed deleting account.", ex);
+                            dismissDialog();
+                            showToast(Toaster.build().message(R.string.failedDeletingAccount));
+                        }
+                    });
+                });
+                addPreference(delete);
+            } else {
+                MaterialStandardPreference login = new MaterialStandardPreference(context);
+                login.setTitle(R.string.login);
+                login.setSummary(R.string.overloadedLogin_please);
+                login.setOnClickListener(v -> {
+                    link = false;
+                    DialogUtils.showDialog(getActivity(), OverloadedChooseProviderDialog.getSignInInstance(), null);
+                });
+                addPreference(login);
+            }
         }
 
         @Override
         public int getTitleRes() {
-            return R.string.googlePlayGames;
+            return R.string.overloaded;
+        }
+
+        @Override
+        public void onSelectedSignInProvider(@NonNull SignInProvider provider) {
+            if (getActivity() == null) return;
+            startActivityForResult(signInHelper.startFlow(getActivity(), provider), RC_SIGN_IN);
         }
     }
 }

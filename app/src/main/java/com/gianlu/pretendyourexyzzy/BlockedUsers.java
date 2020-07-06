@@ -15,9 +15,11 @@ public final class BlockedUsers {
 
     public static void block(@NonNull String name) {
         Prefs.addToSet(PK.BLOCKED_USERS, name);
+        ThisApplication.sendAnalytics(Utils.ACTION_BLOCK_USER);
     }
 
     public static void unblock(@NonNull String name) {
         Prefs.removeFromSet(PK.BLOCKED_USERS, name);
+        ThisApplication.sendAnalytics(Utils.ACTION_UNBLOCK_USER);
     }
 }

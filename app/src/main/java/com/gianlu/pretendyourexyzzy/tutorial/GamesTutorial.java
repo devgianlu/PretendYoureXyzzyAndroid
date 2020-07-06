@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.tutorial.BaseTutorial;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.adapters.GamesAdapter;
+import com.gianlu.pretendyourexyzzy.main.GamesFragment;
 
 import me.toptas.fancyshowcase.FocusShape;
 
@@ -27,7 +27,7 @@ public class GamesTutorial extends BaseTutorial {
         int pos = llm.findFirstVisibleItemPosition();
         if (pos == -1) return false;
 
-        GamesAdapter.ViewHolder holder = (GamesAdapter.ViewHolder) list.findViewHolderForLayoutPosition(pos);
+        GamesFragment.GamesAdapter.ViewHolder holder = (GamesFragment.GamesAdapter.ViewHolder) list.findViewHolderForLayoutPosition(pos);
         if (holder != null) {
             add(forView(holder.status, R.string.tutorial_gameStatus)
                     .focusShape(FocusShape.CIRCLE)

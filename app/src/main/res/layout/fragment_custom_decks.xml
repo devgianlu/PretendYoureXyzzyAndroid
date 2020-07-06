@@ -5,10 +5,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.gianlu.commonutils.misc.RecyclerMessageView
-        android:id="@+id/customDecks_list"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <com.gianlu.commonutils.misc.RecyclerMessageView
+            android:id="@+id/customDecks_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/customDecks_sync"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="2dp"
+            android:textAlignment="center"
+            android:textColor="?android:textColorSecondary" />
+    </LinearLayout>
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu
         android:id="@+id/customDecks_fab"
@@ -22,6 +37,14 @@
         fab:fab_addButtonColorPressed="@color/colorSecondaryVariant"
         fab:fab_addButtonPlusIconColor="@android:color/white"
         fab:fab_labelStyle="@style/FabLabel">
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/customDecksFab_recover"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            fab:fab_icon="@drawable/baseline_cloud_download_24"
+            fab:fab_size="mini"
+            fab:fab_title="@string/recoverCardcastDeck" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/customDecksFab_import"

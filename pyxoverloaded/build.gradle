@@ -1,0 +1,45 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    flavorDimensions 'main'
+    productFlavors {
+        standard {
+            dimension 'main'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation project(':CommonUtils')
+
+    api 'com.google.android.gms:play-services-games:19.0.0'
+    api 'com.google.android.gms:play-services-auth:18.0.0'
+    api 'com.google.firebase:firebase-auth:19.3.1'
+
+    implementation 'com.squareup.okhttp3:okhttp:4.6.0'
+    implementation 'org.whispersystems:signal-protocol-android:2.8.1'
+
+    implementation 'com.github.instacart.truetime-android:library:3.4'
+}

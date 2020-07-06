@@ -8,9 +8,11 @@ import androidx.annotation.Nullable;
 
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.customdecks.AbsCardsFragment;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class WhiteCardsFragment extends AbsCardsFragment {
@@ -27,7 +29,13 @@ public final class WhiteCardsFragment extends AbsCardsFragment {
 
     @NotNull
     @Override
-    protected List<? extends BaseCard> getCards(int id) {
-        return db.loadWhiteCards(id);
+    protected List<? extends BaseCard> getCards() {
+        if (id == null) return new ArrayList<>(0);
+        else return db.getWhiteCards(id);
+    }
+
+    @Override
+    protected boolean editable() {
+        return true;
     }
 }

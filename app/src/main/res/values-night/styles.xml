@@ -5,7 +5,7 @@
         <item name="android:statusBarColor">?colorSurface</item>
     </style>
 
-    <style name="CustomTextInput" parent="Widget.MaterialComponents.TextInputLayout.FilledBox.Dense">
+    <style name="CustomTextInput" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
         <item name="boxStrokeColor">@color/colorSecondary</item>
         <item name="endIconTint">@color/white</item>
         <item name="errorTextColor">@color/red</item>

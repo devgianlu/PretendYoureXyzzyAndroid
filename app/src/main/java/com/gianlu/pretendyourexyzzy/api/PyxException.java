@@ -25,6 +25,7 @@ public class PyxException extends Exception {
         if (isNotRegistered(ex)) {
             if (context == null) return true;
 
+            InstanceHolder.holder().invalidate();
             context.startActivity(new Intent(context, LoadingActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
             return true;

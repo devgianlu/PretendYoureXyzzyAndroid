@@ -56,20 +56,6 @@ public class CardsGroup extends ArrayList<BaseCard> {
         return !isEmpty() && get(0) instanceof UnknownCard; // Assuming that if one cards is unknown, also the others are
     }
 
-    public boolean hasCard(int id) {
-        for (BaseCard card : this)
-            if (card.id() == id)
-                return true;
-
-        return false;
-    }
-
-    public void setWinner() {
-        for (BaseCard card : this)
-            if (card instanceof GameCard)
-                ((GameCard) card).setWinner();
-    }
-
     @Override
     public final int hashCode() {
         int result = 1;
