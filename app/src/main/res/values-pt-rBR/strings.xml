@@ -48,7 +48,7 @@
     <string name="tutorial_whiteCard">Jogue um ou vários cartões brancos para completar a frase. Se você não sabe o significado de uma palavra, use a função de definição no menu superior direito.</string>
     <string name="tutorial_playCard">Para jogar uma carta, basta tocá-la: um diálogo de confirmação aparecerá.</string>
     <string name="tutorial_player">Quando um jogador atingir o objetivo da pontuação, ele ganha. Você pode tocar nos jogadores para revelar informações adicionais.</string>
-    <string name="tutorial_overloaded">Overloaded enables many cool features not present in the standard game experience. It\'s a one time purchase.</string>
+    <string name="tutorial_overloaded">Sobrecarregado habilita muitos recursos interessantes que não estão presentes na experiência padrão de jogo. É uma compra única.</string>
     <!-- General -->
     <string name="app_name">Você está no Xyzzy</string>
     <string name="nickname">Apelido</string>
@@ -203,7 +203,7 @@
     <string name="loggedIn">Sessão iniciada</string>
     <string name="login">Conectar-se</string>
     <string name="customDecks">Decks personalizados</string>
-    <string name="importDeck">Import deck</string>
+    <string name="importDeck">Importar deck</string>
     <string name="noCustomDecks_create">Você não tem decks personalizados. Crie um agora mesmo!</string>
     <string name="noCustomDecks_game">Não há baralhos personalizados neste jogo.</string>
     <string name="editCustomDeck">Editar baralho personalizado</string>
@@ -213,8 +213,8 @@
     <string name="watermark">Marca d\'água</string>
     <string name="invalidWatermark">A marca d\'água deve ter 5 caracteres, incluindo apenas letras maiúsculas e números.</string>
     <string name="customDeckNameNotUnique">Você já tem um deck com esse nome.</string>
-    <string name="noCustomCards">There are no custom cards!</string>
-    <string name="noCustomCardsCreateOne">There are no custom cards! Create some by pressing the add button.</string>
+    <string name="noCustomCards">Não há nenhum cartão personalizado!</string>
+    <string name="noCustomCardsCreateOne">Não há cartões personalizados! Crie alguns pressionando o botão adicionar.</string>
     <string name="createCard">Criar cartão</string>
     <string name="cardText">Texto do cartão</string>
     <string name="createCustomCardInfo_white">Os cartões brancos contêm respostas aos cartões pretos. Nenhum espaço reservado é necessário.</string>
@@ -222,7 +222,7 @@
     <string name="failedAddingCustomCard">Falha ao adicionar cartão personalizado.</string>
     <string name="editCard">Editar cartão</string>
     <string name="completeDeckInfoFirst">Por favor, preencha a informação do deck primeiro.</string>
-    <string name="customCardTextInvalid">The card text must not be empty and less than 256 characters long.</string>
+    <string name="customCardTextInvalid">O texto do cartão não deve ter menos de 256 caracteres.</string>
     <string name="missingPlaceholderBlack">Espaço reservado ausente no cartão preto: ele será adicionado no final.</string>
     <string name="strangeCustomCardFormat">O formato deste cartão parece estranho: certifique-se de seguir as instruções.</string>
     <string name="importCustomDeck">Importar baralho personalizado</string>
@@ -234,7 +234,7 @@
     <string name="failedAddingCustomDeck">Falha ao adicionar baralho personalizado!</string>
     <string name="customDeckAdded">Deck personalizado adicionado!</string>
     <string name="noCustomDecksToAdd">Você não tem decks personalizados para adicionar.</string>
-    <string name="failedSigningIn">Failed signing in!</string>
+    <string name="failedSigningIn">Falha ao entrar!</string>
     <string name="overloaded_requiresSignIn">Overloaded requires sign in</string>
     <string name="overloaded_requiresSignIn_desc">Before joining Overloaded, you must sign in with one of the following providers!</string>
     <string name="google">Google</string>
