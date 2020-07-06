@@ -3,6 +3,8 @@ package xyz.gianlu.pyxoverloaded;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -85,6 +87,7 @@ public class OverloadedApi {
     private volatile Map<String, FriendStatus> friendsStatusCached = null;
     private Long maintenanceEnd = null;
     private boolean isFirstRequest = true;
+    private String clientVersion = "??";
 
     private OverloadedApi() {
         FirebaseAuth.getInstance().addAuthStateListener(fa -> {
@@ -113,6 +116,13 @@ public class OverloadedApi {
     }
 
     private static void init(@NonNull Context context) {
+        try {
+            PackageInfo pi = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            instance.clientVersion = pi.versionName + "," + pi.versionCode;
+        } catch (PackageManager.NameNotFoundException ex) {
+            Log.e(TAG, "Failed getting package info.", ex);
+        }
+
         if (chatInstance == null) chatInstance = new OverloadedChatApi(context, instance);
     }
 
@@ -181,6 +191,7 @@ public class OverloadedApi {
         }
 
         Request req = reqBuilder.addHeader("Authorization", "FirebaseToken " + lastToken.token)
+                .addHeader("X-Client-Version", clientVersion)
                 .addHeader("X-Device-Id", String.valueOf(SignalProtocolHelper.getLocalDeviceId())).build();
         try (Response resp = client.newCall(req).execute()) {
             Log.v(TAG, String.format("%s -> %d", req.url().encodedPath(), resp.code()));
