@@ -38,6 +38,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
@@ -353,6 +355,61 @@ public class Pyx implements Closeable {
         }
     }
 
+    public void recoverCardcastDeck(@NonNull String code, @NonNull Context context, @NonNull OnRecoverResult callback) {
+        executor.execute(new LifecycleAwareRunnable(handler, callback) {
+
+            @NonNull
+            private JSONObject convertCardObj(@NonNull JSONObject raw) throws JSONException {
+                String text = raw.getString("Text");
+                return new JSONObject().put("text", CommonUtils.toJSONArray(text.split("____", -1)));
+            }
+
+            @Override
+            public void run() {
+                try (Response resp = client.newCall(new Request.Builder().url("https://pretendyoure.xyz/zy/metrics/deck/" + code).build()).execute()) {
+                    if (resp.code() == 404) {
+                        post(callback::notFound);
+                        return;
+                    } else if (resp.code() != 200) {
+                        post(() -> callback.onException(new StatusCodeException(resp)));
+                        return;
+                    }
+
+                    ResponseBody body = resp.body();
+                    if (body == null) {
+                        post(() -> callback.onException(new Exception("No response body.")));
+                        return;
+                    }
+
+                    JSONObject rawObj = new JSONObject(body.string());
+
+                    JSONArray whites = new JSONArray();
+                    JSONArray rawWhites = rawObj.getJSONArray("WhiteCards");
+                    for (int i = 0; i < rawWhites.length(); i++)
+                        whites.put(convertCardObj(rawWhites.getJSONObject(i)));
+
+                    JSONArray blacks = new JSONArray();
+                    JSONArray rawBlacks = rawObj.getJSONArray("BlackCards");
+                    for (int i = 0; i < rawBlacks.length(); i++)
+                        blacks.put(convertCardObj(rawBlacks.getJSONObject(i)));
+
+                    JSONObject obj = new JSONObject();
+                    obj.put("calls", blacks).put("responses", whites);
+                    obj.put("name", rawObj.getString("Name")).put("watermark", code).put("description", "");
+
+                    File tmpFile = new File(context.getCacheDir(), CommonUtils.randomString(6, "abcdefghijklmnopqrstuvwxyz"));
+                    try (FileOutputStream out = new FileOutputStream(tmpFile)) {
+                        out.write(obj.toString().getBytes());
+                    }
+
+                    post(() -> callback.onDone(tmpFile));
+                } catch (IOException | JSONException ex) {
+                    post(() -> callback.onException(ex));
+                }
+            }
+        });
+    }
+
     @Override
     public void close() {
         client.dispatcher().executorService().shutdown();
@@ -405,6 +462,14 @@ public class Pyx implements Closeable {
     @UiThread
     public interface OnSuccess {
         void onDone();
+
+        void onException(@NonNull Exception ex);
+    }
+
+    public interface OnRecoverResult {
+        void onDone(@NonNull File tmpFile);
+
+        void notFound();
 
         void onException(@NonNull Exception ex);
     }

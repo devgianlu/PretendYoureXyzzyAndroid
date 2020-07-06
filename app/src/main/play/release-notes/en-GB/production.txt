@@ -1,2 +1,4 @@
-### Removed
-- Cardcast has been shutdown, a replacement will be available soon
+### Added
+- Added custom decks functionality (on supporting servers)
+- Added ability to recover Cardcast decks
+- Added legend in server dialogs

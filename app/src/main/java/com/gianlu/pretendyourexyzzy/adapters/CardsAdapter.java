@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.UnknownCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.UnknownCard;
 import com.gianlu.pretendyourexyzzy.cards.GameCardView;
@@ -81,6 +83,15 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
 
     public void setSelectable(boolean selectable) {
         isSelectable = selectable;
+    }
+
+    public int indexOfGroup(int cardId) {
+        for (int i = 0; i < cards.size(); i++) {
+            if (cards.get(i).hasCard(cardId))
+                return i;
+        }
+
+        return -1;
     }
 
     @UiThread

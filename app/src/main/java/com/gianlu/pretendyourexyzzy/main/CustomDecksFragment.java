@@ -3,10 +3,12 @@ package com.gianlu.pretendyourexyzzy.main;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -19,6 +21,14 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
+import com.gianlu.commonutils.ui.Toaster;
+import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
+import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
+import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksAdapter;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
@@ -77,6 +87,30 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
             fab.collapse();
         });
 
+        FloatingActionButton recoverDeck = layout.findViewById(R.id.customDecksFab_recover);
+        recoverDeck.setOnClickListener(v -> {
+            EditText input = new EditText(requireContext());
+            input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5), new InputFilter.AllCaps()});
+
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+            builder.setTitle(R.string.recoverCardcastDeck).setView(input)
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(R.string.recover, (dialog, which) -> {
+                        String code = input.getText().toString();
+                        if (!code.matches("[A-Z0-9]{5}")) {
+                            showToast(Toaster.build().message(R.string.invalidDeckCode));
+                            return;
+                        }
+
+                        try {
+                            recoverCardcastDeck(code);
+                        } catch (LevelMismatchException ignored) {
+                        }
+                    });
+            showDialog(builder);
+            fab.collapse();
+        });
+
         return layout;
     }
 
@@ -117,7 +151,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
 
                     File tmpFile = new File(requireContext().getCacheDir(), CommonUtils.randomString(6, "abcdefghijklmnopqrstuvwxyz"));
                     CommonUtils.copy(in, new FileOutputStream(tmpFile));
-                    EditCustomDeckActivity.startActivityImport(requireContext(), tmpFile);
+                    EditCustomDeckActivity.startActivityImport(requireContext(), true, tmpFile);
                 } catch (IOException ex) {
                     Log.e(TAG, "Failed importing JSON file: " + data, ex);
                 }

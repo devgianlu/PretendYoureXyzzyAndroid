@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy.api.models.metrics;
 
+import androidx.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,7 +16,7 @@ public class SessionHistory {
     public final List<SimpleRound> playedRounds;
     public final List<SimpleRound> judgedRounds;
 
-    public SessionHistory(JSONObject obj) throws JSONException {
+    public SessionHistory(@NonNull JSONObject obj) throws JSONException {
         pid = obj.getString("PersistentId");
         loginTimestamp = obj.getLong("LogInTimestamp");
 
@@ -42,7 +44,7 @@ public class SessionHistory {
         public final String id;
         public final long timestamp;
 
-        public Game(JSONObject obj) throws JSONException {
+        public Game(@NonNull JSONObject obj) throws JSONException {
             id = obj.getString("GameId");
             timestamp = obj.getLong("Timestamp") * 1000;
         }

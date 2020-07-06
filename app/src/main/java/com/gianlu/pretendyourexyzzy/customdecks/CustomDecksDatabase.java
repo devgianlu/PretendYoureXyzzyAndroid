@@ -17,6 +17,8 @@ import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -73,6 +75,10 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    }
+
+    @Override
+    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
     private void sendCustomDeckPatch(long revision, @Nullable Long remoteId, @NonNull CustomDecksPatchOp op, @Nullable CustomDeck deck, @Nullable CustomCard card, @Nullable Long cardId) {
@@ -861,7 +867,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
         @Override
         public int numPick() {
-            return !black() ? -1 : text.split("____").length - 1;
+            return !black() ? -1 : text.split("____", -1).length - 1;
         }
 
         @Override

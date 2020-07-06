@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.1] - 06-07-2020
+### Added
+- Added ability to recover Cardcast decks
+
+
+## [3.2.0] - 04-07-2020
+### Added
+- Added custom decks functionality (on supporting servers)
+- Added legend in server dialogs
+
+
 ## [3.1.4] - 19-05-2020
 ### Removed
 - Cardcast has been shutdown, a replacement will be available soon

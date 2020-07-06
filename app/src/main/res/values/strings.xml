@@ -29,8 +29,8 @@
     <string name="tutorial_firstDesc">Pretend You\'re Xyzzy is an online cards game based on Cards Against Humanity. In this tutorial I\'ll explain you how to play.</string>
     <string name="tutorial_secondTitle">The rules</string>
     <string name="tutorial_secondDesc">Every turn a Black Card is played by the Card Czar, everyone else answers the question or completes the fill-in-the-blank phrase. Once everyone played, the Card Czar chooses the funniest play, whoever submitted it gets one point. In the next turn a new player becomes the Card Czar and everyone is drawn back up with ten cards.</string>
-    <string name="tutorial_thirdTitle">Cardcast</string>
-    <string name="tutorial_thirdDesc">This game supports Cardcast integration: with Cardcast you can create custom decks (from the website <a>cardcastgame.com</a>) and add them to your own game. You can also search for decks someone else made and use them.</string>
+    <string name="tutorial_thirdTitle">Custom decks</string>
+    <string name="tutorial_thirdDesc">This game supports custom decks (on supporting servers): you can create custom decks from the app and add them to your own game.</string>
     <string name="tutorial_fourthTitle">More features</string>
     <string name="tutorial_fourthDesc">More features are available in this app, you\'ll learn them as you go. Good game!</string>
     <string name="tutorial_chooseNickname">Choose a nickname to play, this won\'t be permanent.</string>
@@ -41,7 +41,7 @@
     <string name="tutorial_spectateGame">Spectators can only see what\'s happening and cannot play, but they can write on the chat.</string>
     <string name="tutorial_joinGame">Join the game to start playing immediately.</string>
     <string name="tutorial_createGame">You can create your own game and define your own settings.</string>
-    <string name="tutorial_setupGame">Here you can customize your game options. Don\'t forget you can also add Cardcast decks from the menu up here.</string>
+    <string name="tutorial_setupGame">Here you can customize your game options. Don\'t forget you can also add custom decks from the menu up here (if supported on the server).</string>
     <string name="tutorial_startGame">Once you\'re done, start the game. To do that you must have at least 3 players and a given number of cards.</string>
     <string name="tutorial_chooseIdCode">Enter or generate an identification code to make it difficult for someone to impersonate you.</string>
     <string name="tutorial_blackCard">This is a block card: you have to complete the sentence with the white cards below.</string>
@@ -336,4 +336,9 @@
     <string name="deckDoesNotExist">This deck doesn\'t exist anymore.</string>
     <string name="cannotFindCustomDeck">Cannot find this deck.</string>
     <string name="cannotSearchDeckWithoutOverloaded">This feature is supported only for Overloaded users.</string>
+    <string name="recoverCardcastDeck">Recover Cardcast deck</string>
+    <string name="recover">Recover</string>
+    <string name="invalidDeckCode">The deck code is invalid!</string>
+    <string name="recoverDeckNotFound">Deck cannot be recovered: not found.</string>
+    <string name="failedRecoveringCardcastDeck">Failed recovering Cardcast deck.</string>
 </resources>
