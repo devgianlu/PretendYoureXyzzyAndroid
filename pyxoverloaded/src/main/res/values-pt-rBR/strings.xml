@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Subscription messages -->
-    <string name="subscriptionPaused_message">Your subscription is paused and you don\'t have access to Overloaded. You can resume your subscription at any time.</string>
-    <string name="subscriptionGracePeriod_message">You have entered the grace period. You still have access to Overloaded, but you\'ll lose it on %s if you don\'t update your payment method.</string>
-    <string name="subscriptionAccountHold_message">The grace period ended, you are in account hold. You won\'t have access to Overloaded until you fix your payment method.</string>
-    <string name="subscriptionCancelled_message">Your subscription has been cancelled. You\'ll lose Overloaded access after this billing period ends on %s.</string>
+    <string name="subscriptionPaused_message">Sua assinatura está em pausa e você não tem acesso ao Sobrecarga. Você pode retomar sua assinatura a qualquer momento.</string>
+    <string name="subscriptionGracePeriod_message">Você entrou no período de carga. Você ainda tem acesso ao Sobrecarga, mas perderá em %s se não atualizar o seu método de pagamento.</string>
+    <string name="subscriptionAccountHold_message">O período de invencibilidade terminou, você está em conta pendente. Você não terá acesso ao Sobrecarregado até corrigir seu método de pagamento.</string>
+    <string name="subscriptionCancelled_message">Sua assinatura foi cancelada. Você perderá o acesso sobrecarregado depois que este período de faturamento terminar em %s.</string>
     <!-- Subscription statuses -->
-    <string name="active">Active</string>
-    <string name="expired">Expired</string>
-    <string name="paused">Paused</string>
-    <string name="accountHold">Account hold</string>
-    <string name="gracePeriod">Grace period</string>
-    <string name="cancelled">Cancelled</string>
+    <string name="active">Ativo</string>
+    <string name="expired">Expirado</string>
+    <string name="paused">Pausado</string>
+    <string name="accountHold">Conta detida</string>
+    <string name="gracePeriod">Período de tolerância</string>
+    <string name="cancelled">Cancelado</string>
     <string name="ok">OK</string>
-    <string name="none">None</string>
-    <string name="overloadedStatus_maintenance">Server is under maintenance. We expect to be online at %s.</string>
+    <string name="none">Nenhuma</string>
+    <string name="overloadedStatus_maintenance">O servidor está em manutenção. Esperamos estar online em %s.</string>
 </resources>
