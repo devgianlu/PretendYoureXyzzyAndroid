@@ -234,4 +234,9 @@
     <string name="failedAddingCustomDeck">Falha ao adicionar baralho personalizado!</string>
     <string name="customDeckAdded">Deck personalizado adicionado!</string>
     <string name="noCustomDecksToAdd">Você não tem decks personalizados para adicionar.</string>
+    <string name="recoverCardcastDeck">Recover Cardcast deck</string>
+    <string name="recover">Recover</string>
+    <string name="invalidDeckCode">The deck code is invalid!</string>
+    <string name="recoverDeckNotFound">Deck cannot be recovered: not found.</string>
+    <string name="failedRecoveringCardcastDeck">Failed recovering Cardcast deck.</string>
 </resources>
