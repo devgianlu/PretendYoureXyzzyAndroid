@@ -24,6 +24,7 @@ import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -39,14 +40,14 @@ import xyz.gianlu.pyxoverloaded.model.UserData;
 public final class OverloadedBillingHelper implements PurchasesUpdatedListener, AskUsernameDialog.Listener {
     public static final Sku ACTIVE_SKU = Sku.OVERLOADED_MONTHLY_SKU;
     private static final String TAG = OverloadedBillingHelper.class.getSimpleName();
-    private final Context context;
+    private final Activity activity;
     private final Listener listener;
     private BillingClient billingClient;
     private Exception latestException = null;
     private UserData latestData = null;
 
-    public OverloadedBillingHelper(@NonNull Context context, @NonNull Listener listener) {
-        this.context = context;
+    public OverloadedBillingHelper(@NonNull Activity activity, @NonNull Listener listener) {
+        this.activity = activity;
         this.listener = listener;
     }
 
@@ -67,7 +68,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     ///////////////////////////////
 
     public void onStart() {
-        billingClient = BillingClient.newBuilder(context).enablePendingPurchases().setListener(this).build();
+        billingClient = BillingClient.newBuilder(activity).enablePendingPurchases().setListener(this).build();
         billingClient.startConnection(new BillingClientStateListener() {
             private boolean retried = false;
 
@@ -100,8 +101,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
 
                     Purchase purchase;
                     if (data.purchaseStatus.ok) {
-                        OverloadedApi.get().openWebSocket();
-                        OverloadedApi.chat(context).shareKeysIfNeeded();
+                        doOkStuff();
                     } else if ((purchase = getLatestPurchase()) != null) {
                         OverloadedApi.get().registerUser(null, purchase.getSku(), purchase.getPurchaseToken(), null, new UserDataCallback() {
                             @Override
@@ -202,6 +202,11 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         }
     }
 
+    private void doOkStuff() {
+        OverloadedApi.get().openWebSocket();
+        OverloadedApi.chat(activity).shareKeysIfNeeded();
+    }
+
     /**
      * Gets the SKU details for the standard purchase.
      *
@@ -222,12 +227,14 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     /**
      * Starts the billing flow for the given SKU.
      *
-     * @param product  The {@link SkuDetails} for this flow
-     * @param activity The caller {@link Activity}
+     * @param product The {@link SkuDetails} for this flow
      */
-    private void startBillingFlow(@NonNull Activity activity, @NonNull SkuDetails product, @NonNull String uid) {
+    private void startBillingFlow(@NonNull SkuDetails product) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) throw new IllegalStateException();
+
         BillingFlowParams flowParams = BillingFlowParams.newBuilder()
-                .setObfuscatedAccountId(Utils.sha1(uid))
+                .setObfuscatedAccountId(Utils.sha1(user.getUid()))
                 .setSkuDetails(product)
                 .build();
 
@@ -247,15 +254,13 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
 
     /**
      * Starts the billing flow after getting the SKU details.
-     *
-     * @param activity The caller {@link Activity}
      */
-    public void startBillingFlow(@NonNull Activity activity, @NonNull String uid) {
-        SkuDetailsCallback callback = new SkuDetailsCallback() {
+    private void startBillingFlow() {
+        getSkuDetails(new SkuDetailsCallback() {
             @Override
             public void onSuccess(@NonNull SkuDetails details) {
                 listener.dismissDialog();
-                startBillingFlow(activity, details, uid);
+                startBillingFlow(details);
             }
 
             @Override
@@ -263,29 +268,39 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                 listener.dismissDialog();
                 handleBillingErrors(code);
             }
-        };
+        });
+    }
 
+    /**
+     * Starts the general flow for registering.
+     */
+    public void startFlow() {
         listener.showProgress(R.string.loading);
         OverloadedApi.get().userData(activity, new UserDataCallback() {
             @Override
             public void onUserData(@NonNull UserData data) {
                 if (data.purchaseStatus.ok) {
-                    updateStatus(data, null);
-
-                    OverloadedApi.get().openWebSocket();
-                    OverloadedApi.chat(context).shareKeysIfNeeded();
                     listener.dismissDialog();
+                    updateStatus(data, null);
+                    doOkStuff();
                 } else {
-                    getSkuDetails(callback);
+                    startBillingFlow();
                 }
             }
 
             @Override
             public void onFailed(@NonNull Exception ex) {
                 listener.dismissDialog();
-                Log.e(TAG, "Failed getting user data, continuing flow.", ex);
+                if (ex instanceof OverloadedServerException) {
+                    if (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NOT_REGISTERED)) {
+                        listener.showDialog(AskUsernameDialog.get());
+                        // Follows in #onUsernameSelected(String)
+                        return;
+                    }
+                }
 
-                getSkuDetails(callback);
+                Log.e(TAG, "Failed getting user data, continuing flow.", ex);
+                startBillingFlow();
             }
         });
     }
@@ -317,10 +332,9 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             @Override
             public void onUserData(@NonNull UserData data) {
                 if (data.purchaseStatus.ok) {
-                    OverloadedApi.get().openWebSocket();
-                    OverloadedApi.chat(context).shareKeysIfNeeded();
                     listener.dismissDialog();
                     updateStatus(data, null);
+                    doOkStuff();
                     return;
                 }
 
@@ -330,10 +344,8 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                         listener.dismissDialog();
                         updateStatus(data, null);
 
-                        if (data.purchaseStatus.ok) {
-                            OverloadedApi.get().openWebSocket();
-                            OverloadedApi.chat(context).shareKeysIfNeeded();
-                        }
+                        if (data.purchaseStatus.ok)
+                            doOkStuff();
                     }
 
                     @Override
@@ -374,15 +386,14 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     @Override
     public void onUsernameSelected(@NonNull String username) {
         Purchase purchase = getLatestPurchase();
-        if (purchase == null) {
-            Log.e(TAG, "Couldn't find latest purchase.");
-            return;
-        }
 
         listener.showProgress(R.string.loading);
-        OverloadedApi.get().registerUser(username, purchase.getSku(), purchase.getPurchaseToken(), null, new UserDataCallback() {
+        OverloadedApi.get().registerUser(username, purchase != null ? purchase.getSku() : null, purchase != null ? purchase.getPurchaseToken() : null, null, new UserDataCallback() {
             @Override
             public void onUserData(@NonNull UserData data) {
+                if (data.purchaseStatus.ok) doOkStuff();
+                else startBillingFlow();
+
                 listener.dismissDialog();
                 updateStatus(data, null);
             }

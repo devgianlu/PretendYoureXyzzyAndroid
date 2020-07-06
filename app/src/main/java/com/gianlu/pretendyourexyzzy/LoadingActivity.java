@@ -210,7 +210,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                     public void onSignInSuccessful(@NonNull FirebaseUser user) {
                         dismissDialog();
                         showToast(Toaster.build().message(R.string.signInSuccessful));
-                        billingHelper.startBillingFlow(LoadingActivity.this, user.getUid());
+                        billingHelper.startFlow();
                     }
 
                     @Override

@@ -402,7 +402,11 @@ public class OverloadedApi {
      * @param activity      The caller {@link Activity}
      * @param callback      The callback containing the latest {@link UserData}
      */
-    public void registerUser(@Nullable String username, @NotNull String sku, @NonNull String purchaseToken, @Nullable Activity activity, @NonNull UserDataCallback callback) {
+    @Contract("null, null, null, _, _ -> fail")
+    public void registerUser(@Nullable String username, @Nullable String sku, @Nullable String purchaseToken, @Nullable Activity activity, @NonNull UserDataCallback callback) {
+        if (username == null && (sku == null && purchaseToken == null))
+            throw new IllegalStateException();
+
         Task<UserData> task = user.getIdToken(true)
                 .continueWith(new NonNullContinuation<GetTokenResult, OverloadedToken>() {
                     @Override
@@ -415,8 +419,8 @@ public class OverloadedApi {
                     public UserData then(@NonNull OverloadedToken token) throws OverloadedException, JSONException, MaintenanceException {
                         JSONObject body = new JSONObject();
                         if (username != null) body.put("username", username);
-                        body.put("sku", sku);
-                        body.put("purchaseToken", purchaseToken);
+                        if (sku != null) body.put("sku", sku);
+                        if (purchaseToken != null) body.put("purchaseToken", purchaseToken);
 
                         JSONObject obj = makePostRequest("User/Register", body);
                         return userDataCached = new UserData(obj.getJSONObject("userData"));
