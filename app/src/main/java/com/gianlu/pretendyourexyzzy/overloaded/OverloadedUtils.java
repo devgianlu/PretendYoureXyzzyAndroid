@@ -56,7 +56,7 @@ public final class OverloadedUtils {
     @NonNull
     public static List<Achievement> getBestAchievements(@NonNull Iterable<Achievement> achievements) {
         List<Achievement> best = new ArrayList<>(5);
-        Achievement ach = findAchievement(achievements, GPGamesHelper.ACH_CARDCAST);
+        Achievement ach = findAchievement(achievements, GPGamesHelper.ACH_CUSTOM_DECK);
         if (ach != null && ach.getState() == Achievement.STATE_UNLOCKED) best.add(ach);
         ach = findBestAchievementOf(achievements, GPGamesHelper.ACHS_PEOPLE_GAME);
         if (ach != null) best.add(ach);

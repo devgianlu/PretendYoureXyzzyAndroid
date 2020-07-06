@@ -186,16 +186,16 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 updateGameInfo();
 
                 if (gameData.amHost()) {
-                    boolean hasCardcast = false;
+                    boolean hasCustomDeck = false;
                     for (int deckId : gameData.options.cardSets) {
                         if (deckId < 0) {
-                            hasCardcast = true; // Cardcast deck ids are always negative
+                            hasCustomDeck = true; // Custom decks ids are always negative
                             break;
                         }
                     }
 
-                    if (hasCardcast)
-                        GPGamesHelper.unlockAchievement(context, GPGamesHelper.ACH_CARDCAST);
+                    if (hasCustomDeck)
+                        GPGamesHelper.unlockAchievement(context, GPGamesHelper.ACH_CUSTOM_DECK);
                 }
                 break;
             case LOBBY:
