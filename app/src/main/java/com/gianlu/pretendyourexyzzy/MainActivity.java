@@ -21,7 +21,6 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
-import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.drawer.BaseDrawerItem;
 import com.gianlu.commonutils.drawer.DrawerManager;
 import com.gianlu.commonutils.logs.LogsHelper;
@@ -29,6 +28,7 @@ import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.api.PyxChatHelper;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
@@ -36,31 +36,39 @@ import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
-import com.gianlu.pretendyourexyzzy.main.ChatFragment;
 import com.gianlu.pretendyourexyzzy.main.CustomDecksFragment;
 import com.gianlu.pretendyourexyzzy.main.DrawerItem;
 import com.gianlu.pretendyourexyzzy.main.GamesFragment;
 import com.gianlu.pretendyourexyzzy.main.NamesFragment;
 import com.gianlu.pretendyourexyzzy.main.OnLeftGame;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
+import com.gianlu.pretendyourexyzzy.main.OverloadedFragment;
+import com.gianlu.pretendyourexyzzy.main.PyxChatsFragment;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
+import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.PlayGamesAuthProvider;
 
 import org.json.JSONException;
 
 import java.util.Objects;
 
-public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction {
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
+
+public class MainActivity extends ActivityWithDialog implements GamesFragment.OnParticipateGame, OnLeftGame, EditGameOptionsDialog.ApplyOptions, UserInfoDialog.OnViewGame, DrawerManager.MenuDrawerListener<DrawerItem>, DrawerManager.OnAction, OverloadedChatApi.UnreadCountListener, PyxChatHelper.UnreadCountListener {
     private static final String TAG = MainActivity.class.getSimpleName();
     private final Object fragmentsLock = new Object();
     private BottomNavigationManager navigation;
     private NamesFragment namesFragment;
     private GamesFragment gamesFragment;
     private CustomDecksFragment customDecksFragment;
-    private ChatFragment gameChatFragment;
     private OngoingGameFragment ongoingGameFragment;
-    private ChatFragment globalChatFragment;
+    private PyxChatsFragment chatsFragment;
+    private OverloadedFragment overloadedFragment;
     private RegisteredPyx pyx;
     private DrawerManager<User, DrawerItem> drawerManager;
     private volatile GamePermalink currentGame;
@@ -70,6 +78,16 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     protected void onResume() {
         super.onResume();
         if (drawerManager != null) drawerManager.syncTogglerState();
+
+        if (overloadedFragment != null && !OverloadedUtils.isSignedIn()) {
+            navigation.remove(Item.OVERLOADED);
+            synchronized (fragmentsLock) {
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.remove(overloadedFragment);
+                transaction.commitAllowingStateLoss();
+                overloadedFragment = null;
+            }
+        }
     }
 
     @Override
@@ -78,143 +96,10 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         if (drawerManager != null) drawerManager.syncTogglerState();
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        Toolbar toolbar = findViewById(R.id.main_toolbar);
-        setSupportActionBar(toolbar);
-
-        try {
-            pyx = RegisteredPyx.get();
-        } catch (LevelMismatchException ex) {
-            startActivity(new Intent(this, LoadingActivity.class)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-            return;
-        }
-
-        DrawerManager.Config<User, DrawerItem> drawerConfig = new DrawerManager.Config<User, DrawerItem>(this)
-                .addMenuItem(new BaseDrawerItem<>(DrawerItem.HOME, R.drawable.baseline_home_24, getString(R.string.home)));
-
-        if (pyx.hasMetrics())
-            drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.USER_METRICS, R.drawable.baseline_person_24, getString(R.string.metrics)));
-
-        drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.STARRED_CARDS, R.drawable.baseline_star_24, getString(R.string.starredCards)))
-                .addMenuItemSeparator()
-                .addMenuItem(new BaseDrawerItem<>(DrawerItem.PREFERENCES, R.drawable.baseline_settings_24, getString(R.string.preferences)))
-                .addMenuItem(new BaseDrawerItem<>(DrawerItem.REPORT, R.drawable.baseline_report_problem_24, getString(R.string.report)))
-                .singleProfile(pyx.user(), this);
-
-        drawerManager = drawerConfig.build(this, findViewById(R.id.main_drawer), toolbar);
-        drawerManager.setActiveItem(DrawerItem.HOME);
-
-        navigation = new BottomNavigationManager(findViewById(R.id.main_navigation));
-        navigation.setOnNavigationItemSelectedListener(item -> {
-            switch (item) {
-                case PLAYERS:
-                    setTitle(getString(R.string.playersLabel) + " - " + getString(R.string.app_name));
-                    break;
-                case GAMES:
-                    setTitle(getString(R.string.games) + " - " + getString(R.string.app_name));
-                    break;
-                case CUSTOM_DECKS:
-                    setTitle(getString(R.string.customDecks) + " - " + getString(R.string.app_name));
-                    break;
-                case ONGOING_GAME:
-                    setTitle(getString(R.string.gameLabel) + " - " + getString(R.string.app_name));
-                    break;
-                case GAME_CHAT:
-                    setTitle(getString(R.string.gameChat) + " - " + getString(R.string.app_name));
-                    break;
-                case GLOBAL_CHAT:
-                    setTitle(getString(R.string.globalChat) + " - " + getString(R.string.app_name));
-                    break;
-            }
-
-            switchTo(item);
-            return true;
-        });
-        navigation.setOnNavigationItemReselectedListener(item -> {
-            switch (item) {
-                case PLAYERS:
-                    if (namesFragment != null) namesFragment.scrollToTop();
-                    break;
-                case GAMES:
-                    if (gamesFragment != null) gamesFragment.scrollToTop();
-                    break;
-                case GAME_CHAT:
-                    if (gameChatFragment != null) gameChatFragment.scrollToTop();
-                    break;
-                case GLOBAL_CHAT:
-                    if (globalChatFragment != null) globalChatFragment.scrollToTop();
-                    break;
-            }
-        });
-
-        setKeepScreenOn(Prefs.getBoolean(PK.KEEP_SCREEN_ON));
-
-        GPGamesHelper.setPopupView(this, (View) navigation.view.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
-
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        namesFragment = (NamesFragment) getOrAdd(transaction, Item.PLAYERS, NamesFragment::getInstance);
-        gamesFragment = (GamesFragment) getOrAdd(transaction, Item.GAMES, GamesFragment::getInstance);
-        customDecksFragment = (CustomDecksFragment) getOrAdd(transaction, Item.CUSTOM_DECKS, CustomDecksFragment::getInstance);
-
-        if (pyx.config().globalChatEnabled())
-            globalChatFragment = (ChatFragment) getOrAdd(transaction, Item.GLOBAL_CHAT, ChatFragment::getGlobalInstance);
-
-        transaction.commitNow();
-
-        Item currentFragment = null;
-        if (savedInstanceState != null) {
-            currentGame = (GamePermalink) savedInstanceState.getSerializable("currentGame");
-            currentFragment = (Item) savedInstanceState.getSerializable("currentFragment");
-        }
-
-        ongoingGameFragment = (OngoingGameFragment) getSupportFragmentManager().findFragmentByTag(Item.ONGOING_GAME.tag);
-        gameChatFragment = (ChatFragment) getSupportFragmentManager().findFragmentByTag(Item.GAME_CHAT.tag);
-
-        if (currentGame == null) {
-            inflateNavigation(Layout.LOBBY);
-            if (currentFragment == null) navigation.setSelectedItem(Item.GAMES);
-
-            if (gameChatFragment != null || ongoingGameFragment != null) {
-                transaction = getSupportFragmentManager().beginTransaction();
-                if (gameChatFragment != null) transaction.remove(gameChatFragment);
-                if (ongoingGameFragment != null) transaction.remove(ongoingGameFragment);
-                transaction.commitNow();
-            }
-        } else {
-            if (ongoingGameFragment == null) {
-                transaction = getSupportFragmentManager().beginTransaction();
-                ongoingGameFragment = OngoingGameFragment.getInstance(currentGame);
-                addOrReplace(transaction, ongoingGameFragment, Item.ONGOING_GAME);
-
-                if (pyx.config().gameChatEnabled()) {
-                    gameChatFragment = ChatFragment.getGameInstance(currentGame.gid);
-                    addOrReplace(transaction, gameChatFragment, Item.GAME_CHAT);
-                }
-
-                transaction.commitNow();
-            }
-
-            inflateNavigation(Layout.ONGOING);
-            if (currentFragment == null) navigation.setSelectedItem(Item.ONGOING_GAME);
-        }
-
-        if (currentFragment != null) navigation.setSelectedItem(currentFragment);
-
-        GamePermalink perm = (GamePermalink) getIntent().getSerializableExtra("game");
-        if (perm != null) {
-            gamesFragment.launchGame(perm, getIntent().getStringExtra("password"), getIntent().getBooleanExtra("shouldRequest", true));
-            getIntent().removeExtra("gid");
-        }
-    }
-
     @NonNull
-    private Fragment getOrAdd(@NonNull FragmentTransaction transaction, @NonNull Item item, @NonNull CreateFragment provider) {
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(item.tag);
+    private <F extends Fragment> F getOrAdd(@NonNull FragmentTransaction transaction, @NonNull Item item, @NonNull CreateFragment<F> provider) {
+        // noinspection unchecked
+        F fragment = (F) getSupportFragmentManager().findFragmentByTag(item.tag);
         if (fragment != null) return fragment;
 
         fragment = provider.create();
@@ -312,13 +197,13 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                         if (ongoingGameFragment != null)
                             transaction.add(R.id.main_container, ongoingGameFragment, item.tag);
                         break;
-                    case GAME_CHAT:
-                        if (gameChatFragment != null)
-                            transaction.add(R.id.main_container, gameChatFragment, item.tag);
+                    case PYX_CHAT:
+                        if (chatsFragment != null)
+                            transaction.add(R.id.main_container, chatsFragment, item.tag);
                         break;
-                    case GLOBAL_CHAT:
-                        if (globalChatFragment != null)
-                            transaction.add(R.id.main_container, globalChatFragment, item.tag);
+                    case OVERLOADED:
+                        if (overloadedFragment != null)
+                            transaction.add(R.id.main_container, overloadedFragment, item.tag);
                         break;
                 }
             }
@@ -343,10 +228,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             ongoingGameFragment = OngoingGameFragment.getInstance(game);
             addOrReplace(transaction, ongoingGameFragment, Item.ONGOING_GAME);
 
-            if (pyx.config().gameChatEnabled()) {
-                gameChatFragment = ChatFragment.getGameInstance(game.gid);
-                addOrReplace(transaction, gameChatFragment, Item.GAME_CHAT);
-            }
+            toggleGameChat(transaction, game.gid);
 
             try {
                 transaction.commitNow();
@@ -357,11 +239,169 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         }
     }
 
+    private void toggleGameChat(@NonNull FragmentTransaction transaction, @Nullable Integer gid) {
+        if (chatsFragment == null && pyx.config().globalChatEnabled())
+            chatsFragment = getOrAdd(transaction, Item.PYX_CHAT, () -> PyxChatsFragment.get(pyx));
+
+        if (gid != null && pyx.config().gameChatEnabled()) {
+            if (chatsFragment == null)
+                chatsFragment = getOrAdd(transaction, Item.PYX_CHAT, () -> PyxChatsFragment.get(pyx));
+
+            chatsFragment.toggleGameChat(gid);
+        } else {
+            if (chatsFragment != null) {
+                if (pyx.config().globalChatEnabled()) chatsFragment.toggleGameChat(null);
+                else transaction.remove(chatsFragment);
+            }
+        }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
+
+        try {
+            pyx = RegisteredPyx.get();
+        } catch (LevelMismatchException ex) {
+            Toaster.with(this).message(R.string.failedLoading).show();
+            startActivity(new Intent(this, LoadingActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+            return;
+        }
+
+        DrawerManager.Config<User, DrawerItem> drawerConfig = new DrawerManager.Config<User, DrawerItem>(this)
+                .addMenuItem(new BaseDrawerItem<>(DrawerItem.HOME, R.drawable.baseline_home_24, getString(R.string.home)));
+
+        if (pyx.hasMetrics())
+            drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.USER_METRICS, R.drawable.baseline_person_24, getString(R.string.metrics)));
+
+        drawerConfig.addMenuItem(new BaseDrawerItem<>(DrawerItem.STARRED_CARDS, R.drawable.baseline_star_24, getString(R.string.starredCards)))
+                .addMenuItemSeparator()
+                .addMenuItem(new BaseDrawerItem<>(DrawerItem.PREFERENCES, R.drawable.baseline_settings_24, getString(R.string.preferences)))
+                .addMenuItem(new BaseDrawerItem<>(DrawerItem.REPORT, R.drawable.baseline_report_problem_24, getString(R.string.report)))
+                .singleProfile(pyx.user(), this);
+
+        drawerManager = drawerConfig.build(this, findViewById(R.id.main_drawer), toolbar);
+        drawerManager.setActiveItem(DrawerItem.HOME);
+
+        navigation = new BottomNavigationManager(findViewById(R.id.main_navigation));
+        navigation.setOnNavigationItemSelectedListener(item -> {
+            switch (item) {
+                case PLAYERS:
+                    setTitle(getString(R.string.playersLabel) + " - " + getString(R.string.app_name));
+                    break;
+                case GAMES:
+                    setTitle(getString(R.string.games) + " - " + getString(R.string.app_name));
+                    break;
+                case CUSTOM_DECKS:
+                    setTitle(getString(R.string.customDecks) + " - " + getString(R.string.app_name));
+                    break;
+                case ONGOING_GAME:
+                    setTitle(getString(R.string.gameLabel) + " - " + getString(R.string.app_name));
+                    break;
+                case PYX_CHAT:
+                    setTitle(getString(R.string.chat) + " - " + getString(R.string.app_name));
+                    break;
+                case OVERLOADED:
+                    setTitle(getString(R.string.overloaded) + " - " + getString(R.string.app_name));
+                    break;
+            }
+
+            if (chatsFragment != null) {
+                if (item == Item.PYX_CHAT) chatsFragment.onSelectedFragment();
+                else chatsFragment.onDeselectedFragment();
+            }
+
+            switchTo(item);
+            return true;
+        });
+        navigation.setOnNavigationItemReselectedListener(item -> {
+            switch (item) {
+                case PLAYERS:
+                    if (namesFragment != null) namesFragment.scrollToTop();
+                    break;
+                case GAMES:
+                    if (gamesFragment != null) gamesFragment.scrollToTop();
+                    break;
+                case PYX_CHAT:
+                    if (chatsFragment != null) chatsFragment.scrollToTop();
+                    break;
+            }
+        });
+
+        setKeepScreenOn(Prefs.getBoolean(PK.KEEP_SCREEN_ON));
+
+        GPGamesHelper.setPopupView(this, (View) navigation.view.getParent(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        namesFragment = getOrAdd(transaction, Item.PLAYERS, NamesFragment::getInstance);
+        gamesFragment = getOrAdd(transaction, Item.GAMES, GamesFragment::getInstance);
+        customDecksFragment = getOrAdd(transaction, Item.CUSTOM_DECKS, CustomDecksFragment::getInstance);
+
+        if (OverloadedUtils.isSignedIn())
+            overloadedFragment = getOrAdd(transaction, Item.OVERLOADED, OverloadedFragment::getInstance);
+
+        Item currentFragment = null;
+        if (savedInstanceState != null) {
+            currentGame = (GamePermalink) savedInstanceState.getSerializable("currentGame");
+            currentFragment = (Item) savedInstanceState.getSerializable("currentFragment");
+        }
+
+        toggleGameChat(transaction, currentGame == null ? null : currentGame.gid);
+        transaction.commitNow();
+
+        ongoingGameFragment = (OngoingGameFragment) getSupportFragmentManager().findFragmentByTag(Item.ONGOING_GAME.tag);
+        if (currentGame == null) {
+            inflateNavigation(Layout.LOBBY);
+            if (currentFragment == null) navigation.setSelectedItem(Item.GAMES);
+
+            if (ongoingGameFragment != null) {
+                transaction = getSupportFragmentManager().beginTransaction();
+                if (ongoingGameFragment != null) transaction.remove(ongoingGameFragment);
+                transaction.commitNow();
+            }
+        } else {
+            if (ongoingGameFragment == null) {
+                transaction = getSupportFragmentManager().beginTransaction();
+                ongoingGameFragment = OngoingGameFragment.getInstance(currentGame);
+                addOrReplace(transaction, ongoingGameFragment, Item.ONGOING_GAME);
+                transaction.commitNow();
+            }
+
+            inflateNavigation(Layout.ONGOING);
+            if (currentFragment == null) navigation.setSelectedItem(Item.ONGOING_GAME);
+        }
+
+        if (currentFragment != null) navigation.setSelectedItem(currentFragment);
+
+        pyx.chat().addUnreadCountListener(this);
+
+        GamePermalink perm = (GamePermalink) getIntent().getSerializableExtra("game");
+        if (perm != null) {
+            gamesFragment.launchGame(perm, getIntent().getStringExtra("password"), getIntent().getBooleanExtra("shouldRequest", true));
+            getIntent().removeExtra("gid");
+        }
+
+        if (OverloadedApi.get().isFullyRegistered()) {
+            SyncUtils.syncStarredCards(this, null);
+            SyncUtils.syncCustomDecks(this, null);
+            SyncUtils.syncStarredCustomDecks(this, null);
+
+            OverloadedSignInHelper.signInSilently(this, PlayGamesAuthProvider.PROVIDER_ID).addOnSuccessListener(account -> {
+                String authCode = account.getServerAuthCode();
+                if (authCode != null) OverloadedApi.get().linkGames(authCode);
+            });
+        }
+    }
+
     @Override
     public void onLeftGame() {
         currentGame = null;
         ongoingGameFragment = null;
-        gameChatFragment = null;
         AnalyticsApplication.sendAnalytics(Utils.ACTION_LEFT_GAME);
 
         inflateNavigation(Layout.LOBBY);
@@ -371,13 +411,11 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             FragmentManager manager = getSupportFragmentManager();
             FragmentTransaction transaction = manager.beginTransaction();
 
+            toggleGameChat(transaction, null);
+
             try {
                 Fragment ongoingGame = manager.findFragmentByTag(Item.ONGOING_GAME.tag);
                 if (ongoingGame != null) transaction.remove(ongoingGame);
-
-                Fragment gameChat = manager.findFragmentByTag(Item.GAME_CHAT.tag);
-                if (gameChat != null) transaction.remove(gameChat);
-
                 transaction.commit();
             } catch (IllegalStateException ex) {
                 Log.d(TAG, "Failed fragments transaction on left game.", ex);
@@ -401,7 +439,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     @Override
     public void changeGameOptions(int gid, @NonNull Game.Options options) {
         try {
-            showDialog(DialogUtils.progressDialog(this, R.string.loading));
+            showProgress(R.string.loading);
             pyx.request(PyxRequests.changeGameOptions(gid, options), this, new Pyx.OnSuccess() {
                 @Override
                 public void onDone() {
@@ -453,25 +491,56 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         return false;
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        OverloadedApi.chat(this).addUnreadCountListener(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        OverloadedApi.chat(this).removeUnreadCountListener(this);
+        if (pyx != null) pyx.chat().removeUnreadCountListener(this);
+    }
+
     private void inflateNavigation(@NonNull Layout layout) {
         if (navigation == null) return;
         navigation.clear();
 
         for (int i = 0; i < layout.items.length; i++) {
             Item item = layout.items[i];
-            if (item == Item.GAME_CHAT && !pyx.config().gameChatEnabled())
+            if (item == Item.PYX_CHAT && !(pyx.config().gameChatEnabled() || pyx.config().globalChatEnabled()))
                 continue;
-            else if (item == Item.GLOBAL_CHAT && !pyx.config().globalChatEnabled())
+            else if (item == Item.OVERLOADED && !OverloadedUtils.isSignedIn())
                 continue;
 
             navigation.add(item);
         }
+
+        mayUpdateUnreadCount();
+    }
+
+    @Override
+    public void mayUpdateUnreadCount() {
+        if (!OverloadedUtils.isSignedIn()) return;
+
+        int count = OverloadedApi.chat(this).countTotalUnread();
+        if (count == 0) navigation.removeBadge(Item.OVERLOADED);
+        else navigation.setBadge(Item.OVERLOADED, count);
+    }
+
+    @Override
+    public void onPyxUnread(int count) {
+        if (count == 0) navigation.removeBadge(Item.PYX_CHAT);
+        else navigation.setBadge(Item.PYX_CHAT, count);
     }
 
     private enum Item {
-        GLOBAL_CHAT(R.string.globalChat, R.drawable.baseline_chat_24), GAME_CHAT(R.string.gameChat, R.drawable.baseline_chat_bubble_outline_24),
         CUSTOM_DECKS(R.string.customDecks, R.drawable.baseline_bookmarks_24), GAMES(R.string.games, R.drawable.baseline_games_24),
-        PLAYERS(R.string.playersLabel, R.drawable.baseline_people_24), ONGOING_GAME(R.string.ongoingGame, R.drawable.baseline_casino_24);
+        PLAYERS(R.string.playersLabel, R.drawable.baseline_people_24), ONGOING_GAME(R.string.ongoingGame, R.drawable.baseline_casino_24),
+        OVERLOADED(R.string.overloaded, R.drawable.baseline_videogame_asset_24), PYX_CHAT(R.string.chat, R.drawable.baseline_chat_bubble_outline_24);
 
         private final int text;
         private final int icon;
@@ -496,8 +565,14 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     }
 
     private enum Layout {
-        LOBBY(Item.PLAYERS, Item.GLOBAL_CHAT, Item.GAMES, Item.CUSTOM_DECKS),
-        ONGOING(Item.PLAYERS, Item.GLOBAL_CHAT, Item.CUSTOM_DECKS, Item.ONGOING_GAME, Item.GAME_CHAT);
+        LOBBY(Item.PLAYERS, Item.PYX_CHAT, Item.GAMES, Item.CUSTOM_DECKS, Item.OVERLOADED),
+        ONGOING(Item.PLAYERS, Item.PYX_CHAT, Item.CUSTOM_DECKS, Item.OVERLOADED, Item.ONGOING_GAME);
+
+        static {
+            for (Layout l : values())
+                if (l.items.length > 5)
+                    throw new IllegalStateException();
+        }
 
         private final Item[] items;
 
@@ -506,9 +581,9 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         }
     }
 
-    private interface CreateFragment {
+    private interface CreateFragment<F extends Fragment> {
         @NonNull
-        Fragment create();
+        F create();
     }
 
     @UiThread
@@ -519,8 +594,20 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             this.view = view;
         }
 
+        void remove(@NonNull Item item) {
+            view.getMenu().removeItem(item.id);
+        }
+
         void add(@NonNull Item item) {
             view.getMenu().add(Menu.NONE, item.id, Menu.NONE, item.text).setIcon(item.icon);
+        }
+
+        void setBadge(@NonNull Item item, int number) {
+            view.getOrCreateBadge(item.id).setNumber(number);
+        }
+
+        void removeBadge(@NonNull Item item) {
+            view.removeBadge(item.id);
         }
 
         void clear() {

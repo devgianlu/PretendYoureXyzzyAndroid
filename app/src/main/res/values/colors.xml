@@ -15,4 +15,5 @@
     <color name="urbanAccent">#EFFF00</color>
 
     <color name="customDecksSheetFabBg">@color/colorSecondary</color>
+    <color name="overloadedHeaderBg">#ffffff</color>
 </resources>

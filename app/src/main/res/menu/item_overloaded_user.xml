@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/overloadedUserItemMenu_showProfile"
+        android:title="@string/showProfile" />
+    <item
+        android:id="@+id/overloadedUserItemMenu_openChat"
+        android:title="@string/openChat" />
+    <item
+        android:id="@+id/overloadedUserItemMenu_removeFriend"
+        android:title="@string/removeFriend" />
+    <item
+        android:id="@+id/overloadedUserItemMenu_acceptRequest"
+        android:title="@string/acceptRequest" />
+    <item
+        android:id="@+id/overloadedUserItemMenu_rejectRequest"
+        android:title="@string/rejectRequest" />
+</menu>

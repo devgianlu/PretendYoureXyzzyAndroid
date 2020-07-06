@@ -1,12 +1,14 @@
 package com.gianlu.pretendyourexyzzy.main.ongoinggame;
 
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -21,13 +23,12 @@ import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
-import com.gianlu.pretendyourexyzzy.adapters.DefinitionsAdapter;
 import com.gianlu.pretendyourexyzzy.api.urbandictionary.Definition;
 import com.gianlu.pretendyourexyzzy.api.urbandictionary.Definitions;
 import com.gianlu.pretendyourexyzzy.api.urbandictionary.UrbanDictApi;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> implements DefinitionsAdapter.Listener {
+public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> {
     private static final String TAG = UrbanDictSheet.class.getSimpleName();
     private RecyclerView list;
     private MessageView message;
@@ -72,7 +73,7 @@ public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> 
         } else {
             message.hide();
             list.setVisibility(View.VISIBLE);
-            list.setAdapter(new DefinitionsAdapter(requireContext(), payload, this));
+            list.setAdapter(new DefinitionsAdapter(requireContext(), payload));
         }
     }
 
@@ -92,12 +93,65 @@ public class UrbanDictSheet extends ThemedModalBottomSheet<String, Definitions> 
         return R.style.UrbanDictTheme;
     }
 
-    @Override
-    public void onDefinitionSelected(@NonNull Definition definition) {
-        try {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(definition.permalink)));
-        } catch (ActivityNotFoundException ex) {
-            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.missingWebBrowser));
+    private class DefinitionsAdapter extends RecyclerView.Adapter<DefinitionsAdapter.ViewHolder> {
+        private final LayoutInflater inflater;
+        private final Definitions definitions;
+
+        DefinitionsAdapter(@NonNull Context context, @NonNull Definitions definitions) {
+            this.inflater = LayoutInflater.from(context);
+            this.definitions = definitions;
+            setHasStableIds(true);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return definitions.get(position).id;
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new ViewHolder(parent);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            final Definition def = definitions.get(position);
+            holder.definition.setText(def.definition);
+            holder.word.setText(def.word);
+            if (def.example.isEmpty()) {
+                holder.example.setVisibility(View.GONE);
+            } else {
+                holder.example.setVisibility(View.VISIBLE);
+                holder.example.setText(def.example);
+            }
+
+            holder.itemView.setOnClickListener(v -> {
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(def.permalink)));
+                } catch (ActivityNotFoundException ex) {
+                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.missingWebBrowser));
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return definitions.size();
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            final TextView definition;
+            final TextView word;
+            final TextView example;
+
+            ViewHolder(ViewGroup parent) {
+                super(inflater.inflate(R.layout.item_urban_def, parent, false));
+
+                definition = itemView.findViewById(R.id.urbanDefItem_definition);
+                word = itemView.findViewById(R.id.urbanDefItem_word);
+                example = itemView.findViewById(R.id.urbanDefItem_example);
+            }
         }
     }
 }

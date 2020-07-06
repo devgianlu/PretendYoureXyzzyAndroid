@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 import com.gianlu.commonutils.adapters.Filterable;
 import com.gianlu.pretendyourexyzzy.R;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.text.ParseException;
 import java.util.Comparator;
 
@@ -85,7 +87,7 @@ public class Name implements Filterable<String> {
         }
 
         @NonNull
-        public String getFormal(Context context) {
+        public String getFormal(@NonNull Context context) {
             switch (this) {
                 case ADMIN:
                     return context.getString(R.string.admin) + " (" + val + ")";
@@ -99,18 +101,16 @@ public class Name implements Filterable<String> {
     }
 
     public static class AzComparator implements Comparator<Name> {
-
         @Override
-        public int compare(Name o1, Name o2) {
-            return o1.noSigil.compareTo(o2.noSigil);
+        public int compare(@NotNull Name o1, @NotNull Name o2) {
+            return o1.noSigil.compareToIgnoreCase(o2.noSigil);
         }
     }
 
     public static class ZaComparator implements Comparator<Name> {
-
         @Override
-        public int compare(Name o1, Name o2) {
-            return o2.noSigil.compareTo(o1.noSigil);
+        public int compare(@NotNull Name o1, @NotNull Name o2) {
+            return o2.noSigil.compareToIgnoreCase(o1.noSigil);
         }
     }
 }

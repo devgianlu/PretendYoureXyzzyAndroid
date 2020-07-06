@@ -3,6 +3,8 @@ package com.gianlu.pretendyourexyzzy.api.models.cards;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,14 +17,14 @@ import java.util.regex.Pattern;
 public final class GameCard extends BaseCard {
     private static final Pattern CARD_NUM_PATTERN = Pattern.compile("<span class=\"cardnum\">(\\d*)\\s?[/\\\\]\\s?(\\d*)</span>");
     public final int id;
-    public final String text;
-    public final String watermark;
     public final int numPick;
     public final int numDraw;
     public final boolean writeIn;
-    private final String originalText;
-    private final String originalWatermark;
-    public boolean winner = false;
+    public final String originalText;
+    public final String originalWatermark;
+    private final String text;
+    private final String watermark;
+    private boolean winner = false;
 
     private GameCard(int id, @NonNull String originalText, @NonNull String originalWatermark, @NonNull JSONObject obj) {
         this.id = id;
@@ -43,6 +45,14 @@ public final class GameCard extends BaseCard {
             watermark = watermarkTmp;
             text = textTmp.trim();
         }
+    }
+
+    public static boolean hasCard(@NonNull CardsGroup group, int id) {
+        for (BaseCard card : group)
+            if (card instanceof GameCard && ((GameCard) card).id == id)
+                return true;
+
+        return false;
     }
 
     @NonNull
@@ -80,17 +90,6 @@ public final class GameCard extends BaseCard {
     }
 
     @NonNull
-    public JSONObject toJson() throws JSONException {
-        return new JSONObject()
-                .put("cid", id)
-                .put("PK", numPick)
-                .put("D", numDraw)
-                .put("wi", writeIn)
-                .put("T", originalText)
-                .put("W", originalWatermark);
-    }
-
-    @NonNull
     @Override
     public String text() {
         return text;
@@ -112,17 +111,14 @@ public final class GameCard extends BaseCard {
         return numDraw;
     }
 
-    public boolean writeIn() {
-        return writeIn;
-    }
-
-    @Override
-    public int id() {
-        return id;
-    }
-
     public boolean isWinner() {
         return winner;
+    }
+
+    public static void setWinner(@NonNull CardsGroup group) {
+        for (BaseCard card : group)
+            if (card instanceof GameCard)
+                ((GameCard) card).setWinner();
     }
 
     public void setWinner() {

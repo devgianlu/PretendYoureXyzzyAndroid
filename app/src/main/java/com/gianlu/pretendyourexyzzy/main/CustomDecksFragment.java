@@ -25,9 +25,13 @@ import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksAdapter;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.FloatingCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
+import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
+import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
@@ -36,11 +40,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-public class CustomDecksFragment extends FragmentWithDialog {
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
+
+public class CustomDecksFragment extends FragmentWithDialog implements OverloadedSyncApi.SyncStatusListener, CustomDecksAdapter.Listener {
     private static final int RC_IMPORT_JSON = 2;
     private static final String TAG = CustomDecksFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
     private CustomDecksDatabase db;
+    private TextView syncStatus;
 
     @NonNull
     public static CustomDecksFragment getInstance() {
@@ -53,9 +61,14 @@ public class CustomDecksFragment extends FragmentWithDialog {
         CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.fragment_custom_decks, container, false);
         db = CustomDecksDatabase.get(requireContext());
 
+        syncStatus = layout.findViewById(R.id.customDecks_sync);
         rmv = layout.findViewById(R.id.customDecks_list);
-        rmv.disableSwipeRefresh();
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
+
+        if (OverloadedApi.get().isFullyRegistered())
+            rmv.enableSwipeRefresh(this::refreshSync, R.color.appColorBright);
+        else
+            rmv.disableSwipeRefresh();
 
         FloatingActionsMenu fab = layout.findViewById(R.id.customDecks_fab);
         FloatingActionButton importDeck = layout.findViewById(R.id.customDecksFab_import);
@@ -121,13 +134,31 @@ public class CustomDecksFragment extends FragmentWithDialog {
         });
     }
 
+    private void refreshSync() {
+        if (getContext() == null)
+            return;
+
+        SyncUtils.syncCustomDecks(requireContext(), this::refreshList);
+        SyncUtils.syncStarredCustomDecks(requireContext(), this::refreshList);
+    }
+
+    private void refreshList() {
+        List<FloatingCustomDeck> decks = db.getAllDecks();
+        rmv.loadListData(new CustomDecksAdapter(requireContext(), decks, this), false);
+        if (decks.isEmpty()) rmv.showInfo(R.string.noCustomDecks_create);
+        else rmv.showList();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        OverloadedSyncApi.get().addSyncListener(this);
+    }
+
     @Override
     public void onResume() {
         super.onResume();
-        List<CustomDeck> decks = db.getDecks();
-        rmv.loadListData(new CustomDecksAdapter(decks), false);
-        if (decks.isEmpty()) rmv.showInfo(R.string.noCustomDecks_create);
-        else rmv.showList();
+        refreshList();
     }
 
     @Override
@@ -150,51 +181,17 @@ public class CustomDecksFragment extends FragmentWithDialog {
         }
     }
 
-    private class CustomDecksAdapter extends RecyclerView.Adapter<CustomDecksAdapter.ViewHolder> {
-        private final List<CustomDeck> decks;
-        private final LayoutInflater inflater;
+    @Override
+    public void syncStatusUpdated(@NonNull OverloadedSyncApi.SyncProduct product, boolean isSyncing, boolean error) {
+        if (syncStatus != null && (product == OverloadedSyncApi.SyncProduct.CUSTOM_DECKS || product == OverloadedSyncApi.SyncProduct.STARRED_CUSTOM_DECKS))
+            SyncUtils.updateSyncText(syncStatus, product, isSyncing, error);
+    }
 
-        CustomDecksAdapter(@NonNull List<CustomDeck> decks) {
-            this.decks = decks;
-            this.inflater = LayoutInflater.from(getContext());
-            setHasStableIds(true);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return decks.get(position).id;
-        }
-
-        @Override
-        @NonNull
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new ViewHolder(parent);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            CustomDeck deck = decks.get(position);
-            holder.name.setText(deck.name);
-            holder.watermark.setText(deck.watermark);
-            holder.itemView.setOnClickListener(view -> EditCustomDeckActivity.startActivityEdit(holder.itemView.getContext(), deck));
-            CommonUtils.setRecyclerViewTopMargin(holder);
-        }
-
-        @Override
-        public int getItemCount() {
-            return decks.size();
-        }
-
-        class ViewHolder extends RecyclerView.ViewHolder {
-            final TextView name;
-            final TextView watermark;
-
-            ViewHolder(ViewGroup parent) {
-                super(inflater.inflate(R.layout.item_custom_deck, parent, false));
-
-                name = itemView.findViewById(R.id.customDeckItem_name);
-                watermark = itemView.findViewById(R.id.customDeckItem_watermark);
-            }
-        }
+    @Override
+    public void onCustomDeckSelected(@NonNull FloatingCustomDeck deck) {
+        if (deck instanceof CustomDeck)
+            EditCustomDeckActivity.startActivityEdit(requireContext(), (CustomDeck) deck);
+        else if (deck instanceof CustomDecksDatabase.StarredDeck && deck.owner != null)
+            ViewCustomDeckActivity.startActivity(requireContext(), deck.owner, deck.name, ((CustomDecksDatabase.StarredDeck) deck).shareCode);
     }
 }

@@ -12,8 +12,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SearchView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,10 +26,12 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
+import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.tutorial.BaseTutorial;
 import com.gianlu.commonutils.tutorial.TutorialManager;
@@ -32,7 +39,7 @@ import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
-import com.gianlu.pretendyourexyzzy.adapters.GamesAdapter;
+import com.gianlu.pretendyourexyzzy.api.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxException;
@@ -49,7 +56,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.jetbrains.annotations.NotNull;
 
-public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<GamesList>, GamesAdapter.Listener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, Pyx.OnEventListener, TutorialManager.Listener {
+import java.util.Comparator;
+import java.util.List;
+
+public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<GamesList>, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, Pyx.OnEventListener, TutorialManager.Listener {
+    private static final String TAG = GamesFragment.class.getSimpleName();
     private GamesList lastResult;
     private RecyclerMessageView rmv;
     private OnParticipateGame handler;
@@ -138,8 +149,6 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         return false;
     }
 
-    private static final String TAG = GamesFragment.class.getSimpleName();
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -207,7 +216,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
     public void onDone(@NonNull GamesList result) {
         if (!isAdded()) return;
 
-        adapter = new GamesAdapter(getContext(), result, pyx, Prefs.getBoolean(PK.FILTER_LOCKED_LOBBIES), this);
+        adapter = new GamesAdapter(getContext(), result, pyx, Prefs.getBoolean(PK.FILTER_LOCKED_LOBBIES));
         rmv.loadListData(adapter, false);
 
         lastResult = result;
@@ -232,8 +241,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
             rmv.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 
-    @Override
-    public void spectateGame(@NonNull final Game game) {
+    private void spectateGame(@NonNull final Game game) {
         if (game.hasPassword(false)) {
             askForPassword(password -> spectateGame(game.gid, password));
         } else {
@@ -241,19 +249,12 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         }
     }
 
-    @Override
-    public void joinGame(@NonNull final Game game) {
+    private void joinGame(@NonNull final Game game) {
         if (game.hasPassword(false)) {
             askForPassword(password -> joinGame(game.gid, password));
         } else {
             joinGame(game.gid, null);
         }
-    }
-
-    @Override
-    public void onItemCountUpdated(int count) {
-        if (count == 0) rmv.showInfo(R.string.noGames);
-        else rmv.showList();
     }
 
     private void spectateGame(final int gid, @Nullable String password) {
@@ -426,11 +427,147 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         return tutorial instanceof GamesTutorial && ((GamesTutorial) tutorial).buildSequence(createGame, rmv.list());
     }
 
+    public enum SortBy {
+        NAME,
+        NUM_PLAYERS,
+        NUM_SPECTATORS
+    }
+
     public interface OnParticipateGame {
         void onParticipatingGame(@NonNull GamePermalink game);
     }
 
     private interface OnPassword {
         void onPassword(@Nullable String password);
+    }
+
+    public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHolder, Game, SortBy, Game.Protection> {
+        private final LayoutInflater inflater;
+        private final FirstLoadedPyx pyx;
+
+        GamesAdapter(Context context, List<Game> objs, FirstLoadedPyx pyx, boolean filterOutLockedLobbies) {
+            super(objs, SortBy.NUM_PLAYERS);
+            this.pyx = pyx;
+            this.inflater = LayoutInflater.from(context);
+
+            setHasStableIds(true);
+            setFilterOutLockedLobbies(filterOutLockedLobbies);
+        }
+
+        void setFilterOutLockedLobbies(boolean filter) {
+            if (filter) setFilters(Game.Protection.LOCKED);
+            else setFilters();
+        }
+
+        boolean doesFilterOutLockedLobbies() {
+            return filters.contains(Game.Protection.LOCKED);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return objs.get(position).gid;
+        }
+
+        @Override
+        protected boolean matchQuery(@NonNull Game item, @Nullable String query) {
+            return query == null || item.host.toLowerCase().contains(query.toLowerCase());
+        }
+
+        @Override
+        protected void shouldUpdateItemCount(int count) {
+            if (count == 0) rmv.showInfo(R.string.noGames);
+            else rmv.showList();
+        }
+
+        @NonNull
+        @Override
+        public Comparator<Game> getComparatorFor(SortBy sorting) {
+            switch (sorting) {
+                case NAME:
+                    return new Game.NameComparator();
+                default:
+                case NUM_PLAYERS:
+                    return new Game.NumPlayersComparator();
+                case NUM_SPECTATORS:
+                    return new Game.NumSpectatorsComparator();
+            }
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new ViewHolder(parent);
+        }
+
+        @Override
+        public void onSetupViewHolder(@NonNull final ViewHolder holder, int position, @NonNull final Game game) {
+            holder.name.setText(game.host);
+            holder.players.setHtml(R.string.players, game.players.size(), game.options.playersLimit);
+            holder.goal.setHtml(R.string.goal, game.options.scoreLimit);
+            holder.locked.setImageResource(game.hasPassword(false) ? R.drawable.outline_lock_24 : R.drawable.baseline_lock_open_24);
+            CommonUtils.setImageTintColor(holder.locked, game.hasPassword(false) ? R.color.red : R.color.green);
+            holder.status.setImageResource(game.status == Game.Status.LOBBY ? R.drawable.baseline_hourglass_empty_24 : R.drawable.baseline_casino_24);
+            holder.timerMultiplier.setHtml(R.string.timerMultiplier, game.options.timerMultiplier);
+            holder.blankCards.setHtml(R.string.blankCards, game.options.blanksLimit);
+            holder.cardsets.setHtml(R.string.cardSets, game.options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(pyx.firstLoad().createCardSetNamesList(game.options.cardSets), ", "));
+
+            if (game.options.spectatorsLimit == 0)
+                holder.spectators.setHtml(R.string.spectatorsNotAllowed);
+            else
+                holder.spectators.setHtml(R.string.spectators, game.spectators.size(), game.options.spectatorsLimit);
+
+            holder.spectate.setOnClickListener(v -> spectateGame(game));
+            holder.join.setOnClickListener(v -> joinGame(game));
+            holder.expand.setOnClickListener(v -> CommonUtils.handleCollapseClick(holder.expand, holder.details));
+            CommonUtils.setRecyclerViewTopMargin(holder);
+        }
+
+        @Override
+        protected void onUpdateViewHolder(@NonNull ViewHolder holder, int position, @NonNull Game payload) {
+        }
+
+        @NonNull
+        List<Game> getGames() {
+            return originalObjs;
+        }
+
+        @NonNull
+        List<Game> getVisibleGames() {
+            return objs;
+        }
+
+        public class ViewHolder extends RecyclerView.ViewHolder {
+            public final ImageView locked;
+            public final ImageView status;
+            public final Button spectate;
+            public final Button join;
+            final ImageButton expand;
+            final TextView name;
+            final SuperTextView players;
+            final SuperTextView spectators;
+            final SuperTextView goal;
+            final LinearLayout details;
+            final SuperTextView cardsets;
+            final SuperTextView timerMultiplier;
+            final SuperTextView blankCards;
+
+            ViewHolder(ViewGroup parent) {
+                super(inflater.inflate(R.layout.item_game, parent, false));
+
+                name = itemView.findViewById(R.id.gameItem_name);
+                status = itemView.findViewById(R.id.gameItem_status);
+                players = itemView.findViewById(R.id.gameItem_players);
+                locked = itemView.findViewById(R.id.gameItem_locked);
+                spectators = itemView.findViewById(R.id.gameItem_spectators);
+                goal = itemView.findViewById(R.id.gameItem_goal);
+                spectate = itemView.findViewById(R.id.gameItem_spectate);
+                join = itemView.findViewById(R.id.gameItem_join);
+                expand = itemView.findViewById(R.id.gameItem_expand);
+                details = itemView.findViewById(R.id.gameItem_details);
+                cardsets = details.findViewById(R.id.gameItem_cardsets);
+                timerMultiplier = details.findViewById(R.id.gameItem_timerMultiplier);
+                blankCards = details.findViewById(R.id.gameItem_blankCards);
+            }
+        }
     }
 }

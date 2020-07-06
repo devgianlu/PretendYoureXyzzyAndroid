@@ -19,7 +19,7 @@ public class FirstLoad {
     public final User user;
     public final GamePermalink game;
 
-    public FirstLoad(JSONObject obj, @Nullable User user) throws JSONException {
+    public FirstLoad(@NonNull JSONObject obj, @Nullable User user) throws JSONException {
         this.nextOperation = NextOp.parse(obj.getString("next"));
         this.inProgress = obj.getBoolean("ip");
         this.decks = Deck.list(obj.getJSONArray("css"));
@@ -28,7 +28,7 @@ public class FirstLoad {
     }
 
     @NonNull
-    public List<String> createCardSetNamesList(List<Integer> includeIds) {
+    public List<String> createCardSetNamesList(@NonNull List<Integer> includeIds) {
         List<String> names = new ArrayList<>();
         for (int id : includeIds) {
             Deck set = Utils.findCardSet(decks, id);

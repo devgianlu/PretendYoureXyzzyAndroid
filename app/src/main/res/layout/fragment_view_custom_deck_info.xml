@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_medium"
+        android:labelFor="@id/viewCustomDeck_name"
+        android:text="@string/name"
+        android:textAllCaps="true"
+        android:textColor="?colorOnSurface"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/viewCustomDeck_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:textColor="?colorOnSurface" />
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_medium"
+        android:labelFor="@id/viewCustomDeck_watermark"
+        android:text="@string/watermark"
+        android:textAllCaps="true"
+        android:textColor="?colorOnSurface"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/viewCustomDeck_watermark"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:textColor="?colorOnSurface" />
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_medium"
+        android:labelFor="@id/viewCustomDeck_desc"
+        android:text="@string/description"
+        android:textAllCaps="true"
+        android:textColor="?colorOnSurface"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/viewCustomDeck_desc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:justificationMode="inter_word"
+        android:textColor="?colorOnSurface" />
+
+</LinearLayout>

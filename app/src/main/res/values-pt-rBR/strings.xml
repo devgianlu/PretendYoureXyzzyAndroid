@@ -65,7 +65,6 @@
     <string name="players"><![CDATA[<b>Jogadores:</b>]]> %1$d/%2$d</string>
     <string name="spectators"><![CDATA[<b>Espectadores:</b>]]> %1$d/%2$d</string>
     <string name="noMessages">Não há mensagens.</string>
-    <string name="message">Mensagem</string>
     <string name="failedSendMessage">Falha ao enviar a mensagem!</string>
     <string name="logout">Desconectar</string>
     <string name="spectate">Assistir</string>
@@ -103,7 +102,6 @@
     <string name="failedStartGame">Falha ao iniciar o jogo!</string>
     <string name="blackCards">Cartões pretos</string>
     <string name="whiteCards">Cartões brancos</string>
-    <string name="status">Situação</string>
     <string name="required">Obrigatório</string>
     <string name="provided">Fornecido</string>
     <string name="cannotStartGame">Não é possível iniciar o jogo</string>
@@ -212,7 +210,6 @@
     <string name="description">Descrição</string>
     <string name="watermark">Marca d\'água</string>
     <string name="invalidWatermark">A marca d\'água deve ter 5 caracteres, incluindo apenas letras maiúsculas e números.</string>
-    <string name="emptyDeckName">O nome do deck não pode estar vazio.</string>
     <string name="customDeckNameNotUnique">Você já tem um deck com esse nome.</string>
     <string name="noCustomCards">Não há cartões personalizados! Crie alguns pressionando o botão adicionar.</string>
     <string name="createCard">Criar cartão</string>
@@ -222,7 +219,6 @@
     <string name="failedAddingCustomCard">Falha ao adicionar cartão personalizado.</string>
     <string name="editCard">Editar cartão</string>
     <string name="completeDeckInfoFirst">Por favor, preencha a informação do deck primeiro.</string>
-    <string name="customCardEmpty">Por favor, insira o texto do cartão.</string>
     <string name="missingPlaceholderBlack">Espaço reservado ausente no cartão preto: ele será adicionado no final.</string>
     <string name="strangeCustomCardFormat">O formato deste cartão parece estranho: certifique-se de seguir as instruções.</string>
     <string name="importCustomDeck">Importar baralho personalizado</string>

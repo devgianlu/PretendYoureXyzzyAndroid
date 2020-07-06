@@ -30,7 +30,6 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.misc.SuperTextView;
-import com.gianlu.commonutils.typography.FontsManager;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
@@ -84,7 +83,6 @@ public class GameCardView extends MaterialCardView {
         setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, getResources().getDisplayMetrics()));
 
         text = findViewById(R.id.pyxCard_text);
-        FontsManager.set(R.font.roboto_medium, text);
 
         watermark = findViewById(R.id.pyxCard_watermark);
         numPick = findViewById(R.id.pyxCard_numPick);

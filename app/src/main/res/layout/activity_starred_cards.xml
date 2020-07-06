@@ -49,4 +49,12 @@
             android:layout_margin="48dp"
             android:visibility="gone" />
     </FrameLayout>
+
+    <TextView
+        android:id="@+id/starredCards_sync"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="2dp"
+        android:textAlignment="center"
+        android:textColor="?android:textColorSecondary" />
 </LinearLayout>

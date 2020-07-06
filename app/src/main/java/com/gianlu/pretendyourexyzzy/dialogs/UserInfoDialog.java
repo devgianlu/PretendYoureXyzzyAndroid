@@ -19,7 +19,6 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.ui.Toaster;
-import com.gianlu.pretendyourexyzzy.BlockedUsers;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
@@ -28,6 +27,8 @@ import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.WhoisResult;
 
 import java.util.Date;
+
+import static android.view.View.GONE;
 
 public class UserInfoDialog extends DialogFragment {
     private static final String TAG = UserInfoDialog.class.getSimpleName();
@@ -90,11 +91,11 @@ public class UserInfoDialog extends DialogFragment {
         name.setText(user.nickname);
 
         SuperTextView sigil = layout.findViewById(R.id.userInfoDialog_sigil);
-        sigil.setHtml(R.string.sigil, user.sigil.getFormal(getContext()));
+        sigil.setHtml(R.string.sigil, user.sigil.getFormal(requireContext()));
 
         SuperTextView idCode = layout.findViewById(R.id.userInfoDialog_idCode);
         if (user.idCode.isEmpty()) {
-            idCode.setVisibility(View.GONE);
+            idCode.setVisibility(GONE);
         } else {
             idCode.setVisibility(View.VISIBLE);
             idCode.setHtml(R.string.idCode, user.idCode);
@@ -108,7 +109,7 @@ public class UserInfoDialog extends DialogFragment {
 
         SuperTextView ipAddr = layout.findViewById(R.id.userInfoDialog_ipAddr);
         if (user.ipAddress() == null) {
-            ipAddr.setVisibility(View.GONE);
+            ipAddr.setVisibility(GONE);
         } else {
             ipAddr.setVisibility(View.VISIBLE);
             ipAddr.setHtml(R.string.ipAddress, user.ipAddress());
@@ -116,29 +117,18 @@ public class UserInfoDialog extends DialogFragment {
 
         SuperTextView client = layout.findViewById(R.id.userInfoDialog_client);
         if (user.clientName() == null) {
-            client.setVisibility(View.GONE);
+            client.setVisibility(GONE);
         } else {
             client.setVisibility(View.VISIBLE);
             client.setHtml(R.string.clientName, user.clientName());
         }
 
-        Button blockUser = layout.findViewById(R.id.userInfoDialog_block);
-        if (BlockedUsers.isBlocked(user.nickname)) {
-            blockUser.setVisibility(View.GONE);
-        } else {
-            blockUser.setVisibility(View.VISIBLE);
-            blockUser.setOnClickListener(v -> {
-                BlockedUsers.block(user.nickname);
-                dismissAllowingStateLoss();
-            });
-        }
-
         Button viewGame = layout.findViewById(R.id.userInfoDialog_viewGame);
         SuperTextView game = layout.findViewById(R.id.userInfoDialog_game);
-        final Game gameInfo = user.game();
+        Game gameInfo = user.game();
         if (gameInfo == null) {
-            game.setVisibility(View.GONE);
-            viewGame.setVisibility(View.GONE);
+            game.setVisibility(GONE);
+            viewGame.setVisibility(GONE);
         } else {
             game.setVisibility(View.VISIBLE);
 
@@ -160,6 +150,7 @@ public class UserInfoDialog extends DialogFragment {
             }
 
             if (listener != null && listener.canViewGame()) {
+                CommonUtils.setPaddingDip((View) viewGame.getParent(), null, 0, null, null);
                 viewGame.setVisibility(View.VISIBLE);
                 viewGame.setOnClickListener(v -> {
                     if (listener != null) {
@@ -168,7 +159,7 @@ public class UserInfoDialog extends DialogFragment {
                     }
                 });
             } else {
-                viewGame.setVisibility(View.GONE);
+                viewGame.setVisibility(GONE);
             }
         }
 

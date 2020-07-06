@@ -30,6 +30,7 @@ import com.gianlu.pretendyourexyzzy.api.models.metrics.GameRound;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionHistory;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionStats;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -61,7 +62,7 @@ import okhttp3.ResponseBody;
 
 
 public class Pyx implements Closeable {
-    protected final static int AJAX_TIMEOUT = 5;
+    protected final static int AJAX_TIMEOUT = 10;
     protected final static int POLLING_TIMEOUT = 30;
     private static final String TAG = Pyx.class.getSimpleName();
     public final Server server;
@@ -149,8 +150,12 @@ public class Pyx implements Closeable {
                 throw new StatusCodeException(resp);
             }
         } catch (SocketTimeoutException ex) {
-            if (!retried) return request(operation, true, params);
-            else throw ex;
+            if (!retried) {
+                Log.d(TAG, "Socket timeout, retrying.", ex);
+                return request(operation, true, params);
+            } else {
+                throw ex;
+            }
         } catch (RuntimeException ex) {
             if (ex.getCause() instanceof SSLException) throw (SSLException) ex.getCause();
             else throw ex;
@@ -506,6 +511,7 @@ public class Pyx implements Closeable {
 
     public static class Server {
         private static final String TAG = Server.class.getSimpleName();
+        private static List<Server> allServers = null;
         public final HttpUrl url;
         public final String name;
         private final boolean editable;
@@ -606,7 +612,7 @@ public class Pyx implements Closeable {
             List<Server> all = new ArrayList<>(10);
             all.addAll(loadServers(PK.USER_SERVERS));
             all.addAll(loadServers(PK.API_SERVERS));
-            return all;
+            return allServers = all;
         }
 
         @NonNull
@@ -643,6 +649,15 @@ public class Pyx implements Closeable {
             }
 
             return null;
+        }
+
+        @Nullable
+        public static Server lastServerNoThrow() {
+            try {
+                return lastServer();
+            } catch (Exception ex) {
+                return null;
+            }
         }
 
         @NonNull
@@ -708,13 +723,24 @@ public class Pyx implements Closeable {
             }
         }
 
-        public static boolean hasServer(String name) {
+        public static boolean hasServer(@NonNull String name) {
             try {
                 return getServer(PK.USER_SERVERS, name) != null || getServer(PK.API_SERVERS, name) != null;
             } catch (JSONException ex) {
                 Log.e(TAG, "Failed parsing JSON.", ex);
                 return true;
             }
+        }
+
+        @Nullable
+        public static Server fromOverloadedId(@NonNull String serverId) {
+            if (allServers == null) loadAllServers();
+
+            for (Server server : allServers)
+                if (OverloadedUtils.getServerId(server).equals(serverId))
+                    return server;
+
+            return null;
         }
 
         @NonNull

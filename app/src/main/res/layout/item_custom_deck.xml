@@ -22,10 +22,27 @@
             android:textColor="?android:textColorPrimary"
             android:textSize="18sp" />
 
-        <TextView
-            android:id="@+id/customDeckItem_watermark"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/colorAccent" />
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/customDeckItem_watermark"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:textColor="@color/colorAccent" />
+
+            <TextView
+                android:id="@+id/customDeckItem_cards"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/customDeckItem_owner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

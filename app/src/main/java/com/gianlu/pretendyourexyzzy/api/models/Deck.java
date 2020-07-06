@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy.api.models;
 
+import android.text.Html;
+
 import androidx.annotation.NonNull;
 
 import com.gianlu.commonutils.CommonUtils;
@@ -21,22 +23,34 @@ public class Deck {
     public final int whiteCards;
     public final boolean baseDeck;
 
+    public Deck(@NonNull JSONObject obj) throws JSONException {
+        weight = obj.getInt("w");
+        id = obj.getInt("cid");
+        description = Html.fromHtml(obj.getString("csd")).toString();
+        name = Html.fromHtml(obj.getString("csn")).toString();
+        blackCards = obj.getInt("bcid");
+        baseDeck = obj.getBoolean("bd");
+        whiteCards = obj.getInt("wcid");
+        watermark = CommonUtils.optString(obj, "W");
+    }
+
     @NonNull
-    public static List<Deck> list(JSONArray array) throws JSONException {
+    public static List<Deck> list(@NonNull JSONArray array) throws JSONException {
         List<Deck> list = new ArrayList<>(array.length());
         for (int i = 0; i < array.length(); i++) list.add(new Deck(array.getJSONObject(i)));
         return list;
     }
 
-    public Deck(JSONObject obj) throws JSONException {
-        weight = obj.getInt("w");
-        id = obj.getInt("cid");
-        description = obj.getString("csd");
-        name = obj.getString("csn");
-        blackCards = obj.getInt("bcid");
-        baseDeck = obj.getBoolean("bd");
-        whiteCards = obj.getInt("wcid");
-        watermark = CommonUtils.optString(obj, "W");
+    public static int countWhiteCards(@NonNull List<Deck> decks) {
+        int count = 0;
+        for (Deck deck : decks) count += deck.whiteCards;
+        return count;
+    }
+
+    public static int countBlackCards(@NonNull List<Deck> decks) {
+        int count = 0;
+        for (Deck deck : decks) count += deck.blackCards;
+        return count;
     }
 
     @Override
@@ -50,17 +64,5 @@ public class Deck {
     @Override
     public int hashCode() {
         return id;
-    }
-
-    public static int countWhiteCards(List<Deck> decks) {
-        int count = 0;
-        for (Deck deck : decks) count += deck.whiteCards;
-        return count;
-    }
-
-    public static int countBlackCards(List<Deck> decks) {
-        int count = 0;
-        for (Deck deck : decks) count += deck.blackCards;
-        return count;
     }
 }

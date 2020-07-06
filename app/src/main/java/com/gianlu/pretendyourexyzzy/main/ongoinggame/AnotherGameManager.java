@@ -154,15 +154,16 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
             GPGamesHelper.incrementAchievement(context, 1, GPGamesHelper.ACH_WIN_10_ROUNDS,
                     GPGamesHelper.ACH_WIN_30_ROUNDS, GPGamesHelper.ACH_WIN_69_ROUNDS,
                     GPGamesHelper.ACH_WIN_420_ROUNDS);
-
             event(UiEvent.YOU_ROUND_WINNER);
         } else {
             event(UiEvent.ROUND_WINNER, roundWinner);
         }
 
         gameData.lastRoundPermalink = lastRoundPermalink;
-        if (!gameData.amSpectator())
+        if (!gameData.amSpectator()) {
             GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_ROUNDS_PLAYED);
+            GPGamesHelper.updateWinRate(context);
+        }
     }
 
     private void dealCards(List<? extends BaseCard> cards) {
@@ -185,16 +186,16 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                 updateGameInfo();
 
                 if (gameData.amHost()) {
-                    boolean hasCardcast = false;
+                    boolean hasCustomDeck = false;
                     for (int deckId : gameData.options.cardSets) {
                         if (deckId < 0) {
-                            hasCardcast = true; // Cardcast deck ids are always negative
+                            hasCustomDeck = true; // Custom decks ids are always negative
                             break;
                         }
                     }
 
-                    if (hasCardcast)
-                        GPGamesHelper.unlockAchievement(context, GPGamesHelper.ACH_CARDCAST);
+                    if (hasCustomDeck)
+                        GPGamesHelper.unlockAchievement(context, GPGamesHelper.ACH_CUSTOM_DECK);
                 }
                 break;
             case LOBBY:
@@ -338,14 +339,14 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     }
 
     @Override
-    public void onCardSelected(@NonNull final BaseCard card) {
+    public void onCardSelected(@NonNull BaseCard card) {
         if (gameData.amJudge()) {
-            listener.showDialog(Dialogs.confirmation(context, () -> judgeCardInternal(card)));
+            listener.showDialog(Dialogs.confirmation(context, () -> judgeCardInternal((GameCard) card)));
         } else {
-            if (((GameCard) card).writeIn()) {
-                listener.showDialog(Dialogs.askText(context, text -> playCardInternal(card, text)));
+            if (((GameCard) card).writeIn) {
+                listener.showDialog(Dialogs.askText(context, text -> playCardInternal((GameCard) card, text)));
             } else {
-                listener.showDialog(Dialogs.confirmation(context, () -> playCardInternal(card, null)));
+                listener.showDialog(Dialogs.confirmation(context, () -> playCardInternal((GameCard) card, null)));
             }
         }
     }
@@ -392,8 +393,8 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         }
     }
 
-    private void judgeCardInternal(@NonNull BaseCard card) {
-        pyx.request(PyxRequests.judgeCard(gid, card.id()), null, new Pyx.OnSuccess() {
+    private void judgeCardInternal(@NonNull GameCard card) {
+        pyx.request(PyxRequests.judgeCard(gid, card.id), null, new Pyx.OnSuccess() {
             @Override
             public void onDone() {
                 ThisApplication.sendAnalytics(Utils.ACTION_JUDGE_CARD);
@@ -415,8 +416,8 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         });
     }
 
-    private void playCardInternal(@NonNull BaseCard card, @Nullable String text) {
-        pyx.request(PyxRequests.playCard(gid, card.id(), text), null, new Pyx.OnSuccess() {
+    private void playCardInternal(@NonNull GameCard card, @Nullable String text) {
+        pyx.request(PyxRequests.playCard(gid, card.id, text), null, new Pyx.OnSuccess() {
             @Override
             public void onDone() {
                 gameLayout.removeHand(card);

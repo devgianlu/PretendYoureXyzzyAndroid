@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/chatItemMenu_showProfile"
+        android:title="@string/showProfile" />
+    <item
+        android:id="@+id/chatItemMenu_delete"
+        android:title="@string/deleteChat" />
+</menu>

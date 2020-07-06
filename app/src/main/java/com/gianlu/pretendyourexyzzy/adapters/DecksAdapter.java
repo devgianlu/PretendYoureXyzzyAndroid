@@ -62,6 +62,8 @@ public class DecksAdapter extends RecyclerView.Adapter<DecksAdapter.ViewHolder> 
         } else {
             holder.remove.setVisibility(View.GONE);
         }
+
+        holder.itemView.setOnClickListener(v -> listener.onDeckSelected(deck));
     }
 
     public void add(@NonNull Deck deck) {
@@ -93,6 +95,8 @@ public class DecksAdapter extends RecyclerView.Adapter<DecksAdapter.ViewHolder> 
         void shouldUpdateItemCount(int count);
 
         void removeDeck(@NonNull Deck deck);
+
+        void onDeckSelected(@NonNull Deck deck);
 
         boolean canModifyCustomDecks();
     }

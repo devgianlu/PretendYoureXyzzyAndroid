@@ -17,7 +17,6 @@ import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.PagerAdapter;
-import com.gianlu.pretendyourexyzzy.customdecks.edit.AbsCardsFragment;
 import com.gianlu.pretendyourexyzzy.customdecks.edit.BlackCardsFragment;
 import com.gianlu.pretendyourexyzzy.customdecks.edit.GeneralInfoFragment;
 import com.gianlu.pretendyourexyzzy.customdecks.edit.WhiteCardsFragment;
@@ -65,18 +64,18 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_custom_deck);
+        setContentView(R.layout.activity_edit_view_custom_deck);
         setTitle(getIntent().getStringExtra("title"));
-        setSupportActionBar(findViewById(R.id.editCustomDeck_toolbar));
+        setSupportActionBar(findViewById(R.id.editViewCustomDeck_toolbar));
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
 
         id = getIntent().getIntExtra("id", -1);
         if (id == -1) id = null;
 
-        pager = findViewById(R.id.editCustomDeck_pager);
+        pager = findViewById(R.id.editViewCustomDeck_pager);
         pager.setOffscreenPageLimit(3);
-        TabLayout tabs = findViewById(R.id.editCustomDeck_tabs);
+        TabLayout tabs = findViewById(R.id.editViewCustomDeck_tabs);
         tabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -125,6 +124,8 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
                 if (save()) {
                     blackCardsFragment.importCards(this, obj.optJSONArray("calls"));
                     whiteCardsFragment.importCards(this, obj.optJSONArray("responses"));
+
+                    tmpFile.delete();
                 }
             } catch (JSONException | IOException ex) {
                 Log.e(TAG, "Failed importing deck.", ex);
@@ -184,7 +185,7 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
                 builder.setTitle(R.string.delete).setMessage(getString(R.string.deleteDeckConfirmation, getName()))
                         .setPositiveButton(android.R.string.yes, (dialog, which) -> {
                             if (id == null) return;
-                            CustomDecksDatabase.get(EditCustomDeckActivity.this).deleteDeckAndCards(id);
+                            CustomDecksDatabase.get(EditCustomDeckActivity.this).deleteDeckAndCards(id, true);
                             onBackPressed();
                         }).setNegativeButton(android.R.string.no, null);
 

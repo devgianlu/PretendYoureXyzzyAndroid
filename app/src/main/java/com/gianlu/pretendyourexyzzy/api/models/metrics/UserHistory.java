@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.api.models.metrics;
 
 import androidx.annotation.NonNull;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 
 public class UserHistory extends ArrayList<UserHistory.Session> {
 
-    public UserHistory(@NonNull JSONObject obj) throws JSONException {
+    public UserHistory(@NotNull JSONObject obj) throws JSONException {
         JSONArray array = obj.optJSONArray("Sessions");
         if (array == null) return;
 
@@ -21,7 +22,7 @@ public class UserHistory extends ArrayList<UserHistory.Session> {
         public final String id;
         public final long loginTimestamp;
 
-        Session(@NonNull JSONObject obj) throws JSONException {
+        Session(@NotNull JSONObject obj) throws JSONException {
             id = obj.getString("SessionId");
             loginTimestamp = obj.getLong("LogInTimestamp") * 1000;
         }

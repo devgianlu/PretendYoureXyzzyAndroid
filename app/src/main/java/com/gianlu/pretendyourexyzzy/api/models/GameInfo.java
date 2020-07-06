@@ -40,7 +40,7 @@ public class GameInfo {
                 if (Objects.equals(status.val, val))
                     return status;
 
-            throw new IllegalArgumentException("Cannot find status with value: " + val);
+            throw new IllegalArgumentException("Cannot find purchaseStatus with value: " + val);
         }
     }
 

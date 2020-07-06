@@ -43,8 +43,7 @@ public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
             return rmv;
         }
 
-        pyx.getUserHistory(null, this);
-
+        pyx.getUserHistory(getActivity(), this);
         return rmv;
     }
 
@@ -52,7 +51,9 @@ public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
     public void onDone(@NonNull UserHistory result) {
         if (getContext() == null) return;
 
-        rmv.loadListData(new UserHistoryAdapter(getContext(), pyx, result, (UserHistoryAdapter.Listener) getContext()));
+        rmv.loadListData(new UserHistoryAdapter(getContext(), pyx, result, (UserHistoryAdapter.Listener) getContext()), false);
+        if (result.isEmpty()) rmv.showInfo(R.string.noMetricsSessions);
+        else rmv.showList();
     }
 
     @Override
