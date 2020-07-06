@@ -14,6 +14,3 @@ echo $REPO_USER
 
 # Create release
 ./github-release-bin release -s "${GITHUB_OAUTH_TOKEN}" -u "${REPO_USER}" -r "${REPO_NAME}" -t "${TRAVIS_TAG}" -n "${RELEASE_NAME}" -d "${RELEASE_NOTES}" --draft
-
-# Upload APK file
-./github-release-bin upload -s "${GITHUB_OAUTH_TOKEN}" -u "${REPO_USER}" -r "${REPO_NAME}" -t "${TRAVIS_TAG}" -n "app-foss-release.apk" -f "${APK_FILE}" -R

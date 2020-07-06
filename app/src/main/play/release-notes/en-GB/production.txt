@@ -1,4 +1,11 @@
+** OVERLOADED (BETA) UPDATE **
+
 ### Added
-- Added custom decks functionality (on supporting servers)
-- Added ability to recover Cardcast decks
-- Added legend in server dialogs
+- Added end-to-end encrypted chat (Overloaded only)
+- Synchronize starred cards and custom decks (Overloaded only)
+- See other users profiles and stats (Overloaded only)
+- Make friends on servers (Overloaded only)
+
+### Changed
+- Improved chats layout
+- More improvements and bug fixes
