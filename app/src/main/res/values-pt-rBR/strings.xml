@@ -65,7 +65,6 @@
     <string name="players"><![CDATA[<b>Jogadores:</b>]]> %1$d/%2$d</string>
     <string name="spectators"><![CDATA[<b>Espectadores:</b>]]> %1$d/%2$d</string>
     <string name="noMessages">Não há mensagens.</string>
-    <string name="message">Mensagem</string>
     <string name="failedSendMessage">Falha ao enviar a mensagem!</string>
     <string name="logout">Desconectar</string>
     <string name="spectate">Assistir</string>
@@ -103,7 +102,6 @@
     <string name="failedStartGame">Falha ao iniciar o jogo!</string>
     <string name="blackCards">Cartões pretos</string>
     <string name="whiteCards">Cartões brancos</string>
-    <string name="status">Situação</string>
     <string name="required">Obrigatório</string>
     <string name="provided">Fornecido</string>
     <string name="cannotStartGame">Não é possível iniciar o jogo</string>

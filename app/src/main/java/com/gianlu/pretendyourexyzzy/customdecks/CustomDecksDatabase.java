@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.customdecks;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -73,10 +74,20 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-    }
+        if (oldVersion == 1 && newVersion == 5) {
+            db.execSQL("ALTER TABLE decks ADD revision INTEGER NOT NULL DEFAULT 0");
+            db.execSQL("ALTER TABLE decks ADD remoteId INTEGER");
+            db.execSQL("CREATE UNIQUE INDEX remoteId_decks_unique ON decks(remoteId)");
 
-    @Override
-    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            db.execSQL("ALTER TABLE cards ADD remoteId INTEGER");
+            db.execSQL("CREATE UNIQUE INDEX remoteId_cards_unique ON cards(remoteId)");
+
+            db.execSQL("CREATE TABLE IF NOT EXISTS starred_decks (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL, remoteId INTEGER UNIQUE)");
+
+            Log.i(TAG, "Migrated database from " + oldVersion + " to " + newVersion);
+        } else {
+            throw new SQLException("Cannot upgrade from " + oldVersion + " to " + newVersion);
+        }
     }
 
     private void sendCustomDeckPatch(long revision, @Nullable Long remoteId, @NonNull CustomDecksPatchOp op, @Nullable CustomDeck deck, @Nullable CustomCard card, @Nullable Long cardId) {

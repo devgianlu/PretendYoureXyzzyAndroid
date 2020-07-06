@@ -60,6 +60,6 @@ public final class Utils {
 
     @NonNull
     public static HttpUrl overloadedServerUrl(@NonNull String path) {
-        return HttpUrl.get("http://192.168.1.25:8080/" + path); // FIXME
+        return HttpUrl.get("https://pyx-overloaded.gianlu.xyz/" + path);
     }
 }
