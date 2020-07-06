@@ -51,7 +51,6 @@ import com.google.firebase.auth.FirebaseUser;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.security.SecureRandom;

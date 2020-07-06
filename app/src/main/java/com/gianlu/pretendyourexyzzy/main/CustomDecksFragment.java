@@ -25,11 +25,6 @@ import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
-import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
-import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
-import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksAdapter;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
@@ -37,6 +32,7 @@ import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.FloatingCust
 import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -112,6 +108,30 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         });
 
         return layout;
+    }
+
+    private void recoverCardcastDeck(@NonNull String code) throws LevelMismatchException {
+        showProgress(R.string.loading);
+        Pyx.get().recoverCardcastDeck(code, requireContext(), new Pyx.OnRecoverResult() {
+            @Override
+            public void onDone(@NonNull File tmpFile) {
+                dismissDialog();
+                EditCustomDeckActivity.startActivityImport(requireContext(), false, tmpFile);
+            }
+
+            @Override
+            public void notFound() {
+                dismissDialog();
+                showToast(Toaster.build().message(R.string.recoverDeckNotFound));
+            }
+
+            @Override
+            public void onException(@NonNull Exception ex) {
+                Log.e(TAG, "Cannot recover deck.", ex);
+                showToast(Toaster.build().message(R.string.failedRecoveringCardcastDeck));
+                dismissDialog();
+            }
+        });
     }
 
     private void refreshSync() {

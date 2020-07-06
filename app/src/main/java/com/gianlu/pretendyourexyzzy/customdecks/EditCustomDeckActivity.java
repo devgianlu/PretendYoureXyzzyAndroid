@@ -17,7 +17,6 @@ import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.PagerAdapter;
-import com.gianlu.pretendyourexyzzy.customdecks.edit.AbsCardsFragment;
 import com.gianlu.pretendyourexyzzy.customdecks.edit.BlackCardsFragment;
 import com.gianlu.pretendyourexyzzy.customdecks.edit.GeneralInfoFragment;
 import com.gianlu.pretendyourexyzzy.customdecks.edit.WhiteCardsFragment;

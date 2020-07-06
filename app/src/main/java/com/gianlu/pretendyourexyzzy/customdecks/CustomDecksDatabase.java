@@ -17,8 +17,6 @@ import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
