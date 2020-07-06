@@ -50,9 +50,9 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
                 .putExtra("id", deck.id));
     }
 
-    public static void startActivityImport(@NonNull Context context, @NonNull File tmpFile) {
+    public static void startActivityImport(@NonNull Context context, boolean importDeck, @NonNull File tmpFile) {
         context.startActivity(new Intent(context, EditCustomDeckActivity.class)
-                .putExtra("title", context.getString(R.string.importCustomDeck))
+                .putExtra("title", importDeck ? context.getString(R.string.importCustomDeck) : context.getString(R.string.recoverCardcastDeck))
                 .putExtra("tmpFile", tmpFile));
     }
 

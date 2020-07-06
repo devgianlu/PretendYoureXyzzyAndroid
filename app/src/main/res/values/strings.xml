@@ -235,4 +235,9 @@
     <string name="failedAddingCustomDeck">Failed adding custom deck!</string>
     <string name="customDeckAdded">Custom deck added!</string>
     <string name="noCustomDecksToAdd">You have no custom decks to add.</string>
+    <string name="recoverCardcastDeck">Recover Cardcast deck</string>
+    <string name="recover">Recover</string>
+    <string name="invalidDeckCode">The deck code is invalid!</string>
+    <string name="recoverDeckNotFound">Deck cannot be recovered: not found.</string>
+    <string name="failedRecoveringCardcastDeck">Failed recovering Cardcast deck.</string>
 </resources>

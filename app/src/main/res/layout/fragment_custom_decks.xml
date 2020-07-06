@@ -24,6 +24,14 @@
         fab:fab_labelStyle="@style/FabLabel">
 
         <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/customDecksFab_recover"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            fab:fab_icon="@drawable/baseline_cloud_download_24"
+            fab:fab_size="mini"
+            fab:fab_title="@string/recoverCardcastDeck" />
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/customDecksFab_import"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
