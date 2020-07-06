@@ -29,6 +29,8 @@
     <string name="tutorial_firstDesc">Pretend You\'re Xyzzy é um jogo de cartas online baseado em Cartas contra a Humanidade. Neste tutorial, eu vou explicar como jogar.</string>
     <string name="tutorial_secondTitle">As regras</string>
     <string name="tutorial_secondDesc">Toda vez que uma carta preta é jogada pelo Czar da rodada, todos os outros tem que completar a lacuna das frases com cartas brancas. Após todos jogarem, o Czar escolher a mais engraçada, e o dono da carta ganha um ponto. Na próxima rodada outro jogador vira Czar.</string>
+    <string name="tutorial_thirdTitle">Custom decks</string>
+    <string name="tutorial_thirdDesc">This game supports custom decks (on supporting servers): you can create custom decks from the app and add them to your own game.</string>
     <string name="tutorial_fourthTitle">Outros recursos</string>
     <string name="tutorial_fourthDesc">Mais recursos estão disponíveis neste aplicativo, você vai aprende-los enquanto você joga. Bom jogo!</string>
     <string name="tutorial_chooseNickname">Choose a nickname to play, this won\'t be permanent.</string>
@@ -39,6 +41,7 @@
     <string name="tutorial_spectateGame">Spectators can only see what\'s happening and cannot play, but they can write on the chat.</string>
     <string name="tutorial_joinGame">Join the game to start playing immediately.</string>
     <string name="tutorial_createGame">You can create your own game and define your own settings.</string>
+    <string name="tutorial_setupGame">Here you can customize your game options. Don\'t forget you can also add custom decks from the menu up here (if supported on the server).</string>
     <string name="tutorial_startGame">Once you\'re done, start the game. To do that you must have at least 3 players and a given number of cards.</string>
     <string name="tutorial_chooseIdCode">Enter or generate an identification code to make it difficult for someone to impersonate you.</string>
     <string name="tutorial_blackCard">This is a block card: you have to complete the sentence with the white cards below.</string>
