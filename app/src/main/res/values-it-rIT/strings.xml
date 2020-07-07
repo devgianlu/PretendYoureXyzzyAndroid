@@ -30,9 +30,11 @@
     <string name="tutorial_secondTitle">Regole</string>
     <string name="tutorial_secondDesc">Ogni turno una carta nera viene giocata dal giudice, tutti gli altri rispondono alla domanda o completano la frase. Una volta che tutti hanno giocato, il giudice sceglie l\’accoppiamento di carte più divertente e chi lo ha proposto guadagna un punto. Nel turno successivo un nuovo giocatore diventa il giudice e si continua così.</string>
     <string name="tutorial_thirdTitle">Custom decks</string>
-    <string name="tutorial_thirdDesc">This game supports custom decks (on supporting servers): you can create custom decks from the app and add them to your own game.</string>
-    <string name="tutorial_fourthTitle">Altre funzioni</string>
-    <string name="tutorial_fourthDesc">Nell\'app ci sono anche altre funzioni, ma le imparerai giocando!</string>
+    <string name="tutorial_thirdDesc">This game supports custom decks (on updated servers): you can create custom decks from the app and add them to your own game.</string>
+    <string name="tutorial_fourthTitle">Overloaded</string>
+    <string name="tutorial_fourthDesc">Overloaded is a game expansion that enables cool features like <![CDATA[<b>E2EE chat</b>]]>, <![CDATA[<b>user profiles</b>]]>, custom decks and starred cards <![CDATA[<b>synchronization</b>]]> and more. You can also <![CDATA[<b>share</b>]]> your decks with other players.</string>
+    <string name="tutorial_fifthTitle">More features</string>
+    <string name="tutorial_fifthDesc">More features are available in this app, you\'ll learn them as you go. Good game!</string>
     <string name="tutorial_chooseNickname">Scegli un nome per giocare, non sarà permanente.</string>
     <string name="tutorial_changeServer">Sono disponibili più server, scegli quello che preferisci.</string>
     <string name="tutorial_joinTheServer">Entra nella lobby, ti attenderanno molte partite.</string>
@@ -48,7 +50,7 @@
     <string name="tutorial_whiteCard">Gioca una o più carte per completare la frase. Se non conosci il significato di una parola, usa la funzione dizionario nel menu in alto a destra.</string>
     <string name="tutorial_playCard">Per giocare una carta basta toccarla: apparirà una finestra di conferma.</string>
     <string name="tutorial_player">Una volta che un giocatore raggiunge l\'obiettivo, vince. Puoi toccare sul nome per rivelare ulteriori informazioni.</string>
-    <string name="tutorial_overloaded">Overloaded enables many cool features not present in the standard game experience. It\'s a one time purchase.</string>
+    <string name="tutorial_overloaded">Overloaded enables many cool features not present in the standard game experience. It\'s a monthly subscription.</string>
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
     <string name="nickname">Nome</string>
@@ -339,4 +341,5 @@
     <string name="invalidDeckCode">The deck code is invalid!</string>
     <string name="recoverDeckNotFound">Deck cannot be recovered: not found.</string>
     <string name="failedRecoveringCardcastDeck">Failed recovering Cardcast deck.</string>
+    <string name="changelog">Changelog</string>
 </resources>
