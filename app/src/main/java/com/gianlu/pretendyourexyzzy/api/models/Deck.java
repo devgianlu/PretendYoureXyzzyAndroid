@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.api.models;
 import android.text.Html;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.CommonUtils;
 
@@ -12,6 +13,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Deck {
     public final int weight;
@@ -32,6 +34,15 @@ public class Deck {
         baseDeck = obj.getBoolean("bd");
         whiteCards = obj.getInt("wcid");
         watermark = CommonUtils.optString(obj, "W");
+    }
+
+    @Nullable
+    public static Deck findDeck(@NonNull List<Deck> sets, int id) {
+        for (Deck set : sets)
+            if (Objects.equals(set.id, id))
+                return set;
+
+        return null;
     }
 
     @NonNull

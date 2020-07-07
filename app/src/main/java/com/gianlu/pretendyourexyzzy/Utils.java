@@ -1,18 +1,21 @@
 package com.gianlu.pretendyourexyzzy;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.util.Base64;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.NameValuePair;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
-import com.gianlu.pretendyourexyzzy.api.models.Deck;
-import com.gianlu.pretendyourexyzzy.api.models.Game;
-import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -22,7 +25,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public final class Utils {
     public static final String ACTION_STARRED_CARD_ADD = "added_starred_card";
@@ -43,6 +45,7 @@ public final class Utils {
     public static final String ACTION_UNKNOWN_EVENT = "unknown_server_event";
     public static final String ACTION_BLOCK_USER = "block_user";
     public static final String ACTION_UNBLOCK_USER = "unblock_user";
+    private static final String TAG = Utils.class.getSimpleName();
 
     private Utils() {
     }
@@ -137,35 +140,33 @@ public final class Utils {
         return builder.toString();
     }
 
-    @Nullable
-    public static Game findGame(List<Game> games, int gid) {
-        for (Game game : games)
-            if (game.gid == gid)
-                return game;
+    public static boolean shouldShowChangelog(@NonNull Context context) {
+        try {
+            int appVersion = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
+            int latestShown = Prefs.getInt(PK.LAST_CHANGELOG_SHOWN, -1);
+            return appVersion > latestShown;
+        } catch (PackageManager.NameNotFoundException ex) {
+            Log.e(TAG, "Failed getting package info.", ex);
+            return false;
+        }
+    }
 
-        return null;
+    public static void changelogShown(@NonNull Context context) {
+        try {
+            int appVersion = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
+            Prefs.putInt(PK.LAST_CHANGELOG_SHOWN, appVersion);
+        } catch (PackageManager.NameNotFoundException ex) {
+            Log.e(TAG, "Failed getting package info.", ex);
+        }
     }
 
     @Nullable
-    public static Deck findCardSet(List<Deck> sets, int id) {
-        for (Deck set : sets)
-            if (Objects.equals(set.id, id))
-                return set;
-
-        return null;
-    }
-
-    public static int indexOf(List<GameInfo.Player> players, String nick) {
-        for (int i = 0; i < players.size(); i++)
-            if (Objects.equals(players.get(i).name, nick)) return i;
-
-        return -1;
-    }
-
-    public static int indexOf(List<Game> games, int gid) {
-        for (int i = 0; i < games.size(); i++)
-            if (games.get(i).gid == gid) return i;
-
-        return -1;
+    public static String getChangelog(@NonNull Context context) {
+        try {
+            return CommonUtils.readEntirely(context.getResources().openRawResource(R.raw.changelog)).replace("\n", "<br>");
+        } catch (IOException ex) {
+            Log.e(TAG, "Failed reading changelog.", ex);
+            return null;
+        }
     }
 }

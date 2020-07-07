@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,8 +40,8 @@ public class TutorialActivity extends AppIntro {
     @NonNull
     private Fragment newSlide(@StringRes int title, @StringRes int desc, @DrawableRes int image) {
         SliderPage page = getDefault();
-        page.setTitle(getString(title));
-        page.setDescription(getString(desc));
+        page.setTitle(Html.fromHtml(getString(title)));
+        page.setDescription(Html.fromHtml(getString(desc)));
         page.setImageDrawable(image);
         return image == 0 ? NoImageAppIntroFragment.newInstance(page) : AppIntroFragment.newInstance(page);
     }
@@ -60,6 +61,7 @@ public class TutorialActivity extends AppIntro {
         addSlide(newSlide(R.string.tutorial_secondTitle, R.string.tutorial_secondDesc, 0));
         addSlide(newSlide(R.string.tutorial_thirdTitle, R.string.tutorial_thirdDesc, 0));
         addSlide(newSlide(R.string.tutorial_fourthTitle, R.string.tutorial_fourthDesc, 0));
+        addSlide(newSlide(R.string.tutorial_fifthTitle, R.string.tutorial_fifthDesc, 0));
     }
 
     @Override

@@ -364,8 +364,8 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
         }
     }
 
-    private void launchGameInternal(GamePermalink perm, @Nullable String password, boolean shouldRequest) {
-        Game game = Utils.findGame(adapter.getGames(), perm.gid);
+    private void launchGameInternal(@NonNull GamePermalink perm, @Nullable String password, boolean shouldRequest) {
+        Game game = Game.findGame(adapter.getGames(), perm.gid);
         launchGame = null;
         if (game != null) {
             if (shouldRequest) {
@@ -387,7 +387,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
             adapter.setFilterOutLockedLobbies(false);
         }
 
-        int pos = Utils.indexOf(adapter.getVisibleGames(), gid);
+        int pos = Game.indexOf(adapter.getVisibleGames(), gid);
         if (pos != -1) {
             RecyclerView list = rmv.list();
             list.scrollToPosition(pos);

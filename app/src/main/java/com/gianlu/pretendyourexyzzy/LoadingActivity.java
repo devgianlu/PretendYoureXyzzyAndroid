@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -364,7 +365,15 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         } else {
             currentServer.setText(result.server.name);
             showRegisterUi(result);
-            tutorialManager.tryShowingTutorials(this);
+            if (!tutorialManager.tryShowingTutorials(this) && Utils.shouldShowChangelog(this)) {
+                String changelog = Utils.getChangelog(this);
+                if (changelog == null) return;
+
+                showDialog(new MaterialAlertDialogBuilder(this)
+                        .setOnDismissListener(dialog -> Utils.changelogShown(this))
+                        .setTitle(R.string.changelog).setMessage(Html.fromHtml(changelog))
+                        .setPositiveButton(R.string.ok, null));
+            }
         }
     }
 

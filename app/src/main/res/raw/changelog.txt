@@ -1,0 +1,11 @@
+<b>Overloaded upgrade</b>
+This update includes a lot of new features to provide a better gaming experience:
+- Private chat (end-to-end encrypted)
+- User profile
+- Connect Google Play Games for stats, leaderboards and achievements
+- Synchronize custom decks and starred cards to never lose them
+- View custom decks and starred cards of other users
+- Make friends on the server to chat and share decks and cards
+- More to come...
+
+<b>All testers (from the beta program) will have UNLIMITED Overloaded access forever.</b> Please report any issue so that we can provide a fantastic experience for everyone.

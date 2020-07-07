@@ -3,8 +3,6 @@ package com.gianlu.pretendyourexyzzy.api.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.gianlu.pretendyourexyzzy.Utils;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -31,7 +29,7 @@ public class FirstLoad {
     public List<String> createCardSetNamesList(@NonNull List<Integer> includeIds) {
         List<String> names = new ArrayList<>();
         for (int id : includeIds) {
-            Deck set = Utils.findCardSet(decks, id);
+            Deck set = Deck.findDeck(decks, id);
             if (set != null) names.add(set.name);
         }
 

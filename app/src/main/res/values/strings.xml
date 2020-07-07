@@ -30,9 +30,11 @@
     <string name="tutorial_secondTitle">The rules</string>
     <string name="tutorial_secondDesc">Every turn a Black Card is played by the Card Czar, everyone else answers the question or completes the fill-in-the-blank phrase. Once everyone played, the Card Czar chooses the funniest play, whoever submitted it gets one point. In the next turn a new player becomes the Card Czar and everyone is drawn back up with ten cards.</string>
     <string name="tutorial_thirdTitle">Custom decks</string>
-    <string name="tutorial_thirdDesc">This game supports custom decks (on supporting servers): you can create custom decks from the app and add them to your own game.</string>
-    <string name="tutorial_fourthTitle">More features</string>
-    <string name="tutorial_fourthDesc">More features are available in this app, you\'ll learn them as you go. Good game!</string>
+    <string name="tutorial_thirdDesc">This game supports custom decks (on updated servers): you can create custom decks from the app and add them to your own game.</string>
+    <string name="tutorial_fourthTitle">Overloaded</string>
+    <string name="tutorial_fourthDesc">Overloaded is a game expansion that enables cool features like <![CDATA[<b>E2EE chat</b>]]>, <![CDATA[<b>user profiles</b>]]>, custom decks and starred cards <![CDATA[<b>synchronization</b>]]> and more. You can also <![CDATA[<b>share</b>]]> your decks with other players.</string>
+    <string name="tutorial_fifthTitle">More features</string>
+    <string name="tutorial_fifthDesc">More features are available in this app, you\'ll learn them as you go. Good game!</string>
     <string name="tutorial_chooseNickname">Choose a nickname to play, this won\'t be permanent.</string>
     <string name="tutorial_changeServer">There are multiple servers available, choose the one you prefer.</string>
     <string name="tutorial_joinTheServer">Get ready to play and join the lobby, there you\'ll be pleased with many games.</string>
@@ -48,7 +50,7 @@
     <string name="tutorial_whiteCard">Play one or multiple white cards to complete the sentence. If you don\'t know the meaning of a word, use the definition function in the upper right menu.</string>
     <string name="tutorial_playCard">To play a card just tap it: a confirmation dialog will appear.</string>
     <string name="tutorial_player">Once a player reaches the score goal, it wins. You can tap on players to reveal additional information.</string>
-    <string name="tutorial_overloaded">Overloaded enables many cool features not present in the standard game experience. It\'s a one time purchase.</string>
+    <string name="tutorial_overloaded">Overloaded enables many cool features not present in the standard game experience. It\'s a monthly subscription.</string>
 
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
@@ -341,4 +343,5 @@
     <string name="invalidDeckCode">The deck code is invalid!</string>
     <string name="recoverDeckNotFound">Deck cannot be recovered: not found.</string>
     <string name="failedRecoveringCardcastDeck">Failed recovering Cardcast deck.</string>
+    <string name="changelog">Changelog</string>
 </resources>

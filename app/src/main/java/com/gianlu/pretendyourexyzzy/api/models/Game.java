@@ -21,6 +21,7 @@ import org.json.JSONObject;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 public class Game implements Filterable<Game.Protection>, Serializable {
@@ -32,7 +33,7 @@ public class Game implements Filterable<Game.Protection>, Serializable {
     public final Options options;
     public final Status status;
 
-    public Game(JSONObject obj) throws JSONException {
+    public Game(@NonNull JSONObject obj) throws JSONException {
         host = obj.getString("H");
         gid = obj.getInt("gid");
         status = Status.parse(obj.getString("S"));
@@ -50,6 +51,22 @@ public class Game implements Filterable<Game.Protection>, Serializable {
             String name = spectatorsArray.getString(i);
             if (!spectators.contains(name)) spectators.add(name);
         }
+    }
+
+    public static int indexOf(@NonNull List<Game> games, int gid) {
+        for (int i = 0; i < games.size(); i++)
+            if (games.get(i).gid == gid) return i;
+
+        return -1;
+    }
+
+    @Nullable
+    public static Game findGame(List<Game> games, int gid) {
+        for (Game game : games)
+            if (game.gid == gid)
+                return game;
+
+        return null;
     }
 
     @Override
