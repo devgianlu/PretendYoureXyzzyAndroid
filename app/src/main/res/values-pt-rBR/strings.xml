@@ -30,9 +30,11 @@
     <string name="tutorial_secondTitle">As regras</string>
     <string name="tutorial_secondDesc">Toda rodada uma carta preta é jogada pelo Czar da Carta, todos os outros respondem a pergunta ou completam o espaço em branco da frase. Assim que todos jogarem, o Czar da Carta escolhe a jogada mais engraçada, o remetente responsável receberá um ponto. No próximo turno um novo jogador se torna o Czar da Carta e todo o resto retorna com 10 cartas.</string>
     <string name="tutorial_thirdTitle">Decks personalizados</string>
-    <string name="tutorial_thirdDesc">Este jogo suporta decks personalizados (nos servidores de suporte): você pode criar decks personalizados a partir do aplicativo e adicioná-los ao seu próprio jogo.</string>
-    <string name="tutorial_fourthTitle">Mais recursos</string>
-    <string name="tutorial_fourthDesc">Mais recursos estão disponíveis neste aplicativo, você irá aprendê-los ao decorrer do uso. Bom jogo!</string>
+    <string name="tutorial_thirdDesc">This game supports custom decks (on updated servers): you can create custom decks from the app and add them to your own game.</string>
+    <string name="tutorial_fourthTitle">Overloaded</string>
+    <string name="tutorial_fourthDesc">Overloaded is a game expansion that enables cool features like <![CDATA[<b>E2EE chat</b>]]>, <![CDATA[<b>user profiles</b>]]>, custom decks and starred cards <![CDATA[<b>synchronization</b>]]> and more. You can also <![CDATA[<b>share</b>]]> your decks with other players.</string>
+    <string name="tutorial_fifthTitle">More features</string>
+    <string name="tutorial_fifthDesc">More features are available in this app, you\'ll learn them as you go. Good game!</string>
     <string name="tutorial_chooseNickname">Escolha um apelido para jogar. Este não será permanente.</string>
     <string name="tutorial_changeServer">Existem vários servidores disponíveis, escolha o que você prefere.</string>
     <string name="tutorial_joinTheServer">Prepare-se para jogar e se junte ao lobby, lá você ficará satisfeito com vários jogos.</string>
@@ -48,7 +50,7 @@
     <string name="tutorial_whiteCard">Jogue um ou vários cartões brancos para completar a frase. Se você não sabe o significado de uma palavra, use a função de definição no menu superior direito.</string>
     <string name="tutorial_playCard">Para jogar uma carta, basta tocá-la: um diálogo de confirmação aparecerá.</string>
     <string name="tutorial_player">Quando um jogador atingir o objetivo da pontuação, ele ganha. Você pode tocar nos jogadores para revelar informações adicionais.</string>
-    <string name="tutorial_overloaded">Sobrecarregado habilita muitos recursos interessantes que não estão presentes na experiência padrão de jogo. É uma compra única.</string>
+    <string name="tutorial_overloaded">Overloaded enables many cool features not present in the standard game experience. It\'s a monthly subscription.</string>
     <!-- General -->
     <string name="app_name">Você está no Xyzzy</string>
     <string name="nickname">Apelido</string>
@@ -339,4 +341,5 @@
     <string name="invalidDeckCode">The deck code is invalid!</string>
     <string name="recoverDeckNotFound">Deck cannot be recovered: not found.</string>
     <string name="failedRecoveringCardcastDeck">Failed recovering Cardcast deck.</string>
+    <string name="changelog">Changelog</string>
 </resources>
