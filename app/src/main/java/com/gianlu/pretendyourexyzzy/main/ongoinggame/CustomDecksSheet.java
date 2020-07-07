@@ -34,6 +34,7 @@ import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.FloatingCustomDeck;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.StarredDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
@@ -189,6 +190,8 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
 
                     FloatingCustomDeck deck = customDecks.get(which);
                     if (deck instanceof CustomDeck) {
+                        CustomDecksDatabase.get(requireContext()).updateDeckLastUsed(((CustomDeck) deck).id);
+
                         String json;
                         try {
                             json = ((CustomDeck) deck).craftPyxJson(CustomDecksDatabase.get(requireContext())).toString();
@@ -210,8 +213,10 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
                                 DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
                             }
                         });
-                    } else if (deck instanceof CustomDecksDatabase.StarredDeck) {
-                        String url = OverloadedUtils.getServeCustomDeckUrl(((CustomDecksDatabase.StarredDeck) deck).shareCode);
+                    } else if (deck instanceof StarredDeck) {
+                        CustomDecksDatabase.get(requireContext()).updateStarredDeckLastUsed(((StarredDeck) deck).id);
+
+                        String url = OverloadedUtils.getServeCustomDeckUrl(((StarredDeck) deck).shareCode);
 
                         ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK);
                         pyx.request(PyxRequests.addCustomDeckUrl(getSetupPayload(), url), getActivity(), new Pyx.OnSuccess() {

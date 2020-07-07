@@ -3,7 +3,6 @@ package com.gianlu.pretendyourexyzzy.customdecks;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -23,6 +22,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,7 +40,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     private static CustomDecksDatabase instance;
 
     private CustomDecksDatabase(@Nullable Context context) {
-        super(context, "custom_decks.db", null, 5);
+        super(context, "custom_decks.db", null, 6);
     }
 
     @NonNull
@@ -67,27 +67,30 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(@NotNull SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS decks (id INTEGER PRIMARY KEY UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, description TEXT NOT NULL, revision INTEGER NOT NULL, remoteId INTEGER UNIQUE)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS decks (id INTEGER PRIMARY KEY UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, description TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 0, remoteId INTEGER UNIQUE, lastUsed INTEGER NOT NULL DEFAULT 0)");
         db.execSQL("CREATE TABLE IF NOT EXISTS cards (id INTEGER PRIMARY KEY UNIQUE, deck_id INTEGER NOT NULL, type INTEGER NOT NULL, text TEXT NOT NULL, remoteId INTEGER UNIQUE)");
-        db.execSQL("CREATE TABLE IF NOT EXISTS starred_decks (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL, remoteId INTEGER UNIQUE)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS starred_decks (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL, remoteId INTEGER UNIQUE, lastUsed INTEGER NOT NULL DEFAULT 0)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion == 1 && newVersion == 5) {
-            db.execSQL("ALTER TABLE decks ADD revision INTEGER NOT NULL DEFAULT 0");
-            db.execSQL("ALTER TABLE decks ADD remoteId INTEGER");
-            db.execSQL("CREATE UNIQUE INDEX remoteId_decks_unique ON decks(remoteId)");
+        Log.d(TAG, "Upgrading from " + oldVersion + " to " + newVersion);
+        switch (oldVersion) {
+            case 1:
+                db.execSQL("ALTER TABLE decks ADD revision INTEGER NOT NULL DEFAULT 0");
+                db.execSQL("ALTER TABLE decks ADD remoteId INTEGER");
+                db.execSQL("CREATE UNIQUE INDEX remoteId_decks_unique ON decks(remoteId)");
 
-            db.execSQL("ALTER TABLE cards ADD remoteId INTEGER");
-            db.execSQL("CREATE UNIQUE INDEX remoteId_cards_unique ON cards(remoteId)");
+                db.execSQL("ALTER TABLE cards ADD remoteId INTEGER");
+                db.execSQL("CREATE UNIQUE INDEX remoteId_cards_unique ON cards(remoteId)");
 
-            db.execSQL("CREATE TABLE IF NOT EXISTS starred_decks (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL, remoteId INTEGER UNIQUE)");
-
-            Log.i(TAG, "Migrated database from " + oldVersion + " to " + newVersion);
-        } else {
-            throw new SQLException("Cannot upgrade from " + oldVersion + " to " + newVersion);
+                db.execSQL("CREATE TABLE IF NOT EXISTS starred_decks (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL, remoteId INTEGER UNIQUE)");
+            case 5:
+                db.execSQL("ALTER TABLE decks ADD lastUsed INTEGER NOT NULL DEFAULT 0");
+                db.execSQL("ALTER TABLE starred_decks ADD lastUsed INTEGER NOT NULL DEFAULT 0");
         }
+
+        Log.i(TAG, "Migrated database from " + oldVersion + " to " + newVersion);
     }
 
     private void sendCustomDeckPatch(long revision, @Nullable Long remoteId, @NonNull CustomDecksPatchOp op, @Nullable CustomDeck deck, @Nullable CustomCard card, @Nullable Long cardId) {
@@ -197,6 +200,19 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
     }
 
+    public void updateStarredDeckLastUsed(int id) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            ContentValues values = new ContentValues();
+            values.put("lastUsed", System.currentTimeMillis());
+            db.update("starred_decks", values, "id=?", new String[]{String.valueOf(id)});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
     public void addStarredDeck(@NonNull String shareCode, @NonNull String name, @NonNull String watermark, @NonNull String owner, int cardsCount) {
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
@@ -209,6 +225,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             values.put("watermark", watermark);
             values.put("owner", owner);
             values.put("cards_count", cardsCount);
+            values.put("lastUsed", System.currentTimeMillis());
             id = (int) db.insert("starred_decks", null, values);
             db.setTransactionSuccessful();
         } finally {
@@ -246,7 +263,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         List<FloatingCustomDeck> decks = new LinkedList<>();
         decks.addAll(getDecks());
         decks.addAll(getStarredDecks(false));
-        // TODO: Sort custom decks
+        Collections.sort(decks, (o1, o2) -> Long.compare(o2.lastUsed, o1.lastUsed));
         return decks;
     }
 
@@ -267,6 +284,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
                 values.put("owner", obj.getString("owner"));
                 values.put("cards_count", deckObj.getInt("count"));
                 values.put("remoteId", obj.getLong("remoteId"));
+                values.put("lastUsed", System.currentTimeMillis());
                 db.insert("starred_decks", null, values);
             }
 
@@ -349,18 +367,34 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         try {
+            long lastUsed = System.currentTimeMillis();
+
             ContentValues values = new ContentValues();
             values.put("name", name);
             values.put("watermark", watermark);
             values.put("description", desc);
             values.put("revision", revision);
+            values.put("lastUsed", lastUsed);
             int id = (int) db.insert("decks", null, values);
             db.setTransactionSuccessful();
             if (id == -1) return null;
 
-            CustomDeck deck = new CustomDeck(id, name, watermark, desc, revision);
+            CustomDeck deck = new CustomDeck(id, name, watermark, desc, lastUsed, revision);
             sendCustomDeckPatch(deck.revision, null, CustomDecksPatchOp.ADD_DECK, deck, null, null);
             return deck;
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public void updateDeckLastUsed(int id) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            ContentValues values = new ContentValues();
+            values.put("lastUsed", System.currentTimeMillis());
+            db.update("decks", values, "id=?", new String[]{String.valueOf(id)});
+            db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
         }
@@ -377,6 +411,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             values.put("watermark", watermark);
             values.put("description", desc);
             values.put("revision", revision);
+            values.put("lastUsed", System.currentTimeMillis());
             db.update("decks", values, "id=?", new String[]{String.valueOf(id)});
             db.setTransactionSuccessful();
         } finally {
@@ -394,6 +429,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         try {
             ContentValues values = new ContentValues();
             values.put("revision", revision);
+            values.put("lastUsed", System.currentTimeMillis());
             db.update("decks", values, "id=?", new String[]{String.valueOf(id)});
             db.setTransactionSuccessful();
         } finally {
@@ -420,6 +456,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
                     values.put("watermark", deck.getString("watermark"));
                     values.put("revision", deck.getLong("rev"));
                     values.put("remoteId", remoteId);
+                    values.put("lastUsed", System.currentTimeMillis());
                     deckId = (int) db.insert("decks", null, values);
                     if (deckId == -1) {
                         Log.e(TAG, "Failed inserting custom deck.");
@@ -439,6 +476,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
                     values.put("description", deck.getString("desc"));
                     values.put("watermark", deck.getString("watermark"));
                     values.put("revision", deck.getLong("rev"));
+                    values.put("lastUsed", System.currentTimeMillis());
                     values.put("remoteId", remoteId);
                     db.update("decks", values, "id=?", new String[]{String.valueOf(deckId)});
                     db.setTransactionSuccessful();
@@ -767,16 +805,18 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         public final String name;
         public final String watermark;
         public final String owner;
+        public final long lastUsed;
         private final int count;
 
-        FloatingCustomDeck(@NonNull String name, @NonNull String watermark, @Nullable String owner) {
-            this(name, watermark, owner, -1);
+        FloatingCustomDeck(@NonNull String name, @NonNull String watermark, @Nullable String owner, long lastUsed) {
+            this(name, watermark, owner, lastUsed, -1);
         }
 
-        FloatingCustomDeck(@NonNull String name, @NonNull String watermark, @Nullable String owner, int count) {
+        FloatingCustomDeck(@NonNull String name, @NonNull String watermark, @Nullable String owner, long lastUsed, int count) {
             this.name = name;
             this.watermark = watermark;
             this.owner = owner;
+            this.lastUsed = lastUsed;
             this.count = count;
         }
 
@@ -905,7 +945,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
     public static class StarredDeck extends FloatingCustomDeck {
         public final String shareCode;
-        public final long id;
+        public final int id;
         public final Long remoteId;
 
         public StarredDeck(@NonNull Cursor cursor) {
@@ -926,7 +966,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         public final long revision;
 
         private CustomDeck(@NonNull Cursor cursor) {
-            super(cursor.getString(cursor.getColumnIndex("name")), cursor.getString(cursor.getColumnIndex("watermark")), null);
+            super(cursor.getString(cursor.getColumnIndex("name")), cursor.getString(cursor.getColumnIndex("watermark")), null, cursor.getLong(cursor.getColumnIndex("lastUsed")));
             id = cursor.getInt(cursor.getColumnIndex("id"));
             description = cursor.getString(cursor.getColumnIndex("description"));
             revision = cursor.getLong(cursor.getColumnIndex("revision"));
@@ -935,8 +975,8 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             remoteId = cursor.isNull(remoteIdIndex) ? null : cursor.getLong(remoteIdIndex);
         }
 
-        private CustomDeck(int id, @NonNull String name, @NonNull String watermark, @NonNull String description, long revision) {
-            super(name, watermark, null);
+        private CustomDeck(int id, @NonNull String name, @NonNull String watermark, @NonNull String description, long lastUsed, long revision) {
+            super(name, watermark, null, lastUsed);
             this.id = id;
             this.description = description;
             this.revision = revision;
