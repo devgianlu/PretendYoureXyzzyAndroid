@@ -23,6 +23,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.auth.UserInfo;
+import com.google.firebase.perf.FirebasePerformance;
+import com.google.firebase.perf.metrics.AddTrace;
+import com.google.firebase.perf.metrics.Trace;
 import com.instacart.library.truetime.TrueTime;
 
 import org.jetbrains.annotations.Contract;
@@ -160,14 +163,49 @@ public class OverloadedApi {
         else
             body = RequestBody.create(json.toString().getBytes(), MediaType.get("application/json"));
 
-        return makeRequest(new Request.Builder()
-                .url(overloadedServerUrl(suffix))
-                .post(body), true);
+        return makeRequest(suffix, body);
     }
 
     @NonNull
     @WorkerThread
-    private synchronized JSONObject makeRequest(@NonNull Request.Builder reqBuilder, boolean retry) throws OverloadedException, MaintenanceException {
+    private JSONObject makeRequest(@NonNull String suffix, @NonNull RequestBody body) throws OverloadedException, MaintenanceException {
+        Trace trace = FirebasePerformance.startTrace("overloaded_request");
+        trace.putAttribute("dest", suffix);
+
+        try {
+            trace.putAttribute("body_length", String.valueOf(body.contentLength()));
+        } catch (IOException ignored) {
+        }
+
+        Request.Builder req = new Request.Builder()
+                .url(overloadedServerUrl(suffix))
+                .post(body);
+
+        try {
+            OverloadedException lastEx = null;
+            for (int i = 0; i < 3; i++) {
+                try {
+                    return makeRequestInternal(req);
+                } catch (IOException | JSONException ex) {
+                    lastEx = new OverloadedException(req.toString(), ex);
+
+                    if (ex instanceof SocketTimeoutException) {
+                        trace.incrementMetric("tries", 1);
+                    } else {
+                        throw lastEx;
+                    }
+                }
+            }
+
+            throw lastEx;
+        } finally {
+            trace.stop();
+        }
+    }
+
+    @NonNull
+    @WorkerThread
+    private JSONObject makeRequestInternal(@NonNull Request.Builder reqBuilder) throws OverloadedException, MaintenanceException, IOException, JSONException {
         if (isFirstRequest || isUnderMaintenance()) {
             for (int i = 0; i < 3; i++) {
                 try {
@@ -210,11 +248,6 @@ public class OverloadedApi {
                 throw OverloadedServerException.create(resp, obj);
 
             return obj;
-        } catch (IOException | JSONException ex) {
-            if (retry && ex instanceof SocketTimeoutException)
-                return makeRequest(reqBuilder, false);
-            else
-                throw new OverloadedException(req.toString(), ex);
         }
     }
 
@@ -316,6 +349,7 @@ public class OverloadedApi {
      * Updates the Firebase token <b>synchronously</b>.
      */
     @WorkerThread
+    @AddTrace(name = "overloaded_update_token")
     private void updateTokenSync() {
         if (user == null && updateUser()) throw new IllegalStateException();
 
@@ -526,6 +560,7 @@ public class OverloadedApi {
 
     @Nullable
     @WorkerThread
+    @AddTrace(name = "overloaded_check_maintenance")
     private Long checkMaintenanceSync() throws JSONException, IOException {
         try (Response resp = client.newCall(new Request.Builder()
                 .url(overloadedServerUrl("IsUnderMaintenance"))

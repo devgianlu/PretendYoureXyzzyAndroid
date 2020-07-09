@@ -31,6 +31,8 @@ import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionHistory;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionStats;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
+import com.google.firebase.perf.FirebasePerformance;
+import com.google.firebase.perf.metrics.Trace;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -107,14 +109,43 @@ public class Pyx implements Closeable {
         }
     }
 
+    @NonNull
     @WorkerThread
-    protected final PyxResponse request(@NonNull Op operation, PyxRequest.Param... params) throws IOException, JSONException, PyxException {
-        return request(operation, false, params);
+    protected final PyxResponse request(@NonNull Op operation, @NonNull PyxRequest.Param... params) throws IOException, JSONException, PyxException {
+        Trace trace = FirebasePerformance.startTrace("pyx_request");
+        trace.putAttribute("host", server.url.host());
+        trace.putAttribute("op", operation.val);
+        trace.putAttribute("params_num", String.valueOf(params.length));
+
+        try {
+            Exception lastEx = null;
+            for (int i = 0; i < 3; i++) {
+                try {
+                    return requestInternal(operation, params);
+                } catch (SocketTimeoutException ex) {
+                    lastEx = ex;
+                    trace.incrementMetric("tries", 1);
+                    Log.d(TAG, "Socket timeout, retrying.", ex);
+                } catch (PyxException ex) {
+                    lastEx = ex;
+
+                    trace.incrementMetric("pyx_tries", 1);
+                    trace.putAttribute("pyx_retry_error", ex.errorCode);
+                    if (!ex.shouldRetry())
+                        throw ex;
+                }
+            }
+
+            if (lastEx instanceof IOException) throw (IOException) lastEx;
+            else throw (PyxException) lastEx;
+        } finally {
+            trace.stop();
+        }
     }
 
     @NonNull
     @WorkerThread
-    private PyxResponse request(@NonNull Op operation, boolean retried, PyxRequest.Param... params) throws IOException, JSONException, PyxException {
+    private PyxResponse requestInternal(@NonNull Op operation, @NonNull PyxRequest.Param... params) throws IOException, JSONException, PyxException {
         FormBody.Builder reqBody = new FormBody.Builder(StandardCharsets.UTF_8).add("o", operation.val);
         for (PyxRequest.Param pair : params) {
             if (pair.value() != null)
@@ -140,21 +171,13 @@ public class Pyx implements Closeable {
                     raiseException(obj);
                     Log.v(TAG, operation + "; " + Arrays.toString(params));
                 } catch (PyxException ex) {
-                    Log.d(TAG, "op = " + operation + ", params = " + Arrays.toString(params) + ", code = " + ex.errorCode + ", retried = " + retried, ex);
-                    if (!retried && ex.shouldRetry()) return request(operation, true, params);
+                    Log.d(TAG, "op = " + operation + ", params = " + Arrays.toString(params) + ", code = " + ex.errorCode, ex);
                     throw ex;
                 }
 
                 return new PyxResponse(resp, obj);
             } else {
                 throw new StatusCodeException(resp);
-            }
-        } catch (SocketTimeoutException ex) {
-            if (!retried) {
-                Log.d(TAG, "Socket timeout, retrying.", ex);
-                return request(operation, true, params);
-            } else {
-                throw ex;
             }
         } catch (RuntimeException ex) {
             if (ex.getCause() instanceof SSLException) throw (SSLException) ex.getCause();
@@ -166,18 +189,13 @@ public class Pyx implements Closeable {
         executor.execute(new RequestRunner(request, activity, listener));
     }
 
-    @WorkerThread
-    public final void requestSync(@NonNull PyxRequest request) throws JSONException, PyxException, IOException {
-        request(request.op, request.params);
-    }
-
     public final <E> void request(@NonNull PyxRequestWithResult<E> request, @Nullable Activity activity, @NonNull OnResult<E> listener) {
         executor.execute(new RequestWithResultRunner<>(request, activity, listener));
     }
 
     @NonNull
     @WorkerThread
-    public final <E> E requestSync(PyxRequestWithResult<E> request) throws JSONException, PyxException, IOException {
+    public final <E> E requestSync(@NonNull PyxRequestWithResult<E> request) throws JSONException, PyxException, IOException {
         PyxResponse resp = request(request.op, request.params);
         return request.processor.process(resp.resp, resp.obj);
     }
