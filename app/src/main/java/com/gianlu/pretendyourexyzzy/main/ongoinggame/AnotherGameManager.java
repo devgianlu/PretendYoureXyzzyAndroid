@@ -311,12 +311,18 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
                     GPGamesHelper.achievementSteps(context, players, GPGamesHelper.ACH_3_PEOPLE_GAME,
                             GPGamesHelper.ACH_5_PEOPLE_GAME, GPGamesHelper.ACH_10_PEOPLE_GAME);
                 }
+
+                if (gameData.amSpectator() && result.players.isEmpty())
+                    listener.justLeaveGame();
             }
 
             @Override
             public void onException(@NonNull Exception ex) {
                 Log.e(TAG, "Failed getting game info.", ex);
                 listener.showToast(Toaster.build().message(R.string.failedLoading));
+
+                if (ex instanceof PyxException && ((PyxException) ex).errorCode.equals("ig"))
+                    listener.justLeaveGame();
             }
         });
     }

@@ -141,7 +141,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements PlayersAd
 
                 @Override
                 public void onException(@NonNull Exception ex) {
-                    if (ex instanceof PyxException && ((PyxException) ex).errorCode.equals("nitg")) {
+                    if (ex instanceof PyxException && (((PyxException) ex).errorCode.equals("nitg") || ((PyxException) ex).errorCode.equals("ig"))) {
                         onDone();
                     } else {
                         Log.e(TAG, "Failed leaving game.", ex);
