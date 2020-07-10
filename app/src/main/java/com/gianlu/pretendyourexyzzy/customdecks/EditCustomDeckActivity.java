@@ -16,6 +16,8 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.adapters.PagerAdapter;
 import com.gianlu.pretendyourexyzzy.customdecks.edit.BlackCardsFragment;
 import com.gianlu.pretendyourexyzzy.customdecks.edit.GeneralInfoFragment;
@@ -126,6 +128,7 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
                     whiteCardsFragment.importCards(this, obj.optJSONArray("responses"));
 
                     tmpFile.delete();
+                    ThisApplication.sendAnalytics(Utils.ACTION_IMPORTED_CUSTOM_DECK);
                 }
             } catch (JSONException | IOException ex) {
                 Log.e(TAG, "Failed importing deck.", ex);
@@ -185,6 +188,8 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
                 builder.setTitle(R.string.delete).setMessage(getString(R.string.deleteDeckConfirmation, getName()))
                         .setPositiveButton(android.R.string.yes, (dialog, which) -> {
                             if (id == null) return;
+
+                            ThisApplication.sendAnalytics(Utils.ACTION_DELETED_CUSTOM_DECK);
                             CustomDecksDatabase.get(EditCustomDeckActivity.this).deleteDeckAndCards(id, true);
                             onBackPressed();
                         }).setNegativeButton(android.R.string.no, null);

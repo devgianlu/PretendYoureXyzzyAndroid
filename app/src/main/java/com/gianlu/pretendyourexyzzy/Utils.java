@@ -28,6 +28,7 @@ import java.util.List;
 
 public final class Utils {
     public static final String ACTION_STARRED_CARD_ADD = "added_starred_card";
+    public static final String ACTION_STARRED_CARD_REMOVE = "removed_starred_card";
     public static final String ACTION_JOIN_GAME = "joined_game";
     public static final String ACTION_SPECTATE_GAME = "spectate_game";
     public static final String ACTION_LEFT_GAME = "left_game";
@@ -45,6 +46,11 @@ public final class Utils {
     public static final String ACTION_UNKNOWN_EVENT = "unknown_server_event";
     public static final String ACTION_BLOCK_USER = "block_user";
     public static final String ACTION_UNBLOCK_USER = "unblock_user";
+    public static final String ACTION_IMPORTED_CUSTOM_DECK = "imported_custom_deck";
+    public static final String ACTION_CREATED_CUSTOM_DECK = "created_custom_deck";
+    public static final String ACTION_DELETED_CUSTOM_DECK = "created_custom_deck";
+    public static final String ACTION_ADDED_CUSTOM_DECK_CARD = "added_custom_deck_card";
+    public static final String ACTION_REMOVED_CUSTOM_DECK_CARD = "added_custom_deck_card";
     private static final String TAG = Utils.class.getSimpleName();
 
     private Utils() {

@@ -15,6 +15,8 @@ import androidx.annotation.Nullable;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
 import com.google.android.material.textfield.TextInputLayout;
@@ -80,6 +82,8 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
 
         CustomDecksDatabase db = CustomDecksDatabase.get(context);
         if (deck == null) {
+            ThisApplication.sendAnalytics(Utils.ACTION_CREATED_CUSTOM_DECK);
+
             deck = db.putDeckInfo(name, watermark, description);
             return deck != null;
         } else {

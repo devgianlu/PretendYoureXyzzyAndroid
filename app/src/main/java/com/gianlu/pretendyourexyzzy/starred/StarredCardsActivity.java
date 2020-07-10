@@ -17,6 +17,8 @@ import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.misc.MessageView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
@@ -130,6 +132,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
     }
 
     private void deleteCard(@NonNull StarredCardsDatabase.StarredCard card) {
+        ThisApplication.sendAnalytics(Utils.ACTION_STARRED_CARD_REMOVE);
         StarredCardsDatabase.get(this).remove(card);
         if (list.getAdapter() != null && list.getAdapter().getItemCount() == 0) onBackPressed();
     }

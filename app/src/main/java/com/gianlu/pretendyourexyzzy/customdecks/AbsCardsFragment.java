@@ -26,6 +26,8 @@ import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
@@ -159,6 +161,8 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
                         adapter.removeCard(oldCard);
                         onItemCountChanged(adapter.getItemCount());
                     }
+
+                    ThisApplication.sendAnalytics(Utils.ACTION_REMOVED_CUSTOM_DECK_CARD);
                 }
             });
         }
@@ -189,6 +193,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
                         }
 
                         di.dismiss();
+                        ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK_CARD);
                     } else {
                         showToast(Toaster.build().message(R.string.failedAddingCustomCard));
                     }
