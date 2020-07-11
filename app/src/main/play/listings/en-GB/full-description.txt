@@ -9,4 +9,3 @@ The game is simple. Each round, a black card is randomly chosen from the deck, e
 This project is open source at https://github.com/devgianlu/PretendYoureXyzzyAndroid
 ------------------------------
 Words definition is powered by Urban Dictionary (https://www.urbandictionary.com/).
-Cardcast is powered by https://www.cardcastgame.com
