@@ -32,6 +32,7 @@ public class Game implements Filterable<Game.Protection>, Serializable {
     public final String host;
     public final Options options;
     public final Status status;
+    public final List<Deck> customDecks;
 
     public Game(@NonNull JSONObject obj) throws JSONException {
         host = obj.getString("H");
@@ -51,6 +52,15 @@ public class Game implements Filterable<Game.Protection>, Serializable {
             String name = spectatorsArray.getString(i);
             if (!spectators.contains(name)) spectators.add(name);
         }
+
+        JSONArray customDecksArray = obj.optJSONArray("ccs");
+        if (customDecksArray != null) {
+            customDecks = new ArrayList<>(customDecksArray.length());
+            for (int i = 0; i < customDecksArray.length(); i++)
+                customDecks.add(new Deck(customDecksArray.getJSONObject(i)));
+        } else {
+            customDecks = new ArrayList<>();
+        }
     }
 
     public static int indexOf(@NonNull List<Game> games, int gid) {
@@ -61,7 +71,7 @@ public class Game implements Filterable<Game.Protection>, Serializable {
     }
 
     @Nullable
-    public static Game findGame(List<Game> games, int gid) {
+    public static Game findGame(@NonNull List<Game> games, int gid) {
         for (Game game : games)
             if (game.gid == gid)
                 return game;

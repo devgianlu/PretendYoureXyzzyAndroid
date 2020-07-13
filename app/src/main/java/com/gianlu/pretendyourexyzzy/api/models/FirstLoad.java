@@ -6,7 +6,6 @@ import androidx.annotation.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,15 +24,10 @@ public class FirstLoad {
         this.game = GamePermalink.get(obj);
     }
 
-    @NonNull
-    public List<String> createCardSetNamesList(@NonNull List<Integer> includeIds) {
-        List<String> names = new ArrayList<>();
-        for (int id : includeIds) {
-            Deck set = Deck.findDeck(decks, id);
-            if (set != null) names.add(set.name);
-        }
-
-        return names;
+    @Nullable
+    public String cardSetName(int id) {
+        Deck set = Deck.findDeck(decks, id);
+        return set == null ? null : set.name;
     }
 
     public enum NextOp {

@@ -45,6 +45,7 @@ import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
+import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.api.models.GamesList;
@@ -57,6 +58,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 
 public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<GamesList>, SearchView.OnCloseListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, Pyx.OnEventListener, TutorialManager.Listener {
@@ -509,7 +511,11 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
             holder.status.setImageResource(game.status == Game.Status.LOBBY ? R.drawable.baseline_hourglass_empty_24 : R.drawable.baseline_casino_24);
             holder.timerMultiplier.setHtml(R.string.timerMultiplier, game.options.timerMultiplier);
             holder.blankCards.setHtml(R.string.blankCards, game.options.blanksLimit);
-            holder.cardsets.setHtml(R.string.cardSets, game.options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(pyx.firstLoad().createCardSetNamesList(game.options.cardSets), ", "));
+
+            List<String> deckNames = new LinkedList<>();
+            for (Deck d : game.customDecks) deckNames.add("<i>" + d.name + "</i>");
+            for (int id : game.options.cardSets) deckNames.add(pyx.firstLoad().cardSetName(id));
+            holder.cardsets.setHtml(R.string.cardSets, deckNames.isEmpty() ? "<i>none</i>" : CommonUtils.join(deckNames, ", "));
 
             if (game.options.spectatorsLimit == 0)
                 holder.spectators.setHtml(R.string.spectatorsNotAllowed);

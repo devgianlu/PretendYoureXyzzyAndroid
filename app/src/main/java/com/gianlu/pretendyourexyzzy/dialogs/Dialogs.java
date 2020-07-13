@@ -28,6 +28,8 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONException;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 
 import okhttp3.HttpUrl;
@@ -104,8 +106,10 @@ public final class Dialogs {
         SuperTextView timerMultiplier = layout.findViewById(R.id.gameOptions_timerMultiplier);
         timerMultiplier.setHtml(R.string.timerMultiplier, options.timerMultiplier);
 
+        List<String> deckNames = new LinkedList<>();
+        for (int id : options.cardSets) deckNames.add(firstLoad.cardSetName(id));
         SuperTextView cardSets = layout.findViewById(R.id.gameOptions_cardSets);
-        cardSets.setHtml(R.string.cardSets, options.cardSets.isEmpty() ? "<i>none</i>" : CommonUtils.join(firstLoad.createCardSetNamesList(options.cardSets), ", "));
+        cardSets.setHtml(R.string.cardSets, deckNames.isEmpty() ? "<i>none</i>" : CommonUtils.join(deckNames, ", "));
 
         SuperTextView blankCards = layout.findViewById(R.id.gameOptions_blankCards);
         blankCards.setHtml(R.string.blankCards, options.blanksLimit);
