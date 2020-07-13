@@ -51,6 +51,7 @@
     <string name="tutorial_playCard">Para jogar uma carta, basta tocá-la: um diálogo de confirmação aparecerá.</string>
     <string name="tutorial_player">Quando um jogador atingir o objetivo da pontuação, ele ganha. Você pode tocar nos jogadores para revelar informações adicionais.</string>
     <string name="tutorial_overloaded">Overloaded enables many cool features not present in the standard game experience. It\'s a monthly subscription.</string>
+    <string name="tutorial_addCustomDeck">Here you can create your own custom decks or import and recover old Cardcast decks.</string>
     <!-- General -->
     <string name="app_name">Você está no Xyzzy</string>
     <string name="nickname">Apelido</string>
