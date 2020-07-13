@@ -119,6 +119,12 @@ public class RegisteredPyx extends FirstLoadedPyx {
         });
     }
 
+    @Override
+    public void close() {
+        if (pollingThread != null) pollingThread.safeStop();
+        super.close();
+    }
+
     public class PollingThread extends Thread {
         private final List<OnEventListener> listeners = new ArrayList<>();
         private int exCount = 0;
@@ -191,6 +197,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
 
         void safeStop() {
             shouldStop = true;
+            interrupt();
         }
 
         public void removeListener(@NonNull OnEventListener listener) {
