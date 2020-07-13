@@ -21,6 +21,8 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
+import com.gianlu.commonutils.tutorial.BaseTutorial;
+import com.gianlu.commonutils.tutorial.TutorialManager;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
@@ -32,6 +34,8 @@ import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.FloatingCust
 import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
+import com.gianlu.pretendyourexyzzy.tutorial.CustomDecksTutorial;
+import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
@@ -40,15 +44,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import me.toptas.fancyshowcase.FocusShape;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 
-public class CustomDecksFragment extends FragmentWithDialog implements OverloadedSyncApi.SyncStatusListener, CustomDecksAdapter.Listener {
+public class CustomDecksFragment extends FragmentWithDialog implements OverloadedSyncApi.SyncStatusListener, CustomDecksAdapter.Listener, TutorialManager.Listener {
     private static final int RC_IMPORT_JSON = 2;
     private static final String TAG = CustomDecksFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
     private CustomDecksDatabase db;
     private TextView syncStatus;
+    private TutorialManager tutorialManager;
+    private FloatingActionsMenu fab;
 
     @NonNull
     public static CustomDecksFragment getInstance() {
@@ -70,7 +77,8 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         else
             rmv.disableSwipeRefresh();
 
-        FloatingActionsMenu fab = layout.findViewById(R.id.customDecks_fab);
+
+        fab = layout.findViewById(R.id.customDecks_fab);
         FloatingActionButton importDeck = layout.findViewById(R.id.customDecksFab_import);
         importDeck.setOnClickListener(v -> {
             startActivityForResult(Intent.createChooser(new Intent(Intent.ACTION_GET_CONTENT).setType("*/*"), "Pick JSON file..."), RC_IMPORT_JSON);
@@ -107,6 +115,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
             fab.collapse();
         });
 
+        tutorialManager = new TutorialManager(this, Discovery.CUSTOM_DECKS);
         return layout;
     }
 
@@ -159,6 +168,12 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
     public void onResume() {
         super.onResume();
         refreshList();
+        tryShowingTutorial();
+    }
+
+    public void tryShowingTutorial() {
+        if (tutorialManager != null && getActivity() != null)
+            tutorialManager.tryShowingTutorials(getActivity());
     }
 
     @Override
@@ -193,5 +208,22 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
             EditCustomDeckActivity.startActivityEdit(requireContext(), (CustomDeck) deck);
         else if (deck instanceof CustomDecksDatabase.StarredDeck && deck.owner != null)
             ViewCustomDeckActivity.startActivity(requireContext(), deck.owner, deck.name, ((CustomDecksDatabase.StarredDeck) deck).shareCode);
+    }
+
+    @Override
+    public boolean canShow(@NonNull BaseTutorial tutorial) {
+        return tutorial instanceof CustomDecksTutorial && getActivity() != null && CommonUtils.isVisible(this);
+    }
+
+    @Override
+    public boolean buildSequence(@NonNull BaseTutorial tutorial) {
+        if (!(tutorial instanceof CustomDecksTutorial))
+            return false;
+
+        tutorial.add(tutorial.forView(fab.getChildAt(0), R.string.tutorial_addCustomDeck)
+                .enableAutoTextPosition()
+                .fitSystemWindows(true)
+                .focusShape(FocusShape.CIRCLE));
+        return true;
     }
 }

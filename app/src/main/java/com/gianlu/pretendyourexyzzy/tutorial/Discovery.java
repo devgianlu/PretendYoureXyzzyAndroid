@@ -9,7 +9,8 @@ public enum Discovery implements TutorialManager.Discovery {
     LOGIN(LoginTutorial.class),
     GAMES(GamesTutorial.class),
     CREATE_GAME(CreateGameTutorial.class),
-    HOW_TO_PLAY(HowToPlayTutorial.class);
+    HOW_TO_PLAY(HowToPlayTutorial.class),
+    CUSTOM_DECKS(CustomDecksTutorial.class);
 
     private final Class<? extends BaseTutorial> tutorialClass;
 

@@ -210,6 +210,9 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
             try {
                 transaction.commit();
+
+                if (fragment instanceof CustomDecksFragment)
+                    ((CustomDecksFragment) fragment).tryShowingTutorial();
             } catch (IllegalStateException ex) {
                 AnalyticsApplication.crashlyticsLog(ex.getMessage() + " at #switchTo(Item)");
             }
