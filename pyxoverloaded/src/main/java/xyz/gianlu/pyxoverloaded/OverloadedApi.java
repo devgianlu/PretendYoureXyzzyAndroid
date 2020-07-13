@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
+import com.gianlu.commonutils.preferences.Prefs;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -172,27 +173,37 @@ public class OverloadedApi {
         Trace trace = FirebasePerformance.startTrace("overloaded_request");
         trace.putAttribute("dest", suffix);
 
+        boolean hasServerToken = lastToken != null && lastToken.serverToken != null;
+        trace.putAttribute("has_server_token", String.valueOf(hasServerToken));
+
         try {
             trace.putAttribute("body_length", String.valueOf(body.contentLength()));
         } catch (IOException ignored) {
         }
 
-        Request.Builder req = new Request.Builder()
-                .url(overloadedServerUrl(suffix))
-                .post(body);
-
         try {
             OverloadedException lastEx = null;
             for (int i = 0; i < 3; i++) {
-                try {
-                    return makeRequestInternal(req);
-                } catch (IOException | JSONException ex) {
-                    lastEx = new OverloadedException(req.toString(), ex);
+                Request.Builder req = new Request.Builder()
+                        .url(overloadedServerUrl(suffix))
+                        .post(body);
 
-                    if (ex instanceof SocketTimeoutException) {
+                try {
+                    return makeRequestInternal(req, trace);
+                } catch (IOException ex) {
+                    lastEx = new OverloadedException(req.build().toString(), ex);
+
+                    if (ex instanceof SocketTimeoutException)
                         trace.incrementMetric("tries", 1);
-                    } else {
-                        throw lastEx;
+                } catch (OverloadedServerException ex) {
+                    lastEx = ex;
+
+                    if (ex.reason.equals(OverloadedServerException.REASON_EXPIRED_TOKEN)) {
+                        trace.putAttribute("token_expired", "true");
+                        if (lastToken != null) lastToken.updateServerToken(null);
+                    } else if (ex.reason.equals(OverloadedServerException.REASON_INVALID_AUTH) && hasServerToken) {
+                        trace.putAttribute("token_invalid", "true");
+                        if (lastToken != null) lastToken.updateServerToken(null);
                     }
                 }
             }
@@ -205,7 +216,7 @@ public class OverloadedApi {
 
     @NonNull
     @WorkerThread
-    private JSONObject makeRequestInternal(@NonNull Request.Builder reqBuilder) throws OverloadedException, MaintenanceException, IOException, JSONException {
+    private JSONObject makeRequestInternal(@NonNull Request.Builder reqBuilder, @NonNull Trace trace) throws OverloadedException, MaintenanceException, IOException {
         if (isFirstRequest || isUnderMaintenance()) {
             for (int i = 0; i < 3; i++) {
                 try {
@@ -228,11 +239,23 @@ public class OverloadedApi {
                 throw new NotSignedInException();
         }
 
-        Request req = reqBuilder.addHeader("Authorization", "FirebaseToken " + lastToken.token)
+        Request req = reqBuilder
+                .addHeader("Authorization", lastToken.authHeader())
                 .addHeader("X-Client-Version", clientVersion)
                 .addHeader("X-Device-Id", String.valueOf(SignalProtocolHelper.getLocalDeviceId())).build();
         try (Response resp = client.newCall(req).execute()) {
             Log.v(TAG, String.format("%s -> %d", req.url().encodedPath(), resp.code()));
+
+            String serverToken;
+            if ((serverToken = resp.header("X-Server-Token", null)) != null && lastToken != null) {
+                trace.putAttribute("updated_server_token", "true");
+                lastToken.updateServerToken(serverToken);
+            } else {
+                trace.putAttribute("updated_server_token", "false");
+            }
+
+            String serverVersion = resp.header("X-Server-Version");
+            if (serverVersion != null) trace.putAttribute("server_version", serverVersion);
 
             JSONObject obj;
             ResponseBody body = resp.body();
@@ -240,8 +263,12 @@ public class OverloadedApi {
                 obj = new JSONObject();
             } else {
                 String str = body.string();
-                if (str.isEmpty()) obj = new JSONObject();
-                else obj = new JSONObject(str);
+                try {
+                    if (str.isEmpty()) obj = new JSONObject();
+                    else obj = new JSONObject(str);
+                } catch (JSONException ex) {
+                    throw new IOException(str, ex);
+                }
             }
 
             if (resp.code() < 200 || resp.code() > 299)
@@ -518,7 +545,7 @@ public class OverloadedApi {
 
             webSocket.client = client.newWebSocket(new Request.Builder().get()
                     .header("X-Device-Id", String.valueOf(SignalProtocolHelper.getLocalDeviceId()))
-                    .header("Authorization", "FirebaseToken " + lastToken.token)
+                    .header("Authorization", lastToken.authHeader())
                     .url(overloadedServerUrl("Events")).build(), webSocket);
             return null;
         }), "openWebSocket");
@@ -822,6 +849,8 @@ public class OverloadedApi {
         public static final String REASON_DO_NOT_OWN_DECK = "doNotOwnDeck";
         public static final String REASON_NO_SUCH_DECK = "noSuchDeck";
         public static final String REASON_NO_SUCH_USER = "noSuchUser";
+        public static final String REASON_EXPIRED_TOKEN = "expiredToken";
+        public static final String REASON_INVALID_AUTH = "invalidAuth";
         public final int httpCode;
         public final String reason;
         public final JSONObject details;
@@ -863,22 +892,39 @@ public class OverloadedApi {
     }
 
     private static class OverloadedToken {
-        private final String token;
-        private final long expiration;
+        private final String firebaseToken;
+        private final long firebaseExpiration;
+        private String serverToken;
 
-        private OverloadedToken(@NonNull String token, long expiration) {
-            this.token = token;
-            this.expiration = expiration;
+        private OverloadedToken(@NonNull String firebaseToken, long firebaseExpiration) {
+            this.firebaseToken = firebaseToken;
+            this.firebaseExpiration = firebaseExpiration;
+            this.serverToken = Prefs.getString(OverloadedPK.LAST_SERVER_TOKEN, null);
         }
 
         @NonNull
         static OverloadedToken from(@NonNull GetTokenResult result) {
             if (result.getToken() == null) throw new IllegalArgumentException();
-            return new OverloadedToken(result.getToken(), result.getExpirationTimestamp());
+            return new OverloadedToken(result.getToken(), result.getExpirationTimestamp() * 1000);
         }
 
         boolean expired() {
-            return expiration <= now();
+            return firebaseExpiration <= now();
+        }
+
+        void updateServerToken(@Nullable String token) {
+            serverToken = token;
+            Prefs.putString(OverloadedPK.LAST_SERVER_TOKEN, token);
+        }
+
+        @NonNull
+        String authHeader() {
+            if (serverToken != null) {
+                return "ServerToken " + serverToken;
+            } else {
+                if (expired()) throw new IllegalStateException();
+                return "FirebaseToken " + firebaseToken;
+            }
         }
     }
 

@@ -128,6 +128,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                         }
                     }
 
+                    Log.e(TAG, "Failed getting user data on start.", ex);
                     updateStatus(null, ex);
                 }
             });

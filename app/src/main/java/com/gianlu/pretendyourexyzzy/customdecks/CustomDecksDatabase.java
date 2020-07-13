@@ -457,7 +457,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
                     values.put("revision", deck.getLong("rev"));
                     values.put("remoteId", remoteId);
                     values.put("lastUsed", System.currentTimeMillis());
-                    deckId = (int) db.insert("decks", null, values);
+                    deckId = (int) db.insertWithOnConflict("decks", null, values, SQLiteDatabase.CONFLICT_REPLACE);
                     if (deckId == -1) {
                         Log.e(TAG, "Failed inserting custom deck.");
                         return;
