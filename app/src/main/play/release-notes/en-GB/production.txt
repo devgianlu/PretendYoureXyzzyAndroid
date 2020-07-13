@@ -1,11 +1,12 @@
 ** OVERLOADED (BETA) UPDATE **
 
 ### Added
-- Added end-to-end encrypted chat (Overloaded only)
-- Synchronize starred cards and custom decks (Overloaded only)
-- See other users profiles and stats (Overloaded only)
-- Make friends on servers (Overloaded only)
+- Sort custom decks by most recently used
+- Better performance monitoring
+- Show custom decks in game list
 
 ### Changed
-- Improved chats layout
-- More improvements and bug fixes
+- Improved requests performance
+
+### Fixed
+- Fixed game locking up when spectator is alone inside a game
