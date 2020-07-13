@@ -173,9 +173,6 @@ public class OverloadedApi {
         Trace trace = FirebasePerformance.startTrace("overloaded_request");
         trace.putAttribute("dest", suffix);
 
-        boolean hasServerToken = lastToken != null && lastToken.serverToken != null;
-        trace.putAttribute("has_server_token", String.valueOf(hasServerToken));
-
         try {
             trace.putAttribute("body_length", String.valueOf(body.contentLength()));
         } catch (IOException ignored) {
@@ -201,7 +198,7 @@ public class OverloadedApi {
                     if (ex.reason.equals(OverloadedServerException.REASON_EXPIRED_TOKEN)) {
                         trace.putAttribute("token_expired", "true");
                         if (lastToken != null) lastToken.updateServerToken(null);
-                    } else if (ex.reason.equals(OverloadedServerException.REASON_INVALID_AUTH) && hasServerToken) {
+                    } else if (ex.reason.equals(OverloadedServerException.REASON_INVALID_AUTH) && lastToken != null && lastToken.serverToken != null) {
                         trace.putAttribute("token_invalid", "true");
                         if (lastToken != null) lastToken.updateServerToken(null);
                     }
@@ -238,6 +235,8 @@ public class OverloadedApi {
             if (lastToken == null)
                 throw new NotSignedInException();
         }
+
+        trace.putAttribute("has_server_token", String.valueOf(lastToken != null && lastToken.serverToken != null));
 
         Request req = reqBuilder
                 .addHeader("Authorization", lastToken.authHeader())
