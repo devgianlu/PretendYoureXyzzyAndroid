@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import xyz.gianlu.pyxoverloaded.OverloadedApi.Event;
 import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
 import xyz.gianlu.pyxoverloaded.callback.ChatCallback;
 import xyz.gianlu.pyxoverloaded.callback.ChatMessageCallback;
@@ -372,12 +373,12 @@ public class OverloadedChatApi implements Closeable {
     }
 
     private void dispatchDecryptedMessage(@NonNull PlainChatMessage msg) {
-        api.dispatchLocalEvent(OverloadedApi.Event.Type.CHAT_MESSAGE, msg);
+        api.dispatchLocalEvent(Event.Type.CHAT_MESSAGE, msg);
     }
 
     @WorkerThread
-    void handleEvent(@NonNull OverloadedApi.Event event) throws JSONException {
-        if (event.type == OverloadedApi.Event.Type.ENCRYPTED_CHAT_MESSAGE && event.data != null) {
+    void handleEvent(@NonNull Event event) throws JSONException {
+        if (event.type == Event.Type.ENCRYPTED_CHAT_MESSAGE && event.data != null) {
             PlainChatMessage msg;
             try {
                 msg = new EncryptedChatMessage(event.data).decrypt(this);
@@ -388,6 +389,8 @@ public class OverloadedChatApi implements Closeable {
 
             dispatchUnreadCountUpdate();
             dispatchDecryptedMessage(msg);
+        } else if (event.type == Event.Type.SHARE_KEYS_LOW) {
+            shareKeys(true);
         }
     }
 
