@@ -51,6 +51,7 @@
     <string name="tutorial_playCard">Per giocare una carta basta toccarla: apparirà una finestra di conferma.</string>
     <string name="tutorial_player">Una volta che un giocatore raggiunge l\'obiettivo, vince. Puoi toccare sul nome per rivelare ulteriori informazioni.</string>
     <string name="tutorial_overloaded">Overloaded enables many cool features not present in the standard game experience. It\'s a monthly subscription.</string>
+    <string name="tutorial_addCustomDeck">Here you can create your own custom decks or import and recover old Cardcast decks.</string>
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
     <string name="nickname">Nome</string>
@@ -315,8 +316,8 @@
     <string name="overloadedSync_maintenance">Not syncing, Overloaded under maintenance</string>
     <string name="overloadedSync_errorNeverSynced">Sync error, never synced before</string>
     <string name="overloadedSync_neverSynced">Never synced</string>
-    <string name="overloadedSync_synced">Last synced at %s</string>
-    <string name="overloadedSync_errorSynced">Sync error, last synced at %s</string>
+    <string name="overloadedSync_synced">Last synced %s</string>
+    <string name="overloadedSync_errorSynced">Sync error, last synced %s</string>
     <string name="invalidDeckName">The deck name must be between 5 and 32 characters long.</string>
     <string name="invalidDeckDesc">The deck description must be less than 256 characters longs</string>
     <string name="failedLoadingUserProfile">Failed loading user profile!</string>
@@ -342,4 +343,9 @@
     <string name="recoverDeckNotFound">Deck cannot be recovered: not found.</string>
     <string name="failedRecoveringCardcastDeck">Failed recovering Cardcast deck.</string>
     <string name="changelog">Changelog</string>
+    <string name="deleteAccount_confirmation">Are you sure you want to delete your account? <![CDATA[<b>This action cannot be undone!</b>]]></string>
+    <string name="logout_confirmation">Are you sure you want to logout?</string>
+    <string name="lessThanMinuteAgo">Less than a minute ago</string>
+    <string name="minutesAgo">%dm ago</string>
+    <string name="hoursAgo">%dh ago</string>
 </resources>
