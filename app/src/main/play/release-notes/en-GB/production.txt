@@ -1,12 +1,11 @@
 ** OVERLOADED (BETA) UPDATE **
 
 ### Added
-- Sort custom decks by most recently used
-- Better performance monitoring
-- Show custom decks in game list
+- Added confirmation for game logout
+- Added confirmation for account deletion
 
 ### Changed
-- Improved requests performance
+- Change last sync time format
 
 ### Fixed
-- Fixed game locking up when spectator is alone inside a game
+- Fixed chat not working (Overloaded)
