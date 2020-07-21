@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.Gravity;
 
@@ -276,22 +277,29 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                 delete.setTitle(R.string.deleteAccount);
                 delete.setIcon(R.drawable.baseline_delete_forever_24);
                 delete.setOnClickListener(v -> {
-                    showProgress(R.string.loading);
-                    OverloadedApi.get().deleteAccount(getActivity(), new SuccessCallback() {
-                        @Override
-                        public void onSuccessful() {
-                            dismissDialog();
-                            showToast(Toaster.build().message(R.string.accountDeleted));
-                            onBackPressed();
-                        }
+                    MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(requireContext());
+                    dialog.setTitle(R.string.deleteAccount).setMessage(Html.fromHtml(getString(R.string.deleteAccount_confirmation)))
+                            .setNegativeButton(android.R.string.no, null)
+                            .setPositiveButton(android.R.string.yes, (d, which) -> {
+                                showProgress(R.string.loading);
+                                OverloadedApi.get().deleteAccount(getActivity(), new SuccessCallback() {
+                                    @Override
+                                    public void onSuccessful() {
+                                        dismissDialog();
+                                        showToast(Toaster.build().message(R.string.accountDeleted));
+                                        onBackPressed();
+                                    }
 
-                        @Override
-                        public void onFailed(@NonNull Exception ex) {
-                            Log.e(TAG, "Failed deleting account.", ex);
-                            dismissDialog();
-                            showToast(Toaster.build().message(R.string.failedDeletingAccount));
-                        }
-                    });
+                                    @Override
+                                    public void onFailed(@NonNull Exception ex) {
+                                        Log.e(TAG, "Failed deleting account.", ex);
+                                        dismissDialog();
+                                        showToast(Toaster.build().message(R.string.failedDeletingAccount));
+                                    }
+                                });
+                            });
+
+                    showDialog(dialog);
                 });
                 addPreference(delete);
             } else {

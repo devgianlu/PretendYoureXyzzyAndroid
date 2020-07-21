@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -50,6 +51,7 @@ import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.PlayGamesAuthProvider;
 
 import org.json.JSONException;
@@ -117,8 +119,17 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
     @Override
     public void onBackPressed() {
-        if (ongoingGameFragment != null) ongoingGameFragment.goBack();
-        else super.onBackPressed();
+        if (ongoingGameFragment != null) {
+            ongoingGameFragment.goBack();
+            return;
+        }
+
+        MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(this);
+        dialog.setTitle(R.string.logout).setMessage(Html.fromHtml(getString(R.string.logout_confirmation)))
+                .setNegativeButton(android.R.string.no, null)
+                .setPositiveButton(android.R.string.yes, (d, which) -> logout());
+
+        showDialog(dialog);
     }
 
     @Override
@@ -137,7 +148,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.main_logout:
-                drawerAction();
+                logout();
                 return true;
             case R.id.main_keepScreenOn:
                 item.setChecked(!item.isChecked());
@@ -466,6 +477,10 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
     @Override
     public void drawerAction() {
+        logout();
+    }
+
+    private void logout() {
         pyx.logout();
         startActivity(new Intent(this, LoadingActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));

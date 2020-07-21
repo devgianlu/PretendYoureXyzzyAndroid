@@ -345,4 +345,6 @@
     <string name="recoverDeckNotFound">Deck cannot be recovered: not found.</string>
     <string name="failedRecoveringCardcastDeck">Failed recovering Cardcast deck.</string>
     <string name="changelog">Changelog</string>
+    <string name="deleteAccount_confirmation">Are you sure you want to delete your account? <![CDATA[<b>This action cannot be undone!</b>]]></string>
+    <string name="logout_confirmation">Are you sure you want to logout?</string>
 </resources>
