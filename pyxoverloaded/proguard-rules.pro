@@ -1,1 +1,2 @@
--keep class org.whispersystems.curve25519.**
+-keep class org.whispersystems.**
+-keepclassmembers class org.whispersystems.** { *; }
