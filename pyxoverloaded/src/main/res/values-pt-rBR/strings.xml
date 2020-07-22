@@ -3,7 +3,7 @@
     <!-- Subscription messages -->
     <string name="subscriptionPaused_message">Sua assinatura está em pausa e você não tem acesso ao Sobrecarga. Você pode retomar sua assinatura a qualquer momento.</string>
     <string name="subscriptionGracePeriod_message">Você entrou no período de carga. Você ainda tem acesso ao Sobrecarga, mas perderá em %s se não atualizar o seu método de pagamento.</string>
-    <string name="subscriptionAccountHold_message">O período de invencibilidade terminou, você está em conta pendente. Você não terá acesso ao Sobrecarregado até corrigir seu método de pagamento.</string>
+    <string name="subscriptionAccountHold_message">O período de carência terminou, você está em conta pendente. Você não terá acesso ao Sobrecarregado até corrigir seu método de pagamento.</string>
     <string name="subscriptionCancelled_message">Sua assinatura foi cancelada. Você perderá o acesso à Sobrecarregado depois que este período de faturamento terminar em %s.</string>
     <!-- Subscription statuses -->
     <string name="active">Ativo</string>
