@@ -184,7 +184,7 @@ public class OverloadedSyncApi {
         });
     }
 
-    public void patchCustomDeck(long revision, @Nullable Long remoteId, @NonNull CustomDecksPatchOp op, @Nullable JSONObject deck, @Nullable JSONObject card, @Nullable Long cardId, @Nullable Activity activity, @NonNull GeneralCallback<CustomDecksUpdateResponse> callback) {
+    public void patchCustomDeck(long revision, @Nullable Long remoteId, @NonNull CustomDecksPatchOp op, @Nullable JSONObject deck, @Nullable JSONObject card, @Nullable Long cardId, @Nullable JSONArray cards, @Nullable Activity activity, @NonNull GeneralCallback<CustomDecksUpdateResponse> callback) {
         callbacks(Tasks.call(executorService, () -> {
             dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, true, false);
 
@@ -195,6 +195,7 @@ public class OverloadedSyncApi {
                     .put("relId", cardId)
                     .put("type", op.name())
                     .put("deck", deck)
+                    .put("cards", cards)
                     .put("card", card));
 
             JSONObject obj = api.makePostRequest("Sync/UpdateCustomDecks", body);
@@ -312,7 +313,7 @@ public class OverloadedSyncApi {
     }
 
     public enum CustomDecksPatchOp {
-        ADD_CARD, REM_DECK, REM_CARD, ADD_DECK, EDIT_DECK, EDIT_CARD
+        ADD_CARD, ADD_CARDS, REM_DECK, REM_CARD, ADD_DECK, EDIT_DECK, EDIT_CARD
     }
 
     public interface SyncStatusListener {

@@ -213,6 +213,8 @@ public final class SyncUtils {
                     } else if (resp.update != null) {
                         db.loadDeckUpdate(resp.update, resp.isNew);
                         Log.d(TAG, "Loaded update for custom deck: " + resp.remoteId);
+                    } else {
+                        Log.d(TAG, "Custom deck is up-to-date: " + resp.remoteId);
                     }
                 }
 
