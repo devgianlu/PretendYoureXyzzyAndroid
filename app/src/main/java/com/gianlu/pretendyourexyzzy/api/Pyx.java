@@ -118,16 +118,19 @@ public class Pyx implements Closeable {
         trace.putAttribute("params_num", String.valueOf(params.length));
 
         try {
-            Exception lastEx = null;
+            List<Exception> exceptions = new ArrayList<>(3);
             for (int i = 0; i < 3; i++) {
                 try {
-                    return requestInternal(operation, params);
+                    PyxResponse resp = requestInternal(operation, params);
+                    resp.exceptions = exceptions;
+                    return resp;
                 } catch (SocketTimeoutException ex) {
-                    lastEx = ex;
+                    exceptions.add(ex);
                     trace.incrementMetric("tries", 1);
                     Log.d(TAG, "Socket timeout, retrying.", ex);
                 } catch (PyxException ex) {
-                    lastEx = ex;
+                    exceptions.add(ex);
+                    ex.exceptions = exceptions;
 
                     trace.incrementMetric("pyx_tries", 1);
                     trace.putAttribute("pyx_retry_error", ex.errorCode);
@@ -136,6 +139,7 @@ public class Pyx implements Closeable {
                 }
             }
 
+            Exception lastEx = exceptions.get(exceptions.size() - 1);
             if (lastEx instanceof IOException) throw (IOException) lastEx;
             else throw (PyxException) lastEx;
         } finally {
@@ -520,6 +524,7 @@ public class Pyx implements Closeable {
     protected static class PyxResponse {
         private final Response resp;
         private final JSONObject obj;
+        protected List<Exception> exceptions = null;
 
         PyxResponse(@NonNull Response resp, @NonNull JSONObject obj) {
             this.resp = resp;

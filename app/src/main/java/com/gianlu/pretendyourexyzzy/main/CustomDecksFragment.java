@@ -33,6 +33,7 @@ import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.FloatingCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
 import com.gianlu.pretendyourexyzzy.tutorial.CustomDecksTutorial;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
@@ -45,7 +46,6 @@ import java.io.InputStream;
 import java.util.List;
 
 import me.toptas.fancyshowcase.FocusShape;
-import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 
 public class CustomDecksFragment extends FragmentWithDialog implements OverloadedSyncApi.SyncStatusListener, CustomDecksAdapter.Listener, TutorialManager.Listener {
@@ -72,7 +72,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         rmv = layout.findViewById(R.id.customDecks_list);
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
 
-        if (OverloadedApi.get().isFullyRegistered())
+        if (OverloadedUtils.isSignedIn())
             rmv.enableSwipeRefresh(this::refreshSync, R.color.appColorBright);
         else
             rmv.disableSwipeRefresh();

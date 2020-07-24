@@ -17,6 +17,7 @@ import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.ContentCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -133,7 +134,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     }
 
     private void sendPatch(@NonNull StarredCardsPatchOp op, int localId, @Nullable Long remoteId, @Nullable ContentCard blackCard, @Nullable CardsGroup whiteCards) {
-        if (!OverloadedApi.get().isFullyRegistered())
+        if (!OverloadedUtils.isSignedIn())
             return;
 
         // The remote ID can be that simple because it is used only when removing cards

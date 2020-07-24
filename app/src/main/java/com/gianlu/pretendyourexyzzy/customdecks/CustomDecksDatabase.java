@@ -14,6 +14,7 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -95,7 +96,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     }
 
     private void sendCustomDeckPatch(long revision, @Nullable RemoteId remoteId, @NonNull CustomDecksPatchOp op, @Nullable CustomDeck deck, @Nullable CustomCard card, @Nullable RemoteId cardRemoteId, @Nullable List<CustomCard> cards) {
-        if (!OverloadedApi.get().isFullyRegistered())
+        if (!OverloadedUtils.isSignedIn())
             return;
 
         JSONArray cardsJson = null;
@@ -143,7 +144,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     }
 
     private void sendStarredDeckPatch(long revision, @Nullable RemoteId remoteId, @NonNull StarredCustomDecksPatchOp op, @Nullable String shareCode, @Nullable Integer deckId) {
-        if (!OverloadedApi.get().isFullyRegistered())
+        if (!OverloadedUtils.isSignedIn())
             return;
 
         OverloadedSyncApi.get().patchStarredCustomDecks(revision, op, remoteId, shareCode, new GeneralCallback<OverloadedSyncApi.StarredCustomDecksUpdateResponse>() {

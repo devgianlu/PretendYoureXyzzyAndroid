@@ -3,19 +3,22 @@ package com.gianlu.pretendyourexyzzy.api;
 import android.content.Context;
 import android.content.Intent;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.gianlu.pretendyourexyzzy.LoadingActivity;
 
 import org.json.JSONObject;
 
+import java.util.List;
 import java.util.Objects;
 
 public class PyxException extends Exception {
     public final JSONObject obj;
     public final String errorCode;
+    List<Exception> exceptions = null;
 
-    PyxException(JSONObject obj) {
+    PyxException(@NonNull JSONObject obj) {
         super(obj.optString("ec") + " -> " + obj.toString());
         this.errorCode = obj.optString("ec");
         this.obj = obj;
@@ -36,6 +39,16 @@ public class PyxException extends Exception {
 
     public static boolean isNotRegistered(@Nullable Exception ex) {
         return ex instanceof PyxException && Objects.equals(((PyxException) ex).errorCode, "nr");
+    }
+
+    public boolean hadException(@NonNull Class<? extends Exception> clazz) {
+        if (exceptions == null) return false;
+
+        for (Exception ex : exceptions)
+            if (ex.getClass() == clazz)
+                return true;
+
+        return false;
     }
 
     public boolean shouldRetry() {

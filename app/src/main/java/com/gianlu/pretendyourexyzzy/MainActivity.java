@@ -400,7 +400,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             getIntent().removeExtra("gid");
         }
 
-        if (OverloadedApi.get().isFullyRegistered()) {
+        if (OverloadedUtils.isSignedIn()) {
             SyncUtils.syncStarredCards(this, null);
             SyncUtils.syncCustomDecks(this, null);
             SyncUtils.syncStarredCustomDecks(this, null);

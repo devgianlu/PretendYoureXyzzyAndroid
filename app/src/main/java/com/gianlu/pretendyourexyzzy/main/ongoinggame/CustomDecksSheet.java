@@ -47,8 +47,6 @@ import org.json.JSONException;
 import java.util.Iterator;
 import java.util.List;
 
-import xyz.gianlu.pyxoverloaded.OverloadedApi;
-
 public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>> implements DecksAdapter.Listener, Pyx.OnEventListener {
     private static final String TAG = CustomDecksSheet.class.getSimpleName();
     private RegisteredPyx pyx;
@@ -280,7 +278,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
             }
         }
 
-        if (OverloadedApi.get().isFullyRegistered())
+        if (OverloadedUtils.isSignedIn())
             ViewCustomDeckActivity.startActivitySearch(requireContext(), deck);
         else
             DialogUtils.showToast(requireContext(), Toaster.build().message(R.string.cannotSearchDeckWithoutOverloaded));

@@ -95,7 +95,7 @@ public final class SyncUtils {
     }
 
     public static void syncStarredCards(@NonNull Context context, @Nullable OnCompleteCallback callback) {
-        if (!OverloadedApi.get().isFullyRegistered()) {
+        if (!OverloadedUtils.isSignedIn()) {
             callComplete(callback);
             return;
         }
@@ -187,7 +187,7 @@ public final class SyncUtils {
     }
 
     public static void syncCustomDecks(@NonNull Context context, @Nullable OnCompleteCallback callback) {
-        if (!OverloadedApi.get().isFullyRegistered()) {
+        if (!OverloadedUtils.isSignedIn()) {
             callComplete(callback);
             return;
         }
@@ -294,7 +294,7 @@ public final class SyncUtils {
     }
 
     public static void syncStarredCustomDecks(@NonNull Context context, @Nullable OnCompleteCallback callback) {
-        if (!OverloadedApi.get().isFullyRegistered()) {
+        if (!OverloadedUtils.isSignedIn()) {
             callComplete(callback);
             return;
         }
@@ -378,7 +378,7 @@ public final class SyncUtils {
     public static void updateSyncText(@NonNull TextView view, @NonNull OverloadedSyncApi.SyncProduct product, boolean isSyncing, boolean error) {
         if (OverloadedApi.get().isUnderMaintenance()) {
             view.setText(R.string.overloadedSync_maintenance);
-        } else if (!OverloadedApi.get().isFullyRegistered()) {
+        } else if (!OverloadedUtils.isSignedIn()) {
             view.setText(R.string.overloadedSync_notLoggedIn);
         } else if (isSyncing) {
             view.setText(R.string.overloadedSyncing);
