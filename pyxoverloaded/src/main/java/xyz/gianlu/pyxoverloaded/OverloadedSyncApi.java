@@ -74,64 +74,75 @@ public class OverloadedSyncApi {
     ///////////// Starred cards /////////////
     /////////////////////////////////////////
 
-    public void syncStarredCards(long revision, @Nullable Activity activity, @NonNull GeneralCallback<StarredCardsSyncResponse> callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = api.makePostRequest("Sync/StarredCards", singletonJsonObject("rev", revision));
-            return new StarredCardsSyncResponse(obj);
-        }), activity, result -> {
-            Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, OverloadedApi.now());
-            callback.onResult(result);
-            dispatchSyncUpdate(SyncProduct.STARRED_CARDS, result.needsUpdate, false);
-        }, ex -> {
-            callback.onFailed(ex);
-            dispatchSyncUpdate(SyncProduct.STARRED_CARDS, false, true);
+    public void syncStarredCards(long revision, @NonNull GeneralCallback<StarredCardsSyncResponse> callback) {
+        executorService.execute(() -> {
+            try {
+                dispatchSyncUpdate(SyncProduct.STARRED_CARDS, true, false);
+
+                JSONObject obj = api.makePostRequest("Sync/StarredCards", singletonJsonObject("rev", revision));
+                StarredCardsSyncResponse resp = new StarredCardsSyncResponse(obj);
+                Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, OverloadedApi.now());
+                callback.onResult(resp);
+
+                dispatchSyncUpdate(SyncProduct.STARRED_CARDS, resp.needsUpdate, false);
+            } catch (JSONException | OverloadedApi.OverloadedException | OverloadedApi.MaintenanceException ex) {
+                callback.onFailed(ex);
+
+                dispatchSyncUpdate(SyncProduct.STARRED_CARDS, false, true);
+            }
         });
     }
 
-    public void updateStarredCards(long revision, @NonNull JSONArray update, @Nullable Activity activity, @NonNull GeneralCallback<StarredCardsUpdateResponse> callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            dispatchSyncUpdate(SyncProduct.STARRED_CARDS, true, false);
+    public void updateStarredCards(long revision, @NonNull JSONArray update, @NonNull GeneralCallback<StarredCardsUpdateResponse> callback) {
+        executorService.execute(() -> {
+            try {
+                dispatchSyncUpdate(SyncProduct.STARRED_CARDS, true, false);
 
-            JSONObject body = new JSONObject();
-            body.put("rev", revision);
-            body.put("update", update);
+                JSONObject body = new JSONObject();
+                body.put("rev", revision);
+                body.put("update", update);
 
-            JSONObject obj = api.makePostRequest("Sync/UpdateStarredCards", body);
-            return new StarredCardsUpdateResponse(obj);
-        }), activity, result -> {
-            Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, OverloadedApi.now());
-            callback.onResult(result);
-            dispatchSyncUpdate(SyncProduct.STARRED_CARDS, false, false);
-        }, ex -> {
-            callback.onFailed(ex);
-            dispatchSyncUpdate(SyncProduct.STARRED_CARDS, false, true);
+                JSONObject obj = api.makePostRequest("Sync/UpdateStarredCards", body);
+                StarredCardsUpdateResponse resp = new StarredCardsUpdateResponse(obj);
+                Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, OverloadedApi.now());
+                callback.onResult(resp);
+
+                dispatchSyncUpdate(SyncProduct.STARRED_CARDS, false, false);
+            } catch (JSONException | OverloadedApi.OverloadedException | OverloadedApi.MaintenanceException ex) {
+                callback.onFailed(ex);
+
+                dispatchSyncUpdate(SyncProduct.STARRED_CARDS, false, true);
+            }
         });
     }
 
-    @Contract("_, _, null, null, _, _ -> fail")
-    public void patchStarredCards(long revision, @NonNull StarredCardsPatchOp op, @Nullable Long remoteId, @Nullable JSONObject item, @Nullable Activity activity, @NonNull GeneralCallback<StarredCardsUpdateResponse> callback) {
+    @Contract("_, _, null, null, _ -> fail")
+    public void patchStarredCards(long revision, @NonNull StarredCardsPatchOp op, @Nullable Long remoteId, @Nullable JSONObject item, @NonNull GeneralCallback<StarredCardsUpdateResponse> callback) {
         if (remoteId == null && item == null)
             throw new IllegalArgumentException();
 
-        callbacks(Tasks.call(executorService, () -> {
-            dispatchSyncUpdate(SyncProduct.STARRED_CARDS, true, false);
+        executorService.execute(() -> {
+            try {
+                dispatchSyncUpdate(SyncProduct.STARRED_CARDS, true, false);
 
-            JSONObject body = new JSONObject();
-            body.put("rev", revision);
-            body.put("patch", new JSONObject()
-                    .put("type", op.name())
-                    .put("remoteId", remoteId)
-                    .put("item", item));
+                JSONObject body = new JSONObject();
+                body.put("rev", revision);
+                body.put("patch", new JSONObject()
+                        .put("type", op.name())
+                        .put("remoteId", remoteId)
+                        .put("item", item));
 
-            JSONObject obj = api.makePostRequest("Sync/UpdateStarredCards", body);
-            return new StarredCardsUpdateResponse(obj);
-        }), activity, result -> {
-            Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, OverloadedApi.now());
-            callback.onResult(result);
-            dispatchSyncUpdate(SyncProduct.STARRED_CARDS, false, false);
-        }, ex -> {
-            callback.onFailed(ex);
-            dispatchSyncUpdate(SyncProduct.STARRED_CARDS, false, true);
+                JSONObject obj = api.makePostRequest("Sync/UpdateStarredCards", body);
+                StarredCardsUpdateResponse resp = new StarredCardsUpdateResponse(obj);
+                Prefs.putLong(OverloadedPK.STARRED_CARDS_LAST_SYNC, OverloadedApi.now());
+                callback.onResult(resp);
+
+                dispatchSyncUpdate(SyncProduct.STARRED_CARDS, false, false);
+            } catch (JSONException | OverloadedApi.OverloadedException | OverloadedApi.MaintenanceException ex) {
+                callback.onFailed(ex);
+
+                dispatchSyncUpdate(SyncProduct.STARRED_CARDS, false, true);
+            }
         });
     }
 
@@ -140,73 +151,98 @@ public class OverloadedSyncApi {
     ///////////// Custom decks //////////////
     /////////////////////////////////////////
 
-    public void syncCustomDecks(@NonNull JSONArray syncItems, @Nullable Activity activity, @NonNull GeneralCallback<List<CustomDecksSyncResponse>> callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, true, false);
+    public void syncCustomDecks(@NonNull JSONArray syncItems, @NonNull GeneralCallback<List<CustomDecksSyncResponse>> callback) {
+        executorService.execute(() -> {
+            try {
+                dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, true, false);
 
-            JSONObject body = new JSONObject();
-            body.put("items", syncItems);
+                JSONObject body = new JSONObject();
+                body.put("items", syncItems);
 
-            JSONObject obj = api.makePostRequest("Sync/CustomDecks", body);
+                JSONObject obj = api.makePostRequest("Sync/CustomDecks", body);
+                JSONArray items = obj.getJSONArray("items");
+                List<CustomDecksSyncResponse> list = new ArrayList<>(items.length());
+                for (int i = 0; i < items.length(); i++)
+                    list.add(new CustomDecksSyncResponse(items.getJSONObject(i)));
 
-            JSONArray items = obj.getJSONArray("items");
-            List<CustomDecksSyncResponse> list = new ArrayList<>(items.length());
-            for (int i = 0; i < items.length(); i++)
-                list.add(new CustomDecksSyncResponse(items.getJSONObject(i)));
-            return list;
-        }), activity, result -> {
-            Prefs.putLong(OverloadedPK.CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
-            callback.onResult(result);
-            dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, CustomDecksSyncResponse.needsSomeUpdates(result), false);
-        }, ex -> {
-            callback.onFailed(ex);
-            dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, false, true);
+                Prefs.putLong(OverloadedPK.CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
+                callback.onResult(list);
+                dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, CustomDecksSyncResponse.needsSomeUpdates(list), false);
+            } catch (JSONException | OverloadedApi.OverloadedException | OverloadedApi.MaintenanceException ex) {
+                callback.onFailed(ex);
+                dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, false, true);
+            }
         });
     }
 
-    public void updateCustomDeck(long revision, @NonNull JSONObject update, @Nullable Activity activity, @NonNull GeneralCallback<CustomDecksUpdateResponse> callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, true, false);
+    public void updateCustomDeck(long revision, @NonNull JSONObject update, @NonNull GeneralCallback<CustomDecksUpdateResponse> callback) {
+        executorService.execute(() -> {
+            try {
+                dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, true, false);
 
-            JSONObject body = new JSONObject();
-            body.put("rev", revision);
-            body.put("update", update);
+                JSONObject body = new JSONObject();
+                body.put("rev", revision);
+                body.put("update", update);
 
-            JSONObject obj = api.makePostRequest("Sync/UpdateCustomDecks", body);
-            return new CustomDecksUpdateResponse(obj);
-        }), activity, result -> {
-            Prefs.putLong(OverloadedPK.CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
-            callback.onResult(result);
-            dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, false, false);
-        }, ex -> {
-            callback.onFailed(ex);
-            dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, false, true);
+                JSONObject obj = api.makePostRequest("Sync/UpdateCustomDecks", body);
+                CustomDecksUpdateResponse resp = new CustomDecksUpdateResponse(obj);
+                Prefs.putLong(OverloadedPK.CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
+                callback.onResult(resp);
+
+                dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, false, false);
+            } catch (JSONException | OverloadedApi.OverloadedException | OverloadedApi.MaintenanceException ex) {
+                callback.onFailed(ex);
+                dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, false, true);
+            }
         });
     }
 
-    public void patchCustomDeck(long revision, @Nullable Long remoteId, @NonNull CustomDecksPatchOp op, @Nullable JSONObject deck, @Nullable JSONObject card, @Nullable Long cardId, @Nullable JSONArray cards, @Nullable Activity activity, @NonNull GeneralCallback<CustomDecksUpdateResponse> callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, true, false);
+    public void patchCustomDeck(long revision, @Nullable RemoteId remoteId, @NonNull CustomDecksPatchOp op, @Nullable JSONObject deck, @Nullable JSONObject card,
+                                @Nullable RemoteId cardRemoteId, @Nullable JSONArray cards, @NonNull GeneralCallback<CustomDecksUpdateResponse> callback) {
+        executorService.execute(() -> {
+            try {
+                String type;
+                Long cardRemoteIdUnwrapped;
+                if (op == CustomDecksPatchOp.ADD_EDIT_CARD) {
+                    if (cardRemoteId == null) {
+                        cardRemoteIdUnwrapped = null;
+                        type = "ADD_CARD";
+                    } else {
+                        try {
+                            cardRemoteIdUnwrapped = cardRemoteId.get();
+                            type = "EDIT_CARD";
+                        } catch (RemoteId.RemoteIdException ignored) {
+                            cardRemoteIdUnwrapped = null;
+                            type = "ADD_CARD";
+                        }
+                    }
+                } else {
+                    cardRemoteIdUnwrapped = cardRemoteId == null ? null : cardRemoteId.get();
+                    type = op.name();
+                }
 
-            JSONObject body = new JSONObject();
-            body.put("rev", revision);
-            body.put("patch", new JSONObject()
-                    .put("id", remoteId)
-                    .put("relId", cardId)
-                    .put("type", op.name())
-                    .put("deck", deck)
-                    .put("cards", cards)
-                    .put("card", card));
+                dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, true, false);
 
-            JSONObject obj = api.makePostRequest("Sync/UpdateCustomDecks", body);
-            return new CustomDecksUpdateResponse(obj);
-        }), activity, result -> {
-            Prefs.putLong(OverloadedPK.CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
-            callback.onResult(result);
-            dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, false, false);
-        }, ex -> {
-            callback.onFailed(ex);
-            dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, false, true);
+                JSONObject body = new JSONObject();
+                body.put("rev", revision);
+                body.put("patch", new JSONObject()
+                        .put("id", remoteId != null ? remoteId.get() : null)
+                        .put("relId", cardRemoteIdUnwrapped)
+                        .put("type", type)
+                        .put("deck", deck)
+                        .put("cards", cards)
+                        .put("card", card));
+
+                JSONObject obj = api.makePostRequest("Sync/UpdateCustomDecks", body);
+                CustomDecksUpdateResponse resp = new CustomDecksUpdateResponse(obj);
+                Prefs.putLong(OverloadedPK.CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
+                callback.onResult(resp);
+
+                dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, false, false);
+            } catch (JSONException | OverloadedApi.OverloadedException | OverloadedApi.MaintenanceException | RemoteId.RemoteIdException ex) {
+                callback.onFailed(ex);
+                dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, false, true);
+            }
         });
     }
 
@@ -238,65 +274,72 @@ public class OverloadedSyncApi {
     ///////// Stared custom decks ///////////
     /////////////////////////////////////////
 
-    public void syncStarredCustomDecks(long revision, @Nullable Activity activity, @NonNull GeneralCallback<StarredCustomDecksSyncResponse> callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, true, false);
-            JSONObject obj = api.makePostRequest("Sync/StarredCustomDecks", singletonJsonObject("rev", revision));
-            return new StarredCustomDecksSyncResponse(obj);
-        }), activity, result -> {
-            Prefs.putLong(OverloadedPK.STARRED_CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
-            callback.onResult(result);
-            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, result.needsUpdate, false);
-        }, ex -> {
-            callback.onFailed(ex);
-            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, false, true);
+    public void syncStarredCustomDecks(long revision, @NonNull GeneralCallback<StarredCustomDecksSyncResponse> callback) {
+        executorService.execute(() -> {
+            try {
+                dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, true, false);
+
+                JSONObject obj = api.makePostRequest("Sync/StarredCustomDecks", singletonJsonObject("rev", revision));
+                StarredCustomDecksSyncResponse resp = new StarredCustomDecksSyncResponse(obj);
+                Prefs.putLong(OverloadedPK.STARRED_CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
+                callback.onResult(resp);
+
+                dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, resp.needsUpdate, false);
+            } catch (JSONException | OverloadedApi.OverloadedException | OverloadedApi.MaintenanceException ex) {
+                callback.onFailed(ex);
+                dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, false, true);
+            }
         });
     }
 
-    @Contract("_, _, null, null, _, _ -> fail")
-    public void patchStarredCustomDecks(long revision, @NonNull StarredCustomDecksPatchOp op, @Nullable Long remoteId, @Nullable String shareCode, @Nullable Activity activity, @NonNull GeneralCallback<StarredCustomDecksUpdateResponse> callback) {
+    @Contract("_, _, null, null, _ -> fail")
+    public void patchStarredCustomDecks(long revision, @NonNull StarredCustomDecksPatchOp op, @Nullable RemoteId remoteId, @Nullable String shareCode, @NonNull GeneralCallback<StarredCustomDecksUpdateResponse> callback) {
         if (remoteId == null && shareCode == null)
             throw new IllegalArgumentException();
 
-        callbacks(Tasks.call(executorService, () -> {
-            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, true, false);
+        executorService.execute(() -> {
+            try {
+                dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, true, false);
 
-            JSONObject body = new JSONObject();
-            body.put("rev", revision);
-            body.put("patch", new JSONObject()
-                    .put("type", op.name())
-                    .put("remoteId", remoteId)
-                    .put("shareCode", shareCode));
+                JSONObject body = new JSONObject();
+                body.put("rev", revision);
+                body.put("patch", new JSONObject()
+                        .put("type", op.name())
+                        .put("remoteId", remoteId != null ? remoteId.get() : null)
+                        .put("shareCode", shareCode));
 
-            JSONObject obj = api.makePostRequest("Sync/UpdateStarredCustomDecks", body);
-            return new StarredCustomDecksUpdateResponse(obj);
-        }), activity, result -> {
-            Prefs.putLong(OverloadedPK.STARRED_CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
-            callback.onResult(result);
-            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, false, false);
-        }, ex -> {
-            callback.onFailed(ex);
-            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, false, true);
+                JSONObject obj = api.makePostRequest("Sync/UpdateStarredCustomDecks", body);
+                StarredCustomDecksUpdateResponse resp = new StarredCustomDecksUpdateResponse(obj);
+                Prefs.putLong(OverloadedPK.STARRED_CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
+                callback.onResult(resp);
+
+                dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, false, false);
+            } catch (JSONException | OverloadedApi.OverloadedException | OverloadedApi.MaintenanceException | RemoteId.RemoteIdException ex) {
+                callback.onFailed(ex);
+                dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, false, true);
+            }
         });
     }
 
-    public void updateStarredCustomDecks(long revision, @NonNull JSONArray update, @Nullable Activity activity, @NonNull GeneralCallback<StarredCustomDecksUpdateResponse> callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, true, false);
+    public void updateStarredCustomDecks(long revision, @NonNull JSONArray update, @NonNull GeneralCallback<StarredCustomDecksUpdateResponse> callback) {
+        executorService.execute(() -> {
+            try {
+                dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, true, false);
 
-            JSONObject body = new JSONObject();
-            body.put("rev", revision);
-            body.put("update", update);
+                JSONObject body = new JSONObject();
+                body.put("rev", revision);
+                body.put("update", update);
 
-            JSONObject obj = api.makePostRequest("Sync/UpdateStarredCustomDecks", body);
-            return new StarredCustomDecksUpdateResponse(obj);
-        }), activity, result -> {
-            Prefs.putLong(OverloadedPK.STARRED_CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
-            callback.onResult(result);
-            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, false, false);
-        }, ex -> {
-            callback.onFailed(ex);
-            dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, false, true);
+                JSONObject obj = api.makePostRequest("Sync/UpdateStarredCustomDecks", body);
+                StarredCustomDecksUpdateResponse resp = new StarredCustomDecksUpdateResponse(obj);
+                Prefs.putLong(OverloadedPK.STARRED_CUSTOM_DECKS_LAST_SYNC, OverloadedApi.now());
+                callback.onResult(resp);
+
+                dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, false, false);
+            } catch (JSONException | OverloadedApi.OverloadedException | OverloadedApi.MaintenanceException ex) {
+                callback.onFailed(ex);
+                dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, false, true);
+            }
         });
     }
 
@@ -313,11 +356,25 @@ public class OverloadedSyncApi {
     }
 
     public enum CustomDecksPatchOp {
-        ADD_CARD, ADD_CARDS, REM_DECK, REM_CARD, ADD_DECK, EDIT_DECK, EDIT_CARD
+        ADD_EDIT_CARD, ADD_CARDS, REM_DECK, REM_CARD, ADD_DECK, EDIT_DECK
     }
 
     public interface SyncStatusListener {
         void syncStatusUpdated(@NonNull SyncProduct product, boolean isSyncing, boolean error);
+    }
+
+    public abstract static class RemoteId {
+        @Nullable
+        protected abstract Long getInternal();
+
+        public final long get() throws RemoteIdException {
+            Long remoteId = getInternal();
+            if (remoteId == null) throw new RemoteIdException();
+            else return remoteId;
+        }
+
+        public static class RemoteIdException extends Exception {
+        }
     }
 
     private static class SyncStatus {
