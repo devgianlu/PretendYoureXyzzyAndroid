@@ -348,4 +348,6 @@
     <string name="lessThanMinuteAgo">Less than a minute ago</string>
     <string name="minutesAgo">%dm ago</string>
     <string name="hoursAgo">%dh ago</string>
+    <string name="importCustomDeck_details">You can import a custom deck from a JSON file with the following fields (not mandatory): `name`, `watermark`, `description`, `calls`, `responses`. See https://github.com/ajanata/PretendYoureXyzzy/pull/241 for a template.</string>
+    <string name="editCustomDeck_descDetails">The description is not mandatory, you can leave it empty.</string>
 </resources>
