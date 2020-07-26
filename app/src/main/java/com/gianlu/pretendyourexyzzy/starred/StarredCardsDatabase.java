@@ -133,7 +133,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    private void sendPatch(@NonNull StarredCardsPatchOp op, int localId, @Nullable Long remoteId, @Nullable ContentCard blackCard, @Nullable CardsGroup whiteCards) {
+    private void sendPatch(long revision, @NonNull StarredCardsPatchOp op, int localId, @Nullable Long remoteId, @Nullable ContentCard blackCard, @Nullable CardsGroup whiteCards) {
         if (!OverloadedUtils.isSignedIn())
             return;
 
@@ -158,6 +158,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
                     if (op == StarredCardsPatchOp.ADD && result.remoteId != null)
                         setRemoteId(localId, result.remoteId);
 
+                    setRevision(revision);
                     Log.i(TAG, "Completed starred cards patch on server: " + op);
                 }
 
@@ -193,8 +194,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             int id = (int) db.insert("cards", null, values);
             db.setTransactionSuccessful();
 
-            setRevision(OverloadedApi.now());
-            sendPatch(StarredCardsPatchOp.ADD, id, null, blackCard, whiteCards);
+            sendPatch(OverloadedApi.now(), StarredCardsPatchOp.ADD, id, null, blackCard, whiteCards);
 
             return id != -1;
         } catch (JSONException ex) {
@@ -220,9 +220,8 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             db.delete("cards", "id=?", new String[]{String.valueOf(card.id)});
             db.setTransactionSuccessful();
 
-            setRevision(OverloadedApi.now());
             if (card.remoteId != null)
-                sendPatch(StarredCardsPatchOp.REM, card.id, card.remoteId, null, null);
+                sendPatch(OverloadedApi.now(), StarredCardsPatchOp.REM, card.id, card.remoteId, null, null);
         } finally {
             db.endTransaction();
         }

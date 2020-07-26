@@ -94,6 +94,34 @@ public final class SyncUtils {
         }
     }
 
+    public static void updateSyncText(@NonNull TextView view, @NonNull OverloadedSyncApi.SyncProduct product, boolean isSyncing, boolean error) {
+        if (OverloadedApi.get().isUnderMaintenance()) {
+            view.setText(R.string.overloadedSync_maintenance);
+        } else if (!OverloadedUtils.isSignedIn()) {
+            view.setText(R.string.overloadedSync_notLoggedIn);
+        } else if (isSyncing) {
+            view.setText(R.string.overloadedSyncing);
+        } else {
+            long lastSync = getLastSync(product);
+            if (error) {
+                if (lastSync == -1)
+                    view.setText(R.string.overloadedSync_errorNeverSynced);
+                else
+                    view.setText(view.getContext().getString(R.string.overloadedSync_errorSynced, formatTime(view.getContext(), lastSync)));
+            } else {
+                if (lastSync == -1)
+                    view.setText(R.string.overloadedSync_neverSynced);
+                else
+                    view.setText(view.getContext().getString(R.string.overloadedSync_synced, formatTime(view.getContext(), lastSync)));
+            }
+        }
+    }
+
+
+    /////////////////////////////
+    //////// Sync logic /////////
+    /////////////////////////////
+
     public static void syncStarredCards(@NonNull Context context, @Nullable OnCompleteCallback callback) {
         if (!OverloadedUtils.isSignedIn()) {
             callComplete(callback);
@@ -373,29 +401,6 @@ public final class SyncUtils {
                 callComplete(callback);
             }
         });
-    }
-
-    public static void updateSyncText(@NonNull TextView view, @NonNull OverloadedSyncApi.SyncProduct product, boolean isSyncing, boolean error) {
-        if (OverloadedApi.get().isUnderMaintenance()) {
-            view.setText(R.string.overloadedSync_maintenance);
-        } else if (!OverloadedUtils.isSignedIn()) {
-            view.setText(R.string.overloadedSync_notLoggedIn);
-        } else if (isSyncing) {
-            view.setText(R.string.overloadedSyncing);
-        } else {
-            long lastSync = getLastSync(product);
-            if (error) {
-                if (lastSync == -1)
-                    view.setText(R.string.overloadedSync_errorNeverSynced);
-                else
-                    view.setText(view.getContext().getString(R.string.overloadedSync_errorSynced, formatTime(view.getContext(), lastSync)));
-            } else {
-                if (lastSync == -1)
-                    view.setText(R.string.overloadedSync_neverSynced);
-                else
-                    view.setText(view.getContext().getString(R.string.overloadedSync_synced, formatTime(view.getContext(), lastSync)));
-            }
-        }
     }
 
     @UiThread
