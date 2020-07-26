@@ -288,7 +288,7 @@
     <string name="failedRemovingFriend">Failed removing friend!</string>
     <string name="failedCreatingChat">Failed creating chat!</string>
     <string name="beTheFirstToSendAMessage">Be the first one to send a message!</string>
-    <string name="noFriends">You have no friends!</string>
+    <string name="noFriends_long">You have no friends! Meet on the same server and add each other from the players list.</string>
     <string name="typeAMessage">Type a message</string>
     <string name="deleteAccount">Delete account</string>
     <string name="failedDeletingAccount">Failed deleting account!</string>
