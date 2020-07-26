@@ -1,11 +1,11 @@
 ** OVERLOADED (BETA) UPDATE **
 
 ### Added
-- Added confirmation for game logout
-- Added confirmation for account deletion
-
-### Changed
-- Change last sync time format
+- Added explanation dialog when importing deck
+- Added deck description note
 
 ### Fixed
-- Fixed chat not working (Overloaded)
+- Fixed imported decks not syncing properly (Overloaded)
+- Improved sync when requests fail (Overloaded)
+- Correctly close PYX connection
+- Fixed "nickname already in use" error when logging in
