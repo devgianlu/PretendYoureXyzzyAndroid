@@ -171,7 +171,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
         if (count == 0) {
             friendsList.setVisibility(View.GONE);
             friendsMessage.setVisibility(View.VISIBLE);
-            friendsMessage.info(R.string.noFriends);
+            friendsMessage.info(R.string.noFriends_long);
         } else {
             friendsList.setVisibility(View.VISIBLE);
             friendsMessage.setVisibility(View.GONE);
