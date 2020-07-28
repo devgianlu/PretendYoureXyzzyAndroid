@@ -69,6 +69,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
 
     @Nullable
     @Override
+    @SuppressWarnings("WrongConstant")
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.fragment_custom_decks, container, false);
         db = CustomDecksDatabase.get(requireContext());

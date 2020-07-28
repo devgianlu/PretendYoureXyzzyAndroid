@@ -89,6 +89,7 @@ public class OverloadedApi {
     private volatile UserData userDataCached = null;
     private volatile Task<UserData> userDataTask = null;
     private volatile Map<String, FriendStatus> friendsStatusCached = null;
+    private volatile List<String> overloadedUsersCached = null;
     private Long maintenanceEnd = null;
     private boolean isFirstRequest = true;
     private String clientVersion = "??";
@@ -518,8 +519,18 @@ public class OverloadedApi {
             JSONArray array = obj.getJSONArray("users");
             List<String> list = new ArrayList<>(array.length());
             for (int i = 0; i < array.length(); i++) list.add(array.getString(i));
-            return list;
+            return overloadedUsersCached = list;
         }), activity, callback::onUsers, callback::onFailed);
+    }
+
+    /**
+     * Checks if the given user has Overloaded.
+     *
+     * @param nick The user nickname
+     * @return Whether it is an Overloaded user
+     */
+    public boolean isOverloadedUser(@NonNull String nick) {
+        return overloadedUsersCached == null && overloadedUsersCached.contains(nick);
     }
 
     /**
@@ -577,6 +588,7 @@ public class OverloadedApi {
         userDataTask = null;
         userDataCached = null;
         friendsStatusCached = null;
+        overloadedUsersCached = null;
 
         if (webSocket.client != null) {
             webSocket.client.close(1000, null);
@@ -761,6 +773,12 @@ public class OverloadedApi {
             if (friendsStatusCached == null) return;
 
             friendsStatusCached.remove(event.data.getString("username"));
+        } else if (event.type == OverloadedApi.Event.Type.USER_LEFT_SERVER) {
+            if (overloadedUsersCached != null)
+                overloadedUsersCached.remove(event.data.getString("nick"));
+        } else if (event.type == OverloadedApi.Event.Type.USER_JOINED_SERVER) {
+            if (overloadedUsersCached != null)
+                overloadedUsersCached.add(event.data.getString("nick"));
         }
     }
 

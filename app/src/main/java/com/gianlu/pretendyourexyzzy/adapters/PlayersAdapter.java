@@ -10,12 +10,15 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
 import com.gianlu.pretendyourexyzzy.main.ongoinggame.SensitiveGameData;
 
 import java.util.List;
+
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
 public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHolder> implements SensitiveGameData.AdapterInterface {
     private final List<GameInfo.Player> players;
@@ -40,6 +43,11 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         final GameInfo.Player player = players.get(position);
         holder.name.setText(player.name);
         holder.score.setHtml(R.string.score, player.score);
+
+        if (OverloadedApi.get().isOverloadedUser(player.name))
+            CommonUtils.setTextColor(holder.name, R.color.appColorBright);
+        else
+            CommonUtils.setTextColorFromAttr(holder.name, android.R.attr.textColorPrimary);
 
         switch (player.status) {
             case HOST:
