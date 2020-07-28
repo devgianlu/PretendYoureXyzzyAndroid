@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Custom decks are back!",
+    "host": "pyx.gianlu.xyz",
+    "path": "/ZY",
+    "port": 443,
+    "secure": true,
+    "metrics": "http://pyx.gianlu.xyz:2052/"
+  },
+  {
+    "name": "The Biggest, Blackest Dick",
+    "host": "pyx-1.pretendyoure.xyz",
+    "path": "/zy",
+    "port": 443,
+    "secure": true,
+    "metrics": "https://pretendyoure.xyz/zy/metrics/"
+  },
+  {
+    "name": "A Falcon with a Box on its Head",
+    "host": "pyx-2.pretendyoure.xyz",
+    "path": "/zy",
+    "port": 443,
+    "secure": true,
+    "metrics": "https://pretendyoure.xyz/zy/metrics/"
+  },
+  {
+    "name": "Dickfingers",
+    "host": "pyx-3.pretendyoure.xyz",
+    "path": "/zy",
+    "port": 443,
+    "secure": true,
+    "metrics": "https://pretendyoure.xyz/zy/metrics/"
+  },
+  {
+    "name": "A windmill full of corpses",
+    "host": "pyx-4.pretendyoure.xyz",
+    "path": "/zy",
+    "port": 443,
+    "secure": true,
+    "metrics": "https://pretendyoure.xyz/zy/metrics/"
+  },
+  {
+    "name": "Two midgets shitting in a bucket",
+    "host": "pyx-5.pretendyoure.xyz",
+    "path": "/zy",
+    "port": 443,
+    "secure": true,
+    "metrics": "https://pretendyoure.xyz/zy/metrics/"
+  }
+]

@@ -554,7 +554,7 @@ public class Pyx implements Closeable {
             this.editable = editable;
         }
 
-        Server(JSONObject obj) throws JSONException {
+        Server(@NonNull JSONObject obj) throws JSONException {
             this(parseUrlOrThrow(obj.getString("uri")), parseNullableUrl(obj.optString("metrics")), obj.getString("name"),
                     obj.has("params") ? new Params(obj.getJSONObject("params")) : Params.defaultValues(),
                     obj.optBoolean("editable", true));
@@ -566,7 +566,7 @@ public class Pyx implements Closeable {
             else return HttpUrl.parse(url);
         }
 
-        static void parseAndSave(@NonNull JSONArray array) throws JSONException {
+        static void parseAndSave(@NonNull JSONArray array, boolean cache) throws JSONException {
             List<Server> servers = new ArrayList<>(array.length());
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
@@ -591,7 +591,8 @@ public class Pyx implements Closeable {
                 json.put(server.toJson());
 
             JsonStoring.intoPrefs().putJsonArray(PK.API_SERVERS, json);
-            Prefs.putLong(PK.API_SERVERS_CACHE_AGE, System.currentTimeMillis());
+            if (cache) Prefs.putLong(PK.API_SERVERS_CACHE_AGE, System.currentTimeMillis());
+            else Prefs.putLong(PK.API_SERVERS_CACHE_AGE, 0);
         }
 
         @Nullable
