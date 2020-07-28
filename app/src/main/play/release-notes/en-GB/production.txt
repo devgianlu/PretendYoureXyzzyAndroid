@@ -1,11 +1,17 @@
-** OVERLOADED (BETA) UPDATE **
+** OVERLOADED UPDATE **
 
 ### Added
-- Added explanation dialog when importing deck
-- Added deck description note
+- Added end-to-end encrypted chat
+- Synchronize starred cards and custom decks
+- See other users profiles and stats
+- Make friends on servers
+- Show custom decks in game list
+
+### Changed
+- Improved chats layout
+- Load default server on network error
+- Better edit game options dialog layout
 
 ### Fixed
-- Fixed imported decks not syncing properly (Overloaded)
-- Improved sync when requests fail (Overloaded)
-- Correctly close PYX connection
+- Fixed game locking up when spectator is alone inside a game
 - Fixed "nickname already in use" error when logging in
