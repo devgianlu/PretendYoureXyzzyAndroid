@@ -26,6 +26,7 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
@@ -47,10 +48,18 @@ public final class SyncUtils {
     }
 
     @NonNull
-    private static String formatTime(long time) {
+    private static String formatTime(@NonNull Context context, long time) {
         Calendar today = Calendar.getInstance();
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(time);
+
+        long diff = today.getTimeInMillis() - time;
+        if (diff <= TimeUnit.MINUTES.toMillis(1))
+            return context.getString(R.string.lessThanMinuteAgo).toLowerCase();
+        else if (diff <= TimeUnit.HOURS.toMillis(1))
+            return context.getString(R.string.minutesAgo, TimeUnit.MILLISECONDS.toMinutes(diff));
+        else if (diff <= TimeUnit.DAYS.toMillis(1))
+            return context.getString(R.string.hoursAgo, TimeUnit.MILLISECONDS.toHours(diff));
 
         SimpleDateFormat sdf;
         if (today.get(Calendar.DAY_OF_YEAR) == cal.get(Calendar.DAY_OF_YEAR) && today.get(Calendar.YEAR) == cal.get(Calendar.YEAR))
@@ -58,7 +67,7 @@ public final class SyncUtils {
         else
             sdf = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy", Locale.getDefault());
 
-        return sdf.format(time);
+        return "at " + sdf.format(time);
     }
 
     public static long getLastSync(@NonNull OverloadedSyncApi.SyncProduct product) {
@@ -366,12 +375,12 @@ public final class SyncUtils {
                 if (lastSync == -1)
                     view.setText(R.string.overloadedSync_errorNeverSynced);
                 else
-                    view.setText(view.getContext().getString(R.string.overloadedSync_errorSynced, formatTime(lastSync)));
+                    view.setText(view.getContext().getString(R.string.overloadedSync_errorSynced, formatTime(view.getContext(), lastSync)));
             } else {
                 if (lastSync == -1)
                     view.setText(R.string.overloadedSync_neverSynced);
                 else
-                    view.setText(view.getContext().getString(R.string.overloadedSync_synced, formatTime(lastSync)));
+                    view.setText(view.getContext().getString(R.string.overloadedSync_synced, formatTime(view.getContext(), lastSync)));
             }
         }
     }

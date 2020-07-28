@@ -25,8 +25,9 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            consumerProguardFiles 'proguard-rules.pro'
         }
     }
 }
@@ -35,15 +36,15 @@ dependencies {
     implementation project(':CommonUtils')
 
     api 'com.google.android.gms:play-services-games:19.0.0'
-    api 'com.google.android.gms:play-services-auth:18.0.0'
-    api 'com.google.firebase:firebase-auth:19.3.1'
+    api 'com.google.android.gms:play-services-auth:18.1.0'
+    api 'com.google.firebase:firebase-auth:19.3.2'
 
     implementation 'com.squareup.okhttp3:okhttp:4.6.0'
     implementation 'org.whispersystems:signal-protocol-android:2.8.1'
 
     implementation 'com.github.instacart.truetime-android:library:3.4'
 
-    implementation('com.google.firebase:firebase-perf:19.0.7') {
+    implementation('com.google.firebase:firebase-perf:19.0.8') {
         exclude group: 'com.google.protobuf'
     }
 }

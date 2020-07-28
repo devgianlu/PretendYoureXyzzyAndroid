@@ -761,8 +761,6 @@ public class OverloadedApi {
             if (friendsStatusCached == null) return;
 
             friendsStatusCached.remove(event.data.getString("username"));
-        } else if (event.type == Event.Type.SHARE_KEYS_LOW) {
-            if (chatInstance != null) chatInstance.shareKeys(true);
         }
     }
 
@@ -930,7 +928,7 @@ public class OverloadedApi {
     private static class GzipRequestInterceptor implements Interceptor {
         @NotNull
         @Override
-        public Response intercept(Chain chain) throws IOException {
+        public Response intercept(@NonNull Chain chain) throws IOException {
             Request originalRequest = chain.request();
             if (originalRequest.body() == null || originalRequest.header("Content-Encoding") != null) {
                 return chain.proceed(originalRequest);
