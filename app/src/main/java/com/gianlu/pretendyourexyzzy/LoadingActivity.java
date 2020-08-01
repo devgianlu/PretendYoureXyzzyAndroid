@@ -54,11 +54,15 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+
+import javax.net.ssl.SSLException;
 
 import me.toptas.fancyshowcase.FocusShape;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
@@ -333,7 +337,13 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                                 registerNickname.setError(getString(R.string.invalidNickname));
                                 return;
                             case "niu":
-                                registerNickname.setError(getString(R.string.alreadyUsedNickname));
+                                if (((PyxException) ex).hadException(SocketTimeoutException.class) || ((PyxException) ex).hadException(SSLException.class)
+                                        || ((PyxException) ex).hadException(ConnectException.class)) {
+                                    Log.w(TAG, "Nickname already in use probably caused by network. Will try to first load.");
+                                    discoveryApi.firstLoad(LoadingActivity.this, null, LoadingActivity.this);
+                                } else {
+                                    registerNickname.setError(getString(R.string.alreadyUsedNickname));
+                                }
                                 return;
                             case "tmu":
                                 registerNickname.setError(getString(R.string.tooManyUsers));

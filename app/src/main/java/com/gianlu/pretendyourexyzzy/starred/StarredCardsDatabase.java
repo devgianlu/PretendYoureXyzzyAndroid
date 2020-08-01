@@ -17,6 +17,7 @@ import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.ContentCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -132,37 +133,46 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    private void sendPatch(@NonNull StarredCardsPatchOp op, long localId, @Nullable Long remoteId, @Nullable ContentCard blackCard, @Nullable CardsGroup whiteCards) throws JSONException {
-        if (!OverloadedApi.get().isFullyRegistered())
+    private void sendPatch(long revision, @NonNull StarredCardsPatchOp op, int localId, @Nullable Long remoteId, @Nullable ContentCard blackCard, @Nullable CardsGroup whiteCards) {
+        if (!OverloadedUtils.isSignedIn())
             return;
 
-        JSONObject obj;
-        if (op == StarredCardsPatchOp.REM && remoteId != null) {
-            obj = null;
-        } else if (op == StarredCardsPatchOp.ADD && blackCard != null && whiteCards != null) {
-            obj = new JSONObject();
-            obj.put("bc", blackCard.toJson());
-            obj.put("wc", ContentCard.toJson(whiteCards));
-        } else {
-            throw new IllegalArgumentException();
+        // The remote ID can be that simple because it is used only when removing cards
+
+        try {
+            JSONObject obj;
+            if (op == StarredCardsPatchOp.REM && remoteId != null) {
+                obj = null;
+            } else if (op == StarredCardsPatchOp.ADD && blackCard != null && whiteCards != null) {
+                obj = new JSONObject();
+                obj.put("bc", blackCard.toJson());
+                obj.put("wc", ContentCard.toJson(whiteCards));
+            } else {
+                throw new IllegalArgumentException();
+            }
+
+            Log.d(TAG, "Sending starred cards patch: " + op);
+            OverloadedSyncApi.get().patchStarredCards(getRevision(), op, remoteId, obj, new GeneralCallback<StarredCardsUpdateResponse>() {
+                @Override
+                public void onResult(@NonNull StarredCardsUpdateResponse result) {
+                    if (op == StarredCardsPatchOp.ADD && result.remoteId != null)
+                        setRemoteId(localId, result.remoteId);
+
+                    setRevision(revision);
+                    Log.i(TAG, "Completed starred cards patch on server: " + op);
+                }
+
+                @Override
+                public void onFailed(@NonNull Exception ex) {
+                    Log.e(TAG, "Failed performing patch for starred cards on server: " + op, ex);
+                }
+            });
+        } catch (JSONException ex) {
+            Log.e(TAG, "Failed creating patch for starred cards: " + op, ex);
         }
-
-        OverloadedSyncApi.get().patchStarredCards(getRevision(), op, remoteId, obj, null, new GeneralCallback<StarredCardsUpdateResponse>() {
-            @Override
-            public void onResult(@NonNull StarredCardsUpdateResponse result) {
-                Log.i(TAG, "Performed patch on server: " + getRevision());
-                if (op == StarredCardsPatchOp.ADD && result.remoteId != null)
-                    setRemoteId(localId, result.remoteId);
-            }
-
-            @Override
-            public void onFailed(@NonNull Exception ex) {
-                Log.e(TAG, "Failed performing patch on server: " + op, ex);
-            }
-        });
     }
 
-    public void setRemoteId(long localId, long remoteId) {
+    public void setRemoteId(int localId, long remoteId) {
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         try {
@@ -181,15 +191,10 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
             values.put("blackCard", blackCard.toJson().toString());
             values.put("whiteCards", ContentCard.toJson(whiteCards).toString());
-            long id = db.insert("cards", null, values);
+            int id = (int) db.insert("cards", null, values);
             db.setTransactionSuccessful();
-            setRevision(OverloadedApi.now());
 
-            try {
-                sendPatch(StarredCardsPatchOp.ADD, id, null, blackCard, whiteCards);
-            } catch (JSONException ex) {
-                Log.e(TAG, "Failed sending add patch.", ex);
-            }
+            sendPatch(OverloadedApi.now(), StarredCardsPatchOp.ADD, id, null, blackCard, whiteCards);
 
             return id != -1;
         } catch (JSONException ex) {
@@ -214,14 +219,9 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         try {
             db.delete("cards", "id=?", new String[]{String.valueOf(card.id)});
             db.setTransactionSuccessful();
-            setRevision(OverloadedApi.now());
 
-            try {
-                if (card.remoteId != null)
-                    sendPatch(StarredCardsPatchOp.REM, card.id, card.remoteId, null, null);
-            } catch (JSONException ex) {
-                Log.e(TAG, "Failed sending remove patch.", ex);
-            }
+            if (card.remoteId != null)
+                sendPatch(OverloadedApi.now(), StarredCardsPatchOp.REM, card.id, card.remoteId, null, null);
         } finally {
             db.endTransaction();
         }
@@ -265,7 +265,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     public UpdatePair getUpdate() {
         JSONArray array = new JSONArray();
         List<StarredCard> list = getCards(false);
-        long[] localIds = new long[list.size()];
+        int[] localIds = new int[list.size()];
         for (int i = 0; i < list.size(); i++) {
             StarredCard card = list.get(i);
             localIds[i] = card.id;
@@ -409,9 +409,9 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
 
     public static class UpdatePair {
         public final JSONArray update;
-        public final long[] localIds;
+        public final int[] localIds;
 
-        private UpdatePair(@NonNull JSONArray array, @NonNull long[] localIds) {
+        private UpdatePair(@NonNull JSONArray array, @NonNull int[] localIds) {
             this.update = array;
             this.localIds = localIds;
         }

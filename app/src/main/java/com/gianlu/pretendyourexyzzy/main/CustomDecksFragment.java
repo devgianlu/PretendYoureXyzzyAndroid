@@ -1,9 +1,14 @@
 package com.gianlu.pretendyourexyzzy.main;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.InputFilter;
+import android.text.Layout;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,6 +38,7 @@ import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.FloatingCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
 import com.gianlu.pretendyourexyzzy.tutorial.CustomDecksTutorial;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
@@ -45,7 +51,6 @@ import java.io.InputStream;
 import java.util.List;
 
 import me.toptas.fancyshowcase.FocusShape;
-import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 
 public class CustomDecksFragment extends FragmentWithDialog implements OverloadedSyncApi.SyncStatusListener, CustomDecksAdapter.Listener, TutorialManager.Listener {
@@ -64,6 +69,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
 
     @Nullable
     @Override
+    @SuppressWarnings("WrongConstant")
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.fragment_custom_decks, container, false);
         db = CustomDecksDatabase.get(requireContext());
@@ -72,7 +78,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         rmv = layout.findViewById(R.id.customDecks_list);
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
 
-        if (OverloadedApi.get().isFullyRegistered())
+        if (OverloadedUtils.isSignedIn())
             rmv.enableSwipeRefresh(this::refreshSync, R.color.appColorBright);
         else
             rmv.disableSwipeRefresh();
@@ -81,8 +87,25 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         fab = layout.findViewById(R.id.customDecks_fab);
         FloatingActionButton importDeck = layout.findViewById(R.id.customDecksFab_import);
         importDeck.setOnClickListener(v -> {
-            startActivityForResult(Intent.createChooser(new Intent(Intent.ACTION_GET_CONTENT).setType("*/*"), "Pick JSON file..."), RC_IMPORT_JSON);
             fab.collapse();
+
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+            builder.setTitle(R.string.importCustomDeck)
+                    .setMessage(R.string.importCustomDeck_details)
+                    .setPositiveButton(android.R.string.ok,
+                            (dialog, which) -> startActivityForResult(Intent.createChooser(new Intent(Intent.ACTION_GET_CONTENT).setType("*/*"), "Pick a JSON file..."), RC_IMPORT_JSON));
+
+            Dialog dialog = builder.create();
+            dialog.setOnShowListener(d -> {
+                TextView text = dialog.getWindow().findViewById(android.R.id.message);
+                text.setAutoLinkMask(Linkify.WEB_URLS);
+                text.setMovementMethod(LinkMovementMethod.getInstance());
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    text.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
+            });
+
+            showDialog(dialog);
         });
 
         FloatingActionButton addDeck = layout.findViewById(R.id.customDecksFab_add);

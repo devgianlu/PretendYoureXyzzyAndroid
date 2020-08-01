@@ -14,6 +14,7 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +30,7 @@ import java.util.List;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.CustomDecksPatchOp;
+import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.RemoteId;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCustomDecksPatchOp;
 import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 import xyz.gianlu.pyxoverloaded.model.UserProfile;
@@ -53,7 +55,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         return Prefs.getLong(PK.STARRED_CUSTOM_DECKS_REVISION, 0);
     }
 
-    public static void setStaredCustomDecksRevision(long revision) {
+    public static void setStarredCustomDecksRevision(long revision) {
         Prefs.putLong(PK.STARRED_CUSTOM_DECKS_REVISION, revision);
     }
 
@@ -93,18 +95,43 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         Log.i(TAG, "Migrated database from " + oldVersion + " to " + newVersion);
     }
 
-    private void sendCustomDeckPatch(long revision, @Nullable Long remoteId, @NonNull CustomDecksPatchOp op, @Nullable CustomDeck deck, @Nullable CustomCard card, @Nullable Long cardId) {
-        if (!OverloadedApi.get().isFullyRegistered())
+    private void sendCustomDeckPatch(long revision, int deckId, @Nullable RemoteId remoteId, @NonNull CustomDecksPatchOp op, @Nullable CustomDeck deck, @Nullable CustomCard card, @Nullable RemoteId cardRemoteId, @Nullable List<CustomCard> cards) {
+        if (!OverloadedUtils.isSignedIn())
             return;
 
+        JSONArray cardsJson = null;
+        if (cards != null) {
+            cardsJson = new JSONArray();
+            try {
+                for (CustomCard cc : cards)
+                    cardsJson.put(cc.toSyncJson());
+            } catch (JSONException ex) {
+                Log.e(TAG, "Failed creating custom decks patch cards payload.", ex);
+                return;
+            }
+        }
+
         try {
-            OverloadedSyncApi.get().patchCustomDeck(revision, remoteId, op, deck == null ? null : deck.toSyncJson(), card == null ? null : card.toSyncJson(), cardId, null, new GeneralCallback<OverloadedSyncApi.CustomDecksUpdateResponse>() {
+            Log.d(TAG, "Sending custom deck patch: " + op);
+            OverloadedSyncApi.get().patchCustomDeck(revision, remoteId, op, deck == null ? null : deck.toSyncJson(), card == null ? null : card.toSyncJson(), cardRemoteId, cardsJson, new GeneralCallback<OverloadedSyncApi.CustomDecksUpdateResponse>() {
                 @Override
                 public void onResult(@NonNull OverloadedSyncApi.CustomDecksUpdateResponse result) {
-                    if (op == CustomDecksPatchOp.ADD_CARD && result.cardId != null && card != null)
+                    if (op == CustomDecksPatchOp.ADD_EDIT_CARD && result.cardId != null && card != null) {
                         setCardRemoteId(card.id, result.cardId);
-                    else if (op == CustomDecksPatchOp.ADD_DECK && result.deckId != null && deck != null)
+                    } else if (op == CustomDecksPatchOp.ADD_DECK && result.deckId != null && deck != null) {
                         setDeckRemoteId(deck.id, result.deckId);
+                    } else if (op == CustomDecksPatchOp.ADD_CARDS && result.cardsIds != null && cards != null) {
+                        if (result.cardsIds.length != cards.size()) {
+                            Log.e(TAG, String.format("IDs number doesn't match, local: %d, remote: %d", cards.size(), result.cardsIds.length));
+                            return;
+                        }
+
+                        for (int i = 0; i < result.cardsIds.length; i++)
+                            setCardRemoteId(cards.get(i).id, result.cardsIds[i]);
+                    }
+
+                    if (deckId != -1) updateDeckRevision(deckId, revision);
+                    Log.d(TAG, "Completed custom deck patch: " + op);
                 }
 
                 @Override
@@ -113,19 +140,22 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
                 }
             });
         } catch (JSONException ex) {
-            Log.e(TAG, String.format("Failed creating %s patch for custom decks.", op), ex);
+            Log.e(TAG, "Failed creating patch for custom decks: " + op, ex);
         }
     }
 
-    private void sendStarredDeckPatch(long revision, @Nullable Long remoteId, @NonNull StarredCustomDecksPatchOp op, @Nullable String shareCode, @Nullable Integer deckId) {
-        if (!OverloadedApi.get().isFullyRegistered())
+    private void sendStarredDeckPatch(long revision, @Nullable RemoteId remoteId, @NonNull StarredCustomDecksPatchOp op, @Nullable String shareCode, @Nullable Integer deckId) {
+        if (!OverloadedUtils.isSignedIn())
             return;
 
-        OverloadedSyncApi.get().patchStarredCustomDecks(revision, op, remoteId, shareCode, null, new GeneralCallback<OverloadedSyncApi.StarredCustomDecksUpdateResponse>() {
+        OverloadedSyncApi.get().patchStarredCustomDecks(revision, op, remoteId, shareCode, new GeneralCallback<OverloadedSyncApi.StarredCustomDecksUpdateResponse>() {
             @Override
             public void onResult(@NonNull OverloadedSyncApi.StarredCustomDecksUpdateResponse result) {
                 if (op == StarredCustomDecksPatchOp.ADD && result.remoteId != null && deckId != null)
                     setStarredDeckRemoteId(deckId, result.remoteId);
+
+                setStarredCustomDecksRevision(revision);
+                Log.d(TAG, "Completed starred custom deck patch: " + op);
             }
 
             @Override
@@ -168,7 +198,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
 
         if (remote && deck.remoteId != null)
-            sendCustomDeckPatch(-1, deck.remoteId, CustomDecksPatchOp.REM_DECK, null, null, null);
+            sendCustomDeckPatch(-1, -1, new FixedRemoteId(deck.remoteId), CustomDecksPatchOp.REM_DECK, null, null, null, null);
     }
 
 
@@ -232,11 +262,8 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             db.endTransaction();
         }
 
-        long revision = OverloadedApi.now();
-        setStaredCustomDecksRevision(revision);
-
         if (id != -1)
-            sendStarredDeckPatch(revision, null, StarredCustomDecksPatchOp.ADD, shareCode, id);
+            sendStarredDeckPatch(OverloadedApi.now(), null, StarredCustomDecksPatchOp.ADD, shareCode, id);
     }
 
     public void removeStarredDeck(@NonNull String owner, @NonNull String shareCode) {
@@ -251,11 +278,8 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             db.endTransaction();
         }
 
-        long revision = OverloadedApi.now();
-        setStaredCustomDecksRevision(revision);
-
         if (remoteId != null)
-            sendStarredDeckPatch(revision, remoteId, StarredCustomDecksPatchOp.REM, null, null);
+            sendStarredDeckPatch(OverloadedApi.now(), new FixedRemoteId(remoteId), StarredCustomDecksPatchOp.REM, null, null);
     }
 
     @NonNull
@@ -289,7 +313,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             }
 
             db.setTransactionSuccessful();
-            if (revision != null) setStaredCustomDecksRevision(revision);
+            if (revision != null) setStarredCustomDecksRevision(revision);
         } catch (JSONException ex) {
             Log.e(TAG, "Failed adding starred custom decks.", ex);
         } finally {
@@ -362,8 +386,6 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
     @Nullable
     public CustomDeck putDeckInfo(@NonNull String name, @NonNull String watermark, @NonNull String desc) {
-        long revision = OverloadedApi.now();
-
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         try {
@@ -373,14 +395,14 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             values.put("name", name);
             values.put("watermark", watermark);
             values.put("description", desc);
-            values.put("revision", revision);
+            values.put("revision", 0);
             values.put("lastUsed", lastUsed);
             int id = (int) db.insert("decks", null, values);
             db.setTransactionSuccessful();
             if (id == -1) return null;
 
-            CustomDeck deck = new CustomDeck(id, name, watermark, desc, lastUsed, revision);
-            sendCustomDeckPatch(deck.revision, null, CustomDecksPatchOp.ADD_DECK, deck, null, null);
+            CustomDeck deck = new CustomDeck(id, name, watermark, desc, lastUsed, 0);
+            sendCustomDeckPatch(OverloadedApi.now(), deck.id, null, CustomDecksPatchOp.ADD_DECK, deck, null, null, null);
             return deck;
         } finally {
             db.endTransaction();
@@ -401,8 +423,6 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     }
 
     public void updateDeckInfo(int id, @NonNull String name, @NonNull String watermark, @NonNull String desc) {
-        long revision = OverloadedApi.now();
-
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         try {
@@ -410,7 +430,6 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             values.put("name", name);
             values.put("watermark", watermark);
             values.put("description", desc);
-            values.put("revision", revision);
             values.put("lastUsed", System.currentTimeMillis());
             db.update("decks", values, "id=?", new String[]{String.valueOf(id)});
             db.setTransactionSuccessful();
@@ -419,8 +438,8 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
 
         CustomDeck deck = getDeck(id);
-        if (deck != null && deck.remoteId != null)
-            sendCustomDeckPatch(revision, deck.remoteId, CustomDecksPatchOp.EDIT_DECK, deck, null, null);
+        if (deck != null)
+            sendCustomDeckPatch(OverloadedApi.now(), deck.id, new CustomDeckRemoteId(id), CustomDecksPatchOp.EDIT_DECK, deck, null, null, null);
     }
 
     private void updateDeckRevision(int id, long revision) {
@@ -511,11 +530,6 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
     }
 
-
-    //////////////////////////////////
-    ///////////// Cards //////////////
-    //////////////////////////////////
-
     @NonNull
     public List<CustomCard> getCards(int deckId) {
         CustomDeck deck = getDeck(deckId);
@@ -533,6 +547,11 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             db.endTransaction();
         }
     }
+
+
+    //////////////////////////////////
+    ///////////// Cards //////////////
+    //////////////////////////////////
 
     @NonNull
     public List<CustomCard> getCards(int deckId, int type) {
@@ -592,12 +611,43 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         return getCards(deckId, CARD_TYPE_WHITE);
     }
 
+    @NonNull
+    public List<CustomCard> putCards(int deckId, boolean[] blacks, @NonNull String[][] texts) {
+        CustomDeck deck = getDeck(deckId);
+        if (deck == null) return Collections.emptyList();
+
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+
+        List<CustomCard> cards = new ArrayList<>(blacks.length);
+        try {
+            for (int i = 0; i < blacks.length; i++) {
+                String[] text = texts[i];
+                int type = blacks[i] ? CARD_TYPE_BLACK : CARD_TYPE_WHITE;
+
+                ContentValues values = new ContentValues();
+                values.put("deck_id", deckId);
+                values.put("type", type);
+                values.put("text", CommonUtils.join(text, "____"));
+                long id = db.insert("cards", null, values);
+                CustomCard card = id == -1 ? null : new CustomCard(text, deck.watermark, type, (int) id);
+                if (card != null) cards.add(card);
+                else Log.e(TAG, "Failed adding card at " + i);
+            }
+
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+
+        sendCustomDeckPatch(OverloadedApi.now(), deckId, new CustomDeckRemoteId(deckId), CustomDecksPatchOp.ADD_CARDS, null, null, null, cards);
+        return cards;
+    }
+
     @Nullable
     public CustomCard putCard(int deckId, boolean black, @NonNull String[] text) {
         CustomDeck deck = getDeck(deckId);
         if (deck == null) return null;
-
-        long revision = OverloadedApi.now();
 
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
@@ -612,22 +662,14 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             values.put("text", CommonUtils.join(text, "____"));
             long id = db.insert("cards", null, values);
 
-            values = new ContentValues();
-            values.put("revision", revision);
-            db.update("decks", values, "id=?", new String[]{String.valueOf(deckId)});
-
             db.setTransactionSuccessful();
             card = id == -1 ? null : new CustomCard(text, deck.watermark, type, (int) id);
         } finally {
             db.endTransaction();
         }
 
-        if (card != null) {
-            updateDeckRevision(deckId, revision);
-
-            if (deck.remoteId != null)
-                sendCustomDeckPatch(revision, deck.remoteId, CustomDecksPatchOp.ADD_CARD, null, card, null);
-        }
+        if (card != null)
+            sendCustomDeckPatch(OverloadedApi.now(), deckId, new CustomDeckRemoteId(deckId), CustomDecksPatchOp.ADD_EDIT_CARD, null, card, null, null);
 
         return card;
     }
@@ -637,7 +679,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         if (deck == null)
             return;
 
-        Long remoteId = getCardRemoteId(cardId);
+        Long cardRemoteId = getCardRemoteId(cardId);
 
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
@@ -648,11 +690,8 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             db.endTransaction();
         }
 
-        long revision = OverloadedApi.now();
-        updateDeckRevision(deckId, revision);
-
-        if (deck.remoteId != null && remoteId != null)
-            sendCustomDeckPatch(revision, deck.remoteId, CustomDecksPatchOp.REM_CARD, null, null, remoteId);
+        if (cardRemoteId != null)
+            sendCustomDeckPatch(OverloadedApi.now(), deckId, new CustomDeckRemoteId(deckId), CustomDecksPatchOp.REM_CARD, null, null, new FixedRemoteId(cardRemoteId), null);
     }
 
     @Nullable
@@ -675,16 +714,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             db.endTransaction();
         }
 
-        long revision = OverloadedApi.now();
-        updateDeckRevision(deckId, revision);
-
-        if (deck.remoteId != null) {
-            if (card.remoteId != null)
-                sendCustomDeckPatch(revision, deck.remoteId, CustomDecksPatchOp.EDIT_CARD, null, card, card.remoteId);
-            else
-                sendCustomDeckPatch(revision, deck.remoteId, CustomDecksPatchOp.ADD_CARD, null, card, null);
-        }
-
+        sendCustomDeckPatch(OverloadedApi.now(), deckId, new CustomDeckRemoteId(deckId), CustomDecksPatchOp.ADD_EDIT_CARD, null, card, new CustomDeckCardRemoteId(card.id), null);
         return card;
     }
 
@@ -956,6 +986,49 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
             int remoteIdIndex = cursor.getColumnIndex("remoteId");
             remoteId = cursor.isNull(remoteIdIndex) ? null : cursor.getLong(remoteIdIndex);
+        }
+    }
+
+    private static class FixedRemoteId extends RemoteId {
+        private final long remoteId;
+
+        FixedRemoteId(long remoteId) {
+            this.remoteId = remoteId;
+        }
+
+        @Nullable
+        @Override
+        protected Long getInternal() {
+            return remoteId;
+        }
+    }
+
+    private class CustomDeckRemoteId extends RemoteId {
+        private final int localId;
+
+        CustomDeckRemoteId(int localId) {
+            this.localId = localId;
+        }
+
+        @Nullable
+        @Override
+        protected Long getInternal() {
+            CustomDeck deck = getDeck(localId);
+            return deck == null ? null : deck.remoteId;
+        }
+    }
+
+    private class CustomDeckCardRemoteId extends RemoteId {
+        private final int localCardId;
+
+        CustomDeckCardRemoteId(int localCardId) {
+            this.localCardId = localCardId;
+        }
+
+        @Nullable
+        @Override
+        protected Long getInternal() {
+            return getCardRemoteId(localCardId);
         }
     }
 

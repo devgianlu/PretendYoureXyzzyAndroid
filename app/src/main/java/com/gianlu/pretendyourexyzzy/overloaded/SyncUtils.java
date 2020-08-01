@@ -1,11 +1,14 @@
 package com.gianlu.pretendyourexyzzy.overloaded;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
 
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.R;
@@ -43,8 +46,16 @@ import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 
 public final class SyncUtils {
     private static final String TAG = SyncUtils.class.getSimpleName();
+    private static final Handler HANDLER = new Handler(Looper.getMainLooper());
 
     private SyncUtils() {
+    }
+
+    private static void callComplete(@Nullable OnCompleteCallback callback) {
+        if (callback == null)
+            return;
+
+        HANDLER.post(callback::onComplete);
     }
 
     @NonNull
@@ -83,20 +94,48 @@ public final class SyncUtils {
         }
     }
 
+    public static void updateSyncText(@NonNull TextView view, @NonNull OverloadedSyncApi.SyncProduct product, boolean isSyncing, boolean error) {
+        if (OverloadedApi.get().isUnderMaintenance()) {
+            view.setText(R.string.overloadedSync_maintenance);
+        } else if (!OverloadedUtils.isSignedIn()) {
+            view.setText(R.string.overloadedSync_notLoggedIn);
+        } else if (isSyncing) {
+            view.setText(R.string.overloadedSyncing);
+        } else {
+            long lastSync = getLastSync(product);
+            if (error) {
+                if (lastSync == -1)
+                    view.setText(R.string.overloadedSync_errorNeverSynced);
+                else
+                    view.setText(view.getContext().getString(R.string.overloadedSync_errorSynced, formatTime(view.getContext(), lastSync)));
+            } else {
+                if (lastSync == -1)
+                    view.setText(R.string.overloadedSync_neverSynced);
+                else
+                    view.setText(view.getContext().getString(R.string.overloadedSync_synced, formatTime(view.getContext(), lastSync)));
+            }
+        }
+    }
+
+
+    /////////////////////////////
+    //////// Sync logic /////////
+    /////////////////////////////
+
     public static void syncStarredCards(@NonNull Context context, @Nullable OnCompleteCallback callback) {
-        if (!OverloadedApi.get().isFullyRegistered()) {
-            if (callback != null) callback.onComplete();
+        if (!OverloadedUtils.isSignedIn()) {
+            callComplete(callback);
             return;
         }
 
         StarredCardsDatabase db = StarredCardsDatabase.get(context);
         long ourRevision = StarredCardsDatabase.getRevision();
-        OverloadedSyncApi.get().syncStarredCards(ourRevision, null, new GeneralCallback<StarredCardsSyncResponse>() {
+        OverloadedSyncApi.get().syncStarredCards(ourRevision, new GeneralCallback<StarredCardsSyncResponse>() {
             @Override
             public void onResult(@NonNull StarredCardsSyncResponse result) {
                 if (result.needsUpdate) {
                     StarredCardsDatabase.UpdatePair update = db.getUpdate();
-                    OverloadedSyncApi.get().updateStarredCards(ourRevision, update.update, null, new GeneralCallback<StarredCardsUpdateResponse>() {
+                    OverloadedSyncApi.get().updateStarredCards(ourRevision, update.update, new GeneralCallback<StarredCardsUpdateResponse>() {
                         @Override
                         public void onResult(@NonNull StarredCardsUpdateResponse result) {
                             if (result.remoteIds == null) {
@@ -117,13 +156,13 @@ public final class SyncUtils {
                                 }
                             }
 
-                            if (callback != null) callback.onComplete();
+                            callComplete(callback);
                         }
 
                         @Override
                         public void onFailed(@NonNull Exception ex) {
                             Log.e(TAG, "Failed updating starred cards.", ex);
-                            if (callback != null) callback.onComplete();
+                            callComplete(callback);
                         }
                     });
                 } else if (result.update != null && result.revision != null) {
@@ -142,7 +181,7 @@ public final class SyncUtils {
                             continue;
                         }
 
-                        OverloadedSyncApi.get().patchStarredCards(result.revision, OverloadedSyncApi.StarredCardsPatchOp.ADD, null, obj, null, new GeneralCallback<StarredCardsUpdateResponse>() {
+                        OverloadedSyncApi.get().patchStarredCards(result.revision, OverloadedSyncApi.StarredCardsPatchOp.ADD, null, obj, new GeneralCallback<StarredCardsUpdateResponse>() {
                             @Override
                             public void onResult(@NonNull StarredCardsUpdateResponse result) {
                                 if (result.remoteId != null) {
@@ -160,24 +199,24 @@ public final class SyncUtils {
                         });
                     }
 
-                    if (callback != null) callback.onComplete();
+                    callComplete(callback);
                 } else {
                     Log.d(TAG, "Starred cards are up-to-date: " + ourRevision);
-                    if (callback != null) callback.onComplete();
+                    callComplete(callback);
                 }
             }
 
             @Override
             public void onFailed(@NonNull Exception ex) {
                 Log.e(TAG, "Failed syncing starred cards.", ex);
-                if (callback != null) callback.onComplete();
+                callComplete(callback);
             }
         });
     }
 
     public static void syncCustomDecks(@NonNull Context context, @Nullable OnCompleteCallback callback) {
-        if (!OverloadedApi.get().isFullyRegistered()) {
-            if (callback != null) callback.onComplete();
+        if (!OverloadedUtils.isSignedIn()) {
+            callComplete(callback);
             return;
         }
 
@@ -198,12 +237,12 @@ public final class SyncUtils {
             }
         } catch (JSONException ex) {
             Log.e(TAG, "Failed creating sync payload for custom decks.", ex);
-            if (callback != null) callback.onComplete();
+            callComplete(callback);
             return;
         }
 
         Log.d(TAG, String.format("Sending %d sync items for custom decks.", syncItems.length()));
-        OverloadedSyncApi.get().syncCustomDecks(syncItems, null, new GeneralCallback<List<CustomDecksSyncResponse>>() {
+        OverloadedSyncApi.get().syncCustomDecks(syncItems, new GeneralCallback<List<CustomDecksSyncResponse>>() {
             @Override
             public void onResult(@NonNull List<CustomDecksSyncResponse> result) {
                 for (CustomDecksSyncResponse resp : result) {
@@ -213,19 +252,21 @@ public final class SyncUtils {
                     } else if (resp.update != null) {
                         db.loadDeckUpdate(resp.update, resp.isNew);
                         Log.d(TAG, "Loaded update for custom deck: " + resp.remoteId);
+                    } else {
+                        Log.d(TAG, "Custom deck is up-to-date: " + resp.remoteId);
                     }
                 }
 
                 for (CustomDeck deck : sendLater)
                     sendCustomDeckUpdate(db, deck);
 
-                if (callback != null) callback.onComplete();
+                callComplete(callback);
             }
 
             @Override
             public void onFailed(@NonNull Exception ex) {
                 Log.e(TAG, "Failed syncing custom decks.", ex);
-                if (callback != null) callback.onComplete();
+                callComplete(callback);
             }
         });
     }
@@ -249,7 +290,7 @@ public final class SyncUtils {
         }
 
         Log.d(TAG, "Sending update for custom deck: " + deck);
-        OverloadedSyncApi.get().updateCustomDeck(deck.revision, update, null, new GeneralCallback<CustomDecksUpdateResponse>() {
+        OverloadedSyncApi.get().updateCustomDeck(deck.revision, update, new GeneralCallback<CustomDecksUpdateResponse>() {
             @Override
             public void onResult(@NonNull CustomDecksUpdateResponse result) {
                 if (result.cardsIds == null || result.deckId == null) {
@@ -281,19 +322,19 @@ public final class SyncUtils {
     }
 
     public static void syncStarredCustomDecks(@NonNull Context context, @Nullable OnCompleteCallback callback) {
-        if (!OverloadedApi.get().isFullyRegistered()) {
-            if (callback != null) callback.onComplete();
+        if (!OverloadedUtils.isSignedIn()) {
+            callComplete(callback);
             return;
         }
 
         CustomDecksDatabase db = CustomDecksDatabase.get(context);
         long ourRevision = CustomDecksDatabase.getStaredCustomDecksRevision();
-        OverloadedSyncApi.get().syncStarredCustomDecks(ourRevision, null, new GeneralCallback<StarredCustomDecksSyncResponse>() {
+        OverloadedSyncApi.get().syncStarredCustomDecks(ourRevision, new GeneralCallback<StarredCustomDecksSyncResponse>() {
             @Override
             public void onResult(@NonNull StarredCustomDecksSyncResponse result) {
                 if (result.needsUpdate) {
                     CustomDecksDatabase.UpdatePair update = db.getStarredDecksUpdate();
-                    OverloadedSyncApi.get().updateStarredCustomDecks(ourRevision, update.update, null, new GeneralCallback<StarredCustomDecksUpdateResponse>() {
+                    OverloadedSyncApi.get().updateStarredCustomDecks(ourRevision, update.update, new GeneralCallback<StarredCustomDecksUpdateResponse>() {
                         @Override
                         public void onResult(@NonNull StarredCustomDecksUpdateResponse result) {
                             if (result.remoteIds == null) {
@@ -314,13 +355,13 @@ public final class SyncUtils {
                                 }
                             }
 
-                            if (callback != null) callback.onComplete();
+                            callComplete(callback);
                         }
 
                         @Override
                         public void onFailed(@NonNull Exception ex) {
                             Log.e(TAG, "Failed updating starred cards.", ex);
-                            if (callback != null) callback.onComplete();
+                            callComplete(callback);
                         }
                     });
                 } else if (result.update != null && result.revision != null) {
@@ -329,7 +370,7 @@ public final class SyncUtils {
 
                     List<StarredDeck> leftover = db.getStarredDecks(true);
                     for (StarredDeck deck : leftover) {
-                        OverloadedSyncApi.get().patchStarredCustomDecks(result.revision, StarredCustomDecksPatchOp.ADD, null, deck.shareCode, null, new GeneralCallback<StarredCustomDecksUpdateResponse>() {
+                        OverloadedSyncApi.get().patchStarredCustomDecks(result.revision, StarredCustomDecksPatchOp.ADD, null, deck.shareCode, new GeneralCallback<StarredCustomDecksUpdateResponse>() {
                             @Override
                             public void onResult(@NonNull StarredCustomDecksUpdateResponse result) {
                                 if (result.remoteId != null) {
@@ -347,44 +388,22 @@ public final class SyncUtils {
                         });
                     }
 
-                    if (callback != null) callback.onComplete();
+                    callComplete(callback);
                 } else {
                     Log.d(TAG, "Starred custom decks are up-to-date: " + ourRevision);
-                    if (callback != null) callback.onComplete();
+                    callComplete(callback);
                 }
             }
 
             @Override
             public void onFailed(@NonNull Exception ex) {
                 Log.e(TAG, "Failed syncing starred custom decks.", ex);
-                if (callback != null) callback.onComplete();
+                callComplete(callback);
             }
         });
     }
 
-    public static void updateSyncText(@NonNull TextView view, @NonNull OverloadedSyncApi.SyncProduct product, boolean isSyncing, boolean error) {
-        if (OverloadedApi.get().isUnderMaintenance()) {
-            view.setText(R.string.overloadedSync_maintenance);
-        } else if (!OverloadedApi.get().isFullyRegistered()) {
-            view.setText(R.string.overloadedSync_notLoggedIn);
-        } else if (isSyncing) {
-            view.setText(R.string.overloadedSyncing);
-        } else {
-            long lastSync = getLastSync(product);
-            if (error) {
-                if (lastSync == -1)
-                    view.setText(R.string.overloadedSync_errorNeverSynced);
-                else
-                    view.setText(view.getContext().getString(R.string.overloadedSync_errorSynced, formatTime(view.getContext(), lastSync)));
-            } else {
-                if (lastSync == -1)
-                    view.setText(R.string.overloadedSync_neverSynced);
-                else
-                    view.setText(view.getContext().getString(R.string.overloadedSync_synced, formatTime(view.getContext(), lastSync)));
-            }
-        }
-    }
-
+    @UiThread
     public interface OnCompleteCallback {
         void onComplete();
     }

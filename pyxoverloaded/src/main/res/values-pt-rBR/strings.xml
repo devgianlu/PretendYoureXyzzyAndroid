@@ -10,7 +10,7 @@
     <string name="expired">Expirado</string>
     <string name="paused">Pausado</string>
     <string name="accountHold">Conta detida</string>
-    <string name="gracePeriod">Período de tolerância</string>
+    <string name="gracePeriod">Período de carência</string>
     <string name="cancelled">Cancelado</string>
     <string name="ok">OK</string>
     <string name="none">Nenhuma</string>

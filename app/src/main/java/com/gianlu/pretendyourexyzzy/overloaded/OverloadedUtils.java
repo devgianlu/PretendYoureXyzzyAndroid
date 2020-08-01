@@ -88,6 +88,10 @@ public final class OverloadedUtils {
         return Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]{2,29}$").matcher(str).matches();
     }
 
+    /**
+     * @return Whether the user is signed in and fully registered.
+     * @see OverloadedApi#isFullyRegistered()
+     */
     public static boolean isSignedIn() {
         return FirebaseAuth.getInstance().getCurrentUser() != null && OverloadedApi.get().isFullyRegistered();
     }

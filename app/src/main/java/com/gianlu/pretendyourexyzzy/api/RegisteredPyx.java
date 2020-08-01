@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -129,6 +130,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
         private final List<OnEventListener> listeners = new ArrayList<>();
         private int exCount = 0;
         private volatile boolean shouldStop = false;
+        private Call lastCall;
 
         @Override
         public void run() {
@@ -150,10 +152,10 @@ public class RegisteredPyx extends FirstLoadedPyx {
 
                     builder.header("Cookie", "JSESSIONID=" + user.sessionId);
 
-                    try (Response resp = client.newBuilder()
+                    try (Response resp = (lastCall = client.newBuilder()
                             .connectTimeout(POLLING_TIMEOUT, TimeUnit.SECONDS)
                             .readTimeout(POLLING_TIMEOUT, TimeUnit.SECONDS)
-                            .build().newCall(builder.build()).execute()) {
+                            .build().newCall(builder.build())).execute()) {
                         if (resp.code() != 200) throw new StatusCodeException(resp);
 
                         String json;
@@ -173,6 +175,8 @@ public class RegisteredPyx extends FirstLoadedPyx {
                 } catch (JSONException | PyxException ex) {
                     Log.w(TAG, "Polling exception.", ex);
                 } catch (IOException ex) {
+                    if (shouldStop) break;
+
                     Log.w(TAG, "Polling IO exception.", ex);
                     if (exCount++ > 3) {
                         if (nextWait < 500) nextWait = 500;
@@ -197,6 +201,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
 
         void safeStop() {
             shouldStop = true;
+            if (lastCall != null) lastCall.cancel();
             interrupt();
         }
 

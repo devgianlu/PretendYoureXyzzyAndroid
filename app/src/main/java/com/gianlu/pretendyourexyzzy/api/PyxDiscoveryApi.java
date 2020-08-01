@@ -15,6 +15,7 @@ import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.preferences.json.JsonStoring;
 import com.gianlu.pretendyourexyzzy.PK;
+import com.gianlu.pretendyourexyzzy.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,7 +52,12 @@ public class PyxDiscoveryApi {
         return instance;
     }
 
-    private void loadDiscoveryApiServersSync() throws IOException, JSONException {
+    @NonNull
+    private static JSONArray defaultServers(@NonNull Context context) throws IOException, JSONException {
+        return new JSONArray(CommonUtils.readEntirely(context.getResources().openRawResource(R.raw.default_servers)));
+    }
+
+    private void loadDiscoveryApiServersSync(@NonNull Context context) throws IOException, JSONException {
         try {
             if (!CommonUtils.isDebug() && Prefs.has(PK.API_SERVERS) && !JsonStoring.intoPrefs().isJsonArrayEmpty(PK.API_SERVERS)) {
                 long age = Prefs.getLong(PK.API_SERVERS_CACHE_AGE, 0);
@@ -60,10 +66,14 @@ public class PyxDiscoveryApi {
             }
 
             JSONArray array = new JSONArray(requestSync(DISCOVERY_API_LIST));
-            if (array.length() > 0) Pyx.Server.parseAndSave(array);
+            if (array.length() > 0) Pyx.Server.parseAndSave(array, true);
         } catch (IOException | JSONException ex) {
-            if (JsonStoring.intoPrefs().isJsonArrayEmpty(PK.API_SERVERS)) throw ex;
-            else Log.e(TAG, "Failed loading servers, but list isn't empty.", ex);
+            if (JsonStoring.intoPrefs().isJsonArrayEmpty(PK.API_SERVERS)) {
+                Log.e(TAG, "Failed loading servers, loaded default servers.", ex);
+                Pyx.Server.parseAndSave(defaultServers(context), false);
+            } else {
+                Log.e(TAG, "Failed loading servers, but list isn't empty.", ex);
+            }
         }
     }
 
@@ -112,11 +122,11 @@ public class PyxDiscoveryApi {
             @Override
             public void run() {
                 try {
-                    loadDiscoveryApiServersSync();
+                    loadDiscoveryApiServersSync(context);
                     Pyx.getStandard().firstLoad(activity, listener);
                 } catch (IOException | JSONException ex) {
                     post(() -> listener.onException(ex));
-                } catch (final Pyx.NoServersException ex) {
+                } catch (Pyx.NoServersException ex) {
                     ex.solve(context);
                     post(() -> listener.onException(ex));
                 }

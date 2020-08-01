@@ -62,10 +62,8 @@ public class OverloadedChatApi implements Closeable {
      * Sends keys (without generating pre-keys) to the server if needed.
      */
     public void shareKeysIfNeeded() {
-        if (Prefs.getBoolean(SignalPK.SIGNAL_UPDATE_KEYS, false)) {
+        if (Prefs.getBoolean(SignalPK.SIGNAL_UPDATE_KEYS, false))
             shareKeys(false);
-            Prefs.putBoolean(SignalPK.SIGNAL_UPDATE_KEYS, false);
-        }
     }
 
     /**
@@ -86,6 +84,7 @@ public class OverloadedChatApi implements Closeable {
             body.put("preKeys", preKeysArray);
 
             api.makePostRequest("Chat/ShareKeys", body);
+            Prefs.putBoolean(SignalPK.SIGNAL_UPDATE_KEYS, false);
             return null;
         }), "share-pre-keys");
     }

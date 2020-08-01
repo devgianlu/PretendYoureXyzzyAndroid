@@ -25,11 +25,11 @@ import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.cards.PyxCardsGroupView;
 import com.gianlu.pretendyourexyzzy.dialogs.CardImageZoomDialog;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
 
 import java.util.Objects;
 
-import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 
 public class StarredCardsActivity extends ActivityWithDialog implements CardsAdapter.Listener, OverloadedSyncApi.SyncStatusListener {
@@ -80,7 +80,7 @@ public class StarredCardsActivity extends ActivityWithDialog implements CardsAda
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if (!OverloadedApi.get().isFullyRegistered())
+        if (!OverloadedUtils.isSignedIn())
             menu.removeItem(R.id.starredCards_refresh);
 
         return true;

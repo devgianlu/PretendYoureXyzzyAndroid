@@ -42,7 +42,6 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbsCardsFragment extends FragmentWithDialog implements CardsAdapter.Listener {
@@ -259,19 +258,19 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
     public void importCards(@NonNull Context context, @Nullable JSONArray array) {
         if (array == null || id == null) return;
 
-        List<CustomCard> cards = new ArrayList<>(array.length());
         CustomDecksDatabase db = CustomDecksDatabase.get(context);
+        String[][] texts = new String[array.length()][];
+        boolean[] blacks = new boolean[array.length()];
         for (int i = 0; i < array.length(); i++) {
             try {
-                String[] text = CommonUtils.toStringArray(array.getJSONObject(i).getJSONArray("text"));
-                CustomCard card = db.putCard(id, isBlack(), text);
-                if (card != null) cards.add(card);
-                else Log.w(TAG, "Failed saving card to database.");
+                texts[i] = CommonUtils.toStringArray(array.getJSONObject(i).getJSONArray("text"));
+                blacks[i] = isBlack();
             } catch (JSONException ex) {
                 Log.w(TAG, "Failed importing card at " + i, ex);
             }
         }
 
+        List<CustomCard> cards = db.putCards(id, blacks, texts);
         if (adapter != null) adapter.addCardsAsSingleton(cards);
     }
 
