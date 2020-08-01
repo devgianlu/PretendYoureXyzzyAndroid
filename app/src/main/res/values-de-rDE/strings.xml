@@ -193,7 +193,6 @@
     <string name="showLastRound">Show last round</string>
     <string name="definition">Definition</string>
     <string name="noDefinitions">No definitions found!</string>
-    <string name="noGames">There are no games. You can create your own or join another server.</string>
     <string name="refresh">Refresh</string>
     <string name="blockUser">Block user</string>
     <string name="unblockUser">Unblock user</string>
@@ -201,7 +200,7 @@
     <string name="unblock">Unblock</string>
     <string name="unknownChatCommand">Unknown chat command.</string>
     <string name="lastRound">Last round</string>
-    <string name="spectatorsNotAllowed"><b>Spectators:</b><i>not allowed</i></string>
+    <string name="spectatorsNotAllowed"><![CDATA[<b>Spectators:</b>]]><![CDATA[<i>not allowed</i>]]></string>
     <string name="googlePlayGames">Google Play Games</string>
     <string name="loggedIn">Logged in</string>
     <string name="login">Login</string>
@@ -288,7 +287,6 @@
     <string name="failedRemovingFriend">Failed removing friend!</string>
     <string name="failedCreatingChat">Failed creating chat!</string>
     <string name="beTheFirstToSendAMessage">Be the first one to send a message!</string>
-    <string name="noFriends_long">You have no friends! Meet on the same server and add each other from the players list.</string>
     <string name="typeAMessage">Type a message</string>
     <string name="deleteAccount">Delete account</string>
     <string name="failedDeletingAccount">Failed deleting account!</string>
@@ -348,6 +346,4 @@
     <string name="lessThanMinuteAgo">Less than a minute ago</string>
     <string name="minutesAgo">%dm ago</string>
     <string name="hoursAgo">%dh ago</string>
-    <string name="importCustomDeck_details">You can import a custom deck from a JSON file with the following fields (not mandatory): `name`, `watermark`, `description`, `calls`, `responses`. See https://github.com/ajanata/PretendYoureXyzzy/pull/241 for a template.</string>
-    <string name="editCustomDeck_descDetails">The description is not mandatory, you can leave it empty.</string>
 </resources>
