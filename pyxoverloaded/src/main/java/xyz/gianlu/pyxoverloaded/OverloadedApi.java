@@ -530,7 +530,7 @@ public class OverloadedApi {
      * @return Whether it is an Overloaded user
      */
     public boolean isOverloadedUser(@NonNull String nick) {
-        return overloadedUsersCached == null && overloadedUsersCached.contains(nick);
+        return overloadedUsersCached != null && overloadedUsersCached.contains(nick);
     }
 
     /**
