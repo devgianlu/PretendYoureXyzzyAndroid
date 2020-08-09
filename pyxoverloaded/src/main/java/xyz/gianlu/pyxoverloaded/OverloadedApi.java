@@ -420,8 +420,10 @@ public class OverloadedApi {
      * @param listener   A listener for completion
      */
     public void link(@NonNull AuthCredential credential, @NonNull OnCompleteListener<Void> listener) {
-        if (user == null && updateUser())
+        if (user == null && updateUser()) {
+            listener.onComplete(Tasks.forException(new NotSignedInException()));
             return;
+        }
 
         user.linkWithCredential(credential)
                 .continueWithTask(task -> user.reload())
@@ -467,6 +469,11 @@ public class OverloadedApi {
     public void registerUser(@Nullable String username, @Nullable String sku, @Nullable String purchaseToken, @Nullable Activity activity, @NonNull UserDataCallback callback) {
         if (username == null && (sku == null && purchaseToken == null))
             throw new IllegalStateException();
+
+        if (user == null && updateUser()) {
+            callback.onFailed(new NotSignedInException());
+            return;
+        }
 
         Task<UserData> task = user.getIdToken(true)
                 .continueWith(new NonNullContinuation<GetTokenResult, OverloadedToken>() {
