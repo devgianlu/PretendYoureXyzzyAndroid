@@ -187,6 +187,10 @@ public class OverloadedApi {
                         .post(body);
 
                 try {
+                    req.addHeader("Content-Length", String.valueOf(body.contentLength()));
+                    MediaType contentType = body.contentType();
+                    if (contentType != null) req.addHeader("Content-Type", contentType.toString());
+
                     return makeRequestInternal(req, trace);
                 } catch (IOException ex) {
                     lastEx = new OverloadedException(req.build().toString(), ex);
