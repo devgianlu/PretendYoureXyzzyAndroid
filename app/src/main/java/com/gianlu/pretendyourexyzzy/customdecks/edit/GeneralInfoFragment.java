@@ -95,7 +95,7 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
     public boolean save(@NonNull Context context) {
         if (importName != null && importDesc != null && importWatermark != null) {
             boolean result = save(context, importName, importWatermark, importDesc);
-            importName = importDesc = importWatermark = null;
+            if (result) importName = importDesc = importWatermark = null;
             return result;
         }
 

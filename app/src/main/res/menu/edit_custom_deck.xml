@@ -8,6 +8,12 @@
         app:showAsAction="always" />
 
     <item
+        android:id="@+id/editCustomDeck_export"
+        android:icon="@drawable/baseline_share_24"
+        android:title="@string/exportCustomDeck"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/editCustomDeck_delete"
         android:icon="@drawable/baseline_delete_24"
         android:title="@string/delete"

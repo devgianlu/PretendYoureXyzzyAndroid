@@ -63,7 +63,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     public static List<FloatingCustomDeck> transform(@NotNull String owner, @NonNull List<UserProfile.CustomDeck> original) {
         List<FloatingCustomDeck> list = new ArrayList<>(original.size());
         for (UserProfile.CustomDeck deck : original)
-            list.add(new FloatingCustomDeck(deck.name, deck.watermark, owner, deck.count));
+            list.add(new FloatingCustomDeck(deck.name, deck.watermark, owner, 0, deck.count));
         return list;
     }
 
