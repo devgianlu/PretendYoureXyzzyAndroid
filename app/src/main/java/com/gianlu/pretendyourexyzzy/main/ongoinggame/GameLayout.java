@@ -229,6 +229,8 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
         void showDialog(@NonNull DialogFragment dialog);
 
         void startGame();
+
+        void refreshGameInfo();
     }
 
     private class CountdownTask extends TimerTask {
@@ -240,10 +242,15 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
 
         @Override
         public void run() {
-            handler.post(() -> time.setText(String.valueOf(count)));
+            if (count >= 0) {
+                String countStr = String.valueOf(count);
+                handler.post(() -> time.setText(countStr));
+            } else if (count == -3) {
+                cancel();
+                listener.refreshGameInfo();
+            }
 
-            if (count <= 0) cancel();
-            else count--;
+            count--;
         }
     }
 }

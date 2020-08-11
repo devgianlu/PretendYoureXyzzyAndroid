@@ -112,7 +112,6 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
 
         ViewHolder(@NonNull ViewGroup parent) {
             super(inflater.inflate(R.layout.item_player, parent, false));
-            setIsRecyclable(true);
 
             name = itemView.findViewById(R.id.playerItem_name);
             score = itemView.findViewById(R.id.playerItem_score);

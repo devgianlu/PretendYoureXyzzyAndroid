@@ -379,6 +379,22 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         });
     }
 
+    @Override
+    public void refreshGameInfo() {
+        Log.i(TAG, "Refreshing game info and cards because of timeout.");
+        pyx.getGameInfoAndCards(gid, null, new Pyx.OnResult<GameInfoAndCards>() {
+            @Override
+            public void onDone(@NonNull GameInfoAndCards result) {
+                gameData.update(result.info, result.cards, gameLayout);
+            }
+
+            @Override
+            public void onException(@NonNull Exception ex) {
+                Log.e(TAG, "Failed refreshing game info and cards.", ex);
+            }
+        });
+    }
+
     /**
      * @return Whether the exception has been handled
      */
