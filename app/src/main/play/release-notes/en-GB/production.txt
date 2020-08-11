@@ -1,17 +1,9 @@
-** OVERLOADED UPDATE **
-
 ### Added
-- Added end-to-end encrypted chat
-- Synchronize starred cards and custom decks
-- See other users profiles and stats
-- Make friends on servers
-- Show custom decks in game list
+- Export/share custom decks
 
 ### Changed
-- Improved chats layout
-- Load default server on network error
-- Better edit game options dialog layout
+- Refresh game after 3 seconds it has been stuck
 
 ### Fixed
-- Fixed game locking up when spectator is alone inside a game
-- Fixed "nickname already in use" error when logging in
+- Fixed importing cards with 0 pick
+- Fixed unescaped HTML in cards
