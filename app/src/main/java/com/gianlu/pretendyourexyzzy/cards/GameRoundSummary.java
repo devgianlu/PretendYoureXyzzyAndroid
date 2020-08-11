@@ -149,7 +149,7 @@ public class GameRoundSummary {
 
         textPaint.setTextSize(MAX_TEXT_SIZE);
         do {
-            text = new StaticLayout(card.text(), textPaint, maxTextWidth, Layout.Alignment.ALIGN_NORMAL, 1, 0, true);
+            text = new StaticLayout(card.textUnescaped(), textPaint, maxTextWidth, Layout.Alignment.ALIGN_NORMAL, 1, 0, true);
             textPaint.setTextSize(textPaint.getTextSize() - 1);
         } while (text.getHeight() >= maxTextHeight);
 

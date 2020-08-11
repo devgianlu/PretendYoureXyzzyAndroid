@@ -156,10 +156,12 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                     }
 
                     OverloadedApi.get().link(credential, task -> {
-                        if (task.isSuccessful())
+                        if (task.isSuccessful()) {
                             showToast(Toaster.build().message(R.string.accountLinked));
-                        else
+                        } else {
                             showToast(Toaster.build().message(R.string.failedLinkingAccount));
+                            Log.e(TAG, "Failed linking account.", task.getException());
+                        }
 
                         onBackPressed();
                     });

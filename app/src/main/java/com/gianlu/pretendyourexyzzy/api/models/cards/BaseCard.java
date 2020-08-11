@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,6 +15,15 @@ public abstract class BaseCard implements Serializable {
 
     @NonNull
     public abstract String text();
+
+    @NonNull
+    public final String textUnescaped() {
+        try {
+            return URLDecoder.decode(text(), "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
 
     @Nullable
     public abstract String watermark();
