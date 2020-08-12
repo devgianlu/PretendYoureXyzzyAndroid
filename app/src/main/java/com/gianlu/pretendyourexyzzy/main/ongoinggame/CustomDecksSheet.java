@@ -31,9 +31,9 @@ import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
+import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
-import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.FloatingCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.StarredDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
@@ -60,10 +60,10 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         return new CustomDecksSheet();
     }
 
-    private static void removeDeck(@NonNull List<FloatingCustomDeck> list, @NonNull Deck deck) {
-        Iterator<FloatingCustomDeck> iter = list.iterator();
+    private static void removeDeck(@NonNull List<BasicCustomDeck> list, @NonNull Deck deck) {
+        Iterator<BasicCustomDeck> iter = list.iterator();
         while (iter.hasNext()) {
-            FloatingCustomDeck d = iter.next();
+            BasicCustomDeck d = iter.next();
             if (d.name.equals(deck.name) && d.watermark.equals(deck.watermark)) {
                 iter.remove();
                 break;
@@ -152,7 +152,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         action.setImageResource(R.drawable.baseline_add_24);
         action.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.customDecksSheetFabBg)));
         action.setOnClickListener(v -> {
-            List<FloatingCustomDeck> customDecks;
+            List<BasicCustomDeck> customDecks;
             if ((customDecks = getAddableCustomDecks(CustomDecksDatabase.get(requireContext()))).isEmpty())
                 DialogUtils.showToast(getContext(), Toaster.build().message(R.string.noCustomDecksToAdd));
             else
@@ -163,8 +163,8 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
     }
 
     @NonNull
-    private List<FloatingCustomDeck> getAddableCustomDecks(@NonNull CustomDecksDatabase db) {
-        List<FloatingCustomDeck> customDecks = db.getAllDecks();
+    private List<BasicCustomDeck> getAddableCustomDecks(@NonNull CustomDecksDatabase db) {
+        List<BasicCustomDeck> customDecks = db.getAllDecks();
         if (adapter != null && adapter.getItemCount() != 0) {
             for (Deck deck : adapter.getDecks())
                 removeDeck(customDecks, deck);
@@ -173,10 +173,10 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         return customDecks;
     }
 
-    private void showAddCustomDeckDialog(@NonNull List<FloatingCustomDeck> customDecks) {
+    private void showAddCustomDeckDialog(@NonNull List<BasicCustomDeck> customDecks) {
         String[] names = new String[customDecks.size()];
         for (int i = 0; i < names.length; i++) {
-            FloatingCustomDeck deck = customDecks.get(i);
+            BasicCustomDeck deck = customDecks.get(i);
             names[i] = deck.name + " (" + deck.watermark + ")";
         }
 
@@ -186,7 +186,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
                 .setItems(names, (dialog, which) -> {
                     if (pyx == null || !canModifyCustomDecks()) return;
 
-                    FloatingCustomDeck deck = customDecks.get(which);
+                    BasicCustomDeck deck = customDecks.get(which);
                     if (deck instanceof CustomDeck) {
                         CustomDecksDatabase.get(requireContext()).updateDeckLastUsed(((CustomDeck) deck).id);
 

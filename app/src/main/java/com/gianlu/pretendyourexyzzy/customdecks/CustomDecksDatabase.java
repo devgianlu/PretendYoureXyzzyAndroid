@@ -60,10 +60,10 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     }
 
     @NonNull
-    public static List<FloatingCustomDeck> transform(@NotNull String owner, @NonNull List<UserProfile.CustomDeck> original) {
-        List<FloatingCustomDeck> list = new ArrayList<>(original.size());
+    public static List<BasicCustomDeck> transform(@NotNull String owner, @NonNull List<UserProfile.CustomDeck> original) {
+        List<BasicCustomDeck> list = new ArrayList<>(original.size());
         for (UserProfile.CustomDeck deck : original)
-            list.add(new FloatingCustomDeck(deck.name, deck.watermark, owner, 0, deck.count));
+            list.add(new BasicCustomDeck(deck.name, deck.watermark, owner, 0, deck.count));
         return list;
     }
 
@@ -283,8 +283,8 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     }
 
     @NonNull
-    public List<FloatingCustomDeck> getAllDecks() {
-        List<FloatingCustomDeck> decks = new LinkedList<>();
+    public List<BasicCustomDeck> getAllDecks() {
+        List<BasicCustomDeck> decks = new LinkedList<>();
         decks.addAll(getDecks());
         decks.addAll(getStarredDecks(false));
         Collections.sort(decks, (o1, o2) -> Long.compare(o2.lastUsed, o1.lastUsed));
@@ -831,45 +831,6 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
     }
 
-    public static class FloatingCustomDeck {
-        public final String name;
-        public final String watermark;
-        public final String owner;
-        public final long lastUsed;
-        private final int count;
-
-        FloatingCustomDeck(@NonNull String name, @NonNull String watermark, @Nullable String owner, long lastUsed) {
-            this(name, watermark, owner, lastUsed, -1);
-        }
-
-        FloatingCustomDeck(@NonNull String name, @NonNull String watermark, @Nullable String owner, long lastUsed, int count) {
-            this.name = name;
-            this.watermark = watermark;
-            this.owner = owner;
-            this.lastUsed = lastUsed;
-            this.count = count;
-        }
-
-        public int cardsCount() {
-            return count;
-        }
-
-        public int whiteCardsCount() {
-            return -1;
-        }
-
-        public int blackCardsCount() {
-            return -1;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = name.hashCode();
-            result = 31 * result + watermark.hashCode();
-            return result;
-        }
-    }
-
     public static final class CustomCard extends BaseCard {
         public final int id;
         private final String text;
@@ -973,7 +934,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
     }
 
-    public static class StarredDeck extends FloatingCustomDeck {
+    public static class StarredDeck extends BasicCustomDeck {
         public final String shareCode;
         public final int id;
         public final Long remoteId;
@@ -1032,7 +993,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
     }
 
-    public final class CustomDeck extends FloatingCustomDeck {
+    public final class CustomDeck extends BasicCustomDeck {
         public final int id;
         public final String description;
         public final Long remoteId;

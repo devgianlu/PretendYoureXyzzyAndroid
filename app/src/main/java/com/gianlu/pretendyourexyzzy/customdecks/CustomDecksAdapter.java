@@ -11,18 +11,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.FloatingCustomDeck;
 
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
 public final class CustomDecksAdapter extends RecyclerView.Adapter<CustomDecksAdapter.ViewHolder> {
-    private final List<? extends FloatingCustomDeck> decks;
+    private final List<? extends BasicCustomDeck> decks;
     private final Listener listener;
     private final LayoutInflater inflater;
 
-    public CustomDecksAdapter(@NonNull Context context, @NonNull List<? extends FloatingCustomDeck> decks, @NonNull Listener listener) {
+    public CustomDecksAdapter(@NonNull Context context, @NonNull List<? extends BasicCustomDeck> decks, @NonNull Listener listener) {
         this.decks = decks;
         this.listener = listener;
         this.inflater = LayoutInflater.from(context);
@@ -42,7 +41,7 @@ public final class CustomDecksAdapter extends RecyclerView.Adapter<CustomDecksAd
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        FloatingCustomDeck deck = decks.get(position);
+        BasicCustomDeck deck = decks.get(position);
         holder.name.setText(deck.name);
         holder.watermark.setText(deck.watermark);
         holder.itemView.setOnClickListener(view -> listener.onCustomDeckSelected(deck));
@@ -69,7 +68,7 @@ public final class CustomDecksAdapter extends RecyclerView.Adapter<CustomDecksAd
     }
 
     public interface Listener {
-        void onCustomDeckSelected(@NonNull FloatingCustomDeck deck);
+        void onCustomDeckSelected(@NonNull BasicCustomDeck deck);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

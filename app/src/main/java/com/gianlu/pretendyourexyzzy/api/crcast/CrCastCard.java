@@ -10,7 +10,7 @@ import org.json.JSONObject;
 
 public final class CrCastCard extends BaseCard {
     public final long id;
-    public final CrCastDeck.State state;
+    public final CrCastApi.State state;
     private final String deckCode;
     private final boolean black;
     private final String text;
@@ -22,9 +22,9 @@ public final class CrCastCard extends BaseCard {
         this.black = black;
         this.id = obj.getLong("id");
         this.text = obj.getString("text");
-        this.pick = obj.getInt("pick");
-        this.draw = obj.getInt("draw");
-        this.state = CrCastDeck.State.parse(obj.getInt("state"));
+        this.pick = obj.optInt("pick", -1);
+        this.draw = obj.optInt("draw", -1);
+        this.state = CrCastApi.State.parse(obj.getInt("state"));
     }
 
     @NonNull

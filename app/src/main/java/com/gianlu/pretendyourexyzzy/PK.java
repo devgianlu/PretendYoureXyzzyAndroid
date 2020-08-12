@@ -23,7 +23,9 @@ public final class PK extends CommonPK {
     public static final Prefs.Key STARRED_CARDS_REVISION = new Prefs.Key("starredCardsRevision");
     public static final Prefs.Key STARRED_CUSTOM_DECKS_REVISION = new Prefs.Key("starredCustomDecksRevision");
     public static final Prefs.Key LAST_CHANGELOG_SHOWN = new Prefs.Key("lastChangelogShown");
-    public static final Prefs.Key LAST_CR_CAST_TOKEN = new Prefs.Key("lastCrCastToken");
+    public static final Prefs.Key CR_CAST_TOKEN = new Prefs.Key("crCastToken");
+    public static final Prefs.Key CR_CAST_USER = new Prefs.Key("crCastUser");
+    public static final Prefs.Key CR_CAST_PASSWORD = new Prefs.Key("crCastPass");
     @Deprecated
     public static final Prefs.Key STARRED_CARDS = new Prefs.Key("starredCards");
 }

@@ -11,6 +11,9 @@ import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -32,12 +35,15 @@ import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.api.crcast.CrCastApi;
+import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
+import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksAdapter;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
-import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.FloatingCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
+import com.gianlu.pretendyourexyzzy.dialogs.CrCastLoginDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
 import com.gianlu.pretendyourexyzzy.tutorial.CustomDecksTutorial;
@@ -53,7 +59,7 @@ import java.util.List;
 import me.toptas.fancyshowcase.FocusShape;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 
-public class CustomDecksFragment extends FragmentWithDialog implements OverloadedSyncApi.SyncStatusListener, CustomDecksAdapter.Listener, TutorialManager.Listener {
+public class CustomDecksFragment extends FragmentWithDialog implements OverloadedSyncApi.SyncStatusListener, CustomDecksAdapter.Listener, TutorialManager.Listener, CrCastLoginDialog.LoginListener {
     private static final int RC_IMPORT_JSON = 2;
     private static final String TAG = CustomDecksFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
@@ -61,10 +67,35 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
     private TextView syncStatus;
     private TutorialManager tutorialManager;
     private FloatingActionsMenu fab;
+    private FloatingActionButton connectCrCast;
 
     @NonNull
     public static CustomDecksFragment getInstance() {
-        return new CustomDecksFragment();
+        CustomDecksFragment fragment = new CustomDecksFragment();
+        fragment.setHasOptionsMenu(true);
+        return fragment;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.custom_decks, menu);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        if (!CrCastApi.hasCredentials()) menu.removeItem(R.id.customDecks_logoutCrCast);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.customDecks_logoutCrCast:
+                CrCastApi.get().logout();
+                if (getActivity() != null) getActivity().invalidateOptionsMenu();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Nullable
@@ -138,6 +169,17 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
             fab.collapse();
         });
 
+        connectCrCast = layout.findViewById(R.id.customDecksFab_connectCrCast);
+        if (CrCastApi.hasCredentials()) {
+            connectCrCast.setVisibility(View.GONE);
+        } else {
+            connectCrCast.setVisibility(View.VISIBLE);
+            connectCrCast.setOnClickListener(v -> {
+                CrCastLoginDialog.get().show(getChildFragmentManager(), null);
+                fab.collapse();
+            });
+        }
+
         tutorialManager = new TutorialManager(this, Discovery.CUSTOM_DECKS);
         return layout;
     }
@@ -174,11 +216,37 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         SyncUtils.syncStarredCustomDecks(requireContext(), this::refreshList);
     }
 
+    @Override
+    public void loggedInCrCast() {
+        connectCrCast.setVisibility(View.GONE);
+        if (getActivity() != null) getActivity().invalidateOptionsMenu();
+        refreshList();
+    }
+
     private void refreshList() {
-        List<FloatingCustomDeck> decks = db.getAllDecks();
-        rmv.loadListData(new CustomDecksAdapter(requireContext(), decks, this), false);
+        List<BasicCustomDeck> decks = db.getAllDecks();
+        CustomDecksAdapter adapter = new CustomDecksAdapter(requireContext(), decks, this);
+        rmv.loadListData(adapter, false);
         if (decks.isEmpty()) rmv.showInfo(R.string.noCustomDecks_create);
         else rmv.showList();
+
+        CrCastApi.get().getDecks(getActivity(), new CrCastApi.DecksCallback() {
+            @Override
+            public void onDecks(@NonNull List<CrCastDeck> crCastDecks) {
+                decks.addAll(crCastDecks);
+                adapter.notifyItemRangeInserted(decks.size() - crCastDecks.size(), crCastDecks.size());
+
+                // TODO: Should be sorted
+            }
+
+            @Override
+            public void onException(@NonNull Exception ex) {
+                if (ex instanceof CrCastApi.NotSignedInException)
+                    return;
+
+                Log.e(TAG, "Failed loading CrCast decks.", ex);
+            }
+        });
     }
 
     @Override
@@ -226,7 +294,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
     }
 
     @Override
-    public void onCustomDeckSelected(@NonNull FloatingCustomDeck deck) {
+    public void onCustomDeckSelected(@NonNull BasicCustomDeck deck) {
         if (deck instanceof CustomDeck)
             EditCustomDeckActivity.startActivityEdit(requireContext(), (CustomDeck) deck);
         else if (deck instanceof CustomDecksDatabase.StarredDeck && deck.owner != null)

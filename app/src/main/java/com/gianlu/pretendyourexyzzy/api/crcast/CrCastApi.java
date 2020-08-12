@@ -4,9 +4,11 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
 import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
@@ -20,9 +22,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,6 +42,7 @@ import okhttp3.ResponseBody;
 public final class CrCastApi {
     private static final CrCastApi instance = new CrCastApi();
     private static final String BASE_URL = "https://castapi.clrtd.com/";
+    private static final String TAG = CrCastApi.class.getSimpleName();
     private final OkHttpClient client;
     private final ExecutorService executorService;
     private final LifecycleAwareHandler handler;
@@ -60,28 +64,73 @@ public final class CrCastApi {
         return instance;
     }
 
-    @NonNull
-    @WorkerThread
-    private JSONObject request(@NonNull String suffix) throws IOException, JSONException {
-        try (Response resp = client.newCall(new Request.Builder().get().url(BASE_URL + suffix).build()).execute()) {
-            if (resp.code() != 200) throw new StatusCodeException(resp);
-
-            ResponseBody body = resp.body();
-            if (body == null) throw new IOException("Missing body.");
-            JSONObject json = new JSONObject(body.string());
-
-            int errorCode;
-            if ((errorCode = json.optInt("error", 0)) != 0)
-                throw new CrCastException(errorCode);
-
-            return json;
-        }
+    public static boolean hasCredentials() {
+        return Prefs.has(PK.CR_CAST_TOKEN) || (Prefs.has(PK.CR_CAST_USER) && Prefs.has(PK.CR_CAST_PASSWORD));
     }
 
     @NonNull
-    private String getToken() throws CrCastException {
-        String token = Prefs.getString(PK.LAST_CR_CAST_TOKEN, null);
-        if (token == null || token.isEmpty()) throw new NotSignedInException();
+    @WorkerThread
+    private JSONObject request(@NonNull String suffix) throws IOException, JSONException, CrCastException {
+        Exception lastEx = null;
+        for (int i = 0; i < 3; i++) {
+            try (Response resp = client.newCall(new Request.Builder().get().url(BASE_URL + suffix).build()).execute()) {
+                Log.v(TAG, suffix + " -> " + resp.code());
+                if (resp.code() != 200) throw new StatusCodeException(resp);
+
+                ResponseBody body = resp.body();
+                if (body == null) throw new IOException("Missing body.");
+                JSONObject json = new JSONObject(body.string());
+
+                int errorCode;
+                if ((errorCode = json.optInt("error", 0)) != 0) {
+                    String msg = json.getString("message");
+                    Log.d(TAG, suffix + " -> error: " + errorCode + " (" + msg + ")");
+                    throw new CrCastException(errorCode, msg);
+                }
+
+                return json;
+            } catch (JSONException | IOException ex) {
+                lastEx = ex;
+            } catch (CrCastException ex) {
+                lastEx = ex;
+
+                if (ex.code == ErrorCode.TOKEN_EXPIRED) {
+                    Prefs.remove(PK.CR_CAST_TOKEN);
+                    Log.d(TAG, "Token expired, renewing...");
+                }
+            }
+        }
+
+        if (lastEx instanceof IOException) throw (IOException) lastEx;
+        else if (lastEx instanceof JSONException) throw (JSONException) lastEx;
+        else throw (CrCastException) lastEx;
+    }
+
+    @NonNull
+    @WorkerThread
+    private String getToken() throws NotSignedInException {
+        String token = Prefs.getString(PK.CR_CAST_TOKEN, null);
+        if (token != null && !token.isEmpty()) return token;
+
+        String user = Prefs.getString(PK.CR_CAST_USER, null);
+        String pass = Prefs.getString(PK.CR_CAST_PASSWORD, null);
+        if (user != null && pass != null) {
+            try {
+                return loginSync(user, pass);
+            } catch (IOException | JSONException | CrCastException ex) {
+                throw new CrCastApi.NotSignedInException("Failed login with username and hashed password.", ex);
+            }
+        }
+
+        throw new NotSignedInException("No means to login.");
+    }
+
+    @WorkerThread
+    @NonNull
+    private String loginSync(@NonNull String username, @NonNull String hashedPassword) throws JSONException, IOException, CrCastException {
+        JSONObject obj = request("user/token/?username=" + username + "&password=" + hashedPassword);
+        String token = obj.getString("token");
+        Prefs.putString(PK.CR_CAST_TOKEN, token);
         return token;
     }
 
@@ -89,20 +138,14 @@ public final class CrCastApi {
         executorService.execute(new LifecycleAwareRunnable(handler, activity == null ? callback : activity) {
             @Override
             public void run() {
-                String passwordHash;
                 try {
-                    passwordHash = new String(MessageDigest.getInstance("SHA512").digest(password.getBytes(StandardCharsets.UTF_8)));
-                } catch (GeneralSecurityException ex) {
-                    post(() -> callback.onException(ex));
-                    return;
-                }
+                    byte[] hash = MessageDigest.getInstance("SHA512").digest(password.getBytes(StandardCharsets.UTF_8));
+                    StringBuilder hex = new StringBuilder(new BigInteger(1, hash).toString(16));
+                    while (hex.length() < 32) hex.insert(0, "0");
 
-                try {
-                    JSONObject obj = request("user/token/?username=" + username + "&password=" + passwordHash);
-                    String token = obj.getString("token"); // TODO: Does this expire?
-                    Prefs.putString(PK.LAST_CR_CAST_TOKEN, token);
+                    loginSync(username, hex.toString());
                     post(callback::onLoginSuccessful);
-                } catch (IOException | JSONException ex) {
+                } catch (IOException | JSONException | NoSuchAlgorithmException | CrCastException ex) {
                     post(() -> callback.onException(ex));
                 }
             }
@@ -117,7 +160,7 @@ public final class CrCastApi {
                     JSONObject obj = request("user/" + getToken());
                     CrCastUser user = new CrCastUser(obj);
                     post(() -> callback.onUser(user));
-                } catch (IOException | JSONException | ParseException ex) {
+                } catch (IOException | JSONException | ParseException | CrCastException | NotSignedInException ex) {
                     post(() -> callback.onException(ex));
                 }
             }
@@ -136,45 +179,96 @@ public final class CrCastApi {
                     while (iter.hasNext())
                         list.add(new CrCastDeck(decks.getJSONObject(iter.next())));
                     post(() -> callback.onDecks(list));
-                } catch (IOException | JSONException | ParseException ex) {
+                } catch (IOException | JSONException | ParseException | CrCastException | NotSignedInException ex) {
                     post(() -> callback.onException(ex));
                 }
             }
         });
     }
 
+    public void logout() {
+        Prefs.remove(PK.CR_CAST_TOKEN);
+        Prefs.remove(PK.CR_CAST_USER);
+        Prefs.remove(PK.CR_CAST_PASSWORD);
+    }
+
+    public enum State {
+        DECLINED(0), ACCEPTED(1), PENDING(2), UNPUBLISHED(3);
+
+        private final int val;
+
+        State(int val) {
+            this.val = val;
+        }
+
+        @NonNull
+        public static State parse(int val) {
+            for (State state : values())
+                if (val == state.val)
+                    return state;
+
+            throw new IllegalArgumentException("Unknown state: " + val);
+        }
+    }
+
+    public enum ErrorCode {
+        OK(0), DB_ERROR(1), MISSING_PARAM(2), VALIDATION(3), ALREADY_EXISTS(4),
+        NOT_FOUND(5), BANNED(6), NOT_ACTIVATED(7), NOT_AUTHORIZED(8), NOT_PERMITTED(9),
+        TOKEN_EXPIRED(10);
+
+        private final int val;
+
+        ErrorCode(int val) {
+            this.val = val;
+        }
+
+        @NonNull
+        public static ErrorCode parse(int val) {
+            for (ErrorCode code : values())
+                if (val == code.val)
+                    return code;
+
+            throw new IllegalArgumentException("Unknown error code: " + val);
+        }
+    }
+
+    @UiThread
     public interface UserCallback {
         void onUser(@NonNull CrCastUser user);
 
         void onException(@NonNull Exception ex);
     }
 
+    @UiThread
     public interface DecksCallback {
         void onDecks(@NonNull List<CrCastDeck> decks);
 
         void onException(@NonNull Exception ex);
     }
 
+    @UiThread
     public interface LoginCallback {
         void onLoginSuccessful();
 
         void onException(@NonNull Exception ex);
     }
 
-    public static class NotSignedInException extends CrCastException {
+    public static class NotSignedInException extends Exception {
+        NotSignedInException(@NonNull String message) {
+            super(message);
+        }
 
-        NotSignedInException() {
-            super("Missing token.");
+        NotSignedInException(@NonNull String message, @NonNull Throwable cause) {
+            super(message, cause);
         }
     }
 
-    public static class CrCastException extends IOException {
-        CrCastException(int errorCode) {
-            super("Code: " + errorCode);
-        }
+    public static class CrCastException extends Exception {
+        public final ErrorCode code;
 
-        CrCastException(@NonNull String msg) {
-            super(msg);
+        CrCastException(int errorCode, @NonNull String msg) {
+            super(errorCode + ": " + msg);
+            this.code = ErrorCode.parse(errorCode);
         }
     }
 }
