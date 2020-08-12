@@ -17,6 +17,7 @@ import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.api.StatusCodeException;
 import com.gianlu.pretendyourexyzzy.api.UserAgentInterceptor;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -167,7 +168,7 @@ public final class CrCastApi {
         });
     }
 
-    public void getDecks(@Nullable Activity activity, @NonNull DecksCallback callback) {
+    public void getDecks(@NonNull CustomDecksDatabase db, @Nullable Activity activity, @NonNull DecksCallback callback) {
         executorService.execute(new LifecycleAwareRunnable(handler, activity == null ? callback : activity) {
             @Override
             public void run() {
@@ -177,7 +178,7 @@ public final class CrCastApi {
                     List<CrCastDeck> list = new ArrayList<>(decks.length());
                     Iterator<String> iter = decks.keys();
                     while (iter.hasNext())
-                        list.add(new CrCastDeck(decks.getJSONObject(iter.next())));
+                        list.add(CrCastDeck.parse(decks.getJSONObject(iter.next()), db));
                     post(() -> callback.onDecks(list));
                 } catch (IOException | JSONException | ParseException | CrCastException | NotSignedInException ex) {
                     post(() -> callback.onException(ex));
@@ -195,7 +196,7 @@ public final class CrCastApi {
     public enum State {
         DECLINED(0), ACCEPTED(1), PENDING(2), UNPUBLISHED(3);
 
-        private final int val;
+        public final int val;
 
         State(int val) {
             this.val = val;

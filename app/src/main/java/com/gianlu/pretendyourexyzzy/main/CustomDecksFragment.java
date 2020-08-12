@@ -54,6 +54,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import me.toptas.fancyshowcase.FocusShape;
@@ -91,7 +93,10 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         switch (item.getItemId()) {
             case R.id.customDecks_logoutCrCast:
                 CrCastApi.get().logout();
+                connectCrCast.setVisibility(View.VISIBLE);
                 if (getActivity() != null) getActivity().invalidateOptionsMenu();
+                CustomDecksAdapter adapter = (CustomDecksAdapter) rmv.list().getAdapter();
+                if (adapter != null) adapter.removeAllCrCastDecks();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -109,11 +114,10 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         rmv = layout.findViewById(R.id.customDecks_list);
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
 
-        if (OverloadedUtils.isSignedIn())
-            rmv.enableSwipeRefresh(this::refreshSync, R.color.appColorBright);
+        if (OverloadedUtils.isSignedIn() || CrCastApi.hasCredentials())
+            rmv.enableSwipeRefresh(this::refresh, R.color.appColorBright);
         else
             rmv.disableSwipeRefresh();
-
 
         fab = layout.findViewById(R.id.customDecks_fab);
         FloatingActionButton importDeck = layout.findViewById(R.id.customDecksFab_import);
@@ -208,12 +212,27 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         });
     }
 
-    private void refreshSync() {
+    private void refresh() {
         if (getContext() == null)
             return;
 
-        SyncUtils.syncCustomDecks(requireContext(), this::refreshList);
-        SyncUtils.syncStarredCustomDecks(requireContext(), this::refreshList);
+        if (OverloadedUtils.isSignedIn()) {
+            SyncUtils.OnCompleteCallback callback = new SyncUtils.OnCompleteCallback() {
+                boolean otherFinished = false;
+
+                @Override
+                public void onComplete() {
+                    refreshList();
+
+                    if (otherFinished) refreshCrCast();
+                    else otherFinished = true;
+                }
+            };
+            SyncUtils.syncCustomDecks(requireContext(), callback);
+            SyncUtils.syncStarredCustomDecks(requireContext(), callback);
+        } else if (CrCastApi.hasCredentials()) {
+            refreshCrCast();
+        }
     }
 
     @Override
@@ -221,22 +240,44 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         connectCrCast.setVisibility(View.GONE);
         if (getActivity() != null) getActivity().invalidateOptionsMenu();
         refreshList();
+        refreshCrCast();
     }
 
-    private void refreshList() {
-        List<BasicCustomDeck> decks = db.getAllDecks();
-        CustomDecksAdapter adapter = new CustomDecksAdapter(requireContext(), decks, this);
-        rmv.loadListData(adapter, false);
-        if (decks.isEmpty()) rmv.showInfo(R.string.noCustomDecks_create);
-        else rmv.showList();
+    private void refreshCrCast() {
+        if (!CrCastApi.hasCredentials())
+            return;
 
-        CrCastApi.get().getDecks(getActivity(), new CrCastApi.DecksCallback() {
+        CustomDecksAdapter adapter = (CustomDecksAdapter) rmv.list().getAdapter();
+        if (adapter == null)
+            return;
+
+        CrCastApi.get().getDecks(db, getActivity(), new CrCastApi.DecksCallback() {
             @Override
-            public void onDecks(@NonNull List<CrCastDeck> crCastDecks) {
-                decks.addAll(crCastDecks);
-                adapter.notifyItemRangeInserted(decks.size() - crCastDecks.size(), crCastDecks.size());
+            public void onDecks(@NonNull List<CrCastDeck> updatedDecks) {
+                List<CrCastDeck> oldDecks = db.getCachedCrCastDecks();
 
-                // TODO: Should be sorted
+                List<CrCastDeck> toUpdate = new LinkedList<>();
+                for (CrCastDeck newDeck : updatedDecks) {
+                    CrCastDeck oldDeck;
+                    if ((oldDeck = CrCastDeck.find(oldDecks, newDeck.watermark)) == null || oldDeck.hasChanged(newDeck))
+                        toUpdate.add(newDeck);
+                }
+
+                List<String> toRemove = new LinkedList<>();
+                for (CrCastDeck oldDeck : oldDecks) {
+                    if (CrCastDeck.find(updatedDecks, oldDeck.watermark) == null)
+                        toRemove.add(oldDeck.watermark);
+                }
+
+                CustomDecksDatabase.get(requireContext()).updateCrCastDecks(toUpdate, toRemove);
+
+                for (String removeDeck : toRemove)
+                    adapter.removeCrCastDeck(removeDeck);
+
+                if (!toUpdate.isEmpty())
+                    adapter.itemsAdded(new ArrayList<>(toUpdate));
+
+                Log.d(TAG, "Updated CrCast decks, updated: " + toUpdate.size() + ", removed: " + toRemove.size());
             }
 
             @Override
@@ -249,6 +290,14 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         });
     }
 
+    private void refreshList() {
+        List<BasicCustomDeck> decks = db.getAllDecks();
+        CustomDecksAdapter adapter = new CustomDecksAdapter(requireContext(), decks, this);
+        rmv.loadListData(adapter, false);
+        if (decks.isEmpty()) rmv.showInfo(R.string.noCustomDecks_create);
+        else rmv.showList();
+    }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -259,6 +308,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
     public void onResume() {
         super.onResume();
         refreshList();
+        refreshCrCast();
         tryShowingTutorial();
     }
 

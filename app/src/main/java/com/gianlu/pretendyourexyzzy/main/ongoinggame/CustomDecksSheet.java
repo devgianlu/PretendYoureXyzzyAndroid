@@ -44,6 +44,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONException;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -170,6 +171,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
                 removeDeck(customDecks, deck);
         }
 
+        Collections.sort(customDecks, (o1, o2) -> Long.compare(o2.lastUsed, o1.lastUsed));
         return customDecks;
     }
 

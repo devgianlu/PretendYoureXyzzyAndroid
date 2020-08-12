@@ -3,7 +3,10 @@ package com.gianlu.pretendyourexyzzy.customdecks;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class BasicCustomDeck {
+import com.gianlu.commonutils.adapters.Filterable;
+import com.gianlu.commonutils.adapters.NotFilterable;
+
+public class BasicCustomDeck implements Filterable<NotFilterable> {
     public final String name;
     public final String watermark;
     public final String owner;
@@ -39,5 +42,10 @@ public class BasicCustomDeck {
         int result = name.hashCode();
         result = 31 * result + watermark.hashCode();
         return result;
+    }
+
+    @Override
+    public NotFilterable getFilterable() {
+        return null;
     }
 }

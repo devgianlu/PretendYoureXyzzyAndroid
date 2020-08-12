@@ -1,9 +1,15 @@
 package com.gianlu.pretendyourexyzzy.api.crcast;
 
+import android.database.Cursor;
+
 import androidx.annotation.NonNull;
 
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,42 +17,124 @@ import org.json.JSONObject;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public final class CrCastDeck extends BasicCustomDeck {
     public final String desc;
     public final CrCastApi.State state;
     public final boolean privateDeck;
     public final String lang;
-    public final List<CrCastCard> blacks;
-    public final List<CrCastCard> whites;
     public final long created;
+    private final int whitesCount;
+    private final int blacksCount;
+    private Cards cards;
 
-    CrCastDeck(@NonNull JSONObject obj) throws JSONException, ParseException {
-        super(obj.getString("name"), obj.getString("deckcode"), null /* FIXME */, 0 /* TODO: Get from somewhere */, -1);
+    private CrCastDeck(@NonNull JSONObject obj, @NonNull String watermark, long lastUsed) throws JSONException, ParseException {
+        super(obj.getString("name"), watermark, null, lastUsed, -1);
         desc = obj.getString("description");
         lang = obj.getString("decklang");
         state = CrCastApi.State.parse(obj.getInt("state"));
         privateDeck = obj.getBoolean("private");
         created = CrCastApi.getApiDateTimeFormat().parse(obj.getString("createdate")).getTime();
+        blacksCount = obj.getInt("blackCount");
+        whitesCount = obj.getInt("whiteCount");
 
-        JSONArray blacksArray = obj.getJSONArray("blacks");
-        blacks = new ArrayList<>(blacksArray.length());
-        for (int i = 0; i < blacksArray.length(); i++)
-            blacks.add(new CrCastCard(watermark, true, blacksArray.getJSONObject(i)));
+        cards = new Cards(watermark, obj);
+    }
 
-        JSONArray whitesArray = obj.getJSONArray("whites");
-        whites = new ArrayList<>(whitesArray.length());
-        for (int i = 0; i < whitesArray.length(); i++)
-            whites.add(new CrCastCard(watermark, false, whitesArray.getJSONObject(i)));
+    private CrCastDeck(@NonNull String name, @NonNull String watermark, @NonNull String desc, @NonNull CrCastApi.State state,
+                       boolean privateDeck, @NonNull String lang, long created, int whitesCount, int blacksCount, long lastUsed) {
+        super(name, watermark, null, lastUsed, -1);
+        this.desc = desc;
+        this.state = state;
+        this.privateDeck = privateDeck;
+        this.lang = lang;
+        this.created = created;
+        this.whitesCount = whitesCount;
+        this.blacksCount = blacksCount;
+        this.cards = null;
+    }
+
+    @Nullable
+    @Contract(pure = true)
+    public static CrCastDeck find(@NotNull List<CrCastDeck> list, @NonNull String deckCode) {
+        for (CrCastDeck deck : list) {
+            if (deck.watermark.equals(deckCode))
+                return deck;
+        }
+
+        return null;
+    }
+
+    @NonNull
+    public static CrCastDeck fromCached(@NonNull Cursor cursor) {
+        return new CrCastDeck(cursor.getString(cursor.getColumnIndex("name")),
+                cursor.getString(cursor.getColumnIndex("watermark")),
+                cursor.getString(cursor.getColumnIndex("description")),
+                CrCastApi.State.parse(cursor.getInt(cursor.getColumnIndex("state"))),
+                cursor.getType(cursor.getColumnIndex("private")) == 1,
+                cursor.getString(cursor.getColumnIndex("lang")),
+                cursor.getLong(cursor.getColumnIndex("created")),
+                cursor.getInt(cursor.getColumnIndex("whites_count")),
+                cursor.getInt(cursor.getColumnIndex("blacks_count")),
+                cursor.getLong(cursor.getColumnIndex("lastUsed")));
+    }
+
+    @NonNull
+    public static CrCastDeck parse(@NonNull JSONObject obj, @NonNull CustomDecksDatabase db) throws JSONException, ParseException {
+        String deckCode = obj.getString("deckcode");
+        Long lastUsed = db.getCrCastDeckLastUsed(deckCode);
+        if (lastUsed == null) {
+            lastUsed = System.currentTimeMillis();
+            db.updateCrCastDeckLastUsed(deckCode, lastUsed);
+        }
+
+        return new CrCastDeck(obj, deckCode, lastUsed);
+    }
+
+    public boolean hasChanged(@NotNull CrCastDeck that) {
+        return privateDeck != that.privateDeck || created != that.created ||
+                whitesCount != that.whitesCount || blacksCount != that.blacksCount ||
+                !desc.equals(that.desc) || state != that.state || !lang.equals(that.lang);
     }
 
     @Override
     public int whiteCardsCount() {
-        return whites.size();
+        return whitesCount;
     }
 
     @Override
     public int blackCardsCount() {
-        return blacks.size();
+        return blacksCount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CrCastDeck that = (CrCastDeck) o;
+        return watermark.equals(that.watermark);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(watermark);
+    }
+
+    public static class Cards {
+        public final List<CrCastCard> blacks;
+        public final List<CrCastCard> whites;
+
+        Cards(@NonNull String watermark, @NotNull JSONObject obj) throws JSONException {
+            JSONArray blacksArray = obj.getJSONArray("blacks");
+            blacks = new ArrayList<>(blacksArray.length());
+            for (int i = 0; i < blacksArray.length(); i++)
+                blacks.add(new CrCastCard(watermark, true, blacksArray.getJSONObject(i)));
+
+            JSONArray whitesArray = obj.getJSONArray("whites");
+            whites = new ArrayList<>(whitesArray.length());
+            for (int i = 0; i < whitesArray.length(); i++)
+                whites.add(new CrCastCard(watermark, false, whitesArray.getJSONObject(i)));
+        }
     }
 }
