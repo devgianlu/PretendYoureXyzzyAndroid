@@ -126,15 +126,14 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         }
 
         PyxRequestWithResult<List<Deck>> req = null;
-        if (pyx.server.status != null) {
-            if (pyx.server.status.stats.customDecksEnabled())
-                req = PyxRequests.listCustomDecks(gid);
-            else if (pyx.server.status.stats.crCastEnabled())
-                req = PyxRequests.listCrCastDecks(gid);
-        }
+        if (pyx.config().customDecksEnabled())
+            req = PyxRequests.listCustomDecks(gid);
+        else if (pyx.config().crCastEnabled())
+            req = PyxRequests.listCrCastDecks(gid);
 
         if (req == null) {
             DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDecksNotSupported));
+            dismissAllowingStateLoss();
             return;
         }
 
@@ -165,12 +164,10 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         if (!canModifyCustomDecks()) return false;
 
         List<Class<? extends BasicCustomDeck>> supportedDecks = new ArrayList<>(4);
-        if (pyx.server.status != null) {
-            if (pyx.server.status.stats.customDecksEnabled())
-                supportedDecks.addAll(Arrays.asList(CustomDeck.class, StarredDeck.class, CrCastDeck.class));
-            else if (pyx.server.status.stats.crCastEnabled())
-                supportedDecks.add(CrCastDeck.class);
-        }
+        if (pyx.config().customDecksEnabled())
+            supportedDecks.addAll(Arrays.asList(CustomDeck.class, StarredDeck.class, CrCastDeck.class));
+        else if (pyx.config().crCastEnabled())
+            supportedDecks.add(CrCastDeck.class);
 
         action.setImageResource(R.drawable.baseline_add_24);
         action.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.customDecksSheetFabBg)));
@@ -191,9 +188,15 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
 
         List<BasicCustomDeck> customDecks = db.getAllDecks();
         Iterator<BasicCustomDeck> iter = customDecks.iterator();
-        while (iter.hasNext())
-            if (!supported.contains(iter.next().getClass()))
+        while (iter.hasNext()) {
+            BasicCustomDeck deck = iter.next();
+            if (!supported.contains(deck.getClass())) {
                 iter.remove();
+            } else {
+                if (deck instanceof CrCastDeck && ((CrCastDeck) deck).privateDeck)
+                    iter.remove();
+            }
+        }
 
         if (adapter != null && adapter.getItemCount() != 0) {
             for (Deck deck : adapter.getDecks())
@@ -205,7 +208,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
     }
 
     private void addCustomDeck(@NonNull BasicCustomDeck deck) {
-        if (pyx.server.status.stats.customDecksEnabled()) {
+        if (pyx.config().customDecksEnabled()) {
             if (deck instanceof CustomDeck) {
                 CustomDecksDatabase.get(requireContext()).updateDeckLastUsed(((CustomDeck) deck).id);
 
@@ -264,7 +267,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
             } else {
                 throw new IllegalStateException(deck.toString());
             }
-        } else if (pyx.server.status.stats.crCastEnabled()) {
+        } else if (pyx.config().crCastEnabled()) {
             if (deck instanceof CrCastDeck) {
                 CustomDecksDatabase.get(requireContext()).updateCrCastDeckLastUsed(deck.watermark, System.currentTimeMillis());
 
@@ -297,7 +300,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         builder.setTitle(R.string.addCustomDeck)
                 .setNeutralButton(android.R.string.cancel, null)
                 .setItems(names, (dialog, which) -> {
-                    if (pyx == null || !canModifyCustomDecks() || pyx.server.status == null)
+                    if (pyx == null || !canModifyCustomDecks())
                         return;
 
                     ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK);
@@ -327,12 +330,10 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
     @Override
     public void removeDeck(@NonNull Deck deck) {
         PyxRequest req = null;
-        if (pyx.server.status != null) {
-            if (pyx.server.status.stats.customDecksEnabled())
-                req = PyxRequests.removeCustomDeck(getSetupPayload(), deck.id);
-            else if (pyx.server.status.stats.crCastEnabled())
-                req = PyxRequests.removeCrCastDeck(getSetupPayload(), deck.id);
-        }
+        if (pyx.config().customDecksEnabled())
+            req = PyxRequests.removeCustomDeck(getSetupPayload(), deck.id);
+        else if (pyx.config().crCastEnabled())
+            req = PyxRequests.removeCrCastDeck(getSetupPayload(), deck.id);
 
         if (req == null)
             return;
@@ -361,6 +362,8 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
                 return;
             }
         }
+
+        // TODO: Handle CrCast decks too
 
         if (OverloadedUtils.isSignedIn())
             ViewCustomDeckActivity.startActivitySearch(requireContext(), deck);

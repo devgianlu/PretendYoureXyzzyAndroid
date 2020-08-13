@@ -71,7 +71,7 @@ public final class CrCastApi {
 
     @NonNull
     public static String getServerUrl(@NonNull CrCastDeck deck) {
-        return BASE_URL + "cc/decks/" + deck.watermark + "/combined"; // FIXME: (them) This endpoint doesn't exist yet
+        return BASE_URL + "cc/decks/" + deck.watermark + "/all";
     }
 
     @NonNull
@@ -197,9 +197,9 @@ public final class CrCastApi {
             @Override
             public void run() {
                 try {
-                    CrCastDeck deck = CrCastDeck.parse(request(deckCode).getJSONObject("deck"), db);
+                    CrCastDeck deck = CrCastDeck.parse(request("user/decks/" + getToken() + "/" + deckCode).getJSONObject("deck"), db);
                     post(() -> callback.onDeck(deck));
-                } catch (IOException | JSONException | ParseException | CrCastException ex) {
+                } catch (IOException | JSONException | ParseException | CrCastException | NotSignedInException ex) {
                     post(() -> callback.onException(ex));
                 }
             }

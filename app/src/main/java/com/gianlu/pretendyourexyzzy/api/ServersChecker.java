@@ -163,7 +163,7 @@ public final class ServersChecker {
             }
 
             public boolean crCastEnabled() {
-                return getOrDefault("CR_CAST_ENABLED", false); // FIXME: (them) Does not appear in stats yet
+                return getOrDefault("CR_CAST_ENABLED", false);
             }
         }
     }

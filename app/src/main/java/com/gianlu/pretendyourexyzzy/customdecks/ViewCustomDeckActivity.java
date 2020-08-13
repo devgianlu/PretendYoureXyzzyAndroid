@@ -55,10 +55,11 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
         context.startActivity(intent);
     }
 
-    public static void startActivityCrCast(@NonNull Context context, @NonNull String deckCode) {
+    public static void startActivityCrCast(@NonNull Context context, @NonNull String deckName, @NonNull String deckCode) {
         Intent intent = new Intent(context, ViewCustomDeckActivity.class);
         intent.putExtra("crCast", true);
         intent.putExtra("deckCode", deckCode);
+        intent.putExtra("deckName", deckName);
         context.startActivity(intent);
     }
 
@@ -114,8 +115,6 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
                 onBackPressed();
                 return;
             }
-
-            // FIXME: (them) Doesn't work for private decks
 
             CrCastApi.get().getDeck(deckCode, CustomDecksDatabase.get(this), this, new CrCastApi.DeckCallback() {
                 @Override
