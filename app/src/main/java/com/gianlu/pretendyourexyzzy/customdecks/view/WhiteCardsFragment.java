@@ -24,7 +24,7 @@ public final class WhiteCardsFragment extends AbsCardsFragment {
         WhiteCardsFragment fragment = new WhiteCardsFragment();
         fragment.cards = cards;
         Bundle args = new Bundle();
-        args.putString("title", context.getString(R.string.blackCards));
+        args.putString("title", context.getString(R.string.whiteCards));
         fragment.setArguments(args);
         return fragment;
     }

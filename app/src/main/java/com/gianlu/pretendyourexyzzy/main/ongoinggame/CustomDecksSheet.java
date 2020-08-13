@@ -173,7 +173,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         action.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.customDecksSheetFabBg)));
         action.setOnClickListener(v -> {
             List<BasicCustomDeck> customDecks;
-            if ((customDecks = getAddableCustomDecks(CustomDecksDatabase.get(requireContext()), supportedDecks)).isEmpty())
+            if ((customDecks = getAddableCustomDecks(CustomDecksDatabase.get(requireContext()), pyx.config().crCastEnabled(), supportedDecks)).isEmpty())
                 DialogUtils.showToast(getContext(), Toaster.build().message(R.string.noCustomDecksToAdd));
             else
                 showAddCustomDeckDialog(customDecks);
@@ -183,7 +183,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
     }
 
     @NonNull
-    private List<BasicCustomDeck> getAddableCustomDecks(@NonNull CustomDecksDatabase db, @Nullable List<Class<? extends BasicCustomDeck>> supported) {
+    private List<BasicCustomDeck> getAddableCustomDecks(@NonNull CustomDecksDatabase db, boolean needsUrl, @Nullable List<Class<? extends BasicCustomDeck>> supported) {
         if (supported == null || supported.isEmpty()) return Collections.emptyList();
 
         List<BasicCustomDeck> customDecks = db.getAllDecks();
@@ -193,7 +193,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
             if (!supported.contains(deck.getClass())) {
                 iter.remove();
             } else {
-                if (deck instanceof CrCastDeck && ((CrCastDeck) deck).privateDeck)
+                if (deck instanceof CrCastDeck && !((CrCastDeck) deck).isAccepted() && needsUrl)
                     iter.remove();
             }
         }
@@ -208,13 +208,15 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
     }
 
     private void addCustomDeck(@NonNull BasicCustomDeck deck) {
+        CustomDecksDatabase db = CustomDecksDatabase.get(requireContext());
+
         if (pyx.config().customDecksEnabled()) {
             if (deck instanceof CustomDeck) {
-                CustomDecksDatabase.get(requireContext()).updateDeckLastUsed(((CustomDeck) deck).id);
+                db.updateDeckLastUsed(((CustomDeck) deck).id);
 
                 String json;
                 try {
-                    json = ((CustomDeck) deck).craftPyxJson(CustomDecksDatabase.get(requireContext())).toString();
+                    json = ((CustomDeck) deck).craftPyxJson(db).toString();
                 } catch (JSONException ex) {
                     Log.e(TAG, "Failed crating JSON for deck: " + deck.name, ex);
                     return;
@@ -233,7 +235,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
                     }
                 });
             } else if (deck instanceof StarredDeck) {
-                CustomDecksDatabase.get(requireContext()).updateStarredDeckLastUsed(((StarredDeck) deck).id);
+                db.updateStarredDeckLastUsed(((StarredDeck) deck).id);
 
                 String url = OverloadedUtils.getServeCustomDeckUrl(((StarredDeck) deck).shareCode);
                 pyx.request(PyxRequests.addCustomDeckUrl(getSetupPayload(), url), getActivity(), new Pyx.OnSuccess() {
@@ -249,27 +251,61 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
                     }
                 });
             } else if (deck instanceof CrCastDeck) {
-                CustomDecksDatabase.get(requireContext()).updateCrCastDeckLastUsed(deck.watermark, System.currentTimeMillis());
+                db.updateCrCastDeckLastUsed(deck.watermark, System.currentTimeMillis());
 
-                String url = CrCastApi.getServerUrl((CrCastDeck) deck);
-                pyx.request(PyxRequests.addCustomDeckUrl(getSetupPayload(), url), getActivity(), new Pyx.OnSuccess() {
-                    @Override
-                    public void onDone() {
-                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDeckAdded));
-                    }
+                if (((CrCastDeck) deck).isAccepted()) {
+                    String url = CrCastApi.getDeckUrl((CrCastDeck) deck);
+                    pyx.request(PyxRequests.addCustomDeckUrl(getSetupPayload(), url), getActivity(), new Pyx.OnSuccess() {
+                        @Override
+                        public void onDone() {
+                            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDeckAdded));
+                        }
 
-                    @Override
-                    public void onException(@NonNull Exception ex) {
-                        Log.e(TAG, "Failed adding CrCast custom deck: " + url, ex);
-                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
-                    }
-                });
+                        @Override
+                        public void onException(@NonNull Exception ex) {
+                            Log.e(TAG, "Failed adding CrCast custom deck: " + url, ex);
+                            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
+                        }
+                    });
+                } else {
+                    ((CrCastDeck) deck).getCards(db, new CrCastApi.DeckCallback() {
+                        @Override
+                        public void onDeck(@NonNull CrCastDeck deck) {
+                            String json;
+                            try {
+                                json = deck.craftPyxJson().toString();
+                            } catch (JSONException ex) {
+                                Log.e(TAG, "Failed crating JSON for CrCast deck: " + deck.watermark, ex);
+                                return;
+                            }
+
+                            pyx.request(PyxRequests.addCustomDeckJson(getSetupPayload(), json), getActivity(), new Pyx.OnSuccess() {
+                                @Override
+                                public void onDone() {
+                                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDeckAdded));
+                                }
+
+                                @Override
+                                public void onException(@NonNull Exception ex) {
+                                    Log.e(TAG, "Failed adding CrCast custom deck: " + deck.watermark, ex);
+                                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onException(@NonNull Exception ex) {
+                            Log.e(TAG, "Failed loading CrCast deck cards: " + deck.watermark, ex);
+                            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
+                        }
+                    });
+                }
             } else {
                 throw new IllegalStateException(deck.toString());
             }
         } else if (pyx.config().crCastEnabled()) {
             if (deck instanceof CrCastDeck) {
-                CustomDecksDatabase.get(requireContext()).updateCrCastDeckLastUsed(deck.watermark, System.currentTimeMillis());
+                db.updateCrCastDeckLastUsed(deck.watermark, System.currentTimeMillis());
 
                 pyx.request(PyxRequests.addCrCastDeck(getSetupPayload(), deck.watermark), getActivity(), new Pyx.OnSuccess() {
                     @Override

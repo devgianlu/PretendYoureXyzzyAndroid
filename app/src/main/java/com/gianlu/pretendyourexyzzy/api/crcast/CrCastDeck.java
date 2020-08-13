@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.api.crcast;
 import android.database.Cursor;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.UiThread;
 
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
@@ -124,6 +125,51 @@ public final class CrCastDeck extends BasicCustomDeck {
     @Override
     public int hashCode() {
         return Objects.hash(watermark);
+    }
+
+    public boolean isAccepted() {
+        return state == CrCastApi.State.ACCEPTED;
+    }
+
+    @UiThread
+    public void getCards(@NonNull CustomDecksDatabase db, @NonNull CrCastApi.DeckCallback callback) {
+        if (cards != null) {
+            callback.onDeck(this);
+            return;
+        }
+
+        CrCastApi.get().getDeck(watermark, db, null, new CrCastApi.DeckCallback() {
+            @Override
+            public void onDeck(@NonNull CrCastDeck deck) {
+                CrCastDeck.this.cards = deck.cards;
+                callback.onDeck(CrCastDeck.this);
+            }
+
+            @Override
+            public void onException(@NonNull Exception ex) {
+                callback.onException(ex);
+            }
+        });
+    }
+
+    @NonNull
+    public JSONObject craftPyxJson() throws JSONException {
+        if (cards == null) throw new IllegalStateException();
+
+        JSONObject obj = new JSONObject();
+        obj.put("name", name);
+        obj.put("description", desc);
+        obj.put("watermark", watermark);
+
+        JSONArray callsArray = new JSONArray();
+        for (CrCastCard card : cards.blacks) callsArray.put(card.craftJson());
+        obj.put("calls", callsArray);
+
+        JSONArray responsesArray = new JSONArray();
+        for (CrCastCard card : cards.whites) responsesArray.put(card.craftJson());
+        obj.put("responses", responsesArray);
+
+        return obj;
     }
 
     public static class Cards {

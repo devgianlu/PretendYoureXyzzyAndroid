@@ -956,7 +956,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         @NonNull
         JSONObject craftJson() throws JSONException {
             JSONObject obj = new JSONObject();
-            obj.put("text", CommonUtils.toJSONArray(text.split("____")));
+            obj.put("text", CommonUtils.toJSONArray(text.split("____", -1)));
             return obj;
         }
 

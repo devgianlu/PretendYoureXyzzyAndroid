@@ -103,7 +103,7 @@ public final class ContentCard extends BaseCard {
 
     @Override
     public int numPick() {
-        return black ? text.split("____").length - 1 : -1;
+        return black ? text.split("____", -1).length - 1 : -1;
     }
 
     @Override

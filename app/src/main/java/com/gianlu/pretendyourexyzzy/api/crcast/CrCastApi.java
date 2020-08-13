@@ -70,7 +70,7 @@ public final class CrCastApi {
     }
 
     @NonNull
-    public static String getServerUrl(@NonNull CrCastDeck deck) {
+    public static String getDeckUrl(@NonNull CrCastDeck deck) {
         return BASE_URL + "cc/decks/" + deck.watermark + "/all";
     }
 
