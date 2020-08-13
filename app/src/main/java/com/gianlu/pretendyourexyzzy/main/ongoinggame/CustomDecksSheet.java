@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,9 +27,12 @@ import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.adapters.DecksAdapter;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
-import com.gianlu.pretendyourexyzzy.api.PyxException;
+import com.gianlu.pretendyourexyzzy.api.PyxRequest;
+import com.gianlu.pretendyourexyzzy.api.PyxRequestWithResult;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
+import com.gianlu.pretendyourexyzzy.api.crcast.CrCastApi;
+import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
 import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
@@ -44,6 +48,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONException;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -119,8 +125,21 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
             return;
         }
 
+        PyxRequestWithResult<List<Deck>> req = null;
+        if (pyx.server.status != null) {
+            if (pyx.server.status.stats.customDecksEnabled())
+                req = PyxRequests.listCustomDecks(gid);
+            else if (pyx.server.status.stats.crCastEnabled())
+                req = PyxRequests.listCrCastDecks(gid);
+        }
+
+        if (req == null) {
+            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDecksNotSupported));
+            return;
+        }
+
         pyx.polling().addListener(this);
-        pyx.request(PyxRequests.listCustomDecks(gid), getActivity(), new Pyx.OnResult<List<Deck>>() {
+        pyx.request(req, getActivity(), new Pyx.OnResult<List<Deck>>() {
             @Override
             public void onDone(@NonNull List<Deck> result) {
                 update(result);
@@ -129,12 +148,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
             @Override
             public void onException(@NonNull Exception ex) {
                 Log.e(TAG, "Failed getting custom decks.", ex);
-
-                if (ex instanceof PyxException && ((PyxException) ex).errorCode.equals("bo"))
-                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDecksNotSupported));
-                else
-                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
-
+                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
                 dismissAllowingStateLoss();
             }
         });
@@ -150,11 +164,19 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
     protected boolean onCustomizeAction(@NonNull FloatingActionButton action, @NonNull Integer gid) {
         if (!canModifyCustomDecks()) return false;
 
+        List<Class<? extends BasicCustomDeck>> supportedDecks = new ArrayList<>(4);
+        if (pyx.server.status != null) {
+            if (pyx.server.status.stats.customDecksEnabled())
+                supportedDecks.addAll(Arrays.asList(CustomDeck.class, StarredDeck.class, CrCastDeck.class));
+            else if (pyx.server.status.stats.crCastEnabled())
+                supportedDecks.add(CrCastDeck.class);
+        }
+
         action.setImageResource(R.drawable.baseline_add_24);
         action.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.customDecksSheetFabBg)));
         action.setOnClickListener(v -> {
             List<BasicCustomDeck> customDecks;
-            if ((customDecks = getAddableCustomDecks(CustomDecksDatabase.get(requireContext()))).isEmpty())
+            if ((customDecks = getAddableCustomDecks(CustomDecksDatabase.get(requireContext()), supportedDecks)).isEmpty())
                 DialogUtils.showToast(getContext(), Toaster.build().message(R.string.noCustomDecksToAdd));
             else
                 showAddCustomDeckDialog(customDecks);
@@ -164,8 +186,15 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
     }
 
     @NonNull
-    private List<BasicCustomDeck> getAddableCustomDecks(@NonNull CustomDecksDatabase db) {
+    private List<BasicCustomDeck> getAddableCustomDecks(@NonNull CustomDecksDatabase db, @Nullable List<Class<? extends BasicCustomDeck>> supported) {
+        if (supported == null || supported.isEmpty()) return Collections.emptyList();
+
         List<BasicCustomDeck> customDecks = db.getAllDecks();
+        Iterator<BasicCustomDeck> iter = customDecks.iterator();
+        while (iter.hasNext())
+            if (!supported.contains(iter.next().getClass()))
+                iter.remove();
+
         if (adapter != null && adapter.getItemCount() != 0) {
             for (Deck deck : adapter.getDecks())
                 removeDeck(customDecks, deck);
@@ -173,6 +202,88 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
 
         Collections.sort(customDecks, (o1, o2) -> Long.compare(o2.lastUsed, o1.lastUsed));
         return customDecks;
+    }
+
+    private void addCustomDeck(@NonNull BasicCustomDeck deck) {
+        if (pyx.server.status.stats.customDecksEnabled()) {
+            if (deck instanceof CustomDeck) {
+                CustomDecksDatabase.get(requireContext()).updateDeckLastUsed(((CustomDeck) deck).id);
+
+                String json;
+                try {
+                    json = ((CustomDeck) deck).craftPyxJson(CustomDecksDatabase.get(requireContext())).toString();
+                } catch (JSONException ex) {
+                    Log.e(TAG, "Failed crating JSON for deck: " + deck.name, ex);
+                    return;
+                }
+
+                pyx.request(PyxRequests.addCustomDeckJson(getSetupPayload(), json), getActivity(), new Pyx.OnSuccess() {
+                    @Override
+                    public void onDone() {
+                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDeckAdded));
+                    }
+
+                    @Override
+                    public void onException(@NonNull Exception ex) {
+                        Log.e(TAG, "Failed adding custom deck.", ex);
+                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
+                    }
+                });
+            } else if (deck instanceof StarredDeck) {
+                CustomDecksDatabase.get(requireContext()).updateStarredDeckLastUsed(((StarredDeck) deck).id);
+
+                String url = OverloadedUtils.getServeCustomDeckUrl(((StarredDeck) deck).shareCode);
+                pyx.request(PyxRequests.addCustomDeckUrl(getSetupPayload(), url), getActivity(), new Pyx.OnSuccess() {
+                    @Override
+                    public void onDone() {
+                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDeckAdded));
+                    }
+
+                    @Override
+                    public void onException(@NonNull Exception ex) {
+                        Log.e(TAG, "Failed adding custom deck: " + url, ex);
+                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
+                    }
+                });
+            } else if (deck instanceof CrCastDeck) {
+                CustomDecksDatabase.get(requireContext()).updateCrCastDeckLastUsed(deck.watermark, System.currentTimeMillis());
+
+                String url = CrCastApi.getServerUrl((CrCastDeck) deck);
+                pyx.request(PyxRequests.addCustomDeckUrl(getSetupPayload(), url), getActivity(), new Pyx.OnSuccess() {
+                    @Override
+                    public void onDone() {
+                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDeckAdded));
+                    }
+
+                    @Override
+                    public void onException(@NonNull Exception ex) {
+                        Log.e(TAG, "Failed adding CrCast custom deck: " + url, ex);
+                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
+                    }
+                });
+            } else {
+                throw new IllegalStateException(deck.toString());
+            }
+        } else if (pyx.server.status.stats.crCastEnabled()) {
+            if (deck instanceof CrCastDeck) {
+                CustomDecksDatabase.get(requireContext()).updateCrCastDeckLastUsed(deck.watermark, System.currentTimeMillis());
+
+                pyx.request(PyxRequests.addCrCastDeck(getSetupPayload(), deck.watermark), getActivity(), new Pyx.OnSuccess() {
+                    @Override
+                    public void onDone() {
+                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDeckAdded));
+                    }
+
+                    @Override
+                    public void onException(@NonNull Exception ex) {
+                        Log.e(TAG, "Failed adding CrCast custom deck: " + deck.watermark, ex);
+                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
+                    }
+                });
+            } else {
+                throw new IllegalStateException(deck.toString());
+            }
+        }
     }
 
     private void showAddCustomDeckDialog(@NonNull List<BasicCustomDeck> customDecks) {
@@ -186,52 +297,11 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         builder.setTitle(R.string.addCustomDeck)
                 .setNeutralButton(android.R.string.cancel, null)
                 .setItems(names, (dialog, which) -> {
-                    if (pyx == null || !canModifyCustomDecks()) return;
+                    if (pyx == null || !canModifyCustomDecks() || pyx.server.status == null)
+                        return;
 
-                    BasicCustomDeck deck = customDecks.get(which);
-                    if (deck instanceof CustomDeck) {
-                        CustomDecksDatabase.get(requireContext()).updateDeckLastUsed(((CustomDeck) deck).id);
-
-                        String json;
-                        try {
-                            json = ((CustomDeck) deck).craftPyxJson(CustomDecksDatabase.get(requireContext())).toString();
-                        } catch (JSONException ex) {
-                            Log.e(TAG, "Failed crating JSON for deck: " + deck.name, ex);
-                            return;
-                        }
-
-                        ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK);
-                        pyx.request(PyxRequests.addCustomDeckJson(getSetupPayload(), json), getActivity(), new Pyx.OnSuccess() {
-                            @Override
-                            public void onDone() {
-                                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDeckAdded));
-                            }
-
-                            @Override
-                            public void onException(@NonNull Exception ex) {
-                                Log.e(TAG, "Failed adding custom deck.", ex);
-                                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
-                            }
-                        });
-                    } else if (deck instanceof StarredDeck) {
-                        CustomDecksDatabase.get(requireContext()).updateStarredDeckLastUsed(((StarredDeck) deck).id);
-
-                        String url = OverloadedUtils.getServeCustomDeckUrl(((StarredDeck) deck).shareCode);
-
-                        ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK);
-                        pyx.request(PyxRequests.addCustomDeckUrl(getSetupPayload(), url), getActivity(), new Pyx.OnSuccess() {
-                            @Override
-                            public void onDone() {
-                                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDeckAdded));
-                            }
-
-                            @Override
-                            public void onException(@NonNull Exception ex) {
-                                Log.e(TAG, "Failed adding custom deck: " + url, ex);
-                                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
-                            }
-                        });
-                    }
+                    ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK);
+                    addCustomDeck(customDecks.get(which));
                 });
 
         DialogUtils.showDialog(getActivity(), builder);
@@ -256,7 +326,18 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
 
     @Override
     public void removeDeck(@NonNull Deck deck) {
-        pyx.request(PyxRequests.removeCustomDeck(getSetupPayload(), deck.id), getActivity(), new Pyx.OnSuccess() {
+        PyxRequest req = null;
+        if (pyx.server.status != null) {
+            if (pyx.server.status.stats.customDecksEnabled())
+                req = PyxRequests.removeCustomDeck(getSetupPayload(), deck.id);
+            else if (pyx.server.status.stats.crCastEnabled())
+                req = PyxRequests.removeCrCastDeck(getSetupPayload(), deck.id);
+        }
+
+        if (req == null)
+            return;
+
+        pyx.request(req, getActivity(), new Pyx.OnSuccess() {
             @Override
             public void onDone() {
                 DialogUtils.showToast(getContext(), Toaster.build().message(R.string.removedCustomDeck));
@@ -265,6 +346,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
 
             @Override
             public void onException(@NonNull Exception ex) {
+                Log.e(TAG, "Failed removing custom deck.", ex);
                 DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedRemovingCustomDeck));
             }
         });

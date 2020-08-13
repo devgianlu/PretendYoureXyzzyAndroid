@@ -349,6 +349,8 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
             EditCustomDeckActivity.startActivityEdit(requireContext(), (CustomDeck) deck);
         else if (deck instanceof CustomDecksDatabase.StarredDeck && deck.owner != null)
             ViewCustomDeckActivity.startActivity(requireContext(), deck.owner, deck.name, ((CustomDecksDatabase.StarredDeck) deck).shareCode);
+        else if (deck instanceof CrCastDeck)
+            ViewCustomDeckActivity.startActivityCrCast(requireContext(), deck.watermark);
     }
 
     @Override

@@ -108,6 +108,11 @@ public final class CrCastDeck extends BasicCustomDeck {
         return blacksCount;
     }
 
+    @Nullable
+    public Cards cards() {
+        return cards;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

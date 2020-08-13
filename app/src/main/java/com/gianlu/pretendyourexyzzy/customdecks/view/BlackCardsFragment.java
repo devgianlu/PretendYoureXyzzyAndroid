@@ -20,13 +20,23 @@ public final class BlackCardsFragment extends AbsCardsFragment {
     private List<ContentCard> cards;
 
     @NotNull
-    public static BlackCardsFragment get(@NotNull Context context, @NotNull List<Card> cards) {
+    private static BlackCardsFragment get(@NotNull Context context, @NotNull List<ContentCard> cards) {
         BlackCardsFragment fragment = new BlackCardsFragment();
-        fragment.cards = ContentCard.from(cards);
+        fragment.cards = cards;
         Bundle args = new Bundle();
         args.putString("title", context.getString(R.string.blackCards));
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @NotNull
+    public static BlackCardsFragment getWithOverloadedCards(@NotNull Context context, @NotNull List<Card> cards) {
+        return get(context, ContentCard.fromOverloadedCards(cards));
+    }
+
+    @NotNull
+    public static BlackCardsFragment getWithBaseCards(@NotNull Context context, @NotNull List<? extends BaseCard> cards) {
+        return get(context, ContentCard.fromBaseCards(cards));
     }
 
     @NonNull

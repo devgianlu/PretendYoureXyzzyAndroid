@@ -70,6 +70,11 @@ public final class CrCastApi {
     }
 
     @NonNull
+    public static String getServerUrl(@NonNull CrCastDeck deck) {
+        return BASE_URL + "cc/decks/" + deck.watermark + "/combined"; // FIXME: (them) This endpoint doesn't exist yet
+    }
+
+    @NonNull
     @WorkerThread
     private JSONObject request(@NonNull String suffix) throws IOException, JSONException, CrCastException {
         Exception lastEx = null;
@@ -187,6 +192,20 @@ public final class CrCastApi {
         });
     }
 
+    public void getDeck(@NonNull String deckCode, @NonNull CustomDecksDatabase db, @Nullable Activity activity, @NonNull DeckCallback callback) {
+        executorService.execute(new LifecycleAwareRunnable(handler, activity == null ? callback : activity) {
+            @Override
+            public void run() {
+                try {
+                    CrCastDeck deck = CrCastDeck.parse(request(deckCode).getJSONObject("deck"), db);
+                    post(() -> callback.onDeck(deck));
+                } catch (IOException | JSONException | ParseException | CrCastException ex) {
+                    post(() -> callback.onException(ex));
+                }
+            }
+        });
+    }
+
     public void logout() {
         Prefs.remove(PK.CR_CAST_TOKEN);
         Prefs.remove(PK.CR_CAST_USER);
@@ -243,6 +262,13 @@ public final class CrCastApi {
     @UiThread
     public interface DecksCallback {
         void onDecks(@NonNull List<CrCastDeck> decks);
+
+        void onException(@NonNull Exception ex);
+    }
+
+    @UiThread
+    public interface DeckCallback {
+        void onDeck(@NonNull CrCastDeck deck);
 
         void onException(@NonNull Exception ex);
     }

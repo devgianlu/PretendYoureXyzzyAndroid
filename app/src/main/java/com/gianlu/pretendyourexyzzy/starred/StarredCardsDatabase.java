@@ -210,7 +210,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     }
 
     public boolean putCard(@NonNull FloatingStarredCard card) {
-        return putCard(ContentCard.from(card.card.blackCard), ContentCard.from(card.card.whiteCards));
+        return putCard(ContentCard.fromOverloadedCard(card.card.blackCard), ContentCard.fromOverloadedCards(card.card.whiteCards));
     }
 
     public void remove(@NonNull StarredCard card) {
