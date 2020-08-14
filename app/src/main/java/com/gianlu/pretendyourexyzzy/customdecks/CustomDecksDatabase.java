@@ -293,10 +293,10 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     //region Starred decks
 
     @NonNull
-    public List<StarredDeck> getStarredDecks(boolean leftover) {
+    public List<StarredDeck> getStarredDecks(boolean leftoverOnly) {
         SQLiteDatabase db = getReadableDatabase();
         db.beginTransaction();
-        try (Cursor cursor = db.rawQuery(leftover ? "SELECT * FROM starred_decks WHERE remoteId IS NULL" : "SELECT * FROM starred_decks", null)) {
+        try (Cursor cursor = db.rawQuery(leftoverOnly ? "SELECT * FROM starred_decks WHERE remoteId IS NULL" : "SELECT * FROM starred_decks", null)) {
             List<StarredDeck> list = new ArrayList<>(cursor.getCount());
             while (cursor.moveToNext()) list.add(new StarredDeck(cursor));
             return list;

@@ -358,4 +358,15 @@
     <string name="wrongUsernameOrPassowrd">Wrong username/password.</string>
     <string name="logoutCrCast">Logout from CrCast</string>
     <string name="crCastBanned">Your CrCast account has been banned.</string>
+    <string name="privateDeck">Private deck</string>
+    <string name="language">Language</string>
+    <string name="state">State</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="unpublished">Unpublished</string>
+    <string name="pending">Pending</string>
+    <string name="accepted">Accepted</string>
+    <string name="declined">Declined</string>
+    <string name="blackCardsWithCount">Black cards (%d)</string>
+    <string name="whiteCardsWithCount">White cards (%d)</string>
 </resources>

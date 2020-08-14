@@ -391,7 +391,9 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
 
     @Override
     public void onDeckSelected(@NonNull Deck deck) {
-        List<CustomDeck> decks = CustomDecksDatabase.get(requireContext()).getDecks();
+        CustomDecksDatabase db = CustomDecksDatabase.get(requireContext());
+
+        List<CustomDeck> decks = db.getDecks();
         for (CustomDeck customDeck : decks) {
             if (customDeck.name.equals(deck.name) && customDeck.watermark.equals(deck.watermark)) {
                 EditCustomDeckActivity.startActivityEdit(requireContext(), customDeck);
@@ -399,7 +401,21 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
             }
         }
 
-        // TODO: Handle CrCast decks too
+        List<CrCastDeck> crCastDecks = db.getCachedCrCastDecks();
+        for (CrCastDeck customDeck : crCastDecks) {
+            if (customDeck.name.equals(deck.name) && customDeck.watermark.equals(deck.watermark)) {
+                ViewCustomDeckActivity.startActivityCrCast(requireContext(), customDeck.name, customDeck.watermark);
+                return;
+            }
+        }
+
+        List<StarredDeck> starredDecks = db.getStarredDecks(false);
+        for (StarredDeck customDeck : starredDecks) {
+            if (customDeck.name.equals(deck.name) && customDeck.watermark.equals(deck.watermark) && customDeck.owner != null) {
+                ViewCustomDeckActivity.startActivity(requireContext(), customDeck.owner, customDeck.name, customDeck.shareCode);
+                return;
+            }
+        }
 
         if (OverloadedUtils.isSignedIn())
             ViewCustomDeckActivity.startActivitySearch(requireContext(), deck);

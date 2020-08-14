@@ -204,7 +204,7 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
             return;
 
         pager.setAdapter(new PagerAdapter(getSupportFragmentManager(),
-                GeneralInfoFragment.get(this, result.name, result.watermark, result.desc),
+                GeneralInfoFragment.get(this, result),
                 BlackCardsFragment.getWithBaseCards(this, cards.blacks),
                 WhiteCardsFragment.getWithBaseCards(this, cards.whites)));
         tabs.setupWithViewPager(pager);
@@ -219,7 +219,7 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
         owner = result.owner;
 
         pager.setAdapter(new PagerAdapter(getSupportFragmentManager(),
-                GeneralInfoFragment.get(this, result.name, result.watermark, result.desc),
+                GeneralInfoFragment.get(this, result),
                 BlackCardsFragment.getWithOverloadedCards(this, result.blackCards()),
                 WhiteCardsFragment.getWithOverloadedCards(this, result.whiteCards())));
         tabs.setupWithViewPager(pager);

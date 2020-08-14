@@ -25,7 +25,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
@@ -231,7 +230,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     public List<StarredCard> getCards(boolean leftover) {
         SQLiteDatabase db = getReadableDatabase();
         db.beginTransaction();
-        try (Cursor cursor = db.rawQuery(leftover ? "SELECT * FROM cards WHERE remoteId IS NULL" : "SELECT * FROM cards", null)) {
+        try (Cursor cursor = db.rawQuery(leftover ? "SELECT * FROM cards WHERE remoteId IS NULL" : "SELECT * FROM cards ORDER BY remoteId ASC", null)) {
             if (cursor == null) return new ArrayList<>(0);
 
             List<StarredCard> cards = new ArrayList<>(cursor.getCount());
@@ -242,8 +241,6 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
                     Log.e(TAG, "Failed parsing card.", ex);
                 }
             }
-
-            Collections.reverse(cards);
             return cards;
         } finally {
             db.endTransaction();

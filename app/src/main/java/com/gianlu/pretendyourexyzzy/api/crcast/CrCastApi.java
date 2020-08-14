@@ -8,6 +8,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
@@ -15,6 +16,7 @@ import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
+import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.StatusCodeException;
 import com.gianlu.pretendyourexyzzy.api.UserAgentInterceptor;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
@@ -228,6 +230,22 @@ public final class CrCastApi {
                     return state;
 
             throw new IllegalArgumentException("Unknown state: " + val);
+        }
+
+        @StringRes
+        public int toFormal() {
+            switch (this) {
+                case DECLINED:
+                    return R.string.declined;
+                case ACCEPTED:
+                    return R.string.accepted;
+                case PENDING:
+                    return R.string.pending;
+                case UNPUBLISHED:
+                    return R.string.unpublished;
+                default:
+                    throw new IllegalArgumentException("Unknown state: " + this);
+            }
         }
     }
 
