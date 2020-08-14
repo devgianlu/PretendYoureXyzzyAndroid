@@ -184,7 +184,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         builder.setTitle(R.string.addCustomDeck)
                 .setNeutralButton(android.R.string.cancel, null)
                 .setItems(names, (dialog, which) -> {
-                    if (pyx == null || !canModifyCustomDecks()) return;
+                    if (pyx == null || !canModifyCustomDecks() || getContext() == null) return;
 
                     FloatingCustomDeck deck = customDecks.get(which);
                     if (deck instanceof CustomDeck) {
