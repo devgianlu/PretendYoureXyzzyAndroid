@@ -280,7 +280,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
                 if (ex instanceof PyxException) {
                     switch (((PyxException) ex).errorCode) {
                         case "wp":
-                            showToast(Toaster.build().message(R.string.wrongPassword));
+                            showToast(Toaster.build().message(R.string.wrongGamePassword));
                             return;
                         case "gf":
                             showToast(Toaster.build().message(R.string.gameFull));
@@ -314,7 +314,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
                 if (ex instanceof PyxException) {
                     switch (((PyxException) ex).errorCode) {
                         case "wp":
-                            showToast(Toaster.build().message(R.string.wrongPassword));
+                            showToast(Toaster.build().message(R.string.wrongGamePassword));
                             return;
                         case "gf":
                             showToast(Toaster.build().message(R.string.gameFull));
@@ -322,7 +322,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
                     }
                 }
 
-                showToast(Toaster.build().message(R.string.failedJoining));
+                showToast(Toaster.build().message(R.string.failedJoiningGame));
             }
         });
     }
@@ -377,7 +377,7 @@ public class GamesFragment extends FragmentWithDialog implements Pyx.OnResult<Ga
                 if (handler != null) handler.onParticipatingGame(perm);
             }
         } else {
-            showToast(Toaster.build().message(R.string.failedJoining));
+            showToast(Toaster.build().message(R.string.failedJoiningGame));
         }
     }
 

@@ -59,21 +59,33 @@ public final class ContentCard extends BaseCard {
     }
 
     @NonNull
-    public static ContentCard from(@NonNull Card card) {
+    public static ContentCard fromBaseCard(@NonNull BaseCard card) {
+        return new ContentCard(card.text(), card.watermark(), card.black());
+    }
+
+    @NonNull
+    public static List<ContentCard> fromBaseCards(@NonNull List<? extends BaseCard> cards) {
+        List<ContentCard> list = new ArrayList<>(cards.size());
+        for (BaseCard card : cards) list.add(fromBaseCard(card));
+        return list;
+    }
+
+    @NonNull
+    public static ContentCard fromOverloadedCard(@NonNull Card card) {
         return new ContentCard(card.text, card.watermark, card.black());
     }
 
     @NonNull
-    public static CardsGroup from(@NonNull Card[] cards) {
+    public static CardsGroup fromOverloadedCards(@NonNull Card[] cards) {
         List<ContentCard> list = new ArrayList<>(cards.length);
-        for (Card card : cards) list.add(from(card));
+        for (Card card : cards) list.add(fromOverloadedCard(card));
         return CardsGroup.from(list);
     }
 
     @NonNull
-    public static List<ContentCard> from(@NonNull List<Card> cards) {
+    public static List<ContentCard> fromOverloadedCards(@NonNull List<Card> cards) {
         List<ContentCard> list = new ArrayList<>(cards.size());
-        for (Card card : cards) list.add(from(card));
+        for (Card card : cards) list.add(fromOverloadedCard(card));
         return list;
     }
 
@@ -91,7 +103,7 @@ public final class ContentCard extends BaseCard {
 
     @Override
     public int numPick() {
-        return black ? text.split("____").length - 1 : -1;
+        return black ? text.split("____", -1).length - 1 : -1;
     }
 
     @Override

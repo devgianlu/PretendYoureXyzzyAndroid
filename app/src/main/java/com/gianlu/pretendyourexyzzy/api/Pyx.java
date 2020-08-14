@@ -466,6 +466,9 @@ public class Pyx implements Closeable {
         LIST_CUSTOM_CARD_SETS("lcs"),
         ADD_CUSTOM_CARD_SET("acs"),
         REMOVE_CUSTOM_CARD_SET("rcs"),
+        LIST_CR_CAST_CARD_SETS("clc"),
+        ADD_CR_CAST_CARD_SET("cac"),
+        REMOVE_CR_CAST_CARD_SET("crc"),
         WHOIS("Wi");
 
         private final String val;

@@ -76,8 +76,8 @@
     <string name="goal"><![CDATA[<b>Obbiettivo:</b>]]> %d</string>
     <string name="playersLabel">Giocatori</string>
     <string name="gamePassword">Inserisci password</string>
-    <string name="failedJoiningGame">Failed joining the game!</string>
-    <string name="wrongGamePassword">Wrong password for this game!</string>
+    <string name="failedJoiningGame">Impossibile entrare nel gioco!</string>
+    <string name="wrongGamePassword">Password errata!</string>
     <string name="gameFull">La partita è piena! Riprova più tardi.</string>
     <string name="failedSpectating">Impossibile guardare il gioco!</string>
     <string name="ongoingGame">Gioco avviato</string>
@@ -351,21 +351,4 @@
     <string name="importCustomDeck_details">You can import a custom deck from a JSON file with the following fields (not mandatory): `name`, `watermark`, `description`, `calls`, `responses`. See https://github.com/ajanata/PretendYoureXyzzy/pull/241 for a template.</string>
     <string name="editCustomDeck_descDetails">The description is not mandatory, you can leave it empty.</string>
     <string name="exportCustomDeck">Export custom deck</string>
-    <string name="areYouSureJudgeCard">Are you sure you want to select this card as winner?</string>
-    <string name="connectCrCast">Connect CrCast</string>
-    <string name="connectCrCast_details">Connect with CrCast to use your decks on other servers easily.</string>
-    <string name="wrongUsernameOrPassowrd">Wrong username/password.</string>
-    <string name="logoutCrCast">Logout from CrCast</string>
-    <string name="crCastBanned">Your CrCast account has been banned.</string>
-    <string name="privateDeck">Private deck</string>
-    <string name="language">Language</string>
-    <string name="state">State</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
-    <string name="unpublished">Unpublished</string>
-    <string name="pending">Pending</string>
-    <string name="accepted">Accepted</string>
-    <string name="declined">Declined</string>
-    <string name="blackCardsWithCount">Black cards (%d)</string>
-    <string name="whiteCardsWithCount">White cards (%d)</string>
 </resources>
