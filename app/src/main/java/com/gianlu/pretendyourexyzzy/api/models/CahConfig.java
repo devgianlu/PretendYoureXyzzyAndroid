@@ -41,6 +41,14 @@ public class CahConfig {
         return getOrDefault("BLANK_CARDS_ENABLED", false);
     }
 
+    public boolean customDecksEnabled() {
+        return getOrDefault("CUSTOM_DECKS_ENABLED", false);
+    }
+
+    public boolean crCastEnabled() {
+        return getOrDefault("CR_CAST_ENABLED", false);
+    }
+
     public void appendStats(@NonNull String str) {
         Matcher matcher = STATS_PATTERN.matcher(str);
 

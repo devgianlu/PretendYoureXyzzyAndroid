@@ -45,6 +45,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fontFamily="@font/roboto_medium"
+        android:id="@+id/viewCustomDeck_descLabel"
         android:labelFor="@id/viewCustomDeck_desc"
         android:text="@string/description"
         android:textAllCaps="true"
@@ -58,5 +59,65 @@
         android:layout_marginBottom="8dp"
         android:justificationMode="inter_word"
         android:textColor="?colorOnSurface" />
+
+
+    <LinearLayout
+        android:id="@+id/viewCustomDeck_crCast"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto_medium"
+            android:labelFor="@id/viewCustomDeck_state"
+            android:text="@string/state"
+            android:textAllCaps="true"
+            android:textColor="?colorOnSurface"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/viewCustomDeck_state"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:textColor="?colorOnSurface" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto_medium"
+            android:labelFor="@id/viewCustomDeck_private"
+            android:text="@string/privateDeck"
+            android:textAllCaps="true"
+            android:textColor="?colorOnSurface"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/viewCustomDeck_private"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:textColor="?colorOnSurface" />
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto_medium"
+            android:labelFor="@id/viewCustomDeck_lang"
+            android:text="@string/language"
+            android:textAllCaps="true"
+            android:textColor="?colorOnSurface"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/viewCustomDeck_lang"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:textColor="?colorOnSurface" />
+    </LinearLayout>
 
 </LinearLayout>

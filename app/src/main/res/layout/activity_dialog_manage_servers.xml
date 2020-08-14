@@ -17,6 +17,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="4dp"
             android:drawableStart="@drawable/baseline_bookmarks_24"
+            android:drawablePadding="2dp"
             android:text="@string/customDecks" />
 
         <TextView
@@ -25,6 +26,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="4dp"
             android:drawableStart="@drawable/baseline_edit_24"
+            android:drawablePadding="2dp"
             android:text="@string/blankCardsLabel" />
 
         <TextView
@@ -33,6 +35,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="4dp"
             android:drawableStart="@drawable/baseline_person_24"
+            android:drawablePadding="2dp"
             android:text="@string/metrics" />
 
         <TextView
@@ -41,6 +44,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="4dp"
             android:drawableStart="@drawable/baseline_chat_24"
+            android:drawablePadding="2dp"
             android:text="@string/globalChat" />
 
         <TextView
@@ -48,6 +52,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
             android:drawableStart="@drawable/baseline_chat_bubble_outline_24"
+            android:drawablePadding="2dp"
             android:text="@string/gameChat" />
     </org.apmem.tools.layouts.FlowLayout>
 

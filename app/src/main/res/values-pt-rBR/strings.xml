@@ -76,8 +76,8 @@
     <string name="goal"><![CDATA[<b>Meta:</b>]]> %d</string>
     <string name="playersLabel">Jogadores</string>
     <string name="gamePassword">Inserir senha do jogo</string>
-    <string name="failedJoining">Falha ao entrar no jogo!</string>
-    <string name="wrongPassword">Senha errada para este jogo!</string>
+    <string name="failedJoiningGame">Falha ao entrar no jogo!</string>
+    <string name="wrongGamePassword">Senha errada para este jogo!</string>
     <string name="gameFull">O jogo está cheio! Tente mais tarde.</string>
     <string name="failedSpectating">Falha ao assistir ao jogo!</string>
     <string name="ongoingGame">Partida em andamento</string>

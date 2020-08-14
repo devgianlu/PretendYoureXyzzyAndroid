@@ -18,6 +18,8 @@ import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.PagerAdapter;
+import com.gianlu.pretendyourexyzzy.api.crcast.CrCastApi;
+import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
 import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.customdecks.view.BlackCardsFragment;
 import com.gianlu.pretendyourexyzzy.customdecks.view.GeneralInfoFragment;
@@ -38,12 +40,13 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
     private TabLayout tabs;
     private String shareCode;
     private String owner;
-    private CustomDeckWithCards deck = null;
+    private CustomDeckWithCards customDeck = null;
     private ProgressBar loading;
 
     public static void startActivitySearch(@NonNull Context context, @NonNull Deck deck) {
         Intent intent = new Intent(context, ViewCustomDeckActivity.class);
         intent.putExtra("search", true);
+        intent.putExtra("crCast", false);
         intent.putExtra("deckName", deck.name);
         intent.putExtra("watermark", deck.watermark);
         intent.putExtra("desc", deck.description);
@@ -52,9 +55,18 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
         context.startActivity(intent);
     }
 
+    public static void startActivityCrCast(@NonNull Context context, @NonNull String deckName, @NonNull String deckCode) {
+        Intent intent = new Intent(context, ViewCustomDeckActivity.class);
+        intent.putExtra("crCast", true);
+        intent.putExtra("deckCode", deckCode);
+        intent.putExtra("deckName", deckName);
+        context.startActivity(intent);
+    }
+
     public static void startActivity(@NotNull Context context, @NotNull String owner, @NotNull String deckName, @NonNull String shareCode) {
         Intent intent = new Intent(context, ViewCustomDeckActivity.class);
         intent.putExtra("search", false);
+        intent.putExtra("crCast", false);
         intent.putExtra("owner", owner);
         intent.putExtra("shareCode", shareCode);
         intent.putExtra("deckName", deckName);
@@ -97,7 +109,27 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
             }
         });
 
-        if (getIntent().getBooleanExtra("search", false)) {
+        if (getIntent().getBooleanExtra("crCast", false)) {
+            String deckCode = getIntent().getStringExtra("deckCode");
+            if (deckCode == null) {
+                onBackPressed();
+                return;
+            }
+
+            CrCastApi.get().getDeck(deckCode, CustomDecksDatabase.get(this), this, new CrCastApi.DeckCallback() {
+                @Override
+                public void onDeck(@NonNull CrCastDeck deck) {
+                    deckLoaded(deck);
+                }
+
+                @Override
+                public void onException(@NonNull Exception ex) {
+                    Log.e(TAG, "Failed loading CrCast deck.", ex);
+                    Toaster.with(ViewCustomDeckActivity.this).message(R.string.failedLoading).show();
+                    onBackPressed();
+                }
+            });
+        } else if (getIntent().getBooleanExtra("search", false)) {
             String deckName = getIntent().getStringExtra("deckName");
             String watermark = getIntent().getStringExtra("watermark");
             String desc = getIntent().getStringExtra("desc");
@@ -162,15 +194,34 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
         }
     }
 
+    private void deckLoaded(@NonNull CrCastDeck result) {
+        customDeck = null;
+        shareCode = null;
+        owner = null;
+
+        CrCastDeck.Cards cards = result.cards();
+        if (cards == null)
+            return;
+
+        pager.setAdapter(new PagerAdapter(getSupportFragmentManager(),
+                GeneralInfoFragment.get(this, result),
+                BlackCardsFragment.getWithBaseCards(this, cards.blacks),
+                WhiteCardsFragment.getWithBaseCards(this, cards.whites)));
+        tabs.setupWithViewPager(pager);
+
+        loading.setVisibility(View.GONE);
+        supportInvalidateOptionsMenu();
+    }
+
     private void deckLoaded(@NonNull CustomDeckWithCards result) {
-        deck = result;
+        customDeck = result;
         shareCode = result.shareCode;
         owner = result.owner;
 
         pager.setAdapter(new PagerAdapter(getSupportFragmentManager(),
-                GeneralInfoFragment.get(ViewCustomDeckActivity.this, result.name, result.watermark, result.desc),
-                BlackCardsFragment.get(ViewCustomDeckActivity.this, result.blackCards()),
-                WhiteCardsFragment.get(ViewCustomDeckActivity.this, result.whiteCards())));
+                GeneralInfoFragment.get(this, result),
+                BlackCardsFragment.getWithOverloadedCards(this, result.blackCards()),
+                WhiteCardsFragment.getWithOverloadedCards(this, result.whiteCards())));
         tabs.setupWithViewPager(pager);
 
         loading.setVisibility(View.GONE);
@@ -185,7 +236,7 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if (deck == null || shareCode == null || owner == null || owner.equals(OverloadedApi.get().username())) {
+        if (customDeck == null || shareCode == null || owner == null || owner.equals(OverloadedApi.get().username())) {
             menu.removeItem(R.id.viewCustomDeck_addStar);
             menu.removeItem(R.id.viewCustomDeck_removeStar);
         } else if (CustomDecksDatabase.get(this).isStarred(shareCode)) {
@@ -204,10 +255,10 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
                 onBackPressed();
                 return true;
             case R.id.viewCustomDeck_addStar:
-                if (deck == null || owner == null)
+                if (customDeck == null || owner == null)
                     return false;
 
-                CustomDecksDatabase.get(this).addStarredDeck(deck.shareCode, deck.name, deck.watermark, owner, deck.count);
+                CustomDecksDatabase.get(this).addStarredDeck(customDeck.shareCode, customDeck.name, customDeck.watermark, owner, customDeck.count);
                 supportInvalidateOptionsMenu();
                 return true;
             case R.id.viewCustomDeck_removeStar:
