@@ -6,9 +6,9 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
+import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.GPGamesHelper;
 import com.gianlu.pretendyourexyzzy.R;
@@ -347,12 +347,12 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     @Override
     public void onCardSelected(@NonNull BaseCard card) {
         if (gameData.amJudge()) {
-            listener.showDialog(Dialogs.confirmation(context, () -> judgeCardInternal((GameCard) card)));
+            listener.showDialog(Dialogs.confirmation(context, R.string.areYouSureJudgeCard, () -> judgeCardInternal((GameCard) card)));
         } else {
             if (((GameCard) card).writeIn) {
                 listener.showDialog(Dialogs.askText(context, text -> playCardInternal((GameCard) card, text)));
             } else {
-                listener.showDialog(Dialogs.confirmation(context, () -> playCardInternal((GameCard) card, null)));
+                listener.showDialog(Dialogs.confirmation(context, R.string.areYouSurePlayCard, () -> playCardInternal((GameCard) card, null)));
             }
         }
     }
@@ -416,15 +416,19 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     }
 
     private void judgeCardInternal(@NonNull GameCard card) {
+        listener.showProgress(R.string.loading);
         pyx.request(PyxRequests.judgeCard(gid, card.id), null, new Pyx.OnSuccess() {
             @Override
             public void onDone() {
                 ThisApplication.sendAnalytics(Utils.ACTION_JUDGE_CARD);
                 GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_ROUNDS_JUDGED);
+                listener.dismissDialog();
             }
 
             @Override
             public void onException(@NonNull Exception ex) {
+                listener.dismissDialog();
+
                 if (ex instanceof PyxException) {
                     if (((PyxException) ex).errorCode.equals("nj")) {
                         event(UiEvent.NOT_YOUR_TURN);
@@ -439,6 +443,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     }
 
     private void playCardInternal(@NonNull GameCard card, @Nullable String text) {
+        listener.showProgress(R.string.loading);
         pyx.request(PyxRequests.playCard(gid, card.id, text), null, new Pyx.OnSuccess() {
             @Override
             public void onDone() {
@@ -447,10 +452,13 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
 
                 ThisApplication.sendAnalytics(text == null ? Utils.ACTION_PLAY_CARD : Utils.ACTION_PLAY_CUSTOM_CARD);
                 GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_CARDS_PLAYED);
+                listener.dismissDialog();
             }
 
             @Override
             public void onException(@NonNull Exception ex) {
+                listener.dismissDialog();
+
                 if (ex instanceof PyxException) {
                     if (((PyxException) ex).errorCode.equals("nyt")) {
                         event(UiEvent.NOT_YOUR_TURN);
@@ -561,20 +569,14 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
         }
     }
 
-    public interface Listener {
+    public interface Listener extends DialogUtils.ShowStuffInterface {
         void onGameLoaded();
 
         void onFailedLoadingGame(@NonNull Exception ex);
 
         void updateActivityTitle();
 
-        void showToast(@NonNull Toaster toaster);
-
-        void showDialog(@NonNull AlertDialog.Builder dialog);
-
         void justLeaveGame();
-
-        void showDialog(@NonNull DialogFragment dialog);
     }
 
     public interface OnPlayerStateChanged {

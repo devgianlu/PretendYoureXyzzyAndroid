@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
 import com.gianlu.commonutils.CommonUtils;
@@ -164,10 +165,10 @@ public final class Dialogs {
     }
 
     @NonNull
-    public static MaterialAlertDialogBuilder confirmation(@NonNull Context context, @NonNull final OnConfirmed listener) {
-        return new MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.areYouSurePlayCard)
-                .setPositiveButton(android.R.string.yes, (dialog, which) -> listener.onConfirmed()).setNegativeButton(android.R.string.no, null);
+    public static MaterialAlertDialogBuilder confirmation(@NonNull Context context, @StringRes int res, @NonNull final OnConfirmed listener) {
+        return new MaterialAlertDialogBuilder(context).setTitle(res)
+                .setPositiveButton(android.R.string.yes, (dialog, which) -> listener.onConfirmed())
+                .setNegativeButton(android.R.string.no, null);
     }
 
     @NonNull

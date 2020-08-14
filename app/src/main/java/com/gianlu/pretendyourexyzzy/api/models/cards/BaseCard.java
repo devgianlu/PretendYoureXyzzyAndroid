@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy.api.models.cards;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -11,6 +13,7 @@ import java.util.regex.Pattern;
 
 public abstract class BaseCard implements Serializable {
     private static final Pattern HTML_IMAGE_PATTERN = Pattern.compile("^<img.+src='(.*?)'.+/>$");
+    private static final String TAG = BaseCard.class.getSimpleName();
     private transient String imageUrl = null;
 
     @NonNull
@@ -20,8 +23,9 @@ public abstract class BaseCard implements Serializable {
     public final String textUnescaped() {
         try {
             return URLDecoder.decode(text(), "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            throw new IllegalStateException(ex);
+        } catch (UnsupportedEncodingException | IllegalArgumentException ex) {
+            Log.e(TAG, "Failed unescaping text: " + text(), ex);
+            return text();
         }
     }
 

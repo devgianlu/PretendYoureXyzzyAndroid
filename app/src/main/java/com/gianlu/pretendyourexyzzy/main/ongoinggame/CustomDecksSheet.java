@@ -336,7 +336,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         builder.setTitle(R.string.addCustomDeck)
                 .setNeutralButton(android.R.string.cancel, null)
                 .setItems(names, (dialog, which) -> {
-                    if (pyx == null || !canModifyCustomDecks())
+                    if (pyx == null || !canModifyCustomDecks() || getContext() == null)
                         return;
 
                     ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK);

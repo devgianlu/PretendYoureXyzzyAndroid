@@ -353,6 +353,7 @@
     <string name="importCustomDeck_details">You can import a custom deck from a JSON file with the following fields (not mandatory): `name`, `watermark`, `description`, `calls`, `responses`. See https://github.com/ajanata/PretendYoureXyzzy/pull/241 for a template.</string>
     <string name="editCustomDeck_descDetails">The description is not mandatory, you can leave it empty.</string>
     <string name="exportCustomDeck">Export custom deck</string>
+    <string name="areYouSureJudgeCard">Are you sure you want to select this card as winner?</string>
     <string name="connectCrCast">Connect CrCast</string>
     <string name="connectCrCast_details">Connect with CrCast to use your decks on other servers easily.</string>
     <string name="wrongUsernameOrPassowrd">Wrong username/password.</string>

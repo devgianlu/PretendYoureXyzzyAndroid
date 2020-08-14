@@ -193,6 +193,7 @@
     <string name="showLastRound">Mostrar última rodada</string>
     <string name="definition">Definição</string>
     <string name="noDefinitions">Nenhuma definição encontrada!</string>
+    <string name="noGames">There are no games. You can create your own or join another server.</string>
     <string name="refresh">Atualizar</string>
     <string name="blockUser">Bloquear usuário</string>
     <string name="unblockUser">Desbloquear usuário</string>
@@ -200,7 +201,7 @@
     <string name="unblock">Desbloquear</string>
     <string name="unknownChatCommand">Comando de chat desconhecido.</string>
     <string name="lastRound">Última rodada</string>
-    <string name="spectatorsNotAllowed"><![CDATA[<b>Espectadores:</b>]]><![CDATA[<i>não são permitidos</i>]]></string>
+    <string name="spectatorsNotAllowed"><b>Espectadores:</b><i>não são permitidos</i></string>
     <string name="googlePlayGames">Jogos do Google Play</string>
     <string name="loggedIn">Sessão iniciada</string>
     <string name="login">Conectar-se</string>
@@ -287,6 +288,7 @@
     <string name="failedRemovingFriend">Failed removing friend!</string>
     <string name="failedCreatingChat">Failed creating chat!</string>
     <string name="beTheFirstToSendAMessage">Be the first one to send a message!</string>
+    <string name="noFriends_long">You have no friends! Meet on the same server and add each other from the players list.</string>
     <string name="typeAMessage">Type a message</string>
     <string name="deleteAccount">Delete account</string>
     <string name="failedDeletingAccount">Failed deleting account!</string>
@@ -346,4 +348,7 @@
     <string name="lessThanMinuteAgo">Less than a minute ago</string>
     <string name="minutesAgo">%dm ago</string>
     <string name="hoursAgo">%dh ago</string>
+    <string name="importCustomDeck_details">You can import a custom deck from a JSON file with the following fields (not mandatory): `name`, `watermark`, `description`, `calls`, `responses`. See https://github.com/ajanata/PretendYoureXyzzy/pull/241 for a template.</string>
+    <string name="editCustomDeck_descDetails">The description is not mandatory, you can leave it empty.</string>
+    <string name="exportCustomDeck">Export custom deck</string>
 </resources>
