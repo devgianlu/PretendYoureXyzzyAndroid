@@ -97,7 +97,7 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
     public void onDone(@NonNull SessionHistory result) {
         if (getContext() == null) return;
 
-        if (result.games.isEmpty()) {
+        if (result.games.isEmpty() && result.judgedRounds.isEmpty() && result.playedRounds.isEmpty()) {
             loading.setVisibility(View.GONE);
             container.setVisibility(View.GONE);
             message.info(R.string.noActivity);
