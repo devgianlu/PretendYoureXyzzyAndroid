@@ -54,9 +54,7 @@ public class OverloadedChatApi implements Closeable {
         this.db = new ChatDatabaseHelper(context);
     }
 
-    ///////////////////////////////
-    //////////// Keys /////////////
-    ///////////////////////////////
+    //region Keys
 
     /**
      * Sends keys (without generating pre-keys) to the server if needed.
@@ -109,10 +107,9 @@ public class OverloadedChatApi implements Closeable {
         }), "get-keys-" + address.toString()));
     }
 
+    //endregion
 
-    ///////////////////////////////
-    //////////// Chats ////////////
-    ///////////////////////////////
+    //region Chats
 
     /**
      * Starts a chat with the specified user.
@@ -167,11 +164,9 @@ public class OverloadedChatApi implements Closeable {
         return db.getChat(chatId);
     }
 
+    //endregion
 
-    ///////////////////////////////
-    /////////// Sending ///////////
-    ///////////////////////////////
-
+    //region Sending
     /**
      * Sends a message on the specified chat after encrypting it.
      *
@@ -257,12 +252,9 @@ public class OverloadedChatApi implements Closeable {
 
         return true;
     }
+    //endregion
 
-
-    ///////////////////////////////
-    /////// Local messages ////////
-    ///////////////////////////////
-
+    //region Local messages
     /**
      * Gets a list of locally stored messages (128 max) from the given time.
      *
@@ -286,12 +278,9 @@ public class OverloadedChatApi implements Closeable {
         List<PlainChatMessage> msg = db.getMessages(chatId);
         return msg == null ? Collections.emptyList() : msg;
     }
+    //endregion
 
-
-    ///////////////////////////////
-    //////// Last message /////////
-    ///////////////////////////////
-
+    //region Last message
     /**
      * Gets the last message of the given chat.
      *
@@ -323,12 +312,9 @@ public class OverloadedChatApi implements Closeable {
     public int countSinceLastSeen(int chatId) {
         return db.countSinceLastSeen(chatId);
     }
+    //endregion
 
-
-    ///////////////////////////////
-    /////////// Unread ////////////
-    ///////////////////////////////
-
+    //region Unread
     private void dispatchUnreadCountUpdate() {
         synchronized (unreadCountListeners) {
             Handler handler = new Handler(Looper.getMainLooper());
@@ -351,12 +337,9 @@ public class OverloadedChatApi implements Closeable {
     public void removeUnreadCountListener(@NonNull UnreadCountListener listener) {
         unreadCountListeners.remove(listener);
     }
+    //endregion
 
-
-    ///////////////////////////////
-    ////// Receive & decrypt //////
-    ///////////////////////////////
-
+    //region Receive and decrypt
     /**
      * Sends an acknowledgment to the server (that it has received the message).
      *
@@ -392,6 +375,7 @@ public class OverloadedChatApi implements Closeable {
             shareKeys(true);
         }
     }
+    //endregion
 
     @Override
     public void close() {

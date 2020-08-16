@@ -19,6 +19,11 @@ import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.Utils;
 
 public final class OverloadedUtils {
+    public static final String ACTION_OPEN_CHAT = "overloaded_open_chat";
+    public static final String ACTION_SEND_CHAT = "overloaded_send_chat";
+    public static final String ACTION_SHOW_PROFILE = "overloaded_show_profile";
+    public static final String ACTION_ADD_FRIEND = "overloaded_add_friend";
+    public static final String ACTION_REMOVE_FRIEND = "overloaded_remove_friend";
 
     private OverloadedUtils() {
     }

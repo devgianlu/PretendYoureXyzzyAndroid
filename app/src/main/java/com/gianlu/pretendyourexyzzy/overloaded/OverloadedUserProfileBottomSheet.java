@@ -55,6 +55,8 @@ public final class OverloadedUserProfileBottomSheet extends ThemedModalBottomShe
     protected void onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ModalBottomSheetHeaderView header, @NonNull String payload) {
         header.setTitle(payload);
         header.setBackgroundColorRes(MaterialColors.getShuffledInstance().next());
+
+        AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_SHOW_PROFILE);
     }
 
     @Override

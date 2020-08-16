@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.misc.SuperTextView;
@@ -325,6 +326,7 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
                         OverloadedApi.get().addFriend(username, null, new FriendsStatusCallback() {
                             @Override
                             public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
+                                AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_ADD_FRIEND);
                                 showToast(Toaster.build().message(R.string.friendAdded).extra(username));
                             }
 

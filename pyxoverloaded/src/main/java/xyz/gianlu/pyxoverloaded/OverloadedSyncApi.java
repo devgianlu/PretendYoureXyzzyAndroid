@@ -48,6 +48,7 @@ public class OverloadedSyncApi {
         return instance;
     }
 
+    //region Listeners
     public void addSyncListener(@NonNull SyncStatusListener listener) {
         listeners.add(listener);
 
@@ -68,12 +69,9 @@ public class OverloadedSyncApi {
         for (SyncStatusListener listener : new ArrayList<>(listeners))
             handler.post(() -> listener.syncStatusUpdated(product, isSyncing, error));
     }
+    //endregion
 
-
-    /////////////////////////////////////////
-    ///////////// Starred cards /////////////
-    /////////////////////////////////////////
-
+    //region Starred cards
     public void syncStarredCards(long revision, @NonNull GeneralCallback<StarredCardsSyncResponse> callback) {
         executorService.execute(() -> {
             try {
@@ -145,12 +143,9 @@ public class OverloadedSyncApi {
             }
         });
     }
+    //endregion
 
-
-    /////////////////////////////////////////
-    ///////////// Custom decks //////////////
-    /////////////////////////////////////////
-
+    //region Custom decks
     public void syncCustomDecks(@NonNull JSONArray syncItems, @NonNull GeneralCallback<List<CustomDecksSyncResponse>> callback) {
         executorService.execute(() -> {
             try {
@@ -268,12 +263,9 @@ public class OverloadedSyncApi {
             return new UserProfile.CustomDeckWithCards(obj);
         }), activity, callback::onResult, callback::onFailed);
     }
+    //endregion
 
-
-    /////////////////////////////////////////
-    ///////// Stared custom decks ///////////
-    /////////////////////////////////////////
-
+    //region Starred custom decks
     public void syncStarredCustomDecks(long revision, @NonNull GeneralCallback<StarredCustomDecksSyncResponse> callback) {
         executorService.execute(() -> {
             try {
@@ -342,6 +334,7 @@ public class OverloadedSyncApi {
             }
         });
     }
+    //endregion
 
     public enum SyncProduct {
         STARRED_CARDS, CUSTOM_DECKS, STARRED_CUSTOM_DECKS

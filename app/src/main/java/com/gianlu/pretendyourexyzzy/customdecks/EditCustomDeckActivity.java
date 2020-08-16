@@ -15,6 +15,7 @@ import androidx.core.content.FileProvider;
 import androidx.viewpager.widget.ViewPager;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
@@ -232,6 +233,7 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
                 }
                 return true;
             case R.id.editCustomDeck_export:
+                AnalyticsApplication.sendAnalytics(Utils.ACTION_EXPORTED_CUSTOM_DECK);
                 exportCustomDeckJson();
                 return true;
             case R.id.editCustomDeck_delete:

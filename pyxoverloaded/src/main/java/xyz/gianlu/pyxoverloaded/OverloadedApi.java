@@ -137,24 +137,18 @@ public class OverloadedApi {
         return instance;
     }
 
-    /////////////////////////////////////////
-    //////////////// Internal ///////////////
-    /////////////////////////////////////////
-
     @NonNull
     public static OverloadedChatApi chat(@NonNull Context context) {
         init(context);
         return chatInstance;
     }
 
-    /////////////////////////////////////////
-    /////////////// Pyx server //////////////
-    /////////////////////////////////////////
-
     public static void close() {
         chatInstance.close();
         instance.webSocket.close();
     }
+
+    //region Internal
 
     @NonNull
     @WorkerThread
@@ -282,6 +276,31 @@ public class OverloadedApi {
         }
     }
 
+    @Nullable
+    @WorkerThread
+    @AddTrace(name = "overloaded_check_maintenance")
+    private Long checkMaintenanceSync() throws JSONException, IOException {
+        try (Response resp = client.newCall(new Request.Builder()
+                .url(overloadedServerUrl("IsUnderMaintenance"))
+                .get().build()).execute()) {
+            if (resp.code() != 200) throw new IOException(String.valueOf(resp.code()));
+
+            ResponseBody body = resp.body();
+            if (body == null) throw new IOException();
+
+            JSONObject obj = new JSONObject(body.string());
+            if (obj.getBoolean("enabled")) maintenanceEnd = obj.getLong("estimatedEnd");
+            else maintenanceEnd = null;
+
+            Log.i(TAG, "Updated maintenance status: " + maintenanceEnd);
+            return maintenanceEnd;
+        }
+    }
+
+    //endregion
+
+    //region Pyx
+
     /**
      * Report that user has logged out from PYX server.
      */
@@ -291,11 +310,6 @@ public class OverloadedApi {
             return true;
         }), "logoutFromPyx");
     }
-
-
-    /////////////////////////////////////////
-    //////////// User & providers ///////////
-    /////////////////////////////////////////
 
     /**
      * Report that user has logged into a PYX server.
@@ -323,6 +337,10 @@ public class OverloadedApi {
             }
         }), "logIntoPyx");
     }
+
+    //endregion
+
+    //region User and providers
 
     /**
      * @return The current {@link FirebaseUser} instance or {@code null} if not logged in.
@@ -412,10 +430,7 @@ public class OverloadedApi {
         }
     }
 
-
-    /////////////////////////////////////////
-    ////////////// Public API ///////////////
-    /////////////////////////////////////////
+    //endregion
 
     /**
      * Links the current profile with another provider.
@@ -607,27 +622,6 @@ public class OverloadedApi {
         }
     }
 
-    @Nullable
-    @WorkerThread
-    @AddTrace(name = "overloaded_check_maintenance")
-    private Long checkMaintenanceSync() throws JSONException, IOException {
-        try (Response resp = client.newCall(new Request.Builder()
-                .url(overloadedServerUrl("IsUnderMaintenance"))
-                .get().build()).execute()) {
-            if (resp.code() != 200) throw new IOException(String.valueOf(resp.code()));
-
-            ResponseBody body = resp.body();
-            if (body == null) throw new IOException();
-
-            JSONObject obj = new JSONObject(body.string());
-            if (obj.getBoolean("enabled")) maintenanceEnd = obj.getLong("estimatedEnd");
-            else maintenanceEnd = null;
-
-            Log.i(TAG, "Updated maintenance status: " + maintenanceEnd);
-            return maintenanceEnd;
-        }
-    }
-
     /**
      * @return Whether the server is under maintenance (without requesting the server).
      */
@@ -643,10 +637,7 @@ public class OverloadedApi {
         else return maintenanceEnd;
     }
 
-
-    /////////////////////////////////////////
-    /////////////// User data ///////////////
-    /////////////////////////////////////////
+    //region User data
 
     public void userData(@Nullable Activity activity, boolean preferCache, @NonNull UserDataCallback callback) {
         callbacks(userData(preferCache), activity, callback::onUserData, callback::onFailed);
@@ -698,15 +689,14 @@ public class OverloadedApi {
         }), activity, aVoid -> callback.onSuccessful(), callback::onFailed);
     }
 
+    //endregion
+
+    //region Friends
+
     @Nullable
     public Map<String, FriendStatus> friendsStatusCache() {
         return friendsStatusCached;
     }
-
-
-    /////////////////////////////////////////
-    //////////////// Friends ////////////////
-    /////////////////////////////////////////
 
     /**
      * Gets the list of friends and their status (includes friends requests).
@@ -755,14 +745,13 @@ public class OverloadedApi {
         }), activity, callback::onFriendsStatus, callback::onFailed);
     }
 
+    //endregion
+
+    //region Events
+
     void dispatchLocalEvent(@NonNull Event.Type type, @NonNull Object data) {
         webSocket.dispatchEvent(new Event(type, null, data));
     }
-
-
-    /////////////////////////////////////////
-    //////////////// Events /////////////////
-    /////////////////////////////////////////
 
     public void addEventListener(@NonNull EventListener listener) {
         webSocket.listeners.add(listener);
@@ -792,6 +781,8 @@ public class OverloadedApi {
                 overloadedUsersCached.add(event.data.getString("nick"));
         }
     }
+
+    //endregion
 
     @UiThread
     public interface EventListener {
