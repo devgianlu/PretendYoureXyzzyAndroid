@@ -1,9 +1,5 @@
 ### Added
-- Export/share custom decks
-
-### Changed
-- Refresh game after 3 seconds it has been stuck
+- Added support for CrCast (view and use decks)
 
 ### Fixed
-- Fixed importing cards with 0 pick
-- Fixed unescaped HTML in cards
+- Fixed crash when using some cards
