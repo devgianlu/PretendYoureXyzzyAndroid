@@ -87,7 +87,7 @@
     <string name="search">Search</string>
     <string name="score"><![CDATA[<b>Score:</b>]]> %d</string>
     <string name="numPick"><![CDATA[<b>Pick</b>]]> %d</string>
-    <string name="numDraw"><![CDATA[<b>Draw</b>]]> %d</string>
+    <string name="numDraw" comment="Specifies the amount of cards that the player will draw from the deck when this appears on the black card. &#10;&#10;Draw as take cards from the deck."><![CDATA[<b>Draw</b>]]> %d</string>
     <string name="gameOptions">Game options</string>
     <string name="scoreLimit"><![CDATA[<b>Score limit:</b>]]> %d</string>
     <string name="playerLimit"><![CDATA[<b>Players limit:</b>]]> %d</string>
@@ -201,7 +201,7 @@
     <string name="unblock">Unblock</string>
     <string name="unknownChatCommand">Unknown chat command.</string>
     <string name="lastRound">Last round</string>
-    <string name="spectatorsNotAllowed"><b>Spectators:</b><i>not allowed</i></string>
+    <string name="spectatorsNotAllowed"><![CDATA[<b>Spectators:</b>]]><![CDATA[<i>not allowed</i>]]></string>
     <string name="googlePlayGames">Google Play Games</string>
     <string name="loggedIn">Logged in</string>
     <string name="login">Login</string>
