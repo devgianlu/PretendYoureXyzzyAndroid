@@ -10,7 +10,7 @@
     <string name="game_waitingForRoundToEnd">Attendi la fine del turno…</string>
     <string name="game_waitingForStart">Attendi che inizi il gioco…</string>
     <string name="game_isJudging">%s sta scegliendo…</string>
-    <string name="game_waitingForPlayers">In attesa di altri giocatori…</string>
+    <string name="game_waitingForPlayers">In attesa degli altri giocatori…</string>
     <string name="game_playerSkipped">%s è stato saltato.</string>
     <string name="game_pickCards">Seleziona %d carta/e da giocare. La tue carte:</string>
     <string name="game_judgeSkipped">Il giudice %s è stato saltato.</string>
@@ -19,7 +19,7 @@
     <string name="game_judgeLeft_long">Il giudice %s ha abbandonato la partita. Un nuovo turno inizierà a breve.</string>
     <string name="game_judgeLeft_short">Il giudice %s ha abbandonato.</string>
     <string name="game_roundWinner_long">%s ha vinto questo turno! Uno nuovo inizierà a breve…</string>
-    <string name="game_roundWinner_short">%s ha vinto!</string>
+    <string name="game_roundWinner_short">%s ha vinto questo round!</string>
     <string name="game_gameWinner_long">%s ha vinto questo gioco! Attendi che il creatore ne avvii un altro…</string>
     <string name="game_gameWinner_short">%s ha vinto il gioco!</string>
     <string name="game_youGameWinner_long">Hai vinto questo gioco! Attendi che il creatore ne avvii un altro…</string>
@@ -27,31 +27,31 @@
     <!-- Tutorial messages -->
     <string name="tutorial_firstTitle">Benvenuto in Pretend You\'re Xyzzy</string>
     <string name="tutorial_firstDesc">Pretend You\'re Xyzzy è un gioco online basato su Cards Against Humanity. In questo tutorial ti spiegherò come giocare.</string>
-    <string name="tutorial_secondTitle">Regole</string>
-    <string name="tutorial_secondDesc">Ogni turno una carta nera viene giocata dal giudice, tutti gli altri rispondono alla domanda o completano la frase. Una volta che tutti hanno giocato, il giudice sceglie l\’accoppiamento di carte più divertente e chi lo ha proposto guadagna un punto. Nel turno successivo un nuovo giocatore diventa il giudice e si continua così.</string>
-    <string name="tutorial_thirdTitle">Custom decks</string>
-    <string name="tutorial_thirdDesc">This game supports custom decks (on updated servers): you can create custom decks from the app and add them to your own game.</string>
+    <string name="tutorial_secondTitle">Le regole</string>
+    <string name="tutorial_secondDesc">Ogni turno una carta nera viene giocata dal giudice, tutti gli altri rispondono alla domanda completano la frase. Una volta che tutti hanno giocato, il giudice sceglie l\’accoppiamento di carte più divertente e chi lo ha proposto guadagna un punto. Nel turno successivo un nuovo giocatore diventa il giudice e si continua così.</string>
+    <string name="tutorial_thirdTitle">Mazzi personalizzati</string>
+    <string name="tutorial_thirdDesc">Questo gioco supporta mazzi personalizzati (sui server aggiornati): puoi creare mazzi personalizzati dall\'app e aggiungerli al tuo gioco.</string>
     <string name="tutorial_fourthTitle">Overloaded</string>
-    <string name="tutorial_fourthDesc">Overloaded is a game expansion that enables cool features like <![CDATA[<b>E2EE chat</b>]]>, <![CDATA[<b>user profiles</b>]]>, custom decks and starred cards <![CDATA[<b>synchronization</b>]]> and more. You can also <![CDATA[<b>share</b>]]> your decks with other players.</string>
-    <string name="tutorial_fifthTitle">More features</string>
-    <string name="tutorial_fifthDesc">More features are available in this app, you\'ll learn them as you go. Good game!</string>
+    <string name="tutorial_fourthDesc">Overloaded è un aggiunta al gioco che aggiunge funzioni come <![CDATA[<b>chat E2EE</b>]]>, <![CDATA[<b>profili utente</b>]]>, <![CDATA[<b>sincronizzazione</b>]]> mazzi personalizzati e carte preferite e tanto altro. Puoi anche <![CDATA[<b>condividere</b>]]> i tuoi mazzi con altri giocatori.</string>
+    <string name="tutorial_fifthTitle">Altre funzionalità</string>
+    <string name="tutorial_fifthDesc">Altre funzionalità sono disponibili nell\'app, le conoscerai giocando. Buon gioco!</string>
     <string name="tutorial_chooseNickname">Scegli un nome per giocare, non sarà permanente.</string>
     <string name="tutorial_changeServer">Sono disponibili più server, scegli quello che preferisci.</string>
-    <string name="tutorial_joinTheServer">Entra nella lobby, ti attenderanno molte partite.</string>
+    <string name="tutorial_joinTheServer">Entra nella lobby, ti attendono molte partite.</string>
     <string name="tutorial_gameStatus">Questo indica se il gioco è stato avviato o meno. Puoi unirti comunque, purché ci sia spazio per te.</string>
     <string name="tutorial_gameLocked">Un gioco può essere bloccato con una password, che viene impostata dal creatore del gioco, per limitarne l\'accesso.</string>
     <string name="tutorial_spectateGame">Gli spettatori possono solo vedere cosa sta succedendo e non possono giocare, ma possono scrivere in chat.</string>
     <string name="tutorial_joinGame">Entra nella partita per iniziare subito a giocare.</string>
     <string name="tutorial_createGame">Puoi creare il tuo gioco e scegliere le tue impostazioni.</string>
-    <string name="tutorial_setupGame">Here you can customize your game options. Don\'t forget you can also add custom decks from the menu up here (if supported on the server).</string>
+    <string name="tutorial_setupGame">Qui puoi personalizzare la tua partita. Non dimenticare che puoi anche aggiungere mazzi personalizzati dal menu (se sono supportati dal server).</string>
     <string name="tutorial_startGame">Una volta che hai finito, inizia il gioco. Per farlo devi avere almeno 3 giocatori e un determinato numero di carte.</string>
     <string name="tutorial_chooseIdCode">Scegli un codice o generane uno per rendere più difficile per qualcuno impersonarti.</string>
     <string name="tutorial_blackCard">Questa è una carta nera: devi completare la frase con le carte bianche qui sotto.</string>
     <string name="tutorial_whiteCard">Gioca una o più carte per completare la frase. Se non conosci il significato di una parola, usa la funzione dizionario nel menu in alto a destra.</string>
-    <string name="tutorial_playCard">Per giocare una carta basta toccarla: apparirà una finestra di conferma.</string>
+    <string name="tutorial_playCard">Per selezionare una carta basta toccarla: apparirà una finestra di conferma.</string>
     <string name="tutorial_player">Una volta che un giocatore raggiunge l\'obiettivo, vince. Puoi toccare sul nome per rivelare ulteriori informazioni.</string>
-    <string name="tutorial_overloaded">Overloaded enables many cool features not present in the standard game experience. It\'s a monthly subscription.</string>
-    <string name="tutorial_addCustomDeck">Here you can create your own custom decks or import and recover old Cardcast decks.</string>
+    <string name="tutorial_overloaded">Overloaded abilita tante funzionalità aggiuntive non presenti nel gioco. Richiede una sottoscrizione mensile.</string>
+    <string name="tutorial_addCustomDeck">Qui puoi create i tuoi mazzi personalizzati, importarli o recuperare vecchi mazzi Cardcast.</string>
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
     <string name="nickname">Nome</string>
@@ -76,8 +76,8 @@
     <string name="goal"><![CDATA[<b>Obbiettivo:</b>]]> %d</string>
     <string name="playersLabel">Giocatori</string>
     <string name="gamePassword">Inserisci password</string>
-    <string name="failedJoiningGame">Impossibile entrare nel gioco!</string>
-    <string name="wrongGamePassword">Password errata!</string>
+    <string name="failedJoiningGame">Failed joining the game!</string>
+    <string name="wrongGamePassword">Wrong password for this game!</string>
     <string name="gameFull">La partita è piena! Riprova più tardi.</string>
     <string name="failedSpectating">Impossibile guardare il gioco!</string>
     <string name="ongoingGame">Gioco avviato</string>
@@ -87,7 +87,7 @@
     <string name="search">Cerca</string>
     <string name="score"><![CDATA[<b>Punti:</b>]]> %d</string>
     <string name="numPick"><![CDATA[<b>Raccogli</b>]]> %d</string>
-    <string name="numDraw"><![CDATA[<b>Pareggio</b>]]> %d</string>
+    <string name="numDraw" comment="Specifies the amount of cards that the player will draw from the deck when this appears on the black card. &#10;&#10;Draw as take cards from the deck."><![CDATA[<b>Pareggio</b>]]> %d</string>
     <string name="gameOptions">Opzioni di gioco</string>
     <string name="scoreLimit"><![CDATA[<b>Limite punti:</b>]]> %d</string>
     <string name="playerLimit"><![CDATA[<b>Limite giocatori:</b>]]> %d</string>
@@ -351,4 +351,21 @@
     <string name="importCustomDeck_details">You can import a custom deck from a JSON file with the following fields (not mandatory): `name`, `watermark`, `description`, `calls`, `responses`. See https://github.com/ajanata/PretendYoureXyzzy/pull/241 for a template.</string>
     <string name="editCustomDeck_descDetails">The description is not mandatory, you can leave it empty.</string>
     <string name="exportCustomDeck">Export custom deck</string>
+    <string name="areYouSureJudgeCard">Are you sure you want to select this card as winner?</string>
+    <string name="connectCrCast">Connect CrCast</string>
+    <string name="connectCrCast_details">Connect with CrCast to use your decks on other servers easily.</string>
+    <string name="wrongUsernameOrPassowrd">Wrong username/password.</string>
+    <string name="logoutCrCast">Logout from CrCast</string>
+    <string name="crCastBanned">Your CrCast account has been banned.</string>
+    <string name="privateDeck">Private deck</string>
+    <string name="language">Language</string>
+    <string name="state">State</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="unpublished">Unpublished</string>
+    <string name="pending">Pending</string>
+    <string name="accepted">Accepted</string>
+    <string name="declined">Declined</string>
+    <string name="blackCardsWithCount">Black cards (%d)</string>
+    <string name="whiteCardsWithCount">White cards (%d)</string>
 </resources>
