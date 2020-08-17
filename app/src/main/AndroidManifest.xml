@@ -120,7 +120,7 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.FullDark" />
 
-        <!-- GameRound images provider -->
+        <!-- File provider (round images, custom decks) -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.gianlu.pretendyourexyzzy"

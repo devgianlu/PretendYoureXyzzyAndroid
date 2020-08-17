@@ -161,6 +161,10 @@ public final class ServersChecker {
             public boolean customDecksEnabled() {
                 return getOrDefault("CUSTOM_DECKS_ENABLED", false);
             }
+
+            public boolean crCastEnabled() {
+                return getOrDefault("CR_CAST_ENABLED", false);
+            }
         }
     }
 

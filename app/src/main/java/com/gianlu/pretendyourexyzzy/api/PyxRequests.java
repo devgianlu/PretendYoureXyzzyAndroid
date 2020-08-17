@@ -18,6 +18,7 @@ import com.gianlu.pretendyourexyzzy.api.models.Name;
 import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.api.models.WhoisResult;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -106,6 +107,7 @@ public final class PyxRequests {
         return new PyxRequest(Pyx.Op.LEAVE_GAME, new PyxRequest.Param("gid", String.valueOf(gid)));
     }
 
+    @NotNull
     public static PyxRequest changeGameOptions(int gid, @NonNull Game.Options options) throws JSONException {
         return new PyxRequest(Pyx.Op.CHANGE_GAME_OPTIONS,
                 new PyxRequest.Param("gid", String.valueOf(gid)),
@@ -149,6 +151,32 @@ public final class PyxRequests {
         return new PyxRequestWithResult<>(Pyx.Op.GET_NAMES_LIST, NAMES_LIST_PROCESSOR);
     }
 
+    //region Custom decks CrCast (old Cardcast)
+
+    @NonNull
+    public static PyxRequestWithResult<List<Deck>> listCrCastDecks(int gid) {
+        return new PyxRequestWithResult<>(Pyx.Op.LIST_CR_CAST_CARD_SETS, DECKS_LIST_PROCESSOR,
+                new PyxRequest.Param("gid", String.valueOf(gid)));
+    }
+
+    @NotNull
+    public static PyxRequest addCrCastDeck(int gid, @NonNull String code) {
+        return new PyxRequest(Pyx.Op.ADD_CR_CAST_CARD_SET,
+                new PyxRequest.Param("gid", String.valueOf(gid)),
+                new PyxRequest.Param("cci", code));
+    }
+
+    @NonNull
+    public static PyxRequest removeCrCastDeck(int gid, int id) {
+        return new PyxRequest(Pyx.Op.REMOVE_CR_CAST_CARD_SET,
+                new PyxRequest.Param("gid", String.valueOf(gid)),
+                new PyxRequest.Param("cci", String.valueOf(id)));
+    }
+
+    //endregion
+
+    //region Custom decks URL/JSON
+
     @NonNull
     public static PyxRequest addCustomDeckUrl(int gid, @NonNull String url) {
         return new PyxRequest(Pyx.Op.ADD_CUSTOM_CARD_SET,
@@ -175,6 +203,8 @@ public final class PyxRequests {
                 new PyxRequest.Param("gid", String.valueOf(gid)),
                 new PyxRequest.Param("cci", String.valueOf(id)));
     }
+
+    // endregion
 
     @NonNull
     public static PyxRequestWithResult<GameCards> getGameCards(int gid) {

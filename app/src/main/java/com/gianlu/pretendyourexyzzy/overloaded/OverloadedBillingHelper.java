@@ -63,10 +63,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         context.startActivity(intent);
     }
 
-    ///////////////////////////////
-    ////////// Activity ///////////
-    ///////////////////////////////
-
+    //region Activity
     public void onStart() {
         billingClient = BillingClient.newBuilder(activity).enablePendingPurchases().setListener(this).build();
         billingClient.startConnection(new BillingClientStateListener() {
@@ -139,15 +136,12 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
         if (!isFirebaseLoggedIn()) updateStatus(null, null);
     }
 
-
-    ///////////////////////////////
-    /////////// Billing ///////////
-    ///////////////////////////////
-
     public void onDestroy() {
         if (billingClient != null) billingClient.endConnection();
     }
+    //endregion
 
+    //region Billing
     /**
      * Get the latest purchase of Overloaded (cached).
      *
@@ -201,11 +195,6 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             case BillingClient.BillingResponseCode.OK:
                 break;
         }
-    }
-
-    private void doOkStuff() {
-        OverloadedApi.get().openWebSocket();
-        OverloadedApi.chat(activity).shareKeysIfNeeded();
     }
 
     /**
@@ -374,11 +363,12 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
             }
         });
     }
+    //endregion
 
-
-    ///////////////////////////////
-    ///////// Overloaded //////////
-    ///////////////////////////////
+    private void doOkStuff() {
+        OverloadedApi.get().openWebSocket();
+        OverloadedApi.chat(activity).shareKeysIfNeeded();
+    }
 
     private boolean isFirebaseLoggedIn() {
         return FirebaseAuth.getInstance().getCurrentUser() != null;

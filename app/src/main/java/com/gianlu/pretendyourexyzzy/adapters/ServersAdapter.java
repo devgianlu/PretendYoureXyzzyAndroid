@@ -90,7 +90,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
                     holder.hasGameChat.setVisibility(stats.gameChatEnabled() ? View.VISIBLE : View.GONE);
                     holder.hasChat.setVisibility(stats.globalChatEnabled() ? View.VISIBLE : View.GONE);
                     holder.hasBlankCards.setVisibility(stats.blankCardsEnabled() ? View.VISIBLE : View.GONE);
-                    holder.hasCustomDecks.setVisibility(stats.customDecksEnabled() ? View.VISIBLE : View.GONE);
+                    holder.hasCustomDecks.setVisibility(stats.customDecksEnabled() || stats.crCastEnabled() ? View.VISIBLE : View.GONE);
                     break;
                 case ERROR:
                     holder.statusIcon.setImageResource(R.drawable.baseline_error_outline_24);

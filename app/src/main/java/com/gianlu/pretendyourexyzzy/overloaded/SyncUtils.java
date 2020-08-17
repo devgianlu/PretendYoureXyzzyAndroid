@@ -117,11 +117,7 @@ public final class SyncUtils {
         }
     }
 
-
-    /////////////////////////////
-    //////// Sync logic /////////
-    /////////////////////////////
-
+    //region Sync logic
     public static void syncStarredCards(@NonNull Context context, @Nullable OnCompleteCallback callback) {
         if (!OverloadedUtils.isSignedIn()) {
             callComplete(callback);
@@ -402,6 +398,7 @@ public final class SyncUtils {
             }
         });
     }
+    //endregion
 
     @UiThread
     public interface OnCompleteCallback {

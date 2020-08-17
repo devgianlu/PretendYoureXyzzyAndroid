@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Subscription messages -->
+    <string name="subscriptionPaused_message">Uw abonnement is gepauzeerd en u heeft geen toegang tot Overloaded. U kunt uw abonnement op elk gewenst moment hervatten.</string>
+    <string name="subscriptionGracePeriod_message">Je bent de uitstel periode ingegaan. Je hebt nog steeds toegang tot Overloaded, maar je verliest deze toegang op %s als je je betaalmethode niet bijwerkt.</string>
+    <string name="subscriptionAccountHold_message">De uitstel periode is voorbij, je account is bevroren. Je hebt geen toegang tot Overloaded totdat je je betaalmethode bijwerkt.</string>
+    <string name="subscriptionCancelled_message">Uw abonnement is geannuleerd. U verliest toegang tot Overloaded nadat deze factureringsperiode eindigt op %s.</string>
+    <!-- Subscription statuses -->
+    <string name="active">Actief</string>
+    <string name="expired">Verlopen</string>
+    <string name="paused">Gepauzeerd</string>
+    <string name="accountHold">Account bevroren</string>
+    <string name="gracePeriod">Uitstel periode</string>
+    <string name="cancelled">Geannuleerd</string>
+    <string name="ok">Oké</string>
+    <string name="none">Geen</string>
+    <string name="overloadedStatus_maintenance">De server is bezig met onderhoud. We denken weer online te zijn op %s.</string>
+</resources>

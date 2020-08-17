@@ -34,6 +34,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @UiThread
 public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
@@ -229,21 +230,28 @@ public class GameLayout extends FrameLayout implements CardsAdapter.Listener {
         void showDialog(@NonNull DialogFragment dialog);
 
         void startGame();
+
+        void refreshGameInfo();
     }
 
     private class CountdownTask extends TimerTask {
-        private int count;
+        private final AtomicInteger count;
 
         CountdownTask(int sec) {
-            this.count = sec;
+            this.count = new AtomicInteger(sec);
         }
 
         @Override
         public void run() {
-            handler.post(() -> time.setText(String.valueOf(count)));
+            int val = count.get();
+            if (val >= 0) {
+                handler.post(() -> time.setText(String.valueOf(val)));
+            } else if (val == -3) {
+                cancel();
+                listener.refreshGameInfo();
+            }
 
-            if (count <= 0) cancel();
-            else count--;
+            count.decrementAndGet();
         }
     }
 }

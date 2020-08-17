@@ -207,7 +207,7 @@ public class GameCardView extends MaterialCardView {
         notText.setVisibility(GONE);
 
         TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(text, 8, 18, 1, TypedValue.COMPLEX_UNIT_SP);
-        text.setHtml(card.text());
+        text.setHtml(card.textUnescaped());
 
         if (card.black()) {
             numPick.setHtml(R.string.numPick, card.numPick());

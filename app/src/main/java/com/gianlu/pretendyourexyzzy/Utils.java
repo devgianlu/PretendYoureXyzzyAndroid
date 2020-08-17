@@ -47,6 +47,7 @@ public final class Utils {
     public static final String ACTION_BLOCK_USER = "block_user";
     public static final String ACTION_UNBLOCK_USER = "unblock_user";
     public static final String ACTION_IMPORTED_CUSTOM_DECK = "imported_custom_deck";
+    public static final String ACTION_EXPORTED_CUSTOM_DECK = "exported_custom_deck";
     public static final String ACTION_CREATED_CUSTOM_DECK = "created_custom_deck";
     public static final String ACTION_DELETED_CUSTOM_DECK = "created_custom_deck";
     public static final String ACTION_ADDED_CUSTOM_DECK_CARD = "added_custom_deck_card";

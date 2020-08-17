@@ -65,7 +65,7 @@
     <string name="globalChat">Chat global</string>
     <string name="games">Partidas</string>
     <string name="gameChat">Bate-papo do jogo</string>
-    <string name="failedLoading_reason">Falha no carregamento!</string>
+    <string name="failedLoading_reason">Falha no carregamento: %s</string>
     <string name="players"><![CDATA[<b>Jogadores:</b>]]> %1$d/%2$d</string>
     <string name="spectators"><![CDATA[<b>Espectadores:</b>]]> %1$d/%2$d</string>
     <string name="noMessages">Não há mensagens.</string>
@@ -76,8 +76,8 @@
     <string name="goal"><![CDATA[<b>Meta:</b>]]> %d</string>
     <string name="playersLabel">Jogadores</string>
     <string name="gamePassword">Inserir senha do jogo</string>
-    <string name="failedJoining">Falha ao entrar no jogo!</string>
-    <string name="wrongPassword">Senha errada para este jogo!</string>
+    <string name="failedJoiningGame">Failed joining the game!</string>
+    <string name="wrongGamePassword">Wrong password for this game!</string>
     <string name="gameFull">O jogo está cheio! Tente mais tarde.</string>
     <string name="failedSpectating">Falha ao assistir ao jogo!</string>
     <string name="ongoingGame">Partida em andamento</string>
@@ -129,7 +129,7 @@
     <string name="add">Adicionar</string>
     <string name="notEnoughPlayers">Jogadores insuficientes!</string>
     <string name="cannotStartGame_solution">Por favor, satisfaça os requisitos adicionando conjuntos de cartas ao jogo.</string>
-    <string name="name">Nome:</string>
+    <string name="name">Nome</string>
     <string name="preferences">Preferências</string>
     <string name="logs">Registros</string>
     <string name="loading">Carregando…</string>
@@ -193,6 +193,7 @@
     <string name="showLastRound">Mostrar última rodada</string>
     <string name="definition">Definição</string>
     <string name="noDefinitions">Nenhuma definição encontrada!</string>
+    <string name="noGames">There are no games. You can create your own or join another server.</string>
     <string name="refresh">Atualizar</string>
     <string name="blockUser">Bloquear usuário</string>
     <string name="unblockUser">Desbloquear usuário</string>
@@ -221,6 +222,7 @@
     <string name="cardText">Texto do cartão</string>
     <string name="createCustomCardInfo_white">Os cartões brancos contêm respostas aos cartões pretos. Nenhum espaço reservado é necessário.</string>
     <string name="createCustomCardInfo_black">Cartões pretos contêm perguntas ou frases para completar. Use ____ (4 sublinhados) como um espaço reservado para a resposta.</string>
+    <string name="createCustomCardInfo_image">White cards can contain images as responses to black cards: paste the link here or upload an image. Uploaded images will also be optimized.</string>
     <string name="failedAddingCustomCard">Falha ao adicionar cartão personalizado.</string>
     <string name="editCard">Editar cartão</string>
     <string name="completeDeckInfoFirst">Por favor, preencha a informação do deck primeiro.</string>
@@ -287,6 +289,7 @@
     <string name="failedRemovingFriend">Failed removing friend!</string>
     <string name="failedCreatingChat">Failed creating chat!</string>
     <string name="beTheFirstToSendAMessage">Be the first one to send a message!</string>
+    <string name="noFriends_long">You have no friends! Meet on the same server and add each other from the players list.</string>
     <string name="typeAMessage">Type a message</string>
     <string name="deleteAccount">Delete account</string>
     <string name="failedDeletingAccount">Failed deleting account!</string>
@@ -334,7 +337,7 @@
     <string name="removeFromStarredDecks">Remove from starred decks</string>
     <string name="deckDoesNotExist">This deck doesn\'t exist anymore.</string>
     <string name="cannotFindCustomDeck">Cannot find this deck.</string>
-    <string name="cannotSearchDeckWithoutOverloaded">This feature is supported only for Overloaded users.</string>
+    <string name="featureOverloadedOnly">This feature is supported only for Overloaded users.</string>
     <string name="recoverCardcastDeck">Recover Cardcast deck</string>
     <string name="recover">Recover</string>
     <string name="invalidDeckCode">The deck code is invalid!</string>
@@ -346,4 +349,30 @@
     <string name="lessThanMinuteAgo">Less than a minute ago</string>
     <string name="minutesAgo">%dm ago</string>
     <string name="hoursAgo">%dh ago</string>
+    <string name="importCustomDeck_details">You can import a custom deck from a JSON file with the following fields (not mandatory): `name`, `watermark`, `description`, `calls`, `responses`. See https://github.com/ajanata/PretendYoureXyzzy/pull/241 for a template.</string>
+    <string name="editCustomDeck_descDetails">The description is not mandatory, you can leave it empty.</string>
+    <string name="exportCustomDeck">Export custom deck</string>
+    <string name="areYouSureJudgeCard">Are you sure you want to select this card as winner?</string>
+    <string name="connectCrCast">Connect CrCast</string>
+    <string name="connectCrCast_details">Connect with CrCast to use your decks on other servers easily.</string>
+    <string name="wrongUsernameOrPassword">Wrong username/password.</string>
+    <string name="logoutCrCast">Logout from CrCast</string>
+    <string name="crCastBanned">Your CrCast account has been banned.</string>
+    <string name="privateDeck">Private deck</string>
+    <string name="language">Language</string>
+    <string name="state">State</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="unpublished">Unpublished</string>
+    <string name="pending">Pending</string>
+    <string name="accepted">Accepted</string>
+    <string name="declined">Declined</string>
+    <string name="blackCardsWithCount">Black cards (%d)</string>
+    <string name="whiteCardsWithCount">White cards (%d)</string>
+    <string name="addTextCard">Add text card</string>
+    <string name="addImageCard">Add image card</string>
+    <string name="imageLink">Image link</string>
+    <string name="uploadImage">Upload image</string>
+    <string name="invalidImageUrl">The given image URL is invalid.</string>
+    <string name="failedUploadingImage">Failed uploading image!</string>
 </resources>

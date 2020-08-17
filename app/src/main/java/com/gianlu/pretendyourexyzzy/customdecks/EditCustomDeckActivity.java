@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.customdecks;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -10,9 +11,11 @@ import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.core.content.FileProvider;
 import androidx.viewpager.widget.ViewPager;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
@@ -30,6 +33,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class EditCustomDeckActivity extends ActivityWithDialog {
@@ -148,9 +152,49 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
 
             if (whiteCardsFragment != null) whiteCardsFragment.setDeckId(deckId);
             if (blackCardsFragment != null) blackCardsFragment.setDeckId(deckId);
+
+            supportInvalidateOptionsMenu();
             return true;
         } else {
             return false;
+        }
+    }
+
+    private void exportCustomDeckJson() {
+        Integer deckId;
+        if (generalInfoFragment == null || (deckId = generalInfoFragment.getDeckId()) == null)
+            return;
+
+        CustomDecksDatabase db = CustomDecksDatabase.get(this);
+        CustomDecksDatabase.CustomDeck deck = db.getDeck(deckId);
+        if (deck == null)
+            return;
+
+        try {
+            JSONObject obj = deck.craftPyxJson(db);
+
+            File parent = new File(getCacheDir(), "exportedDecks");
+            if (!parent.exists() && !parent.mkdir()) {
+                Log.e(TAG, "Failed creating exported decks directory: " + parent);
+                return;
+            }
+
+            String fileName = getName();
+            if (fileName.isEmpty()) fileName = String.valueOf(deckId);
+
+            File file = new File(parent, fileName + ".json");
+            try (FileOutputStream out = new FileOutputStream(file)) {
+                out.write(obj.toString().getBytes());
+            }
+
+            Uri uri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName(), file);
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("application/json");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.putExtra(Intent.EXTRA_STREAM, uri);
+            startActivity(Intent.createChooser(intent, "Share custom deck..."));
+        } catch (JSONException | IOException | IllegalArgumentException ex) {
+            Log.e(TAG, "Failed exporting custom deck!", ex);
         }
     }
 
@@ -166,7 +210,12 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if (!getIntent().hasExtra("id")) menu.removeItem(R.id.editCustomDeck_delete);
+        if (!getIntent().hasExtra("id"))
+            menu.removeItem(R.id.editCustomDeck_delete);
+
+        if (generalInfoFragment == null || !generalInfoFragment.isSaved())
+            menu.removeItem(R.id.editCustomDeck_export);
+
         return true;
     }
 
@@ -182,6 +231,10 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
                 } else if (pager != null) {
                     pager.setCurrentItem(0);
                 }
+                return true;
+            case R.id.editCustomDeck_export:
+                AnalyticsApplication.sendAnalytics(Utils.ACTION_EXPORTED_CUSTOM_DECK);
+                exportCustomDeckJson();
                 return true;
             case R.id.editCustomDeck_delete:
                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);

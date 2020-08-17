@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.MessageView;
 import com.gianlu.commonutils.ui.Toaster;
@@ -374,6 +375,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                         OverloadedApi.get().removeFriend(friend.username, null, new FriendsStatusCallback() {
                             @Override
                             public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
+                                AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_REMOVE_FRIEND);
                                 showToast(Toaster.build().message(R.string.removedFriend).extra(friend));
                             }
 
@@ -388,6 +390,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                         OverloadedApi.get().addFriend(friend.username, null, new FriendsStatusCallback() {
                             @Override
                             public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
+                                AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_ADD_FRIEND);
                                 showToast(Toaster.build().message(R.string.friendAdded).extra(friend));
                             }
 

@@ -2,6 +2,12 @@
 <com.gianlu.commonutils.misc.SuperTextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:layout_marginStart="4dp"
+    android:layout_marginEnd="4dp"
     android:background="?android:attr/selectableItemBackground"
-    android:textColor="?android:textColorSecondary" />
+    android:paddingStart="4dp"
+    android:paddingTop="6dp"
+    android:paddingEnd="4dp"
+    android:paddingBottom="6dp"
+    android:textColor="?android:textColorSecondary"
+    android:textSize="15sp" />

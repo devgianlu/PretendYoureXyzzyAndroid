@@ -102,7 +102,7 @@ public class MetricsActivity extends ActivityWithDialog implements BreadcrumbsVi
     private void loadGame(@NonNull GamePermalink game) {
         final String gameId = game.extractGameMetricsId();
         if (gameId == null) {
-            Toaster.with(MetricsActivity.this).message(R.string.failedLoading).show();
+            Toaster.with(this).message(R.string.failedLoading).show();
             onBackPressed();
             return;
         }

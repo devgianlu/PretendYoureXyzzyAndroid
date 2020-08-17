@@ -263,7 +263,11 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
         boolean[] blacks = new boolean[array.length()];
         for (int i = 0; i < array.length(); i++) {
             try {
-                texts[i] = CommonUtils.toStringArray(array.getJSONObject(i).getJSONArray("text"));
+                String[] text = CommonUtils.toStringArray(array.getJSONObject(i).getJSONArray("text"));
+                if (isBlack() && text.length == 1)
+                    text = new String[]{text[0] + " ", ""};
+
+                texts[i] = text;
                 blacks[i] = isBlack();
             } catch (JSONException ex) {
                 Log.w(TAG, "Failed importing card at " + i, ex);

@@ -76,8 +76,8 @@
     <string name="goal"><![CDATA[<b>Goal:</b>]]> %d</string>
     <string name="playersLabel">Players</string>
     <string name="gamePassword">Enter game password</string>
-    <string name="failedJoining">Failed joining the game!</string>
-    <string name="wrongPassword">Wrong password for this game!</string>
+    <string name="failedJoiningGame">Failed joining the game!</string>
+    <string name="wrongGamePassword">Wrong password for this game!</string>
     <string name="gameFull">The game is full! Try later.</string>
     <string name="failedSpectating">Failed spectating the game!</string>
     <string name="ongoingGame">Ongoing game</string>
@@ -193,6 +193,7 @@
     <string name="showLastRound">Pokaż ostatnią rundę</string>
     <string name="definition">Definicja</string>
     <string name="noDefinitions">Nie znaleziono definicji!</string>
+    <string name="noGames">There are no games. You can create your own or join another server.</string>
     <string name="refresh">Odśwież</string>
     <string name="blockUser">Zablokuj użytkownika</string>
     <string name="unblockUser">Odblokuj użytkownika</string>
@@ -221,6 +222,7 @@
     <string name="cardText">Card text</string>
     <string name="createCustomCardInfo_white">White cards contain responses to black cards. No placeholders are needed.</string>
     <string name="createCustomCardInfo_black">Black cards contain questions or phrases to complete. Use ____ (4 underscores) as a placeholder for the response.</string>
+    <string name="createCustomCardInfo_image">White cards can contain images as responses to black cards: paste the link here or upload an image. Uploaded images will also be optimized.</string>
     <string name="failedAddingCustomCard">Failed adding custom card.</string>
     <string name="editCard">Edit card</string>
     <string name="completeDeckInfoFirst">Please complete the deck info first.</string>
@@ -287,6 +289,7 @@
     <string name="failedRemovingFriend">Failed removing friend!</string>
     <string name="failedCreatingChat">Failed creating chat!</string>
     <string name="beTheFirstToSendAMessage">Be the first one to send a message!</string>
+    <string name="noFriends_long">You have no friends! Meet on the same server and add each other from the players list.</string>
     <string name="typeAMessage">Type a message</string>
     <string name="deleteAccount">Delete account</string>
     <string name="failedDeletingAccount">Failed deleting account!</string>
@@ -334,7 +337,7 @@
     <string name="removeFromStarredDecks">Remove from starred decks</string>
     <string name="deckDoesNotExist">This deck doesn\'t exist anymore.</string>
     <string name="cannotFindCustomDeck">Cannot find this deck.</string>
-    <string name="cannotSearchDeckWithoutOverloaded">This feature is supported only for Overloaded users.</string>
+    <string name="featureOverloadedOnly">This feature is supported only for Overloaded users.</string>
     <string name="recoverCardcastDeck">Recover Cardcast deck</string>
     <string name="recover">Recover</string>
     <string name="invalidDeckCode">The deck code is invalid!</string>
@@ -346,4 +349,30 @@
     <string name="lessThanMinuteAgo">Less than a minute ago</string>
     <string name="minutesAgo">%dm ago</string>
     <string name="hoursAgo">%dh ago</string>
+    <string name="importCustomDeck_details">You can import a custom deck from a JSON file with the following fields (not mandatory): `name`, `watermark`, `description`, `calls`, `responses`. See https://github.com/ajanata/PretendYoureXyzzy/pull/241 for a template.</string>
+    <string name="editCustomDeck_descDetails">The description is not mandatory, you can leave it empty.</string>
+    <string name="exportCustomDeck">Export custom deck</string>
+    <string name="areYouSureJudgeCard">Are you sure you want to select this card as winner?</string>
+    <string name="connectCrCast">Connect CrCast</string>
+    <string name="connectCrCast_details">Connect with CrCast to use your decks on other servers easily.</string>
+    <string name="wrongUsernameOrPassword">Wrong username/password.</string>
+    <string name="logoutCrCast">Logout from CrCast</string>
+    <string name="crCastBanned">Your CrCast account has been banned.</string>
+    <string name="privateDeck">Private deck</string>
+    <string name="language">Language</string>
+    <string name="state">State</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="unpublished">Unpublished</string>
+    <string name="pending">Pending</string>
+    <string name="accepted">Accepted</string>
+    <string name="declined">Declined</string>
+    <string name="blackCardsWithCount">Black cards (%d)</string>
+    <string name="whiteCardsWithCount">White cards (%d)</string>
+    <string name="addTextCard">Add text card</string>
+    <string name="addImageCard">Add image card</string>
+    <string name="imageLink">Image link</string>
+    <string name="uploadImage">Upload image</string>
+    <string name="invalidImageUrl">The given image URL is invalid.</string>
+    <string name="failedUploadingImage">Failed uploading image!</string>
 </resources>

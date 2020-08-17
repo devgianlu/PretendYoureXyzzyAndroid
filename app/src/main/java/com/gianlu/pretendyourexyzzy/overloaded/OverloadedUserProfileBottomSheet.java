@@ -23,6 +23,7 @@ import com.gianlu.pretendyourexyzzy.adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.cards.GameCardView;
+import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksAdapter;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
@@ -54,6 +55,8 @@ public final class OverloadedUserProfileBottomSheet extends ThemedModalBottomShe
     protected void onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ModalBottomSheetHeaderView header, @NonNull String payload) {
         header.setTitle(payload);
         header.setBackgroundColorRes(MaterialColors.getShuffledInstance().next());
+
+        AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_SHOW_PROFILE);
     }
 
     @Override
@@ -136,7 +139,7 @@ public final class OverloadedUserProfileBottomSheet extends ThemedModalBottomShe
     }
 
     @Override
-    public void onCustomDeckSelected(@NonNull CustomDecksDatabase.FloatingCustomDeck deck) {
+    public void onCustomDeckSelected(@NonNull BasicCustomDeck deck) {
         if (lastPayload == null) return;
 
         UserProfile.CustomDeck userDeck = UserProfile.CustomDeck.find(lastPayload.customDecks, deck.name);

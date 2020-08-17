@@ -3,4 +3,8 @@
     <files-path
         name="gameRound"
         path="gameRoundImages/" />
+
+    <cache-path
+        name="exportedDecks"
+        path="exportedDecks/" />
 </paths>

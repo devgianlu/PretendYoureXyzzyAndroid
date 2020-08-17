@@ -1,17 +1,5 @@
-** OVERLOADED UPDATE **
-
 ### Added
-- Added end-to-end encrypted chat
-- Synchronize starred cards and custom decks
-- See other users profiles and stats
-- Make friends on servers
-- Show custom decks in game list
-
-### Changed
-- Improved chats layout
-- Load default server on network error
-- Better edit game options dialog layout
+- Added support for CrCast (view and use decks)
 
 ### Fixed
-- Fixed game locking up when spectator is alone inside a game
-- Fixed "nickname already in use" error when logging in
+- Fixed crash when using some cards

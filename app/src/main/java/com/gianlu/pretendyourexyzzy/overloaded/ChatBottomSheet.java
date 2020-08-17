@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.NotFilterable;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.bottomsheet.ModalBottomSheetHeaderView;
 import com.gianlu.commonutils.bottomsheet.ThemedModalBottomSheet;
 import com.gianlu.commonutils.dialogs.DialogUtils;
@@ -53,16 +54,12 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
     private ChatMessagesAdapter adapter;
     private OverloadedChatApi chatApi;
 
-    @Override
-    protected void onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ModalBottomSheetHeaderView header, @NonNull Chat payload) {
-        header.setTitle(payload.recipient);
-        header.setBackgroundColorRes(MaterialColors.getShuffledInstance().next());
-    }
-
     private void send() {
         String text = CommonUtils.getText(send);
         if (text.isEmpty() || (text = text.trim()).isEmpty() || chatApi == null)
             return;
+
+        AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_SEND_CHAT);
 
         send.setEnabled(false);
         chatApi.sendMessage(getSetupPayload().id, text, getActivity(), new ChatMessageCallback() {
@@ -79,6 +76,14 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
                 send.setEnabled(true);
             }
         });
+    }
+
+    @Override
+    protected void onCreateHeader(@NonNull LayoutInflater inflater, @NonNull ModalBottomSheetHeaderView header, @NonNull Chat payload) {
+        header.setTitle(payload.recipient);
+        header.setBackgroundColorRes(MaterialColors.getShuffledInstance().next());
+
+        AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_OPEN_CHAT);
     }
 
     @Override
