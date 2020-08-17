@@ -13,6 +13,6 @@
     <string name="gracePeriod">Periodo di grazia</string>
     <string name="cancelled">Annullato</string>
     <string name="ok">OK</string>
-    <string name="none">None</string>
-    <string name="overloadedStatus_maintenance">Server is under maintenance. We expect to be online at %s.</string>
+    <string name="none">Nessuno</string>
+    <string name="overloadedStatus_maintenance">Il server è in manutenzione. Ci aspettiamo di essere online alle %s.</string>
 </resources>
