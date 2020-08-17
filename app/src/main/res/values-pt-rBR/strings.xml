@@ -129,7 +129,7 @@
     <string name="add">Adicionar</string>
     <string name="notEnoughPlayers">Jogadores insuficientes!</string>
     <string name="cannotStartGame_solution">Por favor, satisfaça os requisitos adicionando conjuntos de cartas ao jogo.</string>
-    <string name="name">Nome:</string>
+    <string name="name">Nome</string>
     <string name="preferences">Preferências</string>
     <string name="logs">Registros</string>
     <string name="loading">Carregando…</string>
@@ -201,7 +201,7 @@
     <string name="unblock">Desbloquear</string>
     <string name="unknownChatCommand">Comando de chat desconhecido.</string>
     <string name="lastRound">Última rodada</string>
-    <string name="spectatorsNotAllowed"><b>Espectadores:</b><i>não são permitidos</i></string>
+    <string name="spectatorsNotAllowed"><![CDATA[<b>Espectadores:</b>]]><![CDATA[<i>não são permitidos</i>]]></string>
     <string name="googlePlayGames">Jogos do Google Play</string>
     <string name="loggedIn">Sessão iniciada</string>
     <string name="login">Conectar-se</string>
