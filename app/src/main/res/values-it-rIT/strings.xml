@@ -260,7 +260,7 @@
     <string name="profile">Profilo</string>
     <string name="overloaded_noChats">Non ci sono conversazioni!</string>
     <string name="yourServer">Il tuo server</string>
-    <string name="pyxLogin">Accesso PYX</string>
+    <string name="pyxLogin">Accedi a PYX</string>
     <string name="overloaded_notSignedIn">Accesso non effettuato</string>
     <string name="loggedInAs">Connesso come %s</string>
     <string name="overloadedDifferentUsername_title">Nomi utente diversi</string>
