@@ -1,1 +1,44 @@
-[]
+[
+  {
+    "name": "Caio Tonus Ribeiro",
+    "link": "https://crowdin.com/profile/caiotonus",
+    "languages": [
+      "Portuguese (Brazilian)"
+    ]
+  },
+  {
+    "name": "Dawid Pośpiech",
+    "link": "https://crowdin.com/profile/rewida17",
+    "languages": [
+      "Polish"
+    ]
+  },
+  {
+    "name": "Felipe Rodrigues",
+    "link": "https://crowdin.com/profile/felipercastro",
+    "languages": [
+      "Portuguese (Brazilian)"
+    ]
+  },
+  {
+    "name": "Guilhermegolden",
+    "link": "https://crowdin.com/profile/Guilhermegolden",
+    "languages": [
+      "Portuguese"
+    ]
+  },
+  {
+    "name": "LIGHTツ",
+    "link": "https://crowdin.com/profile/ronaldlopes339",
+    "languages": [
+      "Portuguese (Brazilian)"
+    ]
+  },
+  {
+    "name": "Robin Heidenis",
+    "link": "https://crowdin.com/profile/RobinHeidenis",
+    "languages": [
+      "Dutch"
+    ]
+  }
+]
