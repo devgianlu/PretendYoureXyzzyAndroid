@@ -87,7 +87,7 @@
     <string name="search">Zoeken</string>
     <string name="score"><![CDATA[<b>Score:</b>]]> %d</string>
     <string name="numPick"><![CDATA[<b>Kies</b>]]> %d</string>
-    <string name="numDraw" comment="Specifies the amount of cards that the player will draw from the deck when this appears on the black card. &#10;&#10;Draw as take cards from the deck."><![CDATA[<b>Draw</b>]]> %d</string>
+    <string name="numDraw"><![CDATA[<b>Draw</b>]]> %d</string>
     <string name="gameOptions">Spelinstellingen</string>
     <string name="scoreLimit"><![CDATA[<b>Score limit:</b>]]> %d</string>
     <string name="playerLimit"><![CDATA[<b>Players limit:</b>]]> %d</string>
@@ -222,6 +222,7 @@
     <string name="cardText">Card text</string>
     <string name="createCustomCardInfo_white">White cards contain responses to black cards. No placeholders are needed.</string>
     <string name="createCustomCardInfo_black">Black cards contain questions or phrases to complete. Use ____ (4 underscores) as a placeholder for the response.</string>
+    <string name="createCustomCardInfo_image">White cards can contain images as responses to black cards: paste the link here or upload an image. Uploaded images will also be optimized.</string>
     <string name="failedAddingCustomCard">Failed adding custom card.</string>
     <string name="editCard">Edit card</string>
     <string name="completeDeckInfoFirst">Please complete the deck info first.</string>
@@ -336,7 +337,7 @@
     <string name="removeFromStarredDecks">Remove from starred decks</string>
     <string name="deckDoesNotExist">This deck doesn\'t exist anymore.</string>
     <string name="cannotFindCustomDeck">Cannot find this deck.</string>
-    <string name="cannotSearchDeckWithoutOverloaded">This feature is supported only for Overloaded users.</string>
+    <string name="featureOverloadedOnly">This feature is supported only for Overloaded users.</string>
     <string name="recoverCardcastDeck">Recover Cardcast deck</string>
     <string name="recover">Recover</string>
     <string name="invalidDeckCode">The deck code is invalid!</string>
@@ -354,7 +355,7 @@
     <string name="areYouSureJudgeCard">Are you sure you want to select this card as winner?</string>
     <string name="connectCrCast">Connect CrCast</string>
     <string name="connectCrCast_details">Connect with CrCast to use your decks on other servers easily.</string>
-    <string name="wrongUsernameOrPassowrd">Wrong username/password.</string>
+    <string name="wrongUsernameOrPassword">Wrong username/password.</string>
     <string name="logoutCrCast">Logout from CrCast</string>
     <string name="crCastBanned">Your CrCast account has been banned.</string>
     <string name="privateDeck">Private deck</string>
@@ -368,4 +369,10 @@
     <string name="declined">Declined</string>
     <string name="blackCardsWithCount">Black cards (%d)</string>
     <string name="whiteCardsWithCount">White cards (%d)</string>
+    <string name="addTextCard">Add text card</string>
+    <string name="addImageCard">Add image card</string>
+    <string name="imageLink">Image link</string>
+    <string name="uploadImage">Upload image</string>
+    <string name="invalidImageUrl">The given image URL is invalid.</string>
+    <string name="failedUploadingImage">Failed uploading image!</string>
 </resources>
