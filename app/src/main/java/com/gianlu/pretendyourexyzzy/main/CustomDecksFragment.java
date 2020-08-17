@@ -149,6 +149,11 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
             fab.collapse();
         });
 
+        FloatingActionButton translate = layout.findViewById(R.id.customDecksFab_translate);
+        translate.setOnClickListener(v -> {
+            // TODO: Launch translation activity
+        });
+
         FloatingActionButton recoverDeck = layout.findViewById(R.id.customDecksFab_recover);
         recoverDeck.setOnClickListener(v -> {
             EditText input = new EditText(requireContext());

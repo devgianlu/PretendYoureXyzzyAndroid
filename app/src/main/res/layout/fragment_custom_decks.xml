@@ -47,6 +47,14 @@
             fab:fab_title="@string/connectCrCast" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/customDecksFab_translate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            fab:fab_icon="@drawable/baseline_g_translate_24"
+            fab:fab_size="mini"
+            fab:fab_title="@string/translateBaseDeck" />
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/customDecksFab_recover"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

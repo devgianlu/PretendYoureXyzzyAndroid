@@ -370,4 +370,5 @@
     <string name="declined">Declined</string>
     <string name="blackCardsWithCount">Black cards (%d)</string>
     <string name="whiteCardsWithCount">White cards (%d)</string>
+    <string name="translateBaseDeck">Translate base deck</string>
 </resources>
