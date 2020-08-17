@@ -84,7 +84,7 @@ public class CrCastLoginDialog extends DialogFragment {
                     if (ex instanceof CrCastApi.CrCastException) {
                         switch (((CrCastApi.CrCastException) ex).code) {
                             case NOT_AUTHORIZED:
-                                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.wrongUsernameOrPassowrd));
+                                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.wrongUsernameOrPassword));
                                 return;
                             case BANNED:
                                 DialogUtils.showToast(getContext(), Toaster.build().message(R.string.crCastBanned));
