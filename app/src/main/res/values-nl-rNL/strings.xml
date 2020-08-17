@@ -87,7 +87,7 @@
     <string name="search">Zoeken</string>
     <string name="score"><![CDATA[<b>Score:</b>]]> %d</string>
     <string name="numPick"><![CDATA[<b>Kies</b>]]> %d</string>
-    <string name="numDraw"><![CDATA[<b>Draw</b>]]> %d</string>
+    <string name="numDraw" comment="Specifies the amount of cards that the player will draw from the deck when this appears on the black card. &#10;&#10;Draw as take cards from the deck."><![CDATA[<b>Draw</b>]]> %d</string>
     <string name="gameOptions">Spelinstellingen</string>
     <string name="scoreLimit"><![CDATA[<b>Score limit:</b>]]> %d</string>
     <string name="playerLimit"><![CDATA[<b>Players limit:</b>]]> %d</string>
