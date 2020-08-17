@@ -1,8 +1,12 @@
 package com.gianlu.pretendyourexyzzy.customdecks;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -24,6 +28,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.ui.Toaster;
@@ -44,16 +49,23 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
+
 public abstract class AbsCardsFragment extends FragmentWithDialog implements CardsAdapter.Listener {
     private static final String TAG = AbsCardsFragment.class.getSimpleName();
+    private static final int RC_OPEN_CARD_IMAGE = 4;
     private static final int MAX_CARD_TEXT_LENGTH = 256;
     protected CustomDecksDatabase db;
     protected Integer id;
     private CardsAdapter adapter;
     private RecyclerMessageView rmv;
+    private OpenCardImageCallback openCardImageCallback;
 
     @NonNull
     private static ParseResult parseInputText(@NonNull String text, boolean black) {
@@ -240,7 +252,43 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
                 return;
             }
 
-            // TODO: Upload to Overloaded and get link
+            openCardImageCallback = uri -> {
+                if (getContext() == null)
+                    return;
+
+                ProgressDialog pd = DialogUtils.progressDialog(requireContext(), R.string.loading);
+                pd.show();
+
+                try {
+                    InputStream in = requireContext().getContentResolver().openInputStream(uri);
+                    if (in == null) return;
+
+                    // It will take care of closing the stream
+                    OverloadedApi.get().uploadCardImage(in, null, new GeneralCallback<String>() {
+                        @Override
+                        public void onResult(@NonNull String result) {
+                            pd.dismiss();
+                            CommonUtils.setText(imageUrl, OverloadedUtils.getCardImageUrl(result));
+                        }
+
+                        @Override
+                        public void onFailed(@NonNull Exception ex) {
+                            Log.e(TAG, "Failed uploading image to Overloaded.", ex);
+
+                            pd.dismiss();
+                            showToast(Toaster.build().message(R.string.failedUploadingImage));
+                        }
+                    });
+                } catch (IOException ex) {
+                    Log.e(TAG, "Failed opening image stream.", ex);
+                }
+            };
+
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("*/*");
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/jpeg", "image/png", "image/bmp", "image/gif"});
+            startActivityForResult(Intent.createChooser(intent, "Pick an image to upload..."), RC_OPEN_CARD_IMAGE);
         });
 
         CommonUtils.getEditText(imageUrl).addTextChangedListener(new TextWatcher() {
@@ -397,6 +445,24 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
 
         List<CustomCard> cards = db.putCards(id, blacks, texts);
         if (adapter != null) adapter.addCardsAsSingleton(cards);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == RC_OPEN_CARD_IMAGE) {
+            Uri uri;
+            if (openCardImageCallback == null || data == null || (uri = data.getData()) == null)
+                return;
+
+            if (resultCode == Activity.RESULT_OK) openCardImageCallback.onImageUri(uri);
+            openCardImageCallback = null;
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    private interface OpenCardImageCallback {
+        void onImageUri(@NonNull Uri uri);
     }
 
     private static class ParseResult {

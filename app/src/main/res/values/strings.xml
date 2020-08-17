@@ -376,4 +376,5 @@
     <string name="imageLink">Image link</string>
     <string name="uploadImage">Upload image</string>
     <string name="invalidImageUrl">The given image URL is invalid.</string>
+    <string name="failedUploadingImage">Failed uploading image!</string>
 </resources>
