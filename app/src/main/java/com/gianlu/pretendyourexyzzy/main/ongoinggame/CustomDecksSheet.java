@@ -420,7 +420,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         if (OverloadedUtils.isSignedIn())
             ViewCustomDeckActivity.startActivitySearch(requireContext(), deck);
         else
-            DialogUtils.showToast(requireContext(), Toaster.build().message(R.string.cannotSearchDeckWithoutOverloaded));
+            DialogUtils.showToast(requireContext(), Toaster.build().message(R.string.featureOverloadedOnly));
     }
 
     @Override

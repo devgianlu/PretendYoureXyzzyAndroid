@@ -110,4 +110,9 @@ public final class OverloadedUtils {
     public static String getServeCustomDeckUrl(@NonNull String shareCode) {
         return Utils.overloadedServerUrl("ServeCustomDeck") + "?shareCode=" + shareCode;
     }
+
+    @NonNull
+    public static String getCardImageUrl(@NonNull String id) {
+        return Utils.overloadedServerUrl("Images/GetCardImage") + "?id=" + id;
+    }
 }

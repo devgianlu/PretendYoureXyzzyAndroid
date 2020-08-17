@@ -7,6 +7,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Base64;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -14,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -35,7 +37,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
@@ -432,6 +436,30 @@ public class OverloadedApi {
 
     //endregion
 
+    //region Misc
+
+    /**
+     * Uploads an image and gets a reference ID in return.
+     *
+     * @param in       The image stream
+     * @param activity The caller {@link Activity}
+     * @param callback The callback containing the image ID
+     */
+    public void uploadCardImage(@NonNull InputStream in, @Nullable Activity activity, @NonNull GeneralCallback<String> callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            ByteArrayOutputStream out = new ByteArrayOutputStream(512 * 1024);
+            try {
+                CommonUtils.copy(in, out);
+            } finally {
+                in.close();
+            }
+
+            String imageEncoded = Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
+            JSONObject obj = makePostRequest("Images/UploadCardImage", singletonJsonObject("image", imageEncoded));
+            return obj.getString("id");
+        }), activity, callback::onResult, callback::onFailed);
+    }
+
     /**
      * Links the current profile with another provider.
      *
@@ -621,6 +649,9 @@ public class OverloadedApi {
             webSocket.client = null;
         }
     }
+    //endregion
+
+    //region Maintenance
 
     /**
      * @return Whether the server is under maintenance (without requesting the server).
@@ -636,6 +667,7 @@ public class OverloadedApi {
         if (maintenanceEnd == null) throw new IllegalStateException();
         else return maintenanceEnd;
     }
+    //endregion
 
     //region User data
 
