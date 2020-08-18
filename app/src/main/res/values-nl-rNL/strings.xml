@@ -222,6 +222,7 @@
     <string name="cardText">Card text</string>
     <string name="createCustomCardInfo_white">White cards contain responses to black cards. No placeholders are needed.</string>
     <string name="createCustomCardInfo_black">Black cards contain questions or phrases to complete. Use ____ (4 underscores) as a placeholder for the response.</string>
+    <string name="createCustomCardInfo_image">White cards can contain images as responses to black cards: paste the link here or upload an image. Uploaded images will also be optimized.</string>
     <string name="failedAddingCustomCard">Failed adding custom card.</string>
     <string name="editCard">Edit card</string>
     <string name="completeDeckInfoFirst">Please complete the deck info first.</string>
@@ -368,4 +369,10 @@
     <string name="declined">Declined</string>
     <string name="blackCardsWithCount">Black cards (%d)</string>
     <string name="whiteCardsWithCount">White cards (%d)</string>
+    <string name="addTextCard">Add text card</string>
+    <string name="addImageCard">Add image card</string>
+    <string name="imageLink">Image link</string>
+    <string name="uploadImage">Upload image</string>
+    <string name="invalidImageUrl">The given image URL is invalid.</string>
+    <string name="failedUploadingImage">Failed uploading image!</string>
 </resources>

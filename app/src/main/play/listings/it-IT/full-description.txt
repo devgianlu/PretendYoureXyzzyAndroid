@@ -1,30 +1,30 @@
-This app let's you play Pretend You're Xyzzy, an online card game, on your device wherever you are. 
+This app lets you play Pretend You're Xyzzy, an online card game, on your device wherever you are.
 
------ ATTENTION! -----
-This app content may disappoint some people. If you don't agree with the content of this app, don't complain with me. I'm not the creator of this game, just a player who is also a developer.
+----- ATTENZIONE! -----
+Il contenuto di questa app potrebbe dare fastidio ad alcune persone. Se non sei d'accordo con il contenuto di questa app, non lamentarti con me. Non sono il creatore di questo gioco, solo un giocatore che è anche uno sviluppatore.
 --------------------------------
 
-The game is simple. Each round, a black card is randomly chosen from the deck, everyone answers with their funniest white card. The judge the decides which player wins.
+Il gioco è semplice. Ogni turno, una carta nera è scelta a caso dal mazzo, tutti rispondono con la loro carta bianca più divertente. Il giudice decide quale giocatore vince.
 
 
-Free features:
-- Play with friends on a variety of servers
-- Customize your game
-- Play with custom decks
-- Create custom decks from the app
-- Star your favourite cards
-- See your lifetime metrics (games played)
+Funzioni gratuite:
+- Gioca con gli amici su una varietà di server
+- Personalizza il tuo gioco
+- Gioca con mazzi personalizzati
+- Crea mazzi personalizzati dall'app
+- Salva le tue carte preferite
+- Vedi le tue metriche (partite giocate)
 
-Overloaded features:
+Funzioni di Overloaded:
 - Create your profile
-- Accumulate achievements and stats (cards and rounds played, rounds won)
-- Make friends
-- Privately chat with your friends
-- See your friends' starred cards and custom decks
-- Synchronize your starred cards and custom decks so that you never lose them
-- More to come...
+- Accumula successi e statistiche (carte e round giocati, round vinti)
+- Fai amicizia
+- Chatta privatamente con i tuoi amici
+- Vedi le carte preferite e i mazzi personalizzati dei tuoi amici
+- Sincronizza le tue carte preferiti e i mazzi personalizzati in modo da non perderli mai
+- Altro a venire...
 
 
-This project is open source at https://github.com/devgianlu/PretendYoureXyzzyAndroid
+Questo progetto è open source su https://github.com/devgianlu/PretendYoureXyzzyAndroid
 ------------------------------
-Words definition is powered by Urban Dictionary (https://www.urbandictionary.com/).
+La definizione delle parole è fornita da Urban Dictionary (https://www.urbandictionary.com/).
