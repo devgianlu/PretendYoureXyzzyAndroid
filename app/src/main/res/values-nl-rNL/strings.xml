@@ -51,7 +51,7 @@
     <string name="tutorial_playCard">Om een kaart te spelen tik je er op. Er wordt dan een bevestigingsdialoog weergegeven.</string>
     <string name="tutorial_player">Zodra een speler het score doel heeft bereikt, wint hij. Je kunt op spelers tikken om extra informatie te onthullen.</string>
     <string name="tutorial_overloaded">Overloaded zet een hele boel gave functies aan die niet in de standaard game zitten. Het is een maandelijks abonnement.</string>
-    <string name="tutorial_addCustomDeck">Hier kan je je eigen decks maken of je oude Cardcast decks importeren.</string>
+    <string name="tutorial_addCustomDeck">Here you can create your own custom decks (with text and images) or import and recover old Cardcast decks.</string>
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
     <string name="nickname">Gebruikersnaam</string>
