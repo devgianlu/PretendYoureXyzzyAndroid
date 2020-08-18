@@ -51,7 +51,7 @@
     <string name="tutorial_playCard">Per selezionare una carta basta toccarla: apparirà una finestra di conferma.</string>
     <string name="tutorial_player">Una volta che un giocatore raggiunge l\'obiettivo, vince. Puoi toccare sul nome per rivelare ulteriori informazioni.</string>
     <string name="tutorial_overloaded">Overloaded abilita tante funzionalità aggiuntive non presenti nel gioco. Richiede una sottoscrizione mensile.</string>
-    <string name="tutorial_addCustomDeck">Qui puoi create i tuoi mazzi personalizzati, importarli o recuperare vecchi mazzi Cardcast.</string>
+    <string name="tutorial_addCustomDeck">Here you can create your own custom decks (with text and images) or import and recover old Cardcast decks.</string>
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
     <string name="nickname">Nome</string>
