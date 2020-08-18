@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,9 +14,11 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
@@ -232,17 +235,19 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
                 collaboratorsMessage.setVisibility(View.VISIBLE);
                 collaboratorsMessage.info(R.string.collaboratorsDeckNotSynced);
             } else {
+                long deckRemoteId = deck.remoteId;
 
+                addCollaborator.setEnabled(false);
                 collaborators.setVisibility(View.GONE);
                 collaboratorsMessage.setVisibility(View.GONE);
                 collaboratorsLoading.setVisibility(View.VISIBLE);
-                OverloadedSyncApi.get().getCollaborators(deck.remoteId, getActivity(), new GeneralCallback<List<String>>() {
+                OverloadedSyncApi.get().getCollaborators(deckRemoteId, getActivity(), new GeneralCallback<List<String>>() {
                     @Override
                     public void onResult(@NonNull List<String> result) {
-                        collaboratorsLoading.setVisibility(View.GONE);
-                        collaboratorsMessage.setVisibility(View.GONE);
-                        collaborators.setVisibility(View.VISIBLE);
-                        setCollaborators(result);
+                        setCollaborators(deckRemoteId, result);
+
+                        addCollaborator.setEnabled(true);
+                        addCollaborator.setOnClickListener(v -> showAddCollaboratorDialog(deckRemoteId, result));
                     }
 
                     @Override
@@ -255,9 +260,6 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
                         collaboratorsMessage.error(R.string.failedLoading);
                     }
                 });
-
-                addCollaborator.setEnabled(true);
-                addCollaborator.setOnClickListener(v -> showAddCollaboratorDialog(deck.remoteId));
             }
         } else {
             addCollaborator.setEnabled(false);
@@ -284,22 +286,25 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
     }
 
     //region Collaborators
-    private void showAddCollaboratorDialog(long deckRemoteId) {
+    private void showAddCollaboratorDialog(long deckRemoteId, @NonNull List<String> alreadyCollaborators) {
         showProgress(R.string.loading);
         OverloadedApi.get().friendsStatus(getActivity(), new FriendsStatusCallback() {
             @Override
             public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
+                dismissDialog();
                 if (getContext() == null)
                     return;
 
-                dismissDialog();
-                if (result.isEmpty()) {
-                    // TODO: No friends
+                List<String> friends = new ArrayList<>(result.size());
+                for (Map.Entry<String, FriendStatus> entry : result.entrySet())
+                    if (!entry.getValue().mutual) friends.remove(entry.getKey());
+
+                friends.removeAll(alreadyCollaborators);
+
+                if (friends.isEmpty()) {
+                    showToast(Toaster.build().message(R.string.noCollaboratorsToAdd));
                     return;
                 }
-
-                List<String> friends = new ArrayList<>(result.keySet());
-                // TODO: Remove already collaborators
 
                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
                 builder.setTitle(R.string.addCollaborator)
@@ -313,7 +318,7 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
                                 @Override
                                 public void onResult(@NonNull List<String> collaborators) {
                                     dismissDialog();
-                                    setCollaborators(collaborators);
+                                    setCollaborators(deckRemoteId, collaborators);
                                 }
 
                                 @Override
@@ -338,10 +343,53 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
         });
     }
 
-    private void setCollaborators(@NonNull List<String> list) {
+    private void setCollaborators(long remoteDeckId, @NonNull List<String> list) {
         collaborators.removeAllViews();
 
-        // TODO: Show collaborators list
+        collaboratorsLoading.setVisibility(View.GONE);
+        if (list.isEmpty()) {
+            collaborators.setVisibility(View.GONE);
+            collaboratorsMessage.setVisibility(View.VISIBLE);
+            collaboratorsMessage.info(R.string.noCollaborators);
+            return;
+        }
+
+        collaboratorsMessage.setVisibility(View.GONE);
+        collaborators.setVisibility(View.VISIBLE);
+
+        for (String username : list) {
+            TextView text = (TextView) getLayoutInflater().inflate(R.layout.item_collaborator, collaborators, false);
+            text.setText(username);
+            collaborators.addView(text);
+
+            PopupMenu popup = new PopupMenu(collaborators.getContext(), text);
+            popup.inflate(R.menu.item_collaborator);
+            popup.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == R.id.collaboratorItemMenu_remove) {
+                    showProgress(R.string.loading);
+                    OverloadedSyncApi.get().removeCollaborator(remoteDeckId, username, getActivity(), new GeneralCallback<List<String>>() {
+                        @Override
+                        public void onResult(@NonNull List<String> result) {
+                            dismissDialog();
+                            setCollaborators(remoteDeckId, result);
+                        }
+
+                        @Override
+                        public void onFailed(@NonNull Exception ex) {
+                            Log.e(TAG, "Failed removing collaborator: " + username, ex);
+                            dismissDialog();
+
+                            showToast(Toaster.build().message(R.string.failedRemovingCollaborator));
+                        }
+                    });
+                    return true;
+                }
+
+                return false;
+            });
+
+            text.setOnClickListener(v -> CommonUtils.showPopupOffset(popup, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()), 0));
+        }
     }
     //endregion
 }

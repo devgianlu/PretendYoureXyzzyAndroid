@@ -381,4 +381,8 @@
     <string name="collaboratorsDeckNotSynced">You need to sync your deck before accessing collaborators.</string>
     <string name="addCollaborator">Add collaborator</string>
     <string name="failedAddingCollaborator">Failed adding collaborator!</string>
+    <string name="noCollaboratorsToAdd">There are no collaborators to add, make them your friends first.</string>
+    <string name="removeCollaborator">Remove collaborator</string>
+    <string name="failedRemovingCollaborator">Failed removing collaborator!</string>
+    <string name="noCollaborators">This deck has no collaborators, you can add your mutual friends by tapping the button up here.</string>
 </resources>
