@@ -6,3 +6,4 @@
 - Fixed crash when using some cards
 - Fixed metrics not viewing correctly
 - Fixed exporting cards
+- Fixed app crashing on startup
