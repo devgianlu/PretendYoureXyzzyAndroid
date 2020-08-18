@@ -89,9 +89,14 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
                 db.execSQL("CREATE UNIQUE INDEX remoteId_cards_unique ON cards(remoteId)");
 
                 db.execSQL("CREATE TABLE IF NOT EXISTS starred_decks (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL, remoteId INTEGER UNIQUE)");
+            case 2:
+            case 3:
+            case 4:
             case 5:
                 db.execSQL("ALTER TABLE decks ADD lastUsed INTEGER NOT NULL DEFAULT 0");
                 db.execSQL("ALTER TABLE starred_decks ADD lastUsed INTEGER NOT NULL DEFAULT 0");
+            case 6:
+            case 7:
             case 8:
                 db.execSQL("CREATE TABLE IF NOT EXISTS cr_cast_decks (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER NOT NULL, created INTEGER NOT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL)");
         }
