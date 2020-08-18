@@ -42,6 +42,7 @@ import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomCard;
 import com.gianlu.pretendyourexyzzy.customdecks.edit.BlackCardsFragment;
+import com.gianlu.pretendyourexyzzy.dialogs.CardImageZoomDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
@@ -418,9 +419,11 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
 
     @Override
     public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
-        if (editable()) {
+        if (action == GameCardView.Action.SELECT && editable()) {
             if (card.getImageUrl() != null) showCreateImageCardDialog((CustomCard) card);
             else showCreateTextCardDialog((CustomCard) card);
+        } else if (action == GameCardView.Action.SELECT_IMG) {
+            showDialog(CardImageZoomDialog.get(card));
         }
     }
 

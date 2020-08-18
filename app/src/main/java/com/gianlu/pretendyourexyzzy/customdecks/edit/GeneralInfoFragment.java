@@ -297,7 +297,7 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
 
                 List<String> friends = new ArrayList<>(result.size());
                 for (Map.Entry<String, FriendStatus> entry : result.entrySet())
-                    if (!entry.getValue().mutual) friends.remove(entry.getKey());
+                    if (entry.getValue().mutual) friends.add(entry.getKey());
 
                 friends.removeAll(alreadyCollaborators);
 

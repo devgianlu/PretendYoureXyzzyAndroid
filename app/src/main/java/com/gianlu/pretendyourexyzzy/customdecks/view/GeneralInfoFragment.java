@@ -31,6 +31,7 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
         args.putString("name", deck.name);
         args.putString("watermark", deck.watermark);
         args.putString("desc", deck.desc);
+        args.putBoolean("collaborator", deck.collaborator);
         fragment.setArguments(args);
         return fragment;
     }
@@ -72,9 +73,11 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
             desc.setText(descStr);
         }
 
+        LinearLayout collaborating = layout.findViewById(R.id.viewCustomDeck_collaborating);
         LinearLayout crCast = layout.findViewById(R.id.viewCustomDeck_crCast);
         if (args.getBoolean("crCast", false)) {
             crCast.setVisibility(View.VISIBLE);
+            collaborating.setVisibility(View.GONE);
 
             TextView state = crCast.findViewById(R.id.viewCustomDeck_state);
             state.setText(((CrCastApi.State) args.getSerializable("state")).toFormal());
@@ -86,6 +89,10 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
             lang.setText(args.getString("lang"));
         } else {
             crCast.setVisibility(View.GONE);
+            collaborating.setVisibility(View.VISIBLE);
+
+            TextView canCollaborate = collaborating.findViewById(R.id.viewCustomDeck_canCollaborate);
+            canCollaborate.setText(args.getBoolean("collaborator", false) ? R.string.yes : R.string.no);
         }
 
         return layout;

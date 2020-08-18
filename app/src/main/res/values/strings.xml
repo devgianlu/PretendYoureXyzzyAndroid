@@ -385,4 +385,5 @@
     <string name="removeCollaborator">Remove collaborator</string>
     <string name="failedRemovingCollaborator">Failed removing collaborator!</string>
     <string name="noCollaborators">This deck has no collaborators, you can add your mutual friends by tapping the button up here.</string>
+    <string name="canCollaborate">Can collaborate</string>
 </resources>

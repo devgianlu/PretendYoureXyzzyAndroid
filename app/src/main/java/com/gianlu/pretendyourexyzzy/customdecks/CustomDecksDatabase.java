@@ -1028,7 +1028,8 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
         public StarredDeck(@NonNull Cursor cursor) {
             super(cursor.getString(cursor.getColumnIndex("name")), cursor.getString(cursor.getColumnIndex("watermark")),
-                    cursor.getString(cursor.getColumnIndex("owner")), cursor.getInt(cursor.getColumnIndex("cards_count")));
+                    cursor.getString(cursor.getColumnIndex("owner")), cursor.getLong(cursor.getColumnIndex("lastUsed")),
+                    cursor.getInt(cursor.getColumnIndex("cards_count")));
             shareCode = cursor.getString(cursor.getColumnIndex("shareCode"));
             id = cursor.getInt(cursor.getColumnIndex("id"));
 
