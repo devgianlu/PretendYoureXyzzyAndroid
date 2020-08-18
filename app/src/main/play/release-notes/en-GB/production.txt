@@ -1,5 +1,8 @@
 ### Added
 - Added support for CrCast (view and use decks)
+- Added ability to create image cards
 
 ### Fixed
 - Fixed crash when using some cards
+- Fixed metrics not viewing correctly
+- Fixed exporting cards

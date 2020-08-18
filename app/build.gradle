@@ -14,8 +14,8 @@ android {
         applicationId "com.gianlu.pretendyourexyzzy"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 109
-        versionName "4.1.0"
+        versionCode 110
+        versionName "4.1.1"
     }
 
     if (isTravis) {
