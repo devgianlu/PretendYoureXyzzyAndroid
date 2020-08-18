@@ -37,6 +37,7 @@ import okhttp3.HttpUrl;
 
 public final class Dialogs {
 
+    @NonNull
     @SuppressLint("InflateParams")
     public static AlertDialog addServer(@NonNull final Context context, @Nullable final Pyx.Server server, @NonNull final OnAddServer listener) {
         LinearLayout layout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.dialog_add_server, null, false);

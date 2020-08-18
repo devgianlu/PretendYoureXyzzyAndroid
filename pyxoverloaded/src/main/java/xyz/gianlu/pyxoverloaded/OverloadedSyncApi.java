@@ -265,6 +265,33 @@ public class OverloadedSyncApi {
     }
     //endregion
 
+    //region Custom decks collaborators
+    public void getCollaborators(long remoteId, @Nullable Activity activity, @NonNull GeneralCallback<List<String>> callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject obj = api.makePostRequest("Sync/GetCollaborators", singletonJsonObject("remoteId", remoteId));
+            return CommonUtils.toStringsList(obj.getJSONArray("collaborators"), false);
+        }), activity, callback::onResult, callback::onFailed);
+    }
+
+    public void addCollaborator(long remoteId, @NonNull String username, @Nullable Activity activity, @NonNull GeneralCallback<List<String>> callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject body = new JSONObject();
+            body.put("remoteId", remoteId).put("username", username);
+            JSONObject obj = api.makePostRequest("Sync/AddCollaborator", body);
+            return CommonUtils.toStringsList(obj.getJSONArray("collaborators"), false);
+        }), activity, callback::onResult, callback::onFailed);
+    }
+
+    public void removeCollaborator(long remoteId, @NonNull String username, @Nullable Activity activity, @NonNull GeneralCallback<List<String>> callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject body = new JSONObject();
+            body.put("remoteId", remoteId).put("username", username);
+            JSONObject obj = api.makePostRequest("Sync/RemoveCollaborator", body);
+            return CommonUtils.toStringsList(obj.getJSONArray("collaborators"), false);
+        }), activity, callback::onResult, callback::onFailed);
+    }
+    //endregion
+
     //region Starred custom decks
     public void syncStarredCustomDecks(long revision, @NonNull GeneralCallback<StarredCustomDecksSyncResponse> callback) {
         executorService.execute(() -> {
