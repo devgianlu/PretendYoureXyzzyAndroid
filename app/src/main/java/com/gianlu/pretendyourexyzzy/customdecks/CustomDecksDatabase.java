@@ -43,7 +43,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     private static CustomDecksDatabase instance;
 
     private CustomDecksDatabase(@Nullable Context context) {
-        super(context, "custom_decks.db", null, 9);
+        super(context, "custom_decks.db", null, 10);
     }
 
     @NonNull
@@ -98,6 +98,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             case 6:
             case 7:
             case 8:
+            case 9:
                 db.execSQL("CREATE TABLE IF NOT EXISTS cr_cast_decks (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER NOT NULL, created INTEGER NOT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL)");
         }
 
