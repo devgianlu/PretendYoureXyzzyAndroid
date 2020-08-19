@@ -98,7 +98,6 @@ public class UserProfile {
             return list;
         }
 
-
         @NotNull
         public List<Card> whiteCards() {
             LinkedList<Card> list = new LinkedList<>();

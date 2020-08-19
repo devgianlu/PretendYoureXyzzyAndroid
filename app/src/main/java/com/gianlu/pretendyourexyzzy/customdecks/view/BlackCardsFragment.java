@@ -20,23 +20,24 @@ public final class BlackCardsFragment extends AbsCardsFragment {
     private List<ContentCard> cards;
 
     @NotNull
-    private static BlackCardsFragment get(@NotNull Context context, @NotNull List<ContentCard> cards) {
+    private static BlackCardsFragment get(@NotNull Context context, boolean collaborate, @NotNull List<ContentCard> cards) {
         BlackCardsFragment fragment = new BlackCardsFragment();
         fragment.cards = cards;
         Bundle args = new Bundle();
         args.putString("title", context.getString(R.string.blackCardsWithCount, cards.size()));
+        args.putBoolean("collaborate", collaborate);
         fragment.setArguments(args);
         return fragment;
     }
 
     @NotNull
-    public static BlackCardsFragment getWithOverloadedCards(@NotNull Context context, @NotNull List<Card> cards) {
-        return get(context, ContentCard.fromOverloadedCards(cards));
+    public static BlackCardsFragment getWithOverloadedCards(@NotNull Context context, boolean collaborate, @NotNull List<Card> cards) {
+        return get(context, collaborate, ContentCard.fromOverloadedCards(cards));
     }
 
     @NotNull
-    public static BlackCardsFragment getWithBaseCards(@NotNull Context context, @NotNull List<? extends BaseCard> cards) {
-        return get(context, ContentCard.fromBaseCards(cards));
+    public static BlackCardsFragment getWithBaseCards(@NotNull Context context, boolean collaborate, @NotNull List<? extends BaseCard> cards) {
+        return get(context, collaborate, ContentCard.fromBaseCards(cards));
     }
 
     @NonNull
@@ -48,5 +49,10 @@ public final class BlackCardsFragment extends AbsCardsFragment {
     @Override
     protected boolean editable() {
         return false;
+    }
+
+    @Override
+    protected boolean canCollaborate() {
+        return requireArguments().getBoolean("collaborate", false);
     }
 }

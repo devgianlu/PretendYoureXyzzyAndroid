@@ -39,6 +39,7 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
     private CustomDecksDatabase db;
     private ViewPager pager;
     private TabLayout tabs;
+    private GeneralInfoFragment generalInfoFragment;
     private String shareCode;
     private String owner;
     private CustomDeckWithCards customDeck = null;
@@ -198,6 +199,11 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
         }
     }
 
+    @NonNull
+    public String getWatermark() {
+        return generalInfoFragment != null ? generalInfoFragment.getWatermark() : "";
+    }
+
     private void deckLoaded(@NonNull CrCastDeck result) {
         customDeck = null;
         shareCode = null;
@@ -208,9 +214,9 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
             return;
 
         pager.setAdapter(new PagerAdapter(getSupportFragmentManager(),
-                GeneralInfoFragment.get(this, result),
-                BlackCardsFragment.getWithBaseCards(this, cards.blacks),
-                WhiteCardsFragment.getWithBaseCards(this, cards.whites)));
+                generalInfoFragment = GeneralInfoFragment.get(this, result),
+                BlackCardsFragment.getWithBaseCards(this, false, cards.blacks),
+                WhiteCardsFragment.getWithBaseCards(this, false, cards.whites)));
         tabs.setupWithViewPager(pager);
 
         loading.setVisibility(View.GONE);
@@ -222,10 +228,18 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
         shareCode = result.shareCode;
         owner = result.owner;
 
+        BlackCardsFragment blackCardsFragment = BlackCardsFragment.getWithOverloadedCards(this, result.collaborator, result.blackCards());
+        WhiteCardsFragment whiteCardsFragment = WhiteCardsFragment.getWithOverloadedCards(this, result.collaborator, result.whiteCards());
+
+        if (result.collaborator) {
+            CollaboratorHandler handler = new CollaboratorHandler(result.shareCode);
+            blackCardsFragment.setHandler(handler);
+            whiteCardsFragment.setHandler(handler);
+        }
+
         pager.setAdapter(new PagerAdapter(getSupportFragmentManager(),
-                GeneralInfoFragment.get(this, result),
-                BlackCardsFragment.getWithOverloadedCards(this, result.blackCards()),
-                WhiteCardsFragment.getWithOverloadedCards(this, result.whiteCards())));
+                generalInfoFragment = GeneralInfoFragment.get(this, result),
+                blackCardsFragment, whiteCardsFragment));
         tabs.setupWithViewPager(pager);
 
         loading.setVisibility(View.GONE);

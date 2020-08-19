@@ -52,6 +52,11 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
         return fragment;
     }
 
+    @NonNull
+    public String getWatermark() {
+        return requireArguments().getString("watermark", "");
+    }
+
     @NotNull
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
