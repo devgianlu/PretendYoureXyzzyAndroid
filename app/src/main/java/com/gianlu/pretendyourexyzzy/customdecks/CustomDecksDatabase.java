@@ -322,6 +322,21 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
     }
 
+    public void updateStarredDeck(@NonNull String shareCode, @NonNull String name, @NonNull String watermark, int cardsCount) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            ContentValues values = new ContentValues();
+            values.put("name", name);
+            values.put("watermark", watermark);
+            values.put("cards_count", cardsCount);
+            db.update("starred_decks", values, "shareCode=?", new String[]{shareCode});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
     public void updateStarredDeckLastUsed(int id) {
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();

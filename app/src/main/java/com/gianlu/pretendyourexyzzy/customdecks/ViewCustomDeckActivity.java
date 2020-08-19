@@ -36,6 +36,7 @@ import xyz.gianlu.pyxoverloaded.model.UserProfile.CustomDeckWithCards;
 
 public class ViewCustomDeckActivity extends ActivityWithDialog {
     private static final String TAG = ViewCustomDeckActivity.class.getSimpleName();
+    private CustomDecksDatabase db;
     private ViewPager pager;
     private TabLayout tabs;
     private String shareCode;
@@ -109,6 +110,8 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
             }
         });
 
+        db = CustomDecksDatabase.get(this);
+
         if (getIntent().getBooleanExtra("crCast", false)) {
             String deckCode = getIntent().getStringExtra("deckCode");
             if (deckCode == null) {
@@ -116,7 +119,7 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
                 return;
             }
 
-            CrCastApi.get().getDeck(deckCode, CustomDecksDatabase.get(this), this, new CrCastApi.DeckCallback() {
+            CrCastApi.get().getDeck(deckCode, db, this, new CrCastApi.DeckCallback() {
                 @Override
                 public void onDeck(@NonNull CrCastDeck deck) {
                     deckLoaded(deck);
@@ -174,6 +177,7 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
                 @Override
                 public void onResult(@NonNull CustomDeckWithCards result) {
                     deckLoaded(result);
+                    db.updateStarredDeck(result.shareCode, result.name, result.watermark, result.count);
                 }
 
                 @Override
@@ -182,7 +186,7 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
 
                     if (ex instanceof OverloadedServerException && (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_DECK)
                             || ((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_USER))) {
-                        CustomDecksDatabase.get(ViewCustomDeckActivity.this).removeStarredDeck(owner, shareCode);
+                        db.removeStarredDeck(owner, shareCode);
                         Toaster.with(ViewCustomDeckActivity.this).message(R.string.deckDoesNotExist).show();
                     } else {
                         Toaster.with(ViewCustomDeckActivity.this).message(R.string.failedLoading).show();
@@ -239,7 +243,7 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
         if (customDeck == null || shareCode == null || owner == null || owner.equals(OverloadedApi.get().username())) {
             menu.removeItem(R.id.viewCustomDeck_addStar);
             menu.removeItem(R.id.viewCustomDeck_removeStar);
-        } else if (CustomDecksDatabase.get(this).isStarred(shareCode)) {
+        } else if (db.isStarred(shareCode)) {
             menu.removeItem(R.id.viewCustomDeck_addStar);
         } else {
             menu.removeItem(R.id.viewCustomDeck_removeStar);
@@ -258,14 +262,14 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
                 if (customDeck == null || owner == null)
                     return false;
 
-                CustomDecksDatabase.get(this).addStarredDeck(customDeck.shareCode, customDeck.name, customDeck.watermark, owner, customDeck.count);
+                db.addStarredDeck(customDeck.shareCode, customDeck.name, customDeck.watermark, owner, customDeck.count);
                 supportInvalidateOptionsMenu();
                 return true;
             case R.id.viewCustomDeck_removeStar:
                 if (owner == null || shareCode == null)
                     return false;
 
-                CustomDecksDatabase.get(this).removeStarredDeck(owner, shareCode);
+                db.removeStarredDeck(owner, shareCode);
                 supportInvalidateOptionsMenu();
                 return true;
             default:
