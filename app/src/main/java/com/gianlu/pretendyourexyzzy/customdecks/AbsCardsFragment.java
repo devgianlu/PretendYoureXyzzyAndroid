@@ -53,6 +53,8 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
@@ -182,12 +184,20 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
     private void removeCard(@NonNull BaseCard oldCard) {
         if (handler == null) return;
 
-        handler.removeCard(oldCard, (o) -> {
-            ThisApplication.sendAnalytics(Utils.ACTION_REMOVED_CUSTOM_DECK_CARD);
+        handler.removeCard(oldCard, new CardActionCallback<Void>() {
+            @Override
+            public void onComplete(Void result) {
+                ThisApplication.sendAnalytics(Utils.ACTION_REMOVED_CUSTOM_DECK_CARD);
 
-            if (adapter != null) {
-                adapter.removeCard(oldCard);
-                onItemCountChanged(adapter.getItemCount());
+                if (adapter != null) {
+                    adapter.removeCard(oldCard);
+                    onItemCountChanged(adapter.getItemCount());
+                }
+            }
+
+            @Override
+            public void onFailed() {
+                showToast(Toaster.build().message(R.string.failedRemovingCard));
             }
         });
     }
@@ -195,34 +205,50 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
     private void updateCard(@NonNull DialogInterface di, @NonNull BaseCard oldCard, @NonNull String[] text) {
         if (handler == null) return;
 
-        handler.updateCard(oldCard, text, (card) -> {
-            if (adapter != null && card != null) {
-                int index = -1;
-                if (oldCard instanceof CustomCard)
-                    index = adapter.indexOfGroup(((CustomCard) oldCard).id, CustomCard.class, (c, id) -> c.id == id);
-                else if (oldCard instanceof ContentCard)
-                    index = adapter.indexOfGroup(oldCard.hashCode(), ContentCard.class, (c, id) -> c.hashCode() == id);
+        handler.updateCard(oldCard, text, new CardActionCallback<BaseCard>() {
+            @Override
+            public void onComplete(BaseCard card) {
+                if (adapter != null && card != null) {
+                    int index = -1;
+                    if (oldCard instanceof CustomCard)
+                        index = adapter.indexOfGroup(((CustomCard) oldCard).id, CustomCard.class, (c, id) -> c.id == id);
+                    else if (oldCard instanceof ContentCard)
+                        index = adapter.indexOfGroup(oldCard.hashCode(), ContentCard.class, (c, id) -> c.hashCode() == id);
 
-                if (index != -1) adapter.updateCard(index, card);
+                    if (index != -1) adapter.updateCard(index, card);
+                }
+
+                di.dismiss();
             }
 
-            di.dismiss();
+            @Override
+            public void onFailed() {
+                showToast(Toaster.build().message(R.string.failedUpdatingCard));
+            }
         });
     }
 
     private void addCard(@NonNull DialogInterface di, @NonNull String[] text) {
         if (handler == null) return;
 
-        handler.addCard(isBlack(), text, card -> {
-            if (card != null) {
-                if (adapter != null) {
-                    adapter.addCard(card);
-                    onItemCountChanged(adapter.getItemCount());
-                }
+        handler.addCard(isBlack(), text, new CardActionCallback<BaseCard>() {
+            @Override
+            public void onComplete(BaseCard card) {
+                if (card != null) {
+                    if (adapter != null) {
+                        adapter.addCard(card);
+                        onItemCountChanged(adapter.getItemCount());
+                    }
 
-                di.dismiss();
-                ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK_CARD);
-            } else {
+                    di.dismiss();
+                    ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK_CARD);
+                } else {
+                    showToast(Toaster.build().message(R.string.failedAddingCustomCard));
+                }
+            }
+
+            @Override
+            public void onFailed() {
                 showToast(Toaster.build().message(R.string.failedAddingCustomCard));
             }
         });
@@ -231,8 +257,26 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
     private void addCards(boolean[] blacks, @NonNull String[][] texts) {
         if (handler == null) return;
 
-        handler.addCards(blacks, texts, cards -> {
-            if (adapter != null) adapter.addCardsAsSingleton(cards);
+        handler.addCards(blacks, texts, new CardActionCallback<List<? extends BaseCard>>() {
+            @Override
+            public void onComplete(List<? extends BaseCard> cards) {
+                List<BaseCard> filter = new ArrayList<>(cards);
+                Iterator<BaseCard> iter = filter.iterator();
+                while (iter.hasNext()) {
+                    BaseCard card = iter.next();
+                    if (!isBlack() && card.black())
+                        iter.remove();
+                    else if (isBlack() && !card.black())
+                        iter.remove();
+                }
+
+                if (adapter != null) adapter.addCardsAsSingleton(filter);
+            }
+
+            @Override
+            public void onFailed() {
+                showToast(Toaster.build().message(R.string.failedAddingCustomCard));
+            }
         });
     }
     //endregion
@@ -445,6 +489,12 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
         }
     }
 
+    /**
+     * Import cards from JSON. Caller should make sure which type (black, white) the cards are and which fragment it's calling.
+     *
+     * @param context The caller {@link Context}
+     * @param array   The array containing the cards or {@code null}
+     */
     public void importCards(@NonNull Context context, @Nullable JSONArray array) {
         if (array == null) return;
 
@@ -488,17 +538,19 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
     }
 
     public interface CardActionsHandler {
-        void removeCard(@NonNull BaseCard oldCard, @NonNull CardActionCompleteCallback<Void> callback);
+        void removeCard(@NonNull BaseCard oldCard, @NonNull CardActionCallback<Void> callback);
 
-        void updateCard(@NonNull BaseCard oldCard, @NonNull String[] text, @NonNull CardActionCompleteCallback<CustomCard> callback);
+        void updateCard(@NonNull BaseCard oldCard, @NonNull String[] text, @NonNull CardActionCallback<BaseCard> callback);
 
-        void addCard(boolean black, @NonNull String[] text, @NonNull CardActionCompleteCallback<CustomCard> callback);
+        void addCard(boolean black, @NonNull String[] text, @NonNull CardActionCallback<BaseCard> callback);
 
-        void addCards(boolean[] blacks, @NonNull String[][] texts, @NonNull CardActionCompleteCallback<List<CustomCard>> callback);
+        void addCards(boolean[] blacks, @NonNull String[][] texts, @NonNull CardActionCallback<List<? extends BaseCard>> callback);
     }
 
-    public interface CardActionCompleteCallback<T> {
+    public interface CardActionCallback<T> {
         void onComplete(T result);
+
+        void onFailed();
     }
 
     private static class ParseResult {

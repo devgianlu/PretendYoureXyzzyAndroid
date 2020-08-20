@@ -232,7 +232,7 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
         WhiteCardsFragment whiteCardsFragment = WhiteCardsFragment.getWithOverloadedCards(this, result.collaborator, result.whiteCards());
 
         if (result.collaborator) {
-            CollaboratorHandler handler = new CollaboratorHandler(result.shareCode);
+            CollaboratorHandler handler = new CollaboratorHandler(result.shareCode, result.watermark);
             blackCardsFragment.setHandler(handler);
             whiteCardsFragment.setHandler(handler);
         }

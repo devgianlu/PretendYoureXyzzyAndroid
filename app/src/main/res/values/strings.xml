@@ -386,4 +386,6 @@
     <string name="failedRemovingCollaborator">Failed removing collaborator!</string>
     <string name="noCollaborators">This deck has no collaborators, you can add your mutual friends by tapping the button up here.</string>
     <string name="canCollaborate">Can collaborate</string>
+    <string name="failedRemovingCard">Failed removing card!</string>
+    <string name="failedUpdatingCard">Failed updating card!</string>
 </resources>
