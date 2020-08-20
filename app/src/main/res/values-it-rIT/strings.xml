@@ -51,7 +51,7 @@
     <string name="tutorial_playCard">Per selezionare una carta basta toccarla: apparirà una finestra di conferma.</string>
     <string name="tutorial_player">Una volta che un giocatore raggiunge l\'obiettivo, vince. Puoi toccare sul nome per rivelare ulteriori informazioni.</string>
     <string name="tutorial_overloaded">Overloaded abilita tante funzionalità aggiuntive non presenti nel gioco. Richiede una sottoscrizione mensile.</string>
-    <string name="tutorial_addCustomDeck">Qui puoi create i tuoi mazzi personalizzati, importarli o recuperare vecchi mazzi Cardcast.</string>
+    <string name="tutorial_addCustomDeck">Here you can create your own custom decks (with text and images) or import and recover old Cardcast decks.</string>
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
     <string name="nickname">Nome</string>
@@ -337,7 +337,7 @@
     <string name="removeFromStarredDecks">Rimuovi dai mazzi preferiti</string>
     <string name="deckDoesNotExist">Questo mazzo non esiste più.</string>
     <string name="cannotFindCustomDeck">Impossibile trovare questo mazzo.</string>
-    <string name="featureOverloadedOnly">This feature is supported only for Overloaded users.</string>
+    <string name="featureOverloadedOnly">This feature is supported for Overloaded users only.</string>
     <string name="recoverCardcastDeck">Recupera mazzo Cardcast</string>
     <string name="recover">Recupera</string>
     <string name="invalidDeckCode">Il codice del mazzo non è valido!</string>
@@ -375,4 +375,15 @@
     <string name="uploadImage">Upload image</string>
     <string name="invalidImageUrl">The given image URL is invalid.</string>
     <string name="failedUploadingImage">Failed uploading image!</string>
+    <string name="collaborators">Collaborators</string>
+    <string name="collaboratorsDeckNotSynced">You need to sync your deck before accessing collaborators.</string>
+    <string name="addCollaborator">Add collaborator</string>
+    <string name="failedAddingCollaborator">Failed adding collaborator!</string>
+    <string name="noCollaboratorsToAdd">There are no collaborators to add, make them your friends first.</string>
+    <string name="removeCollaborator">Remove collaborator</string>
+    <string name="failedRemovingCollaborator">Failed removing collaborator!</string>
+    <string name="noCollaborators">This deck has no collaborators, you can add your mutual friends by tapping the button up here.</string>
+    <string name="canCollaborate">Can collaborate</string>
+    <string name="failedRemovingCard">Failed removing card!</string>
+    <string name="failedUpdatingCard">Failed updating card!</string>
 </resources>
