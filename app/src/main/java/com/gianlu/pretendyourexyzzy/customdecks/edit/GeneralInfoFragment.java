@@ -60,6 +60,7 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
     private ProgressBar collaboratorsLoading;
     private ImageButton addCollaborator;
     private CustomDecksDatabase db;
+    private List<String> collaboratorsList;
     private CustomDeck deck;
     private String importName;
     private String importDesc;
@@ -247,7 +248,7 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
                         setCollaborators(deckRemoteId, result);
 
                         addCollaborator.setEnabled(true);
-                        addCollaborator.setOnClickListener(v -> showAddCollaboratorDialog(deckRemoteId, result));
+                        addCollaborator.setOnClickListener(v -> showAddCollaboratorDialog(deckRemoteId));
                     }
 
                     @Override
@@ -286,7 +287,7 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
     }
 
     //region Collaborators
-    private void showAddCollaboratorDialog(long deckRemoteId, @NonNull List<String> alreadyCollaborators) {
+    private void showAddCollaboratorDialog(long deckRemoteId) {
         showProgress(R.string.loading);
         OverloadedApi.get().friendsStatus(getActivity(), new FriendsStatusCallback() {
             @Override
@@ -299,7 +300,8 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
                 for (Map.Entry<String, FriendStatus> entry : result.entrySet())
                     if (entry.getValue().mutual) friends.add(entry.getKey());
 
-                friends.removeAll(alreadyCollaborators);
+                if (collaboratorsList != null)
+                    friends.removeAll(collaboratorsList);
 
                 if (friends.isEmpty()) {
                     showToast(Toaster.build().message(R.string.noCollaboratorsToAdd));
@@ -345,6 +347,8 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
 
     private void setCollaborators(long remoteDeckId, @NonNull List<String> list) {
         collaborators.removeAllViews();
+
+        collaboratorsList = list;
 
         collaboratorsLoading.setVisibility(View.GONE);
         if (list.isEmpty()) {

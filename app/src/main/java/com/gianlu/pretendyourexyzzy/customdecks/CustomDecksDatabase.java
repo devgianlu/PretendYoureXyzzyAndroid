@@ -619,7 +619,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
                 values.put("text", card.getString("text"));
                 values.put("type", card.getLong("type"));
                 if (card.has("id")) values.put("remoteId", card.getLong("id"));
-                db.insert("cards", null, values);
+                db.insertWithOnConflict("cards", null, values, SQLiteDatabase.CONFLICT_REPLACE);
             }
 
             db.setTransactionSuccessful();
