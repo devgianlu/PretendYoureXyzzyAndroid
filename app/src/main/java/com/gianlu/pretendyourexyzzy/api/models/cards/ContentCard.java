@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 
+import org.jetbrains.annotations.Contract;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,14 +17,16 @@ import java.util.List;
 import xyz.gianlu.pyxoverloaded.model.Card;
 
 public final class ContentCard extends BaseCard {
+    public final Object original;
     private final String text;
     private final String watermark;
     private final boolean black;
 
-    public ContentCard(@NonNull String text, @Nullable String watermark, boolean black) {
+    public ContentCard(@Nullable Object original, @NonNull String text, @Nullable String watermark, boolean black) {
         this.text = text;
         this.watermark = watermark;
         this.black = black;
+        this.original = original;
     }
 
     @NonNull
@@ -43,7 +46,7 @@ public final class ContentCard extends BaseCard {
 
     @NonNull
     public static ContentCard parse(@NonNull JSONObject obj, boolean black) throws JSONException {
-        return new ContentCard(obj.getString("text"), CommonUtils.optString(obj, "watermark"), black);
+        return new ContentCard(null, obj.getString("text"), CommonUtils.optString(obj, "watermark"), black);
     }
 
     @NonNull
@@ -55,12 +58,12 @@ public final class ContentCard extends BaseCard {
 
     @NonNull
     public static ContentCard from(@NonNull GameCard card) {
-        return new ContentCard(card.originalText, card.originalWatermark, card.black());
+        return new ContentCard(card, card.originalText, card.originalWatermark, card.black());
     }
 
     @NonNull
     public static ContentCard fromBaseCard(@NonNull BaseCard card) {
-        return new ContentCard(card.text(), card.watermark(), card.black());
+        return new ContentCard(card, card.text(), card.watermark(), card.black());
     }
 
     @NonNull
@@ -72,7 +75,7 @@ public final class ContentCard extends BaseCard {
 
     @NonNull
     public static ContentCard fromOverloadedCard(@NonNull Card card) {
-        return new ContentCard(card.text, card.watermark, card.black());
+        return new ContentCard(card, card.text, card.watermark, card.black());
     }
 
     @NonNull
@@ -119,5 +122,11 @@ public final class ContentCard extends BaseCard {
     @NonNull
     public JSONObject toJson() throws JSONException {
         return new JSONObject().put("text", text).put("watermark", watermark);
+    }
+
+    @NonNull
+    @Contract("_, _ -> new")
+    public ContentCard update(Object original, String text) {
+        return new ContentCard(original, text, watermark, black);
     }
 }

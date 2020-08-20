@@ -1,11 +1,6 @@
-<b>Overloaded upgrade</b>
-This update includes a lot of new features to provide a better gaming experience:
-- Private chat (end-to-end encrypted)
-- User profile
-- Connect Google Play Games for stats, leaderboards and achievements
-- Synchronize custom decks and starred cards to never lose them
-- View custom decks and starred cards of other users
-- Make friends on the server to chat and share decks and cards
-- More to come...
-
-This can be all available to you for a small monthly subscription.
+In this update:
+- You can know create <b>cards with images</b> (Overloaded users can upload images)
+- Connect <b>CrCast</b> to view and use your decks
+- Fixed custom deck cards not being playable
+- Fixed exporting decks to JSON
+- Fixed metrics
