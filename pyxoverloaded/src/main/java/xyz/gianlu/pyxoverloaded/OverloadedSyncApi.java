@@ -265,6 +265,50 @@ public class OverloadedSyncApi {
     }
     //endregion
 
+    //region Custom decks collaborators
+    public void getCollaborators(long remoteId, @Nullable Activity activity, @NonNull GeneralCallback<List<String>> callback) {
+        callbacks(Tasks.call(api.executorService, () -> {
+            JSONObject obj = api.makePostRequest("Sync/GetCollaborators", singletonJsonObject("remoteId", remoteId));
+            return CommonUtils.toStringsList(obj.getJSONArray("collaborators"), false);
+        }), activity, callback::onResult, callback::onFailed);
+    }
+
+    public void addCollaborator(long remoteId, @NonNull String username, @Nullable Activity activity, @NonNull GeneralCallback<List<String>> callback) {
+        callbacks(Tasks.call(api.executorService, () -> {
+            JSONObject body = new JSONObject();
+            body.put("remoteId", remoteId).put("username", username);
+            JSONObject obj = api.makePostRequest("Sync/AddCollaborator", body);
+            return CommonUtils.toStringsList(obj.getJSONArray("collaborators"), false);
+        }), activity, callback::onResult, callback::onFailed);
+    }
+
+    public void removeCollaborator(long remoteId, @NonNull String username, @Nullable Activity activity, @NonNull GeneralCallback<List<String>> callback) {
+        callbacks(Tasks.call(api.executorService, () -> {
+            JSONObject body = new JSONObject();
+            body.put("remoteId", remoteId).put("username", username);
+            JSONObject obj = api.makePostRequest("Sync/RemoveCollaborator", body);
+            return CommonUtils.toStringsList(obj.getJSONArray("collaborators"), false);
+        }), activity, callback::onResult, callback::onFailed);
+    }
+
+    public void patchCollaborator(long revision, @NonNull String shareCode, @NonNull CollaboratorPatchOp op, @Nullable JSONObject card, @Nullable Long cardRemoteId, @Nullable JSONArray cards,
+                                  @Nullable Activity activity, @NonNull GeneralCallback<CollaboratorPatchResponse> callback) {
+        callbacks(Tasks.call(executorService, () -> {
+            JSONObject body = new JSONObject();
+            body.put("shareCode", shareCode)
+                    .put("rev", revision)
+                    .put("patch", new JSONObject()
+                            .put("type", op.name())
+                            .put("id", cardRemoteId)
+                            .put("card", card)
+                            .put("cards", cards));
+
+            JSONObject obj = api.makePostRequest("Sync/CollaboratorPatch", body);
+            return new CollaboratorPatchResponse(obj);
+        }), activity, callback::onResult, callback::onFailed);
+    }
+    //endregion
+
     //region Starred custom decks
     public void syncStarredCustomDecks(long revision, @NonNull GeneralCallback<StarredCustomDecksSyncResponse> callback) {
         executorService.execute(() -> {
@@ -352,6 +396,10 @@ public class OverloadedSyncApi {
         ADD_EDIT_CARD, ADD_CARDS, REM_DECK, REM_CARD, ADD_DECK, EDIT_DECK
     }
 
+    public enum CollaboratorPatchOp {
+        ADD_CARD, EDIT_CARD, ADD_CARDS, REM_CARD
+    }
+
     public interface SyncStatusListener {
         void syncStatusUpdated(@NonNull SyncProduct product, boolean isSyncing, boolean error);
     }
@@ -380,6 +428,19 @@ public class OverloadedSyncApi {
         }
     }
 
+    public static class CollaboratorPatchResponse {
+        public final long[] cardsIds;
+        public final Long cardId;
+
+        private CollaboratorPatchResponse(@NonNull JSONObject obj) throws JSONException {
+            cardId = CommonUtils.optLong(obj, "cardId");
+
+            JSONArray cardsIdsArray = obj.optJSONArray("cardsIds");
+            if (cardsIdsArray == null) cardsIds = null;
+            else cardsIds = CommonUtils.toLongsList(cardsIdsArray);
+        }
+    }
+
     public static class CustomDecksUpdateResponse {
         public final long[] cardsIds;
         public final Long deckId;
@@ -390,13 +451,8 @@ public class OverloadedSyncApi {
             cardId = CommonUtils.optLong(obj, "cardId");
 
             JSONArray cardsIdsArray = obj.optJSONArray("cardsIds");
-            if (cardsIdsArray == null) {
-                cardsIds = null;
-            } else {
-                cardsIds = new long[cardsIdsArray.length()];
-                for (int i = 0; i < cardsIdsArray.length(); i++)
-                    cardsIds[i] = cardsIdsArray.getLong(i);
-            }
+            if (cardsIdsArray == null) cardsIds = null;
+            else cardsIds = CommonUtils.toLongsList(cardsIdsArray);
         }
     }
 
@@ -412,10 +468,7 @@ public class OverloadedSyncApi {
             if (!obj.has("remoteIds") || obj.isNull("remoteIds")) {
                 remoteIds = null;
             } else {
-                JSONArray array = obj.getJSONArray("remoteIds");
-                remoteIds = new long[array.length()];
-                for (int i = 0; i < array.length(); i++)
-                    remoteIds[i] = array.getLong(i);
+                remoteIds = CommonUtils.toLongsList(obj.getJSONArray("remoteIds"));
             }
         }
     }
@@ -478,10 +531,7 @@ public class OverloadedSyncApi {
             if (!obj.has("remoteIds") || obj.isNull("remoteIds")) {
                 remoteIds = null;
             } else {
-                JSONArray array = obj.getJSONArray("remoteIds");
-                remoteIds = new long[array.length()];
-                for (int i = 0; i < array.length(); i++)
-                    remoteIds[i] = array.getLong(i);
+                remoteIds = CommonUtils.toLongsList(obj.getJSONArray("remoteIds"));
             }
         }
     }

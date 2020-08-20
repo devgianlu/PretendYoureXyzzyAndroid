@@ -39,9 +39,10 @@ import com.gianlu.pretendyourexyzzy.adapters.CardsAdapter;
 import com.gianlu.pretendyourexyzzy.adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.ContentCard;
 import com.gianlu.pretendyourexyzzy.cards.GameCardView;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomCard;
-import com.gianlu.pretendyourexyzzy.customdecks.edit.BlackCardsFragment;
+import com.gianlu.pretendyourexyzzy.dialogs.CardImageZoomDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
@@ -52,6 +53,8 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
@@ -62,7 +65,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
     private static final int RC_OPEN_CARD_IMAGE = 4;
     private static final int MAX_CARD_TEXT_LENGTH = 256;
     protected CustomDecksDatabase db;
-    protected Integer id;
+    protected CardActionsHandler handler;
     private CardsAdapter adapter;
     private RecyclerMessageView rmv;
     private OpenCardImageCallback openCardImageCallback;
@@ -106,18 +109,27 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
 
     protected abstract boolean editable();
 
-    public void setDeckId(int deckId) {
-        id = deckId;
+    protected abstract boolean canCollaborate();
+
+    public void setHandler(@NonNull CardActionsHandler handler) {
+        this.handler = handler;
     }
 
     private boolean isBlack() {
-        return this instanceof BlackCardsFragment;
+        return this instanceof com.gianlu.pretendyourexyzzy.customdecks.edit.BlackCardsFragment
+                || this instanceof com.gianlu.pretendyourexyzzy.customdecks.view.BlackCardsFragment;
     }
 
     @NonNull
     private String getWatermark() {
-        EditCustomDeckActivity activity = (EditCustomDeckActivity) getActivity();
-        return activity == null ? "" : activity.getWatermark();
+        Activity activity = getActivity();
+        if (activity instanceof EditCustomDeckActivity) {
+            return ((EditCustomDeckActivity) activity).getWatermark();
+        } else if (activity instanceof ViewCustomDeckActivity) {
+            return ((ViewCustomDeckActivity) activity).getWatermark();
+        } else {
+            return "";
+        }
     }
 
     @Nullable
@@ -126,7 +138,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
         CoordinatorLayout layout = (CoordinatorLayout) inflater.inflate(R.layout.fragment_custom_cards, container, false);
 
         FloatingActionsMenu fab = layout.findViewById(R.id.customCardsFragment_fab);
-        if (editable()) {
+        if (editable() || canCollaborate()) {
             fab.setVisibility(View.VISIBLE);
 
             FloatingActionButton addImage = fab.findViewById(R.id.customCardsFragmentFab_addImage);
@@ -153,14 +165,9 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
         rmv.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         rmv.list().addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
 
-        if (id == null) {
-            id = requireArguments().getInt("id", -1);
-            if (id == -1) id = null;
-        }
-
         db = CustomDecksDatabase.get(requireContext());
         List<? extends BaseCard> cards = getCards();
-        rmv.loadListData(adapter = new CardsAdapter(true, cards, editable() ? GameCardView.Action.SELECT : null, null, true, this), false);
+        rmv.loadListData(adapter = new CardsAdapter(true, cards, (editable() || canCollaborate()) ? GameCardView.Action.SELECT : null, null, true, this), false);
         onItemCountChanged(cards.size());
 
         return layout;
@@ -168,37 +175,114 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
 
     private void onItemCountChanged(int count) {
         if (count == 0)
-            rmv.showInfo(editable() ? R.string.noCustomCardsCreateOne : R.string.noCustomCards);
+            rmv.showInfo((editable() || canCollaborate()) ? R.string.noCustomCardsCreateOne : R.string.noCustomCards);
         else
             rmv.showList();
     }
 
-    private void updateCard(DialogInterface di, CustomCard oldCard, String[] text) {
-        CustomCard card = db.updateCard(id, oldCard, text);
-        if (adapter != null && card != null) {
-            int index = adapter.indexOfGroup(oldCard.id, CustomCard.class, (c, id) -> c.id == id);
-            if (index != -1) adapter.updateCard(index, card);
-        }
+    //region Cards actions
+    private void removeCard(@NonNull BaseCard oldCard) {
+        if (handler == null) return;
 
-        di.dismiss();
-    }
+        handler.removeCard(oldCard, new CardActionCallback<Void>() {
+            @Override
+            public void onComplete(Void result) {
+                ThisApplication.sendAnalytics(Utils.ACTION_REMOVED_CUSTOM_DECK_CARD);
 
-    private void addCard(DialogInterface di, String[] text) {
-        CustomCard card = db.putCard(id, isBlack(), text);
-        if (card != null) {
-            if (adapter != null) {
-                adapter.addCard(card);
-                onItemCountChanged(adapter.getItemCount());
+                if (adapter != null) {
+                    adapter.removeCard(oldCard);
+                    onItemCountChanged(adapter.getItemCount());
+                }
             }
 
-            di.dismiss();
-            ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK_CARD);
-        } else {
-            showToast(Toaster.build().message(R.string.failedAddingCustomCard));
-        }
+            @Override
+            public void onFailed() {
+                showToast(Toaster.build().message(R.string.failedRemovingCard));
+            }
+        });
     }
 
-    private void showCreateImageCardDialog(@Nullable CustomCard oldCard) {
+    private void updateCard(@NonNull DialogInterface di, @NonNull BaseCard oldCard, @NonNull String[] text) {
+        if (handler == null) return;
+
+        handler.updateCard(oldCard, text, new CardActionCallback<BaseCard>() {
+            @Override
+            public void onComplete(BaseCard card) {
+                if (adapter != null && card != null) {
+                    int index = -1;
+                    if (oldCard instanceof CustomCard)
+                        index = adapter.indexOfGroup(((CustomCard) oldCard).id, CustomCard.class, (c, id) -> c.id == id);
+                    else if (oldCard instanceof ContentCard)
+                        index = adapter.indexOfGroup(oldCard.hashCode(), ContentCard.class, (c, id) -> c.hashCode() == id);
+
+                    if (index != -1) adapter.updateCard(index, card);
+                }
+
+                di.dismiss();
+            }
+
+            @Override
+            public void onFailed() {
+                showToast(Toaster.build().message(R.string.failedUpdatingCard));
+            }
+        });
+    }
+
+    private void addCard(@NonNull DialogInterface di, @NonNull String[] text) {
+        if (handler == null) return;
+
+        handler.addCard(isBlack(), text, new CardActionCallback<BaseCard>() {
+            @Override
+            public void onComplete(BaseCard card) {
+                if (card != null) {
+                    if (adapter != null) {
+                        adapter.addCard(card);
+                        onItemCountChanged(adapter.getItemCount());
+                    }
+
+                    di.dismiss();
+                    ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK_CARD);
+                } else {
+                    showToast(Toaster.build().message(R.string.failedAddingCustomCard));
+                }
+            }
+
+            @Override
+            public void onFailed() {
+                showToast(Toaster.build().message(R.string.failedAddingCustomCard));
+            }
+        });
+    }
+
+    private void addCards(boolean[] blacks, @NonNull String[][] texts) {
+        if (handler == null) return;
+
+        handler.addCards(blacks, texts, new CardActionCallback<List<? extends BaseCard>>() {
+            @Override
+            public void onComplete(List<? extends BaseCard> cards) {
+                List<BaseCard> filter = new ArrayList<>(cards);
+                Iterator<BaseCard> iter = filter.iterator();
+                while (iter.hasNext()) {
+                    BaseCard card = iter.next();
+                    if (!isBlack() && card.black())
+                        iter.remove();
+                    else if (isBlack() && !card.black())
+                        iter.remove();
+                }
+
+                if (adapter != null) adapter.addCardsAsSingleton(filter);
+            }
+
+            @Override
+            public void onFailed() {
+                showToast(Toaster.build().message(R.string.failedAddingCustomCard));
+            }
+        });
+    }
+    //endregion
+
+    //region Create card dialogs
+    private void showCreateImageCardDialog(@Nullable BaseCard oldCard) {
         if (isBlack())
             return;
 
@@ -212,19 +296,8 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(oldCard == null ? R.string.add : R.string.save, null);
 
-        if (oldCard != null) {
-            builder.setNeutralButton(R.string.remove, (dialog, which) -> {
-                if (id != null) {
-                    db.removeCard(id, oldCard.id);
-                    if (adapter != null) {
-                        adapter.removeCard(oldCard);
-                        onItemCountChanged(adapter.getItemCount());
-                    }
-
-                    ThisApplication.sendAnalytics(Utils.ACTION_REMOVED_CUSTOM_DECK_CARD);
-                }
-            });
-        }
+        if (oldCard != null)
+            builder.setNeutralButton(R.string.remove, (dialog, which) -> removeCard(oldCard));
 
         final AlertDialog dialog = builder.create();
         dialog.setOnShowListener(di -> {
@@ -327,7 +400,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
         showDialog(dialog);
     }
 
-    private void showCreateTextCardDialog(@Nullable CustomCard oldCard) {
+    private void showCreateTextCardDialog(@Nullable BaseCard oldCard) {
         LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_create_text_card, null, false);
         ((TextView) layout.findViewById(R.id.createCardDialog_info)).setText(isBlack() ? R.string.createCustomCardInfo_black : R.string.createCustomCardInfo_white);
         GameCardView preview = layout.findViewById(R.id.createCardDialog_preview);
@@ -338,19 +411,8 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(oldCard == null ? R.string.add : R.string.save, null);
 
-        if (oldCard != null) {
-            builder.setNeutralButton(R.string.remove, (dialog, which) -> {
-                if (id != null) {
-                    db.removeCard(id, oldCard.id);
-                    if (adapter != null) {
-                        adapter.removeCard(oldCard);
-                        onItemCountChanged(adapter.getItemCount());
-                    }
-
-                    ThisApplication.sendAnalytics(Utils.ACTION_REMOVED_CUSTOM_DECK_CARD);
-                }
-            });
-        }
+        if (oldCard != null)
+            builder.setNeutralButton(R.string.remove, (dialog, which) -> removeCard(oldCard));
 
         final AlertDialog dialog = builder.create();
         dialog.setOnShowListener(di -> {
@@ -358,7 +420,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
             button.setEnabled(false);
             button.setOnClickListener(v -> {
                 ParseResult result = parseInputText(CommonUtils.getText(text), isBlack());
-                if (result.result == ParseResult.Result.ERROR || result.output == null || id == null)
+                if (result.result == ParseResult.Result.ERROR || result.output == null)
                     return;
 
                 if (oldCard != null) updateCard(di, oldCard, result.output);
@@ -415,19 +477,30 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
 
         showDialog(dialog);
     }
+    //endregion
 
     @Override
     public void onCardAction(@NonNull GameCardView.Action action, @NonNull CardsGroup group, @NonNull BaseCard card) {
-        if (editable()) {
-            if (card.getImageUrl() != null) showCreateImageCardDialog((CustomCard) card);
-            else showCreateTextCardDialog((CustomCard) card);
+        if (action == GameCardView.Action.SELECT && (editable() || canCollaborate())) {
+            if (card.getImageUrl() != null) showCreateImageCardDialog(card);
+            else showCreateTextCardDialog(card);
+        } else if (action == GameCardView.Action.SELECT_IMG) {
+            showDialog(CardImageZoomDialog.get(card));
         }
     }
 
+    /**
+     * Import cards from JSON. Caller should make sure which type (black, white) the cards are and which fragment it's calling.
+     *
+     * @param context The caller {@link Context}
+     * @param array   The array containing the cards or {@code null}
+     */
     public void importCards(@NonNull Context context, @Nullable JSONArray array) {
-        if (array == null || id == null) return;
+        if (array == null) return;
 
-        CustomDecksDatabase db = CustomDecksDatabase.get(context);
+        if (db == null)
+            db = CustomDecksDatabase.get(context);
+
         String[][] texts = new String[array.length()][];
         boolean[] blacks = new boolean[array.length()];
         for (int i = 0; i < array.length(); i++) {
@@ -443,8 +516,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
             }
         }
 
-        List<CustomCard> cards = db.putCards(id, blacks, texts);
-        if (adapter != null) adapter.addCardsAsSingleton(cards);
+        addCards(blacks, texts);
     }
 
     @Override
@@ -463,6 +535,22 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
 
     private interface OpenCardImageCallback {
         void onImageUri(@NonNull Uri uri);
+    }
+
+    public interface CardActionsHandler {
+        void removeCard(@NonNull BaseCard oldCard, @NonNull CardActionCallback<Void> callback);
+
+        void updateCard(@NonNull BaseCard oldCard, @NonNull String[] text, @NonNull CardActionCallback<BaseCard> callback);
+
+        void addCard(boolean black, @NonNull String[] text, @NonNull CardActionCallback<BaseCard> callback);
+
+        void addCards(boolean[] blacks, @NonNull String[][] texts, @NonNull CardActionCallback<List<? extends BaseCard>> callback);
+    }
+
+    public interface CardActionCallback<T> {
+        void onComplete(T result);
+
+        void onFailed();
     }
 
     private static class ParseResult {
