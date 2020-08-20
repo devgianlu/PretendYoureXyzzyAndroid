@@ -22,7 +22,7 @@ public class PollMessage {
     public final boolean emote;
     public final boolean wall;
 
-    private PollMessage(JSONObject obj) throws JSONException {
+    private PollMessage(@NonNull JSONObject obj) throws JSONException {
         event = Event.parse(obj.getString("E"));
         sender = CommonUtils.optString(obj, "f");
         message = CommonUtils.optString(obj, "m");
@@ -35,7 +35,7 @@ public class PollMessage {
     }
 
     @NonNull
-    public static List<PollMessage> list(JSONArray array) throws JSONException {
+    public static List<PollMessage> list(@NonNull JSONArray array) throws JSONException {
         List<PollMessage> list = new ArrayList<>(array.length());
         for (int i = 0; i < array.length(); i++) {
             try {

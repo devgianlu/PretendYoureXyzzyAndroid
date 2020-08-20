@@ -37,6 +37,11 @@ class PyxChatController {
         return new PyxChatController(gid);
     }
 
+    @Nullable
+    String username() {
+        return pyx == null ? null : pyx.user().nickname;
+    }
+
     @NonNull
     List<PollMessage> init() throws LevelMismatchException {
         pyx = RegisteredPyx.get();
