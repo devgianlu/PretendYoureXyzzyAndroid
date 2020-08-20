@@ -14,6 +14,7 @@ import androidx.annotation.WorkerThread;
 
 import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
+import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
@@ -51,7 +52,7 @@ public final class CrCastApi {
     private final LifecycleAwareHandler handler;
 
     private CrCastApi() {
-        executorService = Executors.newSingleThreadExecutor();
+        executorService = Executors.newSingleThreadExecutor(new NamedThreadFactory("cr-cast-"));
         client = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
         handler = new LifecycleAwareHandler(new Handler(Looper.getMainLooper()));
     }

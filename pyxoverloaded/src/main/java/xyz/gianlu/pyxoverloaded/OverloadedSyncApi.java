@@ -8,8 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.commonutils.preferences.Prefs;
-import com.google.android.gms.common.util.concurrent.NamedThreadFactory;
 import com.google.android.gms.tasks.Tasks;
 
 import org.jetbrains.annotations.Contract;
@@ -35,7 +35,7 @@ public class OverloadedSyncApi {
     private final List<SyncStatusListener> listeners = new ArrayList<>(5);
     private final Handler handler;
     private final EnumMap<SyncProduct, SyncStatus> syncStatuses = new EnumMap<>(SyncProduct.class);
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor(new NamedThreadFactory("overloaded-sync-api"));
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor(new NamedThreadFactory("overloaded-sync-"));
 
     private OverloadedSyncApi(@NonNull OverloadedApi api) {
         this.api = api;
