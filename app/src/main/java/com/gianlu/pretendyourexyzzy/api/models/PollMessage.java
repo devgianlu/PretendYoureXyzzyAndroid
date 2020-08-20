@@ -49,6 +49,8 @@ public class PollMessage {
 
     public enum Event {
         BANNED("B&"),
+        ADD_CR_CAST_CARDSET("cac"),
+        REMOVE_CR_CAST_CARDSET("crc"),
         ADD_CARDSET("acs"),
         REMOVE_CARDSET("rcs"),
         CHAT("c"),
