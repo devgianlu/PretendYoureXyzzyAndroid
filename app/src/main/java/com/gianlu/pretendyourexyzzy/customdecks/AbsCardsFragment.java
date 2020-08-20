@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -69,6 +70,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
     private CardsAdapter adapter;
     private RecyclerMessageView rmv;
     private OpenCardImageCallback openCardImageCallback;
+    private Listener listener;
 
     @NonNull
     private static ParseResult parseInputText(@NonNull String text, boolean black) {
@@ -120,16 +122,24 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
                 || this instanceof com.gianlu.pretendyourexyzzy.customdecks.view.BlackCardsFragment;
     }
 
+    @Override
+    @CallSuper
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof Listener)
+            listener = (Listener) context;
+    }
+
+    @Override
+    @CallSuper
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
+    }
+
     @NonNull
     private String getWatermark() {
-        Activity activity = getActivity();
-        if (activity instanceof EditCustomDeckActivity) {
-            return ((EditCustomDeckActivity) activity).getWatermark();
-        } else if (activity instanceof ViewCustomDeckActivity) {
-            return ((ViewCustomDeckActivity) activity).getWatermark();
-        } else {
-            return "";
-        }
+        return listener != null ? listener.getWatermark() : "";
     }
 
     @Nullable
@@ -178,6 +188,12 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
             rmv.showInfo((editable() || canCollaborate()) ? R.string.noCustomCardsCreateOne : R.string.noCustomCards);
         else
             rmv.showList();
+
+        int titleRes = requireArguments().getInt("titleWithCountRes", 0);
+        if (titleRes != 0 && getContext() != null) {
+            requireArguments().putString("title", getString(titleRes, count));
+            if (listener != null) listener.refreshTabs();
+        }
     }
 
     //region Cards actions
@@ -270,7 +286,10 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
                         iter.remove();
                 }
 
-                if (adapter != null) adapter.addCardsAsSingleton(filter);
+                if (adapter != null) {
+                    adapter.addCardsAsSingleton(filter);
+                    onItemCountChanged(adapter.getItemCount());
+                }
             }
 
             @Override
@@ -531,6 +550,13 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    public interface Listener {
+        @NonNull
+        String getWatermark();
+
+        void refreshTabs();
     }
 
     private interface OpenCardImageCallback {

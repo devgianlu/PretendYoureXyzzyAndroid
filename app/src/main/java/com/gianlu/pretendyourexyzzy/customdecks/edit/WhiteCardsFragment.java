@@ -21,6 +21,7 @@ public final class WhiteCardsFragment extends AbsCardsFragment {
     public static WhiteCardsFragment get(@NonNull Context context) {
         WhiteCardsFragment fragment = new WhiteCardsFragment();
         Bundle args = new Bundle();
+        args.putInt("titleWithCountRes", R.string.whiteCardsWithCount);
         args.putString("title", context.getString(R.string.whiteCards));
         fragment.setArguments(args);
         return fragment;

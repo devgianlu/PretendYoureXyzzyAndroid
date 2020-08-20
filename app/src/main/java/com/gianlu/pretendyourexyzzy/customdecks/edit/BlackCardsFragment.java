@@ -21,6 +21,7 @@ public final class BlackCardsFragment extends AbsCardsFragment {
     public static BlackCardsFragment get(@NonNull Context context) {
         BlackCardsFragment fragment = new BlackCardsFragment();
         Bundle args = new Bundle();
+        args.putInt("titleWithCountRes", R.string.blackCardsWithCount);
         args.putString("title", context.getString(R.string.blackCards));
         fragment.setArguments(args);
         return fragment;
