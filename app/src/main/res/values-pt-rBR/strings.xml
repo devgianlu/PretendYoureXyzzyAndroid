@@ -206,7 +206,6 @@
     <string name="loggedIn">Sessão iniciada</string>
     <string name="login">Conectar-se</string>
     <string name="customDecks">Decks personalizados</string>
-    <string name="importDeck">Importar deck</string>
     <string name="noCustomDecks_create">Você não tem decks personalizados. Crie um agora mesmo!</string>
     <string name="noCustomDecks_game">Não há baralhos personalizados neste jogo.</string>
     <string name="editCustomDeck">Editar baralho personalizado</string>
@@ -250,7 +249,6 @@
     <string name="overloaded_linkAccount_desc">Vincule outra conta ao seu perfil atual</string>
     <string name="accountLinked">Conta vinculada!</string>
     <string name="failedLinkingAccount">Falha ao vincular conta!</string>
-    <string name="overloadedStatus_purchasePending">Seu pagamento ainda está pendente, volte mais tarde!</string>
     <string name="username">Usuário</string>
     <string name="askOverloadedUsername_title">Escolha seu nome de usuário Sobrecarregado</string>
     <string name="askOverloadedUsername_desc">Por favor, escolha um nome de usuário para sua conta sobrecarregada. Você ainda pode usar um nome de usuário diferente para PYX.</string>
@@ -308,8 +306,6 @@
     <string name="friendRequest">Friend request</string>
     <string name="failedCheckingUsername">Failed checking username!</string>
     <string name="deleteChat">Delete chat</string>
-    <string name="chatDeleted">Chat deleted</string>
-    <string name="failedDeletingChat">Failed deleting chat!</string>
     <string name="publicStarredCards">Public starred cards</string>
     <string name="publicCustomDecks">Public custom decks</string>
     <string name="overloadedSyncing">Syncing…</string>
