@@ -244,7 +244,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
         });
     }
 
-    private void addCard(@NonNull DialogInterface di, @NonNull String[] text) {
+    private void addCard(@NonNull DialogInterface di, @NonNull String[] text, boolean image) {
         if (handler == null) return;
 
         handler.addCard(isBlack(), text, new CardActionCallback<BaseCard>() {
@@ -257,7 +257,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
                     }
 
                     di.dismiss();
-                    ThisApplication.sendAnalytics(Utils.ACTION_ADDED_CUSTOM_DECK_CARD);
+                    ThisApplication.sendAnalytics(image ? Utils.ACTION_ADDED_CUSTOM_DECK_IMAGE_CARD : Utils.ACTION_ADDED_CUSTOM_DECK_TEXT_CARD);
                 } else {
                     showToast(Toaster.build().message(R.string.failedAddingCustomCard));
                 }
@@ -334,7 +334,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
 
                 String[] text = new String[]{"[img]" + url + "[/img]"};
                 if (oldCard != null) updateCard(di, oldCard, text);
-                else addCard(di, text);
+                else addCard(di, text, true);
             });
         });
 
@@ -443,7 +443,7 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
                     return;
 
                 if (oldCard != null) updateCard(di, oldCard, result.output);
-                else addCard(di, result.output);
+                else addCard(di, result.output, false);
             });
         });
 

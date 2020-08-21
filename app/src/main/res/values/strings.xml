@@ -207,7 +207,6 @@
     <string name="loggedIn">Logged in</string>
     <string name="login">Login</string>
     <string name="customDecks">Custom decks</string>
-    <string name="importDeck">Import deck</string>
     <string name="noCustomDecks_create">You have no custom decks. Create one right away!</string>
     <string name="noCustomDecks_game">There are no custom decks in this game.</string>
     <string name="editCustomDeck">Edit custom deck</string>
@@ -252,7 +251,6 @@
     <string name="overloaded_linkAccount_desc">Link another account to your current profile</string>
     <string name="accountLinked">Account linked!</string>
     <string name="failedLinkingAccount">Failed linking account!</string>
-    <string name="overloadedStatus_purchasePending">Your payment is still pending, check back later!</string>
     <string name="username">Username</string>
     <string name="askOverloadedUsername_title">Choose your Overloaded username</string>
     <string name="askOverloadedUsername_desc">Please choose a username for your Overloaded account. You can still use a different username for PYX.</string>
@@ -310,8 +308,6 @@
     <string name="friendRequest">Friend request</string>
     <string name="failedCheckingUsername">Failed checking username!</string>
     <string name="deleteChat">Delete chat</string>
-    <string name="chatDeleted">Chat deleted</string>
-    <string name="failedDeletingChat">Failed deleting chat!</string>
     <string name="publicStarredCards">Public starred cards</string>
     <string name="publicCustomDecks">Public custom decks</string>
     <string name="overloadedSyncing">Syncing…</string>

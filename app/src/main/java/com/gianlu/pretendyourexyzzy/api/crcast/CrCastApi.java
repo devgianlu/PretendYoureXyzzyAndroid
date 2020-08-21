@@ -33,6 +33,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -57,10 +58,15 @@ public final class CrCastApi {
         handler = new LifecycleAwareHandler(new Handler(Looper.getMainLooper()));
     }
 
-    @NonNull
     @SuppressLint("SimpleDateFormat")
-    static SimpleDateFormat getApiDateTimeFormat() {
-        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    static long parseApiDate(@NonNull String text) {
+        try {
+            Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(text);
+            return date == null ? 0 : date.getTime();
+        } catch (ParseException ex) {
+            Log.e(TAG, "Failed parsing date: " + text, ex);
+            return 0;
+        }
     }
 
     @NonNull
@@ -169,7 +175,7 @@ public final class CrCastApi {
                     JSONObject obj = request("user/" + getToken());
                     CrCastUser user = new CrCastUser(obj);
                     post(() -> callback.onUser(user));
-                } catch (IOException | JSONException | ParseException | CrCastException | NotSignedInException ex) {
+                } catch (IOException | JSONException | CrCastException | NotSignedInException ex) {
                     post(() -> callback.onException(ex));
                 }
             }

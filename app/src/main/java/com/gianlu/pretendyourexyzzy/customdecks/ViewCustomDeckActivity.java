@@ -249,8 +249,6 @@ public class ViewCustomDeckActivity extends ActivityWithDialog implements AbsCar
                 blackCardsFragment, whiteCardsFragment));
         tabs.setupWithViewPager(pager);
 
-        pager.getAdapter().notifyDataSetChanged();
-
         loading.setVisibility(View.GONE);
         supportInvalidateOptionsMenu();
     }
