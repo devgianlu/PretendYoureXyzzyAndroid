@@ -206,7 +206,6 @@
     <string name="loggedIn">Accesso eseguito</string>
     <string name="login">Accedi</string>
     <string name="customDecks">Mazzi personalizzati</string>
-    <string name="importDeck">Importa mazzo</string>
     <string name="noCustomDecks_create">Non hai mazzi personalizzati. Creane uno subito!</string>
     <string name="noCustomDecks_game">Non ci sono mazzi personalizzati in questa partita.</string>
     <string name="editCustomDeck">Modifica mazzo personalizzato</string>
@@ -250,7 +249,6 @@
     <string name="overloaded_linkAccount_desc">Collega un altro account al tuo profilo corrente</string>
     <string name="accountLinked">Account collegato!</string>
     <string name="failedLinkingAccount">Impossibile collegare l\'account!</string>
-    <string name="overloadedStatus_purchasePending">Il tuo pagamento è ancora in corso, riprova più tardi!</string>
     <string name="username">Nome utente</string>
     <string name="askOverloadedUsername_title">Scegli il tuo nome utente per Overloaded</string>
     <string name="askOverloadedUsername_desc">Scegli un nome utente per il tuo account Overloaded. Puoi comunque usare un nome utente diverso per PYX.</string>
@@ -308,8 +306,6 @@
     <string name="friendRequest">Richiesta di amicizia</string>
     <string name="failedCheckingUsername">Impossibile controllare il nome utente!</string>
     <string name="deleteChat">Elimina conversazione</string>
-    <string name="chatDeleted">Conversazione eliminata</string>
-    <string name="failedDeletingChat">Impossibile eliminare la conversazione!</string>
     <string name="publicStarredCards">Carte preferite pubbliche</string>
     <string name="publicCustomDecks">Mazzi personalizzati pubblici</string>
     <string name="overloadedSyncing">Sincronizzando…</string>
