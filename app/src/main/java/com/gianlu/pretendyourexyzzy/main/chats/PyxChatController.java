@@ -122,10 +122,14 @@ class PyxChatController {
     }
 
     void showUserInfo(@NonNull FragmentActivity activity, @NonNull String sender) {
+        if (pyx == null) return;
+
         UserInfoDialog.loadAndShow(pyx, activity, sender);
     }
 
     void readAllMessages(long timestamp) {
+        if (pyx == null) return;
+
         if (gid == -1) pyx.chat().resetGlobalUnread(timestamp);
         else pyx.chat().resetGameUnread(timestamp);
     }

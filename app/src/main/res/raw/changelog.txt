@@ -1,6 +1,9 @@
-<b>Collaborative decks!</b>
-
+<b>Collaborative decks</b>
 You can now create custom decks with your friends! Just add your friend in Overloaded (must be mutual friendship), star his deck and ask him to make you a collaborator of that deck.
 Collaborators can view the private deck they are collaborating to, add, edit and remove cards.
 
 This feature is available for Overloaded users only.
+
+
+<b>Custom decks images</b>
+Add images to your custom decks (as white cards only) with a link, Overloaded users can upload images directly from their devices.
