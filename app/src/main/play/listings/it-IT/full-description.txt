@@ -1,4 +1,4 @@
-This app lets you play Pretend You're Xyzzy, an online card game, on your device wherever you are.
+Questa app ti permette di giocare a Pretend You're Xyzzy, un gioco di carte online, sul tuo dispositivo ovunque tu sia.
 
 ----- ATTENZIONE! -----
 Il contenuto di questa app potrebbe dare fastidio ad alcune persone. Se non sei d'accordo con il contenuto di questa app, non lamentarti con me. Non sono il creatore di questo gioco, solo un giocatore che è anche uno sviluppatore.
@@ -12,17 +12,17 @@ Funzioni gratuite:
 - Personalizza il tuo gioco
 - Gioca con mazzi personalizzati
 - Crea mazzi personalizzati dall'app
-- Add images (from link) to your custom decks
+- Aggiungi immagini (dal link) ai tuoi mazzi personalizzati
 - Salva le tue carte preferite
 - Vedi le tue metriche (partite giocate)
 
 Funzioni di Overloaded:
-- Create your profile
+- Crea il tuo profilo
 - Accumula successi e statistiche (carte e round giocati, round vinti)
 - Fai amicizia
 - Chatta privatamente con i tuoi amici
-- Create collaborative custom decks for you and your friends
-- Upload images and add them to your custom decks
+- Crea mazzi personalizzati collaborativi per te e i tuoi amici
+- Carica immagini e aggiungile ai tuoi mazzi personalizzati
 - Vedi le carte preferite e i mazzi personalizzati dei tuoi amici
 - Sincronizza le tue carte preferiti e i mazzi personalizzati in modo da non perderli mai
 - Altro a venire...
