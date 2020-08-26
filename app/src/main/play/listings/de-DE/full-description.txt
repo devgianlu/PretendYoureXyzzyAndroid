@@ -12,6 +12,7 @@ Free features:
 - Customize your game
 - Play with custom decks
 - Create custom decks from the app
+- Add images (from link) to your custom decks
 - Star your favourite cards
 - See your lifetime metrics (games played)
 
@@ -20,6 +21,8 @@ Overloaded features:
 - Accumulate achievements and stats (cards and rounds played, rounds won)
 - Make friends
 - Privately chat with your friends
+- Create collaborative custom decks for you and your friends
+- Upload images and add them to your custom decks
 - See your friends' starred cards and custom decks
 - Synchronize your starred cards and custom decks so that you never lose them
 - More to come...
