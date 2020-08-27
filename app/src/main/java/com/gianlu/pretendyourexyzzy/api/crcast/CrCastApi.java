@@ -12,12 +12,14 @@ import androidx.annotation.StringRes;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
 import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.StatusCodeException;
 import com.gianlu.pretendyourexyzzy.api.UserAgentInterceptor;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
@@ -144,6 +146,9 @@ public final class CrCastApi {
     @NonNull
     private String loginSync(@NonNull String username, @NonNull String hashedPassword) throws JSONException, IOException, CrCastException {
         JSONObject obj = request("user/token/?username=" + username + "&password=" + hashedPassword);
+        Prefs.putString(PK.CR_CAST_USER, username);
+        Prefs.putString(PK.CR_CAST_PASSWORD, hashedPassword);
+
         String token = obj.getString("token");
         Prefs.putString(PK.CR_CAST_TOKEN, token);
         return token;
@@ -160,6 +165,7 @@ public final class CrCastApi {
 
                     loginSync(username, hex.toString());
                     post(callback::onLoginSuccessful);
+                    AnalyticsApplication.sendAnalytics(Utils.ACTION_CR_CAST_LOGIN);
                 } catch (IOException | JSONException | NoSuchAlgorithmException | CrCastException ex) {
                     post(() -> callback.onException(ex));
                 }
@@ -219,6 +225,7 @@ public final class CrCastApi {
         Prefs.remove(PK.CR_CAST_TOKEN);
         Prefs.remove(PK.CR_CAST_USER);
         Prefs.remove(PK.CR_CAST_PASSWORD);
+        AnalyticsApplication.sendAnalytics(Utils.ACTION_CR_CAST_LOGOUT);
     }
 
     public enum State {
