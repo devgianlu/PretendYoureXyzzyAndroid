@@ -1,9 +1,11 @@
-<b>Collaborative decks</b>
-You can now create custom decks with your friends! Just add your friend in Overloaded (must be mutual friendship), star his deck and ask him to make you a collaborator of that deck.
-Collaborators can view the private deck they are collaborating to, add, edit and remove cards.
+<b>Purchase protection</b>
+In order to protect our customers, subscriptions will not be renewed if the user doesn't open the application in the days the renew is happening.
 
-This feature is available for Overloaded users only.
-
-
-<b>Custom decks images</b>
-Add images to your custom decks (as white cards only) with a link, Overloaded users can upload images directly from their devices.
+<b>Free trial for everyone!</b>
+We have enabled a trial period of 3 days for everyone! Enjoy the features of the Overloaded expansion!
+Just to refresh your mind, here's some of the features:
+- Make friends and chat with them privately
+- Create collaborative custom decks for you and your friends
+- Upload images and add them to your custom decks
+- See your friends' starred cards and custom decks
+- Synchronize your decks so that you never lose them

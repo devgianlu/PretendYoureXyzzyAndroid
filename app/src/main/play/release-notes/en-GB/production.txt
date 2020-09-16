@@ -1,8 +1,3 @@
-### Added
-- Added collaborative decks (Overloaded)
-- Added cards count for custom decks
-
 ### Fixed
-- Fixed some CrCast issues
-- Fixed Overloaded sync issues
-- Other minor fixes
+- Fixed CrCast logging out
+- Fixed subscription renewing not working properly
