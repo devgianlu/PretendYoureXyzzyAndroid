@@ -1,3 +1,2 @@
 ### Fixed
-- Fixed CrCast logging out
-- Fixed subscription renewing not working properly
+- Fixed CrCast decks not loading
