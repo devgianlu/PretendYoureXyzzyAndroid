@@ -33,7 +33,7 @@ public final class CrCastDeck extends BasicCustomDeck {
     private CrCastDeck(@NonNull JSONObject obj, @NonNull String watermark, long lastUsed) throws JSONException {
         super(obj.getString("name"), watermark, null, lastUsed, -1);
         desc = obj.getString("description");
-        lang = obj.getString("decklang");
+        lang = obj.getString("language");
         state = CrCastApi.State.parse(obj.getInt("state"));
         privateDeck = obj.getBoolean("private");
         created = CrCastApi.parseApiDate(obj.getString("createdate"));
