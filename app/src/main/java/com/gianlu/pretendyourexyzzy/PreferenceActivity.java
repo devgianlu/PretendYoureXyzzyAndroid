@@ -16,6 +16,7 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.preferences.BasePreferenceActivity;
 import com.gianlu.commonutils.preferences.BasePreferenceFragment;
+import com.gianlu.commonutils.preferences.CommonPK;
 import com.gianlu.commonutils.preferences.MaterialAboutPreferenceItem;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
@@ -45,13 +46,17 @@ import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public class PreferenceActivity extends BasePreferenceActivity implements OverloadedChooseProviderDialog.Listener {
-
     private static final String TAG = PreferenceActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         GPGamesHelper.setPopupView(this, Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+
+        if (disableUsageStatisticsToggle()) {
+            Prefs.putBoolean(CommonPK.CRASH_REPORT_ENABLED, true);
+            Prefs.putBoolean(CommonPK.TRACKING_ENABLED, true);
+        }
     }
 
     @NonNull
@@ -85,6 +90,11 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
 
     @Override
     protected boolean disableOtherDonationsOnGooglePlay() {
+        return true;
+    }
+
+    @Override
+    protected boolean disableUsageStatisticsToggle() {
         return true;
     }
 
