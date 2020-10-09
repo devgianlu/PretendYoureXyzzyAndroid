@@ -22,9 +22,8 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
-import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionHistory;
 
-public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<SessionHistory> {
+public class SessionHistoryFragment extends FragmentWithDialog {
     private static final String TAG = SessionHistoryFragment.class.getSimpleName();
     private ProgressBar loading;
     private SuperTextView gamesLabel;
@@ -88,36 +87,30 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
             return layout;
         }
 
-        pyx.getSessionHistory(id, null, this);
+        pyx.getSessionHistory(id)
+                .addOnSuccessListener(requireActivity(), result -> {
+                    if (result.games.isEmpty() && result.judgedRounds.isEmpty() && result.playedRounds.isEmpty()) {
+                        loading.setVisibility(View.GONE);
+                        container.setVisibility(View.GONE);
+                        message.info(R.string.noActivity);
+                    } else {
+                        loading.setVisibility(View.GONE);
+                        container.setVisibility(View.VISIBLE);
+                        gamesLabel.setHtml(R.string.gamesCount, result.games.size());
+                        games.setAdapter(new GamesAdapter(requireContext(), result.games, (GamesAdapter.Listener) getContext()));
+                        playedRoundsLabel.setHtml(R.string.playedRoundsCount, result.playedRounds.size());
+                        playedRounds.setAdapter(new RoundsAdapter(requireContext(), result.playedRounds, (RoundsAdapter.Listener) getContext()));
+                        judgedRoundsLabel.setHtml(R.string.judgedRoundsCount, result.judgedRounds.size());
+                        judgedRounds.setAdapter(new RoundsAdapter(requireContext(), result.judgedRounds, (RoundsAdapter.Listener) getContext()));
+                    }
+                })
+                .addOnFailureListener(requireActivity(), ex -> {
+                    Log.e(TAG, "Failed loading history.", ex);
+                    loading.setVisibility(View.GONE);
+                    container.setVisibility(View.GONE);
+                    message.error(R.string.failedLoading_reason, ex.getMessage());
+                });
 
         return layout;
-    }
-
-    @Override
-    public void onDone(@NonNull SessionHistory result) {
-        if (getContext() == null) return;
-
-        if (result.games.isEmpty() && result.judgedRounds.isEmpty() && result.playedRounds.isEmpty()) {
-            loading.setVisibility(View.GONE);
-            container.setVisibility(View.GONE);
-            message.info(R.string.noActivity);
-        } else {
-            loading.setVisibility(View.GONE);
-            container.setVisibility(View.VISIBLE);
-            gamesLabel.setHtml(R.string.gamesCount, result.games.size());
-            games.setAdapter(new GamesAdapter(getContext(), result.games, (GamesAdapter.Listener) getContext()));
-            playedRoundsLabel.setHtml(R.string.playedRoundsCount, result.playedRounds.size());
-            playedRounds.setAdapter(new RoundsAdapter(getContext(), result.playedRounds, (RoundsAdapter.Listener) getContext()));
-            judgedRoundsLabel.setHtml(R.string.judgedRoundsCount, result.judgedRounds.size());
-            judgedRounds.setAdapter(new RoundsAdapter(getContext(), result.judgedRounds, (RoundsAdapter.Listener) getContext()));
-        }
-    }
-
-    @Override
-    public void onException(@NonNull Exception ex) {
-        Log.e(TAG, "Failed loading history.", ex);
-        loading.setVisibility(View.GONE);
-        container.setVisibility(View.GONE);
-        message.error(R.string.failedLoading_reason, ex.getMessage());
     }
 }

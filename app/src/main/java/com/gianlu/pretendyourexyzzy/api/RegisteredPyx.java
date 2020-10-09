@@ -22,6 +22,7 @@ import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
+import com.google.android.gms.tasks.Task;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -72,8 +73,9 @@ public class RegisteredPyx extends FirstLoadedPyx {
         request.addHeader("Cookie", "JSESSIONID=" + user.sessionId);
     }
 
-    public final void getUserHistory(@Nullable Activity activity, @NonNull OnResult<UserHistory> listener) {
-        getUserHistory(user.persistentId, activity, listener);
+    @NonNull
+    public final Task<UserHistory> getUserHistory() {
+        return getUserHistory(user.persistentId);
     }
 
     @NonNull

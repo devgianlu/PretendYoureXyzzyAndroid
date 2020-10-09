@@ -33,6 +33,11 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
+        <!-- One time login activity -->
+        <activity android:name=".OneTimeLoginActivity">
+            <!-- TODO -->
+        </activity>
+
         <!-- Loading activity -->
         <activity
             android:name=".LoadingActivity"

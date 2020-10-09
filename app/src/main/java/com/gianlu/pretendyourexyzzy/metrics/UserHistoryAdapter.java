@@ -61,17 +61,9 @@ class UserHistoryAdapter extends RecyclerView.Adapter<UserHistoryAdapter.ViewHol
             if (listener != null) listener.onSessionSelected(item);
         });
 
-        pyx.getSessionStats(item.id, null, new Pyx.OnResult<SessionStats>() {
-            @Override
-            public void onDone(@NonNull SessionStats result) {
-                notifyItemChanged(holder.getAdapterPosition(), result);
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                Log.e(TAG, "Failed getting session stats.", ex);
-            }
-        });
+        pyx.getSessionStats(item.id)
+                .addOnSuccessListener(result -> notifyItemChanged(holder.getAdapterPosition(), result))
+                .addOnFailureListener(ex -> Log.e(TAG, "Failed getting session stats.", ex));
     }
 
     @Override

@@ -14,11 +14,9 @@ import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
-import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
-import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
 
-public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<UserHistory> {
+public class UserHistoryFragment extends FragmentWithDialog {
     private static final String TAG = UserHistoryFragment.class.getSimpleName();
     private RegisteredPyx pyx;
     private RecyclerMessageView rmv;
@@ -43,22 +41,16 @@ public class UserHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
             return rmv;
         }
 
-        pyx.getUserHistory(getActivity(), this);
+        pyx.getUserHistory()
+                .addOnSuccessListener(requireActivity(), result -> {
+                    rmv.loadListData(new UserHistoryAdapter(requireContext(), pyx, result, (UserHistoryAdapter.Listener) getContext()), false);
+                    if (result.isEmpty()) rmv.showInfo(R.string.noMetricsSessions);
+                    else rmv.showList();
+                })
+                .addOnFailureListener(requireActivity(), ex -> {
+                    Log.e(TAG, "Failed getting history.", ex);
+                    rmv.showError(R.string.failedLoading_reason, ex.getMessage());
+                });
         return rmv;
-    }
-
-    @Override
-    public void onDone(@NonNull UserHistory result) {
-        if (getContext() == null) return;
-
-        rmv.loadListData(new UserHistoryAdapter(getContext(), pyx, result, (UserHistoryAdapter.Listener) getContext()), false);
-        if (result.isEmpty()) rmv.showInfo(R.string.noMetricsSessions);
-        else rmv.showList();
-    }
-
-    @Override
-    public void onException(@NonNull Exception ex) {
-        Log.e(TAG, "Failed getting history.", ex);
-        rmv.showError(R.string.failedLoading_reason, ex.getMessage());
     }
 }

@@ -15,11 +15,10 @@ import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
-import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.GameHistory;
 
-public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<GameHistory> {
+public class GameHistoryFragment extends FragmentWithDialog {
     private static final String TAG = GameHistoryFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
 
@@ -67,24 +66,20 @@ public class GameHistoryFragment extends FragmentWithDialog implements Pyx.OnRes
                 return rmv;
             }
 
-            pyx.getGameHistory(id, null, this);
+            pyx.getGameHistory(id)
+                    .addOnSuccessListener(requireActivity(), this::loaded)
+                    .addOnFailureListener(requireActivity(), ex -> {
+                        Log.e(TAG, "Failed loading history.", ex);
+                        rmv.showError(R.string.failedLoading_reason, ex.getMessage());
+                    });
         } else {
-            onDone(history);
+            loaded(history);
         }
 
         return rmv;
     }
 
-    @Override
-    public void onDone(@NonNull GameHistory result) {
-        if (getContext() == null) return;
-
-        rmv.loadListData(new RoundsAdapter(getContext(), result, (RoundsAdapter.Listener) getContext()));
-    }
-
-    @Override
-    public void onException(@NonNull Exception ex) {
-        Log.e(TAG, "Failed loading history.", ex);
-        rmv.showError(R.string.failedLoading_reason, ex.getMessage());
+    private void loaded(@NonNull GameHistory result) {
+        rmv.loadListData(new RoundsAdapter(requireContext(), result, (RoundsAdapter.Listener) requireContext()));
     }
 }

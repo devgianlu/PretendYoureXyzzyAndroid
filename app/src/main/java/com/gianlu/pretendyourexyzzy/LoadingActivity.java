@@ -70,7 +70,7 @@ import xyz.gianlu.pyxoverloaded.model.UserData;
 import xyz.gianlu.pyxoverloaded.model.UserData.PurchaseStatusGranular;
 
 
-public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<FirstLoadedPyx>, TutorialManager.Listener, OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener, AskUsernameDialog.Listener {
+public class LoadingActivity extends ActivityWithDialog implements TutorialManager.Listener, OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener, AskUsernameDialog.Listener {
     private static final int RC_SIGN_IN = 3;
     private static final String TAG = LoadingActivity.class.getSimpleName();
     private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
@@ -109,10 +109,8 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         if (actionBar != null) actionBar.hide();
 
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
         if (Prefs.getBoolean(PK.FIRST_RUN, true)) {
@@ -180,24 +178,21 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         if (lastServer != null) currentServer.setText(lastServer.name);
 
         discoveryApi = PyxDiscoveryApi.get();
-        discoveryApi.getWelcomeMessage(this, new Pyx.OnResult<String>() {
-            @Override
-            public void onDone(@NonNull String result) {
-                if (result.isEmpty()) {
-                    welcomeMessage.setVisibility(View.GONE);
-                } else {
-                    welcomeMessage.setVisibility(View.VISIBLE);
-                    welcomeMessage.setHtml(result);
-                }
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                Log.e(TAG, "Failed loading welcome message.", ex);
+        discoveryApi.getWelcomeMessage().addOnSuccessListener(this, result -> {
+            if (result.isEmpty()) {
                 welcomeMessage.setVisibility(View.GONE);
+            } else {
+                welcomeMessage.setVisibility(View.VISIBLE);
+                welcomeMessage.setHtml(result);
             }
+        }).addOnFailureListener(this, ex -> {
+            Log.e(TAG, "Failed loading welcome message.", ex);
+            welcomeMessage.setVisibility(View.GONE);
         });
-        discoveryApi.firstLoad(this, null, this);
+
+        discoveryApi.firstLoad(this)
+                .addOnSuccessListener(LoadingActivity.this, LoadingActivity.this::doneFirstLoad)
+                .addOnFailureListener(LoadingActivity.this, LoadingActivity.this::failedFirstLoad);
     }
 
     @Override
@@ -260,7 +255,9 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                 toggleLoading(true);
                 dismissDialog();
 
-                discoveryApi.firstLoad(LoadingActivity.this, null, LoadingActivity.this);
+                discoveryApi.firstLoad(LoadingActivity.this)
+                        .addOnSuccessListener(LoadingActivity.this, LoadingActivity.this::doneFirstLoad)
+                        .addOnFailureListener(LoadingActivity.this, LoadingActivity.this::failedFirstLoad);
             }
         }));
 
@@ -340,7 +337,9 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
                                 if (((PyxException) ex).hadException(SocketTimeoutException.class) || ((PyxException) ex).hadException(SSLException.class)
                                         || ((PyxException) ex).hadException(ConnectException.class)) {
                                     Log.w(TAG, "Nickname already in use probably caused by network. Will try to first load.");
-                                    discoveryApi.firstLoad(LoadingActivity.this, null, LoadingActivity.this);
+                                    discoveryApi.firstLoad(LoadingActivity.this)
+                                            .addOnSuccessListener(LoadingActivity.this, LoadingActivity.this::doneFirstLoad)
+                                            .addOnFailureListener(LoadingActivity.this, LoadingActivity.this::failedFirstLoad);
                                 } else {
                                     registerNickname.setError(getString(R.string.alreadyUsedNickname));
                                 }
@@ -361,8 +360,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         });
     }
 
-    @Override
-    public void onDone(@NonNull FirstLoadedPyx result) {
+    private void doneFirstLoad(@NonNull FirstLoadedPyx result) {
         FirstLoad fl = result.firstLoad();
         if (fl.inProgress && fl.user != null) {
             if (fl.nextOperation == FirstLoad.NextOp.GAME) {
@@ -387,8 +385,7 @@ public class LoadingActivity extends ActivityWithDialog implements Pyx.OnResult<
         }
     }
 
-    @Override
-    public void onException(@NonNull Exception ex) {
+    private void failedFirstLoad(@NonNull Exception ex) {
         if (ex instanceof PyxException) {
             if (Objects.equals(((PyxException) ex).errorCode, "se")) {
                 toggleLoading(false);

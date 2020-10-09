@@ -18,10 +18,8 @@ import com.gianlu.commonutils.misc.BreadcrumbsView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
-import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
-import com.gianlu.pretendyourexyzzy.api.models.metrics.GameHistory;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionHistory;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SimpleRound;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
@@ -109,27 +107,21 @@ public class MetricsActivity extends ActivityWithDialog implements BreadcrumbsVi
 
         ProgressDialog pd = DialogUtils.progressDialog(this, R.string.loading);
         showDialog(pd);
-        pyx.getGameHistory(gameId, this, new Pyx.OnResult<GameHistory>() {
-            @Override
-            public void onDone(@NonNull GameHistory result) {
-                dismissDialog();
-
-                breadcrumbs.addItem(new BreadcrumbsView.Item(getString(R.string.ongoingGame), TYPE_GAME, null));
-
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.metrics_container, GameHistoryFragment.get(result), TAG_GAME)
-                        .commit();
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                dismissDialog();
-                Log.e(TAG, "Failed loading history.", ex);
-                Toaster.with(MetricsActivity.this).message(R.string.failedLoading).show();
-                onBackPressed();
-            }
-        });
+        pyx.getGameHistory(gameId)
+                .addOnSuccessListener(this, result -> {
+                    dismissDialog();
+                    breadcrumbs.addItem(new BreadcrumbsView.Item(getString(R.string.ongoingGame), TYPE_GAME, null));
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.metrics_container, GameHistoryFragment.get(result), TAG_GAME)
+                            .commit();
+                })
+                .addOnFailureListener(this, ex -> {
+                    dismissDialog();
+                    Log.e(TAG, "Failed loading history.", ex);
+                    Toaster.with(MetricsActivity.this).message(R.string.failedLoading).show();
+                    onBackPressed();
+                });
     }
 
     private void loadGame(@NonNull final SessionHistory.Game game) {

@@ -384,4 +384,5 @@
     <string name="canCollaborate">Can collaborate</string>
     <string name="failedRemovingCard">Failed removing card!</string>
     <string name="failedUpdatingCard">Failed updating card!</string>
+    <string name="welcomeToApp">Welcome to Pretend You\'re Xyzzy</string>
 </resources>
