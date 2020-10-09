@@ -191,6 +191,11 @@ public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.L
     }
 
     @Override
+    public boolean isMe(@NonNull String sender) {
+        return controller != null && sender.equals(controller.username());
+    }
+
+    @Override
     public void onChatMessage(@NonNull PollMessage msg) {
         adapter.newMessage(msg);
         if (isAdded()) rmv.list().scrollToPosition(adapter.getItemCount() - 1);

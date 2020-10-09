@@ -1,5 +1,2 @@
-### Added
-- Added support for CrCast (view and use decks)
-
 ### Fixed
-- Fixed crash when using some cards
+- Fixed CrCast decks not loading

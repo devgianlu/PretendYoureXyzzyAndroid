@@ -20,23 +20,25 @@ public final class WhiteCardsFragment extends AbsCardsFragment {
     private List<ContentCard> cards;
 
     @NotNull
-    private static WhiteCardsFragment get(@NotNull Context context, @NotNull List<ContentCard> cards) {
+    private static WhiteCardsFragment get(@NotNull Context context, boolean collaborate, @NotNull List<ContentCard> cards) {
         WhiteCardsFragment fragment = new WhiteCardsFragment();
         fragment.cards = cards;
         Bundle args = new Bundle();
-        args.putString("title", context.getString(R.string.whiteCardsWithCount, cards.size()));
+        args.putInt("titleWithCountRes", R.string.whiteCardsWithCount);
+        args.putString("title", context.getString(R.string.whiteCards));
+        args.putBoolean("collaborate", collaborate);
         fragment.setArguments(args);
         return fragment;
     }
 
     @NotNull
-    public static WhiteCardsFragment getWithOverloadedCards(@NotNull Context context, @NotNull List<Card> cards) {
-        return get(context, ContentCard.fromOverloadedCards(cards));
+    public static WhiteCardsFragment getWithOverloadedCards(@NotNull Context context, boolean collaborate, @NotNull List<Card> cards) {
+        return get(context, collaborate, ContentCard.fromOverloadedCards(cards));
     }
 
     @NotNull
-    public static WhiteCardsFragment getWithBaseCards(@NotNull Context context, @NotNull List<? extends BaseCard> cards) {
-        return get(context, ContentCard.fromBaseCards(cards));
+    public static WhiteCardsFragment getWithBaseCards(@NotNull Context context, boolean collaborate, @NotNull List<? extends BaseCard> cards) {
+        return get(context, collaborate, ContentCard.fromBaseCards(cards));
     }
 
     @NonNull
@@ -48,5 +50,10 @@ public final class WhiteCardsFragment extends AbsCardsFragment {
     @Override
     protected boolean editable() {
         return false;
+    }
+
+    @Override
+    protected boolean canCollaborate() {
+        return requireArguments().getBoolean("collaborate", false);
     }
 }

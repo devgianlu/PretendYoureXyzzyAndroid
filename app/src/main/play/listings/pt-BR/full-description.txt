@@ -1,4 +1,4 @@
-This app let's you play Pretend You're Xyzzy, an online card game, on your device wherever you are. 
+This app lets you play Pretend You're Xyzzy, an online card game, on your device wherever you are.
 
 ----- ATTENTION! -----
 This app content may disappoint some people. If you don't agree with the content of this app, don't complain with me. I'm not the creator of this game, just a player who is also a developer.
@@ -12,6 +12,7 @@ Free features:
 - Customize your game
 - Play with custom decks
 - Create custom decks from the app
+- Add images (from link) to your custom decks
 - Star your favourite cards
 - See your lifetime metrics (games played)
 
@@ -20,6 +21,8 @@ Overloaded features:
 - Accumulate achievements and stats (cards and rounds played, rounds won)
 - Make friends
 - Privately chat with your friends
+- Create collaborative custom decks for you and your friends
+- Upload images and add them to your custom decks
 - See your friends' starred cards and custom decks
 - Synchronize your starred cards and custom decks so that you never lose them
 - More to come...

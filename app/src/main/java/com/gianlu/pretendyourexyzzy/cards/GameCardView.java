@@ -53,6 +53,7 @@ public class GameCardView extends MaterialCardView {
     private final ImageButton secondaryAction;
     private final Action primary;
     private final Action secondary;
+    private boolean enableCardImageZoom = true;
     private BaseCard card;
 
     public GameCardView(@NonNull Context context) {
@@ -102,6 +103,11 @@ public class GameCardView extends MaterialCardView {
         setupActions();
         setClickable(selectable);
         setFocusable(selectable);
+    }
+
+    public void setCardImageZoomEnabled(boolean enabled) {
+        enableCardImageZoom = enabled;
+        setupActions();
     }
 
     private void showUnknown() {
@@ -237,7 +243,7 @@ public class GameCardView extends MaterialCardView {
         } else {
             setupAction(primary, primaryAction);
             setupAction(secondary, secondaryAction);
-            checkRoomForSelectImage();
+            if (enableCardImageZoom) checkRoomForSelectImage();
         }
     }
 

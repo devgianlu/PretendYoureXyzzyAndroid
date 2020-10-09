@@ -36,13 +36,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class EditCustomDeckActivity extends ActivityWithDialog {
+public class EditCustomDeckActivity extends ActivityWithDialog implements AbsCardsFragment.Listener {
     private static final String TAG = EditCustomDeckActivity.class.getSimpleName();
     private GeneralInfoFragment generalInfoFragment;
     private ViewPager pager;
     private AbsCardsFragment whiteCardsFragment;
     private AbsCardsFragment blackCardsFragment;
-    private Integer id;
 
     public static void startActivityNew(@NonNull Context context) {
         context.startActivity(new Intent(context, EditCustomDeckActivity.class)
@@ -76,7 +75,7 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
 
-        id = getIntent().getIntExtra("id", -1);
+        Integer id = getIntent().getIntExtra("id", -1);
         if (id == -1) id = null;
 
         pager = findViewById(R.id.editViewCustomDeck_pager);
@@ -119,8 +118,14 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
         });
 
         generalInfoFragment = GeneralInfoFragment.get(this, id);
-        blackCardsFragment = BlackCardsFragment.get(this, id);
-        whiteCardsFragment = WhiteCardsFragment.get(this, id);
+        blackCardsFragment = BlackCardsFragment.get(this);
+        whiteCardsFragment = WhiteCardsFragment.get(this);
+
+        if (id != null) {
+            CustomDecksHandler handler = new CustomDecksHandler(this, id);
+            blackCardsFragment.setHandler(handler);
+            whiteCardsFragment.setHandler(handler);
+        }
 
         File tmpFile = (File) getIntent().getSerializableExtra("tmpFile");
         if (tmpFile != null) {
@@ -150,8 +155,9 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
             Integer deckId = generalInfoFragment.getDeckId();
             if (deckId == null) return false;
 
-            if (whiteCardsFragment != null) whiteCardsFragment.setDeckId(deckId);
-            if (blackCardsFragment != null) blackCardsFragment.setDeckId(deckId);
+            CustomDecksHandler handler = new CustomDecksHandler(this, deckId);
+            if (whiteCardsFragment != null) whiteCardsFragment.setHandler(handler);
+            if (blackCardsFragment != null) blackCardsFragment.setHandler(handler);
 
             supportInvalidateOptionsMenu();
             return true;
@@ -199,8 +205,15 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
     }
 
     @NonNull
+    @Override
     public String getWatermark() {
         return generalInfoFragment == null ? "" : generalInfoFragment.getWatermark();
+    }
+
+    @Override
+    public void refreshTabs() {
+        if (pager != null && pager.getAdapter() != null)
+            pager.getAdapter().notifyDataSetChanged();
     }
 
     @NonNull
@@ -240,10 +253,11 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
                 builder.setTitle(R.string.delete).setMessage(getString(R.string.deleteDeckConfirmation, getName()))
                         .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                            if (id == null) return;
+                            Integer deckId = generalInfoFragment.getDeckId();
+                            if (deckId == null) return;
 
                             ThisApplication.sendAnalytics(Utils.ACTION_DELETED_CUSTOM_DECK);
-                            CustomDecksDatabase.get(EditCustomDeckActivity.this).deleteDeckAndCards(id, true);
+                            CustomDecksDatabase.get(EditCustomDeckActivity.this).deleteDeckAndCards(deckId, true);
                             onBackPressed();
                         }).setNegativeButton(android.R.string.no, null);
 

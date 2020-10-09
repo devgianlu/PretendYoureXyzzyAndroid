@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -20,7 +21,8 @@
         android:layout_marginBottom="8dp"
         android:justificationMode="inter_word"
         android:text="@string/askOverloadedUsername_desc"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2" />
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2"
+        tools:targetApi="o" />
 
 
     <com.gianlu.commonutils.misc.LoadableContentView

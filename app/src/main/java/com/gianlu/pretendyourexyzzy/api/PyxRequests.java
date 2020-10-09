@@ -167,10 +167,10 @@ public final class PyxRequests {
     }
 
     @NonNull
-    public static PyxRequest removeCrCastDeck(int gid, int id) {
+    public static PyxRequest removeCrCastDeck(int gid, @NonNull String code) {
         return new PyxRequest(Pyx.Op.REMOVE_CR_CAST_CARD_SET,
                 new PyxRequest.Param("gid", String.valueOf(gid)),
-                new PyxRequest.Param("cci", String.valueOf(id)));
+                new PyxRequest.Param("cci", code));
     }
 
     //endregion

@@ -7,6 +7,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.gianlu.commonutils.misc.NamedThreadFactory;
+
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -27,7 +29,7 @@ public final class ServersChecker {
     private static final int TIMEOUT = 5; // sec
     private static final String TAG = ServersChecker.class.getSimpleName();
     private final OkHttpClient client;
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final ExecutorService executorService = Executors.newCachedThreadPool(new NamedThreadFactory("servers-checker-"));
     private final Handler handler;
 
     public ServersChecker() {

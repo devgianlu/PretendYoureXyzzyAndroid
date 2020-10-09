@@ -30,13 +30,13 @@ public final class CrCastDeck extends BasicCustomDeck {
     private final int blacksCount;
     private Cards cards;
 
-    private CrCastDeck(@NonNull JSONObject obj, @NonNull String watermark, long lastUsed) throws JSONException, ParseException {
+    private CrCastDeck(@NonNull JSONObject obj, @NonNull String watermark, long lastUsed) throws JSONException {
         super(obj.getString("name"), watermark, null, lastUsed, -1);
         desc = obj.getString("description");
-        lang = obj.getString("decklang");
+        lang = obj.getString("language");
         state = CrCastApi.State.parse(obj.getInt("state"));
         privateDeck = obj.getBoolean("private");
-        created = CrCastApi.getApiDateTimeFormat().parse(obj.getString("createdate")).getTime();
+        created = CrCastApi.parseApiDate(obj.getString("createdate"));
         blacksCount = obj.getInt("blackCount");
         whitesCount = obj.getInt("whiteCount");
 

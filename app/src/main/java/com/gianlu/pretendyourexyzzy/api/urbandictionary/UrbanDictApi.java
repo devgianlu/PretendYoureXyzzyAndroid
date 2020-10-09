@@ -10,6 +10,7 @@ import androidx.annotation.UiThread;
 
 import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
+import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.pretendyourexyzzy.api.StatusCodeException;
 import com.gianlu.pretendyourexyzzy.api.UserAgentInterceptor;
 
@@ -41,7 +42,7 @@ public class UrbanDictApi {
     private final LifecycleAwareHandler handler;
 
     private UrbanDictApi() {
-        executorService = Executors.newSingleThreadExecutor();
+        executorService = Executors.newSingleThreadExecutor(new NamedThreadFactory("urban-dict-"));
         client = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
         handler = new LifecycleAwareHandler(new Handler(Looper.getMainLooper()));
     }

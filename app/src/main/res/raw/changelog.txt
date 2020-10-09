@@ -1,11 +1,11 @@
-<b>Overloaded upgrade</b>
-This update includes a lot of new features to provide a better gaming experience:
-- Private chat (end-to-end encrypted)
-- User profile
-- Connect Google Play Games for stats, leaderboards and achievements
-- Synchronize custom decks and starred cards to never lose them
-- View custom decks and starred cards of other users
-- Make friends on the server to chat and share decks and cards
-- More to come...
+<b>Purchase protection</b>
+In order to protect our customers, subscriptions will not be renewed if the user doesn't open the application in the days the renew is happening.
 
-This can be all available to you for a small monthly subscription.
+<b>Free trial for everyone!</b>
+We have enabled a trial period of 3 days for everyone! Enjoy the features of the Overloaded expansion!
+Just to refresh your mind, here's some of the features:
+- Make friends and chat with them privately
+- Create collaborative custom decks for you and your friends
+- Upload images and add them to your custom decks
+- See your friends' starred cards and custom decks
+- Synchronize your decks so that you never lose them

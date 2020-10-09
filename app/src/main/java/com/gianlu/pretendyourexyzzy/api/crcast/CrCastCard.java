@@ -10,22 +10,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public final class CrCastCard extends BaseCard {
-    public final long id;
     public final CrCastApi.State state;
     private final String deckCode;
     private final boolean black;
     private final String text;
     private final int pick;
-    private final int draw;
 
     CrCastCard(@NonNull String deckCode, boolean black, @NonNull JSONObject obj) throws JSONException {
         this.deckCode = deckCode;
         this.black = black;
-        this.id = obj.getLong("id");
         this.text = reformatText(obj.getString("text"), black);
-        this.pick = obj.optInt("pick", -1);
-        this.draw = obj.optInt("draw", -1);
         this.state = CrCastApi.State.parse(obj.getInt("state"));
+        this.pick = text.split("_+", -1).length - 1;
     }
 
     @NonNull
@@ -55,7 +51,7 @@ public final class CrCastCard extends BaseCard {
 
     @Override
     public int numDraw() {
-        return draw;
+        return -1;
     }
 
     @Override

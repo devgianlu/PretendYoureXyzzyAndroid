@@ -369,7 +369,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         if (pyx.config().customDecksEnabled())
             req = PyxRequests.removeCustomDeck(getSetupPayload(), deck.id);
         else if (pyx.config().crCastEnabled())
-            req = PyxRequests.removeCrCastDeck(getSetupPayload(), deck.id);
+            req = PyxRequests.removeCrCastDeck(getSetupPayload(), Integer.toString(-deck.id, 36));
 
         if (req == null)
             return;
@@ -420,7 +420,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         if (OverloadedUtils.isSignedIn())
             ViewCustomDeckActivity.startActivitySearch(requireContext(), deck);
         else
-            DialogUtils.showToast(requireContext(), Toaster.build().message(R.string.cannotSearchDeckWithoutOverloaded));
+            DialogUtils.showToast(requireContext(), Toaster.build().message(R.string.featureOverloadedOnly));
     }
 
     @Override
@@ -431,13 +431,13 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
 
     @Override
     public void onPollMessage(@NonNull PollMessage message) throws JSONException {
-        if (message.event == PollMessage.Event.ADD_CARDSET) {
+        if (message.event == PollMessage.Event.ADD_CARDSET || message.event == PollMessage.Event.ADD_CR_CAST_CARDSET) {
             Deck deck = new Deck(message.obj.getJSONObject("cdi"));
             if (adapter != null) {
                 adapter.add(deck);
                 updateCountString();
             }
-        } else if (message.event == PollMessage.Event.REMOVE_CARDSET) {
+        } else if (message.event == PollMessage.Event.REMOVE_CARDSET || message.event == PollMessage.Event.REMOVE_CR_CAST_CARDSET) {
             Deck deck = new Deck(message.obj.getJSONObject("cdi"));
             if (adapter != null) {
                 adapter.remove(deck);

@@ -7,7 +7,6 @@ import com.gianlu.commonutils.CommonUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
 import java.util.List;
 
 public final class CrCastUser {
@@ -20,14 +19,14 @@ public final class CrCastUser {
     public final long registered;
     public final List<String> favorites;
 
-    CrCastUser(@NonNull JSONObject obj) throws JSONException, ParseException {
+    CrCastUser(@NonNull JSONObject obj) throws JSONException {
         username = obj.getString("username");
         email = obj.getString("email");
         moderator = obj.getBoolean("moderator");
         activated = obj.getBoolean("activated");
         banned = obj.getBoolean("banned");
-        tokenExpiration = CrCastApi.getApiDateTimeFormat().parse(obj.getString("tokenExpiration")).getTime();
-        registered = CrCastApi.getApiDateTimeFormat().parse(obj.getString("registerdate")).getTime();
+        tokenExpiration = CrCastApi.parseApiDate(obj.getString("tokenExpiration"));
+        registered = CrCastApi.parseApiDate(obj.getString("registerdate"));
         favorites = CommonUtils.toStringsList(obj.getJSONArray("favorites"), false);
     }
 }
