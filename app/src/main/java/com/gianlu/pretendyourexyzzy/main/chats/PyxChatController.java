@@ -1,7 +1,5 @@
 package com.gianlu.pretendyourexyzzy.main.chats;
 
-import android.app.Activity;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
@@ -15,6 +13,7 @@ import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
+import com.google.android.gms.tasks.Task;
 
 import java.util.List;
 
@@ -64,7 +63,7 @@ class PyxChatController {
         });
     }
 
-    void send(@NonNull String msg, @Nullable Activity activity, @NonNull SendCallback callback) {
+    void send(@NonNull String msg, @NonNull SendCallback callback) {
         if (pyx == null) throw new IllegalStateException();
 
         boolean emote;
@@ -94,26 +93,19 @@ class PyxChatController {
             wall = false;
         }
 
-        send(msg, emote, wall, activity, new Pyx.OnSuccess() {
-            @Override
-            public void onDone() {
-                callback.onSuccessful();
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                callback.onFailed(ex);
-            }
-        });
+        send(msg, emote, wall)
+                .addOnSuccessListener(aVoid -> callback.onSuccessful())
+                .addOnFailureListener(callback::onFailed);
     }
 
-    private void send(@NonNull String msg, boolean emote, boolean wall, @Nullable Activity activity, @NonNull Pyx.OnSuccess listener) {
+    @NonNull
+    private Task<Void> send(@NonNull String msg, boolean emote, boolean wall) {
         if (gid == -1) {
-            pyx.request(PyxRequests.sendMessage(msg, emote, wall), activity, listener);
             AnalyticsApplication.sendAnalytics(Utils.ACTION_SENT_MSG);
+            return pyx.request(PyxRequests.sendMessage(msg, emote, wall));
         } else {
-            pyx.request(PyxRequests.sendGameMessage(gid, msg, emote), activity, listener);
             AnalyticsApplication.sendAnalytics(Utils.ACTION_SENT_GAME_MSG);
+            return pyx.request(PyxRequests.sendGameMessage(gid, msg, emote));
         }
     }
 

@@ -1,11 +1,8 @@
 package com.gianlu.pretendyourexyzzy.api;
 
-import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -14,8 +11,6 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
-import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
 import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.preferences.json.JsonStoring;
@@ -52,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -71,19 +67,16 @@ public class Pyx implements Closeable {
     protected final static int POLLING_TIMEOUT = 30;
     private static final String TAG = Pyx.class.getSimpleName();
     public final Server server;
-    protected final LifecycleAwareHandler handler;
     protected final OkHttpClient client;
     protected final ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("pyx-"));
 
     Pyx() throws NoServersException {
-        this.handler = new LifecycleAwareHandler(new Handler(Looper.getMainLooper()));
         this.server = Server.lastServer();
         this.client = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
     }
 
-    protected Pyx(Server server, LifecycleAwareHandler handler, OkHttpClient client) {
+    protected Pyx(Server server, OkHttpClient client) {
         this.server = server;
-        this.handler = handler;
         this.client = client;
     }
 
@@ -192,12 +185,26 @@ public class Pyx implements Closeable {
         }
     }
 
-    public final void request(@NonNull PyxRequest request, @Nullable Activity activity, @NonNull OnSuccess listener) {
-        executor.execute(new RequestRunner(request, activity, listener));
+    /**
+     * Makes a request to the server. This request should have no result.
+     *
+     * @param request The {@link PyxRequest}
+     * @return A task resulting to nothing
+     */
+    @NonNull
+    public final Task<Void> request(@NonNull PyxRequest request) {
+        return Tasks.call(executor, () -> {
+            request(request.op, request.params);
+            return null;
+        });
     }
 
-    public final <E> void request(@NonNull PyxRequestWithResult<E> request, @Nullable Activity activity, @NonNull OnResult<E> listener) {
-        executor.execute(new RequestWithResultRunner<>(request, activity, listener));
+    @NonNull
+    public final <E> Task<E> request(@NonNull PyxRequestWithResult<E> request) {
+        return Tasks.call(executor, () -> {
+            PyxResponse resp = request(request.op, request.params);
+            return request.processor.process(resp.resp, resp.obj);
+        });
     }
 
     @NonNull
@@ -288,7 +295,7 @@ public class Pyx implements Closeable {
     }
 
     @NonNull
-    public final Task<GameRound> getGameRound(@NonNull String roundId, @Nullable Activity activity, @NonNull OnResult<GameRound> listener) {
+    public final Task<GameRound> getGameRound(@NonNull String roundId) {
         HttpUrl url = server.gameRound(roundId);
         if (url == null) return Tasks.forException(new MetricsNotSupportedException(server));
 
@@ -303,17 +310,18 @@ public class Pyx implements Closeable {
             FirstLoadedPyx pyx = holder.get(InstanceHolder.Level.FIRST_LOADED);
             return Tasks.forResult(pyx);
         } catch (LevelMismatchException exx) {
-            return Tasks.call(() -> {
+            return Tasks.call(executor, () -> {
                 FirstLoadAndConfig result = firstLoadSync();
-                FirstLoadedPyx pyx = new FirstLoadedPyx(server, handler, client, result);
+                FirstLoadedPyx pyx = new FirstLoadedPyx(server, client, result);
                 holder.set(pyx);
                 return pyx;
             });
         }
     }
 
-    public void recoverCardcastDeck(@NonNull String code, @NonNull Context context, @NonNull OnRecoverResult callback) {
-        executor.execute(new LifecycleAwareRunnable(handler, callback) {
+    @NonNull
+    public Task<File> recoverCardcastDeck(@NonNull String code, @NonNull Context context) {
+        return Tasks.call(executor, new Callable<File>() {
 
             @NonNull
             private JSONObject convertCardObj(@NonNull JSONObject raw) throws JSONException {
@@ -322,21 +330,14 @@ public class Pyx implements Closeable {
             }
 
             @Override
-            public void run() {
+            public File call() throws Exception {
                 try (Response resp = client.newCall(new Request.Builder().url("https://pretendyoure.xyz/zy/metrics/deck/" + code).build()).execute()) {
-                    if (resp.code() == 404) {
-                        post(callback::notFound);
-                        return;
-                    } else if (resp.code() != 200) {
-                        post(() -> callback.onException(new StatusCodeException(resp)));
-                        return;
-                    }
+                    if (resp.code() != 200)
+                        throw new StatusCodeException(resp);
 
                     ResponseBody body = resp.body();
-                    if (body == null) {
-                        post(() -> callback.onException(new Exception("No response body.")));
-                        return;
-                    }
+                    if (body == null)
+                        throw new IllegalArgumentException("No response body.");
 
                     JSONObject rawObj = new JSONObject(body.string());
 
@@ -359,9 +360,7 @@ public class Pyx implements Closeable {
                         out.write(obj.toString().getBytes());
                     }
 
-                    post(() -> callback.onDone(tmpFile));
-                } catch (IOException | JSONException ex) {
-                    post(() -> callback.onException(ex));
+                    return tmpFile;
                 }
             }
         });
@@ -420,28 +419,6 @@ public class Pyx implements Closeable {
     }
 
     @UiThread
-    public interface OnSuccess {
-        void onDone();
-
-        void onException(@NonNull Exception ex);
-    }
-
-    public interface OnRecoverResult {
-        void onDone(@NonNull File tmpFile);
-
-        void notFound();
-
-        void onException(@NonNull Exception ex);
-    }
-
-    @UiThread
-    public interface OnResult<E> {
-        void onDone(@NonNull E result);
-
-        void onException(@NonNull Exception ex);
-    }
-
-    @UiThread
     public interface OnEventListener {
         void onPollMessage(@NonNull PollMessage message) throws JSONException;
     }
@@ -454,7 +431,7 @@ public class Pyx implements Closeable {
     }
 
     public static class MetricsNotSupportedException extends Exception {
-        MetricsNotSupportedException(Server server) {
+        MetricsNotSupportedException(@NonNull Server server) {
             super("Metrics aren't supported on this server: " + server.name);
         }
     }
@@ -623,12 +600,23 @@ public class Pyx implements Closeable {
         }
 
         @NonNull
+        public static Server pickBestServer(@NonNull List<Server> servers) {
+            if (servers.isEmpty()) throw new IllegalArgumentException();
+
+            for (Server server : servers)
+                if (server.url.host().contains("pretendyoure.xyz")) // These servers are usually more populated
+                    return server;
+
+            return servers.get(0);
+        }
+
+        @NonNull
         public static Server lastServer() throws NoServersException {
             String name = Prefs.getString(PK.LAST_SERVER, null);
 
             List<Server> apiServers = loadServers(PK.API_SERVERS);
             if (name == null) {
-                if (!apiServers.isEmpty()) return apiServers.get(0);
+                if (!apiServers.isEmpty()) return pickBestServer(apiServers);
                 throw new NoServersException();
             }
 
@@ -648,14 +636,14 @@ public class Pyx implements Closeable {
             }
 
             if (server == null) {
-                if (!apiServers.isEmpty()) return apiServers.get(0);
+                if (!apiServers.isEmpty()) return pickBestServer(apiServers);
                 throw new NoServersException();
             }
 
             return server;
         }
 
-        public static void addUserServer(Server server) throws JSONException {
+        public static void addUserServer(@NonNull Server server) throws JSONException {
             if (!server.isEditable()) return;
 
             JSONArray array = JsonStoring.intoPrefs().getJsonArray(PK.USER_SERVERS);
@@ -669,7 +657,7 @@ public class Pyx implements Closeable {
             JsonStoring.intoPrefs().putJsonArray(PK.USER_SERVERS, array);
         }
 
-        public static void removeUserServer(Server server) {
+        public static void removeUserServer(@NonNull Server server) {
             if (!server.isEditable()) return;
 
             try {
@@ -707,6 +695,13 @@ public class Pyx implements Closeable {
                     return server;
 
             return null;
+        }
+
+        public static void setLastServer(@NonNull Server server) {
+            Pyx.invalidate();
+            Prefs.putString(PK.LAST_SERVER, server.name);
+
+            Log.d(TAG, "Set last server to " + server.url);
         }
 
         @NonNull
@@ -863,49 +858,6 @@ public class Pyx implements Closeable {
                 obj.put("pL-min", playersMin);
                 obj.put("pL-max", playersMax);
                 return obj;
-            }
-        }
-    }
-
-    private class RequestRunner extends LifecycleAwareRunnable {
-        private final PyxRequest request;
-        private final OnSuccess listener;
-
-        RequestRunner(PyxRequest request, @Nullable Activity activity, @NonNull OnSuccess listener) {
-            super(handler, activity == null ? listener : activity);
-            this.request = request;
-            this.listener = listener;
-        }
-
-        @Override
-        public void run() {
-            try {
-                request(request.op, request.params);
-                post(listener::onDone);
-            } catch (IOException | JSONException | PyxException ex) {
-                post(() -> listener.onException(ex));
-            }
-        }
-    }
-
-    private class RequestWithResultRunner<E> extends LifecycleAwareRunnable {
-        private final PyxRequestWithResult<E> request;
-        private final OnResult<E> listener;
-
-        RequestWithResultRunner(PyxRequestWithResult<E> request, @Nullable Activity activity, @NonNull OnResult<E> listener) {
-            super(handler, activity == null ? listener : activity);
-            this.request = request;
-            this.listener = listener;
-        }
-
-        @Override
-        public void run() {
-            try {
-                PyxResponse resp = request(request.op, request.params);
-                E result = request.processor.process(resp.resp, resp.obj);
-                post(() -> listener.onDone(result));
-            } catch (IOException | JSONException | PyxException ex) {
-                post(() -> listener.onException(ex));
             }
         }
     }

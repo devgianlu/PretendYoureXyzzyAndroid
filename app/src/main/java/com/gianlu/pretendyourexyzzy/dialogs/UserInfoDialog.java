@@ -20,7 +20,6 @@ import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
@@ -36,20 +35,16 @@ public class UserInfoDialog extends DialogFragment {
 
     public static void loadAndShow(@NonNull RegisteredPyx pyx, @NonNull FragmentActivity activity, @NonNull String name) {
         DialogUtils.showDialog(activity, DialogUtils.progressDialog(activity, R.string.loading));
-        pyx.request(PyxRequests.whois(name), activity, new Pyx.OnResult<WhoisResult>() {
-            @Override
-            public void onDone(@NonNull WhoisResult result) {
-                DialogUtils.dismissDialog(activity);
-                DialogUtils.showDialog(activity, UserInfoDialog.get(result), null);
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                DialogUtils.dismissDialog(activity);
-                Log.e(TAG, "Failed whois.", ex);
-                Toaster.with(activity).message(R.string.failedLoading).show();
-            }
-        });
+        pyx.request(PyxRequests.whois(name))
+                .addOnSuccessListener(activity, result -> {
+                    DialogUtils.dismissDialog(activity);
+                    DialogUtils.showDialog(activity, UserInfoDialog.get(result), null);
+                })
+                .addOnFailureListener(activity, ex -> {
+                    DialogUtils.dismissDialog(activity);
+                    Log.e(TAG, "Failed whois.", ex);
+                    Toaster.with(activity).message(R.string.failedLoading).show();
+                });
     }
 
     @NonNull

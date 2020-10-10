@@ -40,7 +40,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<GameRound> {
+public class GameRoundDialog extends DialogFragment {
     private static final String TAG = GameRoundDialog.class.getSimpleName();
     private GameRoundSummary summary;
     private ImageView image;
@@ -109,7 +109,22 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
             return layout;
         }
 
-        pyx.getGameRound(id, getActivity(), this);
+        pyx.getGameRound(id)
+                .addOnSuccessListener(requireActivity(), result -> {
+                    round = result;
+                    generate();
+
+                    loading.setVisibility(View.GONE);
+                    image.setVisibility(View.VISIBLE);
+                    rotate.setEnabled(true);
+                    share.setEnabled(true);
+                    save.setEnabled(true);
+                })
+                .addOnFailureListener(requireActivity(), ex -> {
+                    Log.e(TAG, "Failed loading round.", ex);
+                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
+                    dismissAllowingStateLoss();
+                });
 
         return layout;
     }
@@ -184,24 +199,5 @@ public class GameRoundDialog extends DialogFragment implements Pyx.OnResult<Game
 
         summary = new GameRoundSummary(getContext(), round, rotate.isChecked());
         image.setImageBitmap(summary.getBitmap());
-    }
-
-    @Override
-    public void onDone(@NonNull GameRound result) {
-        round = result;
-        generate();
-
-        loading.setVisibility(View.GONE);
-        image.setVisibility(View.VISIBLE);
-        rotate.setEnabled(true);
-        share.setEnabled(true);
-        save.setEnabled(true);
-    }
-
-    @Override
-    public void onException(@NonNull Exception ex) {
-        Log.e(TAG, "Failed loading round.", ex);
-        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
-        dismissAllowingStateLoss();
     }
 }

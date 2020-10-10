@@ -56,7 +56,7 @@ import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
 import xyz.gianlu.pyxoverloaded.callback.UsersCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
-public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<List<Name>>, MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, OverloadedApi.EventListener, Pyx.OnEventListener {
+public class NamesFragment extends FragmentWithDialog implements MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, OverloadedApi.EventListener, Pyx.OnEventListener {
     private static final String TAG = NamesFragment.class.getSimpleName();
     private final List<String> overloadedUsers = new ArrayList<>();
     private RecyclerMessageView rmv;
@@ -142,11 +142,16 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
 
         rmv.enableSwipeRefresh(() -> {
             adapter = null;
-            pyx.request(PyxRequests.getNamesList(), null, NamesFragment.this);
+            pyx.request(PyxRequests.getNamesList())
+                    .addOnSuccessListener(this::loadedNames)
+                    .addOnFailureListener(this::failedLoadingNames);
         }, R.color.colorAccent);
 
         pyx.polling().addListener(this);
-        pyx.request(PyxRequests.getNamesList(), null, this);
+        pyx.request(PyxRequests.getNamesList())
+                .addOnSuccessListener(this::loadedNames)
+                .addOnFailureListener(this::failedLoadingNames);
+
         if (OverloadedUtils.isSignedIn()) {
             OverloadedApi.get().addEventListener(this);
             OverloadedApi.get().listUsers(pyx.server.url, getActivity(), new UsersCallback() {
@@ -177,10 +182,7 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
         setRetainInstance(true);
     }
 
-    @Override
-    public void onDone(@NonNull List<Name> result) {
-        if (!isAdded()) return;
-
+    private void loadedNames(@NonNull List<Name> result) {
         adapter = new NamesAdapter(getContext(), result, overloadedUsers);
         rmv.loadListData(adapter);
 
@@ -191,8 +193,7 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
         updateActivityTitle();
     }
 
-    @Override
-    public void onException(@NonNull Exception ex) {
+    private void failedLoadingNames(@NonNull Exception ex) {
         Log.e(TAG, "Failed loading names.", ex);
         if (!PyxException.solveNotRegistered(getContext(), ex))
             rmv.showError(R.string.failedLoading_reason, ex.getMessage());
@@ -221,7 +222,9 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
                 break;
             case GAME_LIST_REFRESH:
                 adapter = null;
-                pyx.request(PyxRequests.getNamesList(), null, NamesFragment.this);
+                pyx.request(PyxRequests.getNamesList())
+                        .addOnSuccessListener(this::loadedNames)
+                        .addOnFailureListener(this::failedLoadingNames);
                 break;
         }
     }
@@ -274,7 +277,7 @@ public class NamesFragment extends FragmentWithDialog implements Pyx.OnResult<Li
             ((SuperTextView) holder.itemView).setHtml(name.sigil() == Name.Sigil.NORMAL_USER ? name.withSigil() : (SuperTextView.makeBold(name.sigil().symbol()) + name.noSigil()));
             holder.itemView.setOnClickListener(v -> showPopup(holder.itemView.getContext(), holder.itemView, name.noSigil()));
             if (overloadedUsers.contains(name.noSigil()))
-                CommonUtils.setTextColor((TextView) holder.itemView, R.color.appColorBright);
+                CommonUtils.setTextColor((TextView) holder.itemView, R.color.appColor_500);
             else
                 CommonUtils.setTextColorFromAttr((TextView) holder.itemView, android.R.attr.textColorSecondary);
         }

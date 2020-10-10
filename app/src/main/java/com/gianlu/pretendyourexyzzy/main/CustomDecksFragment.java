@@ -35,6 +35,7 @@ import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.api.StatusCodeException;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastApi;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
@@ -114,7 +115,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
 
         if (OverloadedUtils.isSignedIn() || CrCastApi.hasCredentials())
-            rmv.enableSwipeRefresh(this::refresh, R.color.appColorBright);
+            rmv.enableSwipeRefresh(this::refresh, R.color.appColor_500);
         else
             rmv.disableSwipeRefresh();
 
@@ -192,26 +193,21 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
 
     private void recoverCardcastDeck(@NonNull String code) throws LevelMismatchException {
         showProgress(R.string.loading);
-        Pyx.get().recoverCardcastDeck(code, requireContext(), new Pyx.OnRecoverResult() {
-            @Override
-            public void onDone(@NonNull File tmpFile) {
-                dismissDialog();
-                EditCustomDeckActivity.startActivityImport(requireContext(), false, tmpFile);
-            }
+        Pyx.get().recoverCardcastDeck(code, requireContext())
+                .addOnSuccessListener(tmpFile -> {
+                    dismissDialog();
+                    EditCustomDeckActivity.startActivityImport(requireContext(), false, tmpFile);
+                })
+                .addOnFailureListener(ex -> {
+                    dismissDialog();
 
-            @Override
-            public void notFound() {
-                dismissDialog();
-                showToast(Toaster.build().message(R.string.recoverDeckNotFound));
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                Log.e(TAG, "Cannot recover deck.", ex);
-                showToast(Toaster.build().message(R.string.failedRecoveringCardcastDeck));
-                dismissDialog();
-            }
-        });
+                    if (ex instanceof StatusCodeException && ((StatusCodeException) ex).code == 404) {
+                        showToast(Toaster.build().message(R.string.recoverDeckNotFound));
+                    } else {
+                        Log.e(TAG, "Cannot recover deck.", ex);
+                        showToast(Toaster.build().message(R.string.failedRecoveringCardcastDeck));
+                    }
+                });
     }
 
     private void refresh() {

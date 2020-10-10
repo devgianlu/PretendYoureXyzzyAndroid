@@ -35,7 +35,6 @@ import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.adapters.PlayersAdapter;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.NameValuePair;
-import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
@@ -116,7 +115,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements PlayersAd
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
         MenuItem lastRound = menu.findItem(R.id.ongoingGame_lastRound);
         if (lastRound != null)
             lastRound.setVisible(manager != null && manager.getLastRoundMetricsId() != null);
@@ -127,7 +126,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements PlayersAd
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.ongoing_game, menu);
     }
 
@@ -135,20 +134,15 @@ public class OngoingGameFragment extends FragmentWithDialog implements PlayersAd
         if (pyx == null)
             return;
 
-        pyx.request(PyxRequests.leaveGame(perm.gid), getActivity(), new Pyx.OnSuccess() {
-            @Override
-            public void onDone() {
+        pyx.request(PyxRequests.leaveGame(perm.gid))
+                .addOnSuccessListener(aVoid -> {
+                    if (onLeftGame != null) onLeftGame.onLeftGame();
+                }).addOnFailureListener(ex -> {
+            if (ex instanceof PyxException && (((PyxException) ex).errorCode.equals("nitg") || ((PyxException) ex).errorCode.equals("ig"))) {
                 if (onLeftGame != null) onLeftGame.onLeftGame();
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                if (ex instanceof PyxException && (((PyxException) ex).errorCode.equals("nitg") || ((PyxException) ex).errorCode.equals("ig"))) {
-                    onDone();
-                } else {
-                    Log.e(TAG, "Failed leaving game.", ex);
-                    showToast(Toaster.build().message(R.string.failedLeaving));
-                }
+            } else {
+                Log.e(TAG, "Failed leaving game.", ex);
+                showToast(Toaster.build().message(R.string.failedLeaving));
             }
         });
     }

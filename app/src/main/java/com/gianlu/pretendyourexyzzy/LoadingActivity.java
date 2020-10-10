@@ -35,7 +35,6 @@ import com.gianlu.pretendyourexyzzy.api.NameValuePair;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxDiscoveryApi;
 import com.gianlu.pretendyourexyzzy.api.PyxException;
-import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.overloaded.AskUsernameDialog;
@@ -118,6 +117,9 @@ public class LoadingActivity extends ActivityWithDialog implements TutorialManag
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
             return;
         }
+
+        startActivity(new Intent(this, OneTimeLoginActivity.class));
+        if (true) return;
 
         Button preferences = findViewById(R.id.loading_preferences);
         preferences.setOnClickListener(v -> startActivity(new Intent(LoadingActivity.this, PreferenceActivity.class)));
@@ -311,52 +313,48 @@ public class LoadingActivity extends ActivityWithDialog implements TutorialManag
             if (billingHelper.getStatus() == Status.SIGNED_IN && !overloadedToggle.isChecked() && nick.equals(OverloadedApi.get().username()))
                 overloadedToggle.setChecked(true);
 
-            pyx.register(nick, idCode, this, new Pyx.OnResult<RegisteredPyx>() {
-                @Override
-                public void onDone(@NonNull RegisteredPyx result) {
-                    Prefs.putString(PK.LAST_NICKNAME, result.user().nickname);
-                    Prefs.putString(PK.LAST_ID_CODE, idCode);
-                    goToMain();
-                }
+            pyx.register(nick, idCode)
+                    .addOnSuccessListener(this, result -> {
+                        Prefs.putString(PK.LAST_NICKNAME, result.user().nickname);
+                        Prefs.putString(PK.LAST_ID_CODE, idCode);
+                        goToMain();
+                    })
+                    .addOnFailureListener(this, ex -> {
+                        Log.e(TAG, "Failed registering on server.", ex);
 
-                @Override
-                public void onException(@NonNull Exception ex) {
-                    Log.e(TAG, "Failed registering on server.", ex);
+                        toggleLoading(false);
 
-                    toggleLoading(false);
-
-                    if (ex instanceof PyxException) {
-                        switch (((PyxException) ex).errorCode) {
-                            case "rn":
-                                registerNickname.setError(getString(R.string.reservedNickname));
-                                return;
-                            case "in":
-                                registerNickname.setError(getString(R.string.invalidNickname));
-                                return;
-                            case "niu":
-                                if (((PyxException) ex).hadException(SocketTimeoutException.class) || ((PyxException) ex).hadException(SSLException.class)
-                                        || ((PyxException) ex).hadException(ConnectException.class)) {
-                                    Log.w(TAG, "Nickname already in use probably caused by network. Will try to first load.");
-                                    discoveryApi.firstLoad(LoadingActivity.this)
-                                            .addOnSuccessListener(LoadingActivity.this, LoadingActivity.this::doneFirstLoad)
-                                            .addOnFailureListener(LoadingActivity.this, LoadingActivity.this::failedFirstLoad);
-                                } else {
-                                    registerNickname.setError(getString(R.string.alreadyUsedNickname));
-                                }
-                                return;
-                            case "tmu":
-                                registerNickname.setError(getString(R.string.tooManyUsers));
-                                return;
-                            case "iid":
-                                registerIdCode.setError(getString(R.string.invalidIdCode));
-                                return;
+                        if (ex instanceof PyxException) {
+                            switch (((PyxException) ex).errorCode) {
+                                case "rn":
+                                    registerNickname.setError(getString(R.string.reservedNickname));
+                                    return;
+                                case "in":
+                                    registerNickname.setError(getString(R.string.invalidNickname));
+                                    return;
+                                case "niu":
+                                    if (((PyxException) ex).hadException(SocketTimeoutException.class) || ((PyxException) ex).hadException(SSLException.class)
+                                            || ((PyxException) ex).hadException(ConnectException.class)) {
+                                        Log.w(TAG, "Nickname already in use probably caused by network. Will try to first load.");
+                                        discoveryApi.firstLoad(LoadingActivity.this)
+                                                .addOnSuccessListener(LoadingActivity.this, LoadingActivity.this::doneFirstLoad)
+                                                .addOnFailureListener(LoadingActivity.this, LoadingActivity.this::failedFirstLoad);
+                                    } else {
+                                        registerNickname.setError(getString(R.string.alreadyUsedNickname));
+                                    }
+                                    return;
+                                case "tmu":
+                                    registerNickname.setError(getString(R.string.tooManyUsers));
+                                    return;
+                                case "iid":
+                                    registerIdCode.setError(getString(R.string.invalidIdCode));
+                                    return;
+                            }
                         }
-                    }
 
-                    Log.e(TAG, "Failed registering user on server.", ex);
-                    Toaster.with(LoadingActivity.this).message(R.string.failedLoading).show();
-                }
-            });
+                        Log.e(TAG, "Failed registering user on server.", ex);
+                        Toaster.with(LoadingActivity.this).message(R.string.failedLoading).show();
+                    });
         });
     }
 

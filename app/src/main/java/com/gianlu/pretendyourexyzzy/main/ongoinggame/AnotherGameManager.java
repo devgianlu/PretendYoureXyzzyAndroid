@@ -21,7 +21,6 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
-import com.gianlu.pretendyourexyzzy.api.models.GameInfoAndCards;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
@@ -301,47 +300,36 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
     }
 
     private void updateGameInfo() {
-        pyx.request(PyxRequests.getGameInfo(gid), null, new Pyx.OnResult<GameInfo>() {
-            @Override
-            public void onDone(@NonNull GameInfo result) {
-                gameData.update(result);
+        pyx.request(PyxRequests.getGameInfo(gid))
+                .addOnSuccessListener(result -> {
+                    gameData.update(result);
 
-                if (gameData.amHost()) {
-                    int players = result.players.size() - 1; // Do not include ourselves
-                    GPGamesHelper.achievementSteps(context, players, GPGamesHelper.ACH_3_PEOPLE_GAME,
-                            GPGamesHelper.ACH_5_PEOPLE_GAME, GPGamesHelper.ACH_10_PEOPLE_GAME);
-                }
+                    if (gameData.amHost()) {
+                        int players = result.players.size() - 1; // Do not include ourselves
+                        GPGamesHelper.achievementSteps(context, players, GPGamesHelper.ACH_3_PEOPLE_GAME,
+                                GPGamesHelper.ACH_5_PEOPLE_GAME, GPGamesHelper.ACH_10_PEOPLE_GAME);
+                    }
 
-                if (gameData.amSpectator() && result.players.isEmpty())
-                    listener.justLeaveGame();
-            }
+                    if (gameData.amSpectator() && result.players.isEmpty())
+                        listener.justLeaveGame();
+                })
+                .addOnFailureListener(ex -> {
+                    Log.e(TAG, "Failed getting game info.", ex);
+                    listener.showToast(Toaster.build().message(R.string.failedLoading));
 
-            @Override
-            public void onException(@NonNull Exception ex) {
-                Log.e(TAG, "Failed getting game info.", ex);
-                listener.showToast(Toaster.build().message(R.string.failedLoading));
-
-                if (ex instanceof PyxException && ((PyxException) ex).errorCode.equals("ig"))
-                    listener.justLeaveGame();
-            }
-        });
+                    if (ex instanceof PyxException && ((PyxException) ex).errorCode.equals("ig"))
+                        listener.justLeaveGame();
+                });
     }
 
     public void begin() {
-        pyx.getGameInfoAndCards(gid, null, new Pyx.OnResult<GameInfoAndCards>() {
-            @Override
-            public void onDone(@NonNull GameInfoAndCards result) {
-                gameData.update(result.info, result.cards, gameLayout);
-                listener.onGameLoaded();
-
-                pyx.polling().addListener(AnotherGameManager.this);
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                listener.onFailedLoadingGame(ex);
-            }
-        });
+        pyx.getGameInfoAndCards(gid)
+                .addOnSuccessListener(result -> {
+                    gameData.update(result.info, result.cards, gameLayout);
+                    listener.onGameLoaded();
+                    pyx.polling().addListener(this);
+                })
+                .addOnFailureListener(listener::onFailedLoadingGame);
     }
 
     @Override
@@ -364,35 +352,21 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
 
     @Override
     public void startGame() {
-        pyx.request(PyxRequests.startGame(gid), null, new Pyx.OnSuccess() {
-            @Override
-            public void onDone() {
-                Toaster.with(context).message(R.string.gameStarted).show();
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                Log.e(TAG, "Failed starting game.", ex);
-                if (!(ex instanceof PyxException) || !handleStartGameException((PyxException) ex))
-                    Toaster.with(context).message(R.string.failedStartGame).show();
-            }
-        });
+        pyx.request(PyxRequests.startGame(gid))
+                .addOnSuccessListener(aVoid -> Toaster.with(context).message(R.string.gameStarted).show())
+                .addOnFailureListener(ex -> {
+                    Log.e(TAG, "Failed starting game.", ex);
+                    if (!(ex instanceof PyxException) || !handleStartGameException((PyxException) ex))
+                        Toaster.with(context).message(R.string.failedStartGame).show();
+                });
     }
 
     @Override
     public void refreshGameInfo() {
         Log.i(TAG, "Refreshing game info and cards because of timeout.");
-        pyx.getGameInfoAndCards(gid, null, new Pyx.OnResult<GameInfoAndCards>() {
-            @Override
-            public void onDone(@NonNull GameInfoAndCards result) {
-                gameData.update(result.info, result.cards, gameLayout);
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                Log.e(TAG, "Failed refreshing game info and cards.", ex);
-            }
-        });
+        pyx.getGameInfoAndCards(gid)
+                .addOnSuccessListener(result -> gameData.update(result.info, result.cards, gameLayout))
+                .addOnFailureListener(ex -> Log.e(TAG, "Failed refreshing game info and cards.", ex));
     }
 
     /**
@@ -417,61 +391,53 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
 
     private void judgeCardInternal(@NonNull GameCard card) {
         listener.showProgress(R.string.loading);
-        pyx.request(PyxRequests.judgeCard(gid, card.id), null, new Pyx.OnSuccess() {
-            @Override
-            public void onDone() {
-                ThisApplication.sendAnalytics(Utils.ACTION_JUDGE_CARD);
-                GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_ROUNDS_JUDGED);
-                listener.dismissDialog();
-            }
+        pyx.request(PyxRequests.judgeCard(gid, card.id))
+                .addOnSuccessListener(aVoid -> {
+                    ThisApplication.sendAnalytics(Utils.ACTION_JUDGE_CARD);
+                    GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_ROUNDS_JUDGED);
+                    listener.dismissDialog();
+                })
+                .addOnFailureListener(ex -> {
+                    listener.dismissDialog();
 
-            @Override
-            public void onException(@NonNull Exception ex) {
-                listener.dismissDialog();
-
-                if (ex instanceof PyxException) {
-                    if (((PyxException) ex).errorCode.equals("nj")) {
-                        event(UiEvent.NOT_YOUR_TURN);
-                        return;
+                    if (ex instanceof PyxException) {
+                        if (((PyxException) ex).errorCode.equals("nj")) {
+                            event(UiEvent.NOT_YOUR_TURN);
+                            return;
+                        }
                     }
-                }
 
-                Log.e(TAG, "Failed judging.", ex);
-                listener.showToast(Toaster.build().message(R.string.failedJudging));
-            }
-        });
+                    Log.e(TAG, "Failed judging.", ex);
+                    listener.showToast(Toaster.build().message(R.string.failedJudging));
+                });
     }
 
     private void playCardInternal(@NonNull GameCard card, @Nullable String text) {
         listener.showProgress(R.string.loading);
-        pyx.request(PyxRequests.playCard(gid, card.id, text), null, new Pyx.OnSuccess() {
-            @Override
-            public void onDone() {
-                gameLayout.removeHand(card);
-                gameLayout.addTable(card, gameLayout.blackCard());
+        pyx.request(PyxRequests.playCard(gid, card.id, text))
+                .addOnSuccessListener(aVoid -> {
+                    gameLayout.removeHand(card);
+                    gameLayout.addTable(card, gameLayout.blackCard());
 
-                ThisApplication.sendAnalytics(text == null ? Utils.ACTION_PLAY_CARD : Utils.ACTION_PLAY_CUSTOM_CARD);
-                GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_CARDS_PLAYED);
-                listener.dismissDialog();
-            }
+                    ThisApplication.sendAnalytics(text == null ? Utils.ACTION_PLAY_CARD : Utils.ACTION_PLAY_CUSTOM_CARD);
+                    GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_CARDS_PLAYED);
+                    listener.dismissDialog();
+                })
+                .addOnFailureListener(ex -> {
+                    listener.dismissDialog();
 
-            @Override
-            public void onException(@NonNull Exception ex) {
-                listener.dismissDialog();
-
-                if (ex instanceof PyxException) {
-                    if (((PyxException) ex).errorCode.equals("nyt")) {
-                        event(UiEvent.NOT_YOUR_TURN);
-                        return;
-                    } else if (((PyxException) ex).errorCode.equals("dnhc")) {
-                        gameLayout.removeHand(card);
+                    if (ex instanceof PyxException) {
+                        if (((PyxException) ex).errorCode.equals("nyt")) {
+                            event(UiEvent.NOT_YOUR_TURN);
+                            return;
+                        } else if (((PyxException) ex).errorCode.equals("dnhc")) {
+                            gameLayout.removeHand(card);
+                        }
                     }
-                }
 
-                Log.e(TAG, "Failed playing.", ex);
-                listener.showToast(Toaster.build().message(R.string.failedPlayingCard));
-            }
-        });
+                    Log.e(TAG, "Failed playing.", ex);
+                    listener.showToast(Toaster.build().message(R.string.failedPlayingCard));
+                });
     }
 
     public boolean isStatus(@NonNull Game.Status status) {

@@ -104,7 +104,7 @@ public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.L
             if (msg.isEmpty() || controller == null) return;
 
             input.setEnabled(false);
-            controller.send(msg, getActivity(), new PyxChatController.SendCallback() {
+            controller.send(msg, new PyxChatController.SendCallback() {
                 @Override
                 public void onSuccessful() {
                     CommonUtils.setText(input, null);

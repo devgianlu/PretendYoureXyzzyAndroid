@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent">
 
     <LinearLayout
@@ -67,6 +68,6 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:src="@drawable/baseline_done_24"
-        android:tint="?colorOnPrimary"
+        app:tint="?colorOnPrimary"
         android:visibility="gone" />
 </FrameLayout>

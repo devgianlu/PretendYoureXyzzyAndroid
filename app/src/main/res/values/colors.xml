@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="appColorBright">#00B0FF</color>
+    <color name="appColor_100">#CCEFFF</color>
+    <color name="appColor_200">#99DFFF</color>
+    <color name="appColor_300">#66D0FF</color>
+    <color name="appColor_400">#33C0FF</color>
+    <color name="appColor_500">#00B0FF</color>
+    <color name="appColor_600">#008DCC</color>
+    <color name="appColor_700">#006A99</color>
+    <color name="appColor_800">#004666</color>
+    <color name="appColor_900">#002333</color>
 
-    <color name="colorPrimary">#212121</color>
-    <color name="colorPrimaryVariant">#000000</color>
+    <color name="colorPrimary">@color/appColor_500</color>
+    <color name="colorPrimaryVariant">@color/appColor_700</color>
     <color name="colorOnPrimary">@color/white</color>
 
-    <color name="colorSecondary">#00B0FF</color>
-    <color name="colorSecondaryVariant">#065ba5</color>
+    <color name="colorSecondary">@color/appColor_800</color>
+    <color name="colorSecondaryVariant">@color/appColor_900</color>
     <color name="colorOnSecondary">@color/white</color>
 
     <color name="urbanPrimary">#134FE6</color>

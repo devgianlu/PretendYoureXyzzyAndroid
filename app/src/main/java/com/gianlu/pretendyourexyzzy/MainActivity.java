@@ -28,7 +28,6 @@ import com.gianlu.commonutils.logs.LogsHelper;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
-import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxChatHelper;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
@@ -454,20 +453,16 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     public void changeGameOptions(int gid, @NonNull Game.Options options) {
         try {
             showProgress(R.string.loading);
-            pyx.request(PyxRequests.changeGameOptions(gid, options), this, new Pyx.OnSuccess() {
-                @Override
-                public void onDone() {
-                    dismissDialog();
-                    Toaster.with(MainActivity.this).message(R.string.optionsChanged).show();
-                }
-
-                @Override
-                public void onException(@NonNull Exception ex) {
-                    dismissDialog();
-                    Log.e(TAG, "Failed changing game options.", ex);
-                    Toaster.with(MainActivity.this).message(R.string.failedChangingOptions).show();
-                }
-            });
+            pyx.request(PyxRequests.changeGameOptions(gid, options))
+                    .addOnSuccessListener(aVoid -> {
+                        dismissDialog();
+                        Toaster.with(MainActivity.this).message(R.string.optionsChanged).show();
+                    })
+                    .addOnFailureListener(ex -> {
+                        dismissDialog();
+                        Log.e(TAG, "Failed changing game options.", ex);
+                        Toaster.with(MainActivity.this).message(R.string.failedChangingOptions).show();
+                    });
         } catch (JSONException ex) {
             dismissDialog();
             Log.e(TAG, "Failed parsing game options.", ex);

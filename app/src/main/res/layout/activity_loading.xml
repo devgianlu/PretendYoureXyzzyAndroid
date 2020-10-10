@@ -74,7 +74,7 @@
                         android:layout_height="42dp"
                         android:background="?selectableItemBackgroundBorderless"
                         android:src="@drawable/baseline_swap_horiz_24"
-                        android:tint="?colorOnSurface" />
+                        app:tint="?colorOnSurface" />
                 </LinearLayout>
             </LinearLayout>
         </com.facebook.shimmer.ShimmerFrameLayout>

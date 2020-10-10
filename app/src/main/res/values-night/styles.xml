@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <!--
     <style name="AppTheme.FullDark" parent="AppTheme">
         <item name="android:statusBarColor">?colorSurface</item>
     </style>
@@ -15,4 +15,5 @@
         <item name="android:textColor">@color/white</item>
         <item name="android:textCursorDrawable">@null</item>
     </style>
+    -->
 </resources>
