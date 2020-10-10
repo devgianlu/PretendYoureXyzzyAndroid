@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/gamesFragment_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <ImageButton
+            android:id="@+id/gamesFragment_createGame"
+            style="@style/ToolbarIconStyle"
+            android:src="@drawable/baseline_add_24" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/gamesFragment_chat"
+            style="@style/ToolbarIconStyle"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_chat_white_24" />
+
+        <ImageButton
+            android:id="@+id/gamesFragment_menu"
+            style="@style/ToolbarIconStyle"
+            android:src="@drawable/ic_dots_vertical_white_24" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="@string/server"
+            android:textAppearance="@style/TextAppearance.Medium"
+            android:textColor="#000000"
+            android:textSize="24sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input_text"
+            android:elevation="8dp"
+            android:orientation="horizontal"
+            android:outlineAmbientShadowColor="#CCEFFF"
+            android:outlineSpotShadowColor="#CCEFFF"
+            tools:targetApi="p">
+
+            <TextView
+                android:id="@+id/gamesFragment_server"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.Medium"
+                android:textSize="14sp" />
+
+            <ImageButton
+                android:id="@+id/gamesFragment_changeServer"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="4dp"
+                android:background="?selectableItemBackgroundBorderless"
+                android:src="@drawable/baseline_swap_horiz_24"
+                android:tint="#000000" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="21dp"
+        android:background="@drawable/bg_games_container"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingTop="21dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="21dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/games"
+                android:textAppearance="@style/TextAppearance.Medium"
+                android:textColor="@color/white"
+                android:textSize="24sp" />
+
+            <ImageButton
+                android:id="@+id/gamesFragment_filterLocked"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="@drawable/bg_circle_white"
+                android:padding="4dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/baseline_lock_open_24"
+                android:tint="#000000" />
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/gamesFragment_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+</LinearLayout>

@@ -66,14 +66,14 @@
     <string name="games">Spellen</string>
     <string name="gameChat">Spel chat</string>
     <string name="failedLoading_reason">Laden mislukt: %s</string>
-    <string name="players"><![CDATA[<b>Spelers:</b>]]> %1$d/%2$d</string>
-    <string name="spectators"><![CDATA[<b>Toeschouwers:</b>]]> %1$d/%2$d</string>
+    <string name="players">>Spelers: %1$d / %2$d</string>
+    <string name="spectators">Toeschouwers: %1$d / %2$d</string>
     <string name="noMessages">Er zijn geen berichten.</string>
     <string name="failedSendMessage">Bericht versturen mislukt!</string>
     <string name="logout">Afmelden</string>
     <string name="spectate">Toeschouwen</string>
     <string name="join">Deelnemen</string>
-    <string name="goal"><![CDATA[<b>Doel:</b>]]> %d</string>
+    <string name="goal">Doel: %d</string>
     <string name="playersLabel">Spelers</string>
     <string name="gamePassword">Voer wachtwoord in</string>
     <string name="failedJoiningGame">Kan niet deelnemen aan het spel!</string>

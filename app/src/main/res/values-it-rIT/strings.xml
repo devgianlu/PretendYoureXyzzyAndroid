@@ -66,14 +66,14 @@
     <string name="games">Giochi</string>
     <string name="gameChat">Chat del gioco</string>
     <string name="failedLoading_reason">Impossibile caricare: %s</string>
-    <string name="players"><![CDATA[<b>Giocatori:</b>]]> %1$d/%2$d</string>
-    <string name="spectators"><![CDATA[<b>Spettatori:</b>]]> %1$d/%2$d</string>
+    <string name="players">Giocatori: %1$d / %2$d</string>
+    <string name="spectators">Spettatori: %1$d / %2$d</string>
     <string name="noMessages">Non ci sono messaggi.</string>
     <string name="failedSendMessage">Impossibile inviare il messaggio!</string>
     <string name="logout">Esci</string>
     <string name="spectate">Guarda</string>
     <string name="join">Entra</string>
-    <string name="goal"><![CDATA[<b>Obbiettivo:</b>]]> %d</string>
+    <string name="goal">Obbiettivo: %d</string>
     <string name="playersLabel">Giocatori</string>
     <string name="gamePassword">Inserisci password</string>
     <string name="failedJoiningGame">Impossibile partecipare al gioco!</string>

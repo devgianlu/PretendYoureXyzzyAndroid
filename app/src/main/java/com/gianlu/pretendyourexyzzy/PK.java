@@ -28,4 +28,5 @@ public final class PK extends CommonPK {
     public static final Prefs.Key CR_CAST_PASSWORD = new Prefs.Key("crCastPass");
     @Deprecated
     public static final Prefs.Key STARRED_CARDS = new Prefs.Key("starredCards");
+    public static final Prefs.KeyWithDefault<Boolean> ONE_TIME_LOGIN_SHOWN = new Prefs.KeyWithDefault<>("oneTimeLoginShown", false);
 }

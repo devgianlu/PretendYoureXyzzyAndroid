@@ -414,9 +414,7 @@ public class GamesFragment extends FragmentWithDialog implements SearchView.OnCl
     }
 
     public enum SortBy {
-        NAME,
-        NUM_PLAYERS,
-        NUM_SPECTATORS
+        NAME, AVAILABLE_PLAYERS, AVAILABLE_SPECTATORS
     }
 
     public interface OnParticipateGame {
@@ -432,7 +430,7 @@ public class GamesFragment extends FragmentWithDialog implements SearchView.OnCl
         private final FirstLoadedPyx pyx;
 
         GamesAdapter(Context context, List<Game> objs, FirstLoadedPyx pyx, boolean filterOutLockedLobbies) {
-            super(objs, SortBy.NUM_PLAYERS);
+            super(objs, SortBy.AVAILABLE_PLAYERS);
             this.pyx = pyx;
             this.inflater = LayoutInflater.from(context);
 
@@ -472,10 +470,10 @@ public class GamesFragment extends FragmentWithDialog implements SearchView.OnCl
                 case NAME:
                     return new Game.NameComparator();
                 default:
-                case NUM_PLAYERS:
-                    return new Game.NumPlayersComparator();
-                case NUM_SPECTATORS:
-                    return new Game.NumSpectatorsComparator();
+                case AVAILABLE_PLAYERS:
+                    return new Game.NumAvailablePlayersComparator();
+                case AVAILABLE_SPECTATORS:
+                    return new Game.NumAvailableSpectatorsComparator();
             }
         }
 

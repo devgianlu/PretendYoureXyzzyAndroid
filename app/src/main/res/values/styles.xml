@@ -16,6 +16,17 @@
 
     <style name="AppTheme.FullDark" parent="AppTheme" />
 
+    <!-- Toolbar icons -->
+    <style name="ToolbarIconStyle">
+        <item name="android:elevation">8dp</item>
+        <item name="android:outlineAmbientShadowColor" tools:targetApi="p">#CCEFFF</item>
+        <item name="android:outlineSpotShadowColor" tools:targetApi="p">#CCEFFF</item>
+        <item name="android:layout_height">42dp</item>
+        <item name="android:layout_width">42dp</item>
+        <item name="android:background">@drawable/bg_button_big</item>
+        <item name="android:tint">@color/white</item>
+    </style>
+
     <!-- Fonts -->
     <style name="TextAppearance" />
 
@@ -28,14 +39,30 @@
     </style>
 
     <!-- Buttons -->
-    <style name="ButtonStyle" parent="Widget.MaterialComponents.Button">
+    <style name="ButtonSmallStyle" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/colorSecondary</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:elevation">9dp</item>
+        <item name="android:fontFamily">@font/montserrat_regular</item>
+        <item name="android:background">@drawable/bg_button_small</item>
+        <item name="android:outlineAmbientShadowColor" tools:targetApi="p">#59006A</item>
+        <item name="android:outlineSpotShadowColor" tools:targetApi="p">#59006A</item>
+    </style>
+
+    <style name="ButtonBigStyle" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/colorPrimary</item>
         <item name="android:paddingTop">16dp</item>
         <item name="android:paddingBottom">16dp</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:textSize">16sp</item>
         <item name="android:elevation">9dp</item>
         <item name="android:fontFamily">@font/montserrat_medium</item>
-        <item name="android:background">@drawable/button_bg</item>
+        <item name="android:background">@drawable/bg_button_big</item>
         <item name="android:outlineAmbientShadowColor" tools:targetApi="p">#006A99</item>
         <item name="android:outlineSpotShadowColor" tools:targetApi="p">#006A99</item>
     </style>
@@ -54,7 +81,7 @@
 
     <style name="TextInputEditTextStyle" parent="Widget.MaterialComponents.TextInputEditText.OutlinedBox">
         <item name="android:elevation">8dp</item>
-        <item name="android:background">@drawable/input_text_bg</item>
+        <item name="android:background">@drawable/bg_input_text</item>
         <item name="android:outlineAmbientShadowColor" tools:targetApi="p">#CCEFFF</item>
         <item name="android:outlineSpotShadowColor" tools:targetApi="p">#CCEFFF</item>
         <item name="android:paddingStart">8dp</item>

@@ -67,14 +67,14 @@
     <string name="games">Games</string>
     <string name="gameChat">Game chat</string>
     <string name="failedLoading_reason">Failed loading: %s</string>
-    <string name="players"><![CDATA[<b>Players:</b>]]> %1$d/%2$d</string>
-    <string name="spectators"><![CDATA[<b>Spectators:</b>]]> %1$d/%2$d</string>
+    <string name="players">Players: %1$d / %2$d</string>
+    <string name="spectators">Spectators: %1$d / %2$d</string>
     <string name="noMessages">There are no messages.</string>
     <string name="failedSendMessage">Failed sending the message!</string>
     <string name="logout">Logout</string>
     <string name="spectate">Spectate</string>
     <string name="join">Join</string>
-    <string name="goal"><![CDATA[<b>Goal:</b>]]> %d</string>
+    <string name="goal">Goal: %d</string>
     <string name="playersLabel">Players</string>
     <string name="gamePassword">Enter game password</string>
     <string name="failedJoiningGame">Failed joining the game!</string>
@@ -386,4 +386,6 @@
     <string name="failedUpdatingCard">Failed updating card!</string>
     <string name="welcomeToApp">Welcome to Pretend You\'re Xyzzy</string>
     <string name="continue_">Continue</string>
+    <string name="settings">Settings</string>
+    <string name="server">Server</string>
 </resources>

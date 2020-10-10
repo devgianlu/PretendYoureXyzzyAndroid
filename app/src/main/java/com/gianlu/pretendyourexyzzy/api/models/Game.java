@@ -147,27 +147,27 @@ public class Game implements Filterable<Game.Protection>, Serializable {
         }
     }
 
-    public static class NameComparator implements Comparator<Game> {
+    public final static class NameComparator implements Comparator<Game> {
 
         @Override
-        public int compare(Game o1, Game o2) {
+        public int compare(@NonNull Game o1, @NonNull Game o2) {
             return o1.host.compareToIgnoreCase(o2.host);
         }
     }
 
-    public static class NumPlayersComparator implements Comparator<Game> {
+    public final static class NumAvailablePlayersComparator implements Comparator<Game> {
 
         @Override
-        public int compare(Game o1, Game o2) {
-            return o2.players.size() - o1.players.size();
+        public int compare(@NonNull Game o1, @NonNull Game o2) {
+            return (o2.options.playersLimit - o2.players.size()) - (o1.options.playersLimit - o1.players.size());
         }
     }
 
-    public static class NumSpectatorsComparator implements Comparator<Game> {
+    public final static class NumAvailableSpectatorsComparator implements Comparator<Game> {
 
         @Override
-        public int compare(Game o1, Game o2) {
-            return o2.spectators.size() - o1.spectators.size();
+        public int compare(@NonNull Game o1, @NonNull Game o2) {
+            return (o2.options.spectatorsLimit - o2.spectators.size()) - (o1.options.spectatorsLimit - o1.spectators.size());
         }
     }
 

@@ -71,8 +71,9 @@ public class OneTimeLoginActivity extends ActivityWithDialog {
                 .addOnSuccessListener(this, result -> {
                     Prefs.putString(PK.LAST_NICKNAME, result.user().nickname);
                     Prefs.putString(PK.LAST_ID_CODE, idCode);
+                    Prefs.putBoolean(PK.ONE_TIME_LOGIN_SHOWN, true);
 
-                    startActivity(new Intent(this, MainActivity.class)
+                    startActivity(new Intent(this, NewMainActivity.class)
                             .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK));
                 })
                 .addOnFailureListener(this, ex -> {

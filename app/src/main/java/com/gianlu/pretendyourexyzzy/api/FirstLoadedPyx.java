@@ -15,6 +15,8 @@ import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.concurrent.ExecutionException;
 
 import okhttp3.OkHttpClient;
@@ -71,7 +73,8 @@ public class FirstLoadedPyx extends Pyx {
         return pyx;
     }
 
-    public void upgrade(@NonNull User user) {
-        upgrade(user, false);
+    @NotNull
+    public RegisteredPyx upgrade(@NonNull User user) {
+        return upgrade(user, false);
     }
 }

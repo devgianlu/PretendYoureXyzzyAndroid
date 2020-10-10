@@ -36,7 +36,18 @@
         <!-- One time login activity -->
         <activity
             android:name=".OneTimeLoginActivity"
-            android:theme="@style/FullscreenTheme"></activity>
+            android:theme="@style/FullscreenTheme" />
+
+        <!-- Main activity -->
+        <activity
+            android:name=".NewMainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <!-- Loading activity -->
         <activity
@@ -44,11 +55,7 @@
             android:configChanges="uiMode"
             android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.SEND" />
