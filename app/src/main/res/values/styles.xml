@@ -91,6 +91,20 @@
         <item name="android:textSize">16sp</item>
     </style>
 
+    <!-- Preferences -->
+    <style name="TextAppearance.PreferencesTitle">
+        <item name="android:fontFamily">@font/montserrat_medium</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">#000000</item>
+        <item name="android:layout_margin">16dp</item>
+    </style>
+
+    <declare-styleable name="PreferenceItemView">
+        <attr name="icon" format="reference" />
+        <attr name="title" format="string" />
+        <attr name="subtitle" format="string" />
+    </declare-styleable>
+
     <!-- Old -->
     <style name="UrbanDictTheme">
         <item name="colorPrimary">@color/urbanPrimary</item>

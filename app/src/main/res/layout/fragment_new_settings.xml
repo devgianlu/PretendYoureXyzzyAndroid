@@ -1,10 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/settings" />
-</LinearLayout>
+        android:orientation="vertical"
+        android:paddingBottom="16dp">
+
+        <TextView
+            style="@style/TextAppearance.PreferencesTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/general" />
+
+        <com.gianlu.pretendyourexyzzy.PreferenceItemView
+            android:id="@+id/settings_players"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/baseline_people_24"
+            app:title="@string/playersLabel" />
+
+        <com.gianlu.pretendyourexyzzy.PreferenceItemView
+            android:id="@+id/settings_metrics"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/baseline_data_usage_24"
+            app:title="@string/metrics" />
+
+        <TextView
+            style="@style/TextAppearance.PreferencesTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/about_app" />
+
+        <com.gianlu.pretendyourexyzzy.PreferenceItemView
+            android:id="@+id/settings_app"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_new_logo_fg"
+            app:title="@string/app_name" />
+
+        <com.gianlu.pretendyourexyzzy.PreferenceItemView
+            android:id="@+id/settings_version"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/outline_info_24"
+            app:title="@string/version" />
+
+        <com.gianlu.pretendyourexyzzy.PreferenceItemView
+            android:id="@+id/settings_developer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_person_circle_900_96"
+            app:subtitle="@string/devgianlu"
+            app:title="@string/prefs_developer" />
+
+        <com.gianlu.pretendyourexyzzy.PreferenceItemView
+            android:id="@+id/settings_emailMe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/baseline_email_24"
+            app:subtitle="@string/devgianluEmail"
+            app:title="@string/emailMe" />
+
+        <com.gianlu.pretendyourexyzzy.PreferenceItemView
+            android:id="@+id/settings_openSource"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/baseline_bug_report_24"
+            app:subtitle="@string/openSource_desc"
+            app:title="@string/openSource" />
+
+        <com.gianlu.pretendyourexyzzy.PreferenceItemView
+            android:id="@+id/settings_translators"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/baseline_translate_24"
+            app:title="@string/translators" />
+
+        <TextView
+            style="@style/TextAppearance.PreferencesTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/preferences" />
+
+        <com.gianlu.pretendyourexyzzy.PreferenceItemView
+            android:id="@+id/settings_prefGeneral"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_carbon_settings_900_96"
+            app:title="@string/general" />
+
+        <com.gianlu.pretendyourexyzzy.PreferenceItemView
+            android:id="@+id/settings_prefOverloaded"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/baseline_videogame_asset_24"
+            app:title="@string/overloaded" />
+
+        <TextView
+            style="@style/TextAppearance.PreferencesTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/rateDonate" />
+
+        <com.gianlu.pretendyourexyzzy.PreferenceItemView
+            android:id="@+id/settings_rate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/baseline_rate_review_24"
+            app:subtitle="@string/leaveReview"
+            app:title="@string/rateApp" />
+
+        <com.gianlu.pretendyourexyzzy.PreferenceItemView
+            android:id="@+id/settings_donate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/baseline_attach_money_24"
+            app:subtitle="@string/donateGoogleSummary"
+            app:title="@string/donateGoogle" />
+
+        <TextView
+            style="@style/TextAppearance.PreferencesTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/logs" />
+
+        <com.gianlu.pretendyourexyzzy.PreferenceItemView
+            android:id="@+id/settings_sendLogs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/baseline_email_24"
+            app:title="@string/send_email" />
+
+        <com.gianlu.pretendyourexyzzy.PreferenceItemView
+            android:id="@+id/settings_exportLogs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/baseline_share_24"
+            app:title="@string/exportLogFiles" />
+    </LinearLayout>
+</ScrollView>

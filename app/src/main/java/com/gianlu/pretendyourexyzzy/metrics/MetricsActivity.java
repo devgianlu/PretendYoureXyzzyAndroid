@@ -39,11 +39,11 @@ public class MetricsActivity extends ActivityWithDialog implements BreadcrumbsVi
     private RegisteredPyx pyx;
     private BreadcrumbsView breadcrumbs;
 
-    public static void startActivity(Context context) {
+    public static void startActivity(@NonNull Context context) {
         startActivity(context, null);
     }
 
-    public static void startActivity(Context context, @Nullable GamePermalink game) {
+    public static void startActivity(@NonNull Context context, @Nullable GamePermalink game) {
         context.startActivity(new Intent(context, MetricsActivity.class)
                 .putExtra("game", game));
     }
