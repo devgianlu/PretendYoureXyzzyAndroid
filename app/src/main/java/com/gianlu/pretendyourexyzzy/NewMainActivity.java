@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -21,6 +22,7 @@ import com.gianlu.pretendyourexyzzy.main.NewSettingsFragment;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -86,10 +88,7 @@ public class NewMainActivity extends ActivityWithDialog {
 
         preparePyxInstance()
                 .addOnSuccessListener(this, this::pyxReady)
-                .addOnFailureListener(this, ex -> {
-                    Log.e(TAG, "Failed loading Pyx instance.", ex);
-                    pyxInvalid();
-                });
+                .addOnFailureListener(this, this::pyxError);
     }
 
     public void checkReloadNeeded() {
@@ -104,10 +103,7 @@ public class NewMainActivity extends ActivityWithDialog {
         pyx.logout();
         preparePyxInstance(newUsername, newIdCode)
                 .addOnSuccessListener(this, this::pyxReady)
-                .addOnFailureListener(this, ex -> {
-                    Log.e(TAG, "Failed loading Pyx instance.", ex);
-                    pyxInvalid();
-                });
+                .addOnFailureListener(this, this::pyxError);
     }
 
     public void changeServer(@NotNull Pyx.Server server) {
@@ -116,10 +112,7 @@ public class NewMainActivity extends ActivityWithDialog {
         Pyx.Server.setLastServer(server);
         preparePyxInstance()
                 .addOnSuccessListener(this, this::pyxReady)
-                .addOnFailureListener(this, ex -> {
-                    Log.e(TAG, "Failed loading Pyx instance.", ex);
-                    pyxInvalid();
-                });
+                .addOnFailureListener(this, this::pyxError);
     }
 
     private void pyxReady(@NotNull RegisteredPyx pyx) {
@@ -136,6 +129,13 @@ public class NewMainActivity extends ActivityWithDialog {
         if (profileFragment != null) profileFragment.onPyxInvalid();
 
         this.pyx = null;
+    }
+
+    private void pyxError(@NotNull Exception ex) {
+        Log.e(TAG, "Failed loading Pyx instance.", ex);
+        pyxInvalid();
+
+        // TODO: Show error somewhere
     }
 
     @NotNull
@@ -182,6 +182,19 @@ public class NewMainActivity extends ActivityWithDialog {
         } catch (LevelMismatchException ex) {
             return PyxDiscoveryApi.get().firstLoad(this).continueWithTask(firstLoadContinuation);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(this);
+        dialog.setTitle(R.string.logout).setMessage(Html.fromHtml(getString(R.string.logout_confirmation)))
+                .setNegativeButton(R.string.no, null)
+                .setPositiveButton(R.string.yes, (d, which) -> {
+                    pyx.logout();
+                    super.onBackPressed();
+                });
+
+        showDialog(dialog);
     }
 
     public interface MainFragment {

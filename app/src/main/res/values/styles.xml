@@ -18,7 +18,7 @@
 
     <!-- Toolbar icons -->
     <style name="ToolbarIconStyle">
-        <item name="android:elevation">8dp</item>
+        <item name="android:elevation">10dp</item>
         <item name="android:outlineAmbientShadowColor" tools:targetApi="p">#CCEFFF</item>
         <item name="android:outlineSpotShadowColor" tools:targetApi="p">#CCEFFF</item>
         <item name="android:layout_height">42dp</item>
