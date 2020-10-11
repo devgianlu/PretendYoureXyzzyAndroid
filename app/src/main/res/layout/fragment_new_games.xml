@@ -35,6 +35,8 @@
             android:src="@drawable/ic_dots_vertical_white_24" />
     </LinearLayout>
 
+    <!-- TODO: Scroll behaviour -->
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -121,7 +123,11 @@
                 android:scaleType="fitCenter"
                 android:src="@drawable/baseline_lock_open_24"
                 android:tint="#000000" />
+
+            <!-- TODO: More filters -->
         </LinearLayout>
+
+        <!-- TODO: Swipe to refresh -->
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/gamesFragment_list"

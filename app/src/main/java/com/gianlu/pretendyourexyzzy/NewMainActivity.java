@@ -79,7 +79,18 @@ public class NewMainActivity extends ActivityWithDialog {
         });
         binding.mainNavigation.setSelectedItemId(R.id.mainNavigation_home);
 
-        preparePyxInstance("test12366", null) // TODO
+        preparePyxInstance()
+                .addOnSuccessListener(this, this::pyxReady)
+                .addOnFailureListener(this, ex -> {
+                    Log.e(TAG, "Failed loading Pyx instance.", ex);
+                    pyxInvalid();
+                });
+    }
+
+    public void changeServer(@NotNull Pyx.Server server) {
+        pyxInvalid();
+        Pyx.Server.setLastServer(server);
+        preparePyxInstance()
                 .addOnSuccessListener(this, this::pyxReady)
                 .addOnFailureListener(this, ex -> {
                     Log.e(TAG, "Failed loading Pyx instance.", ex);
@@ -97,6 +108,14 @@ public class NewMainActivity extends ActivityWithDialog {
         if (settingsFragment != null) settingsFragment.onPyxInvalid();
         if (gamesFragment != null) gamesFragment.onPyxInvalid();
         if (profileFragment != null) profileFragment.onPyxInvalid();
+    }
+
+    @NotNull
+    private Task<RegisteredPyx> preparePyxInstance() {
+        String username = "test77"; // TODO: Pick username and ID code from somewhere
+        String idCode = null;
+
+        return preparePyxInstance(username, idCode);
     }
 
     @NotNull

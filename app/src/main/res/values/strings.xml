@@ -92,10 +92,10 @@
     <string name="gameOptions">Game options</string>
     <string name="scoreLimit"><![CDATA[<b>Score limit:</b>]]> %d</string>
     <string name="playerLimit"><![CDATA[<b>Players limit:</b>]]> %d</string>
-    <string name="timerMultiplier"><![CDATA[<b>Timer multiplier:</b>]]> %s</string>
-    <string name="spectatorLimit"><![CDATA[<b>Spectators limit:</b>]]> %d</string>
-    <string name="blankCards"><![CDATA[<b>Blank cards:</b>]]> %d</string>
-    <string name="cardSets"><![CDATA[<b>Card sets:</b>]]> %s</string>
+    <string name="timerMultiplier">Timer multiplier: %s</string>
+    <string name="spectatorLimit">Spectators limit: %d</string>
+    <string name="blankCards">Blank cards: %d</string>
+    <string name="cardSets">Card sets: %s</string>
     <string name="spectatorsLabel">Spectators</string>
     <string name="keepScreenOn">Keep screen on</string>
     <string name="starredCards">Starred cards</string>

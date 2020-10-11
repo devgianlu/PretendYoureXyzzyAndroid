@@ -50,8 +50,8 @@
         <item name="android:elevation">9dp</item>
         <item name="android:fontFamily">@font/montserrat_regular</item>
         <item name="android:background">@drawable/bg_button_small</item>
-        <item name="android:outlineAmbientShadowColor" tools:targetApi="p">#59006A</item>
-        <item name="android:outlineSpotShadowColor" tools:targetApi="p">#59006A</item>
+        <item name="android:outlineAmbientShadowColor" tools:targetApi="p">#006A99</item>
+        <item name="android:outlineSpotShadowColor" tools:targetApi="p">#006A99</item>
     </style>
 
     <style name="ButtonBigStyle" parent="Widget.MaterialComponents.Button">
