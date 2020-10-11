@@ -112,6 +112,8 @@ public class NewGamesFragment extends FragmentWithDialog implements NewMainActiv
     private void gamesLoaded(@NonNull GamesList games) {
         GamesAdapter adapter = new GamesAdapter(games);
         binding.gamesFragmentList.setAdapter(adapter);
+        binding.gamesFragmentListLoading.setVisibility(View.GONE);
+        binding.gamesFragmentListLoading.hideShimmer();
 
         if (Prefs.getBoolean(PK.FILTER_LOCKED_LOBBIES)) {
             adapter.setFilterOutLockedLobbies(true);
@@ -129,7 +131,7 @@ public class NewGamesFragment extends FragmentWithDialog implements NewMainActiv
     }
 
     private void failedLoadingGames(@NonNull Exception ex) {
-        // TODO
+        // TODO: Show games loading error
     }
 
     @Override
@@ -140,14 +142,28 @@ public class NewGamesFragment extends FragmentWithDialog implements NewMainActiv
                 .addOnSuccessListener(this::gamesLoaded)
                 .addOnFailureListener(this::failedLoadingGames);
 
+        binding.gamesFragmentChangeServer.setEnabled(true);
         binding.gamesFragmentServer.setText(pyx.server.name);
+        binding.gamesFragmentServerLoading.hideShimmer();
     }
 
     @Override
     public void onPyxInvalid() {
         this.pyx = null;
 
-        // TODO: Clear layout
+        if (binding != null) {
+            binding.gamesFragmentList.setAdapter(null);
+            binding.gamesFragmentListLoading.setVisibility(View.VISIBLE);
+            binding.gamesFragmentListLoading.showShimmer(true);
+
+            binding.gamesFragmentListEmpty.setVisibility(View.GONE);
+
+            binding.gamesFragmentChangeServer.setEnabled(false);
+            binding.gamesFragmentServer.setText(null);
+            binding.gamesFragmentServerLoading.showShimmer(true);
+
+            // TODO: Clear layout
+        }
     }
 
     private class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHolder, Game, GamesFragment.SortBy, Game.Protection> {
@@ -239,7 +255,7 @@ public class NewGamesFragment extends FragmentWithDialog implements NewMainActiv
 
         @Override
         protected void shouldUpdateItemCount(int count) {
-            // TODO: No games imagery
+            binding.gamesFragmentListEmpty.setVisibility(count == 0 ? View.VISIBLE : View.GONE);
         }
 
         @NonNull

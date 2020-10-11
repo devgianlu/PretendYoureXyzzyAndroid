@@ -1,10 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/profile" />
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:text="@string/profile"
+            android:textAppearance="@style/TextAppearance.Medium"
+            android:textSize="24sp" />
+
+        <ImageButton
+            android:id="@+id/profileFragment_chat"
+            style="@style/ToolbarIconStyle"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_chat_white_24" />
+
+        <ImageButton
+            android:id="@+id/profileFragment_menu"
+            style="@style/ToolbarIconStyle"
+            android:src="@drawable/ic_dots_vertical_white_24" />
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="152dp"
+        android:layout_height="152dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_circle_gray"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:src="@drawable/ic_overloaded_feature" />
+
+    <include
+        android:id="@+id/profileFragment_inputs"
+        layout="@layout/include_username_id_code" />
+
+    <!-- TODO: Custom decks -->
+    <!-- TODO: Starred cards -->
+    <!-- TODO: Friends -->
+    <!-- TODO: Achievements -->
 </LinearLayout>

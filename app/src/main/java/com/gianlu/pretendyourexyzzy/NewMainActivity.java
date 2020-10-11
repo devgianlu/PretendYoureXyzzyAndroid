@@ -24,6 +24,8 @@ import com.google.android.gms.tasks.Tasks;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 public class NewMainActivity extends ActivityWithDialog {
     private static final String SETTINGS_FRAGMENT_TAG = "settings";
     private static final String GAMES_FRAGMENT_TAG = "games";
@@ -33,12 +35,13 @@ public class NewMainActivity extends ActivityWithDialog {
     private NewSettingsFragment settingsFragment;
     private NewGamesFragment gamesFragment;
     private NewProfileFragment profileFragment;
+    private RegisteredPyx pyx;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!Prefs.getBoolean(PK.ONE_TIME_LOGIN_SHOWN)) {
+        if (!Prefs.getBoolean(PK.ONE_TIME_LOGIN_SHOWN) || Prefs.getString(PK.LAST_NICKNAME, null) == null) {
             startActivity(new Intent(this, OneTimeLoginActivity.class)
                     .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
             return;
@@ -56,12 +59,14 @@ public class NewMainActivity extends ActivityWithDialog {
         binding.mainNavigation.setOnNavigationItemSelectedListener(item -> {
             switch (item.getItemId()) {
                 case R.id.mainNavigation_settings:
+                    checkReloadNeeded();
                     getSupportFragmentManager().beginTransaction()
                             .hide(gamesFragment).hide(profileFragment)
                             .show(settingsFragment)
                             .commitNow();
                     return true;
                 case R.id.mainNavigation_home:
+                    checkReloadNeeded();
                     getSupportFragmentManager().beginTransaction()
                             .hide(settingsFragment).hide(profileFragment)
                             .show(gamesFragment)
@@ -87,8 +92,27 @@ public class NewMainActivity extends ActivityWithDialog {
                 });
     }
 
+    public void checkReloadNeeded() {
+        if (profileFragment == null || pyx == null)
+            return;
+
+        String newUsername = profileFragment.getUsername();
+        String newIdCode = profileFragment.getIdCode();
+        if (newUsername.equals(pyx.user().nickname) && Objects.equals(Prefs.getString(PK.LAST_ID_CODE, null), newIdCode))
+            return;
+
+        pyx.logout();
+        preparePyxInstance(newUsername, newIdCode)
+                .addOnSuccessListener(this, this::pyxReady)
+                .addOnFailureListener(this, ex -> {
+                    Log.e(TAG, "Failed loading Pyx instance.", ex);
+                    pyxInvalid();
+                });
+    }
+
     public void changeServer(@NotNull Pyx.Server server) {
-        pyxInvalid();
+        if (pyx != null) pyx.logout();
+
         Pyx.Server.setLastServer(server);
         preparePyxInstance()
                 .addOnSuccessListener(this, this::pyxReady)
@@ -99,6 +123,8 @@ public class NewMainActivity extends ActivityWithDialog {
     }
 
     private void pyxReady(@NotNull RegisteredPyx pyx) {
+        this.pyx = pyx;
+
         if (settingsFragment != null) settingsFragment.onPyxReady(pyx);
         if (gamesFragment != null) gamesFragment.onPyxReady(pyx);
         if (profileFragment != null) profileFragment.onPyxReady(pyx);
@@ -108,14 +134,20 @@ public class NewMainActivity extends ActivityWithDialog {
         if (settingsFragment != null) settingsFragment.onPyxInvalid();
         if (gamesFragment != null) gamesFragment.onPyxInvalid();
         if (profileFragment != null) profileFragment.onPyxInvalid();
+
+        this.pyx = null;
     }
 
     @NotNull
     private Task<RegisteredPyx> preparePyxInstance() {
-        String username = "test77"; // TODO: Pick username and ID code from somewhere
-        String idCode = null;
+        String username = Prefs.getString(PK.LAST_NICKNAME, null);
+        if (username == null) {
+            startActivity(new Intent(this, OneTimeLoginActivity.class)
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+            return Tasks.forException(new IllegalStateException("No username set."));
+        }
 
-        return preparePyxInstance(username, idCode);
+        return preparePyxInstance(username, Prefs.getString(PK.LAST_ID_CODE, null));
     }
 
     @NotNull
@@ -125,7 +157,7 @@ public class NewMainActivity extends ActivityWithDialog {
             FirstLoad fl = pyx.firstLoad();
             if (fl.inProgress && fl.user != null) {
                 if (fl.nextOperation == FirstLoad.NextOp.GAME) {
-                    // TODO
+                    // TODO: Open game board
                 }
 
                 return Tasks.forResult(pyx.upgrade(fl.user));
@@ -133,6 +165,10 @@ public class NewMainActivity extends ActivityWithDialog {
                 return task.getResult().register(username, idCode);
             }
         };
+
+        pyxInvalid();
+        Prefs.putString(PK.LAST_NICKNAME, username);
+        Prefs.putString(PK.LAST_ID_CODE, idCode);
 
         try {
             Pyx local = Pyx.get();

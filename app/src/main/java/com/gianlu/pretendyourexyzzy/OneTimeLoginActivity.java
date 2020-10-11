@@ -35,8 +35,8 @@ public class OneTimeLoginActivity extends ActivityWithDialog {
 
         firstLoadTask = PyxDiscoveryApi.get().firstLoad(this);
 
-        CommonUtils.clearErrorOnEdit(binding.oneTimeLoginUsername);
-        CommonUtils.clearErrorOnEdit(binding.oneTimeLoginIdCode);
+        CommonUtils.clearErrorOnEdit(binding.oneTimeLoginInputs.usernameInput);
+        CommonUtils.clearErrorOnEdit(binding.oneTimeLoginInputs.idCodeInput);
 
         binding.oneTimeLoginContinue.setOnClickListener(v -> {
             setLoading(true);
@@ -47,24 +47,24 @@ public class OneTimeLoginActivity extends ActivityWithDialog {
 
     @Nullable
     private String getIdCode() {
-        String id = CommonUtils.getText(binding.oneTimeLoginIdCode).trim();
+        String id = CommonUtils.getText(binding.oneTimeLoginInputs.idCodeInput).trim();
         return id.isEmpty() ? null : id;
     }
 
     private void setLoading(boolean loading) {
         binding.oneTimeLoginContinue.setEnabled(!loading);
-        binding.oneTimeLoginUsername.setEnabled(!loading);
-        binding.oneTimeLoginIdCode.setEnabled(!loading);
+        binding.oneTimeLoginInputs.usernameInput.setEnabled(!loading);
+        binding.oneTimeLoginInputs.idCodeInput.setEnabled(!loading);
     }
 
     private void register(@NonNull FirstLoadedPyx pyx) {
         if (!pyx.isServerSecure() && !pyx.config().insecureIdAllowed())
-            binding.oneTimeLoginIdCode.setEnabled(false);
+            binding.oneTimeLoginInputs.idCodeInput.setEnabled(false);
         else
-            binding.oneTimeLoginIdCode.setEnabled(true);
+            binding.oneTimeLoginInputs.idCodeInput.setEnabled(true);
 
         String idCode = getIdCode();
-        String username = CommonUtils.getText(binding.oneTimeLoginUsername);
+        String username = CommonUtils.getText(binding.oneTimeLoginInputs.usernameInput);
 
         setLoading(true);
         pyx.register(username, idCode)
@@ -84,20 +84,20 @@ public class OneTimeLoginActivity extends ActivityWithDialog {
                     if (ex instanceof PyxException) {
                         switch (((PyxException) ex).errorCode) {
                             case "rn":
-                                binding.oneTimeLoginUsername.setError(getString(R.string.reservedNickname));
+                                binding.oneTimeLoginInputs.usernameInput.setError(getString(R.string.reservedNickname));
                                 return;
                             case "in":
-                                binding.oneTimeLoginUsername.setError(getString(R.string.invalidNickname));
+                                binding.oneTimeLoginInputs.usernameInput.setError(getString(R.string.invalidNickname));
                                 return;
                             case "niu":
-                                binding.oneTimeLoginUsername.setError(getString(R.string.alreadyUsedNickname));
+                                binding.oneTimeLoginInputs.usernameInput.setError(getString(R.string.alreadyUsedNickname));
                                 return;
                             case "tmu":
                                 if (changeServer(pyx.server))
-                                    binding.oneTimeLoginUsername.setError(getString(R.string.tooManyUsers));
+                                    binding.oneTimeLoginInputs.usernameInput.setError(getString(R.string.tooManyUsers));
                                 return;
                             case "iid":
-                                binding.oneTimeLoginUsername.setError(getString(R.string.invalidIdCode));
+                                binding.oneTimeLoginInputs.usernameInput.setError(getString(R.string.invalidIdCode));
                                 return;
                         }
                     }

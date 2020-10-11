@@ -54,39 +54,45 @@
             android:textColor="#000000"
             android:textSize="24sp" />
 
-        <LinearLayout
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/gamesFragment_serverLoading"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_input_text"
-            android:elevation="8dp"
-            android:orientation="horizontal"
-            android:outlineAmbientShadowColor="#CCEFFF"
-            android:outlineSpotShadowColor="#CCEFFF"
-            tools:targetApi="p">
+            android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/gamesFragment_server"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"
-                android:layout_weight="1"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textAppearance="@style/TextAppearance.Medium"
-                android:textSize="14sp" />
+                android:background="@drawable/bg_input_text"
+                android:elevation="8dp"
+                android:orientation="horizontal"
+                android:outlineAmbientShadowColor="#CCEFFF"
+                android:outlineSpotShadowColor="#CCEFFF"
+                tools:targetApi="p">
 
-            <ImageButton
-                android:id="@+id/gamesFragment_changeServer"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginEnd="4dp"
-                android:background="?selectableItemBackgroundBorderless"
-                android:src="@drawable/baseline_swap_horiz_24"
-                android:tint="#000000" />
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/gamesFragment_server"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textAppearance="@style/TextAppearance.Medium"
+                    android:textSize="14sp" />
+
+                <ImageButton
+                    android:id="@+id/gamesFragment_changeServer"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="4dp"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:src="@drawable/baseline_swap_horiz_24"
+                    android:tint="#000000" />
+            </LinearLayout>
+        </com.facebook.shimmer.ShimmerFrameLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -127,11 +133,98 @@
             <!-- TODO: More filters -->
         </LinearLayout>
 
-        <!-- TODO: Swipe to refresh -->
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/gamesFragment_list"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent">
+
+            <!-- TODO: Swipe to refresh -->
+
+            <LinearLayout
+                android:id="@+id/gamesFragment_listEmpty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                android:paddingStart="48dp"
+                android:paddingEnd="48dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="200dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_undraw_not_found" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/noGamesMessage"
+                    android:textAlignment="center"
+                    android:textAppearance="@style/TextAppearance.Medium"
+                    android:textColor="#505050"
+                    android:textSize="12sp" />
+
+                <!-- Move it a bit further up -->
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="60dp" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/gamesFragment_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/gamesFragment_listLoading"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="110dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@drawable/placeholder_game_item" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="110dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@drawable/placeholder_game_item" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="110dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@drawable/placeholder_game_item" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="110dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@drawable/placeholder_game_item" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="110dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@drawable/placeholder_game_item" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="110dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@drawable/placeholder_game_item" />
+                </LinearLayout>
+            </com.facebook.shimmer.ShimmerFrameLayout>
+        </FrameLayout>
     </LinearLayout>
 </LinearLayout>
