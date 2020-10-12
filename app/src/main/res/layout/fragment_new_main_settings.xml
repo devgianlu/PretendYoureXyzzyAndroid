@@ -8,13 +8,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:paddingTop="16dp"
         android:paddingBottom="16dp">
-
-        <TextView
-            style="@style/TextAppearance.PreferencesTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/general" />
 
         <com.gianlu.pretendyourexyzzy.PreferenceItemView
             android:id="@+id/settings_players"

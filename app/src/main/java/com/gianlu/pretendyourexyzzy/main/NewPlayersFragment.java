@@ -139,10 +139,13 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
     @NonNull
     private Task<List<String>> loadOverloadedUsers() {
         if (!OverloadedUtils.isSignedIn())
-            return overloadedUsersTask = Tasks.forException(new Exception("Overloaded not signed in!"));
+            return overloadedUsersTask = Tasks.forException(new Exception("Overloaded not signed in."));
 
         if (overloadedUsersTask != null && !overloadedUsersTask.isComplete())
             return overloadedUsersTask;
+
+        if (pyx == null)
+            return overloadedUsersTask = Tasks.forException(new Exception("Missing Pyx instance."));
 
         return overloadedUsersTask = OverloadedApi.get().listUsers(pyx.server.url)
                 .addOnSuccessListener(list -> overloadedUsers = list)

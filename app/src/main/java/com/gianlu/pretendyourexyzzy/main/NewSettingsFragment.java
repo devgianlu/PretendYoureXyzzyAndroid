@@ -1,10 +1,12 @@
 package com.gianlu.pretendyourexyzzy.main;
 
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,27 +15,62 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
 
+import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.FossUtils;
+import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.logs.LogsHelper;
+import com.gianlu.commonutils.preferences.PreferencesBillingHelper;
+import com.gianlu.commonutils.preferences.Prefs;
+import com.gianlu.commonutils.preferences.Translators;
 import com.gianlu.commonutils.ui.Toaster;
+import com.gianlu.pretendyourexyzzy.BlockedUsers;
 import com.gianlu.pretendyourexyzzy.NewMainActivity;
+import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewMainSettingsBinding;
+import com.gianlu.pretendyourexyzzy.databinding.FragmentNewPrefsSettingsBinding;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
+import com.yarolegovich.mp.AbsMaterialCheckablePreference;
+import com.yarolegovich.mp.AbsMaterialPreference;
+import com.yarolegovich.mp.MaterialCheckboxPreference;
+import com.yarolegovich.mp.MaterialPreferenceCategory;
+import com.yarolegovich.mp.MaterialStandardPreference;
+import com.yarolegovich.mp.io.MaterialPreferences;
+import com.yarolegovich.mp.io.StorageModule;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
+import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
+import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public class NewSettingsFragment extends FragmentWithDialog implements NewMainActivity.MainFragment {
     private static final String TAG = NewSettingsFragment.class.getSimpleName();
     private static final int CONTAINER_ID = 69;
+    private final EnumMap<Page, ChildFragment> fragments = new EnumMap<>(Page.class);
     private Page currentPage;
-    private MainFragment mainFragment;
-    private NewPlayersFragment playersFragment;
     private RegisteredPyx pyx;
 
     @NonNull
@@ -59,14 +96,14 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
     public void onPyxReady(@NotNull RegisteredPyx pyx) {
         this.pyx = pyx;
 
-        if (mainFragment != null) mainFragment.callPyxReady(pyx);
-        if (playersFragment != null) playersFragment.callPyxReady(pyx);
+        for (ChildFragment frag : fragments.values())
+            frag.callPyxReady(pyx);
     }
 
     @Override
     public void onPyxInvalid() {
-        if (mainFragment != null) mainFragment.callPyxInvalid();
-        if (playersFragment != null) playersFragment.callPyxInvalid();
+        for (ChildFragment frag : fragments.values())
+            frag.callPyxInvalid();
 
         this.pyx = null;
     }
@@ -80,21 +117,19 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
         return true;
     }
 
-    private void replaceFragment(@NonNull Page page) {
-        boolean created = false;
-        ChildFragment frag;
-        switch (page) {
-            default:
-            case MAIN:
-                if (mainFragment == null) mainFragment = new MainFragment();
-                frag = mainFragment;
-                break;
-            case PLAYERS:
-                if (playersFragment == null) playersFragment = new NewPlayersFragment();
-                frag = playersFragment;
-                break;
+    @NonNull
+    private ChildFragment getFragment(@NonNull Page page) {
+        ChildFragment frag = fragments.get(page);
+        if (frag == null) {
+            frag = page.init();
+            fragments.put(page, frag);
         }
 
+        return frag;
+    }
+
+    private void replaceFragment(@NonNull Page page) {
+        ChildFragment frag = getFragment(page);
         getChildFragmentManager().beginTransaction()
                 .replace(CONTAINER_ID, frag)
                 .runOnCommit(() -> {
@@ -106,15 +141,39 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
     }
 
     private enum Page {
-        MAIN, PLAYERS
+        MAIN(MainFragment.class), PLAYERS(NewPlayersFragment.class), TRANSLATORS(TranslatorsFragment.class),
+        PREFS_GENERAL(GeneralPrefsFragment.class), PREFS_OVERLOADED(OverloadedPrefsFragment.class);
 
         // TODO: Move metrics to a fragment?
+
+        private final Class<? extends ChildFragment> clazz;
+
+        Page(Class<? extends ChildFragment> clazz) {
+            this.clazz = clazz;
+        }
+
+        @NonNull
+        public ChildFragment init() {
+            try {
+                return clazz.newInstance();
+            } catch (IllegalAccessException | java.lang.InstantiationException ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
     }
 
     public abstract static class ChildFragment extends FragmentWithDialog {
         private boolean callReady = false;
         private RegisteredPyx pyx = null;
         private boolean callInvalid = false;
+
+        protected final void openLink(@NonNull String uri) {
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(uri)));
+            } catch (ActivityNotFoundException ex) {
+                showToast(Toaster.build().message(R.string.missingWebBrowser));
+            }
+        }
 
         protected final void goBack() {
             replaceFragment(Page.MAIN);
@@ -138,7 +197,7 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
             pyx = null;
         }
 
-        void callPyxReady(@NonNull RegisteredPyx pyx) {
+        final void callPyxReady(@NonNull RegisteredPyx pyx) {
             if (isAdded()) {
                 onPyxReady(pyx);
             } else {
@@ -148,7 +207,7 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
             }
         }
 
-        void callPyxInvalid() {
+        final void callPyxInvalid() {
             if (isAdded()) {
                 onPyxInvalid();
             } else {
@@ -165,16 +224,64 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
         }
     }
 
-    public static class MainFragment extends ChildFragment {
-        private FragmentNewMainSettingsBinding binding;
+    public abstract static class PrefsChildFragment extends ChildFragment {
+        private MaterialPreferenceCategory lastCategory;
+        private StorageModule storageModule;
+        private FragmentNewPrefsSettingsBinding binding;
 
-        private void openLink(@NonNull String uri) {
-            try {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(uri)));
-            } catch (ActivityNotFoundException ex) {
-                showToast(Toaster.build().message(R.string.missingWebBrowser));
-            }
+        protected abstract void buildPreferences(@NonNull Context context);
+
+        protected final void addCategory(@StringRes int title) {
+            MaterialPreferenceCategory category = new MaterialPreferenceCategory(requireContext());
+            category.setTitle(getString(title));
+            binding.settingsPrefsFragmentScreen.addView(category);
+            lastCategory = category;
         }
+
+        protected final void addPreference(@NonNull AbsMaterialPreference<?> preference) {
+            preference.setStorageModule(storageModule);
+            if (lastCategory == null) binding.settingsPrefsFragmentScreen.addView(preference);
+            else lastCategory.addView(preference);
+        }
+
+        protected final void removePreference(@NonNull AbsMaterialPreference<?> preference) {
+            if (lastCategory == null) binding.settingsPrefsFragmentScreen.removeView(preference);
+            else lastCategory.removeView(preference);
+        }
+
+        protected final void clearPreferences() {
+            binding.settingsPrefsFragmentScreen.useLinearLayout();
+        }
+
+        protected final void rebuildPreferences() {
+            clearPreferences();
+            buildPreferences(binding.settingsPrefsFragmentScreen.getContext());
+        }
+
+        protected final void addController(AbsMaterialCheckablePreference controller, boolean showWhenChecked, AbsMaterialPreference<?>... dependent) {
+            binding.settingsPrefsFragmentScreen.setVisibilityController(controller, dependent, showWhenChecked);
+        }
+
+        @NonNull
+        @Override
+        public final View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+            binding = FragmentNewPrefsSettingsBinding.inflate(inflater, container, false);
+            binding.settingsPrefsFragmentScreen.useLinearLayout();
+            binding.settingsPrefsFragmentTitle.setText(getTitleRes());
+            binding.settingsPrefsFragmentBack.setOnClickListener((v) -> goBack());
+
+            storageModule = MaterialPreferences.getStorageModule(requireContext());
+            buildPreferences(requireContext());
+            return binding.getRoot();
+        }
+
+        @StringRes
+        public abstract int getTitleRes();
+    }
+
+    public static class MainFragment extends ChildFragment {
+        private PreferencesBillingHelper billingHelper;
+        private FragmentNewMainSettingsBinding binding;
 
         @Nullable
         @Override
@@ -189,16 +296,10 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
             binding.settingsDeveloper.setOnClickListener((v) -> openLink("https://gianlu.xyz"));
             binding.settingsEmailMe.setOnClickListener((v) -> LogsHelper.sendEmail(requireContext(), null));
             binding.settingsOpenSource.setOnClickListener((v) -> openLink("https://github.com/devgianlu/PretendYoureXyzzyAndroid"));
-            binding.settingsTranslators.setOnClickListener((v) -> {
-                // TODO: Translators
-            });
+            binding.settingsTranslators.setOnClickListener((v) -> replaceFragment(Page.TRANSLATORS));
 
-            binding.settingsPrefGeneral.setOnClickListener(v -> {
-                // TODO: General preferences
-            });
-            binding.settingsPrefOverloaded.setOnClickListener(v -> {
-                // TODO: Overloaded preferences
-            });
+            binding.settingsPrefGeneral.setOnClickListener(v -> replaceFragment(Page.PREFS_GENERAL));
+            binding.settingsPrefOverloaded.setOnClickListener(v -> replaceFragment(Page.PREFS_OVERLOADED));
 
             binding.settingsRate.setOnClickListener(v -> {
                 String pkg = requireContext().getPackageName();
@@ -209,9 +310,7 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
                     openLink("https://play.google.com/store/apps/details?id=" + pkg);
                 }
             });
-            binding.settingsDonate.setOnClickListener(v -> {
-                // TODO: Donate
-            });
+            binding.settingsDonate.setOnClickListener(v -> donate());
 
             binding.settingsSendLogs.setOnClickListener(v -> {
                 LogsHelper.sendEmail(requireContext(), null);
@@ -232,6 +331,21 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
             return binding.getRoot();
         }
 
+        @Override
+        public void onStart() {
+            super.onStart();
+
+            if (billingHelper == null && getActivity() != null && FossUtils.hasGoogleBilling()) {
+                billingHelper = new PreferencesBillingHelper(this, PreferencesBillingHelper.DONATE_SKUS);
+                billingHelper.onStart(requireActivity());
+            }
+        }
+
+        private void donate() {
+            if (billingHelper != null && getActivity() != null)
+                billingHelper.donate(requireActivity(), false);
+        }
+
         @NotNull
         private String getVersion() {
             try {
@@ -239,6 +353,259 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
             } catch (PackageManager.NameNotFoundException ex) {
                 return getString(R.string.unknown);
             }
+        }
+    }
+
+    public static class GeneralPrefsFragment extends PrefsChildFragment {
+
+        private void showUnblockDialog(@NonNull Context context) {
+            String[] entries = Prefs.getSet(PK.BLOCKED_USERS, new HashSet<>()).toArray(new String[0]);
+            boolean[] checked = new boolean[entries.length];
+
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+            builder.setTitle(R.string.unblockUser)
+                    .setMultiChoiceItems(entries, checked, (dialog, which, isChecked) -> checked[which] = isChecked)
+                    .setPositiveButton(R.string.unblock, (dialog, which) -> {
+                        for (int i = 0; i < checked.length; i++) {
+                            if (checked[i]) BlockedUsers.unblock(entries[i]);
+                        }
+
+                        if (Prefs.isSetEmpty(PK.BLOCKED_USERS)) onBackPressed();
+                    }).setNegativeButton(android.R.string.cancel, null);
+
+            showDialog(builder);
+        }
+
+        @Override
+        protected void buildPreferences(@NonNull Context context) {
+            MaterialCheckboxPreference nightMode = new MaterialCheckboxPreference.Builder(context)
+                    .defaultValue(PK.NIGHT_MODE.fallback())
+                    .key(PK.NIGHT_MODE.key())
+                    .build();
+            nightMode.setTitle(R.string.prefs_nightMode);
+            nightMode.setSummary(R.string.prefs_nightMode_summary);
+            addPreference(nightMode);
+
+            if (!Prefs.isSetEmpty(PK.BLOCKED_USERS)) {
+                MaterialStandardPreference unblock = new MaterialStandardPreference(context);
+                unblock.setTitle(R.string.unblockUser);
+                unblock.setSummary(R.string.unblockUser_summary);
+                unblock.setOnClickListener(v -> showUnblockDialog(context));
+                addPreference(unblock);
+            }
+        }
+
+        @Override
+        public int getTitleRes() {
+            return R.string.general;
+        }
+    }
+
+    public static class OverloadedPrefsFragment extends PrefsChildFragment implements OverloadedChooseProviderDialog.Listener {
+        private static final int RC_SIGN_IN = 3;
+        private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
+        private boolean link;
+
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+            if (requestCode == RC_SIGN_IN && data != null) {
+                if (link) {
+                    AuthCredential credential = signInHelper.extractCredential(data);
+                    if (credential == null) {
+                        Log.w(TAG, "Couldn't extract credentials: " + data);
+                        showToast(Toaster.build().message(R.string.failedSigningIn));
+                        return;
+                    }
+
+                    OverloadedApi.get().link(credential, task -> {
+                        if (task.isSuccessful()) {
+                            showToast(Toaster.build().message(R.string.accountLinked));
+                        } else {
+                            showToast(Toaster.build().message(R.string.failedLinkingAccount));
+                            Log.e(TAG, "Failed linking account.", task.getException());
+                        }
+
+                        onBackPressed();
+                    });
+                } else {
+                    signInHelper.processSignInData(data, new OverloadedSignInHelper.SignInCallback() {
+                        @Override
+                        public void onSignInSuccessful(@NonNull FirebaseUser user) {
+                            showToast(Toaster.build().message(R.string.signInSuccessful));
+                            onBackPressed();
+                        }
+
+                        @Override
+                        public void onSignInFailed() {
+                            showToast(Toaster.build().message(R.string.failedSigningIn));
+                            onBackPressed();
+                        }
+                    });
+                }
+            } else {
+                super.onActivityResult(requestCode, resultCode, data);
+            }
+        }
+
+        private boolean canLink() {
+            FirebaseUser user = OverloadedApi.get().firebaseUser();
+            if (user == null) return false;
+
+            List<String> providers = new ArrayList<>(OverloadedSignInHelper.providerIds());
+            for (UserInfo info : user.getProviderData()) {
+                Iterator<String> iterator = providers.iterator();
+                while (iterator.hasNext()) {
+                    if (Objects.equals(iterator.next(), info.getProviderId()))
+                        iterator.remove();
+                }
+            }
+
+            return providers.size() > 0;
+        }
+
+        @NonNull
+        private List<String> linkableProviderNames(@NonNull Context context) {
+            List<String> names = new ArrayList<>();
+            for (OverloadedSignInHelper.SignInProvider provider : OverloadedSignInHelper.SIGN_IN_PROVIDERS) {
+                if (!OverloadedApi.get().hasLinkedProvider(provider.id))
+                    names.add(context.getString(provider.nameRes));
+            }
+
+            return names;
+        }
+
+        @NonNull
+        private List<String> linkableProviderIds() {
+            List<String> ids = new ArrayList<>();
+            for (OverloadedSignInHelper.SignInProvider provider : OverloadedSignInHelper.SIGN_IN_PROVIDERS) {
+                if (!OverloadedApi.get().hasLinkedProvider(provider.id))
+                    ids.add(provider.id);
+            }
+
+            return ids;
+        }
+
+        @Override
+        protected void buildPreferences(@NonNull Context context) {
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (currentUser != null) {
+                MaterialStandardPreference loggedInAs = new MaterialStandardPreference(context);
+                loggedInAs.setTitle(R.string.loggedIn);
+                loggedInAs.setSummary(Utils.getDisplayableName(currentUser));
+                loggedInAs.setClickable(false);
+                addPreference(loggedInAs);
+
+                if (canLink()) {
+                    MaterialStandardPreference linkAccount = new MaterialStandardPreference(context);
+                    linkAccount.setTitle(R.string.linkAccount);
+                    linkAccount.setSummary(CommonUtils.join(linkableProviderNames(context), ", "));
+                    linkAccount.setOnClickListener(v -> {
+                        link = true;
+                        DialogUtils.showDialog(getActivity(),
+                                OverloadedChooseProviderDialog.getLinkInstance(linkableProviderIds()),
+                                null);
+                    });
+                    addPreference(linkAccount);
+                }
+
+                MaterialStandardPreference purchaseStatus = new MaterialStandardPreference(context);
+                purchaseStatus.setTitle(R.string.purchaseStatus);
+                purchaseStatus.setClickable(false);
+                purchaseStatus.setLoading(true);
+                addPreference(purchaseStatus);
+                OverloadedApi.get().userData(getActivity(), new UserDataCallback() {
+                    @Override
+                    public void onUserData(@NonNull UserData userData) {
+                        purchaseStatus.setSummary(String.format("%s (%s)", userData.purchaseStatus.toString(context), userData.username));
+                        purchaseStatus.setLoading(false);
+                    }
+
+                    @Override
+                    public void onFailed(@NonNull Exception ex) {
+                        Log.e(TAG, "Failed getting user data.", ex);
+                        purchaseStatus.setSummary("<error>");
+                        purchaseStatus.setLoading(false);
+                    }
+                });
+
+                MaterialStandardPreference logout = new MaterialStandardPreference(context);
+                logout.setTitle(R.string.logout);
+                logout.setIcon(R.drawable.outline_exit_to_app_24);
+                logout.setOnClickListener(v -> {
+                    OverloadedApi.get().logout();
+                    onBackPressed();
+                });
+                addPreference(logout);
+
+                MaterialStandardPreference delete = new MaterialStandardPreference(context);
+                delete.setTitle(R.string.deleteAccount);
+                delete.setIcon(R.drawable.baseline_delete_forever_24);
+                delete.setOnClickListener(v -> {
+                    MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(requireContext());
+                    dialog.setTitle(R.string.deleteAccount).setMessage(Html.fromHtml(getString(R.string.deleteAccount_confirmation)))
+                            .setNegativeButton(android.R.string.no, null)
+                            .setPositiveButton(android.R.string.yes, (d, which) -> {
+                                showProgress(R.string.loading);
+                                OverloadedApi.get().deleteAccount(getActivity(), new SuccessCallback() {
+                                    @Override
+                                    public void onSuccessful() {
+                                        dismissDialog();
+                                        showToast(Toaster.build().message(R.string.accountDeleted));
+                                        onBackPressed();
+                                    }
+
+                                    @Override
+                                    public void onFailed(@NonNull Exception ex) {
+                                        Log.e(TAG, "Failed deleting account.", ex);
+                                        dismissDialog();
+                                        showToast(Toaster.build().message(R.string.failedDeletingAccount));
+                                    }
+                                });
+                            });
+
+                    showDialog(dialog);
+                });
+                addPreference(delete);
+            } else {
+                MaterialStandardPreference login = new MaterialStandardPreference(context);
+                login.setTitle(R.string.login);
+                login.setSummary(R.string.overloadedLogin_please);
+                login.setOnClickListener(v -> {
+                    link = false;
+                    DialogUtils.showDialog(getActivity(), OverloadedChooseProviderDialog.getSignInInstance(), null);
+                });
+                addPreference(login);
+            }
+        }
+
+        @Override
+        public int getTitleRes() {
+            return R.string.overloaded;
+        }
+
+        @Override
+        public void onSelectedSignInProvider(@NonNull OverloadedSignInHelper.SignInProvider provider) {
+            if (getActivity() == null) return;
+            startActivityForResult(signInHelper.startFlow(getActivity(), provider), RC_SIGN_IN);
+        }
+    }
+
+    public static class TranslatorsFragment extends PrefsChildFragment {
+
+        @Override
+        protected void buildPreferences(@NonNull Context context) {
+            for (Translators.Item item : Translators.load(context)) {
+                MaterialStandardPreference pref = new MaterialStandardPreference(context);
+                pref.setTitle(item.name);
+                pref.setSummary(item.languages);
+                pref.setOnClickListener(v -> openLink(item.link));
+                addPreference(pref);
+            }
+        }
+
+        @Override
+        public int getTitleRes() {
+            return com.gianlu.commonutils.R.string.translators;
         }
     }
 }
