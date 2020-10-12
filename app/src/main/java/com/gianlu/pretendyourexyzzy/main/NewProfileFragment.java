@@ -47,6 +47,11 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
         this.pyx = null;
     }
 
+    @Override
+    public boolean goBack() {
+        return false;
+    }
+
     @NotNull
     public String getUsername() {
         return CommonUtils.getText(binding.profileFragmentInputs.usernameInput);

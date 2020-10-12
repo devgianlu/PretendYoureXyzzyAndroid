@@ -29,7 +29,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -114,7 +116,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
     }
 
     public class PollingThread extends Thread {
-        private final List<OnEventListener> listeners = new ArrayList<>();
+        private final Set<OnEventListener> listeners = new HashSet<>();
         private int exCount = 0;
         private volatile boolean shouldStop = false;
         private Call lastCall;
@@ -181,8 +183,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
 
         public void addListener(@NonNull OnEventListener listener) {
             synchronized (listeners) {
-                if (!listeners.contains(listener))
-                    listeners.add(listener);
+                listeners.add(listener);
             }
         }
 

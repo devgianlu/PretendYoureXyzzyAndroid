@@ -114,6 +114,8 @@ public class NewGamesFragment extends FragmentWithDialog implements NewMainActiv
 
         binding.gamesFragmentSwipeRefresh.setColorSchemeResources(R.color.appColor_500);
         binding.gamesFragmentSwipeRefresh.setOnRefreshListener(() -> {
+            if (pyx == null) return;
+
             setGamesStatus(true, false, false);
             pyx.request(PyxRequests.getGamesList())
                     .addOnSuccessListener(this::gamesLoaded)
@@ -137,34 +139,7 @@ public class NewGamesFragment extends FragmentWithDialog implements NewMainActiv
             else if (filter.equals("in_progress")) filter = "lobby";
             else filter = "any";
             Prefs.putString(PK.FILTER_GAME_STATUS, filter);
-
-            switch (filter) {
-                default:
-                case "any":
-                    binding.gamesFragmentFilterStatus.setImageResource(R.drawable.baseline_casino_hourglass_24);
-                    CommonUtils.setPaddingDip(binding.gamesFragmentFilterStatus, 0);
-                    if (adapter != null) {
-                        adapter.removeFilter(Game.Filters.IN_PROGRESS);
-                        adapter.removeFilter(Game.Filters.LOBBY);
-                    }
-                    break;
-                case "in_progress":
-                    binding.gamesFragmentFilterStatus.setImageResource(R.drawable.baseline_casino_24);
-                    CommonUtils.setPaddingDip(binding.gamesFragmentFilterStatus, 4);
-                    if (adapter != null) {
-                        adapter.removeFilter(Game.Filters.IN_PROGRESS);
-                        adapter.addFilter(Game.Filters.LOBBY);
-                    }
-                    break;
-                case "lobby":
-                    binding.gamesFragmentFilterStatus.setImageResource(R.drawable.baseline_hourglass_empty_24);
-                    CommonUtils.setPaddingDip(binding.gamesFragmentFilterStatus, 4);
-                    if (adapter != null) {
-                        adapter.addFilter(Game.Filters.IN_PROGRESS);
-                        adapter.removeFilter(Game.Filters.LOBBY);
-                    }
-                    break;
-            }
+            updateGameStatusFilter(filter);
         });
 
         binding.gamesFragmentMenu.setOnClickListener((v) -> showPopupMenu());
@@ -184,6 +159,36 @@ public class NewGamesFragment extends FragmentWithDialog implements NewMainActiv
         setGamesStatus(true, false, false);
 
         return binding.getRoot();
+    }
+
+    private void updateGameStatusFilter(@NonNull String filter) {
+        switch (filter) {
+            default:
+            case "any":
+                binding.gamesFragmentFilterStatus.setImageResource(R.drawable.baseline_casino_hourglass_24);
+                CommonUtils.setPaddingDip(binding.gamesFragmentFilterStatus, 0);
+                if (adapter != null) {
+                    adapter.removeFilter(Game.Filters.IN_PROGRESS);
+                    adapter.removeFilter(Game.Filters.LOBBY);
+                }
+                break;
+            case "in_progress":
+                binding.gamesFragmentFilterStatus.setImageResource(R.drawable.baseline_casino_24);
+                CommonUtils.setPaddingDip(binding.gamesFragmentFilterStatus, 4);
+                if (adapter != null) {
+                    adapter.removeFilter(Game.Filters.IN_PROGRESS);
+                    adapter.addFilter(Game.Filters.LOBBY);
+                }
+                break;
+            case "lobby":
+                binding.gamesFragmentFilterStatus.setImageResource(R.drawable.baseline_hourglass_empty_24);
+                CommonUtils.setPaddingDip(binding.gamesFragmentFilterStatus, 4);
+                if (adapter != null) {
+                    adapter.addFilter(Game.Filters.IN_PROGRESS);
+                    adapter.removeFilter(Game.Filters.LOBBY);
+                }
+                break;
+        }
     }
 
     private void changeServerDialog(boolean dismissible) {
@@ -232,6 +237,8 @@ public class NewGamesFragment extends FragmentWithDialog implements NewMainActiv
             adapter.setFilterOutLockedLobbies(false);
             binding.gamesFragmentFilterLocked.setImageResource(R.drawable.outline_lock_24);
         }
+
+        updateGameStatusFilter(Prefs.getString(PK.FILTER_GAME_STATUS));
     }
 
     private void failedLoadingGames(@NonNull Exception ex) {
@@ -269,6 +276,11 @@ public class NewGamesFragment extends FragmentWithDialog implements NewMainActiv
         }
     }
 
+    @Override
+    public boolean goBack() {
+        return false;
+    }
+
     private void showPopupMenu() {
         PopupMenu menu = new PopupMenu(requireContext(), binding.gamesFragmentMenu);
         menu.inflate(R.menu.new_games);
@@ -298,6 +310,7 @@ public class NewGamesFragment extends FragmentWithDialog implements NewMainActiv
     public void onDestroy() {
         super.onDestroy();
         if (pyx != null) pyx.polling().removeListener(this);
+        this.pyx = null;
     }
 
     @Override

@@ -186,20 +186,42 @@ public class NewMainActivity extends ActivityWithDialog {
 
     @Override
     public void onBackPressed() {
-        MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(this);
-        dialog.setTitle(R.string.logout).setMessage(Html.fromHtml(getString(R.string.logout_confirmation)))
-                .setNegativeButton(R.string.no, null)
-                .setPositiveButton(R.string.yes, (d, which) -> {
-                    pyx.logout();
-                    super.onBackPressed();
-                });
+        MainFragment visible;
+        switch (binding.mainNavigation.getSelectedItemId()) {
+            case R.id.mainNavigation_settings:
+                visible = settingsFragment;
+                break;
+            case R.id.mainNavigation_home:
+                visible = gamesFragment;
+                break;
+            case R.id.mainNavigation_profile:
+                visible = profileFragment;
+                break;
+            default:
+                visible = null;
+        }
 
-        showDialog(dialog);
+        if (visible == null || !visible.goBack()) {
+            MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(this);
+            dialog.setTitle(R.string.logout).setMessage(Html.fromHtml(getString(R.string.logout_confirmation)))
+                    .setNegativeButton(R.string.no, null)
+                    .setPositiveButton(R.string.yes, (d, which) -> {
+                        pyx.logout();
+                        super.onBackPressed();
+                    });
+
+            showDialog(dialog);
+        }
     }
 
     public interface MainFragment {
         void onPyxReady(@NotNull RegisteredPyx pyx);
 
         void onPyxInvalid();
+
+        /**
+         * @return Whether it has consumed the event.
+         */
+        boolean goBack();
     }
 }
