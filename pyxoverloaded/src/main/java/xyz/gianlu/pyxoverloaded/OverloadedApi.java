@@ -44,8 +44,10 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -72,7 +74,6 @@ import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
 import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
 import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
-import xyz.gianlu.pyxoverloaded.callback.UsersCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 import xyz.gianlu.pyxoverloaded.model.UserProfile;
@@ -566,18 +567,17 @@ public class OverloadedApi {
      * Gets all online users on the specified server.
      *
      * @param serverUrl The server URL
-     * @param activity  The caller {@link Activity}
-     * @param callback  The callback containing the list of users
+     * @return A task resolving to the list of users
      */
-    public void listUsers(@NonNull HttpUrl serverUrl, @Nullable Activity activity, @NonNull UsersCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
+    public Task<List<String>> listUsers(@NonNull HttpUrl serverUrl) {
+        return Tasks.call(executorService, () -> {
             JSONObject obj = makePostRequest("Pyx/ListOnline", singletonJsonObject("serverUrl", serverUrl.toString()));
 
             JSONArray array = obj.getJSONArray("users");
             List<String> list = new ArrayList<>(array.length());
             for (int i = 0; i < array.length(); i++) list.add(array.getString(i));
             return overloadedUsersCached = list;
-        }), activity, callback::onUsers, callback::onFailed);
+        });
     }
 
     /**
@@ -1021,7 +1021,7 @@ public class OverloadedApi {
     }
 
     private class WebSocketHolder extends WebSocketListener {
-        final List<EventListener> listeners = new ArrayList<>();
+        final Set<EventListener> listeners = new HashSet<>();
         private final Handler handler = new Handler(Looper.getMainLooper());
         public WebSocket client;
         private int tries = 0;

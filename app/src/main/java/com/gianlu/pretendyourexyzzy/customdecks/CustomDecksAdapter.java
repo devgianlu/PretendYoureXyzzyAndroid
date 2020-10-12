@@ -83,7 +83,7 @@ public final class CustomDecksAdapter extends OrderedRecyclerViewAdapter<CustomD
 
     @NonNull
     @Override
-    public Comparator<BasicCustomDeck> getComparatorFor(Void sorting) {
+    public Comparator<BasicCustomDeck> getComparatorFor(@NonNull Void sorting) {
         return (o1, o2) -> Long.compare(o2.lastUsed, o1.lastUsed);
     }
 

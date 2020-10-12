@@ -53,7 +53,6 @@ import java.util.Map;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
-import xyz.gianlu.pyxoverloaded.callback.UsersCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
 public class NamesFragment extends FragmentWithDialog implements MenuItem.OnActionExpandListener, SearchView.OnCloseListener, SearchView.OnQueryTextListener, OverloadedApi.EventListener, Pyx.OnEventListener {
@@ -154,20 +153,16 @@ public class NamesFragment extends FragmentWithDialog implements MenuItem.OnActi
 
         if (OverloadedUtils.isSignedIn()) {
             OverloadedApi.get().addEventListener(this);
-            OverloadedApi.get().listUsers(pyx.server.url, getActivity(), new UsersCallback() {
-                @Override
-                public void onUsers(@NonNull List<String> list) {
-                    overloadedUsers.clear();
-                    overloadedUsers.addAll(list);
-                    if (adapter != null) adapter.setOverloadedUsers(list);
-                }
-
-                @Override
-                public void onFailed(@NonNull Exception ex) {
-                    overloadedUsers.clear();
-                    Log.e(TAG, "Failed listing Overloaded users.", ex);
-                }
-            });
+            OverloadedApi.get().listUsers(pyx.server.url)
+                    .addOnSuccessListener(requireActivity(), list -> {
+                        overloadedUsers.clear();
+                        overloadedUsers.addAll(list);
+                        if (adapter != null) adapter.setOverloadedUsers(list);
+                    })
+                    .addOnFailureListener(ex -> {
+                        overloadedUsers.clear();
+                        Log.e(TAG, "Failed listing Overloaded users.", ex);
+                    });
         }
         return rmv;
     }
@@ -360,7 +355,7 @@ public class NamesFragment extends FragmentWithDialog implements MenuItem.OnActi
 
         @NonNull
         @Override
-        public Comparator<Name> getComparatorFor(@NotNull Sorting sorting) {
+        public Comparator<Name> getComparatorFor(@NonNull @NotNull Sorting sorting) {
             switch (sorting) {
                 default:
                 case AZ:

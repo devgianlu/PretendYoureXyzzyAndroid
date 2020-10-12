@@ -178,7 +178,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
 
         @NonNull
         @Override
-        public Comparator<Chat> getComparatorFor(Void sorting) {
+        public Comparator<Chat> getComparatorFor(@NonNull Void sorting) {
             return (o1, o2) -> {
                 PlainChatMessage m1 = chatApi.getLastMessage(o1.id);
                 if (m1 == null) return 0;

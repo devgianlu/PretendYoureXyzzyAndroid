@@ -279,7 +279,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
 
         @NonNull
         @Override
-        public Comparator<PlainChatMessage> getComparatorFor(Void sorting) {
+        public Comparator<PlainChatMessage> getComparatorFor(@NonNull Void sorting) {
             return (o1, o2) -> Long.compare(o2.timestamp, o1.timestamp);
         }
 

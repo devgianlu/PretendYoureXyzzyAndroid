@@ -465,7 +465,7 @@ public class GamesFragment extends FragmentWithDialog implements SearchView.OnCl
 
         @NonNull
         @Override
-        public Comparator<Game> getComparatorFor(SortBy sorting) {
+        public Comparator<Game> getComparatorFor(@NonNull SortBy sorting) {
             switch (sorting) {
                 case NAME:
                     return new Game.NameComparator();

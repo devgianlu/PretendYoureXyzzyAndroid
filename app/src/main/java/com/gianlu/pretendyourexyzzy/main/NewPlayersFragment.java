@@ -1,41 +1,64 @@
 package com.gianlu.pretendyourexyzzy.main;
 
+import android.content.Context;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.misc.SuperTextView;
+import com.gianlu.commonutils.ui.Toaster;
+import com.gianlu.pretendyourexyzzy.BlockedUsers;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Name;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewPlayersSettingsBinding;
+import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUserProfileBottomSheet;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implements Pyx.OnEventListener {
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
+import xyz.gianlu.pyxoverloaded.model.FriendStatus;
+
+public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implements Pyx.OnEventListener, OverloadedApi.EventListener {
     private static final String TAG = NewPlayersFragment.class.getSimpleName();
     private FragmentNewPlayersSettingsBinding binding;
     private RegisteredPyx pyx;
     private PlayersAdapter adapter;
+    private Task<List<String>> overloadedUsersTask;
+    private List<String> overloadedUsers;
 
     private void setPlayersStatus(boolean loading, boolean error) {
         if (loading) {
@@ -82,8 +105,12 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
         });
 
         createPlayersPlaceholders();
-
         setPlayersStatus(true, false);
+
+        if (OverloadedUtils.isSignedIn()) {
+            OverloadedApi.get().addEventListener(this);
+            loadOverloadedUsers();
+        }
 
         return binding.getRoot();
     }
@@ -109,6 +136,19 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
         }
     }
 
+    @NonNull
+    private Task<List<String>> loadOverloadedUsers() {
+        if (!OverloadedUtils.isSignedIn())
+            return overloadedUsersTask = Tasks.forException(new Exception("Overloaded not signed in!"));
+
+        if (overloadedUsersTask != null && !overloadedUsersTask.isComplete())
+            return overloadedUsersTask;
+
+        return overloadedUsersTask = OverloadedApi.get().listUsers(pyx.server.url)
+                .addOnSuccessListener(list -> overloadedUsers = list)
+                .addOnFailureListener(ex -> Log.e(TAG, "Failed getting Overloaded users.", ex));
+    }
+
     private void playersLoaded(@NonNull List<Name> names) {
         adapter = new PlayersAdapter(names);
         binding.playersFragmentList.setAdapter(adapter);
@@ -125,7 +165,7 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
         this.pyx = pyx;
         this.pyx.polling().addListener(this);
 
-        pyx.request(PyxRequests.getNamesList())
+        loadOverloadedUsers().continueWithTask(task -> pyx.request(PyxRequests.getNamesList()))
                 .addOnSuccessListener(this::playersLoaded)
                 .addOnFailureListener(this::failedLoadingPlayers);
 
@@ -146,6 +186,7 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
     @Override
     public void onDestroy() {
         super.onDestroy();
+        OverloadedApi.get().removeEventListener(this);
         if (pyx != null) pyx.polling().removeListener(this);
         this.pyx = null;
     }
@@ -158,16 +199,35 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
                     adapter.itemChangedOrAdded(new Name(msg.obj.getString("n")));
                 break;
             case PLAYER_LEAVE:
-                if (adapter != null)
-                    adapter.removeItem(msg.obj.getString("n"));
+                if (adapter != null) {
+                    String username = msg.obj.getString("n");
+                    adapter.removeItem((item) -> item.noSigil().equals(username));
+                }
                 break;
             case GAME_LIST_REFRESH:
-                pyx.request(PyxRequests.getNamesList())
+                loadOverloadedUsers().continueWithTask(task -> pyx.request(PyxRequests.getNamesList()))
                         .addOnSuccessListener((names) -> {
                             if (adapter != null) adapter.itemsChanged(names);
                         })
-                        .addOnFailureListener((ex) -> Log.e(TAG, "Failed refreshing names list."));
+                        .addOnFailureListener((ex) -> Log.e(TAG, "Failed refreshing names list.", ex));
                 break;
+        }
+    }
+
+    @Override
+    public void onEvent(@NonNull OverloadedApi.Event event) throws JSONException {
+        if (event.data == null) return;
+
+        if (event.type == OverloadedApi.Event.Type.USER_LEFT_SERVER) {
+            String username = event.data.getString("nick");
+            if (overloadedUsers != null)
+                if (overloadedUsers.remove(username) && adapter != null)
+                    adapter.itemChanged((item) -> item.noSigil().equals(username));
+        } else if (event.type == OverloadedApi.Event.Type.USER_JOINED_SERVER) {
+            String username = event.data.getString("nick");
+            if (overloadedUsers != null)
+                if (overloadedUsers.add(username) && adapter != null)
+                    adapter.itemChanged((item) -> item.noSigil().equals(username));
         }
     }
 
@@ -189,9 +249,82 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
         @Override
         protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull Name name) {
             ((SuperTextView) holder.itemView).setHtml(name.sigil() == Name.Sigil.NORMAL_USER ? name.withSigil() : (SuperTextView.makeBold(name.sigil().symbol()) + name.noSigil()));
+            holder.itemView.setOnClickListener(v -> showPopup(holder.itemView.getContext(), holder.itemView, name.noSigil()));
 
-            // TODO: Handle player click
-            // TODO: Handle Overloaded users
+            if (hasOverloadedUser(name.noSigil()))
+                CommonUtils.setTextColor((TextView) holder.itemView, R.color.appColor_500);
+            else
+                CommonUtils.setTextColorFromAttr((TextView) holder.itemView, android.R.attr.textColorSecondary);
+        }
+
+        private boolean hasOverloadedUser(@NonNull String username) {
+            return overloadedUsers != null && overloadedUsers.contains(username);
+        }
+
+        private void showPopup(@NonNull Context context, @NonNull View anchor, @NonNull String username) {
+            PopupMenu popup = new PopupMenu(context, anchor);
+            popup.inflate(R.menu.item_name);
+
+            Menu menu = popup.getMenu();
+            if (!username.equals(Utils.myPyxUsername())) {
+                if (BlockedUsers.isBlocked(username)) {
+                    menu.removeItem(R.id.nameItemMenu_block);
+                    menu.removeItem(R.id.nameItemMenu_showProfile);
+                    menu.removeItem(R.id.nameItemMenu_addFriend);
+                } else {
+                    menu.removeItem(R.id.nameItemMenu_unblock);
+                    if (hasOverloadedUser(username)) {
+                        Map<String, FriendStatus> map = OverloadedApi.get().friendsStatusCache();
+                        if (map != null && map.containsKey(username))
+                            menu.removeItem(R.id.nameItemMenu_addFriend);
+                    } else {
+                        menu.removeItem(R.id.nameItemMenu_showProfile);
+                        menu.removeItem(R.id.nameItemMenu_addFriend);
+                    }
+                }
+            } else {
+                menu.removeItem(R.id.nameItemMenu_unblock);
+                menu.removeItem(R.id.nameItemMenu_block);
+                menu.removeItem(R.id.nameItemMenu_addFriend);
+                menu.removeItem(R.id.nameItemMenu_showProfile);
+            }
+
+            popup.setOnMenuItemClickListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.nameItemMenu_showInfo:
+                        FragmentActivity activity = getActivity();
+                        if (activity != null) UserInfoDialog.loadAndShow(pyx, activity, username);
+                        return true;
+                    case R.id.nameItemMenu_unblock:
+                        BlockedUsers.unblock(username);
+                        return true;
+                    case R.id.nameItemMenu_block:
+                        BlockedUsers.block(username);
+                        return true;
+                    case R.id.nameItemMenu_showProfile:
+                        OverloadedUserProfileBottomSheet.get().show(NewPlayersFragment.this, username);
+                        return true;
+                    case R.id.nameItemMenu_addFriend:
+                        OverloadedApi.get().addFriend(username, null, new FriendsStatusCallback() {
+                            @Override
+                            public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
+                                AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_ADD_FRIEND);
+                                showToast(Toaster.build().message(R.string.friendAdded).extra(username));
+                            }
+
+                            @Override
+                            public void onFailed(@NotNull Exception ex) {
+                                Log.e(TAG, "Failed adding friend.", ex);
+                                showToast(Toaster.build().message(R.string.failedAddingFriend).extra(username));
+                            }
+                        });
+                        return true;
+                    default:
+                        return false;
+                }
+            });
+
+            CommonUtils.showPopupOffsetDip(context, popup, 24, -8);
         }
 
         @Override
@@ -202,19 +335,9 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
         protected void shouldUpdateItemCount(int count) {
         }
 
-        void removeItem(@NonNull String nameStr) {
-            for (int i = 0; i < originalObjs.size(); i++) {
-                Name name = originalObjs.get(i);
-                if (nameStr.equals(name.noSigil())) {
-                    removeItem(name);
-                    break;
-                }
-            }
-        }
-
         @NonNull
         @Override
-        public Comparator<Name> getComparatorFor(Sorting sorting) {
+        public Comparator<Name> getComparatorFor(@NonNull Sorting sorting) {
             switch (sorting) {
                 default:
                 case AZ:
