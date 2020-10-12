@@ -3,6 +3,7 @@ package com.gianlu.pretendyourexyzzy.api.models;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.adapters.Filterable;
 import com.gianlu.pretendyourexyzzy.R;
@@ -12,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.text.ParseException;
 import java.util.Comparator;
 
-public class Name implements Filterable<String> {
+public class Name implements Filterable<Void> {
     private final String name;
     private final String noSigil;
     private final Sigil sigil;
@@ -39,8 +40,9 @@ public class Name implements Filterable<String> {
     }
 
     @Override
-    public String getFilterable() {
-        return name;
+    @Nullable
+    public Void[] getMatchingFilters() {
+        return null;
     }
 
     public enum Sigil {

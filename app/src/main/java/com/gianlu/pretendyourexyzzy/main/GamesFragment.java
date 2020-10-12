@@ -425,7 +425,7 @@ public class GamesFragment extends FragmentWithDialog implements SearchView.OnCl
         void onPassword(@Nullable String password);
     }
 
-    public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHolder, Game, SortBy, Game.Protection> {
+    public class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHolder, Game, SortBy, Game.Filters> {
         private final LayoutInflater inflater;
         private final FirstLoadedPyx pyx;
 
@@ -439,12 +439,12 @@ public class GamesFragment extends FragmentWithDialog implements SearchView.OnCl
         }
 
         void setFilterOutLockedLobbies(boolean filter) {
-            if (filter) setFilters(Game.Protection.LOCKED);
+            if (filter) setFilters(Game.Filters.LOCKED);
             else setFilters();
         }
 
         boolean doesFilterOutLockedLobbies() {
-            return filters.contains(Game.Protection.LOCKED);
+            return filters.contains(Game.Filters.LOCKED);
         }
 
         @Override

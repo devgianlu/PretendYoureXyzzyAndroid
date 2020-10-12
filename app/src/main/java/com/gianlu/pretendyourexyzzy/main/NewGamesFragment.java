@@ -125,11 +125,46 @@ public class NewGamesFragment extends FragmentWithDialog implements NewMainActiv
         binding.gamesFragmentChangeServer.setOnClickListener(v -> changeServerDialog(true));
 
         binding.gamesFragmentFilterLocked.setOnClickListener(v -> {
-            boolean filter = !adapter.doesFilterOutLockedLobbies();
+            boolean filter = !Prefs.getBoolean(PK.FILTER_LOCKED_LOBBIES);
             Prefs.putBoolean(PK.FILTER_LOCKED_LOBBIES, filter);
             binding.gamesFragmentFilterLocked.setImageResource(filter ? R.drawable.baseline_lock_open_24 : R.drawable.outline_lock_24);
 
             if (adapter != null) adapter.setFilterOutLockedLobbies(filter);
+        });
+        binding.gamesFragmentFilterStatus.setOnClickListener(v -> {
+            String filter = Prefs.getString(PK.FILTER_GAME_STATUS);
+            if (filter.equals("any")) filter = "in_progress";
+            else if (filter.equals("in_progress")) filter = "lobby";
+            else filter = "any";
+            Prefs.putString(PK.FILTER_GAME_STATUS, filter);
+
+            switch (filter) {
+                default:
+                case "any":
+                    binding.gamesFragmentFilterStatus.setImageResource(R.drawable.baseline_casino_hourglass_24);
+                    CommonUtils.setPaddingDip(binding.gamesFragmentFilterStatus, 0);
+                    if (adapter != null) {
+                        adapter.removeFilter(Game.Filters.IN_PROGRESS);
+                        adapter.removeFilter(Game.Filters.LOBBY);
+                    }
+                    break;
+                case "in_progress":
+                    binding.gamesFragmentFilterStatus.setImageResource(R.drawable.baseline_casino_24);
+                    CommonUtils.setPaddingDip(binding.gamesFragmentFilterStatus, 4);
+                    if (adapter != null) {
+                        adapter.removeFilter(Game.Filters.IN_PROGRESS);
+                        adapter.addFilter(Game.Filters.LOBBY);
+                    }
+                    break;
+                case "lobby":
+                    binding.gamesFragmentFilterStatus.setImageResource(R.drawable.baseline_hourglass_empty_24);
+                    CommonUtils.setPaddingDip(binding.gamesFragmentFilterStatus, 4);
+                    if (adapter != null) {
+                        adapter.addFilter(Game.Filters.IN_PROGRESS);
+                        adapter.removeFilter(Game.Filters.LOBBY);
+                    }
+                    break;
+            }
         });
 
         binding.gamesFragmentMenu.setOnClickListener((v) -> showPopupMenu());
@@ -276,7 +311,7 @@ public class NewGamesFragment extends FragmentWithDialog implements NewMainActiv
         }
     }
 
-    private class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHolder, Game, GamesFragment.SortBy, Game.Protection> {
+    private class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHolder, Game, GamesFragment.SortBy, Game.Filters> {
 
         GamesAdapter(List<Game> games) {
             super(games, GamesFragment.SortBy.AVAILABLE_PLAYERS);
@@ -285,12 +320,8 @@ public class NewGamesFragment extends FragmentWithDialog implements NewMainActiv
         }
 
         void setFilterOutLockedLobbies(boolean filter) {
-            if (filter) setFilters(Game.Protection.LOCKED);
-            else setFilters();
-        }
-
-        boolean doesFilterOutLockedLobbies() {
-            return filters.contains(Game.Protection.LOCKED);
+            if (filter) addFilter(Game.Filters.LOCKED);
+            else removeFilter(Game.Filters.LOCKED);
         }
 
         @NonNull

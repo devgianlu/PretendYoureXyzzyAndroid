@@ -15,7 +15,6 @@ import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.adapters.NotFilterable;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
@@ -82,7 +81,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
         return rmv;
     }
 
-    private class ChatsAdapter extends OrderedRecyclerViewAdapter<ChatsAdapter.ViewHolder, Chat, Void, NotFilterable> {
+    private class ChatsAdapter extends OrderedRecyclerViewAdapter<ChatsAdapter.ViewHolder, Chat, Void, Void> {
         private final LayoutInflater inflater;
 
         ChatsAdapter(@NonNull Context context, @NonNull List<Chat> chats) {

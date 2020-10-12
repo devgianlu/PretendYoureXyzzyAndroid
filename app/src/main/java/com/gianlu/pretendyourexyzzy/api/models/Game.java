@@ -24,7 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-public class Game implements Filterable<Game.Protection>, Serializable {
+public class Game implements Filterable<Game.Filters>, Serializable {
     public final int gid;
     public final ArrayList<String> players;
     public final ArrayList<String> spectators;
@@ -107,8 +107,11 @@ public class Game implements Filterable<Game.Protection>, Serializable {
     }
 
     @Override
-    public Protection getFilterable() {
-        return hasPassword(false) ? Protection.LOCKED : Protection.OPEN;
+    public Filters[] getMatchingFilters() {
+        return new Filters[]{
+                hasPassword(false) ? Filters.LOCKED : Filters.OPEN,
+                status.isStarted() ? Filters.IN_PROGRESS : Filters.LOBBY
+        };
     }
 
     public boolean hasPassword(boolean knowsPassword) {
@@ -116,9 +119,9 @@ public class Game implements Filterable<Game.Protection>, Serializable {
         else return hasPassword;
     }
 
-    public enum Protection {
-        LOCKED,
-        OPEN
+    public enum Filters {
+        LOCKED, OPEN,
+        LOBBY, IN_PROGRESS
     }
 
     public enum Status {

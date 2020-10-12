@@ -12,7 +12,6 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.adapters.NotFilterable;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
@@ -21,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public final class CustomDecksAdapter extends OrderedRecyclerViewAdapter<CustomDecksAdapter.ViewHolder, BasicCustomDeck, Void, NotFilterable> {
+public final class CustomDecksAdapter extends OrderedRecyclerViewAdapter<CustomDecksAdapter.ViewHolder, BasicCustomDeck, Void, Void> {
     private final Listener listener;
     private final LayoutInflater inflater;
 

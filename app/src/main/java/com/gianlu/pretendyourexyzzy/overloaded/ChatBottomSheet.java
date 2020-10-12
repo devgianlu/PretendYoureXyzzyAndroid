@@ -17,7 +17,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.adapters.NotFilterable;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.bottomsheet.ModalBottomSheetHeaderView;
@@ -209,7 +208,7 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         }
     }
 
-    private class ChatMessagesAdapter extends OrderedRecyclerViewAdapter<ChatMessagesAdapter.ViewHolder, PlainChatMessage, Void, NotFilterable> {
+    private class ChatMessagesAdapter extends OrderedRecyclerViewAdapter<ChatMessagesAdapter.ViewHolder, PlainChatMessage, Void, Void> {
         private final LayoutInflater inflater;
         private final int dp64;
 

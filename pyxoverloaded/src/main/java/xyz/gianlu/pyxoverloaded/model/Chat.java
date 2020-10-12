@@ -3,13 +3,13 @@ package xyz.gianlu.pyxoverloaded.model;
 import android.database.Cursor;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.adapters.Filterable;
-import com.gianlu.commonutils.adapters.NotFilterable;
 
 import xyz.gianlu.pyxoverloaded.signal.OverloadedUserAddress;
 
-public class Chat implements Filterable<NotFilterable> {
+public class Chat implements Filterable<Void> {
     public final int id;
     public final String recipient;
     public final String address;
@@ -45,7 +45,8 @@ public class Chat implements Filterable<NotFilterable> {
     }
 
     @Override
-    public NotFilterable getFilterable() {
+    @Nullable
+    public Void[] getMatchingFilters() {
         return null;
     }
 }

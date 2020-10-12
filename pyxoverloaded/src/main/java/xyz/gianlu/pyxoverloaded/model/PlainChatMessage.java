@@ -3,15 +3,15 @@ package xyz.gianlu.pyxoverloaded.model;
 import android.database.Cursor;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.adapters.Filterable;
-import com.gianlu.commonutils.adapters.NotFilterable;
 
 import java.util.Objects;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
-public class PlainChatMessage implements Filterable<NotFilterable> {
+public class PlainChatMessage implements Filterable<Void> {
     public final int chatId;
     public final long rowId;
     public final String text;
@@ -48,8 +48,9 @@ public class PlainChatMessage implements Filterable<NotFilterable> {
     }
 
     @Override
-    public NotFilterable getFilterable() {
-        return new NotFilterable();
+    @Nullable
+    public Void[] getMatchingFilters() {
+        return null;
     }
 
     public boolean isFromMe() {

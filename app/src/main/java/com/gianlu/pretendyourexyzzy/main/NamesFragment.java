@@ -251,7 +251,7 @@ public class NamesFragment extends FragmentWithDialog implements MenuItem.OnActi
         ZA
     }
 
-    private class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHolder, Name, Sorting, String> {
+    private class NamesAdapter extends OrderedRecyclerViewAdapter<NamesAdapter.ViewHolder, Name, Sorting, Void> {
         private final LayoutInflater inflater;
         private final List<String> overloadedUsers;
 

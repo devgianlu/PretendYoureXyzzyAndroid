@@ -4,9 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.adapters.Filterable;
-import com.gianlu.commonutils.adapters.NotFilterable;
 
-public class BasicCustomDeck implements Filterable<NotFilterable> {
+public class BasicCustomDeck implements Filterable<Void> {
     public final String name;
     public final String watermark;
     public final String owner;
@@ -45,7 +44,8 @@ public class BasicCustomDeck implements Filterable<NotFilterable> {
     }
 
     @Override
-    public NotFilterable getFilterable() {
+    @Nullable
+    public Void[] getMatchingFilters() {
         return null;
     }
 }
