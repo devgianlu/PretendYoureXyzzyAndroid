@@ -170,12 +170,10 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:textAlignment="center"
                         android:layout_marginTop="16dp"
                         android:text="@string/noGamesMessage"
-                        android:textAlignment="center"
-                        android:textAppearance="@style/TextAppearance.Medium"
-                        android:textColor="#505050"
-                        android:textSize="12sp" />
+                        android:textAppearance="@style/TextAppearance.Undraw" />
 
                     <!-- Move it a bit further up -->
                     <Space
@@ -202,12 +200,10 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:textAlignment="center"
                         android:layout_marginTop="16dp"
                         android:text="@string/gamesErrorMessage"
-                        android:textAlignment="center"
-                        android:textAppearance="@style/TextAppearance.Medium"
-                        android:textColor="#505050"
-                        android:textSize="12sp" />
+                        android:textAppearance="@style/TextAppearance.Undraw" />
 
                     <!-- Move it a bit further up -->
                     <Space

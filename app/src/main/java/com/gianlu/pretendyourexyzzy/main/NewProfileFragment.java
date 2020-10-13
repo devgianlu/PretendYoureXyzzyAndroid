@@ -32,6 +32,12 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentNewProfileBinding.inflate(inflater, container, false);
         binding.profileFragmentInputs.idCodeInput.setEndIconOnClickListener(v -> CommonUtils.setText(binding.profileFragmentInputs.idCodeInput, CommonUtils.randomString(100)));
+
+        // TODO: Load custom decks
+        // TODO: Load starred cards
+        // TODO: Load friends
+        // TODO: Load achievements
+
         return binding.getRoot();
     }
 

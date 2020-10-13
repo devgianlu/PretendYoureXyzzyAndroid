@@ -100,7 +100,7 @@
     <string name="keepScreenOn">Keep screen on</string>
     <string name="starredCards">Starred cards</string>
     <string name="selectAStarredCard">Select a card from the list above.</string>
-    <string name="noStarredCards">You have no starred cards!</string>
+    <string name="noStarredCards">Save the cards you love, have a good laugh reading them.</string>
     <string name="hurryUp">Hurry up!!</string>
     <string name="setBlankCardText">Set blank card text</string>
     <string name="failedCreatingGame">Failed creating a new game!</string>
@@ -272,7 +272,7 @@
     <string name="overloadedHeader_roundsPlayed"><![CDATA[<b>Rounds played</b><br>]]>%s</string>
     <string name="overloadedHeader_roundsWon"><![CDATA[<b>Rounds won</b><br>]]>%s</string>
     <string name="achievements">Achievements</string>
-    <string name="noAchievements">You have no achievements!</string>
+    <string name="noAchievements">Start playing and get rewarded with badges!</string>
     <string name="linkedAccounts">Linked accounts</string>
     <string name="friends">Friends</string>
     <string name="friendOffline">Offline</string>
@@ -390,4 +390,6 @@
     <string name="server">Server</string>
     <string name="noGamesMessage">Feeling lonely… Try switching server to find more games.</string>
     <string name="gamesErrorMessage">Something went wrong… Try again.</string>
+    <string name="noCustomDecks">Be creative… Create your own custom decks!</string>
+    <string name="noFriends">Make some friends... You\'ll have a lot to share!</string>
 </resources>
