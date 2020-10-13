@@ -43,7 +43,9 @@ public class UserHistoryFragment extends FragmentWithDialog {
 
         pyx.getUserHistory()
                 .addOnSuccessListener(requireActivity(), result -> {
-                    rmv.loadListData(new UserHistoryAdapter(requireContext(), pyx, result, (UserHistoryAdapter.Listener) getContext()), false);
+                    if (!isAdded()) return;
+
+                    rmv.loadListData(new UserHistoryAdapter(requireContext(), pyx, result, (UserHistoryAdapter.Listener) getParentFragment()), false);
                     if (result.isEmpty()) rmv.showInfo(R.string.noMetricsSessions);
                     else rmv.showList();
                 })

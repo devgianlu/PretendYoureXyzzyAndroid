@@ -87,14 +87,6 @@
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar.Drawer" />
 
-        <!-- Metrics activity (sessions, games, rounds) -->
-        <activity
-            android:name=".metrics.MetricsActivity"
-            android:configChanges="uiMode"
-            android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-
         <!-- Manager servers activity -->
         <activity
             android:name=".activities.ManageServersActivity"

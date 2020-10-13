@@ -35,7 +35,7 @@ import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewMainSettingsBinding;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewPrefsSettingsBinding;
-import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
+import com.gianlu.pretendyourexyzzy.metrics.MetricsFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -113,8 +113,10 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
         if (currentPage == null || currentPage == Page.MAIN)
             return false;
 
-        replaceFragment(Page.MAIN);
-        return true;
+        ChildFragment frag = fragments.get(currentPage);
+        if (frag == null) return false;
+
+        return frag.goBack();
     }
 
     @NonNull
@@ -142,9 +144,8 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
 
     private enum Page {
         MAIN(MainFragment.class), PLAYERS(NewPlayersFragment.class), TRANSLATORS(TranslatorsFragment.class),
-        PREFS_GENERAL(GeneralPrefsFragment.class), PREFS_OVERLOADED(OverloadedPrefsFragment.class);
-
-        // TODO: Move metrics to a fragment?
+        PREFS_GENERAL(GeneralPrefsFragment.class), PREFS_OVERLOADED(OverloadedPrefsFragment.class),
+        METRICS(MetricsFragment.class);
 
         private final Class<? extends ChildFragment> clazz;
 
@@ -175,8 +176,9 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
             }
         }
 
-        protected final void goBack() {
+        protected boolean goBack() {
             replaceFragment(Page.MAIN);
+            return true;
         }
 
         protected final void replaceFragment(@NonNull Page page) {
@@ -281,15 +283,14 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
 
     public static class MainFragment extends ChildFragment {
         private PreferencesBillingHelper billingHelper;
-        private FragmentNewMainSettingsBinding binding;
 
         @Nullable
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            binding = FragmentNewMainSettingsBinding.inflate(inflater, container, false);
+            FragmentNewMainSettingsBinding binding = FragmentNewMainSettingsBinding.inflate(inflater, container, false);
 
             binding.settingsPlayers.setOnClickListener(v -> replaceFragment(Page.PLAYERS));
-            binding.settingsMetrics.setOnClickListener(v -> MetricsActivity.startActivity(requireContext()));
+            binding.settingsMetrics.setOnClickListener(v -> replaceFragment(Page.METRICS));
 
             binding.settingsApp.setSubtitle(R.string.devgianluCopyright, Calendar.getInstance().get(Calendar.YEAR));
             binding.settingsVersion.setSubtitle(getVersion());
@@ -312,9 +313,7 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
             });
             binding.settingsDonate.setOnClickListener(v -> donate());
 
-            binding.settingsSendLogs.setOnClickListener(v -> {
-                LogsHelper.sendEmail(requireContext(), null);
-            });
+            binding.settingsSendLogs.setOnClickListener(v -> LogsHelper.sendEmail(requireContext(), null));
             binding.settingsExportLogs.setOnClickListener(v -> {
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 Exception logsException = LogsHelper.exportLogFiles(requireContext(), shareIntent);
@@ -447,6 +446,22 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
             }
         }
 
+        private boolean hasLinked() {
+            FirebaseUser user = OverloadedApi.get().firebaseUser();
+            return user != null && user.getProviderData().size() > 0;
+        }
+
+        @NonNull
+        private List<String> linkedProviderNames(@NonNull Context context) {
+            List<String> names = new ArrayList<>();
+            for (OverloadedSignInHelper.SignInProvider provider : OverloadedSignInHelper.SIGN_IN_PROVIDERS) {
+                if (OverloadedApi.get().hasLinkedProvider(provider.id))
+                    names.add(context.getString(provider.nameRes));
+            }
+
+            return names;
+        }
+
         private boolean canLink() {
             FirebaseUser user = OverloadedApi.get().firebaseUser();
             if (user == null) return false;
@@ -494,6 +509,14 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
                 loggedInAs.setSummary(Utils.getDisplayableName(currentUser));
                 loggedInAs.setClickable(false);
                 addPreference(loggedInAs);
+
+                if (hasLinked()) {
+                    MaterialStandardPreference linkedAccounts = new MaterialStandardPreference(context);
+                    linkedAccounts.setTitle(R.string.linkedAccounts);
+                    linkedAccounts.setSummary(CommonUtils.join(linkedProviderNames(context), ", "));
+                    linkedAccounts.setClickable(false);
+                    addPreference(linkedAccounts);
+                }
 
                 if (canLink()) {
                     MaterialStandardPreference linkAccount = new MaterialStandardPreference(context);

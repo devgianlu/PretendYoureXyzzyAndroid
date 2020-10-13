@@ -89,6 +89,8 @@ public class SessionHistoryFragment extends FragmentWithDialog {
 
         pyx.getSessionHistory(id)
                 .addOnSuccessListener(requireActivity(), result -> {
+                    if (!isAdded()) return;
+
                     if (result.games.isEmpty() && result.judgedRounds.isEmpty() && result.playedRounds.isEmpty()) {
                         loading.setVisibility(View.GONE);
                         container.setVisibility(View.GONE);
@@ -97,11 +99,11 @@ public class SessionHistoryFragment extends FragmentWithDialog {
                         loading.setVisibility(View.GONE);
                         container.setVisibility(View.VISIBLE);
                         gamesLabel.setHtml(R.string.gamesCount, result.games.size());
-                        games.setAdapter(new GamesAdapter(requireContext(), result.games, (GamesAdapter.Listener) getContext()));
+                        games.setAdapter(new GamesAdapter(requireContext(), result.games, (GamesAdapter.Listener) getParentFragment()));
                         playedRoundsLabel.setHtml(R.string.playedRoundsCount, result.playedRounds.size());
-                        playedRounds.setAdapter(new RoundsAdapter(requireContext(), result.playedRounds, (RoundsAdapter.Listener) getContext()));
+                        playedRounds.setAdapter(new RoundsAdapter(requireContext(), result.playedRounds, (RoundsAdapter.Listener) getParentFragment()));
                         judgedRoundsLabel.setHtml(R.string.judgedRoundsCount, result.judgedRounds.size());
-                        judgedRounds.setAdapter(new RoundsAdapter(requireContext(), result.judgedRounds, (RoundsAdapter.Listener) getContext()));
+                        judgedRounds.setAdapter(new RoundsAdapter(requireContext(), result.judgedRounds, (RoundsAdapter.Listener) getParentFragment()));
                     }
                 })
                 .addOnFailureListener(requireActivity(), ex -> {

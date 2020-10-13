@@ -80,6 +80,8 @@ public class GameHistoryFragment extends FragmentWithDialog {
     }
 
     private void loaded(@NonNull GameHistory result) {
-        rmv.loadListData(new RoundsAdapter(requireContext(), result, (RoundsAdapter.Listener) requireContext()));
+        if (!isAdded()) return;
+
+        rmv.loadListData(new RoundsAdapter(requireContext(), result, (RoundsAdapter.Listener) getParentFragment()));
     }
 }

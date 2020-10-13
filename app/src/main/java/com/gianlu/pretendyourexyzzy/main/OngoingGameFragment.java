@@ -49,7 +49,6 @@ import com.gianlu.pretendyourexyzzy.main.ongoinggame.AnotherGameManager;
 import com.gianlu.pretendyourexyzzy.main.ongoinggame.CustomDecksSheet;
 import com.gianlu.pretendyourexyzzy.main.ongoinggame.GameLayout;
 import com.gianlu.pretendyourexyzzy.main.ongoinggame.UrbanDictSheet;
-import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
 import com.gianlu.pretendyourexyzzy.tutorial.CreateGameTutorial;
 import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
 import com.gianlu.pretendyourexyzzy.tutorial.HowToPlayTutorial;
@@ -238,7 +237,7 @@ public class OngoingGameFragment extends FragmentWithDialog implements PlayersAd
                 shareGame();
                 return true;
             case R.id.ongoingGame_gameMetrics:
-                MetricsActivity.startActivity(getContext(), perm);
+                // MetricsActivity.startActivity(getContext(), perm);
                 return true;
             case R.id.ongoingGame_lastRound:
                 String roundId = manager == null ? null : manager.getLastRoundMetricsId();

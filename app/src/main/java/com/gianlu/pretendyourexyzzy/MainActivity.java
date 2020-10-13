@@ -44,7 +44,6 @@ import com.gianlu.pretendyourexyzzy.main.OnLeftGame;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.main.OverloadedFragment;
 import com.gianlu.pretendyourexyzzy.main.PyxChatsFragment;
-import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
@@ -491,7 +490,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 StarredCardsActivity.startActivity(this);
                 return true;
             case USER_METRICS:
-                MetricsActivity.startActivity(this);
+                // MetricsActivity.startActivity(this);
                 return true;
             case PREFERENCES:
                 startActivity(new Intent(this, PreferenceActivity.class));
