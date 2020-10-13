@@ -31,6 +31,7 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentNewProfileBinding.inflate(inflater, container, false);
+        binding.profileFragmentInputs.idCodeInput.setEndIconOnClickListener(v -> CommonUtils.setText(binding.profileFragmentInputs.idCodeInput, CommonUtils.randomString(100)));
         return binding.getRoot();
     }
 
