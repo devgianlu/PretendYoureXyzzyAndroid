@@ -7,7 +7,6 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -38,21 +37,25 @@ import com.google.android.material.card.MaterialCardView;
 
 public class GameCardView extends MaterialCardView {
     public static final int WIDTH_DIP = 156;
+    public static final int HEIGHT_DIP = 230;
     private static final String TAG = GameCardView.class.getSimpleName();
-    public final ImageButton primaryAction;
     public final SuperTextView text;
-    private final CardListener listener;
     private final int mWidth;
+    private final int mHeight;
     private final FrameLayout notText;
     private final ProgressBar loading;
     private final ImageView unknown;
     private final ImageView image;
+
+    public final ImageButton primaryAction;
+    private final ImageButton secondaryAction;
     private final SuperTextView numDraw;
     private final SuperTextView numPick;
     private final TextView watermark;
-    private final ImageButton secondaryAction;
+
     private final Action primary;
     private final Action secondary;
+    private final CardListener listener;
     private boolean enableCardImageZoom = true;
     private BaseCard card;
 
@@ -79,9 +82,13 @@ public class GameCardView extends MaterialCardView {
         this.secondary = secondary;
         this.listener = listener;
 
-        LayoutInflater.from(getContext()).inflate(R.layout.pyx_card, this, true);
+        View.inflate(getContext(), R.layout.pyx_card, this);
+
         mWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, WIDTH_DIP, getResources().getDisplayMetrics());
-        setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, getResources().getDisplayMetrics()));
+        mHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, HEIGHT_DIP, getResources().getDisplayMetrics());
+
+        setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics()));
+        setRadius((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics()));
 
         text = findViewById(R.id.pyxCard_text);
 
@@ -161,7 +168,7 @@ public class GameCardView extends MaterialCardView {
         int background = card.black() ? Color.BLACK : getWhiteBackground();
 
         if (card instanceof GameCard && ((GameCard) card).isWinner())
-            setCardBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorAccent));
+            setCardBackgroundColor(ContextCompat.getColor(getContext(), R.color.appColor_500));
         else
             setCardBackgroundColor(background);
 
@@ -277,7 +284,7 @@ public class GameCardView extends MaterialCardView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(MeasureSpec.makeMeasureSpec(mWidth, MeasureSpec.EXACTLY), heightMeasureSpec);
+        super.onMeasure(MeasureSpec.makeMeasureSpec(mWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(mHeight, MeasureSpec.EXACTLY));
     }
 
     @Nullable
@@ -291,10 +298,7 @@ public class GameCardView extends MaterialCardView {
     }
 
     public enum Action {
-        SELECT,
-        DELETE,
-        TOGGLE_STAR,
-        SELECT_IMG
+        SELECT, DELETE, TOGGLE_STAR, SELECT_IMG
     }
 
     interface CardListener {

@@ -63,6 +63,7 @@
                 android:layout_marginTop="18dp"
                 android:layout_marginEnd="24dp"
                 android:layout_marginBottom="8dp"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <TextView
@@ -78,7 +79,6 @@
                     android:id="@+id/profileFragment_customDecksAdd"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
-                    android:layout_gravity="center_vertical"
                     android:background="@drawable/bg_button_big"
                     android:padding="4dp"
                     android:scaleType="fitCenter"
@@ -139,7 +139,10 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/profileFragment_starredCardsList"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:visibility="gone" />
 
                 <LinearLayout
                     android:id="@+id/profileFragment_starredCardsEmpty"
