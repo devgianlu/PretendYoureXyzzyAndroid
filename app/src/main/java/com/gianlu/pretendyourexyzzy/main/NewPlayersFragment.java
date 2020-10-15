@@ -40,7 +40,6 @@ import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
 import java.util.Comparator;
@@ -49,7 +48,6 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
-import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
 public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implements Pyx.OnEventListener, OverloadedApi.EventListener {
@@ -308,19 +306,15 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
                         OverloadedUserProfileBottomSheet.get().show(NewPlayersFragment.this, username);
                         return true;
                     case R.id.nameItemMenu_addFriend:
-                        OverloadedApi.get().addFriend(username, null, new FriendsStatusCallback() {
-                            @Override
-                            public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
-                                AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_ADD_FRIEND);
-                                showToast(Toaster.build().message(R.string.friendAdded).extra(username));
-                            }
-
-                            @Override
-                            public void onFailed(@NotNull Exception ex) {
-                                Log.e(TAG, "Failed adding friend.", ex);
-                                showToast(Toaster.build().message(R.string.failedAddingFriend).extra(username));
-                            }
-                        });
+                        OverloadedApi.get().addFriend(username)
+                                .addOnSuccessListener(map -> {
+                                    AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_ADD_FRIEND);
+                                    showToast(Toaster.build().message(R.string.friendAdded).extra(username));
+                                })
+                                .addOnFailureListener(ex -> {
+                                    Log.e(TAG, "Failed adding friend.", ex);
+                                    showToast(Toaster.build().message(R.string.failedAddingFriend).extra(username));
+                                });
                         return true;
                     default:
                         return false;

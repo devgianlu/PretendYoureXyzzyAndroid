@@ -1,30 +1,46 @@
 package com.gianlu.pretendyourexyzzy.main;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.text.InputType;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.preferences.Prefs;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.NewMainActivity;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
+import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewProfileBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemFriendBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemStarredCardBinding;
+import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUserProfileBottomSheet;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase.StarredCard;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -72,11 +88,36 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
         //endregion
 
         //region Friends
+        binding.profileFragmentFriendsAdd.setOnClickListener(v -> {
+            EditText input = new EditText(requireContext());
+            input.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+            builder.setTitle(R.string.addFriend)
+                    .setView(input)
+                    .setPositiveButton(R.string.add, (dialog, which) -> {
+                        String username = input.getText().toString();
+                        OverloadedApi.get().addFriend(username)
+                                .addOnSuccessListener(map -> {
+                                    AnalyticsApplication.sendAnalytics(Utils.ACTION_ADDED_FRIEND_USERNAME);
+                                    showToast(Toaster.build().message(R.string.friendAdded).extra(username));
+                                })
+                                .addOnFailureListener(ex -> {
+                                    Log.e(TAG, "Failed adding friend.", ex);
+                                    showToast(Toaster.build().message(R.string.failedAddingFriend).extra(username));
+                                });
+                    })
+                    .setNegativeButton(R.string.cancel, null);
+
+            showDialog(builder);
+        });
+
         binding.profileFragmentFriendsList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
         binding.profileFragmentFriendsLoading.setVisibility(View.VISIBLE);
         OverloadedUtils.waitReady().addOnSuccessListener(signedIn -> {
             if (signedIn) {
                 binding.profileFragmentFriendsOverloaded.setVisibility(View.GONE);
+                binding.profileFragmentFriendsAdd.setVisibility(View.VISIBLE);
 
                 OverloadedApi.get().friendsStatus()
                         .addOnSuccessListener(friends -> {
@@ -95,6 +136,7 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                 binding.profileFragmentFriendsList.setVisibility(View.GONE);
                 binding.profileFragmentFriendsEmpty.setVisibility(View.GONE);
                 binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
+                binding.profileFragmentFriendsAdd.setVisibility(View.GONE);
             }
         });
         //endregion
@@ -184,10 +226,9 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
 
         @Override
         protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull FriendStatus friend) {
+            holder.itemView.setOnClickListener(v -> showPopup(holder.itemView, friend));
             holder.binding.friendItemName.setText(friend.username);
             holder.setStatus(friend.getStatus());
-
-            // TODO: Show popup
         }
 
         @Override
@@ -213,6 +254,101 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                 int res = o1.getStatus().ordinal() - o2.getStatus().ordinal();
                 return res != 0 ? res : o1.username.compareToIgnoreCase(o2.username);
             };
+        }
+
+        @NonNull
+        private SpannableString getMenuHeader(@NonNull FriendStatus friend) {
+            String text;
+            int color;
+            switch (friend.getStatus()) {
+                case INCOMING_REQUEST:
+                    color = R.color.orange;
+                    text = getString(R.string.friendRequest);
+                    break;
+                case ONLINE:
+                    color = R.color.green;
+                    Pyx.Server server = Pyx.Server.fromOverloadedId(friend.serverId);
+                    text = getString(R.string.friendOnlineOn, server == null ? friend.serverId : server.name);
+                    break;
+                case OFFLINE:
+                    color = R.color.red;
+                    text = getString(R.string.friendOffline);
+                    break;
+                case OUTGOING_REQUEST:
+                    color = R.color.deepPurple;
+                    text = getString(R.string.requestSent);
+                    break;
+                default:
+                    throw new IllegalArgumentException(friend.getStatus().name());
+            }
+
+            SpannableString header = new SpannableString(text);
+            header.setSpan(new ForegroundColorSpan(ContextCompat.getColor(requireContext(), color)), 0, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            return header;
+        }
+
+        private void showPopup(@NonNull View anchor, @NonNull FriendStatus friend) {
+            Context context = anchor.getContext();
+            PopupMenu popup = new PopupMenu(context, anchor);
+            Menu menu = popup.getMenu();
+            menu.add(0, 0, 0, getMenuHeader(friend)).setEnabled(false);
+            popup.getMenuInflater().inflate(R.menu.item_overloaded_user, menu);
+
+            if (!friend.mutual)
+                menu.removeItem(R.id.overloadedUserItemMenu_openChat);
+
+            if (!friend.request) {
+                menu.removeItem(R.id.overloadedUserItemMenu_rejectRequest);
+                menu.removeItem(R.id.overloadedUserItemMenu_acceptRequest);
+            } else {
+                menu.removeItem(R.id.overloadedUserItemMenu_removeFriend);
+            }
+
+            popup.setOnMenuItemClickListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.overloadedUserItemMenu_showProfile:
+                        OverloadedUserProfileBottomSheet.get().show(NewProfileFragment.this, friend.username);
+                        return true;
+                    case R.id.overloadedUserItemMenu_openChat:
+                        OverloadedApi.chat(context).startChat(friend.username)
+                                .addOnSuccessListener(chat -> {
+                                    ChatBottomSheet sheet = new ChatBottomSheet();
+                                    sheet.show(getActivity(), chat);
+                                })
+                                .addOnFailureListener(ex -> {
+                                    Log.e(TAG, "Failed opening chat.", ex);
+                                    showToast(Toaster.build().message(R.string.failedCreatingChat).extra(friend));
+                                });
+                        return true;
+                    case R.id.overloadedUserItemMenu_rejectRequest:
+                    case R.id.overloadedUserItemMenu_removeFriend:
+                        OverloadedApi.get().removeFriend(friend.username)
+                                .addOnSuccessListener(map -> {
+                                    AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_REMOVE_FRIEND);
+                                    showToast(Toaster.build().message(R.string.removedFriend).extra(friend));
+                                })
+                                .addOnFailureListener(ex -> {
+                                    Log.e(TAG, "Failed removing friend.", ex);
+                                    showToast(Toaster.build().message(R.string.failedRemovingFriend).extra(friend));
+                                });
+                        return true;
+                    case R.id.overloadedUserItemMenu_acceptRequest:
+                        OverloadedApi.get().addFriend(friend.username)
+                                .addOnSuccessListener(map -> {
+                                    AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_ADD_FRIEND);
+                                    showToast(Toaster.build().message(R.string.friendAdded).extra(friend));
+                                })
+                                .addOnFailureListener(ex -> {
+                                    Log.e(TAG, "Failed adding friend.", ex);
+                                    showToast(Toaster.build().message(R.string.failedAddingFriend).extra(friend));
+                                });
+                        return true;
+                    default:
+                        return false;
+                }
+            });
+
+            CommonUtils.showPopupOffsetDip(context, popup, 40, -40);
         }
 
         void userLeft(@NonNull String nickname) {

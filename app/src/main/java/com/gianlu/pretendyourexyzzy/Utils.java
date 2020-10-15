@@ -55,6 +55,7 @@ public final class Utils {
     public static final String ACTION_REMOVED_CUSTOM_DECK_CARD = "added_custom_deck_card";
     public static final String ACTION_CR_CAST_LOGIN = "cr_cast_login";
     public static final String ACTION_CR_CAST_LOGOUT = "cr_cast_logout";
+    public static final String ACTION_ADDED_FRIEND_USERNAME = "added_friend_username";
     private static final String TAG = Utils.class.getSimpleName();
 
     private Utils() {

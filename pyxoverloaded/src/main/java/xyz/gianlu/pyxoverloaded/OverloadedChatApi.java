@@ -13,6 +13,7 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
 import com.gianlu.commonutils.preferences.Prefs;
+import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
 import org.json.JSONArray;
@@ -28,7 +29,6 @@ import java.util.concurrent.ExecutionException;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi.Event;
 import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
-import xyz.gianlu.pyxoverloaded.callback.ChatCallback;
 import xyz.gianlu.pyxoverloaded.callback.ChatMessageCallback;
 import xyz.gianlu.pyxoverloaded.model.Chat;
 import xyz.gianlu.pyxoverloaded.model.EncryptedChatMessage;
@@ -115,22 +115,19 @@ public class OverloadedChatApi implements Closeable {
      * Starts a chat with the specified user.
      *
      * @param username The recipient username
-     * @param activity The caller {@link Activity}
-     * @param callback The callback containing the chat info
+     * @return A task resolving to the {@link Chat} object.
      */
-    public void startChat(@NonNull String username, @Nullable Activity activity, @NonNull ChatCallback callback) {
+    @NonNull
+    public Task<Chat> startChat(@NonNull String username) {
         Chat chat = db.findChatWith(username);
-        if (chat != null)
-            new Handler(Looper.getMainLooper()).post(() -> callback.onChat(chat));
+        if (chat != null) Tasks.forResult(chat);
 
-        callbacks(Tasks.call(api.executorService, () -> {
+        return Tasks.call(api.executorService, () -> {
             JSONObject body = new JSONObject();
             body.put("username", username);
             JSONObject obj = api.makePostRequest("Chat/Start", body);
             return db.putChat(obj.getString("address"), username);
-        }), activity, remoteChat -> {
-            if (chat == null) callback.onChat(remoteChat);
-        }, callback::onFailed);
+        });
     }
 
     /**
@@ -167,6 +164,7 @@ public class OverloadedChatApi implements Closeable {
     //endregion
 
     //region Sending
+
     /**
      * Sends a message on the specified chat after encrypting it.
      *
@@ -255,6 +253,7 @@ public class OverloadedChatApi implements Closeable {
     //endregion
 
     //region Local messages
+
     /**
      * Gets a list of locally stored messages (128 max) from the given time.
      *
@@ -281,6 +280,7 @@ public class OverloadedChatApi implements Closeable {
     //endregion
 
     //region Last message
+
     /**
      * Gets the last message of the given chat.
      *
@@ -340,6 +340,7 @@ public class OverloadedChatApi implements Closeable {
     //endregion
 
     //region Receive and decrypt
+
     /**
      * Sends an acknowledgment to the server (that it has received the message).
      *

@@ -36,7 +36,6 @@ import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUserProfileBottomSheet;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.gms.games.achievement.Achievement;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
 import java.util.ArrayList;
@@ -47,10 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
-import xyz.gianlu.pyxoverloaded.callback.ChatCallback;
-import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
 import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
-import xyz.gianlu.pyxoverloaded.model.Chat;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 import xyz.gianlu.pyxoverloaded.model.UserData.PropertyKey;
@@ -352,50 +348,38 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
                         OverloadedUserProfileBottomSheet.get().show(ProfileFragment.this, friend.username);
                         return true;
                     case R.id.overloadedUserItemMenu_openChat:
-                        OverloadedApi.chat(context).startChat(friend.username, getActivity(), new ChatCallback() {
-                            @Override
-                            public void onChat(@NonNull Chat chat) {
-                                ChatBottomSheet sheet = new ChatBottomSheet();
-                                sheet.show(getActivity(), chat);
-                            }
-
-                            @Override
-                            public void onFailed(@NonNull Exception ex) {
-                                Log.e(TAG, "Failed opening chat.", ex);
-                                showToast(Toaster.build().message(R.string.failedCreatingChat).extra(friend));
-                            }
-                        });
+                        OverloadedApi.chat(context).startChat(friend.username)
+                                .addOnSuccessListener(chat -> {
+                                    ChatBottomSheet sheet = new ChatBottomSheet();
+                                    sheet.show(getActivity(), chat);
+                                })
+                                .addOnFailureListener(ex -> {
+                                    Log.e(TAG, "Failed opening chat.", ex);
+                                    showToast(Toaster.build().message(R.string.failedCreatingChat).extra(friend));
+                                });
                         return true;
                     case R.id.overloadedUserItemMenu_rejectRequest:
                     case R.id.overloadedUserItemMenu_removeFriend:
-                        OverloadedApi.get().removeFriend(friend.username, null, new FriendsStatusCallback() {
-                            @Override
-                            public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
-                                AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_REMOVE_FRIEND);
-                                showToast(Toaster.build().message(R.string.removedFriend).extra(friend));
-                            }
-
-                            @Override
-                            public void onFailed(@NotNull Exception ex) {
-                                Log.e(TAG, "Failed removing friend.", ex);
-                                showToast(Toaster.build().message(R.string.failedRemovingFriend).extra(friend));
-                            }
-                        });
+                        OverloadedApi.get().removeFriend(friend.username)
+                                .addOnSuccessListener(map -> {
+                                    AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_REMOVE_FRIEND);
+                                    showToast(Toaster.build().message(R.string.removedFriend).extra(friend));
+                                })
+                                .addOnFailureListener(ex -> {
+                                    Log.e(TAG, "Failed removing friend.", ex);
+                                    showToast(Toaster.build().message(R.string.failedRemovingFriend).extra(friend));
+                                });
                         return true;
                     case R.id.overloadedUserItemMenu_acceptRequest:
-                        OverloadedApi.get().addFriend(friend.username, null, new FriendsStatusCallback() {
-                            @Override
-                            public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
-                                AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_ADD_FRIEND);
-                                showToast(Toaster.build().message(R.string.friendAdded).extra(friend));
-                            }
-
-                            @Override
-                            public void onFailed(@NotNull Exception ex) {
-                                Log.e(TAG, "Failed adding friend.", ex);
-                                showToast(Toaster.build().message(R.string.failedAddingFriend).extra(friend));
-                            }
-                        });
+                        OverloadedApi.get().addFriend(friend.username)
+                                .addOnSuccessListener(map -> {
+                                    AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_ADD_FRIEND);
+                                    showToast(Toaster.build().message(R.string.friendAdded).extra(friend));
+                                })
+                                .addOnFailureListener(ex -> {
+                                    Log.e(TAG, "Failed adding friend.", ex);
+                                    showToast(Toaster.build().message(R.string.failedAddingFriend).extra(friend));
+                                });
                         return true;
                     default:
                         return false;

@@ -70,7 +70,6 @@ import okio.BufferedSink;
 import okio.GzipSink;
 import okio.Okio;
 import xyz.gianlu.pyxoverloaded.callback.BooleanCallback;
-import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
 import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
 import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
@@ -735,6 +734,7 @@ public class OverloadedApi {
      *
      * @return A task resolving to the map of friends
      */
+    @NonNull
     public Task<Map<String, FriendStatus>> friendsStatus() {
         return Tasks.call(executorService, () -> {
             JSONObject obj = makePostRequest("User/FriendsStatus", null);
@@ -746,34 +746,34 @@ public class OverloadedApi {
      * Removes a friend or denies a friend request.
      *
      * @param username The target username
-     * @param activity The caller {@link Activity}
-     * @param callback The callback containing the status of the removed friend
+     * @return A task resolving to the updated friends list
      */
-    public void removeFriend(@NonNull String username, @Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
+    @NonNull
+    public Task<Map<String, FriendStatus>> removeFriend(@NonNull String username) {
+        return Tasks.call(executorService, () -> {
             JSONObject obj = makePostRequest("User/RemoveFriend", singletonJsonObject("username", username));
 
             Map<String, FriendStatus> map = friendsStatusCached = FriendStatus.parse(obj);
             dispatchLocalEvent(Event.Type.REMOVED_FRIEND, username);
             return map;
-        }), activity, callback::onFriendsStatus, callback::onFailed);
+        });
     }
 
     /**
      * Adds a friend or makes a friend request.
      *
      * @param username The target username
-     * @param activity The caller {@link Activity}
-     * @param callback The callback containing the status of the removed friend
+     * @return A task resolving to the updated friends list
      */
-    public void addFriend(@NonNull String username, @Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
+    @NonNull
+    public Task<Map<String, FriendStatus>> addFriend(@NonNull String username) {
+        return Tasks.call(executorService, () -> {
             JSONObject obj = makePostRequest("User/AddFriend", singletonJsonObject("username", username));
 
             Map<String, FriendStatus> map = friendsStatusCached = FriendStatus.parse(obj);
             dispatchLocalEvent(Event.Type.ADDED_FRIEND, username);
             return map;
-        }), activity, callback::onFriendsStatus, callback::onFailed);
+        });
     }
 
     //endregion
