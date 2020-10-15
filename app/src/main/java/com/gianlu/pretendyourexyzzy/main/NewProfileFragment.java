@@ -26,6 +26,8 @@ import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
+import com.gianlu.pretendyourexyzzy.AchievementProgressView;
+import com.gianlu.pretendyourexyzzy.GPGamesHelper;
 import com.gianlu.pretendyourexyzzy.NewMainActivity;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
@@ -40,6 +42,8 @@ import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUserProfileBottomSheet;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase.StarredCard;
+import com.google.android.gms.common.images.ImageManager;
+import com.google.android.gms.games.achievement.Achievement;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
@@ -141,8 +145,43 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
         });
         //endregion
 
+        GPGamesHelper.loadAchievements(requireContext())
+                .addOnSuccessListener(data -> {
+                    binding.profileFragmentAchievementsEmpty.setVisibility(View.GONE);
+
+                    int colorComplete = ContextCompat.getColor(requireContext(), R.color.appColor_500);
+                    int colorIncomplete = ContextCompat.getColor(requireContext(), R.color.appColor_200);
+
+                    ImageManager im = ImageManager.create(requireContext());
+                    for (Achievement ach : data) {
+                        if (ach.getType() != Achievement.TYPE_INCREMENTAL)
+                            continue;
+
+                        if (ach.getState() != Achievement.STATE_REVEALED)
+                            continue;
+
+                        AchievementProgressView view = new AchievementProgressView(requireContext());
+                        view.setCompleteColor(colorComplete);
+                        view.setIncompleteColor(colorIncomplete);
+                        view.setMinValue(0);
+                        view.setMaxValue(ach.getTotalSteps());
+                        view.setActualValue(ach.getCurrentSteps());
+                        binding.profileFragmentAchievementsList.addView(view);
+
+                        im.loadImage((uri, drawable, isRequestedDrawable) -> {
+                            if (!isRequestedDrawable || drawable == null) return;
+                            view.setIconDrawable(drawable);
+                        }, ach.getUnlockedImageUri());
+                    }
+
+                    data.release();
+                })
+                .addOnFailureListener(ex -> {
+                    Log.e(TAG, "Failed loading achievements.", ex);
+                    // TODO: Show error
+                });
+
         // TODO: Load custom decks
-        // TODO: Load achievements
 
         return binding.getRoot();
     }

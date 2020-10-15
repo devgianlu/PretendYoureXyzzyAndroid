@@ -98,6 +98,9 @@
         <item name="android:textSize">16sp</item>
     </style>
 
+    <!-- Common attrs -->
+    <attr name="icon" format="reference" />
+
     <!-- Preferences -->
     <style name="TextAppearance.PreferencesTitle">
         <item name="android:fontFamily">@font/montserrat_medium</item>
@@ -107,9 +110,19 @@
     </style>
 
     <declare-styleable name="PreferenceItemView">
-        <attr name="icon" format="reference" />
+        <attr name="icon" />
         <attr name="title" format="string" />
         <attr name="subtitle" format="string" />
+    </declare-styleable>
+
+    <!-- Achievements -->
+    <declare-styleable name="AchievementProgressView">
+        <attr name="completeColor" format="color" />
+        <attr name="incompleteColor" format="color" />
+        <attr name="icon" />
+        <attr name="minValue" format="integer" />
+        <attr name="maxValue" format="integer" />
+        <attr name="actualValue" format="integer" />
     </declare-styleable>
 
     <!-- Old -->

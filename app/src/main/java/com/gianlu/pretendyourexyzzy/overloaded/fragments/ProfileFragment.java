@@ -116,27 +116,27 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
     public void onResume() {
         super.onResume();
 
-        GPGamesHelper.loadAchievements(requireContext(), getActivity(), new GPGamesHelper.LoadIterable<Achievement>() {
-            @Override
-            public void onLoaded(@NonNull Iterable<Achievement> result) {
-                List<Achievement> list = OverloadedUtils.getUnlockedAchievements(result);
-                if (achievementsChanged(list)) {
-                    lastAchievements = OverloadedUtils.toAchievementsIds(list);
+        GPGamesHelper.loadAchievements(requireContext())
+                .addOnCompleteListener(task -> {
+                    Iterable<Achievement> result;
+                    if (task.isSuccessful()) {
+                        result = task.getResult();
+                    } else {
+                        Log.e(TAG, "Failed getting achievements.", task.getException());
+                        result = Collections.emptyList();
+                    }
 
-                    AchievementImageLoader il = new AchievementImageLoader(requireContext());
-                    CommonUtils.showViewAndLabel(achievements);
-                    achievements.removeAllViews();
-                    for (Achievement ach : list)
-                        achievements.addItem(ach, il);
-                }
-            }
+                    List<Achievement> list = OverloadedUtils.getUnlockedAchievements(result);
+                    if (achievementsChanged(list)) {
+                        lastAchievements = OverloadedUtils.toAchievementsIds(list);
 
-            @Override
-            public void onFailed(@NonNull Exception ex) {
-                Log.e(TAG, "Failed getting achievements.", ex);
-                onLoaded(Collections.emptyList());
-            }
-        });
+                        AchievementImageLoader il = new AchievementImageLoader(requireContext());
+                        CommonUtils.showViewAndLabel(achievements);
+                        achievements.removeAllViews();
+                        for (Achievement ach : list)
+                            achievements.addItem(ach, il);
+                    }
+                });
 
         CommonUtils.showViewAndLabel(linkedAccounts);
         linkedAccounts.removeAllViews();

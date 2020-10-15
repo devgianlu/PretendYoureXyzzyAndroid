@@ -17,10 +17,11 @@ import com.google.android.gms.games.EventsClient;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.LeaderboardsClient;
-import com.google.android.gms.games.achievement.Achievement;
 import com.google.android.gms.games.achievement.AchievementBuffer;
 import com.google.android.gms.games.event.Event;
 import com.google.android.gms.games.event.EventBuffer;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Contract;
@@ -165,22 +166,11 @@ public final class GPGamesHelper {
         }
     }
 
-    public static void loadAchievements(@NonNull Context context, @Nullable Activity activity, @NonNull LoadIterable<Achievement> callback) {
+    @NonNull
+    public static Task<AchievementBuffer> loadAchievements(@NonNull Context context) {
         AchievementsClient client = achievementsClient(context);
-        if (client == null) {
-            callback.onFailed(new Exception("Failed initializing client!"));
-            return;
-        }
-
-        TaskUtils.callbacks(client.load(false), activity, data -> {
-            AchievementBuffer buffer = data.get();
-            if (buffer == null) {
-                callback.onLoaded(Collections.emptyList());
-            } else {
-                callback.onLoaded(buffer);
-                buffer.release();
-            }
-        }, callback::onFailed);
+        if (client == null) return Tasks.forException(new Exception("Failed initializing client!"));
+        return client.load(false).continueWith(task -> task.getResult().get());
     }
 
     public static void loadEvents(@NonNull Context context, @Nullable Activity activity, @NonNull LoadIterable<Event> callback) {

@@ -67,29 +67,29 @@ public class OverloadedFragment extends FragmentWithDialog {
     public void onResume() {
         super.onResume();
 
-        GPGamesHelper.loadAchievements(requireContext(), getActivity(), new GPGamesHelper.LoadIterable<Achievement>() {
-            @Override
-            public void onLoaded(@NonNull Iterable<Achievement> result) {
-                if (getContext() == null) return;
-                AchievementImageLoader il = new AchievementImageLoader(getContext());
+        GPGamesHelper.loadAchievements(requireContext())
+                .addOnCompleteListener(task -> {
+                    Iterable<Achievement> result;
+                    if (task.isSuccessful()) {
+                        result = task.getResult();
+                    } else {
+                        Log.e(TAG, "Failed loading achievements.", task.getException());
+                        result = Collections.emptyList();
+                    }
 
-                achievements.removeAllViews();
-                List<Achievement> list = OverloadedUtils.getBestAchievements(result);
-                if (list.isEmpty()) {
-                    achievements.setVisibility(View.GONE);
-                } else {
-                    achievements.setVisibility(View.VISIBLE);
-                    for (Achievement ach : OverloadedUtils.getBestAchievements(result))
-                        achievements.addItem(ach, il);
-                }
-            }
+                    if (getContext() == null) return;
+                    AchievementImageLoader il = new AchievementImageLoader(getContext());
 
-            @Override
-            public void onFailed(@NonNull Exception ex) {
-                Log.e(TAG, "Failed loading achievements.", ex);
-                onLoaded(Collections.emptyList());
-            }
-        });
+                    achievements.removeAllViews();
+                    List<Achievement> list = OverloadedUtils.getBestAchievements(result);
+                    if (list.isEmpty()) {
+                        achievements.setVisibility(View.GONE);
+                    } else {
+                        achievements.setVisibility(View.VISIBLE);
+                        for (Achievement ach : OverloadedUtils.getBestAchievements(result))
+                            achievements.addItem(ach, il);
+                    }
+                });
 
         GPGamesHelper.loadEvents(requireContext(), getActivity(), new GPGamesHelper.LoadIterable<Event>() {
             @Override
