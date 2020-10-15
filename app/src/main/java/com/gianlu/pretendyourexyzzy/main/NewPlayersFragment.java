@@ -128,7 +128,7 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
             int width = dp12 * ThreadLocalRandom.current().nextInt(8, 20);
 
             View view = new View(requireContext());
-            view.setBackgroundResource(R.drawable.placeholder_name_item);
+            view.setBackgroundResource(R.drawable.placeholder_general_square_item);
 
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width, height);
             params.setMargins(0, 0, 0, dp12);

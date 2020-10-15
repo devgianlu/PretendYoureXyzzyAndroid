@@ -674,16 +674,13 @@ public class OverloadedApi {
 
     //region User data
 
-    public void userData(@Nullable Activity activity, boolean preferCache, @NonNull UserDataCallback callback) {
-        callbacks(userData(preferCache), activity, callback::onUserData, callback::onFailed);
-    }
-
-    public void userData(@Nullable Activity activity, @NonNull UserDataCallback callback) {
-        userData(activity, false, callback);
+    @NonNull
+    public Task<UserData> userData() {
+        return userData(false);
     }
 
     @NonNull
-    Task<UserData> userData(boolean preferCache) {
+    public Task<UserData> userData(boolean preferCache) {
         if (preferCache && userDataCached != null)
             return Tasks.forResult(userDataCached);
 
@@ -736,14 +733,13 @@ public class OverloadedApi {
     /**
      * Gets the list of friends and their status (includes friends requests).
      *
-     * @param activity The caller {@link Activity}
-     * @param callback The callback containing the list of friends
+     * @return A task resolving to the map of friends
      */
-    public void friendsStatus(@Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
+    public Task<Map<String, FriendStatus>> friendsStatus() {
+        return Tasks.call(executorService, () -> {
             JSONObject obj = makePostRequest("User/FriendsStatus", null);
             return friendsStatusCached = FriendStatus.parse(obj);
-        }), activity, callback::onFriendsStatus, callback::onFailed);
+        });
     }
 
     /**

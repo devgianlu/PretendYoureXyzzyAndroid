@@ -148,24 +148,20 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
             if (OverloadedApi.get().hasLinkedProvider(provider.id))
                 linkedAccounts.addItem(provider.iconRes, ImageView::setImageResource);
 
-        OverloadedApi.get().friendsStatus(getActivity(), new FriendsStatusCallback() {
-            @Override
-            public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
-                friendsLoading.setVisibility(View.GONE);
-                friendsList.setAdapter(friendsAdapter = new FriendsAdapter(requireContext(), result.values()));
-            }
+        OverloadedApi.get().friendsStatus()
+                .addOnSuccessListener(result -> {
+                    friendsLoading.setVisibility(View.GONE);
+                    friendsList.setAdapter(friendsAdapter = new FriendsAdapter(requireContext(), result.values()));
+                })
+                .addOnFailureListener(ex -> {
+                    friendsAdapter = null;
+                    Log.e(TAG, "Failed getting friends status.", ex);
 
-            @Override
-            public void onFailed(@NotNull Exception ex) {
-                friendsAdapter = null;
-                Log.e(TAG, "Failed getting friends status.", ex);
-
-                friendsLoading.setVisibility(View.GONE);
-                friendsList.setVisibility(View.GONE);
-                friendsMessage.setVisibility(View.VISIBLE);
-                friendsMessage.error(R.string.failedLoading);
-            }
-        });
+                    friendsLoading.setVisibility(View.GONE);
+                    friendsList.setVisibility(View.GONE);
+                    friendsMessage.setVisibility(View.VISIBLE);
+                    friendsMessage.error(R.string.failedLoading);
+                });
     }
 
     private void updatedItemCount(int count) {

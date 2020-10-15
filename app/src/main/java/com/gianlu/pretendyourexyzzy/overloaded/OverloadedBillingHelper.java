@@ -91,45 +91,41 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
 
         updateStatus(null, null);
         if (isFirebaseLoggedIn()) {
-            OverloadedApi.get().userData(null, new UserDataCallback() {
-                @Override
-                public void onUserData(@NonNull UserData data) {
-                    updateStatus(data, null);
+            OverloadedApi.get().userData()
+                    .addOnSuccessListener(data -> {
+                        updateStatus(data, null);
 
-                    Purchase purchase;
-                    if (data.purchaseStatus.ok)
-                        doOkStuff();
+                        Purchase purchase;
+                        if (data.purchaseStatus.ok)
+                            doOkStuff();
 
-                    if ((purchase = getLatestPurchase()) != null && (!data.purchaseStatus.ok || (data.expireTime != null && data.expireTime <= System.currentTimeMillis()))) {
-                        OverloadedApi.get().registerUser(null, purchase.getSku(), purchase.getPurchaseToken(), null, new UserDataCallback() {
-                            @Override
-                            public void onUserData(@NonNull UserData data) {
-                                updateStatus(data, null);
-                            }
+                        if ((purchase = getLatestPurchase()) != null && (!data.purchaseStatus.ok || (data.expireTime != null && data.expireTime <= System.currentTimeMillis()))) {
+                            OverloadedApi.get().registerUser(null, purchase.getSku(), purchase.getPurchaseToken(), null, new UserDataCallback() {
+                                @Override
+                                public void onUserData(@NonNull UserData data) {
+                                    updateStatus(data, null);
+                                }
 
-                            @Override
-                            public void onFailed(@NonNull Exception ex) {
-                                Log.e(TAG, "Failed updating purchase token.", ex);
-                                updateStatus(null, ex);
-                            }
-                        });
-                    }
-                }
-
-                @Override
-                public void onFailed(@NonNull Exception ex) {
-                    if (ex instanceof OverloadedServerException) {
-                        if (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NOT_REGISTERED)) {
-                            FirebaseAuth.getInstance().signOut();
-                            updateStatus(null, null);
-                            return;
+                                @Override
+                                public void onFailed(@NonNull Exception ex) {
+                                    Log.e(TAG, "Failed updating purchase token.", ex);
+                                    updateStatus(null, ex);
+                                }
+                            });
                         }
-                    }
+                    })
+                    .addOnFailureListener(ex -> {
+                        if (ex instanceof OverloadedServerException) {
+                            if (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NOT_REGISTERED)) {
+                                FirebaseAuth.getInstance().signOut();
+                                updateStatus(null, null);
+                                return;
+                            }
+                        }
 
-                    Log.e(TAG, "Failed getting user data on start.", ex);
-                    updateStatus(null, ex);
-                }
-            });
+                        Log.e(TAG, "Failed getting user data on start.", ex);
+                        updateStatus(null, ex);
+                    });
         }
     }
 
@@ -268,33 +264,29 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
      */
     public void startFlow() {
         listener.showProgress(R.string.loading);
-        OverloadedApi.get().userData(activity, new UserDataCallback() {
-            @Override
-            public void onUserData(@NonNull UserData data) {
-                if (data.purchaseStatus.ok) {
-                    listener.dismissDialog();
-                    updateStatus(data, null);
-                    doOkStuff();
-                } else {
-                    startBillingFlow();
-                }
-            }
-
-            @Override
-            public void onFailed(@NonNull Exception ex) {
-                listener.dismissDialog();
-                if (ex instanceof OverloadedServerException) {
-                    if (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NOT_REGISTERED)) {
-                        listener.showDialog(AskUsernameDialog.get());
-                        // Follows in #onUsernameSelected(String)
-                        return;
+        OverloadedApi.get().userData()
+                .addOnSuccessListener(activity, data -> {
+                    if (data.purchaseStatus.ok) {
+                        listener.dismissDialog();
+                        updateStatus(data, null);
+                        doOkStuff();
+                    } else {
+                        startBillingFlow();
                     }
-                }
+                })
+                .addOnFailureListener(activity, ex -> {
+                    listener.dismissDialog();
+                    if (ex instanceof OverloadedServerException) {
+                        if (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NOT_REGISTERED)) {
+                            listener.showDialog(AskUsernameDialog.get());
+                            // Follows in #onUsernameSelected(String)
+                            return;
+                        }
+                    }
 
-                Log.e(TAG, "Failed getting user data, continuing flow.", ex);
-                startBillingFlow();
-            }
-        });
+                    Log.e(TAG, "Failed getting user data, continuing flow.", ex);
+                    startBillingFlow();
+                });
     }
 
     @Override
@@ -320,50 +312,46 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
      */
     private void purchaseComplete(@NonNull Purchase purchase) {
         listener.showProgress(R.string.loading);
-        OverloadedApi.get().userData(null, new UserDataCallback() {
-            @Override
-            public void onUserData(@NonNull UserData data) {
-                if (data.purchaseStatus.ok) {
-                    listener.dismissDialog();
-                    updateStatus(data, null);
-                    doOkStuff();
-                    return;
-                }
-
-                OverloadedApi.get().registerUser(null, purchase.getSku(), purchase.getPurchaseToken(), null, new UserDataCallback() {
-                    @Override
-                    public void onUserData(@NonNull UserData data) {
+        OverloadedApi.get().userData()
+                .addOnSuccessListener(data -> {
+                    if (data.purchaseStatus.ok) {
                         listener.dismissDialog();
                         updateStatus(data, null);
-
-                        if (data.purchaseStatus.ok)
-                            doOkStuff();
-                    }
-
-                    @Override
-                    public void onFailed(@NonNull Exception ex) {
-                        listener.dismissDialog();
-                        Log.e(TAG, "Failed updating purchase token.", ex);
-                        updateStatus(null, ex);
-                    }
-                });
-            }
-
-            @Override
-            public void onFailed(@NonNull Exception ex) {
-                listener.dismissDialog();
-                if (ex instanceof OverloadedServerException) {
-                    if (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NOT_REGISTERED)) {
-                        listener.showDialog(AskUsernameDialog.get());
-                        // Follows in #onUsernameSelected(String)
+                        doOkStuff();
                         return;
                     }
-                }
 
-                Log.e(TAG, "Failed getting user data.", ex);
-                updateStatus(null, ex);
-            }
-        });
+                    OverloadedApi.get().registerUser(null, purchase.getSku(), purchase.getPurchaseToken(), null, new UserDataCallback() {
+                        @Override
+                        public void onUserData(@NonNull UserData data) {
+                            listener.dismissDialog();
+                            updateStatus(data, null);
+
+                            if (data.purchaseStatus.ok)
+                                doOkStuff();
+                        }
+
+                        @Override
+                        public void onFailed(@NonNull Exception ex) {
+                            listener.dismissDialog();
+                            Log.e(TAG, "Failed updating purchase token.", ex);
+                            updateStatus(null, ex);
+                        }
+                    });
+                })
+                .addOnFailureListener(ex -> {
+                    listener.dismissDialog();
+                    if (ex instanceof OverloadedServerException) {
+                        if (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NOT_REGISTERED)) {
+                            listener.showDialog(AskUsernameDialog.get());
+                            // Follows in #onUsernameSelected(String)
+                            return;
+                        }
+                    }
+
+                    Log.e(TAG, "Failed getting user data.", ex);
+                    updateStatus(null, ex);
+                });
     }
     //endregion
 

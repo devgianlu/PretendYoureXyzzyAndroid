@@ -8,6 +8,8 @@ import com.gianlu.pretendyourexyzzy.GPGamesHelper;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.google.android.gms.games.achievement.Achievement;
 import com.google.android.gms.games.event.Event;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import java.util.regex.Pattern;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.Utils;
+import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public final class OverloadedUtils {
     public static final String ACTION_OPEN_CHAT = "overloaded_open_chat";
@@ -99,6 +102,24 @@ public final class OverloadedUtils {
      */
     public static boolean isSignedIn() {
         return FirebaseAuth.getInstance().getCurrentUser() != null && OverloadedApi.get().isFullyRegistered();
+    }
+
+    /**
+     * @return A task which will resolve to whether the user is signed in and fully registered.
+     */
+    @NonNull
+    public static Task<Boolean> waitReady() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null)
+            return Tasks.forResult(false);
+
+        return OverloadedApi.get().userData().continueWith(task -> {
+            try {
+                UserData data = task.getResult();
+                return data != null && data.purchaseStatus.ok;
+            } catch (Exception ex) {
+                return false;
+            }
+        });
     }
 
     @NonNull

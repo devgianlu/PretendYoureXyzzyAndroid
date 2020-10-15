@@ -42,7 +42,6 @@ import java.util.regex.Pattern;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
-import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
 import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
@@ -289,60 +288,56 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
     //region Collaborators
     private void showAddCollaboratorDialog(long deckRemoteId) {
         showProgress(R.string.loading);
-        OverloadedApi.get().friendsStatus(getActivity(), new FriendsStatusCallback() {
-            @Override
-            public void onFriendsStatus(@NotNull Map<String, FriendStatus> result) {
-                dismissDialog();
-                if (getContext() == null)
-                    return;
+        OverloadedApi.get().friendsStatus()
+                .addOnSuccessListener(result -> {
+                    dismissDialog();
+                    if (getContext() == null)
+                        return;
 
-                List<String> friends = new ArrayList<>(result.size());
-                for (Map.Entry<String, FriendStatus> entry : result.entrySet())
-                    if (entry.getValue().mutual) friends.add(entry.getKey());
+                    List<String> friends = new ArrayList<>(result.size());
+                    for (Map.Entry<String, FriendStatus> entry : result.entrySet())
+                        if (entry.getValue().mutual) friends.add(entry.getKey());
 
-                if (collaboratorsList != null)
-                    friends.removeAll(collaboratorsList);
+                    if (collaboratorsList != null)
+                        friends.removeAll(collaboratorsList);
 
-                if (friends.isEmpty()) {
-                    showToast(Toaster.build().message(R.string.noCollaboratorsToAdd));
-                    return;
-                }
+                    if (friends.isEmpty()) {
+                        showToast(Toaster.build().message(R.string.noCollaboratorsToAdd));
+                        return;
+                    }
 
-                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
-                builder.setTitle(R.string.addCollaborator)
-                        .setNeutralButton(R.string.cancel, null)
-                        .setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, friends), (dialog, which) -> {
-                            dialog.dismiss();
+                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+                    builder.setTitle(R.string.addCollaborator)
+                            .setNeutralButton(R.string.cancel, null)
+                            .setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, friends), (dialog, which) -> {
+                                dialog.dismiss();
 
-                            showProgress(R.string.loading);
-                            String friend = friends.get(which);
-                            OverloadedSyncApi.get().addCollaborator(deckRemoteId, friend, getActivity(), new GeneralCallback<List<String>>() {
-                                @Override
-                                public void onResult(@NonNull List<String> collaborators) {
-                                    dismissDialog();
-                                    setCollaborators(deckRemoteId, collaborators);
-                                }
+                                showProgress(R.string.loading);
+                                String friend = friends.get(which);
+                                OverloadedSyncApi.get().addCollaborator(deckRemoteId, friend, getActivity(), new GeneralCallback<List<String>>() {
+                                    @Override
+                                    public void onResult(@NonNull List<String> collaborators) {
+                                        dismissDialog();
+                                        setCollaborators(deckRemoteId, collaborators);
+                                    }
 
-                                @Override
-                                public void onFailed(@NonNull Exception ex) {
-                                    Log.e(TAG, "Failed adding collaborator: " + friend, ex);
-                                    showToast(Toaster.build().message(R.string.failedAddingCollaborator));
-                                    dismissDialog();
-                                }
+                                    @Override
+                                    public void onFailed(@NonNull Exception ex) {
+                                        Log.e(TAG, "Failed adding collaborator: " + friend, ex);
+                                        showToast(Toaster.build().message(R.string.failedAddingCollaborator));
+                                        dismissDialog();
+                                    }
+                                });
                             });
-                        });
 
-                showDialog(builder);
-            }
+                    showDialog(builder);
+                })
+                .addOnFailureListener(ex -> {
+                    Log.e(TAG, "Failed getting friends list.", ex);
 
-            @Override
-            public void onFailed(@NotNull Exception ex) {
-                Log.e(TAG, "Failed getting friends list.", ex);
-
-                dismissDialog();
-                showToast(Toaster.build().message(R.string.failedLoading));
-            }
-        });
+                    dismissDialog();
+                    showToast(Toaster.build().message(R.string.failedLoading));
+                });
     }
 
     private void setCollaborators(long remoteDeckId, @NonNull List<String> list) {

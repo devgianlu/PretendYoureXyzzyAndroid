@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Locale;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
-import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
-import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public class OverloadedFragment extends FragmentWithDialog {
     private static final String TAG = OverloadedFragment.class.getSimpleName();
@@ -119,17 +117,9 @@ public class OverloadedFragment extends FragmentWithDialog {
         roundsWon = layout.findViewById(R.id.overloaded_roundsWon);
 
         TextView username = layout.findViewById(R.id.overloaded_username);
-        OverloadedApi.get().userData(getActivity(), true, new UserDataCallback() {
-            @Override
-            public void onUserData(@NonNull UserData data) {
-                username.setText(data.username);
-            }
-
-            @Override
-            public void onFailed(@NonNull Exception ex) {
-                Log.e(TAG, "Failed loading user data.", ex);
-            }
-        });
+        OverloadedApi.get().userData()
+                .addOnSuccessListener(data -> username.setText(data.username))
+                .addOnFailureListener(ex -> Log.e(TAG, "Failed loading user data.", ex));
 
         pager = layout.findViewById(R.id.overloaded_pager);
         pager.setOffscreenPageLimit(3);

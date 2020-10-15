@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.adapters.Filterable;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -13,7 +14,7 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FriendStatus {
+public class FriendStatus implements Filterable<Void> {
     public final String username;
     public final boolean mutual;
     public final boolean request;
@@ -94,5 +95,23 @@ public class FriendStatus {
     @NonNull
     public FriendStatus asRequest() {
         return new FriendStatus(username, false, true, null);
+    }
+
+    @Nullable
+    @Override
+    public Void[] getMatchingFilters() {
+        return null;
+    }
+
+    @NonNull
+    public Status getStatus() {
+        if (request) return Status.INCOMING_REQUEST;
+        else if (!mutual) return Status.OUTGOING_REQUEST;
+        else if (serverId != null) return Status.ONLINE;
+        else return Status.OFFLINE;
+    }
+
+    public enum Status {
+        INCOMING_REQUEST, ONLINE, OFFLINE, OUTGOING_REQUEST // Order is important!
     }
 }

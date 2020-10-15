@@ -42,8 +42,6 @@ import java.util.Objects;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
-import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
-import xyz.gianlu.pyxoverloaded.model.UserData;
 
 public class PreferenceActivity extends BasePreferenceActivity implements OverloadedChooseProviderDialog.Listener {
     private static final String TAG = PreferenceActivity.class.getSimpleName();
@@ -261,20 +259,16 @@ public class PreferenceActivity extends BasePreferenceActivity implements Overlo
                 purchaseStatus.setClickable(false);
                 purchaseStatus.setLoading(true);
                 addPreference(purchaseStatus);
-                OverloadedApi.get().userData(getActivity(), new UserDataCallback() {
-                    @Override
-                    public void onUserData(@NonNull UserData userData) {
-                        purchaseStatus.setSummary(String.format("%s (%s)", userData.purchaseStatus.toString(context), userData.username));
-                        purchaseStatus.setLoading(false);
-                    }
-
-                    @Override
-                    public void onFailed(@NonNull Exception ex) {
-                        Log.e(TAG, "Failed getting user data.", ex);
-                        purchaseStatus.setSummary("<error>");
-                        purchaseStatus.setLoading(false);
-                    }
-                });
+                OverloadedApi.get().userData()
+                        .addOnSuccessListener(userData -> {
+                            purchaseStatus.setSummary(String.format("%s (%s)", userData.purchaseStatus.toString(context), userData.username));
+                            purchaseStatus.setLoading(false);
+                        })
+                        .addOnFailureListener(ex -> {
+                            Log.e(TAG, "Failed getting user data.", ex);
+                            purchaseStatus.setSummary("<error>");
+                            purchaseStatus.setLoading(false);
+                        });
 
                 MaterialStandardPreference logout = new MaterialStandardPreference(context);
                 logout.setTitle(R.string.logout);

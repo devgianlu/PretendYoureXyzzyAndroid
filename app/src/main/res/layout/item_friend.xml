@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="80dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="4dp"
+    android:paddingEnd="4dp"
+    tools:ignore="UseCompoundDrawables">
+
+    <ImageView
+        android:id="@+id/friendItem_image"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:src="@drawable/ic_person_circle_900_96"
+        app:tint="#c1c1c1" />
+
+    <ImageView
+        android:id="@+id/friendItem_status"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="-48dp"
+        android:layout_marginBottom="38dp"
+        android:background="@drawable/bg_circle_white"
+        android:backgroundTint="@color/white"
+        android:padding="1dp"
+        android:src="@drawable/bg_circle_gray"
+        app:tint="@color/green" />
+
+    <TextView
+        android:id="@+id/friendItem_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="2"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.Regular"
+        android:textSize="12sp"
+        app:autoSizeMaxTextSize="12sp"
+        app:autoSizeMinTextSize="8sp"
+        app:autoSizeTextType="uniform" />
+</LinearLayout>
