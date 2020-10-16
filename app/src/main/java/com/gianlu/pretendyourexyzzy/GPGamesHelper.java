@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.view.Gravity;
 import android.view.View;
 
@@ -43,7 +44,7 @@ public final class GPGamesHelper {
     public static final String ACH_WIN_420_ROUNDS = "CgkIus2n760REAIQCg";
     public static final String ACH_3_PEOPLE_GAME = "CgkIus2n760REAIQDA";
     public static final String ACH_5_PEOPLE_GAME = "CgkIus2n760REAIQDQ";
-    public static final String ACH_10_PEOPLE_GAME = "CgkIus2n760REAIQDg ";
+    public static final String ACH_10_PEOPLE_GAME = "CgkIus2n760REAIQDg";
     public static final String ACH_CUSTOM_DECK = "CgkIus2n760REAIQDw";
     public static final String LEAD_WIN_RATE = "CgkIus2n760REAIQEA";
     public static final String[] ACHS_WIN_ROUNDS = new String[]{ACH_WIN_10_ROUNDS, ACH_WIN_30_ROUNDS, ACH_WIN_69_ROUNDS, ACH_WIN_420_ROUNDS};
@@ -87,7 +88,6 @@ public final class GPGamesHelper {
         else
             return null;
     }
-
 
     @Nullable
     private static LeaderboardsClient leaderboardsClient(@NonNull Context context) {
@@ -171,6 +171,13 @@ public final class GPGamesHelper {
         AchievementsClient client = achievementsClient(context);
         if (client == null) return Tasks.forException(new Exception("Failed initializing client!"));
         return client.load(false).continueWith(task -> task.getResult().get());
+    }
+
+    @NonNull
+    public static Task<Intent> loadAchievementsIntent(@NonNull Context context) {
+        AchievementsClient client = achievementsClient(context);
+        if (client == null) return Tasks.forException(new Exception("Failed initializing client!"));
+        return client.getAchievementsIntent();
     }
 
     public static void loadEvents(@NonNull Context context, @Nullable Activity activity, @NonNull LoadIterable<Event> callback) {

@@ -150,9 +150,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
 
         if (roundWinner.equals(gameData.me)) {
             GPGamesHelper.incrementEvent(context, 1, GPGamesHelper.EVENT_ROUNDS_WON);
-            GPGamesHelper.incrementAchievement(context, 1, GPGamesHelper.ACH_WIN_10_ROUNDS,
-                    GPGamesHelper.ACH_WIN_30_ROUNDS, GPGamesHelper.ACH_WIN_69_ROUNDS,
-                    GPGamesHelper.ACH_WIN_420_ROUNDS);
+            GPGamesHelper.incrementAchievement(context, 1, GPGamesHelper.ACHS_WIN_ROUNDS);
             event(UiEvent.YOU_ROUND_WINNER);
         } else {
             event(UiEvent.ROUND_WINNER, roundWinner);
@@ -306,8 +304,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameLayout.Liste
 
                     if (gameData.amHost()) {
                         int players = result.players.size() - 1; // Do not include ourselves
-                        GPGamesHelper.achievementSteps(context, players, GPGamesHelper.ACH_3_PEOPLE_GAME,
-                                GPGamesHelper.ACH_5_PEOPLE_GAME, GPGamesHelper.ACH_10_PEOPLE_GAME);
+                        GPGamesHelper.achievementSteps(context, players, GPGamesHelper.ACHS_PEOPLE_GAME);
                     }
 
                     if (gameData.amSpectator() && result.players.isEmpty())

@@ -52,6 +52,7 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,6 +68,36 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
     @NonNull
     public static NewProfileFragment get() {
         return new NewProfileFragment();
+    }
+
+    @NonNull
+    private static List<Achievement> getAchievementsInProgress(@NonNull Iterable<Achievement> iter) {
+        List<Achievement> list = new ArrayList<>(10);
+        Map<String, Achievement> map = new HashMap<>(3);
+        for (Achievement ach : iter) {
+            if (ach.getType() != Achievement.TYPE_INCREMENTAL || ach.getState() != Achievement.STATE_REVEALED)
+                continue;
+
+            if (ach.getTotalSteps() == ach.getCurrentSteps())
+                continue;
+
+            int index;
+            if ((index = CommonUtils.indexOf(GPGamesHelper.ACHS_WIN_ROUNDS, ach.getAchievementId())) != -1) {
+                Achievement prev = map.get("winRounds");
+                if (prev == null || index < CommonUtils.indexOf(GPGamesHelper.ACHS_WIN_ROUNDS, prev))
+                    map.put("winRounds", ach);
+            } else if ((index = CommonUtils.indexOf(GPGamesHelper.ACHS_PEOPLE_GAME, ach.getAchievementId())) != -1) {
+                Achievement prev = map.get("peopleGame");
+                if (prev == null || index < CommonUtils.indexOf(GPGamesHelper.ACHS_PEOPLE_GAME, prev))
+                    map.put("peopleGame", ach);
+            } else {
+                list.add(ach);
+            }
+        }
+
+        list.addAll(map.values());
+
+        return list;
     }
 
     @Nullable
@@ -145,6 +176,7 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
         });
         //endregion
 
+        //region Achievements
         GPGamesHelper.loadAchievements(requireContext())
                 .addOnSuccessListener(data -> {
                     binding.profileFragmentAchievementsEmpty.setVisibility(View.GONE);
@@ -153,13 +185,7 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                     int colorIncomplete = ContextCompat.getColor(requireContext(), R.color.appColor_200);
 
                     ImageManager im = ImageManager.create(requireContext());
-                    for (Achievement ach : data) {
-                        if (ach.getType() != Achievement.TYPE_INCREMENTAL)
-                            continue;
-
-                        if (ach.getState() != Achievement.STATE_REVEALED)
-                            continue;
-
+                    for (Achievement ach : getAchievementsInProgress(data)) {
                         AchievementProgressView view = new AchievementProgressView(requireContext());
                         view.setCompleteColor(colorComplete);
                         view.setIncompleteColor(colorIncomplete);
@@ -180,6 +206,17 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                     Log.e(TAG, "Failed loading achievements.", ex);
                     // TODO: Show error
                 });
+
+        GPGamesHelper.loadAchievementsIntent(requireContext())
+                .addOnSuccessListener(intent -> {
+                    binding.profileFragmentAchievementsSeeAll.setVisibility(View.VISIBLE);
+                    binding.profileFragmentAchievementsSeeAll.setOnClickListener(v -> startActivityForResult(intent, 77));
+                })
+                .addOnFailureListener(ex -> {
+                    Log.e(TAG, "Failed loading achievements intent.", ex);
+                    binding.profileFragmentAchievementsSeeAll.setVisibility(View.GONE);
+                });
+        //endregion
 
         // TODO: Load custom decks
 
