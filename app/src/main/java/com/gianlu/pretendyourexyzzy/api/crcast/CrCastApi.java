@@ -87,10 +87,16 @@ public final class CrCastApi {
 
     @NonNull
     @WorkerThread
-    private JSONObject request(@NonNull String suffix) throws IOException, JSONException, CrCastException {
+    private JSONObject request(@NonNull String suffix) throws IOException, JSONException, CrCastException, NotSignedInException {
         Exception lastEx = null;
         for (int i = 0; i < 3; i++) {
-            try (Response resp = client.newCall(new Request.Builder().get().url(BASE_URL + suffix).build()).execute()) {
+            String suffixWithToken;
+            if (suffix.contains("{token}"))
+                suffixWithToken = suffix.replace("{token}", getToken());
+            else
+                suffixWithToken = suffix;
+
+            try (Response resp = client.newCall(new Request.Builder().get().url(BASE_URL + suffixWithToken).build()).execute()) {
                 Log.v(TAG, suffix + " -> " + resp.code());
                 if (resp.code() != 200) throw new StatusCodeException(resp);
 
@@ -145,13 +151,17 @@ public final class CrCastApi {
     @WorkerThread
     @NonNull
     private String loginSync(@NonNull String username, @NonNull String hashedPassword) throws JSONException, IOException, CrCastException {
-        JSONObject obj = request("user/token/?username=" + username + "&password=" + hashedPassword);
-        Prefs.putString(PK.CR_CAST_USER, username);
-        Prefs.putString(PK.CR_CAST_PASSWORD, hashedPassword);
+        try {
+            JSONObject obj = request("user/token/?username=" + username + "&password=" + hashedPassword);
+            Prefs.putString(PK.CR_CAST_USER, username);
+            Prefs.putString(PK.CR_CAST_PASSWORD, hashedPassword);
 
-        String token = obj.getString("token");
-        Prefs.putString(PK.CR_CAST_TOKEN, token);
-        return token;
+            String token = obj.getString("token");
+            Prefs.putString(PK.CR_CAST_TOKEN, token);
+            return token;
+        } catch (NotSignedInException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     public void login(@NonNull String username, @NonNull String password, @Nullable Activity activity, LoginCallback callback) {
@@ -178,7 +188,7 @@ public final class CrCastApi {
             @Override
             public void run() {
                 try {
-                    JSONObject obj = request("user/" + getToken());
+                    JSONObject obj = request("user/{token}");
                     CrCastUser user = new CrCastUser(obj);
                     post(() -> callback.onUser(user));
                 } catch (IOException | JSONException | CrCastException | NotSignedInException ex) {
@@ -193,7 +203,7 @@ public final class CrCastApi {
             @Override
             public void run() {
                 try {
-                    JSONObject decks = request("user/decks/" + getToken()).getJSONObject("decks");
+                    JSONObject decks = request("user/decks/{token}").getJSONObject("decks");
 
                     List<CrCastDeck> list = new ArrayList<>(decks.length());
                     Iterator<String> iter = decks.keys();
@@ -212,7 +222,7 @@ public final class CrCastApi {
             @Override
             public void run() {
                 try {
-                    CrCastDeck deck = CrCastDeck.parse(request("user/decks/" + getToken() + "/" + deckCode).getJSONObject("deck"), db);
+                    CrCastDeck deck = CrCastDeck.parse(request("user/decks/{token}/" + deckCode).getJSONObject("deck"), db);
                     post(() -> callback.onDeck(deck));
                 } catch (IOException | JSONException | ParseException | CrCastException | NotSignedInException ex) {
                     post(() -> callback.onException(ex));
