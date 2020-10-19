@@ -92,7 +92,9 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/profileFragment_customDecksList"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp" />
 
                 <LinearLayout
                     android:id="@+id/profileFragment_customDecksEmpty"

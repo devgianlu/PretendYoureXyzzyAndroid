@@ -34,8 +34,14 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
+import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
+import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
+import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
+import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewProfileBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemFriendBinding;
+import com.gianlu.pretendyourexyzzy.databinding.ItemNewCustomDeckBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemStarredCardBinding;
 import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUserProfileBottomSheet;
@@ -200,6 +206,9 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                         }, ach.getUnlockedImageUri());
                     }
 
+                    // TODO: Show empty message
+                    // TODO: Show achievement name?
+
                     data.release();
                 })
                 .addOnFailureListener(ex -> {
@@ -218,7 +227,12 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                 });
         //endregion
 
-        // TODO: Load custom decks
+        //region Custom decks
+        binding.profileFragmentCustomDecksList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
+        CustomDecksDatabase decksDb = CustomDecksDatabase.get(requireContext());
+        List<BasicCustomDeck> customDecks = decksDb.getAllDecks();
+        binding.profileFragmentCustomDecksList.setAdapter(new CustomDecksAdapter(customDecks));
+        //endregion
 
         return binding.getRoot();
     }
@@ -486,6 +500,92 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                 }
 
                 CommonUtils.setImageTintColor(binding.friendItemStatus, color);
+            }
+        }
+    }
+
+    private class CustomDecksAdapter extends OrderedRecyclerViewAdapter<CustomDecksAdapter.ViewHolder, BasicCustomDeck, Void, Void> {
+        CustomDecksAdapter(List<BasicCustomDeck> list) {
+            super(list, null);
+        }
+
+        @Override
+        protected boolean matchQuery(@NonNull BasicCustomDeck item, @Nullable String query) {
+            return true;
+        }
+
+        @Override
+        protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull BasicCustomDeck deck) {
+            holder.binding.customDeckItemName.setText(deck.name);
+            holder.binding.customDeckItemWatermark.setText(deck.watermark);
+
+            if (deck.owner != null && deck instanceof CustomDecksDatabase.StarredDeck) {
+                holder.binding.customDeckItemOwner.setVisibility(View.VISIBLE);
+                CommonUtils.setText(holder.binding.customDeckItemOwner, R.string.deckBy, deck.owner);
+            } else {
+                holder.binding.customDeckItemOwner.setVisibility(View.GONE);
+            }
+
+            if (deck instanceof CustomDecksDatabase.StarredDeck) {
+                holder.binding.customDeckItemIcon.setVisibility(View.VISIBLE);
+                holder.binding.customDeckItemIcon.setImageResource(R.drawable.baseline_star_24);
+            } else if (deck instanceof CrCastDeck) {
+                holder.binding.customDeckItemIcon.setVisibility(View.VISIBLE);
+                holder.binding.customDeckItemIcon.setImageResource(R.drawable.baseline_contactless_24);
+            } else {
+                holder.binding.customDeckItemIcon.setVisibility(View.GONE);
+            }
+
+            int whiteCards = deck.whiteCardsCount();
+            int blackCards = deck.blackCardsCount();
+            if (whiteCards != -1 && blackCards != -1)
+                CommonUtils.setText(holder.binding.customDeckItemCards, R.string.cardsCountBlackWhite, blackCards, whiteCards);
+            else
+                CommonUtils.setText(holder.binding.customDeckItemCards, R.string.cardsCount, deck.cardsCount());
+
+            holder.itemView.setOnClickListener(v -> {
+                if (deck instanceof CustomDecksDatabase.CustomDeck)
+                    EditCustomDeckActivity.startActivityEdit(requireContext(), (CustomDecksDatabase.CustomDeck) deck);
+                else if (deck instanceof CustomDecksDatabase.StarredDeck && deck.owner != null)
+                    ViewCustomDeckActivity.startActivity(requireContext(), deck.owner, deck.name, ((CustomDecksDatabase.StarredDeck) deck).shareCode);
+                else if (deck instanceof CrCastDeck)
+                    ViewCustomDeckActivity.startActivityCrCast(requireContext(), deck.name, deck.watermark);
+            });
+        }
+
+        @Override
+        protected void onUpdateViewHolder(@NonNull ViewHolder holder, int position, @NonNull BasicCustomDeck payload) {
+        }
+
+        @Override
+        protected void shouldUpdateItemCount(int count) {
+            if (count == 0) {
+                binding.profileFragmentCustomDecksEmpty.setVisibility(View.VISIBLE);
+                binding.profileFragmentCustomDecksList.setVisibility(View.GONE);
+            } else {
+                binding.profileFragmentCustomDecksEmpty.setVisibility(View.GONE);
+                binding.profileFragmentCustomDecksList.setVisibility(View.VISIBLE);
+            }
+        }
+
+        @NonNull
+        @Override
+        public Comparator<BasicCustomDeck> getComparatorFor(@NonNull Void sorting) {
+            return (o1, o2) -> (int) (o1.lastUsed - o2.lastUsed);
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new ViewHolder(parent);
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            final ItemNewCustomDeckBinding binding;
+
+            public ViewHolder(@NonNull ViewGroup parent) {
+                super(getLayoutInflater().inflate(R.layout.item_new_custom_deck, parent, false));
+                binding = ItemNewCustomDeckBinding.bind(itemView);
             }
         }
     }
