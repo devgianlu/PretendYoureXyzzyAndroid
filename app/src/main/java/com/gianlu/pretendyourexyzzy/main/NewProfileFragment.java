@@ -34,6 +34,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
+import com.gianlu.pretendyourexyzzy.api.crcast.CrCastApi;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
@@ -43,6 +44,7 @@ import com.gianlu.pretendyourexyzzy.databinding.FragmentNewProfileBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemFriendBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemNewCustomDeckBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemStarredCardBinding;
+import com.gianlu.pretendyourexyzzy.dialogs.CrCastLoginDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUserProfileBottomSheet;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
@@ -59,17 +61,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
-public class NewProfileFragment extends FragmentWithDialog implements NewMainActivity.MainFragment, OverloadedApi.EventListener {
+public class NewProfileFragment extends FragmentWithDialog implements NewMainActivity.MainFragment, OverloadedApi.EventListener, CrCastLoginDialog.LoginListener {
     private static final String TAG = NewProfileFragment.class.getSimpleName();
     private FragmentNewProfileBinding binding;
     private RegisteredPyx pyx;
     private FriendsAdapter friendsAdapter;
+    private CustomDecksAdapter customDecksAdapter;
 
     @NonNull
     public static NewProfileFragment get() {
@@ -111,6 +115,7 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentNewProfileBinding.inflate(inflater, container, false);
         binding.profileFragmentInputs.idCodeInput.setEndIconOnClickListener(v -> CommonUtils.setText(binding.profileFragmentInputs.idCodeInput, CommonUtils.randomString(100)));
+        binding.profileFragmentMenu.setOnClickListener((v) -> showPopupMenu());
 
         OverloadedApi.get().addEventListener(this);
 
@@ -170,7 +175,7 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                         .addOnFailureListener(ex -> {
                             Log.e(TAG, "Failed loading friends.", ex);
                             binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
-                            // TODO: Show error
+                            // TODO: Show friends error
                         });
             } else {
                 binding.profileFragmentFriendsOverloaded.setVisibility(View.VISIBLE);
@@ -206,14 +211,14 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                         }, ach.getUnlockedImageUri());
                     }
 
-                    // TODO: Show empty message
+                    // TODO: Show empty achievements message
                     // TODO: Show achievement name?
 
                     data.release();
                 })
                 .addOnFailureListener(ex -> {
                     Log.e(TAG, "Failed loading achievements.", ex);
-                    // TODO: Show error
+                    // TODO: Show achievements error
                 });
 
         GPGamesHelper.loadAchievementsIntent(requireContext())
@@ -228,10 +233,20 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
         //endregion
 
         //region Custom decks
+        if (CrCastApi.hasCredentials()) {
+            binding.profileFragmentCustomDecksCrCastLogin.setVisibility(View.GONE);
+        } else {
+            binding.profileFragmentCustomDecksCrCastLogin.setVisibility(View.VISIBLE);
+            binding.profileFragmentCustomDecksCrCastLogin.setOnClickListener(v -> {
+                CrCastLoginDialog.get().show(getChildFragmentManager(), null);
+            });
+        }
+
         binding.profileFragmentCustomDecksList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
-        CustomDecksDatabase decksDb = CustomDecksDatabase.get(requireContext());
-        List<BasicCustomDeck> customDecks = decksDb.getAllDecks();
-        binding.profileFragmentCustomDecksList.setAdapter(new CustomDecksAdapter(customDecks));
+
+        // TODO: Import deck
+        // TODO: Recover deck
+
         //endregion
 
         return binding.getRoot();
@@ -256,6 +271,36 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
 
         OverloadedApi.get().removeEventListener(this);
         this.pyx = null;
+    }
+
+    private void showPopupMenu() {
+        android.widget.PopupMenu menu = new android.widget.PopupMenu(requireContext(), binding.profileFragmentMenu);
+        menu.inflate(R.menu.new_profile);
+
+        if (!CrCastApi.hasCredentials()) menu.getMenu().removeItem(R.id.customDecks_logoutCrCast);
+
+        menu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.profileFragment_logoutCrCast) {
+                CrCastApi.get().logout();
+                CustomDecksDatabase.get(requireContext()).clearCrCastDecks();
+
+                binding.profileFragmentCustomDecksCrCastLogin.setVisibility(View.VISIBLE);
+                if (customDecksAdapter != null)
+                    customDecksAdapter.removeItems(elm -> elm instanceof CrCastDeck);
+                return true;
+            }
+
+            return false;
+        });
+        menu.show();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        refreshCustomDecks();
+        refreshCrCastDecks();
     }
 
     @Override
@@ -296,6 +341,59 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                 if (username != null && friendsAdapter != null) friendsAdapter.update(username);
                 break;
         }
+    }
+
+    @Override
+    public void loggedInCrCast() {
+        binding.profileFragmentCustomDecksCrCastLogin.setVisibility(View.GONE);
+        if (getActivity() != null) getActivity().invalidateOptionsMenu();
+        refreshCrCastDecks();
+    }
+
+    private void refreshCustomDecks() {
+        CustomDecksDatabase decksDb = CustomDecksDatabase.get(requireContext());
+        List<BasicCustomDeck> customDecks = decksDb.getAllDecks();
+        binding.profileFragmentCustomDecksList.setAdapter(customDecksAdapter = new CustomDecksAdapter(customDecks));
+    }
+
+    private void refreshCrCastDecks() {
+        if (!CrCastApi.hasCredentials() || customDecksAdapter == null || getContext() == null)
+            return;
+
+        CustomDecksDatabase db = CustomDecksDatabase.get(requireContext());
+        CrCastApi.get().getDecks(db)
+                .addOnSuccessListener(updatedDecks -> {
+                    List<CrCastDeck> oldDecks = db.getCachedCrCastDecks();
+
+                    List<CrCastDeck> toUpdate = new LinkedList<>();
+                    for (CrCastDeck newDeck : updatedDecks) {
+                        CrCastDeck oldDeck;
+                        if ((oldDeck = CrCastDeck.find(oldDecks, newDeck.watermark)) == null || oldDeck.hasChanged(newDeck))
+                            toUpdate.add(newDeck);
+                    }
+
+                    List<String> toRemove = new LinkedList<>();
+                    for (CrCastDeck oldDeck : oldDecks) {
+                        if (CrCastDeck.find(updatedDecks, oldDeck.watermark) == null)
+                            toRemove.add(oldDeck.watermark);
+                    }
+
+                    CustomDecksDatabase.get(requireContext()).updateCrCastDecks(toUpdate, toRemove);
+
+                    for (String removeDeck : toRemove)
+                        customDecksAdapter.removeItem((OrderedRecyclerViewAdapter.Filter<BasicCustomDeck>) elm -> elm instanceof CrCastDeck && removeDeck.equals(elm.watermark));
+
+                    if (!toUpdate.isEmpty())
+                        customDecksAdapter.itemsAdded(new ArrayList<>(toUpdate));
+
+                    Log.d(TAG, "Updated CrCast decks, updated: " + toUpdate.size() + ", removed: " + toRemove.size());
+                })
+                .addOnFailureListener(ex -> {
+                    if (ex instanceof CrCastApi.NotSignedInException)
+                        return;
+
+                    Log.e(TAG, "Failed loading CrCast decks.", ex);
+                });
     }
 
     private class FriendsAdapter extends OrderedRecyclerViewAdapter<FriendsAdapter.ViewHolder, FriendStatus, Void, Void> {
@@ -531,7 +629,10 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                 holder.binding.customDeckItemIcon.setImageResource(R.drawable.baseline_star_24);
             } else if (deck instanceof CrCastDeck) {
                 holder.binding.customDeckItemIcon.setVisibility(View.VISIBLE);
-                holder.binding.customDeckItemIcon.setImageResource(R.drawable.baseline_contactless_24);
+                if (((CrCastDeck) deck).favorite)
+                    holder.binding.customDeckItemIcon.setImageResource(R.drawable.baseline_favorite_contacless_24);
+                else
+                    holder.binding.customDeckItemIcon.setImageResource(R.drawable.baseline_contactless_24);
             } else {
                 holder.binding.customDeckItemIcon.setVisibility(View.GONE);
             }
@@ -549,7 +650,7 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                 else if (deck instanceof CustomDecksDatabase.StarredDeck && deck.owner != null)
                     ViewCustomDeckActivity.startActivity(requireContext(), deck.owner, deck.name, ((CustomDecksDatabase.StarredDeck) deck).shareCode);
                 else if (deck instanceof CrCastDeck)
-                    ViewCustomDeckActivity.startActivityCrCast(requireContext(), deck.name, deck.watermark);
+                    ViewCustomDeckActivity.startActivityCrCast(requireContext(), (CrCastDeck) deck);
             });
         }
 

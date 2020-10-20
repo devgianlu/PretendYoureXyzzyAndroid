@@ -47,7 +47,7 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
         args.putString("desc", deck.desc);
         args.putString("lang", deck.lang);
         args.putBoolean("private", deck.privateDeck);
-        args.putSerializable("state", deck.state);
+        if (deck.state != null) args.putSerializable("state", deck.state);
         fragment.setArguments(args);
         return fragment;
     }
@@ -84,8 +84,10 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
             crCast.setVisibility(View.VISIBLE);
             collaborating.setVisibility(View.GONE);
 
-            TextView state = crCast.findViewById(R.id.viewCustomDeck_state);
-            state.setText(((CrCastApi.State) args.getSerializable("state")).toFormal());
+            TextView stateText = crCast.findViewById(R.id.viewCustomDeck_state);
+            CrCastApi.State state = (CrCastApi.State) args.getSerializable("state");
+            if (state != null) stateText.setText(state.toFormal());
+            else stateText.setText("-");
 
             TextView privateDeck = crCast.findViewById(R.id.viewCustomDeck_private);
             privateDeck.setText(args.getBoolean("private") ? R.string.yes : R.string.no);

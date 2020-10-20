@@ -43,7 +43,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     private static CustomDecksDatabase instance;
 
     private CustomDecksDatabase(@Nullable Context context) {
-        super(context, "custom_decks.db", null, 10);
+        super(context, "custom_decks.db", null, 12);
     }
 
     @NonNull
@@ -73,7 +73,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE IF NOT EXISTS decks (id INTEGER PRIMARY KEY UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, description TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 0, remoteId INTEGER UNIQUE, lastUsed INTEGER NOT NULL DEFAULT 0)");
         db.execSQL("CREATE TABLE IF NOT EXISTS cards (id INTEGER PRIMARY KEY UNIQUE, deck_id INTEGER NOT NULL, type INTEGER NOT NULL, text TEXT NOT NULL, remoteId INTEGER UNIQUE)");
         db.execSQL("CREATE TABLE IF NOT EXISTS starred_decks (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL, remoteId INTEGER UNIQUE, lastUsed INTEGER NOT NULL DEFAULT 0)");
-        db.execSQL("CREATE TABLE IF NOT EXISTS cr_cast_decks (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER NOT NULL, created INTEGER NOT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS cr_cast_decks (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER DEFAULT NULL, created INTEGER DEFAULT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL, favorite INTEGER NOT NULL DEFAULT 0)");
     }
 
     @Override
@@ -100,6 +100,14 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             case 8:
             case 9:
                 db.execSQL("CREATE TABLE IF NOT EXISTS cr_cast_decks (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER NOT NULL, created INTEGER NOT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL)");
+            case 10:
+                db.execSQL("ALTER TABLE cr_cast_decks ADD favorite INTEGER NOT NULL DEFAULT 0");
+            case 11:
+            case 12:
+                db.execSQL("CREATE TABLE cr_cast_decks_tmp (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER DEFAULT NULL, created INTEGER DEFAULT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL, favorite INTEGER NOT NULL DEFAULT 0)");
+                db.execSQL("INSERT INTO cr_cast_decks_tmp SELECT * FROM cr_cast_decks");
+                db.execSQL("DROP TABLE cr_cast_decks");
+                db.execSQL("ALTER TABLE cr_cast_decks_tmp RENAME TO cr_cast_decks");
         }
 
         Log.i(TAG, "Migrated database from " + oldVersion + " to " + newVersion);
@@ -258,13 +266,25 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
                 values.put("description", deck.desc);
                 values.put("lang", deck.lang);
                 values.put("private", deck.privateDeck ? 1 : 0);
-                values.put("state", deck.state.val);
-                values.put("created", deck.created);
+                if (deck.state != null) values.put("state", deck.state.val);
+                if (deck.created != null) values.put("created", deck.created);
                 values.put("whites_count", deck.whiteCardsCount());
                 values.put("blacks_count", deck.blackCardsCount());
+                values.put("favorite", deck.favorite ? 1 : 0);
                 values.put("lastUsed", System.currentTimeMillis());
                 db.insertWithOnConflict("cr_cast_decks", null, values, SQLiteDatabase.CONFLICT_REPLACE);
             }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public void clearCrCastDecks() {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            db.execSQL("DELETE FROM cr_cast_decks");
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();

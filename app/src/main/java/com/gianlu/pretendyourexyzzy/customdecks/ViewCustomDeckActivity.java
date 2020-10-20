@@ -57,11 +57,12 @@ public class ViewCustomDeckActivity extends ActivityWithDialog implements AbsCar
         context.startActivity(intent);
     }
 
-    public static void startActivityCrCast(@NonNull Context context, @NonNull String deckName, @NonNull String deckCode) {
+    public static void startActivityCrCast(@NonNull Context context, @NonNull CrCastDeck deck) {
         Intent intent = new Intent(context, ViewCustomDeckActivity.class);
         intent.putExtra("crCast", true);
-        intent.putExtra("deckCode", deckCode);
-        intent.putExtra("deckName", deckName);
+        intent.putExtra("deckCode", deck.watermark);
+        intent.putExtra("deckName", deck.name);
+        intent.putExtra("favorite", deck.favorite);
         context.startActivity(intent);
     }
 
@@ -120,19 +121,13 @@ public class ViewCustomDeckActivity extends ActivityWithDialog implements AbsCar
                 return;
             }
 
-            CrCastApi.get().getDeck(deckCode, db, this, new CrCastApi.DeckCallback() {
-                @Override
-                public void onDeck(@NonNull CrCastDeck deck) {
-                    deckLoaded(deck);
-                }
-
-                @Override
-                public void onException(@NonNull Exception ex) {
-                    Log.e(TAG, "Failed loading CrCast deck.", ex);
-                    Toaster.with(ViewCustomDeckActivity.this).message(R.string.failedLoading).show();
-                    onBackPressed();
-                }
-            });
+            CrCastApi.get().getDeck(deckCode, getIntent().getBooleanExtra("favorite", true), db)
+                    .addOnSuccessListener(this::deckLoaded)
+                    .addOnFailureListener(ex -> {
+                        Log.e(TAG, "Failed loading CrCast deck.", ex);
+                        Toaster.with(ViewCustomDeckActivity.this).message(R.string.failedLoading).show();
+                        onBackPressed();
+                    });
         } else if (getIntent().getBooleanExtra("search", false)) {
             String deckName = getIntent().getStringExtra("deckName");
             String watermark = getIntent().getStringExtra("watermark");

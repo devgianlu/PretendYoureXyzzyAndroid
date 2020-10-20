@@ -66,36 +66,32 @@ public class CrCastLoginDialog extends DialogFragment {
 
             loadable.loading(true);
             setCancelable(false);
-            CrCastApi.get().login(userStr, passStr, getActivity(), new CrCastApi.LoginCallback() {
-                @Override
-                public void onLoginSuccessful() {
-                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.signInSuccessful));
-                    loadable.notLoading(false);
-                    dismissAllowingStateLoss();
+            CrCastApi.get().login(userStr, passStr)
+                    .addOnSuccessListener(aVoid -> {
+                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.signInSuccessful));
+                        loadable.notLoading(false);
+                        dismissAllowingStateLoss();
 
-                    if (listener != null) listener.loggedInCrCast();
-                }
+                        if (listener != null) listener.loggedInCrCast();
+                    })
+                    .addOnFailureListener(ex -> {
+                        loadable.notLoading(true);
+                        setCancelable(true);
 
-                @Override
-                public void onException(@NonNull Exception ex) {
-                    loadable.notLoading(true);
-                    setCancelable(true);
-
-                    if (ex instanceof CrCastApi.CrCastException) {
-                        switch (((CrCastApi.CrCastException) ex).code) {
-                            case NOT_AUTHORIZED:
-                                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.wrongUsernameOrPassword));
-                                return;
-                            case BANNED:
-                                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.crCastBanned));
-                                return;
+                        if (ex instanceof CrCastApi.CrCastException) {
+                            switch (((CrCastApi.CrCastException) ex).code) {
+                                case NOT_AUTHORIZED:
+                                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.wrongUsernameOrPassword));
+                                    return;
+                                case BANNED:
+                                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.crCastBanned));
+                                    return;
+                            }
                         }
-                    }
 
-                    Log.e(TAG, "Failed signing in!", ex);
-                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSigningIn));
-                }
-            });
+                        Log.e(TAG, "Failed signing in!", ex);
+                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSigningIn));
+                    });
         });
 
         return layout;

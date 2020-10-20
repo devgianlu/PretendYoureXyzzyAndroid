@@ -249,43 +249,39 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         if (adapter == null)
             return;
 
-        CrCastApi.get().getDecks(db, getActivity(), new CrCastApi.DecksCallback() {
-            @Override
-            public void onDecks(@NonNull List<CrCastDeck> updatedDecks) {
-                List<CrCastDeck> oldDecks = db.getCachedCrCastDecks();
+        CrCastApi.get().getDecks(db)
+                .addOnSuccessListener(updatedDecks -> {
+                    List<CrCastDeck> oldDecks = db.getCachedCrCastDecks();
 
-                List<CrCastDeck> toUpdate = new LinkedList<>();
-                for (CrCastDeck newDeck : updatedDecks) {
-                    CrCastDeck oldDeck;
-                    if ((oldDeck = CrCastDeck.find(oldDecks, newDeck.watermark)) == null || oldDeck.hasChanged(newDeck))
-                        toUpdate.add(newDeck);
-                }
+                    List<CrCastDeck> toUpdate = new LinkedList<>();
+                    for (CrCastDeck newDeck : updatedDecks) {
+                        CrCastDeck oldDeck;
+                        if ((oldDeck = CrCastDeck.find(oldDecks, newDeck.watermark)) == null || oldDeck.hasChanged(newDeck))
+                            toUpdate.add(newDeck);
+                    }
 
-                List<String> toRemove = new LinkedList<>();
-                for (CrCastDeck oldDeck : oldDecks) {
-                    if (CrCastDeck.find(updatedDecks, oldDeck.watermark) == null)
-                        toRemove.add(oldDeck.watermark);
-                }
+                    List<String> toRemove = new LinkedList<>();
+                    for (CrCastDeck oldDeck : oldDecks) {
+                        if (CrCastDeck.find(updatedDecks, oldDeck.watermark) == null)
+                            toRemove.add(oldDeck.watermark);
+                    }
 
-                CustomDecksDatabase.get(requireContext()).updateCrCastDecks(toUpdate, toRemove);
+                    CustomDecksDatabase.get(requireContext()).updateCrCastDecks(toUpdate, toRemove);
 
-                for (String removeDeck : toRemove)
-                    adapter.removeCrCastDeck(removeDeck);
+                    for (String removeDeck : toRemove)
+                        adapter.removeCrCastDeck(removeDeck);
 
-                if (!toUpdate.isEmpty())
-                    adapter.itemsAdded(new ArrayList<>(toUpdate));
+                    if (!toUpdate.isEmpty())
+                        adapter.itemsAdded(new ArrayList<>(toUpdate));
 
-                Log.d(TAG, "Updated CrCast decks, updated: " + toUpdate.size() + ", removed: " + toRemove.size());
-            }
+                    Log.d(TAG, "Updated CrCast decks, updated: " + toUpdate.size() + ", removed: " + toRemove.size());
+                })
+                .addOnFailureListener(ex -> {
+                    if (ex instanceof CrCastApi.NotSignedInException)
+                        return;
 
-            @Override
-            public void onException(@NonNull Exception ex) {
-                if (ex instanceof CrCastApi.NotSignedInException)
-                    return;
-
-                Log.e(TAG, "Failed loading CrCast decks.", ex);
-            }
-        });
+                    Log.e(TAG, "Failed loading CrCast decks.", ex);
+                });
     }
 
     private void refreshList() {
@@ -348,7 +344,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         else if (deck instanceof CustomDecksDatabase.StarredDeck && deck.owner != null)
             ViewCustomDeckActivity.startActivity(requireContext(), deck.owner, deck.name, ((CustomDecksDatabase.StarredDeck) deck).shareCode);
         else if (deck instanceof CrCastDeck)
-            ViewCustomDeckActivity.startActivityCrCast(requireContext(), deck.name, deck.watermark);
+            ViewCustomDeckActivity.startActivityCrCast(requireContext(), (CrCastDeck) deck);
     }
 
     @Override

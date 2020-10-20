@@ -244,31 +244,27 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
                                 DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
                             });
                 } else {
-                    ((CrCastDeck) deck).getCards(db, new CrCastApi.DeckCallback() {
-                        @Override
-                        public void onDeck(@NonNull CrCastDeck deck) {
-                            String json;
-                            try {
-                                json = deck.craftPyxJson().toString();
-                            } catch (JSONException ex) {
-                                Log.e(TAG, "Failed crating JSON for CrCast deck: " + deck.watermark, ex);
-                                return;
-                            }
+                    ((CrCastDeck) deck).getCards(db)
+                            .addOnSuccessListener(updatedDeck -> {
+                                String json;
+                                try {
+                                    json = updatedDeck.craftPyxJson().toString();
+                                } catch (JSONException ex) {
+                                    Log.e(TAG, "Failed crating JSON for CrCast deck: " + updatedDeck.watermark, ex);
+                                    return;
+                                }
 
-                            pyx.request(PyxRequests.addCustomDeckJson(getSetupPayload(), json))
-                                    .addOnSuccessListener(aVoid -> DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDeckAdded)))
-                                    .addOnFailureListener(ex -> {
-                                        Log.e(TAG, "Failed adding CrCast custom deck: " + deck.watermark, ex);
-                                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
-                                    });
-                        }
-
-                        @Override
-                        public void onException(@NonNull Exception ex) {
-                            Log.e(TAG, "Failed loading CrCast deck cards: " + deck.watermark, ex);
-                            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
-                        }
-                    });
+                                pyx.request(PyxRequests.addCustomDeckJson(getSetupPayload(), json))
+                                        .addOnSuccessListener(aVoid -> DialogUtils.showToast(getContext(), Toaster.build().message(R.string.customDeckAdded)))
+                                        .addOnFailureListener(ex -> {
+                                            Log.e(TAG, "Failed adding CrCast custom deck: " + updatedDeck.watermark, ex);
+                                            DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
+                                        });
+                            })
+                            .addOnFailureListener(ex -> {
+                                Log.e(TAG, "Failed loading CrCast deck cards: " + deck.watermark, ex);
+                                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedAddingCustomDeck));
+                            });
                 }
             } else {
                 throw new IllegalStateException(deck.toString());
@@ -364,7 +360,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
         List<CrCastDeck> crCastDecks = db.getCachedCrCastDecks();
         for (CrCastDeck customDeck : crCastDecks) {
             if (customDeck.name.equals(deck.name) && customDeck.watermark.equals(deck.watermark)) {
-                ViewCustomDeckActivity.startActivityCrCast(requireContext(), customDeck.name, customDeck.watermark);
+                ViewCustomDeckActivity.startActivityCrCast(requireContext(), customDeck);
                 return;
             }
         }
