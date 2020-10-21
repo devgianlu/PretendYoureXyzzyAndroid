@@ -48,10 +48,15 @@ public class EditCustomDeckActivity extends ActivityWithDialog implements AbsCar
                 .putExtra("title", context.getString(R.string.createCustomDeck)));
     }
 
-    public static void startActivityEdit(@NonNull Context context, @NonNull CustomDecksDatabase.CustomDeck deck) {
-        context.startActivity(new Intent(context, EditCustomDeckActivity.class)
+    @NonNull
+    public static Intent activityEditIntent(@NonNull Context context, @NonNull CustomDecksDatabase.CustomDeck deck) {
+        return new Intent(context, EditCustomDeckActivity.class)
                 .putExtra("title", deck.name + " - " + context.getString(R.string.editCustomDeck))
-                .putExtra("id", deck.id));
+                .putExtra("id", deck.id);
+    }
+
+    public static void startActivityEdit(@NonNull Context context, @NonNull CustomDecksDatabase.CustomDeck deck) {
+        context.startActivity(activityEditIntent(context, deck));
     }
 
     public static void startActivityImport(@NonNull Context context, boolean importDeck, @NonNull File tmpFile) {

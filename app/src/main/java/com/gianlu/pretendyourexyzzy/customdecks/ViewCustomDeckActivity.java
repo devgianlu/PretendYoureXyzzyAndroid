@@ -57,23 +57,33 @@ public class ViewCustomDeckActivity extends ActivityWithDialog implements AbsCar
         context.startActivity(intent);
     }
 
-    public static void startActivityCrCast(@NonNull Context context, @NonNull CrCastDeck deck) {
+    @NonNull
+    public static Intent activityCrCastIntent(@NotNull Context context, @NonNull CrCastDeck deck) {
         Intent intent = new Intent(context, ViewCustomDeckActivity.class);
         intent.putExtra("crCast", true);
         intent.putExtra("deckCode", deck.watermark);
         intent.putExtra("deckName", deck.name);
         intent.putExtra("favorite", deck.favorite);
-        context.startActivity(intent);
+        return intent;
     }
 
-    public static void startActivity(@NotNull Context context, @NotNull String owner, @NotNull String deckName, @NonNull String shareCode) {
+    public static void startActivityCrCast(@NonNull Context context, @NonNull CrCastDeck deck) {
+        context.startActivity(activityCrCastIntent(context, deck));
+    }
+
+    @NonNull
+    public static Intent activityIntent(@NotNull Context context, @NotNull String owner, @NotNull String deckName, @NonNull String shareCode) {
         Intent intent = new Intent(context, ViewCustomDeckActivity.class);
         intent.putExtra("search", false);
         intent.putExtra("crCast", false);
         intent.putExtra("owner", owner);
         intent.putExtra("shareCode", shareCode);
         intent.putExtra("deckName", deckName);
-        context.startActivity(intent);
+        return intent;
+    }
+
+    public static void startActivity(@NotNull Context context, @NotNull String owner, @NotNull String deckName, @NonNull String shareCode) {
+        context.startActivity(activityIntent(context, owner, deckName, shareCode));
     }
 
     @Override

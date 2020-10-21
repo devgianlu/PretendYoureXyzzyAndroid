@@ -123,6 +123,7 @@
         <attr name="minValue" format="integer" />
         <attr name="maxValue" format="integer" />
         <attr name="actualValue" format="integer" />
+        <attr name="desc" format="string" />
     </declare-styleable>
 
     <!-- Old -->

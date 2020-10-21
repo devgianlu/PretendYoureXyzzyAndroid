@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.main;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.Spannable;
@@ -203,6 +204,8 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                         view.setMinValue(0);
                         view.setMaxValue(ach.getTotalSteps());
                         view.setActualValue(ach.getCurrentSteps());
+                        view.setDesc(ach.getDescription());
+                        CommonUtils.setPaddingDip(view, null, null, null, 8);
                         binding.profileFragmentAchievementsList.addView(view);
 
                         im.loadImage((uri, drawable, isRequestedDrawable) -> {
@@ -212,7 +215,6 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                     }
 
                     // TODO: Show empty achievements message
-                    // TODO: Show achievement name?
 
                     data.release();
                 })
@@ -220,6 +222,8 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                     Log.e(TAG, "Failed loading achievements.", ex);
                     // TODO: Show achievements error
                 });
+
+        // TODO: Handle "see all" visibility when empty and when not connected
 
         GPGamesHelper.loadAchievementsIntent(requireContext())
                 .addOnSuccessListener(intent -> {
@@ -381,7 +385,7 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                     CustomDecksDatabase.get(requireContext()).updateCrCastDecks(toUpdate, toRemove);
 
                     for (String removeDeck : toRemove)
-                        customDecksAdapter.removeItem((OrderedRecyclerViewAdapter.Filter<BasicCustomDeck>) elm -> elm instanceof CrCastDeck && removeDeck.equals(elm.watermark));
+                        customDecksAdapter.removeItem(elm -> elm instanceof CrCastDeck && removeDeck.equals(elm.watermark));
 
                     if (!toUpdate.isEmpty())
                         customDecksAdapter.itemsAdded(new ArrayList<>(toUpdate));
@@ -645,12 +649,18 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                 CommonUtils.setText(holder.binding.customDeckItemCards, R.string.cardsCount, deck.cardsCount());
 
             holder.itemView.setOnClickListener(v -> {
+                Intent intent = null;
                 if (deck instanceof CustomDecksDatabase.CustomDeck)
-                    EditCustomDeckActivity.startActivityEdit(requireContext(), (CustomDecksDatabase.CustomDeck) deck);
+                    intent = EditCustomDeckActivity.activityEditIntent(requireContext(), (CustomDecksDatabase.CustomDeck) deck);
                 else if (deck instanceof CustomDecksDatabase.StarredDeck && deck.owner != null)
-                    ViewCustomDeckActivity.startActivity(requireContext(), deck.owner, deck.name, ((CustomDecksDatabase.StarredDeck) deck).shareCode);
+                    intent = ViewCustomDeckActivity.activityIntent(requireContext(), deck.owner, deck.name, ((CustomDecksDatabase.StarredDeck) deck).shareCode);
                 else if (deck instanceof CrCastDeck)
-                    ViewCustomDeckActivity.startActivityCrCast(requireContext(), (CrCastDeck) deck);
+                    intent = ViewCustomDeckActivity.activityCrCastIntent(requireContext(), (CrCastDeck) deck);
+
+                if (intent == null)
+                    return;
+
+                startActivity(intent);
             });
         }
 
