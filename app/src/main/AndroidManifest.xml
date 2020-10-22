@@ -113,6 +113,13 @@
 
         <!-- View custom decks activity -->
         <activity
+            android:name=".customdecks.NewViewCustomDeckActivity"
+            android:configChanges="uiMode"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <!-- View custom decks activity -->
+        <activity
             android:name=".customdecks.ViewCustomDeckActivity"
             android:configChanges="uiMode"
             android:screenOrientation="portrait"

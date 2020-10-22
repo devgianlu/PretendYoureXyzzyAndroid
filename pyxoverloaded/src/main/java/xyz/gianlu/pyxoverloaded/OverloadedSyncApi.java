@@ -10,9 +10,11 @@ import androidx.annotation.Nullable;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.commonutils.preferences.Prefs;
+import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -241,18 +243,19 @@ public class OverloadedSyncApi {
         });
     }
 
-    public void getPublicCustomDeck(@NonNull String username, @NonNull String name, @Nullable Activity activity, @NonNull GeneralCallback<UserProfile.CustomDeckWithCards> callback) {
-        callbacks(Tasks.call(api.executorService /* Using main executor because this is not sensible to concurrency */, () -> {
+    @NotNull
+    public Task<UserProfile.CustomDeckWithCards> getPublicCustomDeck(@NonNull String username, @NonNull String name) {
+        return Tasks.call(api.executorService /* Using main executor because this is not sensible to concurrency */, () -> {
             JSONObject body = new JSONObject();
             body.put("username", username);
             body.put("name", name);
             JSONObject obj = api.makePostRequest("Sync/GetPublicCustomDeck", body);
             return new UserProfile.CustomDeckWithCards(obj);
-        }), activity, callback::onResult, callback::onFailed);
+        });
     }
 
-    public void searchPublicCustomDeck(@NonNull String name, @NonNull String watermark, @NonNull String desc, int blackCards, int whiteCards, @Nullable Activity activity, @NonNull GeneralCallback<UserProfile.CustomDeckWithCards> callback) {
-        callbacks(Tasks.call(api.executorService /* Using main executor because this is not sensible to concurrency */, () -> {
+    public Task<UserProfile.CustomDeckWithCards> searchPublicCustomDeck(@NonNull String name, @NonNull String watermark, @NonNull String desc, int blackCards, int whiteCards) {
+        return Tasks.call(api.executorService /* Using main executor because this is not sensible to concurrency */, () -> {
             JSONObject body = new JSONObject();
             body.put("name", name);
             body.put("watermark", watermark);
@@ -261,7 +264,7 @@ public class OverloadedSyncApi {
             body.put("whiteCards", whiteCards);
             JSONObject obj = api.makePostRequest("Sync/SearchPublicCustomDeck", body);
             return new UserProfile.CustomDeckWithCards(obj);
-        }), activity, callback::onResult, callback::onFailed);
+        });
     }
     //endregion
 

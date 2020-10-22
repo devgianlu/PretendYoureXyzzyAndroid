@@ -40,7 +40,7 @@ import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
-import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
+import com.gianlu.pretendyourexyzzy.customdecks.NewViewCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewProfileBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemFriendBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemNewCustomDeckBinding;
@@ -653,9 +653,9 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
                 if (deck instanceof CustomDecksDatabase.CustomDeck)
                     intent = EditCustomDeckActivity.activityEditIntent(requireContext(), (CustomDecksDatabase.CustomDeck) deck);
                 else if (deck instanceof CustomDecksDatabase.StarredDeck && deck.owner != null)
-                    intent = ViewCustomDeckActivity.activityIntent(requireContext(), deck.owner, deck.name, ((CustomDecksDatabase.StarredDeck) deck).shareCode);
+                    intent = NewViewCustomDeckActivity.activityPublicIntent(requireContext(), (CustomDecksDatabase.StarredDeck) deck);
                 else if (deck instanceof CrCastDeck)
-                    intent = ViewCustomDeckActivity.activityCrCastIntent(requireContext(), (CrCastDeck) deck);
+                    intent = NewViewCustomDeckActivity.activityCrCastIntent(requireContext(), (CrCastDeck) deck);
 
                 if (intent == null)
                     return;

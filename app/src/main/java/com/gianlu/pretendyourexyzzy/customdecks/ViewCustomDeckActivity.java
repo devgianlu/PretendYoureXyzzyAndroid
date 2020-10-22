@@ -31,7 +31,6 @@ import org.jetbrains.annotations.NotNull;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
-import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 import xyz.gianlu.pyxoverloaded.model.UserProfile.CustomDeckWithCards;
 
 public class ViewCustomDeckActivity extends ActivityWithDialog implements AbsCardsFragment.Listener {
@@ -150,26 +149,20 @@ public class ViewCustomDeckActivity extends ActivityWithDialog implements AbsCar
                 return;
             }
 
-            OverloadedSyncApi.get().searchPublicCustomDeck(deckName, watermark, desc, blackCards, whiteCards, this, new GeneralCallback<CustomDeckWithCards>() {
-                @Override
-                public void onResult(@NonNull CustomDeckWithCards result) {
-                    deckLoaded(result);
-                }
+            OverloadedSyncApi.get().searchPublicCustomDeck(deckName, watermark, desc, blackCards, whiteCards)
+                    .addOnSuccessListener(this::deckLoaded)
+                    .addOnFailureListener(ex -> {
+                        Log.e(TAG, "Failed searching custom deck.", ex);
 
-                @Override
-                public void onFailed(@NonNull Exception ex) {
-                    Log.e(TAG, "Failed searching custom deck.", ex);
+                        if (ex instanceof OverloadedServerException && (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_DECK)
+                                || ((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_USER))) {
+                            Toaster.with(this).message(R.string.cannotFindCustomDeck).show();
+                        } else {
+                            Toaster.with(this).message(R.string.failedLoading).show();
+                        }
 
-                    if (ex instanceof OverloadedServerException && (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_DECK)
-                            || ((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_USER))) {
-                        Toaster.with(ViewCustomDeckActivity.this).message(R.string.cannotFindCustomDeck).show();
-                    } else {
-                        Toaster.with(ViewCustomDeckActivity.this).message(R.string.failedLoading).show();
-                    }
-
-                    onBackPressed();
-                }
-            });
+                        onBackPressed();
+                    });
         } else {
             shareCode = getIntent().getStringExtra("shareCode");
             owner = getIntent().getStringExtra("owner");
@@ -179,28 +172,24 @@ public class ViewCustomDeckActivity extends ActivityWithDialog implements AbsCar
                 return;
             }
 
-            OverloadedSyncApi.get().getPublicCustomDeck(owner, deckName, this, new GeneralCallback<CustomDeckWithCards>() {
-                @Override
-                public void onResult(@NonNull CustomDeckWithCards result) {
-                    deckLoaded(result);
-                    db.updateStarredDeck(result.shareCode, result.name, result.watermark, result.count);
-                }
+            OverloadedSyncApi.get().getPublicCustomDeck(owner, deckName)
+                    .addOnSuccessListener(result -> {
+                        deckLoaded(result);
+                        db.updateStarredDeck(result.shareCode, result.name, result.watermark, result.count);
+                    })
+                    .addOnFailureListener(ex -> {
+                        Log.e(TAG, "Failed loading custom deck cards.", ex);
 
-                @Override
-                public void onFailed(@NonNull Exception ex) {
-                    Log.e(TAG, "Failed loading custom deck cards.", ex);
+                        if (ex instanceof OverloadedServerException && (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_DECK)
+                                || ((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_USER))) {
+                            db.removeStarredDeck(owner, shareCode);
+                            Toaster.with(this).message(R.string.deckDoesNotExist).show();
+                        } else {
+                            Toaster.with(this).message(R.string.failedLoading).show();
+                        }
 
-                    if (ex instanceof OverloadedServerException && (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_DECK)
-                            || ((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_USER))) {
-                        db.removeStarredDeck(owner, shareCode);
-                        Toaster.with(ViewCustomDeckActivity.this).message(R.string.deckDoesNotExist).show();
-                    } else {
-                        Toaster.with(ViewCustomDeckActivity.this).message(R.string.failedLoading).show();
-                    }
-
-                    onBackPressed();
-                }
-            });
+                        onBackPressed();
+                    });
         }
     }
 

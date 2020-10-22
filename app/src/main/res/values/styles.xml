@@ -98,34 +98,6 @@
         <item name="android:textSize">16sp</item>
     </style>
 
-    <!-- Common attrs -->
-    <attr name="icon" format="reference" />
-
-    <!-- Preferences -->
-    <style name="TextAppearance.PreferencesTitle">
-        <item name="android:fontFamily">@font/montserrat_medium</item>
-        <item name="android:textSize">24sp</item>
-        <item name="android:textColor">#000000</item>
-        <item name="android:layout_margin">16dp</item>
-    </style>
-
-    <declare-styleable name="PreferenceItemView">
-        <attr name="icon" />
-        <attr name="title" format="string" />
-        <attr name="subtitle" format="string" />
-    </declare-styleable>
-
-    <!-- Achievements -->
-    <declare-styleable name="AchievementProgressView">
-        <attr name="completeColor" format="color" />
-        <attr name="incompleteColor" format="color" />
-        <attr name="icon" />
-        <attr name="minValue" format="integer" />
-        <attr name="maxValue" format="integer" />
-        <attr name="actualValue" format="integer" />
-        <attr name="desc" format="string" />
-    </declare-styleable>
-
     <!-- Old -->
     <style name="UrbanDictTheme">
         <item name="colorPrimary">@color/urbanPrimary</item>
