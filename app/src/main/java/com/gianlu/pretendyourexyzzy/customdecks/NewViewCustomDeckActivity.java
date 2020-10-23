@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.ui.Toaster;
@@ -18,8 +17,12 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastApi;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
 import com.gianlu.pretendyourexyzzy.api.models.Deck;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.ContentCard;
 
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
@@ -75,6 +78,8 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
 
         CustomDecksDatabase db = CustomDecksDatabase.get(this);
 
+        // TODO: Star/unstar deck
+
         switch (type) {
             case SEARCH:
                 String deckName = getIntent().getStringExtra("deckName");
@@ -107,6 +112,7 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
                     return;
 
                 CrCastApi.get().getDeck(deckCode, getIntent().getBooleanExtra("favorite", true), db)
+                        .continueWithTask(task -> task.getResult().getCards(db))
                         .addOnSuccessListener(this::deckLoaded)
                         .addOnFailureListener(ex -> {
                             Log.e(TAG, "Failed loading CrCast deck.", ex);
@@ -146,17 +152,18 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
     }
 
     private void deckLoaded(@NotNull CrCastDeck deck) {
-        // TODO: Load deck
+        CrCastDeck.Cards cards = deck.cards();
+        if (cards == null) throw new IllegalArgumentException();
+
+        loaded(InfoFragment.get(),
+                BlacksFragment.get(cards.blacks),
+                WhitesFragment.get(cards.whites));
     }
 
     private void deckLoaded(@NotNull UserProfile.CustomDeckWithCards deck) {
-        // TODO: Load deck
-    }
-
-    @NotNull
-    @Override
-    protected Fragment getNewFragmentFor(int pos) {
-        return pos == 0 ? new InfoFragment() : pos == 1 ? new BlacksFragment() : new WhitesFragment();
+        loaded(InfoFragment.get(),
+                BlacksFragment.get(ContentCard.fromOverloadedCards(deck.blackCards())),
+                WhitesFragment.get(ContentCard.fromOverloadedCards(deck.blackCards())));
     }
 
     private enum Type {
@@ -165,26 +172,61 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
 
     public static class InfoFragment extends FragmentWithDialog {
 
+        @NotNull
+        public static InfoFragment get() {
+            InfoFragment fragment = new InfoFragment();
+            return fragment;
+        }
+
         @Nullable
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+            // TODO: View info fragment
             return super.onCreateView(inflater, container, savedInstanceState);
         }
     }
 
     public static class BlacksFragment extends AbsNewCardsFragment {
+        private List<? extends BaseCard> cards;
+
+        @NotNull
+        public static BlacksFragment get(List<? extends BaseCard> cards) {
+            BlacksFragment fragment = new BlacksFragment();
+            fragment.cards = cards;
+            return fragment;
+        }
 
         @Override
         protected boolean addEnabled() {
             return false;
         }
+
+        @NotNull
+        @Override
+        protected List<? extends BaseCard> getCards(@NotNull Context context) {
+            return cards;
+        }
     }
 
     public static class WhitesFragment extends AbsNewCardsFragment {
+        private List<? extends BaseCard> cards;
+
+        @NotNull
+        public static WhitesFragment get(List<? extends BaseCard> cards) {
+            WhitesFragment fragment = new WhitesFragment();
+            fragment.cards = cards;
+            return fragment;
+        }
 
         @Override
         protected boolean addEnabled() {
             return false;
+        }
+
+        @NotNull
+        @Override
+        protected List<? extends BaseCard> getCards(@NotNull Context context) {
+            return cards;
         }
     }
 }

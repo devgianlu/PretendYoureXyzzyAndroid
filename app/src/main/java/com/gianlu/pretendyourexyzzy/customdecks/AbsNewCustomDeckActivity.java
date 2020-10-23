@@ -29,6 +29,7 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
 
         binding.customDeckClose.setOnClickListener(v -> finishAfterTransition());
         binding.customDeckMenu.setOnClickListener(v -> {
+            // TODO: Load menu
         });
 
         binding.customDeckNavigation.setOnSelectionChangedListener(pos -> {
@@ -42,9 +43,21 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
             }
         });
 
+        loading();
+    }
+
+    protected final void loading() {
+        fragments.clear();
+
+        // TODO: Show loading
+    }
+
+    protected final void loaded(@NotNull Fragment... frags) {
+        if (frags.length != 3) throw new IllegalArgumentException();
+
         FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
         for (int i = 0; i < 3; i++) {
-            Fragment frag = getNewFragmentFor(i);
+            Fragment frag = frags[i];
             fragments.put(i, frag);
             trans.add(binding.customDeckContainer.getId(), frag)
                     .hide(frag);
@@ -87,9 +100,6 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
     protected boolean navigateTo(@IntRange(from = 0, to = 2) int pos) {
         return true;
     }
-
-    @NotNull
-    protected abstract Fragment getNewFragmentFor(@IntRange(from = 0, to = 2) int pos);
 
     public enum Mode {
         HIDDEN, CONTINUE, SAVE
