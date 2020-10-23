@@ -269,11 +269,12 @@ public class OverloadedSyncApi {
     //endregion
 
     //region Custom decks collaborators
-    public void getCollaborators(long remoteId, @Nullable Activity activity, @NonNull GeneralCallback<List<String>> callback) {
-        callbacks(Tasks.call(api.executorService, () -> {
+    @NotNull
+    public Task<List<String>> getCollaborators(long remoteId) {
+        return Tasks.call(api.executorService, () -> {
             JSONObject obj = api.makePostRequest("Sync/GetCollaborators", singletonJsonObject("remoteId", remoteId));
             return CommonUtils.toStringsList(obj.getJSONArray("collaborators"), false);
-        }), activity, callback::onResult, callback::onFailed);
+        });
     }
 
     public void addCollaborator(long remoteId, @NonNull String username, @Nullable Activity activity, @NonNull GeneralCallback<List<String>> callback) {

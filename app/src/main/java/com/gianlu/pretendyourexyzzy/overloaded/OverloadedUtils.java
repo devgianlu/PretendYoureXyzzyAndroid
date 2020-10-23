@@ -112,7 +112,7 @@ public final class OverloadedUtils {
         if (FirebaseAuth.getInstance().getCurrentUser() == null)
             return Tasks.forResult(false);
 
-        return OverloadedApi.get().userData().continueWith(task -> {
+        return OverloadedApi.get().userData(true).continueWith(task -> {
             try {
                 UserData data = task.getResult();
                 return data != null && data.purchaseStatus.ok;

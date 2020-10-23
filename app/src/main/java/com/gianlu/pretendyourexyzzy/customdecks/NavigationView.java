@@ -68,6 +68,11 @@ public final class NavigationView extends View {
         }
     }
 
+    @IntRange(from = 0, to = 2)
+    public int getSelected() {
+        return this.mSelected;
+    }
+
     public void setSelected(@IntRange(from = 0, to = 2) int pos) {
         this.mSelected = pos;
         invalidate();
@@ -148,11 +153,12 @@ public final class NavigationView extends View {
                 else cx = getWidth() - (mRadius + mRadiusAdd);
 
                 if (Math.sqrt(Math.pow(event.getX() - cx, 2) + Math.pow(event.getY() - cy, 2)) <= mRadius) {
-                    mSelected = i;
-                    postInvalidate();
+                    int pos = i;
                     post(() -> {
-                        if (mSelectionChangedListener != null)
-                            mSelectionChangedListener.onSelected(mSelected);
+                        if (callChangedListener(pos)) {
+                            mSelected = pos;
+                            invalidate();
+                        }
                     });
                     return true;
                 }
@@ -162,7 +168,17 @@ public final class NavigationView extends View {
         return super.onTouchEvent(event);
     }
 
+    private boolean callChangedListener(int pos) {
+        if (mSelectionChangedListener != null)
+            return mSelectionChangedListener.onSelected(pos);
+        else
+            return true;
+    }
+
     public interface OnSelectionChanged {
-        void onSelected(@IntRange(from = 0, to = 2) int pos);
+        /**
+         * @return Whether we should proceed updating the UI
+         */
+        boolean onSelected(@IntRange(from = 0, to = 2) int pos);
     }
 }

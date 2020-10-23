@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -25,20 +26,22 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog {
 
     protected abstract boolean addEnabled();
 
+    protected void onAddClick() {
+    }
+
     @NotNull
     protected abstract List<? extends BaseCard> getCards(@NotNull Context context);
 
     @Nullable
     @Override
+    @CallSuper
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         FragmentCustomDeckCardsBinding binding = FragmentCustomDeckCardsBinding.inflate(inflater, container, false);
         binding.customDeckCardsList.setLayoutManager(new GridLayoutManager(requireContext(), 2, RecyclerView.VERTICAL, false));
 
         if (addEnabled()) {
             binding.customDeckCardsAddContainer.setVisibility(View.VISIBLE);
-            binding.customDeckCardsAdd.setOnClickListener(v -> {
-                // TODO: Show add card fragment
-            });
+            binding.customDeckCardsAdd.setOnClickListener(v -> onAddClick());
         } else {
             binding.customDeckCardsAddContainer.setVisibility(View.GONE);
         }

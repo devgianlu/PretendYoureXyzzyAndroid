@@ -241,25 +241,21 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
                 collaborators.setVisibility(View.GONE);
                 collaboratorsMessage.setVisibility(View.GONE);
                 collaboratorsLoading.setVisibility(View.VISIBLE);
-                OverloadedSyncApi.get().getCollaborators(deckRemoteId, getActivity(), new GeneralCallback<List<String>>() {
-                    @Override
-                    public void onResult(@NonNull List<String> result) {
-                        setCollaborators(deckRemoteId, result);
+                OverloadedSyncApi.get().getCollaborators(deckRemoteId)
+                        .addOnSuccessListener(result -> {
+                            setCollaborators(deckRemoteId, result);
 
-                        addCollaborator.setEnabled(true);
-                        addCollaborator.setOnClickListener(v -> showAddCollaboratorDialog(deckRemoteId));
-                    }
+                            addCollaborator.setEnabled(true);
+                            addCollaborator.setOnClickListener(v -> showAddCollaboratorDialog(deckRemoteId));
+                        })
+                        .addOnFailureListener(ex -> {
+                            Log.e(TAG, "Failed getting collaborators.", ex);
 
-                    @Override
-                    public void onFailed(@NonNull Exception ex) {
-                        Log.e(TAG, "Failed getting collaborators.", ex);
-
-                        collaborators.setVisibility(View.GONE);
-                        collaboratorsLoading.setVisibility(View.GONE);
-                        collaboratorsMessage.setVisibility(View.VISIBLE);
-                        collaboratorsMessage.error(R.string.failedLoading);
-                    }
-                });
+                            collaborators.setVisibility(View.GONE);
+                            collaboratorsLoading.setVisibility(View.GONE);
+                            collaboratorsMessage.setVisibility(View.VISIBLE);
+                            collaboratorsMessage.error(R.string.failedLoading);
+                        });
             }
         } else {
             addCollaborator.setEnabled(false);
