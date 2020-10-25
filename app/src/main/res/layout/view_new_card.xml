@@ -5,14 +5,13 @@
     <LinearLayout
         android:layout_width="160dp"
         android:layout_height="220dp"
-        android:orientation="vertical"
-        android:padding="8dp">
+        android:orientation="vertical">
 
         <com.gianlu.commonutils.misc.SuperTextView
             android:id="@+id/cardItem_text"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginBottom="8dp"
+            android:layout_margin="8dp"
             android:layout_weight="1"
             android:fontFamily="@font/roboto_medium"
             android:textSize="16sp"
@@ -20,9 +19,19 @@
             app:autoSizeMinTextSize="8sp"
             app:autoSizeTextType="uniform" />
 
+        <ImageView
+            android:id="@+id/cardItem_image"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="8dp"
             android:orientation="horizontal">
 
             <com.gianlu.commonutils.misc.SuperTextView

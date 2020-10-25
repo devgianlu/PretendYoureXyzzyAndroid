@@ -156,14 +156,17 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
         if (cards == null) throw new IllegalArgumentException();
 
         loaded(InfoFragment.get(),
-                BlacksFragment.get(cards.blacks),
-                WhitesFragment.get(cards.whites));
+                BlacksFragment.get(cards.blacks, null),
+                WhitesFragment.get(cards.whites, null));
     }
 
     private void deckLoaded(@NotNull UserProfile.CustomDeckWithCards deck) {
+        CollaboratorHandler handler = null;
+        if (deck.collaborator) handler = new CollaboratorHandler(deck.shareCode, deck.watermark);
+
         loaded(InfoFragment.get(),
-                BlacksFragment.get(ContentCard.fromOverloadedCards(deck.blackCards())),
-                WhitesFragment.get(ContentCard.fromOverloadedCards(deck.blackCards())));
+                BlacksFragment.get(ContentCard.fromOverloadedCards(deck.blackCards()), handler),
+                WhitesFragment.get(ContentCard.fromOverloadedCards(deck.blackCards()), handler));
     }
 
     private enum Type {
@@ -174,8 +177,7 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
 
         @NotNull
         public static InfoFragment get() {
-            InfoFragment fragment = new InfoFragment();
-            return fragment;
+            return new InfoFragment();
         }
 
         @Nullable
@@ -190,15 +192,16 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
         private List<? extends BaseCard> cards;
 
         @NotNull
-        public static BlacksFragment get(List<? extends BaseCard> cards) {
+        public static BlacksFragment get(List<? extends BaseCard> cards, @Nullable CardActionsHandler handler) {
             BlacksFragment fragment = new BlacksFragment();
             fragment.cards = cards;
+            fragment.setHandler(handler);
             return fragment;
         }
 
         @Override
-        protected boolean addEnabled() {
-            return false;
+        protected boolean canEditCards() {
+            return handler != null;
         }
 
         @NotNull
@@ -212,15 +215,16 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
         private List<? extends BaseCard> cards;
 
         @NotNull
-        public static WhitesFragment get(List<? extends BaseCard> cards) {
+        public static WhitesFragment get(List<? extends BaseCard> cards, @Nullable CardActionsHandler handler) {
             WhitesFragment fragment = new WhitesFragment();
             fragment.cards = cards;
+            fragment.setHandler(handler);
             return fragment;
         }
 
         @Override
-        protected boolean addEnabled() {
-            return false;
+        protected boolean canEditCards() {
+            return handler != null;
         }
 
         @NotNull

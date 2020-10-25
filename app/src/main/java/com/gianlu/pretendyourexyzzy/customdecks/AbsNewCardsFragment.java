@@ -23,14 +23,16 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public abstract class AbsNewCardsFragment extends FragmentWithDialog {
+    protected CardActionsHandler handler;
 
-    protected abstract boolean addEnabled();
-
-    protected void onAddClick() {
-    }
+    protected abstract boolean canEditCards();
 
     @NotNull
     protected abstract List<? extends BaseCard> getCards(@NotNull Context context);
+
+    public final void setHandler(@Nullable CardActionsHandler handler) {
+        this.handler = handler;
+    }
 
     @Nullable
     @Override
@@ -39,9 +41,11 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog {
         FragmentCustomDeckCardsBinding binding = FragmentCustomDeckCardsBinding.inflate(inflater, container, false);
         binding.customDeckCardsList.setLayoutManager(new GridLayoutManager(requireContext(), 2, RecyclerView.VERTICAL, false));
 
-        if (addEnabled()) {
+        if (canEditCards()) {
             binding.customDeckCardsAddContainer.setVisibility(View.VISIBLE);
-            binding.customDeckCardsAdd.setOnClickListener(v -> onAddClick());
+            binding.customDeckCardsAdd.setOnClickListener(v -> {
+                // TODO: Show add card fragment
+            });
         } else {
             binding.customDeckCardsAddContainer.setVisibility(View.GONE);
         }

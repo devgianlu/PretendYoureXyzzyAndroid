@@ -6,31 +6,41 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewEditCustomDeckInfoBinding;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
+import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
 public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
     private static final String TAG = NewEditCustomDeckActivity.class.getSimpleName();
@@ -86,13 +96,15 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
         NEW, EDIT, IMPORT
     }
 
-    public static class InfoFragment extends FragmentWithDialog {
+    public static class InfoFragment extends FragmentWithDialog implements SavableFragment {
         private static final Pattern VALID_WATERMARK_PATTERN = Pattern.compile("[A-Z0-9]{5}");
         private static final int MIN_DECK_NAME_LENGTH = 5;
         private static final int MAX_DECK_NAME_LENGTH = 32;
         private static final int MAX_DECK_DESC_LENGTH = 256;
         private FragmentNewEditCustomDeckInfoBinding binding;
         private CustomDeck deck;
+        private CustomDecksDatabase db;
+        private CollaboratorsAdapter collaboratorsAdapter;
 
         @NotNull
         public static InfoFragment empty() {
@@ -110,13 +122,46 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
             return fragment;
         }
 
+        @Override
+        public boolean save(@NotNull Bundle bundle) {
+            boolean result = save(CommonUtils.getText(binding.editCustomDeckInfoName), CommonUtils.getText(binding.editCustomDeckInfoWatermark), CommonUtils.getText(binding.editCustomDeckInfoDesc));
+            if (result) bundle.putInt("deckId", deck.id);
+            return result;
+        }
+
+        private boolean save(@NonNull String name, @NonNull String watermark, @NonNull String description) {
+            if (db == null) return false;
+
+            name = name.trim();
+            if (name.length() < MIN_DECK_NAME_LENGTH || name.length() > MAX_DECK_NAME_LENGTH)
+                return false;
+
+            if (!VALID_WATERMARK_PATTERN.matcher(watermark).matches())
+                return false;
+
+            description = description.trim();
+            if (description.length() > MAX_DECK_DESC_LENGTH)
+                return false;
+
+            if (deck == null) {
+                ThisApplication.sendAnalytics(Utils.ACTION_CREATED_CUSTOM_DECK);
+
+                deck = db.putDeckInfo(name, watermark, description);
+                return deck != null;
+            } else {
+                db.updateDeckInfo(deck.id, name, watermark, description);
+                return true;
+            }
+        }
+
         @Nullable
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
             binding = FragmentNewEditCustomDeckInfoBinding.inflate(inflater, container, false);
             binding.editCustomDeckCollaborators.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
+            binding.editCustomDeckAddCollaborator.setOnClickListener(v -> showAddCollaboratorDialog());
 
-            CustomDecksDatabase db = CustomDecksDatabase.get(requireContext());
+            db = CustomDecksDatabase.get(requireContext());
 
             CommonUtils.getEditText(binding.editCustomDeckInfoName).addTextChangedListener(new TextWatcher() {
                 @Override
@@ -198,23 +243,13 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                     binding.editCustomDeckAddCollaborator.setVisibility(View.VISIBLE);
                     binding.editCustomDeckCollaborators.setVisibility(View.GONE);
                     binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
-                    // TODO: Show loading
+                    // TODO: Show loading collaborators
 
                     if (deck == null || deck.remoteId == null) {
                         // TODO: Cannot load collaborators yet
                     } else {
                         OverloadedSyncApi.get().getCollaborators(deck.remoteId)
-                                .addOnSuccessListener(list -> {
-                                    if (list.isEmpty()) {
-                                        binding.editCustomDeckCollaborators.setVisibility(View.GONE);
-                                        binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.VISIBLE);
-                                    } else {
-                                        binding.editCustomDeckCollaborators.setVisibility(View.VISIBLE);
-                                        binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
-
-                                        binding.editCustomDeckCollaborators.setAdapter(new CollaboratorsAdapter(list));
-                                    }
-                                })
+                                .addOnSuccessListener(list -> binding.editCustomDeckCollaborators.setAdapter(collaboratorsAdapter = new CollaboratorsAdapter(list)))
                                 .addOnFailureListener(ex -> {
                                     Log.e(TAG, "Failed getting collaborators.", ex);
                                     // TODO: Show collaborators error
@@ -231,11 +266,66 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
             return binding.getRoot();
         }
 
+        private void showAddCollaboratorDialog() {
+            showProgress(R.string.loading);
+            OverloadedApi.get().friendsStatus()
+                    .addOnSuccessListener(result -> {
+                        dismissDialog();
+                        if (getContext() == null)
+                            return;
+
+                        List<String> friends = new ArrayList<>(result.size());
+                        for (Map.Entry<String, FriendStatus> entry : result.entrySet())
+                            if (entry.getValue().mutual) friends.add(entry.getKey());
+
+                        if (collaboratorsAdapter != null)
+                            friends.removeAll(collaboratorsAdapter.list);
+
+                        if (friends.isEmpty()) {
+                            showToast(Toaster.build().message(R.string.noCollaboratorsToAdd));
+                            return;
+                        }
+
+                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+                        builder.setTitle(R.string.addCollaborator)
+                                .setNeutralButton(R.string.cancel, null)
+                                .setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, friends), (dialog, which) -> {
+                                    dialog.dismiss();
+
+                                    if (deck == null || deck.remoteId == null)
+                                        return;
+
+                                    showProgress(R.string.loading);
+                                    String friend = friends.get(which);
+                                    OverloadedSyncApi.get().addCollaborator(deck.remoteId, friend)
+                                            .addOnSuccessListener(collaborators -> {
+                                                dismissDialog();
+                                                if (collaboratorsAdapter != null)
+                                                    collaboratorsAdapter.setCollaborators(collaborators);
+                                            })
+                                            .addOnFailureListener(ex -> {
+                                                Log.e(TAG, "Failed adding collaborator: " + friend, ex);
+                                                showToast(Toaster.build().message(R.string.failedAddingCollaborator));
+                                                dismissDialog();
+                                            });
+                                });
+
+                        showDialog(builder);
+                    })
+                    .addOnFailureListener(ex -> {
+                        Log.e(TAG, "Failed getting friends list.", ex);
+
+                        dismissDialog();
+                        showToast(Toaster.build().message(R.string.failedLoading));
+                    });
+        }
+
         private class CollaboratorsAdapter extends RecyclerView.Adapter<CollaboratorsAdapter.ViewHolder> {
             private final List<String> list;
 
             CollaboratorsAdapter(@NotNull List<String> list) {
                 this.list = list;
+                countUpdated(list.size());
             }
 
             @NonNull
@@ -244,12 +334,55 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                 return new ViewHolder(parent);
             }
 
+            private void setCollaborators(@NotNull List<String> newList) {
+                list.clear();
+                list.addAll(newList);
+                notifyDataSetChanged();
+
+                countUpdated(list.size());
+            }
+
+            private void countUpdated(int count) {
+                if (count == 0) {
+                    binding.editCustomDeckCollaborators.setVisibility(View.GONE);
+                    binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.VISIBLE);
+                } else {
+                    binding.editCustomDeckCollaborators.setVisibility(View.VISIBLE);
+                    binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
+                }
+            }
+
             @Override
             public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
                 String username = list.get(position);
                 holder.text.setText(username);
 
-                // TODO: Collaborator popup
+                PopupMenu popup = new PopupMenu(requireContext(), holder.text);
+                popup.inflate(R.menu.item_collaborator);
+                popup.setOnMenuItemClickListener(item -> {
+                    if (item.getItemId() == R.id.collaboratorItemMenu_remove) {
+                        if (deck == null || deck.remoteId == null)
+                            return false;
+
+                        showProgress(R.string.loading);
+                        OverloadedSyncApi.get().removeCollaborator(deck.remoteId, username)
+                                .addOnSuccessListener(result -> {
+                                    dismissDialog();
+                                    setCollaborators(result);
+                                })
+                                .addOnFailureListener(ex -> {
+                                    Log.e(TAG, "Failed removing collaborator: " + username, ex);
+                                    dismissDialog();
+
+                                    showToast(Toaster.build().message(R.string.failedRemovingCollaborator));
+                                });
+                        return true;
+                    }
+
+                    return false;
+                });
+
+                holder.text.setOnClickListener(v -> CommonUtils.showPopupOffset(popup, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()), 0));
             }
 
             @Override
@@ -268,18 +401,25 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
         }
     }
 
-    private static abstract class CardsFragment extends AbsNewCardsFragment {
+    private static abstract class CardsFragment extends AbsNewCardsFragment implements SavableFragment {
         private Integer deckId;
         private CustomDecksDatabase db;
 
         @Override
-        protected final boolean addEnabled() {
+        protected final boolean canEditCards() {
             return true;
         }
 
         @Override
-        protected final void onAddClick() {
-            // TODO: Show add fragment
+        public final boolean save(@NotNull Bundle bundle) {
+            if (deckId == null) {
+                deckId = bundle.getInt("deckId", -1);
+                if (deckId == -1) return false;
+
+                setHandler(new CustomDecksHandler(requireContext(), deckId));
+            }
+
+            return true;
         }
 
         @Override
@@ -290,6 +430,8 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
 
             deckId = requireArguments().getInt("deckId", -1);
             if (deckId == -1) deckId = null;
+
+            if (deckId != null) setHandler(new CustomDecksHandler(requireContext(), deckId));
         }
 
         boolean isBlack() {

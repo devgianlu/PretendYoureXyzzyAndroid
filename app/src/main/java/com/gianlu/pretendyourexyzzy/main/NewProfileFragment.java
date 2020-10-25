@@ -118,6 +118,8 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
         binding.profileFragmentInputs.idCodeInput.setEndIconOnClickListener(v -> CommonUtils.setText(binding.profileFragmentInputs.idCodeInput, CommonUtils.randomString(100)));
         binding.profileFragmentMenu.setOnClickListener((v) -> showPopupMenu());
 
+        // TODO: Inputs should show as loading
+
         OverloadedApi.get().addEventListener(this);
 
         //region Starred cards

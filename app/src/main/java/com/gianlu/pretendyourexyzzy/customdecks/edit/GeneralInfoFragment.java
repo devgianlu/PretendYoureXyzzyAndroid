@@ -42,7 +42,6 @@ import java.util.regex.Pattern;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
-import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
 public final class GeneralInfoFragment extends FragmentWithDialog {
@@ -310,20 +309,16 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
 
                                 showProgress(R.string.loading);
                                 String friend = friends.get(which);
-                                OverloadedSyncApi.get().addCollaborator(deckRemoteId, friend, getActivity(), new GeneralCallback<List<String>>() {
-                                    @Override
-                                    public void onResult(@NonNull List<String> collaborators) {
-                                        dismissDialog();
-                                        setCollaborators(deckRemoteId, collaborators);
-                                    }
-
-                                    @Override
-                                    public void onFailed(@NonNull Exception ex) {
-                                        Log.e(TAG, "Failed adding collaborator: " + friend, ex);
-                                        showToast(Toaster.build().message(R.string.failedAddingCollaborator));
-                                        dismissDialog();
-                                    }
-                                });
+                                OverloadedSyncApi.get().addCollaborator(deckRemoteId, friend)
+                                        .addOnSuccessListener(collaborators -> {
+                                            dismissDialog();
+                                            setCollaborators(deckRemoteId, collaborators);
+                                        })
+                                        .addOnFailureListener(ex -> {
+                                            Log.e(TAG, "Failed adding collaborator: " + friend, ex);
+                                            showToast(Toaster.build().message(R.string.failedAddingCollaborator));
+                                            dismissDialog();
+                                        });
                             });
 
                     showDialog(builder);
@@ -362,21 +357,17 @@ public final class GeneralInfoFragment extends FragmentWithDialog {
             popup.setOnMenuItemClickListener(item -> {
                 if (item.getItemId() == R.id.collaboratorItemMenu_remove) {
                     showProgress(R.string.loading);
-                    OverloadedSyncApi.get().removeCollaborator(remoteDeckId, username, getActivity(), new GeneralCallback<List<String>>() {
-                        @Override
-                        public void onResult(@NonNull List<String> result) {
-                            dismissDialog();
-                            setCollaborators(remoteDeckId, result);
-                        }
+                    OverloadedSyncApi.get().removeCollaborator(remoteDeckId, username)
+                            .addOnSuccessListener(result -> {
+                                dismissDialog();
+                                setCollaborators(remoteDeckId, result);
+                            })
+                            .addOnFailureListener(ex -> {
+                                Log.e(TAG, "Failed removing collaborator: " + username, ex);
+                                dismissDialog();
 
-                        @Override
-                        public void onFailed(@NonNull Exception ex) {
-                            Log.e(TAG, "Failed removing collaborator: " + username, ex);
-                            dismissDialog();
-
-                            showToast(Toaster.build().message(R.string.failedRemovingCollaborator));
-                        }
-                    });
+                                showToast(Toaster.build().message(R.string.failedRemovingCollaborator));
+                            });
                     return true;
                 }
 

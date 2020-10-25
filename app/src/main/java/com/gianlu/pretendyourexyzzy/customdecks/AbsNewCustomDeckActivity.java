@@ -64,10 +64,12 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
     }
 
     protected final boolean save() {
+        Bundle bundle = new Bundle();
+
         for (int i = 0; i < 3; i++) {
             Fragment fragment = fragments.get(i);
             if (fragment instanceof SavableFragment) {
-                if (!((SavableFragment) fragment).save())
+                if (!((SavableFragment) fragment).save(bundle))
                     return false;
             }
         }
@@ -150,6 +152,6 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
     }
 
     public interface SavableFragment {
-        boolean save();
+        boolean save(@NotNull Bundle bundle);
     }
 }

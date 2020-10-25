@@ -87,8 +87,8 @@ public class NewMainActivity extends ActivityWithDialog {
         binding.mainNavigation.setSelectedItemId(R.id.mainNavigation_home);
 
         preparePyxInstance()
-                .addOnSuccessListener(this, this::pyxReady)
-                .addOnFailureListener(this, this::pyxError);
+                .addOnSuccessListener(this::pyxReady)
+                .addOnFailureListener(this::pyxError);
     }
 
     public void checkReloadNeeded() {

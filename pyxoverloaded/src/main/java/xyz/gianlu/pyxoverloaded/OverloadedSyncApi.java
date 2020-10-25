@@ -1,6 +1,5 @@
 package xyz.gianlu.pyxoverloaded;
 
-import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -29,7 +28,6 @@ import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 import xyz.gianlu.pyxoverloaded.model.UserProfile;
 
 import static com.gianlu.commonutils.CommonUtils.singletonJsonObject;
-import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
 
 public class OverloadedSyncApi {
     private static OverloadedSyncApi instance = null;
@@ -277,27 +275,29 @@ public class OverloadedSyncApi {
         });
     }
 
-    public void addCollaborator(long remoteId, @NonNull String username, @Nullable Activity activity, @NonNull GeneralCallback<List<String>> callback) {
-        callbacks(Tasks.call(api.executorService, () -> {
+    @NotNull
+    public Task<List<String>> addCollaborator(long remoteId, @NonNull String username) {
+        return Tasks.call(api.executorService, () -> {
             JSONObject body = new JSONObject();
             body.put("remoteId", remoteId).put("username", username);
             JSONObject obj = api.makePostRequest("Sync/AddCollaborator", body);
             return CommonUtils.toStringsList(obj.getJSONArray("collaborators"), false);
-        }), activity, callback::onResult, callback::onFailed);
+        });
     }
 
-    public void removeCollaborator(long remoteId, @NonNull String username, @Nullable Activity activity, @NonNull GeneralCallback<List<String>> callback) {
-        callbacks(Tasks.call(api.executorService, () -> {
+    @NotNull
+    public Task<List<String>> removeCollaborator(long remoteId, @NonNull String username) {
+        return Tasks.call(api.executorService, () -> {
             JSONObject body = new JSONObject();
             body.put("remoteId", remoteId).put("username", username);
             JSONObject obj = api.makePostRequest("Sync/RemoveCollaborator", body);
             return CommonUtils.toStringsList(obj.getJSONArray("collaborators"), false);
-        }), activity, callback::onResult, callback::onFailed);
+        });
     }
 
-    public void patchCollaborator(long revision, @NonNull String shareCode, @NonNull CollaboratorPatchOp op, @Nullable JSONObject card, @Nullable Long cardRemoteId, @Nullable JSONArray cards,
-                                  @Nullable Activity activity, @NonNull GeneralCallback<CollaboratorPatchResponse> callback) {
-        callbacks(Tasks.call(executorService, () -> {
+    @NotNull
+    public Task<CollaboratorPatchResponse> patchCollaborator(long revision, @NonNull String shareCode, @NonNull CollaboratorPatchOp op, @Nullable JSONObject card, @Nullable Long cardRemoteId, @Nullable JSONArray cards) {
+        return Tasks.call(executorService, () -> {
             JSONObject body = new JSONObject();
             body.put("shareCode", shareCode)
                     .put("rev", revision)
@@ -309,7 +309,7 @@ public class OverloadedSyncApi {
 
             JSONObject obj = api.makePostRequest("Sync/CollaboratorPatch", body);
             return new CollaboratorPatchResponse(obj);
-        }), activity, callback::onResult, callback::onFailed);
+        });
     }
     //endregion
 

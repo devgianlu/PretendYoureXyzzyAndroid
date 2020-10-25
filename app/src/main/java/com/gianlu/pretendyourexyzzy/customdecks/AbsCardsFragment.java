@@ -200,103 +200,79 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
     private void removeCard(@NonNull BaseCard oldCard) {
         if (handler == null) return;
 
-        handler.removeCard(oldCard, new CardActionCallback<Void>() {
-            @Override
-            public void onComplete(Void result) {
-                ThisApplication.sendAnalytics(Utils.ACTION_REMOVED_CUSTOM_DECK_CARD);
+        handler.removeCard(oldCard)
+                .addOnSuccessListener(aVoid -> {
+                    ThisApplication.sendAnalytics(Utils.ACTION_REMOVED_CUSTOM_DECK_CARD);
 
-                if (adapter != null) {
-                    adapter.removeCard(oldCard);
-                    onItemCountChanged(adapter.getItemCount());
-                }
-            }
-
-            @Override
-            public void onFailed() {
-                showToast(Toaster.build().message(R.string.failedRemovingCard));
-            }
-        });
+                    if (adapter != null) {
+                        adapter.removeCard(oldCard);
+                        onItemCountChanged(adapter.getItemCount());
+                    }
+                })
+                .addOnFailureListener(ex -> showToast(Toaster.build().message(R.string.failedRemovingCard)));
     }
 
     private void updateCard(@NonNull DialogInterface di, @NonNull BaseCard oldCard, @NonNull String[] text) {
         if (handler == null) return;
 
-        handler.updateCard(oldCard, text, new CardActionCallback<BaseCard>() {
-            @Override
-            public void onComplete(BaseCard card) {
-                if (adapter != null && card != null) {
-                    int index = -1;
-                    if (oldCard instanceof CustomCard)
-                        index = adapter.indexOfGroup(((CustomCard) oldCard).id, CustomCard.class, (c, id) -> c.id == id);
-                    else if (oldCard instanceof ContentCard)
-                        index = adapter.indexOfGroup(oldCard.hashCode(), ContentCard.class, (c, id) -> c.hashCode() == id);
+        handler.updateCard(oldCard, text)
+                .addOnSuccessListener(card -> {
+                    if (adapter != null && card != null) {
+                        int index = -1;
+                        if (oldCard instanceof CustomCard)
+                            index = adapter.indexOfGroup(((CustomCard) oldCard).id, CustomCard.class, (c, id) -> c.id == id);
+                        else if (oldCard instanceof ContentCard)
+                            index = adapter.indexOfGroup(oldCard.hashCode(), ContentCard.class, (c, id) -> c.hashCode() == id);
 
-                    if (index != -1) adapter.updateCard(index, card);
-                }
+                        if (index != -1) adapter.updateCard(index, card);
+                    }
 
-                di.dismiss();
-            }
-
-            @Override
-            public void onFailed() {
-                showToast(Toaster.build().message(R.string.failedUpdatingCard));
-            }
-        });
+                    di.dismiss();
+                })
+                .addOnFailureListener(ex -> showToast(Toaster.build().message(R.string.failedUpdatingCard)));
     }
 
     private void addCard(@NonNull DialogInterface di, @NonNull String[] text, boolean image) {
         if (handler == null) return;
 
-        handler.addCard(isBlack(), text, new CardActionCallback<BaseCard>() {
-            @Override
-            public void onComplete(BaseCard card) {
-                if (card != null) {
-                    if (adapter != null) {
-                        adapter.addCard(card);
-                        onItemCountChanged(adapter.getItemCount());
+        handler.addCard(isBlack(), text)
+                .addOnSuccessListener(card -> {
+                    if (card != null) {
+                        if (adapter != null) {
+                            adapter.addCard(card);
+                            onItemCountChanged(adapter.getItemCount());
+                        }
+
+                        di.dismiss();
+                        ThisApplication.sendAnalytics(image ? Utils.ACTION_ADDED_CUSTOM_DECK_IMAGE_CARD : Utils.ACTION_ADDED_CUSTOM_DECK_TEXT_CARD);
+                    } else {
+                        showToast(Toaster.build().message(R.string.failedAddingCustomCard));
                     }
-
-                    di.dismiss();
-                    ThisApplication.sendAnalytics(image ? Utils.ACTION_ADDED_CUSTOM_DECK_IMAGE_CARD : Utils.ACTION_ADDED_CUSTOM_DECK_TEXT_CARD);
-                } else {
-                    showToast(Toaster.build().message(R.string.failedAddingCustomCard));
-                }
-            }
-
-            @Override
-            public void onFailed() {
-                showToast(Toaster.build().message(R.string.failedAddingCustomCard));
-            }
-        });
+                })
+                .addOnFailureListener(ex -> showToast(Toaster.build().message(R.string.failedAddingCustomCard)));
     }
 
     private void addCards(boolean[] blacks, @NonNull String[][] texts) {
         if (handler == null) return;
 
-        handler.addCards(blacks, texts, new CardActionCallback<List<? extends BaseCard>>() {
-            @Override
-            public void onComplete(List<? extends BaseCard> cards) {
-                List<BaseCard> filter = new ArrayList<>(cards);
-                Iterator<BaseCard> iter = filter.iterator();
-                while (iter.hasNext()) {
-                    BaseCard card = iter.next();
-                    if (!isBlack() && card.black())
-                        iter.remove();
-                    else if (isBlack() && !card.black())
-                        iter.remove();
-                }
+        handler.addCards(blacks, texts)
+                .addOnSuccessListener(cards -> {
+                    List<BaseCard> filter = new ArrayList<>(cards);
+                    Iterator<BaseCard> iter = filter.iterator();
+                    while (iter.hasNext()) {
+                        BaseCard card = iter.next();
+                        if (!isBlack() && card.black())
+                            iter.remove();
+                        else if (isBlack() && !card.black())
+                            iter.remove();
+                    }
 
-                if (adapter != null) {
-                    adapter.addCardsAsSingleton(filter);
-                    onItemCountChanged(adapter.getItemCount());
-                }
-            }
-
-            @Override
-            public void onFailed() {
-                showToast(Toaster.build().message(R.string.failedAddingCustomCard));
-            }
-        });
+                    if (adapter != null) {
+                        adapter.addCardsAsSingleton(filter);
+                        onItemCountChanged(adapter.getItemCount());
+                    }
+                })
+                .addOnFailureListener(ex -> showToast(Toaster.build().message(R.string.failedAddingCustomCard)));
     }
     //endregion
 
@@ -561,22 +537,6 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
 
     private interface OpenCardImageCallback {
         void onImageUri(@NonNull Uri uri);
-    }
-
-    public interface CardActionsHandler {
-        void removeCard(@NonNull BaseCard oldCard, @NonNull CardActionCallback<Void> callback);
-
-        void updateCard(@NonNull BaseCard oldCard, @NonNull String[] text, @NonNull CardActionCallback<BaseCard> callback);
-
-        void addCard(boolean black, @NonNull String[] text, @NonNull CardActionCallback<BaseCard> callback);
-
-        void addCards(boolean[] blacks, @NonNull String[][] texts, @NonNull CardActionCallback<List<? extends BaseCard>> callback);
-    }
-
-    public interface CardActionCallback<T> {
-        void onComplete(T result);
-
-        void onFailed();
     }
 
     private static class ParseResult {
