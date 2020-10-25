@@ -2,11 +2,17 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Paint;
 import android.util.Base64;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.preferences.Prefs;
@@ -14,6 +20,8 @@ import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.NameValuePair;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.google.firebase.auth.FirebaseUser;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -25,6 +33,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class Utils {
     public static final String ACTION_STARRED_CARD_ADD = "added_starred_card";
@@ -178,6 +187,28 @@ public final class Utils {
         } catch (IOException ex) {
             Log.e(TAG, "Failed reading changelog.", ex);
             return null;
+        }
+    }
+
+    public static void generateUsernamePlaceholders(@NotNull Context context, @NotNull ViewGroup container, int fontSizeSp, int spacingDip, int amount) {
+        Paint paint = new Paint();
+        paint.setTypeface(ResourcesCompat.getFont(context, R.font.montserrat_regular));
+        paint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, fontSizeSp, context.getResources().getDisplayMetrics()));
+        Paint.FontMetrics fm = paint.getFontMetrics();
+
+        int height = (int) Math.ceil(fm.bottom - fm.top + fm.leading);
+        int spacingPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, spacingDip, context.getResources().getDisplayMetrics());
+        int dp12 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, spacingDip, context.getResources().getDisplayMetrics());
+
+        for (int i = 0; i < amount; i++) {
+            int width = dp12 * ThreadLocalRandom.current().nextInt(8, 20);
+
+            View view = new View(context);
+            view.setBackgroundResource(R.drawable.placeholder_general_square_item);
+
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width, height);
+            params.setMargins(0, 0, 0, spacingPx);
+            container.addView(view, params);
         }
     }
 }

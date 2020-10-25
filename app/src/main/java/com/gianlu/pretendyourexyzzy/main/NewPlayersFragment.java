@@ -1,21 +1,17 @@
 package com.gianlu.pretendyourexyzzy.main;
 
 import android.content.Context;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -45,7 +41,6 @@ import org.json.JSONException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
@@ -102,7 +97,7 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
             binding.playersFragmentSwipeRefresh.setRefreshing(false);
         });
 
-        createPlayersPlaceholders();
+        Utils.generateUsernamePlaceholders(requireContext(), binding.playersFragmentListLoadingChild, 14, 12, 40);
         setPlayersStatus(true, false);
 
         if (OverloadedUtils.isSignedIn()) {
@@ -111,27 +106,6 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
         }
 
         return binding.getRoot();
-    }
-
-    private void createPlayersPlaceholders() {
-        Paint paint = new Paint();
-        paint.setTypeface(ResourcesCompat.getFont(requireContext(), R.font.montserrat_regular));
-        paint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14, getResources().getDisplayMetrics()));
-        Paint.FontMetrics fm = paint.getFontMetrics();
-
-        int height = (int) Math.ceil(fm.bottom - fm.top + fm.leading);
-        int dp12 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, getResources().getDisplayMetrics());
-
-        for (int i = 0; i < 40; i++) {
-            int width = dp12 * ThreadLocalRandom.current().nextInt(8, 20);
-
-            View view = new View(requireContext());
-            view.setBackgroundResource(R.drawable.placeholder_general_square_item);
-
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width, height);
-            params.setMargins(0, 0, 0, dp12);
-            binding.playersFragmentListLoadingChild.addView(view, params);
-        }
     }
 
     @NonNull
