@@ -2,12 +2,16 @@ package com.gianlu.pretendyourexyzzy.customdecks;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -16,10 +20,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
@@ -32,7 +38,12 @@ import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -65,16 +76,23 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
     }
 
     @Override
+    protected void onInflateMenu(@NotNull MenuInflater inflater, @NotNull Menu menu) {
+        inflater.inflate(R.menu.new_edit_custom_deck, menu);
+
+        if (getDeckId() == null) {
+            menu.removeItem(R.id.editCustomDeck_delete);
+            menu.removeItem(R.id.editCustomDeck_export);
+        }
+    }
+
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Type type = (Type) getIntent().getSerializableExtra("type");
-        if (type == null) return;
-
         int deckId = getIntent().getIntExtra("deckId", -1);
 
-        // TODO: Export deck
-        // TODO: Delete deck
+        Type type = (Type) getIntent().getSerializableExtra("type");
+        if (type == null) return;
 
         switch (type) {
             case NEW:
@@ -89,6 +107,70 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                 setBottomButtonMode(Mode.SAVE);
                 // TODO: Import deck
                 break;
+        }
+    }
+
+    @Override
+    protected boolean onMenuItemSelected(@NotNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.editCustomDeck_export:
+                AnalyticsApplication.sendAnalytics(Utils.ACTION_EXPORTED_CUSTOM_DECK);
+                exportCustomDeckJson();
+                return true;
+            case R.id.editCustomDeck_delete:
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+                builder.setTitle(R.string.delete).setMessage(getString(R.string.deleteDeckConfirmation, getName()))
+                        .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                            Integer deckId = getDeckId();
+                            if (deckId == null) return;
+
+                            ThisApplication.sendAnalytics(Utils.ACTION_DELETED_CUSTOM_DECK);
+                            CustomDecksDatabase.get(this).deleteDeckAndCards(deckId, true);
+                            onBackPressed();
+                        }).setNegativeButton(android.R.string.no, null);
+
+                showDialog(builder);
+                return true;
+            default:
+                return super.onMenuItemSelected(item);
+        }
+    }
+
+    private void exportCustomDeckJson() {
+        Integer deckId = getDeckId();
+        if (deckId == null)
+            return;
+
+        CustomDecksDatabase db = CustomDecksDatabase.get(this);
+        CustomDecksDatabase.CustomDeck deck = db.getDeck(deckId);
+        if (deck == null)
+            return;
+
+        try {
+            JSONObject obj = deck.craftPyxJson(db);
+
+            File parent = new File(getCacheDir(), "exportedDecks");
+            if (!parent.exists() && !parent.mkdir()) {
+                Log.e(TAG, "Failed creating exported decks directory: " + parent);
+                return;
+            }
+
+            String fileName = getName();
+            if (fileName.isEmpty()) fileName = String.valueOf(deckId);
+
+            File file = new File(parent, fileName + ".json");
+            try (FileOutputStream out = new FileOutputStream(file)) {
+                out.write(obj.toString().getBytes());
+            }
+
+            Uri uri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName(), file);
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("application/json");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.putExtra(Intent.EXTRA_STREAM, uri);
+            startActivity(Intent.createChooser(intent, "Share custom deck..."));
+        } catch (JSONException | IOException | IllegalArgumentException ex) {
+            Log.e(TAG, "Failed exporting custom deck!", ex);
         }
     }
 
@@ -126,8 +208,8 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
         public boolean save(@NotNull Bundle bundle) {
             boolean result = save(CommonUtils.getText(binding.editCustomDeckInfoName), CommonUtils.getText(binding.editCustomDeckInfoWatermark), CommonUtils.getText(binding.editCustomDeckInfoDesc));
             if (result) {
+                bundle.putString("name", deck.name);
                 bundle.putInt("deckId", deck.id);
-
             }
 
             return result;

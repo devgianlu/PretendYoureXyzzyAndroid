@@ -2,7 +2,11 @@ package com.gianlu.pretendyourexyzzy.customdecks;
 
 import android.os.Bundle;
 import android.util.SparseArray;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.PopupMenu;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.IntRange;
@@ -20,6 +24,14 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
     private com.gianlu.pretendyourexyzzy.databinding.ActivityNewCustomDeckBinding binding;
     private Mode mode = Mode.HIDDEN;
 
+    protected void onInflateMenu(@NotNull MenuInflater inflater, @NotNull Menu menu) {
+        // TODO: Handle empty menu
+    }
+
+    protected boolean onMenuItemSelected(@NotNull MenuItem item) {
+        return false;
+    }
+
     @Override
     @CallSuper
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -29,13 +41,33 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
         setContentView(binding.getRoot());
 
         binding.customDeckClose.setOnClickListener(v -> finishAfterTransition());
-        binding.customDeckMenu.setOnClickListener(v -> {
-            // TODO: Load menu
-        });
+        binding.customDeckMenu.setOnClickListener(v -> showPopupMenu());
 
         binding.customDeckNavigation.setOnSelectionChangedListener(this::switchFragment);
 
         loading();
+    }
+
+    private void showPopupMenu() {
+        PopupMenu menu = new PopupMenu(this, binding.customDeckMenu);
+        onInflateMenu(menu.getMenuInflater(), menu.getMenu());
+        menu.setOnMenuItemClickListener(this::onMenuItemSelected);
+        menu.show();
+    }
+
+    @NotNull
+    protected String getName() {
+        Bundle bundle = new Bundle();
+        if (save(bundle)) return bundle.getString("name", "");
+        else return "";
+    }
+
+    @Nullable
+    protected Integer getDeckId() {
+        Bundle bundle = new Bundle();
+        if (!save(bundle)) return null;
+        int deckId = bundle.getInt("deckId", -1);
+        return deckId == -1 ? null : deckId;
     }
 
     private boolean switchFragment(int pos) {
@@ -63,9 +95,7 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
         }
     }
 
-    protected final boolean save() {
-        Bundle bundle = new Bundle();
-
+    private boolean save(@NotNull Bundle bundle) {
         for (int i = 0; i < 3; i++) {
             Fragment fragment = fragments.get(i);
             if (fragment instanceof SavableFragment) {
@@ -75,6 +105,10 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
         }
 
         return true;
+    }
+
+    protected final boolean save() {
+        return save(new Bundle());
     }
 
     protected final void loading() {

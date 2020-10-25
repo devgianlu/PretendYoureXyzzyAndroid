@@ -30,6 +30,7 @@ import xyz.gianlu.pyxoverloaded.model.UserProfile;
 
 public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
     private static final String TAG = NewViewCustomDeckActivity.class.getSimpleName();
+    private String deckName;
 
     @NotNull
     private static Intent baseStartIntent(@NotNull Context context, @NotNull Type type) {
@@ -67,14 +68,27 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
         return intent;
     }
 
+    @NotNull
+    @Override
+    protected String getName() {
+        return deckName;
+    }
+
+    @Nullable
+    @Override
+    protected Integer getDeckId() {
+        return null; // Not needed when viewing
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setBottomButtonMode(Mode.HIDDEN);
 
+        deckName = getIntent().getStringExtra("deckName");
         Type type = (Type) getIntent().getSerializableExtra("type");
-        if (type == null) return;
+        if (type == null || deckName == null) return;
 
         CustomDecksDatabase db = CustomDecksDatabase.get(this);
 
@@ -82,13 +96,12 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
 
         switch (type) {
             case SEARCH:
-                String deckName = getIntent().getStringExtra("deckName");
                 String watermark = getIntent().getStringExtra("watermark");
                 String desc = getIntent().getStringExtra("desc");
                 int blackCards = getIntent().getIntExtra("blackCards", -1);
                 int whiteCards = getIntent().getIntExtra("whiteCards", -1);
 
-                if (deckName == null || watermark == null || desc == null || blackCards == -1 || whiteCards == -1)
+                if (watermark == null || desc == null || blackCards == -1 || whiteCards == -1)
                     return;
 
                 OverloadedSyncApi.get().searchPublicCustomDeck(deckName, watermark, desc, blackCards, whiteCards)
@@ -123,8 +136,7 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
             case PUBLIC:
                 String shareCode = getIntent().getStringExtra("shareCode");
                 String owner = getIntent().getStringExtra("owner");
-                deckName = getIntent().getStringExtra("deckName");
-                if (owner == null || deckName == null || shareCode == null)
+                if (owner == null || shareCode == null)
                     return;
 
                 OverloadedSyncApi.get().getPublicCustomDeck(owner, deckName)
@@ -183,7 +195,7 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
         @Nullable
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            // TODO: View info fragment
+            // TODO: Deck info fragment
             return super.onCreateView(inflater, container, savedInstanceState);
         }
     }
