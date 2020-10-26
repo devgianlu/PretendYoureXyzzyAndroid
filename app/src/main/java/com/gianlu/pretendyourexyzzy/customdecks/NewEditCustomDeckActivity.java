@@ -204,6 +204,60 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
             return fragment;
         }
 
+        private void setCollaboratorsStatus(boolean loading, boolean notSignedIn, boolean notSynced, boolean empty, boolean error) {
+            if (loading) {
+                binding.editCustomDeckCollaboratorsOverloaded.setVisibility(View.GONE);
+                binding.editCustomDeckAddCollaborator.setVisibility(View.GONE);
+                binding.editCustomDeckCollaborators.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsNotSynced.setVisibility(View.GONE);
+
+                binding.editCustomDeckCollaboratorsLoading.setVisibility(View.VISIBLE);
+                binding.editCustomDeckCollaboratorsLoading.showShimmer(true);
+            } else if (notSignedIn) {
+                binding.editCustomDeckCollaboratorsLoading.setVisibility(View.GONE);
+                binding.editCustomDeckAddCollaborator.setVisibility(View.GONE);
+                binding.editCustomDeckCollaborators.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsNotSynced.setVisibility(View.GONE);
+
+                binding.editCustomDeckCollaboratorsOverloaded.setVisibility(View.VISIBLE);
+            } else if (notSynced) {
+                binding.editCustomDeckCollaboratorsOverloaded.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsLoading.setVisibility(View.GONE);
+                binding.editCustomDeckAddCollaborator.setVisibility(View.GONE);
+                binding.editCustomDeckCollaborators.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
+
+                binding.editCustomDeckCollaboratorsNotSynced.setVisibility(View.VISIBLE);
+            } else if (empty) {
+                binding.editCustomDeckCollaboratorsOverloaded.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsLoading.setVisibility(View.GONE);
+                binding.editCustomDeckCollaborators.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsNotSynced.setVisibility(View.GONE);
+
+                binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.VISIBLE);
+                binding.editCustomDeckAddCollaborator.setVisibility(View.VISIBLE);
+            } else if (error) {
+                binding.editCustomDeckCollaboratorsOverloaded.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsLoading.setVisibility(View.GONE);
+                binding.editCustomDeckCollaborators.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsNotSynced.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
+
+                binding.editCustomDeckAddCollaborator.setVisibility(View.VISIBLE);
+                // TODO: Show collaborators error
+            } else {
+                binding.editCustomDeckCollaboratorsOverloaded.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsLoading.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsNotSynced.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
+
+                binding.editCustomDeckAddCollaborator.setVisibility(View.VISIBLE);
+                binding.editCustomDeckCollaborators.setVisibility(View.VISIBLE);
+            }
+        }
+
         @Override
         public boolean save(@NotNull Bundle bundle) {
             boolean result = save(CommonUtils.getText(binding.editCustomDeckInfoName), CommonUtils.getText(binding.editCustomDeckInfoWatermark), CommonUtils.getText(binding.editCustomDeckInfoDesc));
@@ -241,47 +295,22 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
         }
 
         private void setupCollaborators() {
-            binding.editCustomDeckCollaboratorsLoading.setVisibility(View.VISIBLE);
-            binding.editCustomDeckAddCollaborator.setVisibility(View.GONE);
-            binding.editCustomDeckCollaborators.setVisibility(View.GONE);
-            binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
-            binding.editCustomDeckCollaboratorsNotSynced.setVisibility(View.GONE);
-            binding.editCustomDeckCollaboratorsOverloaded.setVisibility(View.GONE);
+            setCollaboratorsStatus(true, false, false, false, false);
 
             OverloadedUtils.waitReady().addOnSuccessListener(signedIn -> {
                 if (signedIn) {
-                    binding.editCustomDeckCollaboratorsOverloaded.setVisibility(View.GONE);
-                    binding.editCustomDeckCollaborators.setVisibility(View.GONE);
-                    binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
-
                     if (deck == null || deck.remoteId == null) {
-                        binding.editCustomDeckCollaboratorsLoading.setVisibility(View.GONE);
-                        binding.editCustomDeckAddCollaborator.setVisibility(View.GONE);
-                        binding.editCustomDeckCollaboratorsNotSynced.setVisibility(View.VISIBLE);
+                        setCollaboratorsStatus(false, false, true, false, false);
                     } else {
-                        binding.editCustomDeckCollaboratorsLoading.setVisibility(View.VISIBLE);
-                        binding.editCustomDeckAddCollaborator.setVisibility(View.VISIBLE);
-                        binding.editCustomDeckCollaboratorsNotSynced.setVisibility(View.GONE);
-
                         OverloadedSyncApi.get().getCollaborators(deck.remoteId)
-                                .addOnSuccessListener(list -> {
-                                    binding.editCustomDeckCollaboratorsLoading.setVisibility(View.GONE);
-                                    binding.editCustomDeckCollaborators.setAdapter(collaboratorsAdapter = new CollaboratorsAdapter(list));
-                                })
+                                .addOnSuccessListener(list -> binding.editCustomDeckCollaborators.setAdapter(collaboratorsAdapter = new CollaboratorsAdapter(list)))
                                 .addOnFailureListener(ex -> {
                                     Log.e(TAG, "Failed getting collaborators.", ex);
-
-                                    binding.editCustomDeckCollaboratorsLoading.setVisibility(View.GONE);
-                                    // TODO: Show collaborators error
+                                    setCollaboratorsStatus(false, false, true, false, true);
                                 });
                     }
                 } else {
-                    binding.editCustomDeckCollaboratorsLoading.setVisibility(View.GONE);
-                    binding.editCustomDeckAddCollaborator.setVisibility(View.GONE);
-                    binding.editCustomDeckCollaborators.setVisibility(View.GONE);
-                    binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
-                    binding.editCustomDeckCollaboratorsNotSynced.setVisibility(View.GONE);
-                    binding.editCustomDeckCollaboratorsOverloaded.setVisibility(View.VISIBLE);
+                    setCollaboratorsStatus(false, true, false, false, false);
                 }
             });
         }
@@ -452,13 +481,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
             }
 
             private void countUpdated(int count) {
-                if (count == 0) {
-                    binding.editCustomDeckCollaborators.setVisibility(View.GONE);
-                    binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.VISIBLE);
-                } else {
-                    binding.editCustomDeckCollaborators.setVisibility(View.VISIBLE);
-                    binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
-                }
+                setCollaboratorsStatus(false, false, false, count == 0, false);
             }
 
             @Override

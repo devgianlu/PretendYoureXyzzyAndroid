@@ -4,8 +4,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <!-- TODO: Title? -->
-
     <LinearLayout
         android:id="@+id/customDeckCards_addContainer"
         android:layout_width="match_parent"

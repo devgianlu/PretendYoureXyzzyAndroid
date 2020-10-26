@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
@@ -64,7 +65,7 @@ import java.util.Objects;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
 
-public class NewSettingsFragment extends FragmentWithDialog implements NewMainActivity.MainFragment {
+public class NewSettingsFragment extends NewMainActivity.ChildFragment {
     private static final String TAG = NewSettingsFragment.class.getSimpleName();
     private static final int CONTAINER_ID = 69;
     private final EnumMap<Page, ChildFragment> fragments = new EnumMap<>(Page.class);
@@ -162,9 +163,10 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
     }
 
     public abstract static class ChildFragment extends FragmentWithDialog {
+        private boolean mStarted = false;
         private boolean callReady = false;
-        private RegisteredPyx pyx = null;
         private boolean callInvalid = false;
+        private RegisteredPyx pyx = null;
 
         protected final void openLink(@NonNull String uri) {
             try {
@@ -186,8 +188,10 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
         }
 
         @Override
+        @CallSuper
         public void onStart() {
             super.onStart();
+            mStarted = true;
 
             if (callReady && pyx != null) onPyxReady(pyx);
             else if (callInvalid) onPyxInvalid();
@@ -198,7 +202,7 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
         }
 
         final void callPyxReady(@NonNull RegisteredPyx pyx) {
-            if (isAdded()) {
+            if (mStarted) {
                 onPyxReady(pyx);
             } else {
                 callInvalid = false;
@@ -208,7 +212,7 @@ public class NewSettingsFragment extends FragmentWithDialog implements NewMainAc
         }
 
         final void callPyxInvalid() {
-            if (isAdded()) {
+            if (mStarted) {
                 onPyxInvalid();
             } else {
                 callInvalid = true;

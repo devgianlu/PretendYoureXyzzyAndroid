@@ -116,7 +116,7 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
 
         binding.customDeckBottomButton.setEnabled(false);
 
-        // TODO: Show loading
+        // TODO: Show deck loading
     }
 
     protected final void loaded(@NotNull Fragment... frags) {

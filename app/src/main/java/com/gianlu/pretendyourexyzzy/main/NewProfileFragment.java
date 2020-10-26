@@ -24,7 +24,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
-import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.AchievementProgressView;
@@ -69,7 +68,7 @@ import java.util.Map;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
-public class NewProfileFragment extends FragmentWithDialog implements NewMainActivity.MainFragment, OverloadedApi.EventListener, CrCastLoginDialog.LoginListener {
+public class NewProfileFragment extends NewMainActivity.ChildFragment implements OverloadedApi.EventListener, CrCastLoginDialog.LoginListener {
     private static final String TAG = NewProfileFragment.class.getSimpleName();
     private FragmentNewProfileBinding binding;
     private RegisteredPyx pyx;
@@ -117,8 +116,6 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
         binding = FragmentNewProfileBinding.inflate(inflater, container, false);
         binding.profileFragmentInputs.idCodeInput.setEndIconOnClickListener(v -> CommonUtils.setText(binding.profileFragmentInputs.idCodeInput, CommonUtils.randomString(100)));
         binding.profileFragmentMenu.setOnClickListener((v) -> showPopupMenu());
-
-        // TODO: Inputs should show as loading
 
         OverloadedApi.get().addEventListener(this);
 
@@ -264,6 +261,10 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
     public void onPyxReady(@NotNull RegisteredPyx pyx) {
         this.pyx = pyx;
 
+        binding.profileFragmentRegisterLoading.hideShimmer();
+        binding.profileFragmentInputs.usernameInput.setEnabled(true);
+        binding.profileFragmentInputs.idCodeInput.setEnabled(true);
+
         CommonUtils.setText(binding.profileFragmentInputs.usernameInput, pyx.user().nickname);
         CommonUtils.setText(binding.profileFragmentInputs.idCodeInput, Prefs.getString(PK.LAST_ID_CODE, null));
     }
@@ -271,6 +272,10 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
     @Override
     public void onPyxInvalid() {
         this.pyx = null;
+
+        binding.profileFragmentRegisterLoading.showShimmer(true);
+        binding.profileFragmentInputs.usernameInput.setEnabled(false);
+        binding.profileFragmentInputs.idCodeInput.setEnabled(false);
     }
 
     @Override
@@ -312,7 +317,7 @@ public class NewProfileFragment extends FragmentWithDialog implements NewMainAct
     }
 
     @Override
-    public boolean goBack() {
+    protected boolean goBack() {
         return false;
     }
 

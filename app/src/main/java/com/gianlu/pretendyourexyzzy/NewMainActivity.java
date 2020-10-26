@@ -5,9 +5,11 @@ import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 
+import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
+import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.api.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
@@ -118,24 +120,28 @@ public class NewMainActivity extends ActivityWithDialog {
     private void pyxReady(@NotNull RegisteredPyx pyx) {
         this.pyx = pyx;
 
-        if (settingsFragment != null) settingsFragment.onPyxReady(pyx);
-        if (gamesFragment != null) gamesFragment.onPyxReady(pyx);
-        if (profileFragment != null) profileFragment.onPyxReady(pyx);
+        runOnUiThread(() -> {
+            if (settingsFragment != null) settingsFragment.callPyxReady(pyx);
+            if (gamesFragment != null) gamesFragment.callPyxReady(pyx);
+            if (profileFragment != null) profileFragment.callPyxReady(pyx);
+        });
     }
 
     private void pyxInvalid() {
-        if (settingsFragment != null) settingsFragment.onPyxInvalid();
-        if (gamesFragment != null) gamesFragment.onPyxInvalid();
-        if (profileFragment != null) profileFragment.onPyxInvalid();
-
         this.pyx = null;
+
+        runOnUiThread(() -> {
+            if (settingsFragment != null) settingsFragment.callPyxInvalid();
+            if (gamesFragment != null) gamesFragment.callPyxInvalid();
+            if (profileFragment != null) profileFragment.callPyxInvalid();
+        });
     }
 
     private void pyxError(@NotNull Exception ex) {
         Log.e(TAG, "Failed loading Pyx instance.", ex);
         pyxInvalid();
 
-        // TODO: Show error somewhere
+        // TODO: Show PYX error somewhere
     }
 
     @NotNull
@@ -186,7 +192,7 @@ public class NewMainActivity extends ActivityWithDialog {
 
     @Override
     public void onBackPressed() {
-        MainFragment visible;
+        ChildFragment visible;
         switch (binding.mainNavigation.getSelectedItemId()) {
             case R.id.mainNavigation_settings:
                 visible = settingsFragment;
@@ -214,14 +220,55 @@ public class NewMainActivity extends ActivityWithDialog {
         }
     }
 
-    public interface MainFragment {
-        void onPyxReady(@NotNull RegisteredPyx pyx);
+    public static abstract class ChildFragment extends FragmentWithDialog {
+        private boolean mStarted = false;
+        private boolean callReady = false;
+        private boolean callInvalid = false;
+        private RegisteredPyx pyx = null;
 
-        void onPyxInvalid();
+        @CallSuper
+        @Override
+        public void onStart() {
+            super.onStart();
+            mStarted = true;
+
+            if (callReady && pyx != null) onPyxReady(pyx);
+            else if (callInvalid) onPyxInvalid();
+
+            callReady = false;
+            callInvalid = false;
+            pyx = null;
+        }
+
+        public void callPyxReady(@NotNull RegisteredPyx pyx) {
+            if (mStarted) {
+                onPyxReady(pyx);
+            } else {
+                callInvalid = false;
+                callReady = true;
+                this.pyx = pyx;
+            }
+        }
+
+        public void callPyxInvalid() {
+            if (mStarted) {
+                onPyxInvalid();
+            } else {
+                callInvalid = true;
+                callReady = false;
+                this.pyx = null;
+            }
+        }
+
+        protected void onPyxReady(@NotNull RegisteredPyx pyx) {
+        }
+
+        protected void onPyxInvalid() {
+        }
 
         /**
          * @return Whether it has consumed the event.
          */
-        boolean goBack();
+        protected abstract boolean goBack();
     }
 }

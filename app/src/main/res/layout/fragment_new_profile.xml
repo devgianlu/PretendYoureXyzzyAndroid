@@ -52,9 +52,15 @@
                 android:paddingEnd="16dp"
                 android:src="@drawable/ic_overloaded_feature" />
 
-            <include
-                android:id="@+id/profileFragment_inputs"
-                layout="@layout/include_username_id_code" />
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/profileFragment_registerLoading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <include
+                    android:id="@+id/profileFragment_inputs"
+                    layout="@layout/include_username_id_code" />
+            </com.facebook.shimmer.ShimmerFrameLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"

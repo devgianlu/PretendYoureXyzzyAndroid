@@ -19,7 +19,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
-import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.NewMainActivity;
@@ -44,7 +43,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class NewGamesFragment extends FragmentWithDialog implements NewMainActivity.MainFragment, Pyx.OnEventListener {
+public class NewGamesFragment extends NewMainActivity.ChildFragment implements Pyx.OnEventListener {
     private static final String TAG = NewGamesFragment.class.getSimpleName();
     private FragmentNewGamesBinding binding;
     private RegisteredPyx pyx;
@@ -146,7 +145,7 @@ public class NewGamesFragment extends FragmentWithDialog implements NewMainActiv
         binding.gamesFragmentChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Open chat
+                // TODO: Open global chat
             }
         });
         binding.gamesFragmentCreateGame.setOnClickListener(new View.OnClickListener() {
