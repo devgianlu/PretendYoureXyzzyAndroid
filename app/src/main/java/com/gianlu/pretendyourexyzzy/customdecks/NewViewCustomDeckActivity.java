@@ -85,6 +85,8 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
         super.onCreate(savedInstanceState);
 
         setBottomButtonMode(Mode.HIDDEN);
+        setMenuIconVisible(false);
+        setPageChangeAllowed(true);
 
         deckName = getIntent().getStringExtra("deckName");
         Type type = (Type) getIntent().getSerializableExtra("type");

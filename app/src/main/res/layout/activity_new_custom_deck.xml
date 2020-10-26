@@ -42,8 +42,18 @@
             android:tint="#000000" />
     </LinearLayout>
 
-    <FrameLayout
-        android:id="@+id/customDeck_container"
+    <ImageView
+        android:id="@+id/customDeck_loading"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="1"
+        android:paddingStart="96dp"
+        android:paddingEnd="96dp"
+        android:src="@drawable/ic_undraw_loading_animated" />
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/customDeck_pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />

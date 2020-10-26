@@ -1,7 +1,7 @@
 package com.gianlu.pretendyourexyzzy.customdecks;
 
+import android.graphics.drawable.Animatable;
 import android.os.Bundle;
-import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -9,10 +9,12 @@ import android.view.View;
 import android.widget.PopupMenu;
 
 import androidx.annotation.CallSuper;
-import androidx.annotation.IntRange;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.pretendyourexyzzy.R;
@@ -20,16 +22,23 @@ import com.gianlu.pretendyourexyzzy.R;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
-    private final SparseArray<Fragment> fragments = new SparseArray<>(3);
     private com.gianlu.pretendyourexyzzy.databinding.ActivityNewCustomDeckBinding binding;
     private Mode mode = Mode.HIDDEN;
+    private PagerAdapter adapter;
 
     protected void onInflateMenu(@NotNull MenuInflater inflater, @NotNull Menu menu) {
-        // TODO: Handle empty menu
     }
 
     protected boolean onMenuItemSelected(@NotNull MenuItem item) {
         return false;
+    }
+
+    protected final void setMenuIconVisible(boolean visible) {
+        binding.customDeckMenu.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
+    }
+
+    protected final void setPageChangeAllowed(boolean allowed) {
+        binding.customDeckPager.setUserInputEnabled(allowed);
     }
 
     @Override
@@ -43,7 +52,32 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
         binding.customDeckClose.setOnClickListener(v -> finishAfterTransition());
         binding.customDeckMenu.setOnClickListener(v -> showPopupMenu());
 
-        binding.customDeckNavigation.setOnSelectionChangedListener(this::switchFragment);
+        binding.customDeckPager.setOffscreenPageLimit(3);
+        binding.customDeckPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int pos) {
+                binding.customDeckNavigation.setSelected(pos);
+
+                if (mode == Mode.CONTINUE) {
+                    if (pos == 0)
+                        binding.customDeckBottomButton.setText(R.string.continue_);
+                    else if (pos == 1)
+                        binding.customDeckBottomButton.setText(R.string.continue_);
+                    else
+                        binding.customDeckBottomButton.setText(R.string.save);
+                } else if (mode == Mode.SAVE) {
+                    binding.customDeckBottomButton.setText(R.string.save);
+                }
+            }
+        });
+
+        binding.customDeckNavigation.setOnSelectionChangedListener(pos -> {
+            if (!binding.customDeckPager.isUserInputEnabled())
+                return false;
+
+            binding.customDeckPager.setCurrentItem(pos, true);
+            return true;
+        });
 
         loading();
     }
@@ -70,40 +104,19 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
         return deckId == -1 ? null : deckId;
     }
 
-    private boolean switchFragment(int pos) {
-        if (fragments.size() == 0) return false;
-
-        if (navigateTo(pos)) {
-            FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
-            for (int i = 0; i < 3; i++) {
-                if (i != pos) trans.hide(fragments.get(i));
-            }
-
-            trans.show(fragments.get(pos)).commit();
-
-            if (mode == Mode.CONTINUE) {
-                if (pos == 0) binding.customDeckBottomButton.setText(R.string.continue_);
-                else if (pos == 1) binding.customDeckBottomButton.setText(R.string.continue_);
-                else binding.customDeckBottomButton.setText(R.string.save);
-            } else if (mode == Mode.SAVE) {
-                binding.customDeckBottomButton.setText(R.string.save);
-            }
-
-            return true;
-        } else {
-            return false;
-        }
+    protected void onSaved(@NotNull Bundle bundle) {
     }
 
     private boolean save(@NotNull Bundle bundle) {
-        for (int i = 0; i < 3; i++) {
-            Fragment fragment = fragments.get(i);
+        for (int i = 0; i < adapter.fragments.length; i++) {
+            Fragment fragment = adapter.fragments[i];
             if (fragment instanceof SavableFragment) {
                 if (!((SavableFragment) fragment).save(bundle))
                     return false;
             }
         }
 
+        onSaved(bundle);
         return true;
     }
 
@@ -112,26 +125,22 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
     }
 
     protected final void loading() {
-        fragments.clear();
+        adapter = null;
 
         binding.customDeckBottomButton.setEnabled(false);
 
-        // TODO: Show deck loading
+        binding.customDeckPager.setAdapter(null);
+        binding.customDeckPager.setVisibility(View.GONE);
+        binding.customDeckLoading.setVisibility(View.VISIBLE);
+        ((Animatable) binding.customDeckLoading.getDrawable()).start();
     }
 
     protected final void loaded(@NotNull Fragment... frags) {
         if (frags.length != 3) throw new IllegalArgumentException();
 
-        FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
-        for (int i = 0; i < 3; i++) {
-            Fragment frag = frags[i];
-            fragments.put(i, frag);
-            trans.add(binding.customDeckContainer.getId(), frag)
-                    .hide(frag);
-        }
-
-        trans.show(fragments.get(0));
-        trans.commit();
+        binding.customDeckLoading.setVisibility(View.GONE);
+        binding.customDeckPager.setVisibility(View.VISIBLE);
+        binding.customDeckPager.setAdapter(adapter = new PagerAdapter(this, frags));
 
         binding.customDeckBottomButton.setEnabled(true);
     }
@@ -149,11 +158,14 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
                 binding.customDeckBottomButton.setOnClickListener(v -> {
                     int selected = binding.customDeckNavigation.getSelected();
                     if (selected == 0) {
-                        if (save()) switchFragment(1);
+                        if (save() || !binding.customDeckPager.isUserInputEnabled())
+                            binding.customDeckPager.setCurrentItem(1);
                     } else if (selected == 1) {
-                        if (save()) switchFragment(2);
+                        if (save() || !binding.customDeckPager.isUserInputEnabled())
+                            binding.customDeckPager.setCurrentItem(2);
                     } else if (selected == 2) {
-                        if (save()) finishAfterTransition();
+                        if (save())
+                            finishAfterTransition();
                     }
                 });
                 break;
@@ -174,18 +186,34 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
         finishAfterTransition();
     }
 
-    /**
-     * @return Whether it should proceed in showing the fragment.
-     */
-    protected boolean navigateTo(@IntRange(from = 0, to = 2) int pos) {
-        return true;
-    }
-
     public enum Mode {
         HIDDEN, CONTINUE, SAVE
     }
 
     public interface SavableFragment {
         boolean save(@NotNull Bundle bundle);
+    }
+
+    private static class PagerAdapter extends FragmentStateAdapter {
+        final Fragment[] fragments;
+
+        PagerAdapter(@NonNull FragmentActivity activity, @NonNull Fragment[] fragments) {
+            super(activity);
+            this.fragments = fragments;
+
+            if (fragments.length != 3)
+                throw new IllegalArgumentException();
+        }
+
+        @NonNull
+        @Override
+        public Fragment createFragment(int position) {
+            return fragments[position];
+        }
+
+        @Override
+        public int getItemCount() {
+            return fragments.length;
+        }
     }
 }

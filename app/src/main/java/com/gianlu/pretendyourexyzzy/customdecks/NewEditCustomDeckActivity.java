@@ -86,10 +86,18 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
     }
 
     @Override
+    protected void onSaved(@NotNull Bundle bundle) {
+        setMenuIconVisible(true);
+        setPageChangeAllowed(true);
+    }
+
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         int deckId = getIntent().getIntExtra("deckId", -1);
+        setMenuIconVisible(deckId != -1);
+        setPageChangeAllowed(deckId != -1);
 
         Type type = (Type) getIntent().getSerializableExtra("type");
         if (type == null) return;

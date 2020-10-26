@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.customdecks;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -56,7 +57,6 @@ public final class NavigationView extends View {
         linePaint.setStrokeCap(Paint.Cap.ROUND);
         linePaint.setStrokeWidth(12);
         linePaint.setStyle(Paint.Style.STROKE);
-        linePaint.setPathEffect(new DashPathEffect(new float[]{35, 20}, 0)); // TODO: Adjust dynamically based on width
 
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.NavigationView, defStyleAttr, 0);
         try {
@@ -135,6 +135,20 @@ public final class NavigationView extends View {
         canvas.drawRoundRect(left, top, left + mCardWidth, top + mCardHeight, 4, 4, cardPaint);
     }
 
+    @SuppressLint("DrawAllocation")
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        int width = getMeasuredWidth();
+        width -= mRadius * 2 * 3;
+        if (width > 0) {
+            int dottedSpace = width / 2;
+            linePaint.setPathEffect(new DashPathEffect(new float[]{dottedSpace / 10f, dottedSpace / 15f}, 0));
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(@NonNull MotionEvent event) {
         int action = event.getActionMasked();
