@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -82,28 +83,31 @@ public class UserProfile {
         public final List<Card> cards;
         public final String owner;
         public final boolean collaborator;
+        private final List<Card> blackCards;
+        private final List<Card> whiteCards;
 
         public CustomDeckWithCards(@NonNull JSONObject obj) throws JSONException {
             super(obj);
             cards = Card.parse(obj.getJSONArray("cards"));
             owner = CommonUtils.optString(obj, "owner");
             collaborator = obj.getBoolean("collaborator");
+
+            blackCards = new LinkedList<>();
+            whiteCards = new LinkedList<>();
+            for (Card card : cards) {
+                if (card.black()) blackCards.add(card);
+                else whiteCards.add(card);
+            }
         }
 
         @NotNull
         public List<Card> blackCards() {
-            LinkedList<Card> list = new LinkedList<>();
-            for (Card card : cards)
-                if (card.black()) list.add(card);
-            return list;
+            return Collections.unmodifiableList(blackCards);
         }
 
         @NotNull
         public List<Card> whiteCards() {
-            LinkedList<Card> list = new LinkedList<>();
-            for (Card card : cards)
-                if (!card.black()) list.add(card);
-            return list;
+            return Collections.unmodifiableList(whiteCards);
         }
     }
 

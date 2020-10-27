@@ -19,6 +19,7 @@ import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
 import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.ContentCard;
+import com.gianlu.pretendyourexyzzy.databinding.FragmentNewViewCustomDeckInfoBinding;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -169,7 +170,7 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
         CrCastDeck.Cards cards = deck.cards();
         if (cards == null) throw new IllegalArgumentException();
 
-        loaded(InfoFragment.get(),
+        loaded(InfoFragment.get(deck),
                 BlacksFragment.get(cards.blacks, null),
                 WhitesFragment.get(cards.whites, null));
     }
@@ -178,7 +179,7 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
         CollaboratorHandler handler = null;
         if (deck.collaborator) handler = new CollaboratorHandler(deck.shareCode, deck.watermark);
 
-        loaded(InfoFragment.get(),
+        loaded(InfoFragment.get(deck),
                 BlacksFragment.get(ContentCard.fromOverloadedCards(deck.blackCards()), handler),
                 WhitesFragment.get(ContentCard.fromOverloadedCards(deck.blackCards()), handler));
     }
@@ -190,15 +191,44 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
     public static class InfoFragment extends FragmentWithDialog {
 
         @NotNull
-        public static InfoFragment get() {
-            return new InfoFragment();
+        public static InfoFragment get(@NotNull UserProfile.CustomDeckWithCards deck) {
+            InfoFragment fragment = new InfoFragment();
+            Bundle args = new Bundle();
+            args.putString("name", deck.name);
+            args.putString("watermark", deck.watermark);
+            args.putString("desc", deck.desc);
+            args.putInt("blacks", deck.blackCards().size());
+            args.putInt("whites", deck.whiteCards().size());
+            fragment.setArguments(args);
+            return fragment;
+        }
+
+        @NotNull
+        public static InfoFragment get(@NotNull CrCastDeck deck) {
+            InfoFragment fragment = new InfoFragment();
+            Bundle args = new Bundle();
+            args.putString("name", deck.name);
+            args.putString("watermark", deck.watermark);
+            args.putString("desc", deck.desc);
+            args.putInt("blacks", deck.blackCardsCount());
+            args.putInt("whites", deck.whiteCardsCount());
+            fragment.setArguments(args);
+            return fragment;
         }
 
         @Nullable
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            // TODO: Deck info fragment
-            return super.onCreateView(inflater, container, savedInstanceState);
+            FragmentNewViewCustomDeckInfoBinding binding = FragmentNewViewCustomDeckInfoBinding.inflate(inflater, container, false);
+
+            binding.viewCustomDeckInfoName.setText(requireArguments().getString("name"));
+            binding.viewCustomDeckInfoWatermark.setText(requireArguments().getString("watermark"));
+            binding.viewCustomDeckInfoDesc.setText(requireArguments().getString("desc"));
+
+            binding.viewCustomDeckBlackCards.setText(String.valueOf(requireArguments().getInt("blacks")));
+            binding.viewCustomDeckWhiteCards.setText(String.valueOf(requireArguments().getInt("whites")));
+
+            return binding.getRoot();
         }
     }
 

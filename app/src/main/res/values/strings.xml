@@ -395,4 +395,6 @@
     <string name="requestSent">Request sent</string>
     <string name="seeAll">See all</string>
     <string name="addNew">Add new</string>
+    <string name="whiteCards_break">White\ncards</string>
+    <string name="blackCards_break">Black\ncards</string>
 </resources>

@@ -241,7 +241,7 @@ public class NewMainActivity extends ActivityWithDialog {
         }
 
         public void callPyxReady(@NotNull RegisteredPyx pyx) {
-            if (mStarted) {
+            if (mStarted && isAdded()) {
                 onPyxReady(pyx);
             } else {
                 callInvalid = false;
@@ -251,7 +251,7 @@ public class NewMainActivity extends ActivityWithDialog {
         }
 
         public void callPyxInvalid() {
-            if (mStarted) {
+            if (mStarted && isAdded()) {
                 onPyxInvalid();
             } else {
                 callInvalid = true;

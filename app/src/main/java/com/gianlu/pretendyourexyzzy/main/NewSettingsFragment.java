@@ -202,7 +202,7 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
         }
 
         final void callPyxReady(@NonNull RegisteredPyx pyx) {
-            if (mStarted) {
+            if (mStarted && isAdded()) {
                 onPyxReady(pyx);
             } else {
                 callInvalid = false;
@@ -212,7 +212,7 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
         }
 
         final void callPyxInvalid() {
-            if (mStarted) {
+            if (mStarted && isAdded()) {
                 onPyxInvalid();
             } else {
                 callInvalid = true;

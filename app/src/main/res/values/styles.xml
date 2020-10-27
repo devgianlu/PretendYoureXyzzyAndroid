@@ -38,6 +38,14 @@
         <item name="android:fontFamily">@font/montserrat_medium</item>
     </style>
 
+    <style name="TextAppearance.SemiBold">
+        <item name="android:fontFamily">@font/montserrat_semibold</item>
+    </style>
+
+    <style name="TextAppearance.Bold">
+        <item name="android:fontFamily">@font/montserrat_bold</item>
+    </style>
+
     <style name="TextAppearance.Undraw">
         <item name="android:fontFamily">@font/montserrat_medium</item>
         <item name="android:textColor">#505050</item>
