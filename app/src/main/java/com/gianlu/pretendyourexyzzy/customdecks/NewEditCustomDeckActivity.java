@@ -267,10 +267,11 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
         }
 
         @Override
-        public boolean save(@NotNull Bundle bundle) {
+        public boolean save(@NotNull Bundle bundle, @NotNull Callback callback) {
             boolean result = save(CommonUtils.getText(binding.editCustomDeckInfoName), CommonUtils.getText(binding.editCustomDeckInfoWatermark), CommonUtils.getText(binding.editCustomDeckInfoDesc));
             if (result) {
                 bundle.putString("name", deck.name);
+                bundle.putString("watermark", deck.watermark);
                 bundle.putInt("deckId", deck.id);
             }
 
@@ -544,22 +545,31 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
     private static abstract class CardsFragment extends AbsNewCardsFragment implements SavableFragment {
         private Integer deckId;
         private CustomDecksDatabase db;
+        private String watermark;
 
         @Override
         protected final boolean canEditCards() {
             return true;
         }
 
+        @NotNull
         @Override
-        public final boolean save(@NotNull Bundle bundle) {
+        protected final String getWatermark() {
+            return watermark == null ? "" : watermark;
+        }
+
+        @Override
+        public final boolean save(@NotNull Bundle bundle, @NotNull Callback callback) {
             if (deckId == null) {
                 deckId = bundle.getInt("deckId", -1);
                 if (deckId == -1) return false;
 
+                watermark = bundle.getString("watermark");
+
                 setHandler(new CustomDecksHandler(requireContext(), deckId));
             }
 
-            return true;
+            return super.save(bundle, callback);
         }
 
         @Override
@@ -571,10 +581,16 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
             deckId = requireArguments().getInt("deckId", -1);
             if (deckId == -1) deckId = null;
 
-            if (deckId != null) setHandler(new CustomDecksHandler(requireContext(), deckId));
+            if (deckId != null) {
+                CustomDeck deck = db.getDeck(deckId);
+                if (deck != null) watermark = deck.watermark;
+
+                setHandler(new CustomDecksHandler(requireContext(), deckId));
+            }
         }
 
-        boolean isBlack() {
+        @Override
+        public boolean isBlack() {
             return this instanceof BlacksFragment;
         }
 

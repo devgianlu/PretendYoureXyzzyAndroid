@@ -75,6 +75,11 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
             if (!binding.customDeckPager.isUserInputEnabled())
                 return false;
 
+            if (adapter != null) {
+                Fragment prev = adapter.fragments[binding.customDeckPager.getCurrentItem()];
+                if (prev instanceof AbsNewCardsFragment) ((AbsNewCardsFragment) prev).goBack();
+            }
+
             binding.customDeckPager.setCurrentItem(pos, true);
             return true;
         });
@@ -108,10 +113,22 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
     }
 
     private boolean save(@NotNull Bundle bundle) {
+        SavableFragment.Callback callback = new SavableFragment.Callback() {
+            @Override
+            public void setLoading(boolean loading) {
+                binding.customDeckBottomButton.setEnabled(!loading); // TODO: Show button as loading
+            }
+
+            @Override
+            public void lockNavigation(boolean locked) {
+                if (binding != null) binding.customDeckPager.setUserInputEnabled(!locked);
+            }
+        };
+
         for (int i = 0; i < adapter.fragments.length; i++) {
             Fragment fragment = adapter.fragments[i];
             if (fragment instanceof SavableFragment) {
-                if (!((SavableFragment) fragment).save(bundle))
+                if (!((SavableFragment) fragment).save(bundle, callback))
                     return false;
             }
         }
@@ -158,10 +175,10 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
                 binding.customDeckBottomButton.setOnClickListener(v -> {
                     int selected = binding.customDeckNavigation.getSelected();
                     if (selected == 0) {
-                        if (save() || !binding.customDeckPager.isUserInputEnabled())
+                        if (save() && binding.customDeckPager.isUserInputEnabled())
                             binding.customDeckPager.setCurrentItem(1);
                     } else if (selected == 1) {
-                        if (save() || !binding.customDeckPager.isUserInputEnabled())
+                        if (save() && binding.customDeckPager.isUserInputEnabled())
                             binding.customDeckPager.setCurrentItem(2);
                     } else if (selected == 2) {
                         if (save())
@@ -183,6 +200,12 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
 
     @Override
     public final void onBackPressed() {
+        if (adapter != null) {
+            Fragment current = adapter.fragments[binding.customDeckPager.getCurrentItem()];
+            if (current instanceof AbsNewCardsFragment && ((AbsNewCardsFragment) current).goBack())
+                return;
+        }
+
         finishAfterTransition();
     }
 
@@ -191,7 +214,16 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
     }
 
     public interface SavableFragment {
-        boolean save(@NotNull Bundle bundle);
+        /**
+         * @return Generally, whether the save failed or the next fragment shouldn't be shown
+         */
+        boolean save(@NotNull Bundle bundle, @NotNull Callback callback);
+
+        interface Callback {
+            void setLoading(boolean loading);
+
+            void lockNavigation(boolean locked);
+        }
     }
 
     private static class PagerAdapter extends FragmentStateAdapter {

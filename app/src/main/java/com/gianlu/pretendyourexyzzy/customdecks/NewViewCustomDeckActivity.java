@@ -171,8 +171,8 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
         if (cards == null) throw new IllegalArgumentException();
 
         loaded(InfoFragment.get(deck),
-                BlacksFragment.get(cards.blacks, null),
-                WhitesFragment.get(cards.whites, null));
+                BlacksFragment.get(cards.blacks, deck.watermark, null),
+                WhitesFragment.get(cards.whites, deck.watermark, null));
     }
 
     private void deckLoaded(@NotNull UserProfile.CustomDeckWithCards deck) {
@@ -180,8 +180,8 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
         if (deck.collaborator) handler = new CollaboratorHandler(deck.shareCode, deck.watermark);
 
         loaded(InfoFragment.get(deck),
-                BlacksFragment.get(ContentCard.fromOverloadedCards(deck.blackCards()), handler),
-                WhitesFragment.get(ContentCard.fromOverloadedCards(deck.blackCards()), handler));
+                BlacksFragment.get(ContentCard.fromOverloadedCards(deck.blackCards()), deck.watermark, handler),
+                WhitesFragment.get(ContentCard.fromOverloadedCards(deck.blackCards()), deck.watermark, handler));
     }
 
     private enum Type {
@@ -236,11 +236,26 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
         private List<? extends BaseCard> cards;
 
         @NotNull
-        public static BlacksFragment get(List<? extends BaseCard> cards, @Nullable CardActionsHandler handler) {
+        public static BlacksFragment get(List<? extends BaseCard> cards, @NotNull String watermark, @Nullable CardActionsHandler handler) {
             BlacksFragment fragment = new BlacksFragment();
             fragment.cards = cards;
             fragment.setHandler(handler);
+
+            Bundle args = new Bundle();
+            args.putString("watermark", watermark);
+            fragment.setArguments(args);
             return fragment;
+        }
+
+        @NotNull
+        @Override
+        protected String getWatermark() {
+            return requireArguments().getString("watermark", "");
+        }
+
+        @Override
+        protected boolean isBlack() {
+            return true;
         }
 
         @Override
@@ -259,11 +274,26 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
         private List<? extends BaseCard> cards;
 
         @NotNull
-        public static WhitesFragment get(List<? extends BaseCard> cards, @Nullable CardActionsHandler handler) {
+        public static WhitesFragment get(List<? extends BaseCard> cards, @NotNull String watermark, @Nullable CardActionsHandler handler) {
             WhitesFragment fragment = new WhitesFragment();
             fragment.cards = cards;
             fragment.setHandler(handler);
+
+            Bundle args = new Bundle();
+            args.putString("watermark", watermark);
+            fragment.setArguments(args);
             return fragment;
+        }
+
+        @NotNull
+        @Override
+        protected String getWatermark() {
+            return requireArguments().getString("watermark", "");
+        }
+
+        @Override
+        protected boolean isBlack() {
+            return false;
         }
 
         @Override

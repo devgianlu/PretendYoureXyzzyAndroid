@@ -49,67 +49,12 @@
             </intent-filter>
         </activity>
 
-        <!-- Loading activity -->
-        <activity
-            android:name=".LoadingActivity"
-            android:configChanges="uiMode"
-            android:screenOrientation="portrait"
-            android:theme="@style/FullscreenTheme">
-
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <action android:name="android.intent.action.SEND" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.OPENABLE" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="*.pretendyoure.xyz"
-                    android:scheme="http" />
-                <data
-                    android:host="*.pretendyoure.xyz"
-                    android:scheme="https" />
-            </intent-filter>
-        </activity>
-
         <!-- Tutorial activity -->
         <activity
             android:name=".activities.TutorialActivity"
             android:configChanges="uiMode"
             android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme" />
-
-        <!-- Main activity (with all the fragments) -->
-        <activity
-            android:name=".MainActivity"
-            android:configChanges="uiMode"
-            android:launchMode="singleTask"
-            android:theme="@style/AppTheme.NoActionBar.Drawer" />
-
-        <!-- Manager servers activity -->
-        <activity
-            android:name=".activities.ManageServersActivity"
-            android:configChanges="uiMode"
-            android:parentActivityName=".LoadingActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.FullDark" />
-
-        <!-- Starred cards activity -->
-        <activity
-            android:name=".starred.StarredCardsActivity"
-            android:configChanges="uiMode"
-            android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-
-        <!-- Edit custom decks activity -->
-        <activity
-            android:name=".customdecks.EditCustomDeckActivity"
-            android:configChanges="uiMode"
-            android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- View custom decks activity -->
         <activity
@@ -123,21 +68,8 @@
             android:name=".customdecks.NewEditCustomDeckActivity"
             android:configChanges="uiMode"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-
-        <!-- View custom decks activity -->
-        <activity
-            android:name=".customdecks.ViewCustomDeckActivity"
-            android:configChanges="uiMode"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-
-        <!-- Preferences activity -->
-        <activity
-            android:name=".PreferenceActivity"
-            android:configChanges="uiMode"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.FullDark" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
 
         <!-- File provider (round images, custom decks) -->
         <provider

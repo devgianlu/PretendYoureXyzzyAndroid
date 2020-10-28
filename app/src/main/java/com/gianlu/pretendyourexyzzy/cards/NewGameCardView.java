@@ -9,6 +9,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
@@ -50,6 +51,31 @@ public final class NewGameCardView extends CardView {
         setRadius(dp4 * 2);
 
         setForeground(CommonUtils.resolveAttrAsDrawable(context, android.R.attr.selectableItemBackground));
+
+        unsetLeftAction();
+        unsetRightAction();
+    }
+
+    public void setLeftAction(@DrawableRes int iconRes, @NotNull OnClickListener listener) {
+        binding.cardItemActionLeft.setVisibility(VISIBLE);
+        binding.cardItemActionLeft.setImageResource(iconRes);
+        binding.cardItemActionLeft.setOnClickListener(listener);
+    }
+
+    public void unsetLeftAction() {
+        binding.cardItemActionLeft.setVisibility(GONE);
+        binding.cardItemActionLeft.setOnClickListener(null);
+    }
+
+    public void setRightAction(@DrawableRes int iconRes, @NotNull OnClickListener listener) {
+        binding.cardItemActionRight.setVisibility(VISIBLE);
+        binding.cardItemActionRight.setImageResource(iconRes);
+        binding.cardItemActionRight.setOnClickListener(listener);
+    }
+
+    public void unsetRightAction() {
+        binding.cardItemActionRight.setVisibility(GONE);
+        binding.cardItemActionRight.setOnClickListener(null);
     }
 
     public void setCard(@NotNull BaseCard card) {

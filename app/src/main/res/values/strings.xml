@@ -397,4 +397,7 @@
     <string name="addNew">Add new</string>
     <string name="whiteCards_break">White\ncards</string>
     <string name="blackCards_break">Black\ncards</string>
+    <string name="clickToAddText">Click to add text</string>
+    <string name="createYourCard">Create your card</string>
+    <string name="clickToAddImage">Click to add image</string>
 </resources>
