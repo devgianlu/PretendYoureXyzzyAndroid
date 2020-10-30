@@ -444,12 +444,12 @@ public class OverloadedApi {
     /**
      * Uploads an image and gets a reference ID in return.
      *
-     * @param in       The image stream
-     * @param activity The caller {@link Activity}
-     * @param callback The callback containing the image ID
+     * @param in The image stream
+     * @return A task resolving to the image ID
      */
-    public void uploadCardImage(@NonNull InputStream in, @Nullable Activity activity, @NonNull GeneralCallback<String> callback) {
-        callbacks(Tasks.call(executorService, () -> {
+    @NotNull
+    public Task<String> uploadCardImage(@NonNull InputStream in) {
+        return Tasks.call(executorService, () -> {
             ByteArrayOutputStream out = new ByteArrayOutputStream(512 * 1024);
             try {
                 CommonUtils.copy(in, out);
@@ -460,7 +460,7 @@ public class OverloadedApi {
             String imageEncoded = Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
             JSONObject obj = makePostRequest("Images/UploadCardImage", singletonJsonObject("image", imageEncoded));
             return obj.getString("id");
-        }), activity, callback::onResult, callback::onFailed);
+        });
     }
 
     /**

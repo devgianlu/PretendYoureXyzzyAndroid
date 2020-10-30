@@ -95,13 +95,24 @@
             android:layout_weight="1"
             android:background="@drawable/bg_card_6"
             android:elevation="8dp"
-            android:orientation="vertical"
-            android:padding="12dp">
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/customDeckCards_createImage"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginBottom="8dp"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop" />
 
             <EditText
                 android:id="@+id/customDeckCards_createText"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="12dp"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:fontFamily="@font/roboto_regular"
@@ -117,6 +128,8 @@
                 android:id="@+id/customDeckCards_createMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
                 android:fontFamily="@font/roboto_regular"
                 android:textSize="14sp" />
 
@@ -124,7 +137,9 @@
                 android:id="@+id/customDeckCards_createAddImageContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
                 android:layout_marginTop="8dp"
+                android:layout_marginEnd="12dp"
                 android:layout_marginBottom="8dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
@@ -151,6 +166,9 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginBottom="12dp"
                 android:orientation="horizontal">
 
                 <com.gianlu.commonutils.misc.SuperTextView

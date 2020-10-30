@@ -1,24 +1,38 @@
 package com.gianlu.pretendyourexyzzy.customdecks;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
@@ -26,28 +40,45 @@ import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.cards.NewGameCardView;
+import com.gianlu.pretendyourexyzzy.databinding.DialogAskImageUrlBinding;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentCustomDeckCardsBinding;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+
 public abstract class AbsNewCardsFragment extends FragmentWithDialog implements AbsNewCustomDeckActivity.SavableFragment {
     private static final int MAX_CARD_TEXT_LENGTH = 256;
+    private static final int RC_OPEN_CARD_IMAGE = 4;
+    private static final String TAG = AbsNewCardsFragment.class.getSimpleName();
     protected CardActionsHandler handler;
     private FragmentCustomDeckCardsBinding binding;
     private BaseCard editCard = null;
     private CardsAdapter adapter;
+    private OpenCardImageCallback openCardImageCallback;
 
     @NonNull
-    private static ParseResult parseInputText(@NonNull String text, boolean black) {
+    private static ParseResult parseInputText(@NonNull String text, boolean black, boolean image) {
+        if (black && image)
+            throw new IllegalStateException();
+
         text = text.trim();
         if (text.isEmpty() || text.length() > MAX_CARD_TEXT_LENGTH)
             return new ParseResult(ParseResult.Result.ERROR, null, R.string.customCardTextInvalid);
+
+        if (image)
+            return new ParseResult(ParseResult.Result.OK, new String[]{text}, 0);
 
         if (black) {
             boolean warn = false;
@@ -100,7 +131,7 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
 
     public final boolean goBack() {
         if (canEditCards() && isAddVisible()) {
-            hideAdd();
+            hideAddEdit();
             return true;
         } else {
             return false;
@@ -111,7 +142,7 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
     @CallSuper
     public boolean save(@NotNull Bundle bundle, @NotNull Callback callback) {
         if (canEditCards() && isAddVisible()) {
-            ParseResult result = parseInputText(binding.customDeckCardsCreateText.getText().toString(), isBlack());
+            ParseResult result = parseInputText(binding.customDeckCardsCreateText.getText().toString(), isBlack(), binding.customDeckCardsCreateImage.getVisibility() == View.VISIBLE);
             if (result.result == ParseResult.Result.ERROR || result.output == null)
                 return false;
 
@@ -126,7 +157,7 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
                 callback.lockNavigation(false);
 
                 if (task1.isSuccessful())
-                    hideAdd();
+                    hideAddEdit();
             });
             return false;
         }
@@ -143,7 +174,7 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
 
         if (canEditCards()) {
             binding.customDeckCardsAddContainer.setVisibility(View.VISIBLE);
-            binding.customDeckCardsAdd.setOnClickListener(v -> showAdd(null));
+            binding.customDeckCardsAdd.setOnClickListener(v -> showAddEdit(null));
 
             binding.customDeckCardsCreateText.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -162,7 +193,7 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
                         return;
                     }
 
-                    ParseResult result = parseInputText(s.toString(), isBlack());
+                    ParseResult result = parseInputText(s.toString(), isBlack(), binding.customDeckCardsCreateImage.getVisibility() == View.VISIBLE);
                     if (result.output != null && isBlack()) {
                         binding.customDeckCardsCreatePick.setHtml(R.string.numPick, result.output.length - 1);
                     } else {
@@ -193,7 +224,7 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
 
         List<? extends BaseCard> cards = getCards(requireContext());
         binding.customDeckCardsList.setAdapter(adapter = new CardsAdapter(cards, canEditCards()));
-        hideAdd();
+        hideAddEdit();
 
         return binding.getRoot();
     }
@@ -202,11 +233,15 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
         return binding.customDeckCardsCreate.getVisibility() == View.VISIBLE;
     }
 
-    private void showAdd(@Nullable BaseCard editCard) {
+    private void showAddEdit(@Nullable BaseCard editCard) {
         binding.customDeckCardsShow.setVisibility(View.GONE);
         binding.customDeckCardsCreate.setVisibility(View.VISIBLE);
 
         binding.customDeckCardsCreateWatermark.setText(getWatermark());
+
+        binding.customDeckCardsCreateText.setVisibility(View.VISIBLE);
+        binding.customDeckCardsCreateAddImageContainer.setVisibility(View.VISIBLE);
+        binding.customDeckCardsCreateImage.setVisibility(View.GONE);
 
         if (isBlack()) {
             binding.customDeckCardsCreateCard.setBackgroundTintList(ColorStateList.valueOf(Color.BLACK));
@@ -221,9 +256,7 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
 
             binding.customDeckCardsCreateHint.setText(R.string.createCustomCardInfo_white);
 
-            binding.customDeckCardsCreateAddImage.setOnClickListener(v -> {
-                // TODO: Add image card
-            });
+            binding.customDeckCardsCreateAddImage.setOnClickListener(v -> showAddImageDialog());
         }
 
         if (editCard != null) {
@@ -234,7 +267,7 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
         }
     }
 
-    private void hideAdd() {
+    private void hideAddEdit() {
         binding.customDeckCardsShow.setVisibility(View.VISIBLE);
         binding.customDeckCardsCreate.setVisibility(View.GONE);
 
@@ -243,7 +276,139 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
         binding.customDeckCardsCreateText.clearFocus();
         hideKeyboard();
 
-        editCard = null;
+        this.editCard = null;
+    }
+
+    /**
+     * Shows the dialog to add a image card. Image cards cannot be edited, it's pointless.
+     */
+    private void showAddImageDialog() {
+        DialogAskImageUrlBinding dialogBinding = DialogAskImageUrlBinding.inflate(getLayoutInflater());
+        dialogBinding.askImageUrlLink.setEndIconOnClickListener(v -> {
+            if (!OverloadedUtils.isSignedIn()) {
+                showToast(Toaster.build().message(R.string.featureOverloadedOnly));
+                return;
+            }
+
+            openCardImageCallback = uri -> {
+                if (getContext() == null)
+                    return;
+
+                ProgressDialog pd = DialogUtils.progressDialog(requireContext(), R.string.loading);
+                pd.show();
+
+                try {
+                    InputStream in = requireContext().getContentResolver().openInputStream(uri);
+                    if (in == null) return;
+
+                    // It will take care of closing the stream
+                    OverloadedApi.get().uploadCardImage(in)
+                            .addOnSuccessListener(result -> {
+                                pd.dismiss();
+                                CommonUtils.setText(dialogBinding.askImageUrlLink, OverloadedUtils.getCardImageUrl(result));
+                            })
+                            .addOnFailureListener(ex -> {
+                                Log.e(TAG, "Failed uploading image to Overloaded.", ex);
+
+                                pd.dismiss();
+                                showToast(Toaster.build().message(R.string.failedUploadingImage));
+                            });
+                } catch (IOException ex) {
+                    Log.e(TAG, "Failed opening image stream.", ex);
+                }
+            };
+
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("*/*");
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/jpeg", "image/png", "image/bmp", "image/gif"});
+            startActivityForResult(Intent.createChooser(intent, "Pick an image to upload..."), RC_OPEN_CARD_IMAGE);
+        });
+
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+        builder.setTitle(R.string.addImageCard)
+                .setPositiveButton(R.string.done, null)
+                .setNegativeButton(R.string.cancel, null)
+                .setView(dialogBinding.getRoot());
+
+        AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(di -> {
+            Button button = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+            button.setEnabled(false);
+            button.setOnClickListener(v -> {
+                String url = CommonUtils.getText(dialogBinding.askImageUrlLink);
+                if (url.isEmpty()) return;
+
+                try {
+                    new URL(url);
+                } catch (Exception ignored) {
+                    return;
+                }
+
+                binding.customDeckCardsCreateText.setVisibility(View.GONE);
+                binding.customDeckCardsCreateText.setText(String.format("[img]%s[/img]", url));
+
+                binding.customDeckCardsCreateAddImageContainer.setVisibility(View.GONE);
+                binding.customDeckCardsCreateImage.setVisibility(View.VISIBLE);
+                Glide.with(requireContext()).load(url).listener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException ex, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        Log.e(TAG, "Failed loading image.", ex);
+                        CommonUtils.setTextColor(binding.customDeckCardsCreateMessage, R.color.red);
+                        binding.customDeckCardsCreateMessage.setText(R.string.failedLoadingImage);
+                        binding.customDeckCardsCreateMessage.setVisibility(View.VISIBLE);
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        binding.customDeckCardsCreateMessage.setVisibility(View.GONE);
+                        return false;
+                    }
+                }).into(binding.customDeckCardsCreateImage);
+
+                di.dismiss();
+            });
+        });
+
+        CommonUtils.getEditText(dialogBinding.askImageUrlLink).addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                Button btn = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                if (btn == null) return;
+
+                try {
+                    new URL(s.toString());
+                    btn.setEnabled(true);
+                } catch (Exception ignored) {
+                    btn.setEnabled(false);
+                }
+            }
+        });
+
+        showDialog(dialog);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == RC_OPEN_CARD_IMAGE) {
+            Uri uri;
+            if (openCardImageCallback == null || data == null || (uri = data.getData()) == null)
+                return;
+
+            if (resultCode == Activity.RESULT_OK) openCardImageCallback.onImageUri(uri);
+            openCardImageCallback = null;
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     //region Cards actions
@@ -308,6 +473,10 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
                 })
                 .addOnFailureListener(ex -> showToast(Toaster.build().message(R.string.failedAddingCustomCard)));
     }
+
+    private interface OpenCardImageCallback {
+        void onImageUri(@NonNull Uri uri);
+    }
     //endregion
 
     private static class ParseResult {
@@ -364,8 +533,12 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
             holder.card.setCard(card);
 
             if (canEditCards) {
-                holder.card.setLeftAction(R.drawable.baseline_edit_24, v -> showAdd(card));
                 holder.card.setRightAction(R.drawable.baseline_delete_24, v -> AbsNewCardsFragment.this.removeCard(card));
+
+                if (card.getImageUrl() == null)
+                    holder.card.setLeftAction(R.drawable.baseline_edit_24, v -> showAddEdit(card));
+                else
+                    holder.card.unsetLeftAction();
             } else {
                 holder.card.unsetRightAction();
                 holder.card.unsetLeftAction();

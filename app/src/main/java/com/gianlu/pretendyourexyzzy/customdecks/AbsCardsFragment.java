@@ -59,7 +59,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
-import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 
 public abstract class AbsCardsFragment extends FragmentWithDialog implements CardsAdapter.Listener {
     private static final String TAG = AbsCardsFragment.class.getSimpleName();
@@ -332,21 +331,17 @@ public abstract class AbsCardsFragment extends FragmentWithDialog implements Car
                     if (in == null) return;
 
                     // It will take care of closing the stream
-                    OverloadedApi.get().uploadCardImage(in, null, new GeneralCallback<String>() {
-                        @Override
-                        public void onResult(@NonNull String result) {
-                            pd.dismiss();
-                            CommonUtils.setText(imageUrl, OverloadedUtils.getCardImageUrl(result));
-                        }
+                    OverloadedApi.get().uploadCardImage(in)
+                            .addOnSuccessListener(result -> {
+                                pd.dismiss();
+                                CommonUtils.setText(imageUrl, OverloadedUtils.getCardImageUrl(result));
+                            })
+                            .addOnFailureListener(ex -> {
+                                Log.e(TAG, "Failed uploading image to Overloaded.", ex);
 
-                        @Override
-                        public void onFailed(@NonNull Exception ex) {
-                            Log.e(TAG, "Failed uploading image to Overloaded.", ex);
-
-                            pd.dismiss();
-                            showToast(Toaster.build().message(R.string.failedUploadingImage));
-                        }
-                    });
+                                pd.dismiss();
+                                showToast(Toaster.build().message(R.string.failedUploadingImage));
+                            });
                 } catch (IOException ex) {
                     Log.e(TAG, "Failed opening image stream.", ex);
                 }
