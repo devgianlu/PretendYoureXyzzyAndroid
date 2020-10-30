@@ -1,7 +1,5 @@
 package com.gianlu.pretendyourexyzzy.customdecks;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -20,13 +18,10 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.PagerAdapter;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastApi;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
-import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.customdecks.view.BlackCardsFragment;
 import com.gianlu.pretendyourexyzzy.customdecks.view.GeneralInfoFragment;
 import com.gianlu.pretendyourexyzzy.customdecks.view.WhiteCardsFragment;
 import com.google.android.material.tabs.TabLayout;
-
-import org.jetbrains.annotations.NotNull;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
@@ -43,47 +38,6 @@ public class ViewCustomDeckActivity extends ActivityWithDialog implements AbsCar
     private String owner;
     private CustomDeckWithCards customDeck = null;
     private ProgressBar loading;
-
-    public static void startActivitySearch(@NonNull Context context, @NonNull Deck deck) {
-        Intent intent = new Intent(context, ViewCustomDeckActivity.class);
-        intent.putExtra("search", true);
-        intent.putExtra("crCast", false);
-        intent.putExtra("deckName", deck.name);
-        intent.putExtra("watermark", deck.watermark);
-        intent.putExtra("desc", deck.description);
-        intent.putExtra("blackCards", deck.blackCards);
-        intent.putExtra("whiteCards", deck.whiteCards);
-        context.startActivity(intent);
-    }
-
-    @NonNull
-    public static Intent activityCrCastIntent(@NotNull Context context, @NonNull CrCastDeck deck) {
-        Intent intent = new Intent(context, ViewCustomDeckActivity.class);
-        intent.putExtra("crCast", true);
-        intent.putExtra("deckCode", deck.watermark);
-        intent.putExtra("deckName", deck.name);
-        intent.putExtra("favorite", deck.favorite);
-        return intent;
-    }
-
-    public static void startActivityCrCast(@NonNull Context context, @NonNull CrCastDeck deck) {
-        context.startActivity(activityCrCastIntent(context, deck));
-    }
-
-    @NonNull
-    public static Intent activityIntent(@NotNull Context context, @NotNull String owner, @NotNull String deckName, @NonNull String shareCode) {
-        Intent intent = new Intent(context, ViewCustomDeckActivity.class);
-        intent.putExtra("search", false);
-        intent.putExtra("crCast", false);
-        intent.putExtra("owner", owner);
-        intent.putExtra("shareCode", shareCode);
-        intent.putExtra("deckName", deckName);
-        return intent;
-    }
-
-    public static void startActivity(@NotNull Context context, @NotNull String owner, @NotNull String deckName, @NonNull String shareCode) {
-        context.startActivity(activityIntent(context, owner, deckName, shareCode));
-    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -182,7 +136,7 @@ public class ViewCustomDeckActivity extends ActivityWithDialog implements AbsCar
 
                         if (ex instanceof OverloadedServerException && (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_DECK)
                                 || ((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_USER))) {
-                            db.removeStarredDeck(owner, shareCode);
+                            db.removeStarredDeck(shareCode);
                             Toaster.with(this).message(R.string.deckDoesNotExist).show();
                         } else {
                             Toaster.with(this).message(R.string.failedLoading).show();
@@ -281,10 +235,10 @@ public class ViewCustomDeckActivity extends ActivityWithDialog implements AbsCar
                 supportInvalidateOptionsMenu();
                 return true;
             case R.id.viewCustomDeck_removeStar:
-                if (owner == null || shareCode == null)
+                if (shareCode == null)
                     return false;
 
-                db.removeStarredDeck(owner, shareCode);
+                db.removeStarredDeck(shareCode);
                 supportInvalidateOptionsMenu();
                 return true;
             default:

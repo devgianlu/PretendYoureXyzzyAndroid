@@ -42,8 +42,8 @@ import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksAdapter;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
-import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
-import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
+import com.gianlu.pretendyourexyzzy.customdecks.NewEditCustomDeckActivity;
+import com.gianlu.pretendyourexyzzy.customdecks.NewViewCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.dialogs.CrCastLoginDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
@@ -148,7 +148,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
 
         FloatingActionButton addDeck = layout.findViewById(R.id.customDecksFab_add);
         addDeck.setOnClickListener(v -> {
-            EditCustomDeckActivity.startActivityNew(requireContext());
+            startActivity(NewEditCustomDeckActivity.activityNewIntent(requireContext()));
             fab.collapse();
         });
 
@@ -196,7 +196,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
         Pyx.get().recoverCardcastDeck(code, requireContext())
                 .addOnSuccessListener(tmpFile -> {
                     dismissDialog();
-                    EditCustomDeckActivity.startActivityImport(requireContext(), false, tmpFile);
+                    startActivity(NewEditCustomDeckActivity.activityImportRecoverIntent(requireContext(), tmpFile));
                 })
                 .addOnFailureListener(ex -> {
                     dismissDialog();
@@ -321,7 +321,7 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
 
                     File tmpFile = new File(requireContext().getCacheDir(), CommonUtils.randomString(6, "abcdefghijklmnopqrstuvwxyz"));
                     CommonUtils.copy(in, new FileOutputStream(tmpFile));
-                    EditCustomDeckActivity.startActivityImport(requireContext(), true, tmpFile);
+                    startActivity(NewEditCustomDeckActivity.activityImportRecoverIntent(requireContext(), tmpFile));
                 } catch (IOException ex) {
                     Log.e(TAG, "Failed importing JSON file: " + data, ex);
                 }
@@ -339,12 +339,15 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
 
     @Override
     public void onCustomDeckSelected(@NonNull BasicCustomDeck deck) {
+        Intent intent = null;
         if (deck instanceof CustomDeck)
-            EditCustomDeckActivity.startActivityEdit(requireContext(), (CustomDeck) deck);
+            intent = NewEditCustomDeckActivity.activityEditIntent(requireContext(), (CustomDeck) deck);
         else if (deck instanceof CustomDecksDatabase.StarredDeck && deck.owner != null)
-            ViewCustomDeckActivity.startActivity(requireContext(), deck.owner, deck.name, ((CustomDecksDatabase.StarredDeck) deck).shareCode);
+            intent = NewViewCustomDeckActivity.activityPublicIntent(requireContext(), (CustomDecksDatabase.StarredDeck) deck);
         else if (deck instanceof CrCastDeck)
-            ViewCustomDeckActivity.startActivityCrCast(requireContext(), (CrCastDeck) deck);
+            intent = NewViewCustomDeckActivity.activityCrCastIntent(requireContext(), (CrCastDeck) deck);
+
+        if (intent != null) startActivity(intent);
     }
 
     @Override

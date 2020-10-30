@@ -81,7 +81,7 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
         InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
         if (imm == null) return;
 
-        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+        imm.hideSoftInputFromWindow(binding.getRoot().getWindowToken(), 0);
     }
 
     public final void setHandler(@Nullable CardActionsHandler handler) {

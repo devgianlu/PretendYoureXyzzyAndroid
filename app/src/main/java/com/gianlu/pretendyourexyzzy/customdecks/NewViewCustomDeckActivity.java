@@ -69,6 +69,15 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
         return intent;
     }
 
+    @NonNull
+    public static Intent activityPublicIntent(@NotNull Context context, @NotNull String owner, @NotNull UserProfile.CustomDeck deck) {
+        Intent intent = baseStartIntent(context, Type.PUBLIC);
+        intent.putExtra("owner", owner);
+        intent.putExtra("shareCode", deck.shareCode);
+        intent.putExtra("deckName", deck.name);
+        return intent;
+    }
+
     @NotNull
     @Override
     protected String getName() {
@@ -94,8 +103,6 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
         if (type == null || deckName == null) return;
 
         CustomDecksDatabase db = CustomDecksDatabase.get(this);
-
-        // TODO: Star/unstar deck
 
         switch (type) {
             case SEARCH:
@@ -152,7 +159,7 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
 
                             if (ex instanceof OverloadedServerException && (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_DECK)
                                     || ((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_USER))) {
-                                db.removeStarredDeck(owner, shareCode);
+                                db.removeStarredDeck(shareCode);
                                 Toaster.with(NewViewCustomDeckActivity.this).message(R.string.deckDoesNotExist).show();
                             } else {
                                 Toaster.with(NewViewCustomDeckActivity.this).message(R.string.failedLoading).show();
@@ -189,6 +196,7 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
     }
 
     public static class InfoFragment extends FragmentWithDialog {
+        private FragmentNewViewCustomDeckInfoBinding binding;
 
         @NotNull
         public static InfoFragment get(@NotNull UserProfile.CustomDeckWithCards deck) {
@@ -197,6 +205,8 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
             args.putString("name", deck.name);
             args.putString("watermark", deck.watermark);
             args.putString("desc", deck.desc);
+            args.putString("shareCode", deck.shareCode);
+            args.putString("owner", deck.owner);
             args.putInt("blacks", deck.blackCards().size());
             args.putInt("whites", deck.whiteCards().size());
             fragment.setArguments(args);
@@ -210,6 +220,8 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
             args.putString("name", deck.name);
             args.putString("watermark", deck.watermark);
             args.putString("desc", deck.desc);
+            args.putString("shareCode", null);
+            args.putString("owner", null);
             args.putInt("blacks", deck.blackCardsCount());
             args.putInt("whites", deck.whiteCardsCount());
             fragment.setArguments(args);
@@ -219,7 +231,7 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
         @Nullable
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            FragmentNewViewCustomDeckInfoBinding binding = FragmentNewViewCustomDeckInfoBinding.inflate(inflater, container, false);
+            binding = FragmentNewViewCustomDeckInfoBinding.inflate(inflater, container, false);
 
             binding.viewCustomDeckInfoName.setText(requireArguments().getString("name"));
             binding.viewCustomDeckInfoWatermark.setText(requireArguments().getString("watermark"));
@@ -228,7 +240,40 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
             binding.viewCustomDeckBlackCards.setText(String.valueOf(requireArguments().getInt("blacks")));
             binding.viewCustomDeckWhiteCards.setText(String.valueOf(requireArguments().getInt("whites")));
 
+            updateStar();
+
             return binding.getRoot();
+        }
+
+        private void updateStar() {
+            String shareCode = requireArguments().getString("shareCode");
+            if (shareCode == null) {
+                binding.viewCustomDeckInfoStar.setVisibility(View.GONE);
+            } else {
+                binding.viewCustomDeckInfoStar.setVisibility(View.VISIBLE);
+
+                CustomDecksDatabase db = CustomDecksDatabase.get(requireContext());
+                if (db.isStarred(shareCode)) {
+                    binding.viewCustomDeckInfoStar.setImageResource(R.drawable.baseline_star_24);
+                    binding.viewCustomDeckInfoStar.setOnClickListener(v -> {
+                        db.removeStarredDeck(shareCode);
+                        updateStar();
+                    });
+                } else {
+                    binding.viewCustomDeckInfoStar.setImageResource(R.drawable.baseline_star_outline_24);
+                    binding.viewCustomDeckInfoStar.setOnClickListener(v -> {
+                        String name = requireArguments().getString("name");
+                        String watermark = requireArguments().getString("watermark");
+                        String owner = requireArguments().getString("owner");
+                        int cardsCount = requireArguments().getInt("blacks") + requireArguments().getInt("whites");
+                        if (name == null || watermark == null || owner == null || cardsCount < 0)
+                            return;
+
+                        db.addStarredDeck(shareCode, name, watermark, owner, cardsCount);
+                        updateStar();
+                    });
+                }
+            }
         }
     }
 

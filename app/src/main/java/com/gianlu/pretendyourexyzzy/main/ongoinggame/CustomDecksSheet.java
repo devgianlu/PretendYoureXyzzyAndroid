@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.main.ongoinggame;
 
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.util.Log;
@@ -39,8 +40,8 @@ import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.StarredDeck;
-import com.gianlu.pretendyourexyzzy.customdecks.EditCustomDeckActivity;
-import com.gianlu.pretendyourexyzzy.customdecks.ViewCustomDeckActivity;
+import com.gianlu.pretendyourexyzzy.customdecks.NewEditCustomDeckActivity;
+import com.gianlu.pretendyourexyzzy.customdecks.NewViewCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -349,34 +350,43 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
     public void onDeckSelected(@NonNull Deck deck) {
         CustomDecksDatabase db = CustomDecksDatabase.get(requireContext());
 
+        Intent intent = null;
         List<CustomDeck> decks = db.getDecks();
         for (CustomDeck customDeck : decks) {
             if (customDeck.name.equals(deck.name) && customDeck.watermark.equals(deck.watermark)) {
-                EditCustomDeckActivity.startActivityEdit(requireContext(), customDeck);
-                return;
+                intent = NewEditCustomDeckActivity.activityEditIntent(requireContext(), customDeck);
+                break;
             }
         }
 
-        List<CrCastDeck> crCastDecks = db.getCachedCrCastDecks();
-        for (CrCastDeck customDeck : crCastDecks) {
-            if (customDeck.name.equals(deck.name) && customDeck.watermark.equals(deck.watermark)) {
-                ViewCustomDeckActivity.startActivityCrCast(requireContext(), customDeck);
-                return;
+        if (intent == null) {
+            List<CrCastDeck> crCastDecks = db.getCachedCrCastDecks();
+            for (CrCastDeck customDeck : crCastDecks) {
+                if (customDeck.name.equals(deck.name) && customDeck.watermark.equals(deck.watermark)) {
+                    intent = NewViewCustomDeckActivity.activityCrCastIntent(requireContext(), customDeck);
+                    break;
+                }
             }
         }
 
-        List<StarredDeck> starredDecks = db.getStarredDecks(false);
-        for (StarredDeck customDeck : starredDecks) {
-            if (customDeck.name.equals(deck.name) && customDeck.watermark.equals(deck.watermark) && customDeck.owner != null) {
-                ViewCustomDeckActivity.startActivity(requireContext(), customDeck.owner, customDeck.name, customDeck.shareCode);
-                return;
+        if (intent == null) {
+            List<StarredDeck> starredDecks = db.getStarredDecks(false);
+            for (StarredDeck customDeck : starredDecks) {
+                if (customDeck.name.equals(deck.name) && customDeck.watermark.equals(deck.watermark) && customDeck.owner != null) {
+                    intent = NewViewCustomDeckActivity.activityPublicIntent(requireContext(), customDeck);
+                    break;
+                }
             }
         }
 
-        if (OverloadedUtils.isSignedIn())
-            ViewCustomDeckActivity.startActivitySearch(requireContext(), deck);
-        else
-            DialogUtils.showToast(requireContext(), Toaster.build().message(R.string.featureOverloadedOnly));
+        if (intent == null) {
+            if (OverloadedUtils.isSignedIn())
+                intent = NewViewCustomDeckActivity.activitySearchIntent(requireContext(), deck);
+            else
+                DialogUtils.showToast(requireContext(), Toaster.build().message(R.string.featureOverloadedOnly));
+        }
+
+        if (intent != null) startActivity(intent);
     }
 
     @Override

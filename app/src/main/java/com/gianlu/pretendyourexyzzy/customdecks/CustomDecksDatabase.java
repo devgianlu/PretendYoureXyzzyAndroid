@@ -395,13 +395,13 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             sendStarredDeckPatch(OverloadedApi.now(), null, StarredCustomDecksPatchOp.ADD, shareCode, id);
     }
 
-    public void removeStarredDeck(@NonNull String owner, @NonNull String shareCode) {
+    public void removeStarredDeck(@NonNull String shareCode) {
         Long remoteId = getStarredDeckRemoteId(shareCode);
 
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         try {
-            db.delete("starred_decks", "owner=? AND shareCode=?", new String[]{owner, shareCode});
+            db.delete("starred_decks", "shareCode=?", new String[]{shareCode});
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();

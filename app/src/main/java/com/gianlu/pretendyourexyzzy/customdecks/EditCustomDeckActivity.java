@@ -1,6 +1,5 @@
 package com.gianlu.pretendyourexyzzy.customdecks;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -42,28 +41,6 @@ public class EditCustomDeckActivity extends ActivityWithDialog implements AbsCar
     private ViewPager pager;
     private AbsCardsFragment whiteCardsFragment;
     private AbsCardsFragment blackCardsFragment;
-
-    public static void startActivityNew(@NonNull Context context) {
-        context.startActivity(new Intent(context, EditCustomDeckActivity.class)
-                .putExtra("title", context.getString(R.string.createCustomDeck)));
-    }
-
-    @NonNull
-    public static Intent activityEditIntent(@NonNull Context context, @NonNull CustomDecksDatabase.CustomDeck deck) {
-        return new Intent(context, EditCustomDeckActivity.class)
-                .putExtra("title", deck.name + " - " + context.getString(R.string.editCustomDeck))
-                .putExtra("id", deck.id);
-    }
-
-    public static void startActivityEdit(@NonNull Context context, @NonNull CustomDecksDatabase.CustomDeck deck) {
-        context.startActivity(activityEditIntent(context, deck));
-    }
-
-    public static void startActivityImport(@NonNull Context context, boolean importDeck, @NonNull File tmpFile) {
-        context.startActivity(new Intent(context, EditCustomDeckActivity.class)
-                .putExtra("title", importDeck ? context.getString(R.string.importCustomDeck) : context.getString(R.string.recoverCardcastDeck))
-                .putExtra("tmpFile", tmpFile));
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

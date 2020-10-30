@@ -75,6 +75,13 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
         return baseStartIntent(context, Type.NEW);
     }
 
+    @NotNull
+    public static Intent activityImportRecoverIntent(@NotNull Context context, @NotNull File tmpFile) {
+        Intent intent = baseStartIntent(context, Type.IMPORT);
+        intent.putExtra("tmpFile", tmpFile);
+        return intent;
+    }
+
     @Override
     protected void onInflateMenu(@NotNull MenuInflater inflater, @NotNull Menu menu) {
         inflater.inflate(R.menu.new_edit_custom_deck, menu);

@@ -61,7 +61,8 @@
             android:name=".customdecks.NewViewCustomDeckActivity"
             android:configChanges="uiMode"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
 
         <!-- Edit custom decks activity -->
         <activity
