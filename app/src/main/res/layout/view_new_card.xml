@@ -36,8 +36,6 @@
             android:layout_marginEnd="8dp"
             android:orientation="horizontal">
 
-            <!-- TODO: Doesn't look very good on black cards -->
-
             <ImageButton
                 android:id="@+id/cardItem_actionLeft"
                 android:layout_width="24dp"

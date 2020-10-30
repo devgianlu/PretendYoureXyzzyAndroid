@@ -121,6 +121,11 @@ public final class NewGameCardView extends CardView {
 
                 setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
                 binding.cardItemText.setTextColor(Color.BLACK);
+
+                binding.cardItemActionRight.setImageTintList(ColorStateList.valueOf(Color.BLACK));
+                binding.cardItemActionLeft.setImageTintList(ColorStateList.valueOf(Color.BLACK));
+                binding.cardItemActionRight.getBackground().setAlpha(255);
+                binding.cardItemActionLeft.getBackground().setAlpha(255);
                 break;
             case BLACK:
                 binding.cardItemPick.setVisibility(VISIBLE);
@@ -128,6 +133,11 @@ public final class NewGameCardView extends CardView {
 
                 setBackgroundTintList(ColorStateList.valueOf(Color.BLACK));
                 binding.cardItemText.setTextColor(Color.WHITE);
+
+                binding.cardItemActionRight.setImageTintList(ColorStateList.valueOf(Color.WHITE));
+                binding.cardItemActionLeft.setImageTintList(ColorStateList.valueOf(Color.WHITE));
+                binding.cardItemActionRight.getBackground().setAlpha(127);
+                binding.cardItemActionLeft.getBackground().setAlpha(127);
                 break;
             default:
                 throw new IllegalArgumentException();

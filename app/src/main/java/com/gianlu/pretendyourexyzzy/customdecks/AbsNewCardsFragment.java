@@ -150,10 +150,8 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
             if (editCard != null) task = updateCard(editCard, result.output);
             else task = addCard(result.output);
 
-            callback.setLoading(true);
             callback.lockNavigation(true);
             task.addOnCompleteListener(task1 -> {
-                callback.setLoading(false);
                 callback.lockNavigation(false);
 
                 if (task1.isSuccessful())

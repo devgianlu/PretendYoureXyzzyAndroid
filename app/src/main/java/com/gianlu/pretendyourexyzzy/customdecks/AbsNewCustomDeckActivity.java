@@ -56,6 +56,11 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
         binding.customDeckPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int pos) {
+                if (adapter != null) {
+                    Fragment prev = adapter.fragments[binding.customDeckNavigation.getSelected()];
+                    if (prev instanceof AbsNewCardsFragment) ((AbsNewCardsFragment) prev).goBack();
+                }
+
                 binding.customDeckNavigation.setSelected(pos);
 
                 if (mode == Mode.CONTINUE) {
@@ -74,11 +79,6 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
         binding.customDeckNavigation.setOnSelectionChangedListener(pos -> {
             if (!binding.customDeckPager.isUserInputEnabled())
                 return false;
-
-            if (adapter != null) {
-                Fragment prev = adapter.fragments[binding.customDeckPager.getCurrentItem()];
-                if (prev instanceof AbsNewCardsFragment) ((AbsNewCardsFragment) prev).goBack();
-            }
 
             binding.customDeckPager.setCurrentItem(pos, true);
             return true;
@@ -113,15 +113,10 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
     }
 
     private boolean save(@NotNull Bundle bundle) {
-        SavableFragment.Callback callback = new SavableFragment.Callback() {
-            @Override
-            public void setLoading(boolean loading) {
-                binding.customDeckBottomButton.setEnabled(!loading); // TODO: Show button as loading
-            }
-
-            @Override
-            public void lockNavigation(boolean locked) {
-                if (binding != null) binding.customDeckPager.setUserInputEnabled(!locked);
+        SavableFragment.Callback callback = locked -> {
+            if (binding != null) {
+                binding.customDeckBottomButton.setEnabled(!locked);
+                binding.customDeckPager.setUserInputEnabled(!locked);
             }
         };
 
@@ -220,8 +215,6 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
         boolean save(@NotNull Bundle bundle, @NotNull Callback callback);
 
         interface Callback {
-            void setLoading(boolean loading);
-
             void lockNavigation(boolean locked);
         }
     }
