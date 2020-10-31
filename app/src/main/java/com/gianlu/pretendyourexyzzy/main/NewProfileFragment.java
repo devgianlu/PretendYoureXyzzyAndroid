@@ -170,31 +170,37 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
         binding.profileFragmentFriendsList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
         binding.profileFragmentFriendsLoading.setVisibility(View.VISIBLE);
-        OverloadedUtils.waitReady().addOnSuccessListener(signedIn -> {
-            if (signedIn) {
-                binding.profileFragmentFriendsOverloaded.setVisibility(View.GONE);
-                binding.profileFragmentFriendsAdd.setVisibility(View.VISIBLE);
+        OverloadedUtils.waitReady()
+                .addOnSuccessListener(signedIn -> {
+                    if (signedIn) {
+                        binding.profileFragmentFriendsOverloaded.setVisibility(View.GONE);
+                        binding.profileFragmentFriendsAdd.setVisibility(View.VISIBLE);
 
-                OverloadedApi.get().friendsStatus()
-                        .addOnSuccessListener(friends -> {
-                            binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
+                        OverloadedApi.get().friendsStatus()
+                                .addOnSuccessListener(friends -> {
+                                    binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
 
-                            friendsAdapter = new FriendsAdapter(friends.values());
-                            binding.profileFragmentFriendsList.setAdapter(friendsAdapter);
-                        })
-                        .addOnFailureListener(ex -> {
-                            Log.e(TAG, "Failed loading friends.", ex);
-                            binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
-                            // TODO: Show friends error
-                        });
-            } else {
-                binding.profileFragmentFriendsOverloaded.setVisibility(View.VISIBLE);
-                binding.profileFragmentFriendsList.setVisibility(View.GONE);
-                binding.profileFragmentFriendsEmpty.setVisibility(View.GONE);
-                binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
-                binding.profileFragmentFriendsAdd.setVisibility(View.GONE);
-            }
-        });
+                                    friendsAdapter = new FriendsAdapter(friends.values());
+                                    binding.profileFragmentFriendsList.setAdapter(friendsAdapter);
+                                })
+                                .addOnFailureListener(ex -> {
+                                    Log.e(TAG, "Failed loading friends.", ex);
+                                    binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
+                                    // TODO: Show friends error
+                                });
+                    } else {
+                        binding.profileFragmentFriendsOverloaded.setVisibility(View.VISIBLE);
+                        binding.profileFragmentFriendsList.setVisibility(View.GONE);
+                        binding.profileFragmentFriendsEmpty.setVisibility(View.GONE);
+                        binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
+                        binding.profileFragmentFriendsAdd.setVisibility(View.GONE);
+                    }
+                })
+                .addOnFailureListener(ex -> {
+                    Log.e(TAG, "Failed waiting ready.", ex);
+                    binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
+                    // TODO: Show friends error
+                });
         //endregion
 
         //region Achievements

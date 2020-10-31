@@ -41,7 +41,7 @@ import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.cards.NewGameCardView;
 import com.gianlu.pretendyourexyzzy.databinding.DialogAskImageUrlBinding;
-import com.gianlu.pretendyourexyzzy.databinding.FragmentCustomDeckCardsBinding;
+import com.gianlu.pretendyourexyzzy.databinding.FragmentNewCustomDeckCardsBinding;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
@@ -63,7 +63,7 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
     private static final int RC_OPEN_CARD_IMAGE = 4;
     private static final String TAG = AbsNewCardsFragment.class.getSimpleName();
     protected CardActionsHandler handler;
-    private FragmentCustomDeckCardsBinding binding;
+    private FragmentNewCustomDeckCardsBinding binding;
     private BaseCard editCard = null;
     private CardsAdapter adapter;
     private OpenCardImageCallback openCardImageCallback;
@@ -167,7 +167,7 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
     @Override
     @CallSuper
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentCustomDeckCardsBinding.inflate(inflater, container, false);
+        binding = FragmentNewCustomDeckCardsBinding.inflate(inflater, container, false);
         binding.customDeckCardsList.setLayoutManager(new GridLayoutManager(requireContext(), 2, RecyclerView.VERTICAL, false));
 
         if (canEditCards()) {

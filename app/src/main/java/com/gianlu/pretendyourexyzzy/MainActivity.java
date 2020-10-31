@@ -36,7 +36,6 @@ import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
-import com.gianlu.pretendyourexyzzy.main.CustomDecksFragment;
 import com.gianlu.pretendyourexyzzy.main.DrawerItem;
 import com.gianlu.pretendyourexyzzy.main.GamesFragment;
 import com.gianlu.pretendyourexyzzy.main.NamesFragment;
@@ -47,7 +46,6 @@ import com.gianlu.pretendyourexyzzy.main.PyxChatsFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
-import com.gianlu.pretendyourexyzzy.starred.StarredCardsActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.PlayGamesAuthProvider;
@@ -65,7 +63,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
     private BottomNavigationManager navigation;
     private NamesFragment namesFragment;
     private GamesFragment gamesFragment;
-    private CustomDecksFragment customDecksFragment;
     private OngoingGameFragment ongoingGameFragment;
     private PyxChatsFragment chatsFragment;
     private OverloadedFragment overloadedFragment;
@@ -200,7 +197,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                         transaction.add(R.id.main_container, gamesFragment, item.tag);
                         break;
                     case CUSTOM_DECKS:
-                        transaction.add(R.id.main_container, customDecksFragment, item.tag);
+                        // transaction.add(R.id.main_container, customDecksFragment, item.tag);
                         break;
                     case ONGOING_GAME:
                         if (ongoingGameFragment != null)
@@ -219,9 +216,6 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
 
             try {
                 transaction.commit();
-
-                if (fragment instanceof CustomDecksFragment)
-                    ((CustomDecksFragment) fragment).tryShowingTutorial();
             } catch (IllegalStateException ex) {
                 AnalyticsApplication.crashlyticsLog(ex.getMessage() + " at #switchTo(Item)");
             }
@@ -352,7 +346,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         namesFragment = getOrAdd(transaction, Item.PLAYERS, NamesFragment::getInstance);
         gamesFragment = getOrAdd(transaction, Item.GAMES, GamesFragment::getInstance);
-        customDecksFragment = getOrAdd(transaction, Item.CUSTOM_DECKS, CustomDecksFragment::getInstance);
+        // customDecksFragment = getOrAdd(transaction, Item.CUSTOM_DECKS, CustomDecksFragment::getInstance);
 
         if (OverloadedUtils.isSignedIn())
             overloadedFragment = getOrAdd(transaction, Item.OVERLOADED, OverloadedFragment::getInstance);
@@ -487,7 +481,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
             case HOME:
                 return true;
             case STARRED_CARDS:
-                StarredCardsActivity.startActivity(this);
+                // StarredCardsActivity.startActivity(this);
                 return true;
             case USER_METRICS:
                 // MetricsActivity.startActivity(this);

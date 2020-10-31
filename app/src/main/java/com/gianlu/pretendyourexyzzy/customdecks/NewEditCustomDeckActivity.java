@@ -260,6 +260,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                 binding.editCustomDeckCollaborators.setVisibility(View.GONE);
                 binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
                 binding.editCustomDeckCollaboratorsNotSynced.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsError.setVisibility(View.GONE);
 
                 binding.editCustomDeckCollaboratorsLoading.setVisibility(View.VISIBLE);
                 binding.editCustomDeckCollaboratorsLoading.showShimmer(true);
@@ -269,6 +270,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                 binding.editCustomDeckCollaborators.setVisibility(View.GONE);
                 binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
                 binding.editCustomDeckCollaboratorsNotSynced.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsError.setVisibility(View.GONE);
 
                 binding.editCustomDeckCollaboratorsOverloaded.setVisibility(View.VISIBLE);
             } else if (notSynced) {
@@ -277,6 +279,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                 binding.editCustomDeckAddCollaborator.setVisibility(View.GONE);
                 binding.editCustomDeckCollaborators.setVisibility(View.GONE);
                 binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsError.setVisibility(View.GONE);
 
                 binding.editCustomDeckCollaboratorsNotSynced.setVisibility(View.VISIBLE);
             } else if (empty) {
@@ -284,6 +287,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                 binding.editCustomDeckCollaboratorsLoading.setVisibility(View.GONE);
                 binding.editCustomDeckCollaborators.setVisibility(View.GONE);
                 binding.editCustomDeckCollaboratorsNotSynced.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsError.setVisibility(View.GONE);
 
                 binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.VISIBLE);
                 binding.editCustomDeckAddCollaborator.setVisibility(View.VISIBLE);
@@ -295,12 +299,13 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                 binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
 
                 binding.editCustomDeckAddCollaborator.setVisibility(View.VISIBLE);
-                // TODO: Show collaborators error
+                binding.editCustomDeckCollaboratorsError.setVisibility(View.VISIBLE);
             } else {
                 binding.editCustomDeckCollaboratorsOverloaded.setVisibility(View.GONE);
                 binding.editCustomDeckCollaboratorsLoading.setVisibility(View.GONE);
                 binding.editCustomDeckCollaboratorsNotSynced.setVisibility(View.GONE);
                 binding.editCustomDeckCollaboratorsEmpty.setVisibility(View.GONE);
+                binding.editCustomDeckCollaboratorsError.setVisibility(View.GONE);
 
                 binding.editCustomDeckAddCollaborator.setVisibility(View.VISIBLE);
                 binding.editCustomDeckCollaborators.setVisibility(View.VISIBLE);
@@ -347,22 +352,27 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
         private void setupCollaborators() {
             setCollaboratorsStatus(true, false, false, false, false);
 
-            OverloadedUtils.waitReady().addOnSuccessListener(signedIn -> {
-                if (signedIn) {
-                    if (deck == null || deck.remoteId == null) {
-                        setCollaboratorsStatus(false, false, true, false, false);
-                    } else {
-                        OverloadedSyncApi.get().getCollaborators(deck.remoteId)
-                                .addOnSuccessListener(list -> binding.editCustomDeckCollaborators.setAdapter(collaboratorsAdapter = new CollaboratorsAdapter(list)))
-                                .addOnFailureListener(ex -> {
-                                    Log.e(TAG, "Failed getting collaborators.", ex);
-                                    setCollaboratorsStatus(false, false, true, false, true);
-                                });
-                    }
-                } else {
-                    setCollaboratorsStatus(false, true, false, false, false);
-                }
-            });
+            OverloadedUtils.waitReady()
+                    .addOnSuccessListener(signedIn -> {
+                        if (signedIn) {
+                            if (deck == null || deck.remoteId == null) {
+                                setCollaboratorsStatus(false, false, true, false, false);
+                            } else {
+                                OverloadedSyncApi.get().getCollaborators(deck.remoteId)
+                                        .addOnSuccessListener(list -> binding.editCustomDeckCollaborators.setAdapter(collaboratorsAdapter = new CollaboratorsAdapter(list)))
+                                        .addOnFailureListener(ex -> {
+                                            Log.e(TAG, "Failed getting collaborators.", ex);
+                                            setCollaboratorsStatus(false, false, true, false, true);
+                                        });
+                            }
+                        } else {
+                            setCollaboratorsStatus(false, true, false, false, false);
+                        }
+                    })
+                    .addOnFailureListener(ex -> {
+                        Log.e(TAG, "Failed waiting ready.", ex);
+                        setCollaboratorsStatus(false, false, true, false, true);
+                    });
         }
 
         @Nullable

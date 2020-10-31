@@ -105,7 +105,7 @@ public final class OverloadedUtils {
     }
 
     /**
-     * @return A task which will resolve to whether the user is signed in and fully registered.
+     * @return A task which will resolve to whether the user is signed in and fully registered or fail.
      */
     @NonNull
     public static Task<Boolean> waitReady() {
@@ -113,12 +113,8 @@ public final class OverloadedUtils {
             return Tasks.forResult(false);
 
         return OverloadedApi.get().userData(true).continueWith(task -> {
-            try {
-                UserData data = task.getResult();
-                return data != null && data.purchaseStatus.ok;
-            } catch (Exception ex) {
-                return false;
-            }
+            UserData data = task.getResult();
+            return data != null && data.purchaseStatus.ok;
         });
     }
 
