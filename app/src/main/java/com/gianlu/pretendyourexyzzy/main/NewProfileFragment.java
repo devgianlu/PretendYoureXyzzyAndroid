@@ -186,7 +186,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                                 .addOnFailureListener(ex -> {
                                     Log.e(TAG, "Failed loading friends.", ex);
                                     binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
-                                    // TODO: Show friends error
+                                    binding.profileFragmentFriendsError.setVisibility(View.VISIBLE);
                                 });
                     } else {
                         binding.profileFragmentFriendsOverloaded.setVisibility(View.VISIBLE);
@@ -194,61 +194,66 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                         binding.profileFragmentFriendsEmpty.setVisibility(View.GONE);
                         binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
                         binding.profileFragmentFriendsAdd.setVisibility(View.GONE);
+                        binding.profileFragmentFriendsError.setVisibility(View.GONE);
                     }
                 })
                 .addOnFailureListener(ex -> {
                     Log.e(TAG, "Failed waiting ready.", ex);
                     binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
-                    // TODO: Show friends error
+                    binding.profileFragmentFriendsError.setVisibility(View.VISIBLE);
                 });
         //endregion
 
         //region Achievements
-        GPGamesHelper.loadAchievements(requireContext())
-                .addOnSuccessListener(data -> {
-                    binding.profileFragmentAchievementsEmpty.setVisibility(View.GONE);
+        if (GPGamesHelper.hasGooglePlayGames(requireContext())) {
+            binding.profileFragmentAchievementsNotEnabled.setVisibility(View.GONE);
 
-                    int colorComplete = ContextCompat.getColor(requireContext(), R.color.appColor_500);
-                    int colorIncomplete = ContextCompat.getColor(requireContext(), R.color.appColor_200);
+            GPGamesHelper.loadAchievements(requireContext())
+                    .addOnSuccessListener(data -> {
+                        binding.profileFragmentAchievementsError.setVisibility(View.GONE);
+                        binding.profileFragmentAchievementsList.setVisibility(View.VISIBLE);
 
-                    ImageManager im = ImageManager.create(requireContext());
-                    for (Achievement ach : getAchievementsInProgress(data)) {
-                        AchievementProgressView view = new AchievementProgressView(requireContext());
-                        view.setCompleteColor(colorComplete);
-                        view.setIncompleteColor(colorIncomplete);
-                        view.setMinValue(0);
-                        view.setMaxValue(ach.getTotalSteps());
-                        view.setActualValue(ach.getCurrentSteps());
-                        view.setDesc(ach.getDescription());
-                        CommonUtils.setPaddingDip(view, null, null, null, 8);
-                        binding.profileFragmentAchievementsList.addView(view);
+                        int colorComplete = ContextCompat.getColor(requireContext(), R.color.appColor_500);
+                        int colorIncomplete = ContextCompat.getColor(requireContext(), R.color.appColor_200);
 
-                        im.loadImage((uri, drawable, isRequestedDrawable) -> {
-                            if (!isRequestedDrawable || drawable == null) return;
-                            view.setIconDrawable(drawable);
-                        }, ach.getUnlockedImageUri());
-                    }
+                        ImageManager im = ImageManager.create(requireContext());
+                        for (Achievement ach : getAchievementsInProgress(data)) {
+                            AchievementProgressView view = new AchievementProgressView(requireContext());
+                            view.setCompleteColor(colorComplete);
+                            view.setIncompleteColor(colorIncomplete);
+                            view.setMinValue(0);
+                            view.setMaxValue(ach.getTotalSteps());
+                            view.setActualValue(ach.getCurrentSteps());
+                            view.setDesc(ach.getDescription());
+                            CommonUtils.setPaddingDip(view, null, null, null, 8);
+                            binding.profileFragmentAchievementsList.addView(view);
 
-                    // TODO: Show empty achievements message
+                            im.loadImage((uri, drawable, isRequestedDrawable) -> {
+                                if (!isRequestedDrawable || drawable == null) return;
+                                view.setIconDrawable(drawable);
+                            }, ach.getUnlockedImageUri());
+                        }
 
-                    data.release();
-                })
-                .addOnFailureListener(ex -> {
-                    Log.e(TAG, "Failed loading achievements.", ex);
-                    // TODO: Show achievements error
-                });
+                        data.release();
+                    })
+                    .addOnFailureListener(ex -> {
+                        Log.e(TAG, "Failed loading achievements.", ex);
+                        binding.profileFragmentAchievementsList.setVisibility(View.GONE);
+                        binding.profileFragmentAchievementsError.setVisibility(View.VISIBLE);
+                    });
 
-        // TODO: Handle "see all" visibility when empty and when not connected
-
-        GPGamesHelper.loadAchievementsIntent(requireContext())
-                .addOnSuccessListener(intent -> {
-                    binding.profileFragmentAchievementsSeeAll.setVisibility(View.VISIBLE);
-                    binding.profileFragmentAchievementsSeeAll.setOnClickListener(v -> startActivityForResult(intent, 77));
-                })
-                .addOnFailureListener(ex -> {
-                    Log.e(TAG, "Failed loading achievements intent.", ex);
-                    binding.profileFragmentAchievementsSeeAll.setVisibility(View.GONE);
-                });
+            GPGamesHelper.loadAchievementsIntent(requireContext())
+                    .addOnSuccessListener(intent -> {
+                        binding.profileFragmentAchievementsSeeAll.setVisibility(View.VISIBLE);
+                        binding.profileFragmentAchievementsSeeAll.setOnClickListener(v -> startActivityForResult(intent, 77));
+                    })
+                    .addOnFailureListener(ex -> {
+                        Log.e(TAG, "Failed loading achievements intent.", ex);
+                        binding.profileFragmentAchievementsSeeAll.setVisibility(View.GONE);
+                    });
+        } else {
+            binding.profileFragmentAchievementsNotEnabled.setVisibility(View.VISIBLE);
+        }
         //endregion
 
         //region Custom decks
@@ -271,9 +276,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
             binding.profileFragmentCustomDecksCrCastLogin.setVisibility(View.GONE);
         } else {
             binding.profileFragmentCustomDecksCrCastLogin.setVisibility(View.VISIBLE);
-            binding.profileFragmentCustomDecksCrCastLogin.setOnClickListener(v -> {
-                CrCastLoginDialog.get().show(getChildFragmentManager(), null);
-            });
+            binding.profileFragmentCustomDecksCrCastLogin.setOnClickListener(v -> CrCastLoginDialog.get().show(getChildFragmentManager(), null));
         }
 
         binding.profileFragmentCustomDecksList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));

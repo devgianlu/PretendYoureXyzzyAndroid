@@ -45,7 +45,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
             android:minHeight="36dp"
-            app:emptyText="@string/noAchievements"
+            app:emptyText="No achievements"
             app:imageSize="36dp"
             app:textColor="?colorOnSurface"
             app:textGravity="start"

@@ -100,6 +100,10 @@ public final class GPGamesHelper {
             return null;
     }
 
+    public static boolean hasGooglePlayGames(@NotNull Context context) {
+        return checkAccount(GoogleSignIn.getLastSignedInAccount(context));
+    }
+
     public static void setPopupView(@NonNull Activity activity, @MagicConstant(flagsFromClass = Gravity.class) int gravity) {
         View root = activity.getWindow().getDecorView().findViewById(android.R.id.content);
         if (root != null)
