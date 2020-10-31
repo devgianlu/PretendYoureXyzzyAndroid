@@ -38,10 +38,12 @@ import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -120,7 +122,25 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                 break;
             case IMPORT:
                 setBottomButtonMode(Mode.SAVE);
-                // TODO: Import deck
+
+                File tmpFile = (File) getIntent().getSerializableExtra("tmpFile");
+                if (tmpFile == null) break;
+
+                try (FileInputStream in = new FileInputStream(tmpFile)) {
+                    JSONObject obj = new JSONObject(CommonUtils.readEntirely(in));
+
+                    CardsFragment whitesFragment, blacksFragment;
+                    loaded(InfoFragment.json(obj), blacksFragment = BlacksFragment.empty(), whitesFragment = WhitesFragment.empty());
+                    if (save()) { // Will not import cards if can't save (meh...)
+                        blacksFragment.importCards(this, obj.optJSONArray("calls"));
+                        whitesFragment.importCards(this, obj.optJSONArray("responses"));
+                    }
+                } catch (JSONException | IOException ex) {
+                    Log.e(TAG, "Failed importing deck.", ex);
+                    finishAfterTransition();
+                } finally {
+                    tmpFile.deleteOnExit();
+                }
                 break;
         }
     }
@@ -211,9 +231,23 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
         }
 
         @NotNull
+        public static InfoFragment json(@NotNull JSONObject obj) {
+            InfoFragment fragment = new InfoFragment();
+            Bundle args = new Bundle();
+            args.putInt("deckId", -1);
+            args.putBoolean("import", true);
+            args.putString("name", obj.optString("name"));
+            args.putString("watermark", obj.optString("watermark"));
+            args.putString("desc", obj.optString("description"));
+            fragment.setArguments(args);
+            return fragment;
+        }
+
+        @NotNull
         public static InfoFragment get(int deckId) {
             InfoFragment fragment = new InfoFragment();
             Bundle args = new Bundle();
+            args.putBoolean("import", false);
             args.putInt("deckId", deckId);
             fragment.setArguments(args);
             return fragment;
@@ -413,6 +447,10 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                 CommonUtils.setText(binding.editCustomDeckInfoName, deck.name);
                 CommonUtils.setText(binding.editCustomDeckInfoWatermark, deck.watermark);
                 CommonUtils.setText(binding.editCustomDeckInfoDesc, deck.description);
+            } else if (requireArguments().getBoolean("import", false)) {
+                CommonUtils.setText(binding.editCustomDeckInfoName, requireArguments().getString("name"));
+                CommonUtils.setText(binding.editCustomDeckInfoWatermark, requireArguments().getString("watermark"));
+                CommonUtils.setText(binding.editCustomDeckInfoDesc, requireArguments().getString("desc"));
             }
 
             setupCollaborators();
@@ -606,6 +644,36 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
         protected final List<? extends BaseCard> getCards(@NotNull Context context) {
             if (deckId == null) return new ArrayList<>();
             else return isBlack() ? db.getBlackCards(deckId) : db.getWhiteCards(deckId);
+        }
+
+        /**
+         * Import cards from JSON. Caller should make sure which type (black, white) the cards are and which fragment it's calling.
+         *
+         * @param context The caller {@link Context}
+         * @param array   The array containing the cards or {@code null}
+         */
+        public void importCards(@NonNull Context context, @Nullable JSONArray array) {
+            if (array == null) return;
+
+            if (db == null)
+                db = CustomDecksDatabase.get(context);
+
+            String[][] texts = new String[array.length()][];
+            boolean[] blacks = new boolean[array.length()];
+            for (int i = 0; i < array.length(); i++) {
+                try {
+                    String[] text = CommonUtils.toStringArray(array.getJSONObject(i).getJSONArray("text"));
+                    if (isBlack() && text.length == 1)
+                        text = new String[]{text[0] + " ", ""};
+
+                    texts[i] = text;
+                    blacks[i] = isBlack();
+                } catch (JSONException ex) {
+                    Log.w(TAG, "Failed importing card at " + i, ex);
+                }
+            }
+
+            addCards(blacks, texts);
         }
     }
 

@@ -1,8 +1,10 @@
 package com.gianlu.pretendyourexyzzy.main;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -12,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
@@ -32,8 +35,10 @@ import com.gianlu.pretendyourexyzzy.NewMainActivity;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
+import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
+import com.gianlu.pretendyourexyzzy.api.StatusCodeException;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastApi;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
@@ -57,6 +62,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -70,6 +79,7 @@ import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
 public class NewProfileFragment extends NewMainActivity.ChildFragment implements OverloadedApi.EventListener, CrCastLoginDialog.LoginListener {
     private static final String TAG = NewProfileFragment.class.getSimpleName();
+    private static final int RC_IMPORT_JSON = 420;
     private FragmentNewProfileBinding binding;
     private RegisteredPyx pyx;
     private FriendsAdapter friendsAdapter;
@@ -236,7 +246,20 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         //endregion
 
         //region Custom decks
-        binding.profileFragmentCustomDecksAdd.setOnClickListener(v -> startActivity(NewEditCustomDeckActivity.activityNewIntent(requireContext())));
+        binding.profileFragmentCustomDecksAdd.setOnClickListener(v -> {
+            String[] createOptions = new String[]{getString(R.string.createCustomDeck), getString(R.string.importCustomDeck), getString(R.string.recoverCardcastDeck)};
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext())
+                    .setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, createOptions), (dialog, which) -> {
+                        if (which == 0)
+                            startActivity(NewEditCustomDeckActivity.activityNewIntent(requireContext()));
+                        else if (which == 1)
+                            startActivityForResult(Intent.createChooser(new Intent(Intent.ACTION_GET_CONTENT).setType("*/*"), "Pick a JSON file..."), RC_IMPORT_JSON);
+                        else if (which == 2)
+                            showRecoverCardcastDialog();
+                    });
+
+            showDialog(builder);
+        });
 
         if (CrCastApi.hasCredentials()) {
             binding.profileFragmentCustomDecksCrCastLogin.setVisibility(View.GONE);
@@ -248,13 +271,68 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         }
 
         binding.profileFragmentCustomDecksList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
-
-        // TODO: Import deck
-        // TODO: Recover deck
-
         //endregion
 
         return binding.getRoot();
+    }
+
+    private void showRecoverCardcastDialog() {
+        EditText input = new EditText(requireContext());
+        input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5), new InputFilter.AllCaps()});
+
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+        builder.setTitle(R.string.recoverCardcastDeck).setView(input)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.recover, (dialog, which) -> {
+                    dismissDialog();
+
+                    String code = input.getText().toString();
+                    if (!code.matches("[A-Z0-9]{5}")) {
+                        showToast(Toaster.build().message(R.string.invalidDeckCode));
+                        return;
+                    }
+
+                    try {
+                        showProgress(R.string.loading);
+                        Pyx.get().recoverCardcastDeck(code, requireContext())
+                                .addOnSuccessListener(tmpFile -> {
+                                    dismissDialog();
+                                    startActivity(NewEditCustomDeckActivity.activityImportRecoverIntent(requireContext(), tmpFile));
+                                })
+                                .addOnFailureListener(ex -> {
+                                    dismissDialog();
+
+                                    if (ex instanceof StatusCodeException && ((StatusCodeException) ex).code == 404) {
+                                        showToast(Toaster.build().message(R.string.recoverDeckNotFound));
+                                    } else {
+                                        Log.e(TAG, "Cannot recover deck.", ex);
+                                        showToast(Toaster.build().message(R.string.failedRecoveringCardcastDeck));
+                                    }
+                                });
+                    } catch (LevelMismatchException ignored) {
+                    }
+                });
+        showDialog(builder);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == RC_IMPORT_JSON) {
+            if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
+                try {
+                    InputStream in = requireContext().getContentResolver().openInputStream(data.getData());
+                    if (in == null) return;
+
+                    File tmpFile = new File(requireContext().getCacheDir(), CommonUtils.randomString(6, "abcdefghijklmnopqrstuvwxyz"));
+                    CommonUtils.copy(in, new FileOutputStream(tmpFile));
+                    startActivity(NewEditCustomDeckActivity.activityImportRecoverIntent(requireContext(), tmpFile));
+                } catch (IOException ex) {
+                    Log.e(TAG, "Failed importing JSON file: " + data, ex);
+                }
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override

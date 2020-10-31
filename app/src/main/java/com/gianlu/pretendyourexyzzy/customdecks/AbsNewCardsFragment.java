@@ -452,7 +452,7 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
     }
 
     @NotNull
-    private Task<List<? extends BaseCard>> addCards(boolean[] blacks, @NonNull String[][] texts) {
+    protected Task<List<? extends BaseCard>> addCards(boolean[] blacks, @NonNull String[][] texts) {
         if (handler == null) return Tasks.forCanceled();
 
         return handler.addCards(blacks, texts)
