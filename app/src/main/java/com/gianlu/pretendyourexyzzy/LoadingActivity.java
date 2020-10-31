@@ -118,11 +118,10 @@ public class LoadingActivity extends ActivityWithDialog implements TutorialManag
             return;
         }
 
-        startActivity(new Intent(this, OneTimeLoginActivity.class));
-        if (true) return;
-
         Button preferences = findViewById(R.id.loading_preferences);
-        preferences.setOnClickListener(v -> startActivity(new Intent(LoadingActivity.this, PreferenceActivity.class)));
+        preferences.setOnClickListener(v -> {
+            // startActivity(new Intent(LoadingActivity.this, PreferenceActivity.class))
+        });
 
         tutorialManager = new TutorialManager(this, Discovery.LOGIN);
 

@@ -126,6 +126,9 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         binding = FragmentNewProfileBinding.inflate(inflater, container, false);
         binding.profileFragmentInputs.idCodeInput.setEndIconOnClickListener(v -> CommonUtils.setText(binding.profileFragmentInputs.idCodeInput, CommonUtils.randomString(100)));
         binding.profileFragmentMenu.setOnClickListener((v) -> showPopupMenu());
+        binding.profileFragmentChat.setOnClickListener(v -> {
+            // TODO: Open Overloaded chat
+        });
 
         OverloadedApi.get().addEventListener(this);
 
@@ -205,6 +208,8 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         //endregion
 
         //region Achievements
+        // TODO: Stats?
+
         if (GPGamesHelper.hasGooglePlayGames(requireContext())) {
             binding.profileFragmentAchievementsNotEnabled.setVisibility(View.GONE);
 
@@ -281,6 +286,9 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
         binding.profileFragmentCustomDecksList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
         //endregion
+
+        // TODO: Overloaded profile preferences
+        // TODO: Overloaded subscribe flow
 
         return binding.getRoot();
     }

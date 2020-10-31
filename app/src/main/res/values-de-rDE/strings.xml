@@ -270,7 +270,6 @@
     <string name="overloadedHeader_roundsPlayed"><![CDATA[<b>Rounds played</b><br>]]>%s</string>
     <string name="overloadedHeader_roundsWon"><![CDATA[<b>Rounds won</b><br>]]>%s</string>
     <string name="achievements">Achievements</string>
-    <string name="noAchievements">You have no achievements!</string>
     <string name="linkedAccounts">Linked accounts</string>
     <string name="friends">Friends</string>
     <string name="friendOffline">Offline</string>

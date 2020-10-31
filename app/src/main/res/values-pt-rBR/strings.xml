@@ -270,7 +270,6 @@
     <string name="overloadedHeader_roundsPlayed"><![CDATA[<b>Rodadas tocaram</b><br>]]>%s</string>
     <string name="overloadedHeader_roundsWon"><![CDATA[<b>A rodada ganhou</b><br>]]>%s</string>
     <string name="achievements">Conquistas</string>
-    <string name="noAchievements">Você não tem conquistas!</string>
     <string name="linkedAccounts">Contas vinculadas</string>
     <string name="friends">Amigos</string>
     <string name="friendOffline">Desconectado</string>

@@ -487,7 +487,7 @@ public class MainActivity extends ActivityWithDialog implements GamesFragment.On
                 // MetricsActivity.startActivity(this);
                 return true;
             case PREFERENCES:
-                startActivity(new Intent(this, PreferenceActivity.class));
+                // startActivity(new Intent(this, PreferenceActivity.class));
                 return true;
             case REPORT:
                 LogsHelper.sendEmail(this, null);

@@ -270,7 +270,6 @@
     <string name="overloadedHeader_roundsPlayed"><![CDATA[<b>Turni giocati</b><br>]]>%s</string>
     <string name="overloadedHeader_roundsWon"><![CDATA[<b>Turni vinti</b><br>]]>%s</string>
     <string name="achievements">Successi</string>
-    <string name="noAchievements">Non hai nessun successo!</string>
     <string name="linkedAccounts">Account collegati</string>
     <string name="friends">Amici</string>
     <string name="friendOffline">Offline</string>
