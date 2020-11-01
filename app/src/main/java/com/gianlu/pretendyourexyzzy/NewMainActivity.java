@@ -124,6 +124,9 @@ public class NewMainActivity extends ActivityWithDialog {
             if (settingsFragment != null) settingsFragment.callPyxReady(pyx);
             if (gamesFragment != null) gamesFragment.callPyxReady(pyx);
             if (profileFragment != null) profileFragment.callPyxReady(pyx);
+
+            if (pyx.firstLoad().nextOperation == FirstLoad.NextOp.GAME)
+                startActivity(GameActivity.gameIntent(this, pyx.firstLoad().game));
         });
     }
 
@@ -161,15 +164,8 @@ public class NewMainActivity extends ActivityWithDialog {
         Continuation<FirstLoadedPyx, Task<RegisteredPyx>> firstLoadContinuation = task -> {
             FirstLoadedPyx pyx = task.getResult();
             FirstLoad fl = pyx.firstLoad();
-            if (fl.inProgress && fl.user != null) {
-                if (fl.nextOperation == FirstLoad.NextOp.GAME) {
-                    // TODO: Open game board
-                }
-
-                return Tasks.forResult(pyx.upgrade(fl.user));
-            } else {
-                return task.getResult().register(username, idCode);
-            }
+            if (fl.inProgress && fl.user != null) return Tasks.forResult(pyx.upgrade(fl.user));
+            else return task.getResult().register(username, idCode);
         };
 
         pyxInvalid();

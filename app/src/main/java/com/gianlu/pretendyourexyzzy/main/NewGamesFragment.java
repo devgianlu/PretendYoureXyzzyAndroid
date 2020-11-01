@@ -3,12 +3,14 @@ package com.gianlu.pretendyourexyzzy.main;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 
@@ -21,6 +23,8 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.preferences.Prefs;
+import com.gianlu.commonutils.ui.Toaster;
+import com.gianlu.pretendyourexyzzy.GameActivity;
 import com.gianlu.pretendyourexyzzy.NewMainActivity;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
@@ -35,6 +39,10 @@ import com.gianlu.pretendyourexyzzy.api.models.GamesList;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewGamesBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemNewGameBinding;
+import com.google.android.gms.tasks.CancellationTokenSource;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.TaskCompletionSource;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
@@ -148,12 +156,12 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
                 // TODO: Open global chat
             }
         });
-        binding.gamesFragmentCreateGame.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: Create game
-            }
-        });
+        binding.gamesFragmentCreateGame.setOnClickListener(v -> pyx.request(PyxRequests.createGame())
+                .addOnSuccessListener((gamePermalink) -> startActivity(GameActivity.gameIntent(requireContext(), gamePermalink)))
+                .addOnFailureListener(ex -> {
+                    Log.e(TAG, "Failed creating game.", ex);
+                    showToast(Toaster.build().message(R.string.failedCreatingGame));
+                }));
 
         setGamesStatus(true, false, false);
 
@@ -387,19 +395,43 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
                     CommonUtils.expand(holder.binding.gameItemDetails, null);
             });
 
-            holder.binding.gameItemSpectate.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // TODO: Spectate game
-                }
-            });
+            holder.binding.gameItemSpectate.setOnClickListener(v -> askPassword(game)
+                    .continueWithTask(task -> pyx.request(PyxRequests.spectateGame(game.gid, task.getResult())))
+                    .addOnSuccessListener((gamePermalink) -> startActivity(GameActivity.gameIntent(requireContext(), gamePermalink)))
+                    .addOnFailureListener(ex -> {
+                        Log.e(TAG, "Failed spectating game.", ex);
+                        showToast(Toaster.build().message(R.string.failedSpectating).extra(game.gid));
+                    }));
 
-            holder.binding.gameItemJoin.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // TODO: Join game
-                }
-            });
+            holder.binding.gameItemJoin.setOnClickListener(v -> askPassword(game)
+                    .continueWithTask(task -> pyx.request(PyxRequests.joinGame(game.gid, task.getResult())))
+                    .addOnSuccessListener((gamePermalink) -> startActivity(GameActivity.gameIntent(requireContext(), gamePermalink)))
+                    .addOnFailureListener(ex -> {
+                        Log.e(TAG, "Failed joining game.", ex);
+                        showToast(Toaster.build().message(R.string.failedJoiningGame).extra(game.gid));
+                    }));
+        }
+
+        @NotNull
+        private Task<String> askPassword(@NotNull Game game) {
+            if (game.hasPassword(false)) {
+                EditText password = new EditText(requireContext());
+                password.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+
+                CancellationTokenSource cancellationSource = new CancellationTokenSource();
+                TaskCompletionSource<String> completionSource = new TaskCompletionSource<>(cancellationSource.getToken());
+
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+                builder.setTitle(R.string.gamePassword)
+                        .setView(password)
+                        .setNegativeButton(R.string.cancel, (dialog, which) -> cancellationSource.cancel())
+                        .setPositiveButton(R.string.submit, (dialog, which) -> completionSource.setResult(password.getText().toString()));
+
+                showDialog(builder);
+                return completionSource.getTask();
+            } else {
+                return Tasks.forResult(null);
+            }
         }
 
         @Override
