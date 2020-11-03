@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.main.ongoinggame;
+package com.gianlu.pretendyourexyzzy.game;
 
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -42,7 +42,6 @@ import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.StarredDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.NewEditCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.customdecks.NewViewCustomDeckActivity;
-import com.gianlu.pretendyourexyzzy.main.OngoingGameFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -391,8 +390,7 @@ public class CustomDecksSheet extends ThemedModalBottomSheet<Integer, List<Deck>
 
     @Override
     public boolean canModifyCustomDecks() {
-        OngoingGameFragment parent = (OngoingGameFragment) getParentFragment();
-        return parent != null && parent.canModifyCustomDecks();
+        return false; // TODO
     }
 
     @Override

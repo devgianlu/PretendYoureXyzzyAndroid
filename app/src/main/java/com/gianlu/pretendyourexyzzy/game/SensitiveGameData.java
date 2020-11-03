@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.main.ongoinggame;
+package com.gianlu.pretendyourexyzzy.game;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,17 +17,17 @@ import java.util.Objects;
 import java.util.Set;
 
 public class SensitiveGameData {
-    final List<GameInfo.Player> players = new ArrayList<>();
-    final Set<String> spectators = new HashSet<>();
-    final String me;
+    public final List<GameInfo.Player> players = new ArrayList<>();
+    public final Set<String> spectators = new HashSet<>();
+    public final String me;
     private final Listener listener;
-    volatile boolean hasPassword;
-    volatile AdapterInterface playersInterface;
-    volatile String host;
-    volatile Game.Status status;
-    volatile Game.Options options;
-    volatile String judge;
-    volatile String lastRoundPermalink;
+    public volatile boolean hasPassword;
+    public volatile AdapterInterface playersInterface;
+    public volatile String host;
+    public volatile Game.Status status;
+    public volatile Game.Options options;
+    public volatile String judge;
+    public volatile String lastRoundPermalink;
 
     SensitiveGameData(@NonNull RegisteredPyx pyx, @NonNull Listener listener) {
         this.me = pyx.user().nickname;
@@ -44,7 +44,7 @@ public class SensitiveGameData {
     }
 
     @UiThread
-    void update(@NonNull GameInfo info, @Nullable GameCards cards, @Nullable GameLayout layout) {
+    void update(@NonNull GameInfo info, @Nullable GameCards cards, @Nullable GameUi ui) {
         update(info.game);
 
         List<GameInfo.Player> oldPlayers = new ArrayList<>(players);
@@ -53,12 +53,12 @@ public class SensitiveGameData {
             players.addAll(info.players);
         }
 
-        if (layout != null) {
-            layout.setup(this);
+        if (ui != null) {
+            ui.setup(this);
             if (cards != null) {
-                layout.setHand(cards.hand);
-                layout.setBlackCard(cards.blackCard);
-                layout.setTable(cards.whiteCards, cards.blackCard);
+                ui.setHand(cards.hand);
+                ui.setBlackCard(cards.blackCard);
+                ui.setTable(cards.whiteCards, cards.blackCard);
             }
         }
 

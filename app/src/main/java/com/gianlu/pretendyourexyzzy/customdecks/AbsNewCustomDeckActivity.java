@@ -113,10 +113,17 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
     }
 
     private boolean save(@NotNull Bundle bundle) {
-        SavableFragment.Callback callback = locked -> {
-            if (binding != null) {
+        SavableFragment.Callback callback = new SavableFragment.Callback() {
+            @Override
+            public void lockNavigation(boolean locked) {
                 binding.customDeckBottomButton.setEnabled(!locked);
                 binding.customDeckPager.setUserInputEnabled(!locked);
+            }
+
+            @NotNull
+            @Override
+            public CustomDecksDatabase getDb() {
+                return CustomDecksDatabase.get(AbsNewCustomDeckActivity.this);
             }
         };
 
@@ -216,6 +223,9 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
 
         interface Callback {
             void lockNavigation(boolean locked);
+
+            @NotNull
+            CustomDecksDatabase getDb();
         }
     }
 

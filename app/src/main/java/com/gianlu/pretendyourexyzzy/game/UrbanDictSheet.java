@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.main.ongoinggame;
+package com.gianlu.pretendyourexyzzy.game;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;

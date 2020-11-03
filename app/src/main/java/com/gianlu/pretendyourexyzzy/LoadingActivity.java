@@ -24,8 +24,6 @@ import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.preferences.Prefs;
-import com.gianlu.commonutils.tutorial.BaseTutorial;
-import com.gianlu.commonutils.tutorial.TutorialManager;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.activities.ManageServersActivity;
 import com.gianlu.pretendyourexyzzy.activities.TutorialActivity;
@@ -42,8 +40,6 @@ import com.gianlu.pretendyourexyzzy.overloaded.OverloadedBillingHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedBillingHelper.Status;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
-import com.gianlu.pretendyourexyzzy.tutorial.Discovery;
-import com.gianlu.pretendyourexyzzy.tutorial.LoginTutorial;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputLayout;
@@ -63,13 +59,12 @@ import java.util.Objects;
 
 import javax.net.ssl.SSLException;
 
-import me.toptas.fancyshowcase.FocusShape;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 import xyz.gianlu.pyxoverloaded.model.UserData.PurchaseStatusGranular;
 
 
-public class LoadingActivity extends ActivityWithDialog implements TutorialManager.Listener, OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener, AskUsernameDialog.Listener {
+public class LoadingActivity extends ActivityWithDialog implements OverloadedChooseProviderDialog.Listener, OverloadedBillingHelper.Listener, AskUsernameDialog.Listener {
     private static final int RC_SIGN_IN = 3;
     private static final String TAG = LoadingActivity.class.getSimpleName();
     private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
@@ -82,7 +77,6 @@ public class LoadingActivity extends ActivityWithDialog implements TutorialManag
     private boolean launchGameShouldRequest;
     private ShimmerFrameLayout serverLoading;
     private TextInputLayout registerIdCode;
-    private TutorialManager tutorialManager;
     private SuperTextView welcomeMessage;
     private PyxDiscoveryApi discoveryApi;
     private TextView currentServer;
@@ -122,8 +116,6 @@ public class LoadingActivity extends ActivityWithDialog implements TutorialManag
         preferences.setOnClickListener(v -> {
             // startActivity(new Intent(LoadingActivity.this, PreferenceActivity.class))
         });
-
-        tutorialManager = new TutorialManager(this, Discovery.LOGIN);
 
         inputLoading = findViewById(R.id.loading_inputLoading);
         serverLoading = findViewById(R.id.loading_serverLoading);
@@ -370,7 +362,7 @@ public class LoadingActivity extends ActivityWithDialog implements TutorialManag
         } else {
             currentServer.setText(result.server.name);
             showRegisterUi(result);
-            if (!tutorialManager.tryShowingTutorials(this) && Utils.shouldShowChangelog(this)) {
+            if (Utils.shouldShowChangelog(this)) {
                 String changelog = Utils.getChangelog(this);
                 if (changelog == null) return;
 
@@ -408,42 +400,14 @@ public class LoadingActivity extends ActivityWithDialog implements TutorialManag
 
         waitingOverloaded = false;
 
+        /*
         Intent intent = new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("shouldRequest", launchGameShouldRequest);
         if (launchGame != null) intent.putExtra("game", launchGame);
         if (launchGamePassword != null) intent.putExtra("password", launchGamePassword);
         startActivity(intent);
         waitingOverloaded = false;
-    }
-
-    @Override
-    public boolean canShow(@NonNull BaseTutorial tutorial) {
-        return tutorial instanceof LoginTutorial;
-    }
-
-    @Override
-    public boolean buildSequence(@NonNull BaseTutorial t) {
-        t.add(t.forView(registerNickname, R.string.tutorial_chooseNickname)
-                .enableAutoTextPosition()
-                .roundRectRadius(8)
-                .focusShape(FocusShape.ROUNDED_RECTANGLE));
-        t.add(t.forView(registerIdCode, R.string.tutorial_chooseIdCode)
-                .enableAutoTextPosition()
-                .roundRectRadius(8)
-                .focusShape(FocusShape.ROUNDED_RECTANGLE));
-        t.add(t.forView(changeServer, R.string.tutorial_changeServer)
-                .roundRectRadius(8)
-                .enableAutoTextPosition()
-                .focusShape(FocusShape.ROUNDED_RECTANGLE));
-        t.add(t.forView(overloadedLoading, R.string.tutorial_overloaded)
-                .roundRectRadius(8)
-                .enableAutoTextPosition()
-                .focusShape(FocusShape.ROUNDED_RECTANGLE));
-        t.add(t.forView(registerSubmit, R.string.tutorial_joinTheServer)
-                .roundRectRadius(8)
-                .enableAutoTextPosition()
-                .focusShape(FocusShape.ROUNDED_RECTANGLE));
-        return true;
+        */
     }
 
     @Override

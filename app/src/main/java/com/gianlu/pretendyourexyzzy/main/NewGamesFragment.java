@@ -163,6 +163,8 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
                     showToast(Toaster.build().message(R.string.failedCreatingGame));
                 }));
 
+        setKeepScreenOn(Prefs.getBoolean(PK.KEEP_SCREEN_ON));
+
         setGamesStatus(true, false, false);
 
         return binding.getRoot();
@@ -331,11 +333,13 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
         }
     }
 
-    private class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHolder, Game, GamesFragment.SortBy, Game.Filters> {
+    public enum SortBy {
+        NAME, AVAILABLE_PLAYERS, AVAILABLE_SPECTATORS
+    }
 
+    private class GamesAdapter extends OrderedRecyclerViewAdapter<GamesAdapter.ViewHolder, Game, SortBy, Game.Filters> {
         GamesAdapter(List<Game> games) {
-            super(games, GamesFragment.SortBy.AVAILABLE_PLAYERS);
-
+            super(games, SortBy.AVAILABLE_PLAYERS);
             setHasStableIds(true);
         }
 
@@ -445,7 +449,7 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
 
         @NonNull
         @Override
-        public Comparator<Game> getComparatorFor(@NonNull GamesFragment.SortBy sorting) {
+        public Comparator<Game> getComparatorFor(@NonNull SortBy sorting) {
             switch (sorting) {
                 default:
                 case NAME:

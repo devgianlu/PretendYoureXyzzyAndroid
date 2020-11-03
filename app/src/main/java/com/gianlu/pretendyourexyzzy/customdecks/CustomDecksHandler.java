@@ -1,7 +1,5 @@
 package com.gianlu.pretendyourexyzzy.customdecks;
 
-import android.content.Context;
-
 import androidx.annotation.NonNull;
 
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
@@ -15,8 +13,8 @@ public final class CustomDecksHandler implements CardActionsHandler {
     public final int id;
     private final CustomDecksDatabase db;
 
-    public CustomDecksHandler(@NonNull Context context, int id) {
-        this.db = CustomDecksDatabase.get(context);
+    public CustomDecksHandler(@NonNull CustomDecksDatabase db, int id) {
+        this.db = db;
         this.id = id;
     }
 

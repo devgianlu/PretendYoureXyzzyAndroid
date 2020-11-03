@@ -21,14 +21,20 @@ import com.gianlu.pretendyourexyzzy.databinding.ActivityNewMainBinding;
 import com.gianlu.pretendyourexyzzy.main.NewGamesFragment;
 import com.gianlu.pretendyourexyzzy.main.NewProfileFragment;
 import com.gianlu.pretendyourexyzzy.main.NewSettingsFragment;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
+import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.auth.PlayGamesAuthProvider;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
 public class NewMainActivity extends ActivityWithDialog {
     private static final String SETTINGS_FRAGMENT_TAG = "settings";
@@ -91,6 +97,17 @@ public class NewMainActivity extends ActivityWithDialog {
         preparePyxInstance()
                 .addOnSuccessListener(this::pyxReady)
                 .addOnFailureListener(this::pyxError);
+
+        if (OverloadedUtils.isSignedIn()) {
+            SyncUtils.syncStarredCards(this, null);
+            SyncUtils.syncCustomDecks(this, null);
+            SyncUtils.syncStarredCustomDecks(this, null);
+
+            OverloadedSignInHelper.signInSilently(this, PlayGamesAuthProvider.PROVIDER_ID).addOnSuccessListener(account -> {
+                String authCode = account.getServerAuthCode();
+                if (authCode != null) OverloadedApi.get().linkGames(authCode);
+            });
+        }
     }
 
     public void checkReloadNeeded() {

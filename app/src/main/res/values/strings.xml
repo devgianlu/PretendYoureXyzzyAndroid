@@ -403,4 +403,5 @@
     <string name="collaboratorsErrorMessage">Couldn\'t load collaborators… Try again.</string>
     <string name="friendsErrorMessage">Couldn\'t load friends… Try again.</string>
     <string name="achievementsErrorMessage">Couldn\'t load your achievements… Try again.</string>
+    <string name="failedLoadingGame">Failed loading game!</string>
 </resources>

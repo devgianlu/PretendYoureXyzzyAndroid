@@ -118,7 +118,6 @@
             android:layout_gravity="bottom" />
     </FrameLayout>
 
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/gameActivity_players"
         android:layout_width="match_parent"

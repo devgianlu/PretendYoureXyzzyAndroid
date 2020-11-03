@@ -78,7 +78,7 @@ public class PyxCardsGroupView extends LinearLayout {
         return new int[]{paddingStart, mPadding, paddingEnd, mPadding};
     }
 
-    public void setCards(@NonNull final CardsGroup cards, @Nullable GameCardView.Action primary, @Nullable GameCardView.Action secondary, boolean selectable, boolean forGrid, @Nullable RecyclerView.ViewHolder holder) {
+    public void setCards(@NonNull CardsGroup cards, @Nullable GameCardView.Action primary, @Nullable GameCardView.Action secondary, boolean selectable, boolean forGrid, @Nullable RecyclerView.ViewHolder holder) {
         this.cards = cards;
         calcPaddings();
 

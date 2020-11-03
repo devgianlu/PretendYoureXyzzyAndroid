@@ -220,7 +220,6 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
         private static final int MAX_DECK_DESC_LENGTH = 256;
         private FragmentNewEditCustomDeckInfoBinding binding;
         private CustomDeck deck;
-        private CustomDecksDatabase db;
         private CollaboratorsAdapter collaboratorsAdapter;
 
         @NotNull
@@ -314,7 +313,12 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
 
         @Override
         public boolean save(@NotNull Bundle bundle, @NotNull Callback callback) {
-            boolean result = save(CommonUtils.getText(binding.editCustomDeckInfoName), CommonUtils.getText(binding.editCustomDeckInfoWatermark), CommonUtils.getText(binding.editCustomDeckInfoDesc));
+            boolean result;
+            if (requireArguments().getBoolean("import", false) && binding == null)
+                result = save(requireArguments().getString("name", ""), requireArguments().getString("watermark", ""), requireArguments().getString("desc", ""), callback.getDb());
+            else
+                result = save(CommonUtils.getText(binding.editCustomDeckInfoName), CommonUtils.getText(binding.editCustomDeckInfoWatermark), CommonUtils.getText(binding.editCustomDeckInfoDesc), callback.getDb());
+
             if (result) {
                 bundle.putString("name", deck.name);
                 bundle.putString("watermark", deck.watermark);
@@ -324,7 +328,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
             return result;
         }
 
-        private boolean save(@NonNull String name, @NonNull String watermark, @NonNull String description) {
+        private boolean save(@NonNull String name, @NonNull String watermark, @NonNull String description, CustomDecksDatabase db) {
             if (db == null) return false;
 
             name = name.trim();
@@ -383,7 +387,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
             binding.editCustomDeckAddCollaborator.setOnClickListener(v -> showAddCollaboratorDialog());
             Utils.generateUsernamePlaceholders(requireContext(), binding.editCustomDeckCollaboratorsLoadingChild, 16, 16, 20);
 
-            db = CustomDecksDatabase.get(requireContext());
+            CustomDecksDatabase db = CustomDecksDatabase.get(requireContext());
 
             CommonUtils.getEditText(binding.editCustomDeckInfoName).addTextChangedListener(new TextWatcher() {
                 @Override
@@ -400,7 +404,8 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                     if (str.length() < MIN_DECK_NAME_LENGTH || str.length() > MAX_DECK_NAME_LENGTH) {
                         binding.editCustomDeckInfoName.setErrorEnabled(true);
                         binding.editCustomDeckInfoName.setError(getString(R.string.invalidDeckName));
-                    } else if ((deck == null || !deck.name.equals(str)) && !db.isNameUnique(str)) {
+                    } else if ((deck == null || !deck.name.equals(str)) && !db.isNameUnique(str)
+                            && (!requireArguments().getBoolean("import", false) || !requireArguments().getString("name", "").equals(str))) {
                         binding.editCustomDeckInfoName.setErrorEnabled(true);
                         binding.editCustomDeckInfoName.setError(getString(R.string.customDeckNameNotUnique));
                     } else {
@@ -621,7 +626,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
 
                 watermark = bundle.getString("watermark");
 
-                setHandler(new CustomDecksHandler(requireContext(), deckId));
+                setHandler(new CustomDecksHandler(callback.getDb(), deckId));
             }
 
             return super.save(bundle, callback);
@@ -640,7 +645,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                 CustomDeck deck = db.getDeck(deckId);
                 if (deck != null) watermark = deck.watermark;
 
-                setHandler(new CustomDecksHandler(requireContext(), deckId));
+                setHandler(new CustomDecksHandler(db, deckId));
             }
         }
 

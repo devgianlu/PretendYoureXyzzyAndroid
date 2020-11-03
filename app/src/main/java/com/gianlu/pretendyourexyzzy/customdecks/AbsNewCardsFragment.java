@@ -228,7 +228,7 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
     }
 
     private boolean isAddVisible() {
-        return binding.customDeckCardsCreate.getVisibility() == View.VISIBLE;
+        return binding != null && binding.customDeckCardsCreate.getVisibility() == View.VISIBLE;
     }
 
     private void showAddEdit(@Nullable BaseCard editCard) {

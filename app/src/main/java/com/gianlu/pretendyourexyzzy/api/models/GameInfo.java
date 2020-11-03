@@ -1,6 +1,9 @@
 package com.gianlu.pretendyourexyzzy.api.models;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.gianlu.commonutils.adapters.Filterable;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,7 +18,7 @@ public class GameInfo {
     public final Game game;
     public final List<Player> players;
 
-    public GameInfo(JSONObject obj) throws JSONException {
+    public GameInfo(@NonNull JSONObject obj) throws JSONException {
         game = new Game(obj.getJSONObject("gi"));
         players = Collections.unmodifiableList(Player.list(obj.getJSONArray("pi")));
     }
@@ -35,6 +38,7 @@ public class GameInfo {
             this.val = val;
         }
 
+        @NonNull
         public static PlayerStatus parse(String val) {
             for (PlayerStatus status : values())
                 if (Objects.equals(status.val, val))
@@ -44,12 +48,12 @@ public class GameInfo {
         }
     }
 
-    public static class Player {
+    public static class Player implements Filterable<Void> {
         public final String name;
         public final int score;
         public PlayerStatus status;
 
-        public Player(JSONObject obj) throws JSONException {
+        public Player(@NonNull JSONObject obj) throws JSONException {
             name = obj.getString("N");
             score = obj.getInt("sc");
             status = PlayerStatus.parse(obj.getString("st"));
@@ -62,7 +66,7 @@ public class GameInfo {
         }
 
         @NonNull
-        public static List<Player> list(JSONArray array) throws JSONException {
+        public static List<Player> list(@NonNull JSONArray array) throws JSONException {
             List<Player> list = new ArrayList<>(array.length());
             for (int i = 0; i < array.length(); i++)
                 list.add(new Player(array.getJSONObject(i)));
@@ -75,6 +79,12 @@ public class GameInfo {
             if (o == null || getClass() != o.getClass()) return false;
             Player player = (Player) o;
             return name.equals(player.name);
+        }
+
+        @Nullable
+        @Override
+        public Void[] getMatchingFilters() {
+            return null;
         }
     }
 }

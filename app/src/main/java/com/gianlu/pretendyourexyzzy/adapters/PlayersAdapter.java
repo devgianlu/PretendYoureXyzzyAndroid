@@ -14,7 +14,7 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
-import com.gianlu.pretendyourexyzzy.main.ongoinggame.SensitiveGameData;
+import com.gianlu.pretendyourexyzzy.game.SensitiveGameData;
 
 import java.util.List;
 
