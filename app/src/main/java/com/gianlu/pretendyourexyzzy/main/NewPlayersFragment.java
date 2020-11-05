@@ -12,7 +12,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,8 +29,7 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Name;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewPlayersSettingsBinding;
-import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUserProfileBottomSheet;
+import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
@@ -119,7 +117,7 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
         if (pyx == null)
             return overloadedUsersTask = Tasks.forException(new Exception("Missing Pyx instance."));
 
-        return overloadedUsersTask = OverloadedApi.get().listUsers(pyx.server.url)
+        return overloadedUsersTask = OverloadedApi.get().listUsersOnServer(pyx.server.url)
                 .addOnSuccessListener(list -> overloadedUsers = list)
                 .addOnFailureListener(ex -> Log.e(TAG, "Failed getting Overloaded users.", ex));
     }
@@ -244,7 +242,6 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
             if (!username.equals(Utils.myPyxUsername())) {
                 if (BlockedUsers.isBlocked(username)) {
                     menu.removeItem(R.id.nameItemMenu_block);
-                    menu.removeItem(R.id.nameItemMenu_showProfile);
                     menu.removeItem(R.id.nameItemMenu_addFriend);
                 } else {
                     menu.removeItem(R.id.nameItemMenu_unblock);
@@ -253,7 +250,6 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
                         if (map != null && map.containsKey(username))
                             menu.removeItem(R.id.nameItemMenu_addFriend);
                     } else {
-                        menu.removeItem(R.id.nameItemMenu_showProfile);
                         menu.removeItem(R.id.nameItemMenu_addFriend);
                     }
                 }
@@ -261,23 +257,18 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
                 menu.removeItem(R.id.nameItemMenu_unblock);
                 menu.removeItem(R.id.nameItemMenu_block);
                 menu.removeItem(R.id.nameItemMenu_addFriend);
-                menu.removeItem(R.id.nameItemMenu_showProfile);
             }
 
             popup.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.nameItemMenu_showInfo:
-                        FragmentActivity activity = getActivity();
-                        if (activity != null) UserInfoDialog.loadAndShow(pyx, activity, username);
+                        NewUserInfoDialog.get(username, true).show(getChildFragmentManager(), null);
                         return true;
                     case R.id.nameItemMenu_unblock:
                         BlockedUsers.unblock(username);
                         return true;
                     case R.id.nameItemMenu_block:
                         BlockedUsers.block(username);
-                        return true;
-                    case R.id.nameItemMenu_showProfile:
-                        OverloadedUserProfileBottomSheet.get().show(NewPlayersFragment.this, username);
                         return true;
                     case R.id.nameItemMenu_addFriend:
                         OverloadedApi.get().addFriend(username)

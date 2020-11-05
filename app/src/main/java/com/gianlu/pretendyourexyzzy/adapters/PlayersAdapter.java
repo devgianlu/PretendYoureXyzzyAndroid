@@ -44,7 +44,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHold
         holder.name.setText(player.name);
         holder.score.setHtml(R.string.score, player.score);
 
-        if (OverloadedApi.get().isOverloadedUser(player.name))
+        if (OverloadedApi.get().isOverloadedUserOnServerCached(player.name))
             CommonUtils.setTextColor(holder.name, R.color.appColor_500);
         else
             CommonUtils.setTextColorFromAttr(holder.name, android.R.attr.textColorPrimary);

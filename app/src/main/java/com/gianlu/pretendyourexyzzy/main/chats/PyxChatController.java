@@ -12,7 +12,7 @@ import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
-import com.gianlu.pretendyourexyzzy.dialogs.UserInfoDialog;
+import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
 import com.google.android.gms.tasks.Task;
 
 import java.util.List;
@@ -114,9 +114,7 @@ class PyxChatController {
     }
 
     void showUserInfo(@NonNull FragmentActivity activity, @NonNull String sender) {
-        if (pyx == null) return;
-
-        UserInfoDialog.loadAndShow(pyx, activity, sender);
+        NewUserInfoDialog.get(sender, true).show(activity.getSupportFragmentManager(), null);
     }
 
     void readAllMessages(long timestamp) {

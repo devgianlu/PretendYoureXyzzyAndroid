@@ -35,6 +35,8 @@ import com.gianlu.pretendyourexyzzy.NewMainActivity;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
+import com.gianlu.pretendyourexyzzy.adapters.NewCustomDecksAdapter;
+import com.gianlu.pretendyourexyzzy.adapters.NewStarredCardsAdapter;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
@@ -44,14 +46,11 @@ import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.NewEditCustomDeckActivity;
-import com.gianlu.pretendyourexyzzy.customdecks.NewViewCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewProfileBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemFriendBinding;
-import com.gianlu.pretendyourexyzzy.databinding.ItemNewCustomDeckBinding;
-import com.gianlu.pretendyourexyzzy.databinding.ItemStarredCardBinding;
 import com.gianlu.pretendyourexyzzy.dialogs.CrCastLoginDialog;
+import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUserProfileBottomSheet;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase.StarredCard;
@@ -83,7 +82,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
     private FragmentNewProfileBinding binding;
     private RegisteredPyx pyx;
     private FriendsAdapter friendsAdapter;
-    private CustomDecksAdapter customDecksAdapter;
+    private NewCustomDecksAdapter customDecksAdapter;
 
     @NonNull
     public static NewProfileFragment get() {
@@ -142,7 +141,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         } else {
             binding.profileFragmentStarredCardsEmpty.setVisibility(View.GONE);
             binding.profileFragmentStarredCardsList.setVisibility(View.VISIBLE);
-            binding.profileFragmentStarredCardsList.setAdapter(new StarredCardsAdapter(starredDb, starredCards));
+            binding.profileFragmentStarredCardsList.setAdapter(new NewStarredCardsAdapter(requireContext(), starredDb, starredCards));
         }
         //endregion
 
@@ -461,7 +460,15 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
     private void refreshCustomDecks() {
         CustomDecksDatabase decksDb = CustomDecksDatabase.get(requireContext());
         List<BasicCustomDeck> customDecks = decksDb.getAllDecks();
-        binding.profileFragmentCustomDecksList.setAdapter(customDecksAdapter = new CustomDecksAdapter(customDecks));
+        binding.profileFragmentCustomDecksList.setAdapter(customDecksAdapter = new NewCustomDecksAdapter(requireContext(), customDecks, count -> {
+            if (count == 0) {
+                binding.profileFragmentCustomDecksEmpty.setVisibility(View.VISIBLE);
+                binding.profileFragmentCustomDecksList.setVisibility(View.GONE);
+            } else {
+                binding.profileFragmentCustomDecksEmpty.setVisibility(View.GONE);
+                binding.profileFragmentCustomDecksList.setVisibility(View.VISIBLE);
+            }
+        }));
     }
 
     private void refreshCrCastDecks() {
@@ -603,7 +610,8 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
             popup.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.overloadedUserItemMenu_showProfile:
-                        OverloadedUserProfileBottomSheet.get().show(NewProfileFragment.this, friend.username);
+                        NewUserInfoDialog.get(friend.username, pyx != null && OverloadedUtils.getServerId(pyx.server).equals(friend.serverId))
+                                .show(getChildFragmentManager(), null);
                         return true;
                     case R.id.overloadedUserItemMenu_openChat:
                         OverloadedApi.chat(context).startChat(friend.username)
@@ -706,148 +714,6 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                 }
 
                 CommonUtils.setImageTintColor(binding.friendItemStatus, color);
-            }
-        }
-    }
-
-    private class CustomDecksAdapter extends OrderedRecyclerViewAdapter<CustomDecksAdapter.ViewHolder, BasicCustomDeck, Void, Void> {
-        CustomDecksAdapter(List<BasicCustomDeck> list) {
-            super(list, null);
-        }
-
-        @Override
-        protected boolean matchQuery(@NonNull BasicCustomDeck item, @Nullable String query) {
-            return true;
-        }
-
-        @Override
-        protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull BasicCustomDeck deck) {
-            holder.binding.customDeckItemName.setText(deck.name);
-            holder.binding.customDeckItemWatermark.setText(deck.watermark);
-
-            if (deck.owner != null && deck instanceof CustomDecksDatabase.StarredDeck) {
-                holder.binding.customDeckItemOwner.setVisibility(View.VISIBLE);
-                CommonUtils.setText(holder.binding.customDeckItemOwner, R.string.deckBy, deck.owner);
-            } else {
-                holder.binding.customDeckItemOwner.setVisibility(View.GONE);
-            }
-
-            if (deck instanceof CustomDecksDatabase.StarredDeck) {
-                holder.binding.customDeckItemIcon.setVisibility(View.VISIBLE);
-                holder.binding.customDeckItemIcon.setImageResource(R.drawable.baseline_star_24);
-            } else if (deck instanceof CrCastDeck) {
-                holder.binding.customDeckItemIcon.setVisibility(View.VISIBLE);
-                if (((CrCastDeck) deck).favorite)
-                    holder.binding.customDeckItemIcon.setImageResource(R.drawable.baseline_favorite_contacless_24);
-                else
-                    holder.binding.customDeckItemIcon.setImageResource(R.drawable.baseline_contactless_24);
-            } else {
-                holder.binding.customDeckItemIcon.setVisibility(View.GONE);
-            }
-
-            int whiteCards = deck.whiteCardsCount();
-            int blackCards = deck.blackCardsCount();
-            if (whiteCards != -1 && blackCards != -1)
-                CommonUtils.setText(holder.binding.customDeckItemCards, R.string.cardsCountBlackWhite, blackCards, whiteCards);
-            else
-                CommonUtils.setText(holder.binding.customDeckItemCards, R.string.cardsCount, deck.cardsCount());
-
-            holder.itemView.setOnClickListener(v -> {
-                Intent intent = null;
-                if (deck instanceof CustomDecksDatabase.CustomDeck)
-                    intent = NewEditCustomDeckActivity.activityEditIntent(requireContext(), (CustomDecksDatabase.CustomDeck) deck);
-                else if (deck instanceof CustomDecksDatabase.StarredDeck && deck.owner != null)
-                    intent = NewViewCustomDeckActivity.activityPublicIntent(requireContext(), (CustomDecksDatabase.StarredDeck) deck);
-                else if (deck instanceof CrCastDeck)
-                    intent = NewViewCustomDeckActivity.activityCrCastIntent(requireContext(), (CrCastDeck) deck);
-
-                if (intent == null)
-                    return;
-
-                startActivity(intent);
-            });
-        }
-
-        @Override
-        protected void onUpdateViewHolder(@NonNull ViewHolder holder, int position, @NonNull BasicCustomDeck payload) {
-        }
-
-        @Override
-        protected void shouldUpdateItemCount(int count) {
-            if (count == 0) {
-                binding.profileFragmentCustomDecksEmpty.setVisibility(View.VISIBLE);
-                binding.profileFragmentCustomDecksList.setVisibility(View.GONE);
-            } else {
-                binding.profileFragmentCustomDecksEmpty.setVisibility(View.GONE);
-                binding.profileFragmentCustomDecksList.setVisibility(View.VISIBLE);
-            }
-        }
-
-        @NonNull
-        @Override
-        public Comparator<BasicCustomDeck> getComparatorFor(@NonNull Void sorting) {
-            return (o1, o2) -> (int) (o1.lastUsed - o2.lastUsed);
-        }
-
-        @NonNull
-        @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new ViewHolder(parent);
-        }
-
-        class ViewHolder extends RecyclerView.ViewHolder {
-            final ItemNewCustomDeckBinding binding;
-
-            public ViewHolder(@NonNull ViewGroup parent) {
-                super(getLayoutInflater().inflate(R.layout.item_new_custom_deck, parent, false));
-                binding = ItemNewCustomDeckBinding.bind(itemView);
-            }
-        }
-    }
-
-    private class StarredCardsAdapter extends RecyclerView.Adapter<StarredCardsAdapter.ViewHolder> {
-        private final StarredCardsDatabase db;
-        private final List<StarredCard> list;
-
-        StarredCardsAdapter(StarredCardsDatabase db, List<StarredCard> list) {
-            this.db = db;
-            this.list = list;
-        }
-
-        @NonNull
-        @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new ViewHolder(parent);
-        }
-
-        @Override
-        public int getItemCount() {
-            return list.size();
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            StarredCard card = list.get(position);
-            holder.binding.starredCardItemText.setHtml(card.textUnescaped());
-            holder.binding.starredCardItemUnstar.setOnClickListener(v -> {
-                db.remove(card);
-
-                for (int i = 0; i < list.size(); i++) {
-                    if (card.equals(list.get(i))) {
-                        list.remove(i);
-                        notifyItemRemoved(i);
-                        return;
-                    }
-                }
-            });
-        }
-
-        class ViewHolder extends RecyclerView.ViewHolder {
-            final ItemStarredCardBinding binding;
-
-            public ViewHolder(@NonNull ViewGroup parent) {
-                super(getLayoutInflater().inflate(R.layout.item_starred_card, parent, false));
-                binding = ItemStarredCardBinding.bind(itemView);
             }
         }
     }

@@ -33,6 +33,7 @@ import java.util.Locale;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
+@Deprecated
 public class OverloadedFragment extends FragmentWithDialog {
     private static final String TAG = OverloadedFragment.class.getSimpleName();
     private ImagesListView achievements;

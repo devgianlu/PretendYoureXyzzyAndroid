@@ -32,7 +32,6 @@ import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.overloaded.AchievementImageLoader;
 import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUserProfileBottomSheet;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.gms.games.achievement.Achievement;
 
@@ -345,7 +344,7 @@ public class ProfileFragment extends FragmentWithDialog implements OverloadedApi
             popup.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.overloadedUserItemMenu_showProfile:
-                        OverloadedUserProfileBottomSheet.get().show(ProfileFragment.this, friend.username);
+                        // OverloadedUserProfileBottomSheet.get().show(ProfileFragment.this, friend.username);
                         return true;
                     case R.id.overloadedUserItemMenu_openChat:
                         OverloadedApi.chat(context).startChat(friend.username)

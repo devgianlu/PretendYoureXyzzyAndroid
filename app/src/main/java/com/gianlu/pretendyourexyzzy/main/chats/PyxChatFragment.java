@@ -23,6 +23,7 @@ import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.google.android.material.textfield.TextInputLayout;
 
+@Deprecated
 public class PyxChatFragment extends FragmentWithDialog implements ChatAdapter.Listener, PyxChatController.Listener {
     private static final String TAG = PyxChatFragment.class.getSimpleName();
     private RecyclerMessageView rmv;

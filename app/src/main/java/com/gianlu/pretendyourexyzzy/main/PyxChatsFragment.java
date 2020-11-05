@@ -17,6 +17,7 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.main.chats.PyxChatFragment;
 import com.google.android.material.tabs.TabLayout;
 
+@Deprecated
 public class PyxChatsFragment extends Fragment {
     private PyxChatFragment globalFragment;
     private PyxChatFragment gameFragment;

@@ -404,4 +404,8 @@
     <string name="friendsErrorMessage">Couldn\'t load friends… Try again.</string>
     <string name="achievementsErrorMessage">Couldn\'t load your achievements… Try again.</string>
     <string name="failedLoadingGame">Failed loading game!</string>
+    <string name="onlineFor">Online for</string>
+    <string name="currentlyPlaying">Currently playing</string>
+    <string name="profileNoStarredCards">This user has no starred cards…</string>
+    <string name="profileNoCustomDecks">This user has no custom decks…</string>
 </resources>

@@ -70,7 +70,6 @@ import okio.BufferedSink;
 import okio.GzipSink;
 import okio.Okio;
 import xyz.gianlu.pyxoverloaded.callback.BooleanCallback;
-import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
 import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
@@ -96,7 +95,7 @@ public class OverloadedApi {
     private volatile UserData userDataCached = null;
     private volatile Task<UserData> userDataTask = null;
     private volatile Map<String, FriendStatus> friendsStatusCached = null;
-    private volatile List<String> overloadedUsersCached = null;
+    private volatile List<String> serverOverloadedUsersCached = null;
     private Long maintenanceEnd = null;
     private boolean isFirstRequest = true;
     private String clientVersion = "??";
@@ -484,14 +483,14 @@ public class OverloadedApi {
      * Gets another user profile.
      *
      * @param username The target username
-     * @param activity The caller {@link Activity}
-     * @param callback The callback containing the {@link UserProfile}
+     * @return A task resolving to the {@link UserProfile}
      */
-    public void getProfile(@NonNull String username, @Nullable Activity activity, @NonNull GeneralCallback<UserProfile> callback) {
-        callbacks(Tasks.call(executorService, () -> {
+    @NotNull
+    public Task<UserProfile> getProfile(@NonNull String username) {
+        return Tasks.call(executorService, () -> {
             JSONObject obj = makePostRequest("Profile/Get", singletonJsonObject("username", username));
             return new UserProfile(obj);
-        }), activity, callback::onResult, callback::onFailed);
+        });
     }
 
     /**
@@ -568,25 +567,25 @@ public class OverloadedApi {
      * @param serverUrl The server URL
      * @return A task resolving to the list of users
      */
-    public Task<List<String>> listUsers(@NonNull HttpUrl serverUrl) {
+    public Task<List<String>> listUsersOnServer(@NonNull HttpUrl serverUrl) {
         return Tasks.call(executorService, () -> {
             JSONObject obj = makePostRequest("Pyx/ListOnline", singletonJsonObject("serverUrl", serverUrl.toString()));
 
             JSONArray array = obj.getJSONArray("users");
             List<String> list = new ArrayList<>(array.length());
             for (int i = 0; i < array.length(); i++) list.add(array.getString(i));
-            return overloadedUsersCached = list;
+            return serverOverloadedUsersCached = list;
         });
     }
 
     /**
-     * Checks if the given user has Overloaded.
+     * Checks if the given user has Overloaded and is on the server (from cache).
      *
      * @param nick The user nickname
-     * @return Whether it is an Overloaded user
+     * @return Whether it is an Overloaded user and it is on the same server
      */
-    public boolean isOverloadedUser(@NonNull String nick) {
-        return overloadedUsersCached != null && overloadedUsersCached.contains(nick);
+    public boolean isOverloadedUserOnServerCached(@NonNull String nick) {
+        return serverOverloadedUsersCached != null && serverOverloadedUsersCached.contains(nick);
     }
 
     /**
@@ -644,7 +643,7 @@ public class OverloadedApi {
         userDataTask = null;
         userDataCached = null;
         friendsStatusCached = null;
-        overloadedUsersCached = null;
+        serverOverloadedUsersCached = null;
 
         if (webSocket.client != null) {
             webSocket.client.close(1000, null);
@@ -729,6 +728,10 @@ public class OverloadedApi {
         return friendsStatusCached;
     }
 
+    public boolean hasFriendCached(@NotNull String username) {
+        return friendsStatusCached != null && friendsStatusCached.containsKey(username);
+    }
+
     /**
      * Gets the list of friends and their status (includes friends requests).
      *
@@ -805,11 +808,11 @@ public class OverloadedApi {
 
             friendsStatusCached.remove(event.data.getString("username"));
         } else if (event.type == OverloadedApi.Event.Type.USER_LEFT_SERVER) {
-            if (overloadedUsersCached != null)
-                overloadedUsersCached.remove(event.data.getString("nick"));
+            if (serverOverloadedUsersCached != null)
+                serverOverloadedUsersCached.remove(event.data.getString("nick"));
         } else if (event.type == OverloadedApi.Event.Type.USER_JOINED_SERVER) {
-            if (overloadedUsersCached != null)
-                overloadedUsersCached.add(event.data.getString("nick"));
+            if (serverOverloadedUsersCached != null)
+                serverOverloadedUsersCached.add(event.data.getString("nick"));
         }
     }
 

@@ -21,7 +21,6 @@ import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUserProfileBottomSheet;
 
 import java.util.Comparator;
 import java.util.List;
@@ -151,7 +150,7 @@ public class ChatsFragment extends FragmentWithDialog implements OverloadedApi.E
             popup.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.chatItemMenu_showProfile:
-                        OverloadedUserProfileBottomSheet.get().show(ChatsFragment.this, chat.recipient);
+                        // OverloadedUserProfileBottomSheet.get().show(ChatsFragment.this, chat.recipient);
                         return true;
                     case R.id.chatItemMenu_delete:
                         OverloadedApi.chat(context).deleteChat(chat);

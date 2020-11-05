@@ -94,7 +94,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     }
 
     @NonNull
-    private static String createSentence(@NonNull String blackText, @NonNull String[] whiteTexts) {
+    public static String createSentence(@NonNull String blackText, @NonNull String[] whiteTexts) {
         if (!blackText.contains("____")) {
             StringBuilder builder = new StringBuilder(blackText);
             for (String whiteText : whiteTexts)
