@@ -24,7 +24,7 @@ public final class GameCard extends BaseCard {
     public final String originalWatermark;
     private final String text;
     private final String watermark;
-    private boolean winner = false;
+    private transient boolean winner = false;
 
     private GameCard(int id, @NonNull String originalText, @NonNull String originalWatermark, @NonNull JSONObject obj) {
         this.id = id;
@@ -45,14 +45,6 @@ public final class GameCard extends BaseCard {
             watermark = watermarkTmp;
             text = textTmp.trim();
         }
-    }
-
-    public static boolean hasCard(@NonNull CardsGroup group, int id) {
-        for (BaseCard card : group)
-            if (card instanceof GameCard && ((GameCard) card).id == id)
-                return true;
-
-        return false;
     }
 
     @NonNull

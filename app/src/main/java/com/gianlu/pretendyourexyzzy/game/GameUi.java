@@ -71,12 +71,14 @@ public class GameUi {
     }
 
     public void startGameVisible(boolean visible) {
-        // TODO: Star game button
+        // TODO: Start game button
     }
 
     //region Counter
     public void countFrom(int ms) {
         if (countdownTask != null) countdownTask.cancel();
+
+        binding.gameActivityCounter.setVisibility(View.VISIBLE);
         if (ms < 2147000) {
             countdownTask = new CountdownTask(ms / 1000);
             timer.scheduleAtFixedRate(countdownTask, 0, 1000);
@@ -87,7 +89,7 @@ public class GameUi {
 
     public void resetTimer() {
         if (countdownTask != null) countdownTask.cancel();
-        binding.gameActivityCounter.setText(""); // FIXME
+        binding.gameActivityCounter.setVisibility(View.GONE);
     }
     //endregion
 
@@ -100,7 +102,16 @@ public class GameUi {
     //region Black card
     public void setBlackCard(@Nullable BaseCard card) {
         this.blackCard = card;
-        // TODO: Populate black card
+
+        if (card != null) {
+            binding.gameActivityBlackCardText.setText(card.textUnescaped());
+            binding.gameActivityBlackCardPick.setHtml(R.string.numPick, card.numPick());
+            binding.gameActivityBlackCardWatermark.setText(card.watermark());
+        } else {
+            binding.gameActivityBlackCardText.setText(null);
+            binding.gameActivityBlackCardPick.setHtml(null);
+            binding.gameActivityBlackCardWatermark.setText(null);
+        }
     }
 
     @Nullable
@@ -167,8 +178,8 @@ public class GameUi {
         if (blackCard != null) tableAdapter.addGroup(CardsGroup.unknown(blackCard.numPick()));
     }
 
-    public void notifyWinnerCard(int winnerCard) {
-        // TODO: Winning card notify
+    public void notifyWinnerCard(int winnerCardId) {
+        if (tableAdapter != null) tableAdapter.notifyWinnerCard(winnerCardId);
     }
     //endregion
 
@@ -181,6 +192,7 @@ public class GameUi {
     @UiThread
     private class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> {
         private final List<CardsGroup> cards = new ArrayList<>(10);
+        private RecyclerView list;
 
         CardsAdapter() {
         }
@@ -193,12 +205,26 @@ public class GameUi {
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            CardsGroup group = cards.get(position);
 
+            // TODO: Setup card group and call listener
         }
 
         @Override
         public int getItemCount() {
             return cards.size();
+        }
+
+        @Override
+        public void onAttachedToRecyclerView(@NonNull RecyclerView list) {
+            super.onAttachedToRecyclerView(list);
+            this.list = list;
+        }
+
+        @Override
+        public void onDetachedFromRecyclerView(@NonNull RecyclerView list) {
+            super.onDetachedFromRecyclerView(list);
+            this.list = null;
         }
 
         void clear() {
@@ -257,12 +283,34 @@ public class GameUi {
         }
 
         void setSelectable(boolean selectable) {
-            // TODO: Selectable
+            // TODO: Set cards selectable
+        }
+
+        public void notifyWinnerCard(int winnerCardId) {
+            for (int i = 0; i < cards.size(); i++) {
+                CardsGroup group = cards.get(i);
+                if (group.hasCard(winnerCardId)) {
+                    if (list != null && list.getLayoutManager() instanceof LinearLayoutManager) { // Scroll only if item is not visible
+                        LinearLayoutManager llm = (LinearLayoutManager) list.getLayoutManager();
+                        int start = llm.findFirstCompletelyVisibleItemPosition();
+                        int end = llm.findLastCompletelyVisibleItemPosition();
+                        if (start == -1 || end == -1 || i >= end || i <= start)
+                            list.getLayoutManager().smoothScrollToPosition(list, null, i);
+                    }
+
+                    for (BaseCard card : group)
+                        if (card instanceof GameCard)
+                            ((GameCard) card).setWinner();
+
+                    notifyItemChanged(i);
+                    break;
+                }
+            }
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
             ViewHolder(@NonNull ViewGroup parent) {
-                super(new View(parent.getContext()) /* TODO: Game card item */);
+                super(new View(parent.getContext()) /* TODO: Game card group item */);
             }
         }
     }

@@ -87,7 +87,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
     public void notifyWinningCard(int winnerCardId) {
         for (int i = 0; i < cards.size(); i++) {
             CardsGroup group = cards.get(i);
-            if (GameCard.hasCard(group, winnerCardId)) {
+            if (group.hasCard(winnerCardId)) {
                 if (list != null && list.getLayoutManager() instanceof LinearLayoutManager) { // Scroll only if item is not visible
                     LinearLayoutManager llm = (LinearLayoutManager) list.getLayoutManager();
                     int start = llm.findFirstCompletelyVisibleItemPosition();
@@ -96,7 +96,10 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> 
                         list.getLayoutManager().smoothScrollToPosition(list, null, i);
                 }
 
-                GameCard.setWinner(group);
+                for (BaseCard card : group)
+                    if (card instanceof GameCard)
+                        ((GameCard) card).setWinner();
+
                 notifyItemChanged(i);
                 break;
             }
