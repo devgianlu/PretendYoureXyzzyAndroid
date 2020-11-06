@@ -114,7 +114,7 @@ class PyxChatController {
     }
 
     void showUserInfo(@NonNull FragmentActivity activity, @NonNull String sender) {
-        NewUserInfoDialog.get(sender, true).show(activity.getSupportFragmentManager(), null);
+        NewUserInfoDialog.get(sender, true, false).show(activity.getSupportFragmentManager(), null);
     }
 
     void readAllMessages(long timestamp) {

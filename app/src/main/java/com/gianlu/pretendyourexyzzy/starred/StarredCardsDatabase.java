@@ -17,6 +17,7 @@ import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.ContentCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
+import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +33,6 @@ import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsPatchOp;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsUpdateResponse;
 import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
-import xyz.gianlu.pyxoverloaded.model.UserProfile;
 
 public final class StarredCardsDatabase extends SQLiteOpenHelper {
     private static final String TAG = StarredCardsDatabase.class.getSimpleName();
@@ -84,13 +84,6 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         } catch (JSONException ex) {
             Log.e(TAG, "Failed migrating cards.", ex);
         }
-    }
-
-    @NonNull
-    public static List<FloatingStarredCard> transform(@NonNull List<UserProfile.StarredCard> original) {
-        List<FloatingStarredCard> list = new ArrayList<>(original.size());
-        for (UserProfile.StarredCard card : original) list.add(new FloatingStarredCard(card));
-        return list;
     }
 
     @NonNull
@@ -208,8 +201,8 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         return putCard(ContentCard.from(blackCard), whiteCards);
     }
 
-    public boolean putCard(@NonNull FloatingStarredCard card) {
-        return putCard(ContentCard.fromOverloadedCard(card.card.blackCard), ContentCard.fromOverloadedCards(card.card.whiteCards));
+    public boolean putCard(@NonNull NewUserInfoDialog.StarredCard card) {
+        return putCard(ContentCard.fromOverloadedCard(card.blackCard), ContentCard.fromOverloadedCards(card.whiteCards));
     }
 
     public void remove(@NonNull StarredCard card) {
@@ -301,47 +294,6 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             Log.e(TAG, "Failed adding card.", ex);
         } finally {
             db.endTransaction();
-        }
-    }
-
-    public static class FloatingStarredCard extends BaseCard {
-        private final UserProfile.StarredCard card;
-        private transient String cachedSentence;
-
-        private FloatingStarredCard(@NonNull UserProfile.StarredCard card) {
-            this.card = card;
-        }
-
-        @NonNull
-        @Override
-        public String text() {
-            if (cachedSentence == null) {
-                String[] whiteTexts = new String[card.whiteCards.length];
-                for (int i = 0; i < whiteTexts.length; i++) whiteTexts[i] = card.whiteCards[i].text;
-                cachedSentence = createSentence(card.blackCard.text, whiteTexts);
-            }
-
-            return cachedSentence;
-        }
-
-        @Override
-        public String watermark() {
-            return null;
-        }
-
-        @Override
-        public int numPick() {
-            return -1;
-        }
-
-        @Override
-        public int numDraw() {
-            return -1;
-        }
-
-        @Override
-        public boolean black() {
-            return false;
         }
     }
 

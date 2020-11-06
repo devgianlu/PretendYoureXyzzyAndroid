@@ -53,7 +53,6 @@ import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
-import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase.StarredCard;
 import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.achievement.Achievement;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -133,16 +132,6 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
         //region Starred cards
         binding.profileFragmentStarredCardsList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
-        StarredCardsDatabase starredDb = StarredCardsDatabase.get(requireContext());
-        List<StarredCard> starredCards = starredDb.getCards(false);
-        if (starredCards.isEmpty()) {
-            binding.profileFragmentStarredCardsEmpty.setVisibility(View.VISIBLE);
-            binding.profileFragmentStarredCardsList.setVisibility(View.GONE);
-        } else {
-            binding.profileFragmentStarredCardsEmpty.setVisibility(View.GONE);
-            binding.profileFragmentStarredCardsList.setVisibility(View.VISIBLE);
-            binding.profileFragmentStarredCardsList.setAdapter(new NewStarredCardsAdapter(requireContext(), starredDb, starredCards));
-        }
         //endregion
 
         //region Friends
@@ -408,6 +397,8 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
         refreshCustomDecks();
         refreshCrCastDecks();
+
+        refreshStarredCards();
     }
 
     @Override
@@ -455,6 +446,22 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         binding.profileFragmentCustomDecksCrCastLogin.setVisibility(View.GONE);
         if (getActivity() != null) getActivity().invalidateOptionsMenu();
         refreshCrCastDecks();
+    }
+
+    private void refreshStarredCards() {
+        StarredCardsDatabase starredDb = StarredCardsDatabase.get(requireContext());
+        List<StarredCardsDatabase.StarredCard> starredCards = starredDb.getCards(false);
+        if (starredCards.isEmpty()) {
+            binding.profileFragmentStarredCardsEmpty.setVisibility(View.VISIBLE);
+            binding.profileFragmentStarredCardsList.setVisibility(View.GONE);
+        } else {
+            binding.profileFragmentStarredCardsEmpty.setVisibility(View.GONE);
+            binding.profileFragmentStarredCardsList.setVisibility(View.VISIBLE);
+            binding.profileFragmentStarredCardsList.setAdapter(new NewStarredCardsAdapter(requireContext(), starredCards, R.drawable.ic_star_off_24, (adapter, card) -> {
+                starredDb.remove((StarredCardsDatabase.StarredCard) card);
+                adapter.removeCard(card);
+            }));
+        }
     }
 
     private void refreshCustomDecks() {
@@ -610,7 +617,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
             popup.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.overloadedUserItemMenu_showProfile:
-                        NewUserInfoDialog.get(friend.username, pyx != null && OverloadedUtils.getServerId(pyx.server).equals(friend.serverId))
+                        NewUserInfoDialog.get(friend.username, pyx != null && OverloadedUtils.getServerId(pyx.server).equals(friend.serverId), true)
                                 .show(getChildFragmentManager(), null);
                         return true;
                     case R.id.overloadedUserItemMenu_openChat:

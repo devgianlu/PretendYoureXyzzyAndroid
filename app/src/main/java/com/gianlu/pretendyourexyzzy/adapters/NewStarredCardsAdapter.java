@@ -5,26 +5,43 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.databinding.ItemStarredCardBinding;
-import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 public class NewStarredCardsAdapter extends RecyclerView.Adapter<NewStarredCardsAdapter.ViewHolder> {
-    private final StarredCardsDatabase db;
     private final List<? extends BaseCard> list;
     private final LayoutInflater inflater;
+    private final int actionRes;
+    private final Listener listener;
 
-    public NewStarredCardsAdapter(Context context, @Nullable StarredCardsDatabase db, List<? extends BaseCard> list) {
-        this.db = db;
+    public NewStarredCardsAdapter(Context context, List<? extends BaseCard> list, @DrawableRes int actionRes, Listener listener) {
         this.list = list;
         this.inflater = LayoutInflater.from(context);
+        this.actionRes = actionRes;
+        this.listener = listener;
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        BaseCard card = list.get(position);
+        holder.binding.starredCardItemText.setHtml(card.textUnescaped());
+
+        if (listener != null && actionRes != 0) {
+            holder.binding.starredCardItemAction.setVisibility(View.VISIBLE);
+            holder.binding.starredCardItemAction.setImageResource(actionRes);
+            holder.binding.starredCardItemAction.setOnClickListener(v -> listener.onCardAction(this, card));
+        } else {
+            holder.binding.starredCardItemAction.setVisibility(View.GONE);
+        }
     }
 
     @NonNull
@@ -38,27 +55,18 @@ public class NewStarredCardsAdapter extends RecyclerView.Adapter<NewStarredCards
         return list.size();
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        BaseCard card = list.get(position);
-        holder.binding.starredCardItemText.setHtml(card.textUnescaped());
-
-        if (db != null && card instanceof StarredCardsDatabase.StarredCard) {
-            holder.binding.starredCardItemUnstar.setVisibility(View.VISIBLE);
-            holder.binding.starredCardItemUnstar.setOnClickListener(v -> {
-                db.remove((StarredCardsDatabase.StarredCard) card);
-
-                for (int i = 0; i < list.size(); i++) {
-                    if (card.equals(list.get(i))) {
-                        list.remove(i);
-                        notifyItemRemoved(i);
-                        return;
-                    }
-                }
-            });
-        } else {
-            holder.binding.starredCardItemUnstar.setVisibility(View.GONE);
+    public void removeCard(@NotNull BaseCard card) {
+        for (int i = 0; i < list.size(); i++) {
+            if (card.equals(list.get(i))) {
+                list.remove(i);
+                notifyItemRemoved(i);
+                break;
+            }
         }
+    }
+
+    public interface Listener {
+        void onCardAction(@NotNull NewStarredCardsAdapter adapter, @NotNull BaseCard card);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

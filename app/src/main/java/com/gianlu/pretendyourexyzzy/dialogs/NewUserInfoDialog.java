@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.model.Card;
 import xyz.gianlu.pyxoverloaded.model.UserProfile;
 
 public final class NewUserInfoDialog extends DialogFragment {
@@ -49,10 +50,11 @@ public final class NewUserInfoDialog extends DialogFragment {
     private UserProfile overloadedUser;
 
     @NotNull
-    public static NewUserInfoDialog get(@NotNull String username, boolean whois) {
+    public static NewUserInfoDialog get(@NotNull String username, boolean whois, boolean overloaded) {
         NewUserInfoDialog dialog = new NewUserInfoDialog();
         Bundle args = new Bundle();
         args.putBoolean("whois", whois);
+        args.putBoolean("overloaded", overloaded);
         args.putString("username", username);
         dialog.setArguments(args);
         return dialog;
@@ -101,8 +103,10 @@ public final class NewUserInfoDialog extends DialogFragment {
 
         binding.userInfoDialogUsername.setText(username);
 
-        //region PYX
         boolean whois = requireArguments().getBoolean("whois");
+        boolean overloaded = requireArguments().getBoolean("overloaded");
+
+        //region PYX
         if (whois) {
             binding.userInfoDialogPyxInfo.setVisibility(View.GONE);
             binding.userInfoDialogPyxInfoLoading.setVisibility(View.VISIBLE);
@@ -131,7 +135,7 @@ public final class NewUserInfoDialog extends DialogFragment {
                     .addOnFailureListener(ex -> {
                         Log.e(TAG, "Failed loading whois info.", ex);
 
-                        if (!OverloadedUtils.isSignedIn() || overloadedUser == null)
+                        if (!(OverloadedUtils.isSignedIn() && overloaded) || overloadedUser == null)
                             dismissAllowingStateLoss();
                     });
         } else {
@@ -141,7 +145,7 @@ public final class NewUserInfoDialog extends DialogFragment {
         //endregion
 
         //region Overloaded
-        if (OverloadedUtils.isSignedIn()) {
+        if (OverloadedUtils.isSignedIn() && overloaded) {
             binding.userInfoDialogAddFriend.setVisibility(View.GONE);
             binding.userInfoDialogOverloadedInfo.setVisibility(View.GONE);
             binding.userInfoDialogOverloadedInfoLoading.setVisibility(View.VISIBLE);
@@ -154,25 +158,26 @@ public final class NewUserInfoDialog extends DialogFragment {
                     .addOnSuccessListener(profile -> {
                         this.overloadedUser = profile;
 
-                        // TODO: Open decks
-                        // TODO: Save starred cards
-
                         if (profile.customDecks.isEmpty()) {
                             binding.userInfoDialogCustomDecksEmpty.setVisibility(View.VISIBLE);
                             binding.userInfoDialogCustomDecks.setVisibility(View.GONE);
                         } else {
                             binding.userInfoDialogCustomDecksEmpty.setVisibility(View.GONE);
                             binding.userInfoDialogCustomDecks.setVisibility(View.VISIBLE);
-                            binding.userInfoDialogCustomDecks.setAdapter(new NewCustomDecksAdapter(requireContext(), BasicCustomDeck.fromOverloadedDecks(profile.customDecks, username), null));
+                            binding.userInfoDialogCustomDecks.setAdapter(new NewCustomDecksAdapter(requireContext(), OverloadedCustomDecks.fromOverloadedDecks(profile.customDecks, username), null));
                         }
 
                         if (profile.starredCards.isEmpty()) {
                             binding.userInfoDialogStarredCardsEmpty.setVisibility(View.VISIBLE);
                             binding.userInfoDialogStarredCards.setVisibility(View.GONE);
                         } else {
+                            StarredCardsDatabase db = StarredCardsDatabase.get(requireContext());
                             binding.userInfoDialogStarredCardsEmpty.setVisibility(View.GONE);
                             binding.userInfoDialogStarredCards.setVisibility(View.VISIBLE);
-                            binding.userInfoDialogStarredCards.setAdapter(new NewStarredCardsAdapter(requireContext(), null, StarredCard.fromOverloadedCards(profile.starredCards)));
+                            binding.userInfoDialogStarredCards.setAdapter(new NewStarredCardsAdapter(requireContext(), StarredCard.fromOverloadedCards(profile.starredCards), R.drawable.baseline_star_24, (adapter, card) -> {
+                                if (db.putCard((StarredCard) card))
+                                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.addedCardToStarred));
+                            }));
                         }
 
                         binding.userInfoDialogOverloadedInfo.setVisibility(View.VISIBLE);
@@ -218,10 +223,32 @@ public final class NewUserInfoDialog extends DialogFragment {
         return binding.getRoot();
     }
 
-    private static class StarredCard extends BaseCard {
+    public static class OverloadedCustomDecks extends BasicCustomDeck {
+        public final String shareCode;
+
+        OverloadedCustomDecks(@NonNull String name, @NonNull String watermark, @NotNull String owner, @NotNull String shareCode, int count) {
+            super(name, watermark, owner, 0, count);
+            this.shareCode = shareCode;
+        }
+
+        @NotNull
+        public static List<BasicCustomDeck> fromOverloadedDecks(@NotNull List<UserProfile.CustomDeck> decks, @NotNull String username) {
+            List<BasicCustomDeck> list = new ArrayList<>(decks.size());
+            for (UserProfile.CustomDeck deck : decks)
+                list.add(new OverloadedCustomDecks(deck.name, deck.watermark, username, deck.shareCode, deck.count));
+            return list;
+        }
+    }
+
+    public static class StarredCard extends BaseCard {
+        public final Card blackCard;
+        public final Card[] whiteCards;
         private final String text;
 
         StarredCard(@NotNull UserProfile.StarredCard card) {
+            this.blackCard = card.blackCard;
+            this.whiteCards = card.whiteCards;
+
             String[] whiteTexts = new String[card.whiteCards.length];
             for (int i = 0; i < card.whiteCards.length; i++)
                 whiteTexts[i] = card.whiteCards[i].text;

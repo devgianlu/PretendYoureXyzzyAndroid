@@ -19,6 +19,7 @@ import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.NewEditCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.customdecks.NewViewCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.databinding.ItemNewCustomDeckBinding;
+import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
 
 import java.util.Comparator;
 import java.util.List;
@@ -79,6 +80,8 @@ public class NewCustomDecksAdapter extends OrderedRecyclerViewAdapter<NewCustomD
                 intent = NewEditCustomDeckActivity.activityEditIntent(context, (CustomDecksDatabase.CustomDeck) deck);
             else if (deck instanceof CustomDecksDatabase.StarredDeck && deck.owner != null)
                 intent = NewViewCustomDeckActivity.activityPublicIntent(context, (CustomDecksDatabase.StarredDeck) deck);
+            else if (deck instanceof NewUserInfoDialog.OverloadedCustomDecks && deck.owner != null)
+                intent = NewViewCustomDeckActivity.activityPublicIntent(context, (NewUserInfoDialog.OverloadedCustomDecks) deck);
             else if (deck instanceof CrCastDeck)
                 intent = NewViewCustomDeckActivity.activityCrCastIntent(context, (CrCastDeck) deck);
 

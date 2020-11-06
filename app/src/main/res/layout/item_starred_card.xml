@@ -26,7 +26,7 @@
             app:autoSizeTextType="uniform" />
 
         <ImageButton
-            android:id="@+id/starredCardItem_unstar"
+            android:id="@+id/starredCardItem_action"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_gravity="bottom|start"

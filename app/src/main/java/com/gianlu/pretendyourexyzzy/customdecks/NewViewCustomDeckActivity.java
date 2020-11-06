@@ -20,6 +20,7 @@ import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.ContentCard;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewViewCustomDeckInfoBinding;
+import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -70,9 +71,9 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
     }
 
     @NonNull
-    public static Intent activityPublicIntent(@NotNull Context context, @NotNull String owner, @NotNull UserProfile.CustomDeck deck) {
+    public static Intent activityPublicIntent(@NotNull Context context, @NotNull NewUserInfoDialog.OverloadedCustomDecks deck) {
         Intent intent = baseStartIntent(context, Type.PUBLIC);
-        intent.putExtra("owner", owner);
+        intent.putExtra("owner", deck.owner);
         intent.putExtra("shareCode", deck.shareCode);
         intent.putExtra("deckName", deck.name);
         return intent;

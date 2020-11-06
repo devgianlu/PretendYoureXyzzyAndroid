@@ -5,13 +5,6 @@ import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.adapters.Filterable;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import xyz.gianlu.pyxoverloaded.model.UserProfile;
-
 public class BasicCustomDeck implements Filterable<Void> {
     public final String name;
     public final String watermark;
@@ -29,14 +22,6 @@ public class BasicCustomDeck implements Filterable<Void> {
         this.owner = owner;
         this.lastUsed = lastUsed;
         this.count = count;
-    }
-
-    @NotNull
-    public static List<BasicCustomDeck> fromOverloadedDecks(@NotNull List<UserProfile.CustomDeck> decks, @NotNull String username) {
-        List<BasicCustomDeck> list = new ArrayList<>(decks.size());
-        for (UserProfile.CustomDeck deck : decks)
-            list.add(new BasicCustomDeck(deck.name, deck.watermark, username, 0, deck.count));
-        return list;
     }
 
     public int cardsCount() {

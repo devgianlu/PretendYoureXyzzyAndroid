@@ -222,7 +222,14 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
         @Override
         protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull Name name) {
             ((SuperTextView) holder.itemView).setHtml(name.sigil() == Name.Sigil.NORMAL_USER ? name.withSigil() : (SuperTextView.makeBold(name.sigil().symbol()) + name.noSigil()));
-            holder.itemView.setOnClickListener(v -> showPopup(holder.itemView.getContext(), holder.itemView, name.noSigil()));
+            holder.itemView.setOnClickListener(v -> {
+                if (name.noSigil().equals(Utils.myPyxUsername())) {
+                    showToast(Toaster.build().message(R.string.thisIsYou));
+                    return;
+                }
+
+                showPopup(holder.itemView.getContext(), holder.itemView, name.noSigil());
+            });
 
             if (hasOverloadedUser(name.noSigil()))
                 CommonUtils.setTextColor((TextView) holder.itemView, R.color.appColor_500);
@@ -239,30 +246,24 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
             popup.inflate(R.menu.item_name);
 
             Menu menu = popup.getMenu();
-            if (!username.equals(Utils.myPyxUsername())) {
-                if (BlockedUsers.isBlocked(username)) {
-                    menu.removeItem(R.id.nameItemMenu_block);
-                    menu.removeItem(R.id.nameItemMenu_addFriend);
-                } else {
-                    menu.removeItem(R.id.nameItemMenu_unblock);
-                    if (hasOverloadedUser(username)) {
-                        Map<String, FriendStatus> map = OverloadedApi.get().friendsStatusCache();
-                        if (map != null && map.containsKey(username))
-                            menu.removeItem(R.id.nameItemMenu_addFriend);
-                    } else {
-                        menu.removeItem(R.id.nameItemMenu_addFriend);
-                    }
-                }
-            } else {
-                menu.removeItem(R.id.nameItemMenu_unblock);
+            if (BlockedUsers.isBlocked(username)) {
                 menu.removeItem(R.id.nameItemMenu_block);
                 menu.removeItem(R.id.nameItemMenu_addFriend);
+            } else {
+                menu.removeItem(R.id.nameItemMenu_unblock);
+                if (hasOverloadedUser(username)) {
+                    Map<String, FriendStatus> map = OverloadedApi.get().friendsStatusCache();
+                    if (map != null && map.containsKey(username))
+                        menu.removeItem(R.id.nameItemMenu_addFriend);
+                } else {
+                    menu.removeItem(R.id.nameItemMenu_addFriend);
+                }
             }
 
             popup.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.nameItemMenu_showInfo:
-                        NewUserInfoDialog.get(username, true).show(getChildFragmentManager(), null);
+                        NewUserInfoDialog.get(username, true, hasOverloadedUser(username)).show(getChildFragmentManager(), null);
                         return true;
                     case R.id.nameItemMenu_unblock:
                         BlockedUsers.unblock(username);
