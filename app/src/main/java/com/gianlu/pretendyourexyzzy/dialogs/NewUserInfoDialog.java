@@ -29,8 +29,10 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.WhoisResult;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.cards.CardSize;
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.databinding.DialogNewUserInfoBinding;
+import com.gianlu.pretendyourexyzzy.main.OverloadedFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 
@@ -135,6 +137,9 @@ public final class NewUserInfoDialog extends DialogFragment {
                     .addOnFailureListener(ex -> {
                         Log.e(TAG, "Failed loading whois info.", ex);
 
+                        binding.userInfoDialogPyxInfo.setVisibility(View.GONE);
+                        binding.userInfoDialogPyxInfoLoading.setVisibility(View.GONE);
+
                         if (!(OverloadedUtils.isSignedIn() && overloaded) || overloadedUser == null)
                             dismissAllowingStateLoss();
                     });
@@ -158,13 +163,22 @@ public final class NewUserInfoDialog extends DialogFragment {
                     .addOnSuccessListener(profile -> {
                         this.overloadedUser = profile;
 
+                        if (profile.cardsPlayed == null && profile.roundsPlayed == null && profile.roundsWon == null) {
+                            binding.userInfoDialogOverloadedStats.setVisibility(View.GONE);
+                        } else {
+                            binding.userInfoDialogOverloadedStats.setVisibility(View.VISIBLE);
+                            OverloadedFragment.setEventCount(profile.cardsPlayed, binding.userInfoDialogCardsPlayed, R.string.overloadedHeader_cardsPlayed);
+                            OverloadedFragment.setEventCount(profile.roundsPlayed, binding.userInfoDialogRoundsPlayed, R.string.overloadedHeader_roundsPlayed);
+                            OverloadedFragment.setEventCount(profile.roundsWon, binding.userInfoDialogRoundsWon, R.string.overloadedHeader_roundsWon);
+                        }
+
                         if (profile.customDecks.isEmpty()) {
                             binding.userInfoDialogCustomDecksEmpty.setVisibility(View.VISIBLE);
                             binding.userInfoDialogCustomDecks.setVisibility(View.GONE);
                         } else {
                             binding.userInfoDialogCustomDecksEmpty.setVisibility(View.GONE);
                             binding.userInfoDialogCustomDecks.setVisibility(View.VISIBLE);
-                            binding.userInfoDialogCustomDecks.setAdapter(new NewCustomDecksAdapter(requireContext(), OverloadedCustomDecks.fromOverloadedDecks(profile.customDecks, username), null));
+                            binding.userInfoDialogCustomDecks.setAdapter(new NewCustomDecksAdapter(requireContext(), OverloadedCustomDecks.fromOverloadedDecks(profile.customDecks, username), CardSize.SMALL, null));
                         }
 
                         if (profile.starredCards.isEmpty()) {
@@ -174,7 +188,7 @@ public final class NewUserInfoDialog extends DialogFragment {
                             StarredCardsDatabase db = StarredCardsDatabase.get(requireContext());
                             binding.userInfoDialogStarredCardsEmpty.setVisibility(View.GONE);
                             binding.userInfoDialogStarredCards.setVisibility(View.VISIBLE);
-                            binding.userInfoDialogStarredCards.setAdapter(new NewStarredCardsAdapter(requireContext(), StarredCard.fromOverloadedCards(profile.starredCards), R.drawable.baseline_star_24, (adapter, card) -> {
+                            binding.userInfoDialogStarredCards.setAdapter(new NewStarredCardsAdapter(requireContext(), StarredCard.fromOverloadedCards(profile.starredCards), CardSize.SMALL, R.drawable.baseline_star_24, (adapter, card) -> {
                                 if (db.putCard((StarredCard) card))
                                     DialogUtils.showToast(getContext(), Toaster.build().message(R.string.addedCardToStarred));
                             }));

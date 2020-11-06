@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.cards.CardSize;
 import com.gianlu.pretendyourexyzzy.databinding.ItemStarredCardBinding;
 
 import org.jetbrains.annotations.NotNull;
@@ -20,12 +21,14 @@ import java.util.List;
 public class NewStarredCardsAdapter extends RecyclerView.Adapter<NewStarredCardsAdapter.ViewHolder> {
     private final List<? extends BaseCard> list;
     private final LayoutInflater inflater;
+    private final CardSize size;
     private final int actionRes;
     private final Listener listener;
 
-    public NewStarredCardsAdapter(Context context, List<? extends BaseCard> list, @DrawableRes int actionRes, Listener listener) {
+    public NewStarredCardsAdapter(Context context, List<? extends BaseCard> list, @NotNull CardSize size, @DrawableRes int actionRes, Listener listener) {
         this.list = list;
         this.inflater = LayoutInflater.from(context);
+        this.size = size;
         this.actionRes = actionRes;
         this.listener = listener;
     }
@@ -75,6 +78,11 @@ public class NewStarredCardsAdapter extends RecyclerView.Adapter<NewStarredCards
         public ViewHolder(@NonNull ViewGroup parent) {
             super(inflater.inflate(R.layout.item_starred_card, parent, false));
             binding = ItemStarredCardBinding.bind(itemView);
+
+            RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) binding.getRoot().getLayoutParams();
+            params.width = size.widthPx(parent.getContext());
+            params.height = size.heightPx(parent.getContext());
+            binding.getRoot().setLayoutParams(params);
         }
     }
 }

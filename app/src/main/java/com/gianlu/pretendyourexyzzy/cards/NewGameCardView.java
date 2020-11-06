@@ -28,8 +28,6 @@ import com.gianlu.pretendyourexyzzy.databinding.ViewNewCardBinding;
 import org.jetbrains.annotations.NotNull;
 
 public final class NewGameCardView extends CardView {
-    private static final int CARD_HEIGHT_DIP = 220;
-    private static final int CARD_WIDTH_DIP = 160;
     private static final String TAG = NewGameCardView.class.getSimpleName();
     private final ViewNewCardBinding binding;
     private BaseCard card;
@@ -142,13 +140,6 @@ public final class NewGameCardView extends CardView {
             default:
                 throw new IllegalArgumentException();
         }
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CARD_WIDTH_DIP, getResources().getDisplayMetrics());
-        int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CARD_HEIGHT_DIP, getResources().getDisplayMetrics());
-        super.onMeasure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
     }
 
     public enum Type {

@@ -74,6 +74,7 @@
             android:id="@+id/userInfoDialog_pyxInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:baselineAligned="false"
             android:orientation="horizontal">
 
@@ -132,7 +133,8 @@
         <com.facebook.shimmer.ShimmerFrameLayout
             android:id="@+id/userInfoDialog_pyxInfoLoading"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -158,10 +160,51 @@
             android:id="@+id/userInfoDialog_overloadedInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:orientation="vertical">
 
-            <!-- TODO: Stats -->
+            <LinearLayout
+                android:id="@+id/userInfoDialog_overloadedStats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal">
+
+                <com.gianlu.commonutils.misc.SuperTextView
+                    android:id="@+id/userInfoDialog_cardsPlayed"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/roboto_regular"
+                    android:fontFeatureSettings="smcp"
+                    android:textAlignment="center"
+                    android:textAllCaps="true"
+                    android:textColor="#949494"
+                    android:textSize="12sp" />
+
+                <com.gianlu.commonutils.misc.SuperTextView
+                    android:id="@+id/userInfoDialog_roundsPlayed"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/roboto_regular"
+                    android:fontFeatureSettings="smcp"
+                    android:textAlignment="center"
+                    android:textAllCaps="true"
+                    android:textColor="#949494"
+                    android:textSize="12sp" />
+
+                <com.gianlu.commonutils.misc.SuperTextView
+                    android:id="@+id/userInfoDialog_roundsWon"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/roboto_regular"
+                    android:fontFeatureSettings="smcp"
+                    android:textAlignment="center"
+                    android:textAllCaps="true"
+                    android:textColor="#949494"
+                    android:textSize="12sp" />
+            </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"

@@ -43,6 +43,7 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.StatusCodeException;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastApi;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
+import com.gianlu.pretendyourexyzzy.cards.CardSize;
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.NewEditCustomDeckActivity;
@@ -457,7 +458,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         } else {
             binding.profileFragmentStarredCardsEmpty.setVisibility(View.GONE);
             binding.profileFragmentStarredCardsList.setVisibility(View.VISIBLE);
-            binding.profileFragmentStarredCardsList.setAdapter(new NewStarredCardsAdapter(requireContext(), starredCards, R.drawable.ic_star_off_24, (adapter, card) -> {
+            binding.profileFragmentStarredCardsList.setAdapter(new NewStarredCardsAdapter(requireContext(), starredCards, CardSize.REGULAR, R.drawable.ic_star_off_24, (adapter, card) -> {
                 starredDb.remove((StarredCardsDatabase.StarredCard) card);
                 adapter.removeCard(card);
             }));
@@ -467,7 +468,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
     private void refreshCustomDecks() {
         CustomDecksDatabase decksDb = CustomDecksDatabase.get(requireContext());
         List<BasicCustomDeck> customDecks = decksDb.getAllDecks();
-        binding.profileFragmentCustomDecksList.setAdapter(customDecksAdapter = new NewCustomDecksAdapter(requireContext(), customDecks, count -> {
+        binding.profileFragmentCustomDecksList.setAdapter(customDecksAdapter = new NewCustomDecksAdapter(requireContext(), customDecks, CardSize.REGULAR, count -> {
             if (count == 0) {
                 binding.profileFragmentCustomDecksEmpty.setVisibility(View.VISIBLE);
                 binding.profileFragmentCustomDecksList.setVisibility(View.GONE);

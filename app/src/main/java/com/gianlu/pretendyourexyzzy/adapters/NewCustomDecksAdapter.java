@@ -5,15 +5,18 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
+import com.gianlu.pretendyourexyzzy.cards.CardSize;
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.NewEditCustomDeckActivity;
@@ -21,18 +24,22 @@ import com.gianlu.pretendyourexyzzy.customdecks.NewViewCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.databinding.ItemNewCustomDeckBinding;
 import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Comparator;
 import java.util.List;
 
 public class NewCustomDecksAdapter extends OrderedRecyclerViewAdapter<NewCustomDecksAdapter.ViewHolder, BasicCustomDeck, Void, Void> {
     private final Context context;
     private final LayoutInflater inflater;
+    private final CardSize size;
     private final Listener listener;
 
-    public NewCustomDecksAdapter(Context context, List<BasicCustomDeck> list, @Nullable Listener listener) {
+    public NewCustomDecksAdapter(Context context, List<BasicCustomDeck> list, @NotNull CardSize size, @Nullable Listener listener) {
         super(list, null);
         this.context = context;
         this.inflater = LayoutInflater.from(context);
+        this.size = size;
         this.listener = listener;
         shouldUpdateItemCount(objs.size());
     }
@@ -123,6 +130,19 @@ public class NewCustomDecksAdapter extends OrderedRecyclerViewAdapter<NewCustomD
         public ViewHolder(@NonNull ViewGroup parent) {
             super(inflater.inflate(R.layout.item_new_custom_deck, parent, false));
             binding = ItemNewCustomDeckBinding.bind(itemView);
+
+            int width = size.widthPx(parent.getContext());
+            int height = size.heightPx(parent.getContext());
+
+            for (int i = 0; i < binding.getRoot().getChildCount(); i++) {
+                View child = binding.getRoot().getChildAt(i);
+                if (child instanceof CardView) {
+                    FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) child.getLayoutParams();
+                    params.width = width;
+                    params.height = height;
+                    child.setLayoutParams(params);
+                }
+            }
         }
     }
 }

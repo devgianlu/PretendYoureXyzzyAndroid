@@ -268,9 +268,9 @@
     <string name="overloadedDifferentUsername_message">You cannot use a different username for PYX when using Overloaded. Do you want to change it now?</string>
     <string name="change">Change</string>
     <string name="overloadedStatus_error">An error occurred! Please try again.</string>
-    <string name="overloadedHeader_cardsPlayed"><![CDATA[<b>Cards played</b><br>]]>%s</string>
-    <string name="overloadedHeader_roundsPlayed"><![CDATA[<b>Rounds played</b><br>]]>%s</string>
-    <string name="overloadedHeader_roundsWon"><![CDATA[<b>Rounds won</b><br>]]>%s</string>
+    <string name="overloadedHeader_cardsPlayed">Cards played<![CDATA[<br>]]>%s</string>
+    <string name="overloadedHeader_roundsPlayed">Rounds played<![CDATA[<br>]]>%s</string>
+    <string name="overloadedHeader_roundsWon">Rounds won<![CDATA[<br>]]>%s</string>
     <string name="achievements">Achievements</string>
     <string name="achievementsNotEnabled">Start playing and get rewarded with badges: just connect Google Play Games.</string>
     <string name="linkedAccounts">Linked accounts</string>
