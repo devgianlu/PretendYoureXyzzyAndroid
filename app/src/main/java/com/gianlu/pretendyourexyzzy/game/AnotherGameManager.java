@@ -97,6 +97,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, SensitiveGameDat
                 break;
             case HURRY_UP:
                 event(UiEvent.HURRY_UP);
+                // TODO: Play clock sound
                 break;
             case GAME_SPECTATOR_JOIN:
                 gameData.spectatorJoin(msg.obj.getString("n"));

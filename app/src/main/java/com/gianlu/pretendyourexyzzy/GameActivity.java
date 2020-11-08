@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -71,12 +72,11 @@ public class GameActivity extends ActivityWithDialog implements AnotherGameManag
         }
 
         binding.gameActivityClose.setOnClickListener(v -> leaveGame());
+        binding.gameActivityLoading.setVisibility(View.VISIBLE);
 
         manager.begin();
-
         AnalyticsApplication.sendAnalytics(Utils.ACTION_JOIN_GAME);
 
-        // TODO: Show loading
 
         // UserInfoDialog.loadAndShow(pyx, activity, player.name);
         // MetricsActivity.startActivity(getContext(), perm);
@@ -96,7 +96,7 @@ public class GameActivity extends ActivityWithDialog implements AnotherGameManag
 
     @Override
     public void onGameLoaded() {
-        // TODO: Hide loading
+        binding.gameActivityLoading.setVisibility(View.GONE);
     }
 
     @Override

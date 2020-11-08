@@ -60,6 +60,21 @@
         android:textColor="#7B7B7B"
         android:textSize="20sp" />
 
+    <FrameLayout
+        android:id="@+id/gameActivity_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_gravity="center_vertical"
+            android:paddingStart="96dp"
+            android:paddingEnd="96dp"
+            android:src="@drawable/ic_undraw_loading_animated" />
+    </FrameLayout>
+
     <LinearLayout
         android:id="@+id/gameActivity_notLobby"
         android:layout_width="match_parent"

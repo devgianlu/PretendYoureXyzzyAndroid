@@ -210,6 +210,8 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
             args.putString("owner", deck.owner);
             args.putInt("blacks", deck.blackCards().size());
             args.putInt("whites", deck.whiteCards().size());
+            args.putBoolean("canCollaborate", deck.collaborator);
+            args.putBoolean("crCast", false);
             fragment.setArguments(args);
             return fragment;
         }
@@ -225,6 +227,9 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
             args.putString("owner", null);
             args.putInt("blacks", deck.blackCardsCount());
             args.putInt("whites", deck.whiteCardsCount());
+            args.putBoolean("crCast", true);
+            args.putBoolean("private", deck.privateDeck);
+            args.putString("language", deck.lang);
             fragment.setArguments(args);
             return fragment;
         }
@@ -242,6 +247,26 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
             binding.viewCustomDeckWhiteCards.setText(String.valueOf(requireArguments().getInt("whites")));
 
             updateStar();
+
+            if (requireArguments().getBoolean("crCast", false)) {
+                ((View) binding.viewCustomDeckInfoCanCollaborate.getParent()).setVisibility(View.GONE);
+
+                ((View) binding.viewCustomDeckInfoPrivateDeck.getParent()).setVisibility(View.VISIBLE);
+                binding.viewCustomDeckInfoPrivateDeck.setText(requireArguments().getBoolean("private") ? R.string.yes : R.string.no);
+
+                String lang = requireArguments().getString("language", "");
+                if (lang.isEmpty() || lang.equals("-")) {
+                    ((View) binding.viewCustomDeckInfoLanguage.getParent()).setVisibility(View.GONE);
+                } else {
+                    ((View) binding.viewCustomDeckInfoLanguage.getParent()).setVisibility(View.VISIBLE);
+                    binding.viewCustomDeckInfoLanguage.setText(lang);
+                }
+            } else {
+                ((View) binding.viewCustomDeckInfoPrivateDeck.getParent()).setVisibility(View.GONE);
+                ((View) binding.viewCustomDeckInfoLanguage.getParent()).setVisibility(View.GONE);
+                ((View) binding.viewCustomDeckInfoCanCollaborate.getParent()).setVisibility(View.VISIBLE);
+                binding.viewCustomDeckInfoCanCollaborate.setText(requireArguments().getBoolean("canCollaborate") ? R.string.yes : R.string.no);
+            }
 
             return binding.getRoot();
         }
