@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
@@ -56,6 +57,7 @@ import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.achievement.Achievement;
+import com.google.android.gms.games.event.Event;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
@@ -74,7 +76,11 @@ import java.util.List;
 import java.util.Map;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
+import xyz.gianlu.pyxoverloaded.model.UserData;
+
+import static com.gianlu.pretendyourexyzzy.GPGamesHelper.setEventCount;
 
 public class NewProfileFragment extends NewMainActivity.ChildFragment implements OverloadedApi.EventListener, CrCastLoginDialog.LoginListener {
     private static final String TAG = NewProfileFragment.class.getSimpleName();
@@ -117,6 +123,33 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         list.addAll(map.values());
 
         return list;
+    }
+
+    private static void setupPreferencesCheckBox(@NonNull CheckBox checkBox, @NonNull UserData.PropertyKey key) {
+        UserData data = OverloadedApi.get().userDataCached();
+        if (data == null) return;
+
+        checkBox.setChecked(data.getPropertyBoolean(key));
+        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (!checkBox.isEnabled()) return;
+
+            buttonView.setEnabled(false);
+            OverloadedApi.get().setUserProperty(key, String.valueOf(isChecked), null, new SuccessCallback() {
+                @Override
+                public void onSuccessful() {
+                    checkBox.setChecked(isChecked);
+                    checkBox.setEnabled(true);
+                }
+
+                @Override
+                public void onFailed(@NonNull Exception ex) {
+                    Log.e(TAG, "Failed updating user property: " + key, ex);
+
+                    checkBox.setChecked(!isChecked); // Revert operation
+                    checkBox.setEnabled(true);
+                }
+            });
+        });
     }
 
     @Nullable
@@ -197,9 +230,26 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         //endregion
 
         //region Achievements
-        // TODO: Stats?
-
         if (GPGamesHelper.hasGooglePlayGames(requireContext())) {
+            GPGamesHelper.loadEvents(requireContext())
+                    .addOnSuccessListener(events -> {
+                        for (Event event : events) {
+                            if (GPGamesHelper.EVENT_CARDS_PLAYED.equals(event.getEventId())) {
+                                setEventCount(event.getValue(), binding.profileFragmentCardsPlayed);
+                            } else if (GPGamesHelper.EVENT_ROUNDS_PLAYED.equals(event.getEventId())) {
+                                setEventCount(event.getValue(), binding.profileFragmentRoundsPlayed);
+                            } else if (GPGamesHelper.EVENT_ROUNDS_WON.equals(event.getEventId())) {
+                                setEventCount(event.getValue(), binding.profileFragmentRoundsWon);
+                            }
+                        }
+
+                        events.release();
+                    })
+                    .addOnFailureListener(ex -> {
+                        Log.e(TAG, "Failed loading stats", ex);
+                        binding.profileFragmentStats.setVisibility(View.GONE);
+                    });
+
             binding.profileFragmentAchievementsNotEnabled.setVisibility(View.GONE);
 
             GPGamesHelper.loadAchievements(requireContext())
@@ -246,6 +296,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                         binding.profileFragmentAchievementsSeeAll.setVisibility(View.GONE);
                     });
         } else {
+            binding.profileFragmentStats.setVisibility(View.GONE);
             binding.profileFragmentAchievementsNotEnabled.setVisibility(View.VISIBLE);
         }
         //endregion
@@ -276,7 +327,19 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         binding.profileFragmentCustomDecksList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
         //endregion
 
-        // TODO: Overloaded profile preferences
+        //region Preferences
+        OverloadedUtils.waitReady()
+                .addOnSuccessListener(signedIn -> {
+                    binding.profileFragmentOverloadedPreferences.setVisibility(View.VISIBLE);
+                    setupPreferencesCheckBox(binding.profileFragmentOverloadedPublicCustomDecks, UserData.PropertyKey.PUBLIC_CUSTOM_DECKS);
+                    setupPreferencesCheckBox(binding.profileFragmentOverloadedPublicStarredCards, UserData.PropertyKey.PUBLIC_STARRED_CARDS);
+                })
+                .addOnFailureListener(ex -> {
+                    Log.e(TAG, "Failed waiting ready.", ex);
+                    binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
+                });
+        //endregion
+
         // TODO: Overloaded subscribe flow
 
         return binding.getRoot();

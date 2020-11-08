@@ -167,43 +167,88 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
-                <com.gianlu.commonutils.misc.SuperTextView
-                    android:id="@+id/userInfoDialog_cardsPlayed"
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:fontFamily="@font/roboto_regular"
-                    android:fontFeatureSettings="smcp"
-                    android:textAlignment="center"
-                    android:textAllCaps="true"
-                    android:textColor="#949494"
-                    android:textSize="12sp" />
+                    android:orientation="vertical">
 
-                <com.gianlu.commonutils.misc.SuperTextView
-                    android:id="@+id/userInfoDialog_roundsPlayed"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/roboto_regular"
-                    android:fontFeatureSettings="smcp"
-                    android:textAlignment="center"
-                    android:textAllCaps="true"
-                    android:textColor="#949494"
-                    android:textSize="12sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/roboto_regular"
+                        android:fontFeatureSettings="smcp"
+                        android:text="@string/cardsPlayed"
+                        android:textAllCaps="true"
+                        android:textColor="#949494"
+                        android:textSize="12sp" />
 
-                <com.gianlu.commonutils.misc.SuperTextView
-                    android:id="@+id/userInfoDialog_roundsWon"
+                    <TextView
+                        android:id="@+id/userInfoDialog_cardsPlayed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textAppearance="@style/TextAppearance.Medium"
+                        android:textSize="18sp" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
                     android:layout_weight="1"
-                    android:fontFamily="@font/roboto_regular"
-                    android:fontFeatureSettings="smcp"
-                    android:textAlignment="center"
-                    android:textAllCaps="true"
-                    android:textColor="#949494"
-                    android:textSize="12sp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/roboto_regular"
+                        android:fontFeatureSettings="smcp"
+                        android:text="@string/roundsPlayed"
+                        android:textAllCaps="true"
+                        android:textColor="#949494"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/userInfoDialog_roundsPlayed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textAppearance="@style/TextAppearance.Medium"
+                        android:textSize="18sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/roboto_regular"
+                        android:fontFeatureSettings="smcp"
+                        android:text="@string/roundsWon"
+                        android:textAllCaps="true"
+                        android:textColor="#949494"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/userInfoDialog_roundsWon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textAppearance="@style/TextAppearance.Medium"
+                        android:textSize="18sp" />
+                </LinearLayout>
             </LinearLayout>
 
             <TextView
@@ -301,7 +346,49 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <!-- TODO: Overloaded loading -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="12dp"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/placeholder_general_square_item" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/placeholder_general_square_item" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/placeholder_general_square_item" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/placeholder_general_square_item" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:background="@drawable/placeholder_general_square_item" />
+            </LinearLayout>
         </com.facebook.shimmer.ShimmerFrameLayout>
     </LinearLayout>
 </FrameLayout>

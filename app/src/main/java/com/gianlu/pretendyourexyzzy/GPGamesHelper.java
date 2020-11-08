@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,9 +29,7 @@ import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-
-import xyz.gianlu.pyxoverloaded.TaskUtils;
+import java.util.Locale;
 
 public final class GPGamesHelper {
     public static final String EVENT_CARDS_PLAYED = "CgkIus2n760REAIQAQ";
@@ -184,22 +183,24 @@ public final class GPGamesHelper {
         return client.getAchievementsIntent();
     }
 
-    public static void loadEvents(@NonNull Context context, @Nullable Activity activity, @NonNull LoadIterable<Event> callback) {
+    @NotNull
+    public static Task<EventBuffer> loadEvents(@NonNull Context context) {
         EventsClient client = eventsClient(context);
-        if (client == null) {
-            callback.onFailed(new Exception("Failed initializing client!"));
-            return;
-        }
+        if (client == null) return Tasks.forException(new Exception("Failed initializing client!"));
+        return client.load(false).continueWith(task -> task.getResult().get());
+    }
 
-        TaskUtils.callbacks(client.load(false), activity, data -> {
-            EventBuffer buffer = data.get();
-            if (buffer == null) {
-                callback.onLoaded(Collections.emptyList());
-            } else {
-                callback.onLoaded(buffer);
-                buffer.release();
-            }
-        }, callback::onFailed);
+    public static void setEventCount(@Nullable Long value, @NonNull TextView view) {
+        if (value == null) {
+            ((View) view.getParent()).setVisibility(View.GONE);
+        } else {
+            ((View) view.getParent()).setVisibility(View.VISIBLE);
+
+            String formattedValue;
+            if (value <= 10000) formattedValue = String.valueOf(value);
+            else formattedValue = String.format(Locale.getDefault(), "%.2fK", value / 1000f);
+            view.setText(formattedValue);
+        }
     }
 
     public interface LoadIterable<T> {

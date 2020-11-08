@@ -62,11 +62,105 @@
                     layout="@layout/include_username_id_code" />
             </com.facebook.shimmer.ShimmerFrameLayout>
 
+            <!-- Stats -->
             <LinearLayout
+                android:id="@+id/profileFragment_stats"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="18dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="8dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/roboto_regular"
+                        android:fontFeatureSettings="smcp"
+                        android:text="@string/cardsPlayed"
+                        android:textAllCaps="true"
+                        android:textColor="#949494"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/profileFragment_cardsPlayed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textAppearance="@style/TextAppearance.Medium"
+                        android:textSize="18sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/roboto_regular"
+                        android:fontFeatureSettings="smcp"
+                        android:text="@string/roundsPlayed"
+                        android:textAllCaps="true"
+                        android:textColor="#949494"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/profileFragment_roundsPlayed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textAppearance="@style/TextAppearance.Medium"
+                        android:textSize="18sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/roboto_regular"
+                        android:fontFeatureSettings="smcp"
+                        android:text="@string/roundsWon"
+                        android:textAllCaps="true"
+                        android:textColor="#949494"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/profileFragment_roundsWon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textAppearance="@style/TextAppearance.Medium"
+                        android:textSize="18sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Custom decks -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="12dp"
                 android:layout_marginEnd="24dp"
                 android:layout_marginBottom="8dp"
                 android:gravity="center_vertical"
@@ -139,6 +233,7 @@
                 </LinearLayout>
             </FrameLayout>
 
+            <!-- Starred cards -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -189,6 +284,7 @@
                 </LinearLayout>
             </FrameLayout>
 
+            <!-- Friends -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -343,6 +439,7 @@
                 </LinearLayout>
             </FrameLayout>
 
+            <!-- Achievements -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -358,7 +455,7 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="12dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -435,6 +532,41 @@
                         android:textAppearance="@style/TextAppearance.Undraw" />
                 </LinearLayout>
             </FrameLayout>
+
+            <!-- Preference -->
+            <LinearLayout
+                android:id="@+id/profileFragment_overloadedPreferences"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="8dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/preferences"
+                    android:textAppearance="@style/TextAppearance.Medium"
+                    android:textColor="#000000"
+                    android:textSize="18sp" />
+
+                <CheckBox
+                    android:id="@+id/profileFragment_overloadedPublicCustomDecks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/publicCustomDecks"
+                    android:textAppearance="@style/TextAppearance.Regular"
+                    android:textSize="16sp" />
+
+                <CheckBox
+                    android:id="@+id/profileFragment_overloadedPublicStarredCards"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/publicStarredCards"
+                    android:textAppearance="@style/TextAppearance.Regular"
+                    android:textSize="16sp" />
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

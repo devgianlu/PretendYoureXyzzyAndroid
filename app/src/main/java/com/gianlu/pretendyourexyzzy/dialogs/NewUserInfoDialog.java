@@ -32,7 +32,6 @@ import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.cards.CardSize;
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.databinding.DialogNewUserInfoBinding;
-import com.gianlu.pretendyourexyzzy.main.OverloadedFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 
@@ -44,6 +43,8 @@ import java.util.List;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.model.Card;
 import xyz.gianlu.pyxoverloaded.model.UserProfile;
+
+import static com.gianlu.pretendyourexyzzy.GPGamesHelper.setEventCount;
 
 public final class NewUserInfoDialog extends DialogFragment {
     private static final String TAG = NewUserInfoDialog.class.getSimpleName();
@@ -167,9 +168,9 @@ public final class NewUserInfoDialog extends DialogFragment {
                             binding.userInfoDialogOverloadedStats.setVisibility(View.GONE);
                         } else {
                             binding.userInfoDialogOverloadedStats.setVisibility(View.VISIBLE);
-                            OverloadedFragment.setEventCount(profile.cardsPlayed, binding.userInfoDialogCardsPlayed, R.string.overloadedHeader_cardsPlayed);
-                            OverloadedFragment.setEventCount(profile.roundsPlayed, binding.userInfoDialogRoundsPlayed, R.string.overloadedHeader_roundsPlayed);
-                            OverloadedFragment.setEventCount(profile.roundsWon, binding.userInfoDialogRoundsWon, R.string.overloadedHeader_roundsWon);
+                            setEventCount(profile.cardsPlayed, binding.userInfoDialogCardsPlayed);
+                            setEventCount(profile.roundsPlayed, binding.userInfoDialogRoundsPlayed);
+                            setEventCount(profile.roundsWon, binding.userInfoDialogRoundsWon);
                         }
 
                         if (profile.customDecks.isEmpty()) {

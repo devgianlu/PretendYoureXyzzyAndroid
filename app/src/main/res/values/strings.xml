@@ -411,4 +411,7 @@
     <string name="thisIsYou">This is you!</string>
     <string name="start">Start</string>
     <string name="options">Options</string>
+    <string name="roundsWon">Rounds won</string>
+    <string name="roundsPlayed">Rounds played</string>
+    <string name="cardsPlayed">Cards played</string>
 </resources>
