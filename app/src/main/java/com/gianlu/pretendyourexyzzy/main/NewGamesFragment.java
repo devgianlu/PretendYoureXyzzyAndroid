@@ -24,7 +24,6 @@ import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
-import com.gianlu.pretendyourexyzzy.GameActivity;
 import com.gianlu.pretendyourexyzzy.NewMainActivity;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
@@ -39,6 +38,7 @@ import com.gianlu.pretendyourexyzzy.api.models.GamesList;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewGamesBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemNewGameBinding;
+import com.gianlu.pretendyourexyzzy.game.GameActivity;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -150,11 +150,8 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
         });
 
         binding.gamesFragmentMenu.setOnClickListener((v) -> showPopupMenu());
-        binding.gamesFragmentChat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: Open global chat
-            }
+        binding.gamesFragmentChat.setOnClickListener(v -> {
+            // TODO: Open global chat
         });
         binding.gamesFragmentCreateGame.setOnClickListener(v -> pyx.request(PyxRequests.createGame())
                 .addOnSuccessListener((gamePermalink) -> startActivity(GameActivity.gameIntent(requireContext(), gamePermalink)))

@@ -34,7 +34,6 @@ import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.CustomDecksPatchOp;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.RemoteId;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCustomDecksPatchOp;
 import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
-import xyz.gianlu.pyxoverloaded.model.UserProfile;
 
 public final class CustomDecksDatabase extends SQLiteOpenHelper {
     private static final int CARD_TYPE_BLACK = 0;
@@ -58,14 +57,6 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
     public static void setStarredCustomDecksRevision(long revision) {
         Prefs.putLong(PK.STARRED_CUSTOM_DECKS_REVISION, revision);
-    }
-
-    @NonNull
-    public static List<BasicCustomDeck> transform(@NotNull String owner, @NonNull List<UserProfile.CustomDeck> original) {
-        List<BasicCustomDeck> list = new ArrayList<>(original.size());
-        for (UserProfile.CustomDeck deck : original)
-            list.add(new BasicCustomDeck(deck.name, deck.watermark, owner, 0, deck.count));
-        return list;
     }
 
     @Override

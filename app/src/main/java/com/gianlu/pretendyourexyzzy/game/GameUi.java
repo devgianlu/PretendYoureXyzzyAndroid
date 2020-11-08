@@ -43,7 +43,7 @@ public class GameUi {
     private final com.gianlu.pretendyourexyzzy.databinding.ActivityNewGameBinding binding;
     private final Timer timer = new Timer();
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private Listener listener;
+    private final Listener listener;
     private CountdownTask countdownTask;
     private PlayersAdapter playersAdapter;
     private CardsAdapter tableAdapter;

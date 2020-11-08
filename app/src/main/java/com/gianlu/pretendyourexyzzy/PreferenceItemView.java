@@ -56,9 +56,9 @@ public final class PreferenceItemView extends LinearLayout {
 
     public void setSubtitle(String text) {
         if (text == null) {
-            ((TextView) findViewById(R.id.preferenceItem_subtitle)).setVisibility(GONE);
+            findViewById(R.id.preferenceItem_subtitle).setVisibility(GONE);
         } else {
-            ((TextView) findViewById(R.id.preferenceItem_subtitle)).setVisibility(VISIBLE);
+            findViewById(R.id.preferenceItem_subtitle).setVisibility(VISIBLE);
             ((TextView) findViewById(R.id.preferenceItem_subtitle)).setText(text);
         }
     }

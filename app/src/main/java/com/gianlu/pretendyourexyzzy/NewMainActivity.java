@@ -18,6 +18,7 @@ import com.gianlu.pretendyourexyzzy.api.PyxDiscoveryApi;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.databinding.ActivityNewMainBinding;
+import com.gianlu.pretendyourexyzzy.game.GameActivity;
 import com.gianlu.pretendyourexyzzy.main.NewGamesFragment;
 import com.gianlu.pretendyourexyzzy.main.NewProfileFragment;
 import com.gianlu.pretendyourexyzzy.main.NewSettingsFragment;
