@@ -2,12 +2,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="16dp">
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:paddingBottom="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -59,67 +60,115 @@
         android:textColor="#7B7B7B"
         android:textSize="20sp" />
 
-    <FrameLayout
+    <LinearLayout
+        android:id="@+id/gameActivity_notLobby"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
 
-        <LinearLayout
-            android:layout_width="260dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="96dp"
-            android:background="@drawable/bg_card_6"
-            android:backgroundTint="#000000"
-            android:elevation="6dp"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:id="@+id/gameActivity_blackCardText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/roboto_regular"
-                android:textColor="@color/white"
-                android:textSize="20sp" />
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <!-- TODO: Should be aligned at the top of white cards -->
-
-                <com.gianlu.commonutils.misc.SuperTextView
-                    android:id="@+id/gameActivity_blackCardPick"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/roboto_regular"
-                    android:textColor="#8E8E8E"
-                    android:textSize="14sp" />
+                android:layout_width="260dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="96dp"
+                android:background="@drawable/bg_card_6"
+                android:backgroundTint="#000000"
+                android:elevation="6dp"
+                android:orientation="vertical"
+                android:padding="16dp">
 
                 <TextView
-                    android:id="@+id/gameActivity_blackCardWatermark"
-                    android:layout_width="0dp"
+                    android:id="@+id/gameActivity_blackCardText"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:fontFamily="@font/roboto_regular"
-                    android:textColor="#8E8E8E"
-                    android:textSize="14sp" />
+                    android:textColor="@color/white"
+                    android:textSize="20sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- TODO: Should be aligned at the top of white cards -->
+
+                    <com.gianlu.commonutils.misc.SuperTextView
+                        android:id="@+id/gameActivity_blackCardPick"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/roboto_regular"
+                        android:textColor="#8E8E8E"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/gameActivity_blackCardWatermark"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/roboto_regular"
+                        android:textColor="#8E8E8E"
+                        android:textSize="14sp" />
+                </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/gameActivity_whiteCards"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom" />
+        </FrameLayout>
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/gameActivity_whiteCards"
+            android:id="@+id/gameActivity_players"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/gameActivity_lobby"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/gameActivity_lobbyPlayers"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_weight="1" />
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom" />
-    </FrameLayout>
+            android:orientation="horizontal">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/gameActivity_players"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/gameActivity_options"
+                style="@style/ButtonBigStyle.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="4dp"
+                android:layout_weight="1"
+                android:text="@string/options" />
+
+            <Button
+                android:id="@+id/gameActivity_start"
+                style="@style/ButtonBigStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:layout_weight="1"
+                android:text="@string/start" />
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>

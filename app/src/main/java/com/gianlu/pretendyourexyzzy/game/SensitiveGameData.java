@@ -60,6 +60,9 @@ public class SensitiveGameData {
                 ui.setBlackCard(cards.blackCard);
                 ui.setTable(cards.whiteCards, cards.blackCard);
             }
+
+            if (info.game.status == Game.Status.LOBBY) ui.showLobby();
+            else ui.hideLobby();
         }
 
         synchronized (spectators) {

@@ -29,6 +29,8 @@ import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.jetbrains.annotations.NotNull;
+
 public class EditGameOptionsDialog extends DialogFragment {
     private TextInputLayout scoreLimit;
     private TextInputLayout playerLimit;
@@ -44,7 +46,7 @@ public class EditGameOptionsDialog extends DialogFragment {
     private RegisteredPyx pyx;
 
     @NonNull
-    public static EditGameOptionsDialog get(int gid, Game.Options options) {
+    public static EditGameOptionsDialog get(int gid, @NotNull Game.Options options) {
         EditGameOptionsDialog dialog = new EditGameOptionsDialog();
         Bundle args = new Bundle();
         args.putInt("gid", gid);
@@ -100,7 +102,7 @@ public class EditGameOptionsDialog extends DialogFragment {
         if (args == null || (options = (Game.Options) args.getSerializable("options")) == null
                 || (gid = args.getInt("gid", -1)) == -1 || getContext() == null) {
             dismissAllowingStateLoss();
-            return layout;
+            return null;
         }
 
 
@@ -109,7 +111,7 @@ public class EditGameOptionsDialog extends DialogFragment {
         } catch (LevelMismatchException ex) {
             DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
             dismissAllowingStateLoss();
-            return layout;
+            return null;
         }
 
         scoreLimit = layout.findViewById(R.id.editGameOptions_scoreLimit);

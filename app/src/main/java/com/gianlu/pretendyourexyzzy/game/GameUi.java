@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.UiThread;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -55,6 +56,10 @@ public class GameUi {
         this.listener = listener;
 
         binding.gameActivityPlayers.setLayoutManager(new LinearLayoutManager(context, RecyclerView.HORIZONTAL, false));
+        binding.gameActivityLobbyPlayers.setLayoutManager(new GridLayoutManager(context, 3, RecyclerView.VERTICAL, false));
+
+        binding.gameActivityStart.setOnClickListener(v -> listener.startGame());
+        binding.gameActivityOptions.setOnClickListener(v -> listener.showOptions());
     }
 
     public void setup(@NonNull SensitiveGameData gameData) {
@@ -71,7 +76,8 @@ public class GameUi {
     }
 
     public void startGameVisible(boolean visible) {
-        // TODO: Start game button
+        binding.gameActivityStart.setVisibility(visible ? View.VISIBLE : View.GONE);
+        binding.gameActivityOptions.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
     //region Counter
@@ -90,12 +96,6 @@ public class GameUi {
     public void resetTimer() {
         if (countdownTask != null) countdownTask.cancel();
         binding.gameActivityCounter.setVisibility(View.GONE);
-    }
-    //endregion
-
-    //region Players
-    public void setPlayers(@NotNull List<GameInfo.Player> players) {
-        binding.gameActivityPlayers.setAdapter(playersAdapter = new PlayersAdapter(players));
     }
     //endregion
 
@@ -183,8 +183,34 @@ public class GameUi {
     }
     //endregion
 
+    //region Lobby
+    public void showLobby() {
+        setBlackCard(null);
+        clearTable();
+        clearHand();
+        showTable(false);
+        resetTimer();
+
+        binding.gameActivityNotLobby.setVisibility(View.GONE);
+        binding.gameActivityLobby.setVisibility(View.VISIBLE);
+
+        binding.gameActivityPlayers.setAdapter(null);
+        binding.gameActivityLobbyPlayers.setAdapter(playersAdapter);
+    }
+
+    public void hideLobby() {
+        binding.gameActivityNotLobby.setVisibility(View.VISIBLE);
+        binding.gameActivityLobby.setVisibility(View.GONE);
+
+        binding.gameActivityLobbyPlayers.setAdapter(null);
+        binding.gameActivityPlayers.setAdapter(playersAdapter);
+    }
+    //endregion
+
     public interface Listener extends DialogUtils.ShowStuffInterface {
         void onCardSelected(@NonNull BaseCard card);
+
+        void showOptions();
 
         void startGame();
     }
@@ -333,6 +359,10 @@ public class GameUi {
         protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull GameInfo.Player player) {
             holder.binding.playerItemName.setText(player.name);
             holder.update(player);
+
+            holder.binding.getRoot().setOnClickListener(v -> {
+                // TODO: Player menu
+            });
         }
 
         @Override

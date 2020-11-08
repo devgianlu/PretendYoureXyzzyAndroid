@@ -409,4 +409,6 @@
     <string name="profileNoStarredCards">This user has no starred cards…</string>
     <string name="profileNoCustomDecks">This user has no custom decks…</string>
     <string name="thisIsYou">This is you!</string>
+    <string name="start">Start</string>
+    <string name="options">Options</string>
 </resources>

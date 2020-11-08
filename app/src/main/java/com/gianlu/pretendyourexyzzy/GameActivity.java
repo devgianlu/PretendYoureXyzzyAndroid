@@ -14,9 +14,12 @@ import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
+import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.databinding.ActivityNewGameBinding;
+import com.gianlu.pretendyourexyzzy.dialogs.Dialogs;
+import com.gianlu.pretendyourexyzzy.dialogs.EditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.game.AnotherGameManager;
 import com.gianlu.pretendyourexyzzy.game.GameUi;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -75,18 +78,11 @@ public class GameActivity extends ActivityWithDialog implements AnotherGameManag
 
         // TODO: Show loading
 
-        // DialogUtils.showDialog(getActivity(), EditGameOptionsDialog.get(perm.gid, manager.gameOptions()), null);
-        // DialogUtils.showDialog(getActivity(), Dialogs.gameOptions(getContext(), options, pyx.firstLoad()));
         // UserInfoDialog.loadAndShow(pyx, activity, player.name);
         // MetricsActivity.startActivity(getContext(), perm);
         // showDialog(GameRoundDialog.get(roundId));
         // showDialog(Dialogs.askDefinitionWord(getContext(), text -> UrbanDictSheet.get().show(getActivity(), text)));
         // CustomDecksSheet.get().show(this, perm.gid);
-
-        /*
-         *  if (manager.amHost() && manager.isStatus(Game.Status.LOBBY)) editGameOptions();
-         *  else showGameOptions();
-         */
     }
 
     private void leaveGame() {
@@ -133,6 +129,17 @@ public class GameActivity extends ActivityWithDialog implements AnotherGameManag
          */
 
         if (manager != null) manager.onCardSelected(card);
+    }
+
+    @Override
+    public void showOptions() {
+        Game.Options options = manager.gameOptions();
+        if (options == null) return;
+
+        if (manager.amHost() && manager.isStatus(Game.Status.LOBBY))
+            showDialog(EditGameOptionsDialog.get(game.gid, options), null);
+        else
+            showDialog(Dialogs.gameOptions(this, options, pyx.firstLoad()));
     }
 
     @Override

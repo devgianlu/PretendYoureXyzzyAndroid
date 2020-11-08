@@ -93,7 +93,7 @@ public final class Dialogs {
 
     @NonNull
     @SuppressLint("InflateParams")
-    public static MaterialAlertDialogBuilder gameOptions(@NonNull Context context, @NonNull Game.Options options, @NonNull FirstLoad firstLoad) {
+    public static MaterialAlertDialogBuilder gameOptions(@NonNull Context context, Game.Options options, @NonNull FirstLoad firstLoad) {
         ScrollView layout = (ScrollView) LayoutInflater.from(context).inflate(R.layout.dialog_game_options, null, false);
 
         SuperTextView scoreLimit = layout.findViewById(R.id.gameOptions_scoreLimit);

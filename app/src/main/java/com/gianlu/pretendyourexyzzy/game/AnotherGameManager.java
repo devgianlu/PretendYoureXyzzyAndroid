@@ -170,11 +170,13 @@ public class AnotherGameManager implements Pyx.OnEventListener, SensitiveGameDat
         gameData.update(status);
         switch (status) {
             case JUDGING:
+                ui.hideLobby();
                 ui.countFrom(msg.obj.getInt("Pt"));
                 ui.setTable(CardsGroup.list(msg.obj.getJSONArray("wc")), ui.blackCard());
                 ui.showTable(gameData.amJudge());
                 break;
             case PLAYING:
+                ui.hideLobby();
                 ui.countFrom(msg.obj.getInt("Pt"));
                 ui.clearTable();
                 ui.setBlackCard(GameCard.parse(msg.obj.getJSONObject("bc")));
@@ -194,13 +196,10 @@ public class AnotherGameManager implements Pyx.OnEventListener, SensitiveGameDat
                 }
                 break;
             case LOBBY:
-                event(UiEvent.WAITING_FOR_START);
-                ui.setBlackCard(null);
-                ui.clearTable();
-                ui.clearHand();
-                ui.showTable(false);
                 gameData.resetToIdleAndHost();
-                ui.resetTimer();
+
+                event(UiEvent.WAITING_FOR_START);
+                ui.showLobby();
                 break;
             case DEALING:
             case ROUND_OVER:
