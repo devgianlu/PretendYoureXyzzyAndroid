@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="96dp"
+    android:paddingTop="4dp"
+    android:paddingEnd="4dp"
+    android:paddingBottom="4dp">
+
+    <TextView
+        android:id="@+id/chatItem_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:autoLink="all"
+        android:background="@drawable/ic_chat_msg_sent"
+        android:fontFamily="@font/roboto_regular"
+        android:padding="12dp"
+        android:textAlignment="viewEnd"
+        android:textColor="#ffffff"
+        android:textColorLink="@color/appColor_100"
+        android:textSize="16sp" />
+</FrameLayout>

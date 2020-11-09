@@ -984,16 +984,6 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
 
         @NonNull
-        public static BaseCard createTemp(String[] text, String watermark, boolean black) {
-            return new CustomCard(text, watermark, black ? CARD_TYPE_BLACK : CARD_TYPE_WHITE, Integer.MIN_VALUE);
-        }
-
-        @NonNull
-        public static BaseCard createImageTemp(String url, String watermark, boolean black) {
-            return new CustomCard(new String[]{"[img]" + url + "[/img]"}, watermark, black ? CARD_TYPE_BLACK : CARD_TYPE_WHITE, Integer.MIN_VALUE);
-        }
-
-        @NonNull
         JSONObject craftJson() throws JSONException {
             JSONObject obj = new JSONObject();
             obj.put("text", CommonUtils.toJSONArray(text.split("____", -1)));

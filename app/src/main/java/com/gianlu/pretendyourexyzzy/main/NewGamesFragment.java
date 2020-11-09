@@ -38,6 +38,7 @@ import com.gianlu.pretendyourexyzzy.api.models.GamesList;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewGamesBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemNewGameBinding;
+import com.gianlu.pretendyourexyzzy.dialogs.NewChatDialog;
 import com.gianlu.pretendyourexyzzy.game.GameActivity;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.gms.tasks.Task;
@@ -150,9 +151,6 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
         });
 
         binding.gamesFragmentMenu.setOnClickListener((v) -> showPopupMenu());
-        binding.gamesFragmentChat.setOnClickListener(v -> {
-            // TODO: Open global chat
-        });
         binding.gamesFragmentCreateGame.setOnClickListener(v -> pyx.request(PyxRequests.createGame())
                 .addOnSuccessListener((gamePermalink) -> startActivity(GameActivity.gameIntent(requireContext(), gamePermalink)))
                 .addOnFailureListener(ex -> {
@@ -261,10 +259,18 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
                 .addOnSuccessListener(this::gamesLoaded)
                 .addOnFailureListener(this::failedLoadingGames);
 
+        binding.gamesFragmentCreateGame.setEnabled(true);
         binding.gamesFragmentSwipeRefresh.setEnabled(true);
         binding.gamesFragmentChangeServer.setEnabled(true);
         binding.gamesFragmentServer.setText(pyx.server.name);
         binding.gamesFragmentServerLoading.hideShimmer();
+
+        if (pyx.config().gameChatEnabled()) {
+            binding.gamesFragmentChat.setVisibility(View.VISIBLE);
+            binding.gamesFragmentChat.setOnClickListener(v -> NewChatDialog.getGlobal().show(getChildFragmentManager(), null));
+        } else {
+            binding.gamesFragmentChat.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -275,10 +281,12 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
         if (binding != null) {
             setGamesStatus(true, false, false);
 
+            binding.gamesFragmentCreateGame.setEnabled(false);
             binding.gamesFragmentSwipeRefresh.setEnabled(false);
             binding.gamesFragmentChangeServer.setEnabled(false);
             binding.gamesFragmentServer.setText(null);
             binding.gamesFragmentServerLoading.showShimmer(true);
+            binding.gamesFragmentChat.setVisibility(View.GONE);
         }
     }
 

@@ -23,6 +23,7 @@ import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.databinding.ActivityNewGameBinding;
 import com.gianlu.pretendyourexyzzy.dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.dialogs.EditGameOptionsDialog;
+import com.gianlu.pretendyourexyzzy.dialogs.NewChatDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
@@ -71,6 +72,13 @@ public class GameActivity extends ActivityWithDialog implements AnotherGameManag
             return;
         }
 
+        if (pyx.config().gameChatEnabled()) {
+            binding.gameActivityChat.setVisibility(View.VISIBLE);
+            binding.gameActivityChat.setOnClickListener(v -> NewChatDialog.getGame(game.gid).show(getSupportFragmentManager(), null));
+        } else {
+            binding.gameActivityChat.setVisibility(View.GONE);
+        }
+
         binding.gameActivityClose.setOnClickListener(v -> leaveGame());
         binding.gameActivityLoading.setVisibility(View.VISIBLE);
 
@@ -86,7 +94,7 @@ public class GameActivity extends ActivityWithDialog implements AnotherGameManag
     }
 
     private void leaveGame() {
-        pyx.request(PyxRequests.logout())
+        pyx.request(PyxRequests.leaveGame(game.gid))
                 .addOnSuccessListener(aVoid -> justLeaveGame())
                 .addOnFailureListener(ex -> {
                     Log.e(TAG, "Failed leaving game.", ex);

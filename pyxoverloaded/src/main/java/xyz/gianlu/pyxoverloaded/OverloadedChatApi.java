@@ -1,6 +1,5 @@
 package xyz.gianlu.pyxoverloaded;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,6 +15,7 @@ import com.gianlu.commonutils.preferences.Prefs;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,7 +29,6 @@ import java.util.concurrent.ExecutionException;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi.Event;
 import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
-import xyz.gianlu.pyxoverloaded.callback.ChatMessageCallback;
 import xyz.gianlu.pyxoverloaded.model.Chat;
 import xyz.gianlu.pyxoverloaded.model.EncryptedChatMessage;
 import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
@@ -40,7 +39,6 @@ import xyz.gianlu.pyxoverloaded.signal.OverloadedUserAddress;
 import xyz.gianlu.pyxoverloaded.signal.SignalPK;
 import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
-import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
 import static xyz.gianlu.pyxoverloaded.TaskUtils.loggingCallbacks;
 
 public class OverloadedChatApi implements Closeable {
@@ -55,7 +53,6 @@ public class OverloadedChatApi implements Closeable {
     }
 
     //region Keys
-
     /**
      * Sends keys (without generating pre-keys) to the server if needed.
      */
@@ -106,11 +103,9 @@ public class OverloadedChatApi implements Closeable {
             return null;
         }), "get-keys-" + address.toString()));
     }
-
     //endregion
 
     //region Chats
-
     /**
      * Starts a chat with the specified user.
      *
@@ -160,7 +155,6 @@ public class OverloadedChatApi implements Closeable {
     public Chat getChat(int chatId) {
         return db.getChat(chatId);
     }
-
     //endregion
 
     //region Sending
@@ -168,13 +162,13 @@ public class OverloadedChatApi implements Closeable {
     /**
      * Sends a message on the specified chat after encrypting it.
      *
-     * @param chatId   The chat ID
-     * @param text     The plaintext message
-     * @param activity The caller {@link Activity}
-     * @param callback The callback containing the decrypted message (for local dispatching)
+     * @param chatId The chat ID
+     * @param text   The plaintext message
+     * @return A task resolving to the {@link PlainChatMessage}
      */
-    public void sendMessage(int chatId, @NonNull String text, @Nullable Activity activity, @NonNull ChatMessageCallback callback) {
-        callbacks(api.userData(true).continueWith(api.executorService, (task) -> {
+    @NotNull
+    public Task<PlainChatMessage> sendMessage(int chatId, @NonNull String text) {
+        return api.userData(true).continueWith(api.executorService, (task) -> {
             UserData data = task.getResult();
             if (data == null) throw new IllegalStateException();
 
@@ -210,10 +204,11 @@ public class OverloadedChatApi implements Closeable {
             }
 
             throw lastEx;
-        }), activity, message -> {
-            callback.onMessage(message);
-            dispatchDecryptedMessage(message);
-        }, callback::onFailed);
+        }).continueWith(task -> {
+            PlainChatMessage msg = task.getResult();
+            dispatchDecryptedMessage(msg);
+            return msg;
+        });
     }
 
     @WorkerThread
@@ -253,7 +248,6 @@ public class OverloadedChatApi implements Closeable {
     //endregion
 
     //region Local messages
-
     /**
      * Gets a list of locally stored messages (128 max) from the given time.
      *
@@ -280,7 +274,6 @@ public class OverloadedChatApi implements Closeable {
     //endregion
 
     //region Last message
-
     /**
      * Gets the last message of the given chat.
      *
@@ -340,7 +333,6 @@ public class OverloadedChatApi implements Closeable {
     //endregion
 
     //region Receive and decrypt
-
     /**
      * Sends an acknowledgment to the server (that it has received the message).
      *
@@ -355,6 +347,7 @@ public class OverloadedChatApi implements Closeable {
         }), "message-ack: " + ackId);
     }
 
+    @WorkerThread
     private void dispatchDecryptedMessage(@NonNull PlainChatMessage msg) {
         api.dispatchLocalEvent(Event.Type.CHAT_MESSAGE, msg);
     }

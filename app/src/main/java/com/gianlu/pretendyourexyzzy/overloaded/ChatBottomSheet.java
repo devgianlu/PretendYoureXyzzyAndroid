@@ -30,8 +30,6 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -41,7 +39,6 @@ import java.util.Locale;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
-import xyz.gianlu.pyxoverloaded.callback.ChatMessageCallback;
 import xyz.gianlu.pyxoverloaded.model.Chat;
 import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
 
@@ -61,20 +58,16 @@ public class ChatBottomSheet extends ThemedModalBottomSheet<Chat, ChatBottomShee
         AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_SEND_CHAT);
 
         send.setEnabled(false);
-        chatApi.sendMessage(getSetupPayload().id, text, getActivity(), new ChatMessageCallback() {
-            @Override
-            public void onMessage(@NonNull PlainChatMessage msg) {
-                CommonUtils.setText(send, "");
-                send.setEnabled(true);
-            }
-
-            @Override
-            public void onFailed(@NotNull Exception ex) {
-                Log.e(TAG, "Failed sending message.", ex);
-                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSendMessage).extra(getSetupPayload().id));
-                send.setEnabled(true);
-            }
-        });
+        chatApi.sendMessage(getSetupPayload().id, text)
+                .addOnSuccessListener(plainChatMessage -> {
+                    CommonUtils.setText(send, "");
+                    send.setEnabled(true);
+                })
+                .addOnFailureListener(ex -> {
+                    Log.e(TAG, "Failed sending message.", ex);
+                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSendMessage).extra(getSetupPayload().id));
+                    send.setEnabled(true);
+                });
     }
 
     @Override
