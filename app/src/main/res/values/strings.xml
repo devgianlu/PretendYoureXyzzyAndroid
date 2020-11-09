@@ -414,4 +414,5 @@
     <string name="roundsWon">Rounds won</string>
     <string name="roundsPlayed">Rounds played</string>
     <string name="cardsPlayed">Cards played</string>
+    <string name="overloadedChats">Overloaded chats</string>
 </resources>

@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -29,7 +30,8 @@ import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
-import com.gianlu.pretendyourexyzzy.databinding.FragmentNewChatBinding;
+import com.gianlu.pretendyourexyzzy.databinding.DialogNewChatBinding;
+import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.gms.tasks.Task;
 
 import org.jetbrains.annotations.NotNull;
@@ -40,37 +42,43 @@ import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
+import xyz.gianlu.pyxoverloaded.model.Chat;
 import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
 
 public class NewChatDialog extends DialogFragment {
     private static final String TAG = NewChatDialog.class.getSimpleName();
     private ChatController controller;
     private ChatAdapter adapter;
+    private DialogNewChatBinding binding;
 
     @NotNull
-    private static NewChatDialog get(@NotNull Type type, int gid, int chatId) {
+    private static NewChatDialog get(@NotNull Type type, int gid, Chat chat) {
         NewChatDialog dialog = new NewChatDialog();
         Bundle args = new Bundle();
         args.putSerializable("type", type);
         args.putInt("gid", gid);
-        args.putInt("chatId", chatId);
+        if (chat != null) {
+            args.putInt("chatId", chat.id);
+            args.putString("recipient", chat.recipient);
+        }
+
         dialog.setArguments(args);
         return dialog;
     }
 
     @NotNull
     public static NewChatDialog getGlobal() {
-        return get(Type.GLOBAL, -1, -1);
+        return get(Type.GLOBAL, -1, null);
     }
 
     @NotNull
     public static NewChatDialog getGame(int gid) {
-        return get(Type.GAME, gid, -1);
+        return get(Type.GAME, gid, null);
     }
 
     @NotNull
-    public static NewChatDialog getOverloaded(int chatId) {
-        return get(Type.OVERLOADED, -1, chatId);
+    public static NewChatDialog getOverloaded(@NotNull Chat chat) {
+        return get(Type.OVERLOADED, -1, chat);
     }
 
     @NonNull
@@ -103,7 +111,7 @@ public class NewChatDialog extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        FragmentNewChatBinding binding = FragmentNewChatBinding.inflate(inflater, container, false);
+        binding = DialogNewChatBinding.inflate(inflater, container, false);
 
         Type type = (Type) requireArguments().getSerializable("type");
         if (type == null) {
@@ -143,6 +151,7 @@ public class NewChatDialog extends DialogFragment {
                 }
 
                 controller = new OverloadedController(requireContext(), chatId);
+                binding.chatFragmentTitle.setText(requireArguments().getString("recipient"));
                 break;
             default:
                 dismissAllowingStateLoss();
@@ -157,76 +166,107 @@ public class NewChatDialog extends DialogFragment {
             return null;
         }
 
+        AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_OPEN_CHAT);
+
         controller.attach(msg -> {
             if (adapter != null) adapter.addMessage(msg);
             controller.readAllMessages();
         });
 
-        binding.chatFragmentSend.setOnClickListener(v -> {
-            String msg = binding.chatFragmentText.getText().toString().trim();
-            if (msg.isEmpty() || controller == null) return;
+        binding.chatFragmentText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEND) {
+                send();
+                return true;
+            }
 
-            binding.chatFragmentSend.setEnabled(false);
-            binding.chatFragmentText.setEnabled(false);
-            controller.send(msg, new ChatController.SendCallback() {
-                @Override
-                public void onSuccessful() {
-                    binding.chatFragmentSend.setEnabled(true);
-                    binding.chatFragmentText.setEnabled(true);
-
-                    binding.chatFragmentText.setText(null);
-                }
-
-                @Override
-                public void unknownCommand() {
-                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.unknownChatCommand));
-                    binding.chatFragmentSend.setEnabled(true);
-                    binding.chatFragmentText.setEnabled(true);
-                }
-
-                @Override
-                public void onFailed(@NonNull Exception ex) {
-                    Log.e(TAG, "Failed sending message.", ex);
-                    binding.chatFragmentSend.setEnabled(true);
-                    binding.chatFragmentText.setEnabled(true);
-
-                    int stringRes;
-                    if (ex instanceof PyxException) {
-                        switch (((PyxException) ex).errorCode) {
-                            case "rm":
-                                stringRes = R.string.cannotRepeatMessage;
-                                break;
-                            case "tmsc":
-                                stringRes = R.string.tooManySpecialCharacters;
-                                break;
-                            case "tf":
-                                stringRes = R.string.chattingTooFast;
-                                break;
-                            case "CL":
-                                stringRes = R.string.tryCapsLockOff;
-                                break;
-                            case "rW":
-                                stringRes = R.string.mustUseMoreUniqueWords;
-                                break;
-                            case "mtl":
-                                stringRes = R.string.chatMessageTooLong;
-                                break;
-                            case "nes":
-                                stringRes = R.string.tooLessWords;
-                                break;
-                            default:
-                                stringRes = R.string.failedSendMessage;
-                        }
-                    } else {
-                        stringRes = R.string.failedSendMessage;
-                    }
-
-                    DialogUtils.showToast(getContext(), Toaster.build().message(stringRes));
-                }
-            });
+            return false;
         });
 
+        binding.chatFragmentSend.setOnClickListener(v -> send());
+
+        /* TODO: Load old messages
+         rmv.list().addOnScrollListener(new RecyclerView.OnScrollListener() {
+            volatile boolean isLoading = false;
+            boolean willLoadMore = true;
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView view, int dx, int dy) {
+                if (!isLoading && willLoadMore && adapter != null && !view.canScrollVertically(-1) && dy < 0) {
+                    isLoading = true;
+                    List<PlainChatMessage> list = chatApi.getLocalMessages(payload.id, adapter.olderTimestamp());
+                    if (list != null && !list.isEmpty()) postUpdate(Update.loadedMore(list));
+                    else willLoadMore = false;
+                    isLoading = false;
+                }
+            }
+        });
+         */
+
         return binding.getRoot();
+    }
+
+    private void send() {
+        String msg = binding.chatFragmentText.getText().toString().trim();
+        if (msg.isEmpty() || controller == null) return;
+
+        binding.chatFragmentSend.setEnabled(false);
+        binding.chatFragmentText.setEnabled(false);
+        controller.send(msg, new ChatController.SendCallback() {
+            @Override
+            public void onSuccessful() {
+                binding.chatFragmentSend.setEnabled(true);
+                binding.chatFragmentText.setEnabled(true);
+
+                binding.chatFragmentText.setText(null);
+            }
+
+            @Override
+            public void unknownCommand() {
+                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.unknownChatCommand));
+                binding.chatFragmentSend.setEnabled(true);
+                binding.chatFragmentText.setEnabled(true);
+            }
+
+            @Override
+            public void onFailed(@NonNull Exception ex) {
+                Log.e(TAG, "Failed sending message.", ex);
+                binding.chatFragmentSend.setEnabled(true);
+                binding.chatFragmentText.setEnabled(true);
+
+                int stringRes;
+                if (ex instanceof PyxException) {
+                    switch (((PyxException) ex).errorCode) {
+                        case "rm":
+                            stringRes = R.string.cannotRepeatMessage;
+                            break;
+                        case "tmsc":
+                            stringRes = R.string.tooManySpecialCharacters;
+                            break;
+                        case "tf":
+                            stringRes = R.string.chattingTooFast;
+                            break;
+                        case "CL":
+                            stringRes = R.string.tryCapsLockOff;
+                            break;
+                        case "rW":
+                            stringRes = R.string.mustUseMoreUniqueWords;
+                            break;
+                        case "mtl":
+                            stringRes = R.string.chatMessageTooLong;
+                            break;
+                        case "nes":
+                            stringRes = R.string.tooLessWords;
+                            break;
+                        default:
+                            stringRes = R.string.failedSendMessage;
+                    }
+                } else {
+                    stringRes = R.string.failedSendMessage;
+                }
+
+                DialogUtils.showToast(getContext(), Toaster.build().message(stringRes));
+            }
+        });
     }
 
     @Override
@@ -407,7 +447,10 @@ public class NewChatDialog extends DialogFragment {
             }
 
             send(msg, emote, wall)
-                    .addOnSuccessListener(aVoid -> callback.onSuccessful())
+                    .addOnSuccessListener(aVoid -> {
+                        AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_SEND_CHAT);
+                        callback.onSuccessful();
+                    })
                     .addOnFailureListener(callback::onFailed);
         }
 
@@ -489,7 +532,7 @@ public class NewChatDialog extends DialogFragment {
         @Override
         public int getItemViewType(int position) {
             ChatMessage msg = list.get(position);
-            if (showSender && controller != null && msg.sender.equals(controller.username()))
+            if (controller != null && msg.sender.equals(controller.username()))
                 return TYPE_SENT;
             else
                 return TYPE_RECEIVED;
@@ -506,7 +549,8 @@ public class NewChatDialog extends DialogFragment {
             ChatMessage msg = list.get(position);
 
             holder.setText(msg.text);
-            holder.setSender(msg.sender);
+            if (showSender) holder.setSender(msg.sender);
+            else holder.setSender(null);
         }
 
         @Override

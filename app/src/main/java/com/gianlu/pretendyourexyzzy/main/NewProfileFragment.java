@@ -51,8 +51,9 @@ import com.gianlu.pretendyourexyzzy.customdecks.NewEditCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewProfileBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemFriendBinding;
 import com.gianlu.pretendyourexyzzy.dialogs.CrCastLoginDialog;
+import com.gianlu.pretendyourexyzzy.dialogs.NewChatDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
-import com.gianlu.pretendyourexyzzy.overloaded.ChatBottomSheet;
+import com.gianlu.pretendyourexyzzy.overloaded.ChatsListActivity;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 import com.google.android.gms.common.images.ImageManager;
@@ -158,9 +159,6 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         binding = FragmentNewProfileBinding.inflate(inflater, container, false);
         binding.profileFragmentInputs.idCodeInput.setEndIconOnClickListener(v -> CommonUtils.setText(binding.profileFragmentInputs.idCodeInput, CommonUtils.randomString(100)));
         binding.profileFragmentMenu.setOnClickListener((v) -> showPopupMenu());
-        binding.profileFragmentChat.setOnClickListener(v -> {
-            // TODO: Open Overloaded chat
-        });
 
         OverloadedApi.get().addEventListener(this);
 
@@ -328,15 +326,21 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         //endregion
 
         //region Preferences
+        binding.profileFragmentChat.setVisibility(View.GONE);
+
         OverloadedUtils.waitReady()
                 .addOnSuccessListener(signedIn -> {
                     binding.profileFragmentOverloadedPreferences.setVisibility(View.VISIBLE);
                     setupPreferencesCheckBox(binding.profileFragmentOverloadedPublicCustomDecks, UserData.PropertyKey.PUBLIC_CUSTOM_DECKS);
                     setupPreferencesCheckBox(binding.profileFragmentOverloadedPublicStarredCards, UserData.PropertyKey.PUBLIC_STARRED_CARDS);
+
+                    binding.profileFragmentChat.setVisibility(View.VISIBLE);
+                    binding.profileFragmentChat.setOnClickListener(v -> startActivity(new Intent(requireContext(), ChatsListActivity.class)));
                 })
                 .addOnFailureListener(ex -> {
                     Log.e(TAG, "Failed waiting ready.", ex);
                     binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
+                    binding.profileFragmentChat.setVisibility(View.GONE);
                 });
         //endregion
 
@@ -686,10 +690,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                         return true;
                     case R.id.overloadedUserItemMenu_openChat:
                         OverloadedApi.chat(context).startChat(friend.username)
-                                .addOnSuccessListener(chat -> {
-                                    ChatBottomSheet sheet = new ChatBottomSheet();
-                                    sheet.show(getActivity(), chat);
-                                })
+                                .addOnSuccessListener(chat -> NewChatDialog.getOverloaded(chat).show(getChildFragmentManager(), null))
                                 .addOnFailureListener(ex -> {
                                     Log.e(TAG, "Failed opening chat.", ex);
                                     showToast(Toaster.build().message(R.string.failedCreatingChat).extra(friend));

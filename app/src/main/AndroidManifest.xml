@@ -36,11 +36,15 @@
         <!-- One time login activity -->
         <activity
             android:name=".OneTimeLoginActivity"
+            android:configChanges="uiMode"
+            android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme" />
 
         <!-- Main activity -->
         <activity
             android:name=".NewMainActivity"
+            android:configChanges="uiMode"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -78,6 +82,12 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateHidden" />
+
+        <activity
+            android:name=".overloaded.ChatsListActivity"
+            android:configChanges="uiMode"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- File provider (round images, custom decks) -->
         <provider
