@@ -40,6 +40,30 @@
             android:tint="#000000" />
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/chatsListActivity_empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingStart="48dp"
+        android:paddingEnd="48dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="200dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_undraw_not_found" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/noChatsMessage"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.Undraw" />
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatsListActivity_list"
         android:layout_width="match_parent"

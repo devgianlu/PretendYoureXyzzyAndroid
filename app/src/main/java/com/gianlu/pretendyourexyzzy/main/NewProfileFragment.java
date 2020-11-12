@@ -441,7 +441,8 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         android.widget.PopupMenu menu = new android.widget.PopupMenu(requireContext(), binding.profileFragmentMenu);
         menu.inflate(R.menu.new_profile);
 
-        if (!CrCastApi.hasCredentials()) menu.getMenu().removeItem(R.id.customDecks_logoutCrCast);
+        if (!CrCastApi.hasCredentials())
+            menu.getMenu().removeItem(R.id.profileFragment_logoutCrCast);
 
         menu.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.profileFragment_logoutCrCast) {

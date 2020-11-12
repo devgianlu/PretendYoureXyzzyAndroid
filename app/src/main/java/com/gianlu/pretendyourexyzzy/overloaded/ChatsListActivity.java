@@ -20,8 +20,11 @@ import com.gianlu.pretendyourexyzzy.databinding.ItemOverloadedChatBinding;
 import com.gianlu.pretendyourexyzzy.dialogs.NewChatDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
 
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
@@ -42,9 +45,7 @@ public class ChatsListActivity extends ActivityWithDialog implements OverloadedA
 
         binding.chatsListActivityList.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
         binding.chatsListActivityBack.setOnClickListener(v -> onBackPressed());
-        binding.chatsListActivityMenu.setOnClickListener(v -> {
-            // TODO: Chats list popup
-        });
+        binding.chatsListActivityMenu.setVisibility(View.GONE);
 
         if (!OverloadedUtils.isSignedIn()) {
             finishAfterTransition();
@@ -53,9 +54,6 @@ public class ChatsListActivity extends ActivityWithDialog implements OverloadedA
 
         chatApi = OverloadedApi.chat(this);
         OverloadedApi.get().addEventListener(this);
-
-        adapter = new ChatsAdapter(chatApi.listChats());
-        binding.chatsListActivityList.setAdapter(adapter);
     }
 
     @Override
@@ -68,7 +66,14 @@ public class ChatsListActivity extends ActivityWithDialog implements OverloadedA
     protected void onResume() {
         super.onResume();
 
-        // TODO: Refresh chats
+        if (chatApi != null && binding != null) {
+            adapter = new ChatsAdapter(chatApi.listChats());
+            binding.chatsListActivityList.setAdapter(adapter);
+        }
+    }
+
+    public void refreshChat(int chatId) {
+        if (adapter != null) adapter.refresh(chatId);
     }
 
     @Override
@@ -122,7 +127,22 @@ public class ChatsListActivity extends ActivityWithDialog implements OverloadedA
             } else {
                 holder.binding.overloadedChatItemLastMsg.setText(lastMsg.text);
                 holder.binding.overloadedChatItemTime.setVisibility(View.VISIBLE);
-                holder.binding.overloadedChatItemTime.setText(String.valueOf(lastMsg.timestamp)); // FIXME
+
+                String time;
+                long diff = OverloadedApi.now() - lastMsg.timestamp;
+                if (diff < TimeUnit.MINUTES.toMillis(1)) {
+                    time = getString(R.string.now).toLowerCase();
+                } else if (diff < TimeUnit.HOURS.toMillis(1)) {
+                    time = String.format(Locale.getDefault(), "%dm", TimeUnit.MILLISECONDS.toMinutes(diff));
+                } else if (diff < TimeUnit.DAYS.toMillis(1)) {
+                    time = String.format(Locale.getDefault(), "%dh", TimeUnit.MILLISECONDS.toHours(diff));
+                } else if (diff < TimeUnit.DAYS.toMillis(2)) {
+                    time = getString(R.string.yesterday).toLowerCase();
+                } else {
+                    time = new SimpleDateFormat("dd/MM/yy", Locale.getDefault()).format(lastMsg.timestamp);
+                }
+
+                holder.binding.overloadedChatItemTime.setText(time);
             }
 
             int unread = chatApi.countSinceLastSeen(chat.id);
@@ -171,7 +191,13 @@ public class ChatsListActivity extends ActivityWithDialog implements OverloadedA
 
         @Override
         protected void shouldUpdateItemCount(int count) {
-            // TODO
+            if (count == 0) {
+                binding.chatsListActivityEmpty.setVisibility(View.VISIBLE);
+                binding.chatsListActivityList.setVisibility(View.GONE);
+            } else {
+                binding.chatsListActivityEmpty.setVisibility(View.GONE);
+                binding.chatsListActivityList.setVisibility(View.VISIBLE);
+            }
         }
 
         @NonNull

@@ -99,16 +99,24 @@ public class NewMainActivity extends ActivityWithDialog {
                 .addOnSuccessListener(this::pyxReady)
                 .addOnFailureListener(this::pyxError);
 
-        if (OverloadedUtils.isSignedIn()) {
-            SyncUtils.syncStarredCards(this, null);
-            SyncUtils.syncCustomDecks(this, null);
-            SyncUtils.syncStarredCustomDecks(this, null);
+        OverloadedUtils.waitReady()
+                .addOnSuccessListener(signedId -> {
+                    if (!signedId) return;
 
-            OverloadedSignInHelper.signInSilently(this, PlayGamesAuthProvider.PROVIDER_ID).addOnSuccessListener(account -> {
-                String authCode = account.getServerAuthCode();
-                if (authCode != null) OverloadedApi.get().linkGames(authCode);
-            });
-        }
+                    // TODO: Proper Overloaded init
+
+                    OverloadedApi.get().openWebSocket();
+                    OverloadedApi.chat(this).shareKeysIfNeeded();
+
+                    SyncUtils.syncStarredCards(this, null);
+                    SyncUtils.syncCustomDecks(this, null);
+                    SyncUtils.syncStarredCustomDecks(this, null);
+
+                    OverloadedSignInHelper.signInSilently(this, PlayGamesAuthProvider.PROVIDER_ID).addOnSuccessListener(account -> {
+                        String authCode = account.getServerAuthCode();
+                        if (authCode != null) OverloadedApi.get().linkGames(authCode);
+                    });
+                });
     }
 
     public void checkReloadNeeded() {

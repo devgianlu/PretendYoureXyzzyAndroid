@@ -1,10 +1,14 @@
 package com.gianlu.pretendyourexyzzy.dialogs;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +35,7 @@ import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.databinding.DialogNewChatBinding;
+import com.gianlu.pretendyourexyzzy.overloaded.ChatsListActivity;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.gms.tasks.Task;
 
@@ -120,9 +125,7 @@ public class NewChatDialog extends DialogFragment {
         }
 
         binding.chatFragmentBack.setOnClickListener(v -> dismissAllowingStateLoss());
-        binding.chatFragmentMenu.setOnClickListener(v -> {
-            // TODO: Chat menu
-        });
+        binding.chatFragmentMenu.setVisibility(View.GONE);
 
         LinearLayoutManager llm = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         llm.setStackFromEnd(true);
@@ -184,23 +187,26 @@ public class NewChatDialog extends DialogFragment {
 
         binding.chatFragmentSend.setOnClickListener(v -> send());
 
-        /* TODO: Load old messages
-         rmv.list().addOnScrollListener(new RecyclerView.OnScrollListener() {
+        binding.chatFragmentList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            private final Handler handler = new Handler(Looper.getMainLooper());
             volatile boolean isLoading = false;
             boolean willLoadMore = true;
 
             @Override
             public void onScrolled(@NonNull RecyclerView view, int dx, int dy) {
-                if (!isLoading && willLoadMore && adapter != null && !view.canScrollVertically(-1) && dy < 0) {
+                if (!isLoading && willLoadMore && adapter != null && controller instanceof OverloadedController && !view.canScrollVertically(-1) && dy < 0) {
                     isLoading = true;
-                    List<PlainChatMessage> list = chatApi.getLocalMessages(payload.id, adapter.olderTimestamp());
-                    if (list != null && !list.isEmpty()) postUpdate(Update.loadedMore(list));
-                    else willLoadMore = false;
+
+                    List<ChatMessage> list = ((OverloadedController) controller).getLocalMessages(adapter.olderTimestamp());
+                    if (list != null && !list.isEmpty())
+                        handler.post(() -> adapter.addMessages(list));
+                    else
+                        willLoadMore = false;
+
                     isLoading = false;
                 }
             }
         });
-         */
 
         return binding.getRoot();
     }
@@ -270,6 +276,15 @@ public class NewChatDialog extends DialogFragment {
     }
 
     @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+
+        Activity activity = getActivity();
+        if (activity instanceof ChatsListActivity && controller instanceof OverloadedController)
+            ((ChatsListActivity) activity).refreshChat(((OverloadedController) controller).chatId);
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         if (controller != null) controller.detach();
@@ -317,6 +332,12 @@ public class NewChatDialog extends DialogFragment {
         OverloadedController(@NotNull Context context, int chatId) {
             this.api = OverloadedApi.chat(context);
             this.chatId = chatId;
+        }
+
+        @Nullable
+        public List<ChatMessage> getLocalMessages(long since) {
+            List<PlainChatMessage> messages = api.getLocalMessages(chatId, since);
+            return messages != null ? ChatMessage.fromOverloaded(messages) : null;
         }
 
         @NotNull
@@ -487,10 +508,12 @@ public class NewChatDialog extends DialogFragment {
     private static class ChatMessage {
         final String sender;
         final String text;
+        final long timestamp;
 
-        private ChatMessage(@NotNull String sender, @NotNull String text) {
+        private ChatMessage(@NotNull String sender, @NotNull String text, long timestamp) {
             this.sender = sender;
             this.text = text;
+            this.timestamp = timestamp;
         }
 
         @NotNull
@@ -502,7 +525,7 @@ public class NewChatDialog extends DialogFragment {
 
         @NotNull
         static ChatMessage fromPyx(@NotNull PollMessage event) {
-            return new ChatMessage(event.sender, event.message);
+            return new ChatMessage(event.sender, event.message, event.timestamp);
         }
 
         @NotNull
@@ -514,7 +537,7 @@ public class NewChatDialog extends DialogFragment {
 
         @NotNull
         static ChatMessage fromOverloaded(@NotNull PlainChatMessage msg) {
-            return new ChatMessage(msg.from, msg.text);
+            return new ChatMessage(msg.from, msg.text, msg.timestamp);
         }
     }
 
@@ -563,6 +586,15 @@ public class NewChatDialog extends DialogFragment {
             notifyItemInserted(list.size() - 1);
         }
 
+        public void addMessages(List<ChatMessage> messages) {
+            list.addAll(0, messages);
+            notifyItemRangeInserted(0, messages.size());
+        }
+
+        public long olderTimestamp() {
+            return list.isEmpty() ? 0 : list.get(list.size() - 1).timestamp;
+        }
+
         final class ViewHolder extends RecyclerView.ViewHolder {
             private final TextView text;
             private final TextView sender;
@@ -579,7 +611,11 @@ public class NewChatDialog extends DialogFragment {
             }
 
             void setSender(String sender) {
-                if (this.sender != null) this.sender.setText(sender);
+                if (this.sender != null) {
+                    this.sender.setText(sender);
+                    if (sender == null) this.sender.setVisibility(View.GONE);
+                    else this.sender.setVisibility(View.VISIBLE);
+                }
             }
         }
     }
