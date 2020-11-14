@@ -1,12 +1,9 @@
 package com.gianlu.pretendyourexyzzy.api;
 
 import android.content.Context;
-import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import com.gianlu.pretendyourexyzzy.LoadingActivity;
 
 import org.json.JSONObject;
 
@@ -29,8 +26,7 @@ public class PyxException extends Exception {
             if (context == null) return true;
 
             InstanceHolder.holder().invalidate();
-            context.startActivity(new Intent(context, LoadingActivity.class)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+            // TODO: Launch something?
             return true;
         } else {
             return false;

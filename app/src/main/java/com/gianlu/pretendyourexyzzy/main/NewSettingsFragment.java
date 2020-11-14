@@ -36,6 +36,7 @@ import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewMainSettingsBinding;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewPrefsSettingsBinding;
+import com.gianlu.pretendyourexyzzy.dialogs.OverloadedSubDialog;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
@@ -285,14 +286,26 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
 
     public static class MainFragment extends ChildFragment {
         private PreferencesBillingHelper billingHelper;
+        private FragmentNewMainSettingsBinding binding;
+
+        @Override
+        protected void onPyxReady(@NonNull RegisteredPyx pyx) {
+            binding.settingsMetrics.setVisibility(pyx.hasMetrics() ? View.VISIBLE : View.GONE);
+        }
+
+        @Override
+        protected void onPyxInvalid() {
+            binding.settingsMetrics.setVisibility(View.GONE);
+        }
 
         @Nullable
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            FragmentNewMainSettingsBinding binding = FragmentNewMainSettingsBinding.inflate(inflater, container, false);
+            binding = FragmentNewMainSettingsBinding.inflate(inflater, container, false);
 
             binding.settingsPlayers.setOnClickListener(v -> replaceFragment(Page.PLAYERS));
             binding.settingsMetrics.setOnClickListener(v -> replaceFragment(Page.METRICS));
+            binding.settingsMetrics.setVisibility(View.GONE);
 
             binding.settingsApp.setSubtitle(R.string.devgianluCopyright, Calendar.getInstance().get(Calendar.YEAR));
             binding.settingsVersion.setSubtitle(getVersion());
@@ -526,9 +539,7 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
                     linkAccount.setSummary(CommonUtils.join(linkableProviderNames(context), ", "));
                     linkAccount.setOnClickListener(v -> {
                         link = true;
-                        DialogUtils.showDialog(getActivity(),
-                                OverloadedChooseProviderDialog.getLinkInstance(linkableProviderIds()),
-                                null);
+                        DialogUtils.showDialog(getActivity(), OverloadedChooseProviderDialog.getLinkInstance(linkableProviderIds()), null); // FIXME
                     });
                     addPreference(linkAccount);
                 }
@@ -589,11 +600,11 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
                 addPreference(delete);
             } else {
                 MaterialStandardPreference login = new MaterialStandardPreference(context);
-                login.setTitle(R.string.login);
-                login.setSummary(R.string.overloadedLogin_please);
+                login.setTitle(R.string.subscribe);
+                login.setSummary(R.string.getOverloadedNow_desc);
                 login.setOnClickListener(v -> {
                     link = false;
-                    DialogUtils.showDialog(getActivity(), OverloadedChooseProviderDialog.getSignInInstance(), null);
+                    OverloadedSubDialog.get().show(getChildFragmentManager(), null);
                 });
                 addPreference(login);
             }

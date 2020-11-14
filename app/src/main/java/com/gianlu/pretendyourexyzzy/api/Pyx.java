@@ -15,7 +15,6 @@ import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.preferences.json.JsonStoring;
 import com.gianlu.commonutils.ui.OfflineActivity;
-import com.gianlu.pretendyourexyzzy.LoadingActivity;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.api.models.CahConfig;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
@@ -426,7 +425,7 @@ public class Pyx implements Closeable {
     public static class NoServersException extends Exception {
 
         public void solve(@NonNull Context context) {
-            OfflineActivity.startActivity(context, LoadingActivity.class);
+            OfflineActivity.startActivity(context, null);
         }
     }
 

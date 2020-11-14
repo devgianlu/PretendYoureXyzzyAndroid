@@ -415,7 +415,22 @@
     <string name="roundsPlayed">Rounds played</string>
     <string name="cardsPlayed">Cards played</string>
     <string name="overloadedChats">Overloaded chats</string>
-    <string name="noChatsMessage">Feeling lonely... Make some friends and start chatting!</string>
+    <string name="noChatsMessage">Feeling lonely… Make some friends and start chatting!</string>
     <string name="now">Now</string>
     <string name="yesterday">Yesterday</string>
+    <string name="getOverloadedNow">Get OVERLOADED now</string>
+    <string name="overloadedFeature_profilePicture">Add profile picture</string>
+    <string name="overloadedFeature_customDecks">Create collaborative custom decks</string>
+    <string name="overloadedFeature_friendsChat">Make friends and chat with them privately</string>
+    <string name="overloadedFeature_uploadDeckImage">Upload images to custom decks</string>
+    <string name="overloadedFeature_stats">Achievements and stats</string>
+    <string name="overloadedFeature_sync">Sync your data</string>
+    <string name="subscription">Subscription</string>
+    <string name="forJust">For just…</string>
+    <string name="overloadedSub_usernameInfo">This will be your username from now on: choose wisely!</string>
+    <string name="getOverloadedNow_desc">Get Overloaded now to enable a lot of exciting features!</string>
+    <string name="subscribe">Subscribe</string>
+    <string name="overloadedSub_signInInfo">Sign in with one of these accounts to get started:</string>
+    <string name="priceSlashMonth">/month</string>
+    <string name="overloadedSubscribed">You have subscribed successfully!</string>
 </resources>

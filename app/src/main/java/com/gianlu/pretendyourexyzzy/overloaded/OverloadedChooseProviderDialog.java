@@ -51,7 +51,8 @@ public final class OverloadedChooseProviderDialog extends DialogFragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        listener = (Listener) context;
+        if (context instanceof Listener)
+            listener = (Listener) context;
     }
 
     @Override

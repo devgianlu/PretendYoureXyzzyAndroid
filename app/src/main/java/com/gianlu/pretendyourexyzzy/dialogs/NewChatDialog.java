@@ -50,7 +50,7 @@ import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
 import xyz.gianlu.pyxoverloaded.model.Chat;
 import xyz.gianlu.pyxoverloaded.model.PlainChatMessage;
 
-public class NewChatDialog extends DialogFragment {
+public final class NewChatDialog extends DialogFragment {
     private static final String TAG = NewChatDialog.class.getSimpleName();
     private ChatController controller;
     private ChatAdapter adapter;

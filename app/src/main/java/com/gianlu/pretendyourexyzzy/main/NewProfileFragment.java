@@ -53,6 +53,7 @@ import com.gianlu.pretendyourexyzzy.databinding.ItemFriendBinding;
 import com.gianlu.pretendyourexyzzy.dialogs.CrCastLoginDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.NewChatDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
+import com.gianlu.pretendyourexyzzy.dialogs.OverloadedSubDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.ChatsListActivity;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
@@ -162,6 +163,9 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
         OverloadedApi.get().addEventListener(this);
 
+        binding.profileFragmentProfileImage.setOnClickListener(v -> OverloadedSubDialog.get().show(getChildFragmentManager(), null)); // FIXME
+        // TODO: Show subscription warnings
+
         //region Starred cards
         binding.profileFragmentStarredCardsList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
         //endregion
@@ -213,6 +217,8 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                                 });
                     } else {
                         binding.profileFragmentFriendsOverloaded.setVisibility(View.VISIBLE);
+                        binding.profileFragmentFriendsOverloaded.setOnClickListener(v -> OverloadedSubDialog.get().show(getChildFragmentManager(), null));
+
                         binding.profileFragmentFriendsList.setVisibility(View.GONE);
                         binding.profileFragmentFriendsEmpty.setVisibility(View.GONE);
                         binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
@@ -327,15 +333,20 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
         //region Preferences
         binding.profileFragmentChat.setVisibility(View.GONE);
+        binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
 
         OverloadedUtils.waitReady()
                 .addOnSuccessListener(signedIn -> {
-                    binding.profileFragmentOverloadedPreferences.setVisibility(View.VISIBLE);
-                    setupPreferencesCheckBox(binding.profileFragmentOverloadedPublicCustomDecks, UserData.PropertyKey.PUBLIC_CUSTOM_DECKS);
-                    setupPreferencesCheckBox(binding.profileFragmentOverloadedPublicStarredCards, UserData.PropertyKey.PUBLIC_STARRED_CARDS);
+                    if (signedIn) {
+                        binding.profileFragmentOverloadedPreferences.setVisibility(View.VISIBLE);
+                        setupPreferencesCheckBox(binding.profileFragmentOverloadedPublicCustomDecks, UserData.PropertyKey.PUBLIC_CUSTOM_DECKS);
+                        setupPreferencesCheckBox(binding.profileFragmentOverloadedPublicStarredCards, UserData.PropertyKey.PUBLIC_STARRED_CARDS);
 
-                    binding.profileFragmentChat.setVisibility(View.VISIBLE);
-                    binding.profileFragmentChat.setOnClickListener(v -> startActivity(new Intent(requireContext(), ChatsListActivity.class)));
+                        binding.profileFragmentChat.setVisibility(View.VISIBLE);
+                        binding.profileFragmentChat.setOnClickListener(v -> startActivity(new Intent(requireContext(), ChatsListActivity.class)));
+                    } else {
+                        binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
+                    }
                 })
                 .addOnFailureListener(ex -> {
                     Log.e(TAG, "Failed waiting ready.", ex);
@@ -343,8 +354,6 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                     binding.profileFragmentChat.setVisibility(View.GONE);
                 });
         //endregion
-
-        // TODO: Overloaded subscribe flow
 
         return binding.getRoot();
     }

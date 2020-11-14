@@ -69,7 +69,6 @@ import okhttp3.internal.Util;
 import okio.BufferedSink;
 import okio.GzipSink;
 import okio.Okio;
-import xyz.gianlu.pyxoverloaded.callback.BooleanCallback;
 import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
 import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
@@ -435,11 +434,9 @@ public class OverloadedApi {
             return false;
         }
     }
-
     //endregion
 
     //region Misc
-
     /**
      * Uploads an image and gets a reference ID in return.
      *
@@ -551,14 +548,22 @@ public class OverloadedApi {
      * Checks whether the provided username is unique.
      *
      * @param username The username to check
-     * @param activity The caller {@link Activity}
-     * @param callback The callback containing the boolean response
+     * @return A task revolving to whether the username is unique
      */
-    public void isUsernameUnique(@NonNull String username, @Nullable Activity activity, @NonNull BooleanCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = makePostRequest("IsUsernameUnique", singletonJsonObject("username", username));
-            return obj.getBoolean("unique");
-        }), activity, callback::onResult, callback::onFailed);
+    @NonNull
+    public Task<Boolean> isUsernameUnique(@NonNull String username) {
+        return Tasks.call(executorService, () -> {
+            try (Response resp = client.newCall(new Request.Builder().url(overloadedServerUrl("IsUsernameUnique"))
+                    .post(RequestBody.create(singletonJsonObject("username", username).toString().getBytes(), MediaType.get("application/json"))).build())
+                    .execute()) {
+                JSONObject obj;
+                ResponseBody body = resp.body();
+                if (body == null) obj = new JSONObject();
+                else obj = new JSONObject(body.string());
+
+                return obj.getBoolean("unique");
+            }
+        });
     }
 
     /**
@@ -653,7 +658,6 @@ public class OverloadedApi {
     //endregion
 
     //region Maintenance
-
     /**
      * @return Whether the server is under maintenance (without requesting the server).
      */
@@ -917,13 +921,9 @@ public class OverloadedApi {
         @Contract("_, _ -> new")
         @SuppressLint("DefaultLocale")
         private static OverloadedServerException create(@NonNull Response resp, @NonNull JSONObject obj) {
-            try {
-                String reason = obj.getString("reason");
-                JSONObject details = obj.optJSONObject("details");
-                return new OverloadedServerException(String.format("%s -> %s (%d)", resp.request(), reason, resp.code()), resp.code(), reason, details);
-            } catch (JSONException ex) {
-                throw new IllegalStateException(ex);
-            }
+            String reason = obj.optString("reason");
+            JSONObject details = obj.optJSONObject("details");
+            return new OverloadedServerException(String.format("%s -> %s (%d)", resp.request(), reason, resp.code()), resp.code(), reason, details);
         }
     }
 

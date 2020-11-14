@@ -127,6 +127,8 @@ public final class OverloadedSignInHelper {
      */
     @NonNull
     public Intent startFlow(@NonNull Activity activity, @NonNull SignInProvider provider) {
+        FirebaseAuth.getInstance().signOut();
+
         currentFlow = new Flow();
         currentFlow.provider = provider;
         currentFlow.client = GoogleSignIn.getClient(activity, provider.googleSignInOptions());

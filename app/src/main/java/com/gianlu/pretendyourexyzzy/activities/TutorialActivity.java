@@ -16,7 +16,7 @@ import androidx.fragment.app.Fragment;
 
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.preferences.Prefs;
-import com.gianlu.pretendyourexyzzy.LoadingActivity;
+import com.gianlu.pretendyourexyzzy.NewMainActivity;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
@@ -78,7 +78,7 @@ public class TutorialActivity extends AppIntro {
 
     private void done() {
         Prefs.putBoolean(PK.FIRST_RUN, false);
-        startActivity(new Intent(this, LoadingActivity.class)
+        startActivity(new Intent(this, NewMainActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
     }
 

@@ -103,7 +103,7 @@ public class NewMainActivity extends ActivityWithDialog {
                 .addOnSuccessListener(signedId -> {
                     if (!signedId) return;
 
-                    // TODO: Proper Overloaded init
+                    // TODO: Proper Overloaded init (make sure renewing is also working)
 
                     OverloadedApi.get().openWebSocket();
                     OverloadedApi.chat(this).shareKeysIfNeeded();
@@ -112,10 +112,11 @@ public class NewMainActivity extends ActivityWithDialog {
                     SyncUtils.syncCustomDecks(this, null);
                     SyncUtils.syncStarredCustomDecks(this, null);
 
-                    OverloadedSignInHelper.signInSilently(this, PlayGamesAuthProvider.PROVIDER_ID).addOnSuccessListener(account -> {
-                        String authCode = account.getServerAuthCode();
-                        if (authCode != null) OverloadedApi.get().linkGames(authCode);
-                    });
+                    OverloadedSignInHelper.signInSilently(this, PlayGamesAuthProvider.PROVIDER_ID)
+                            .addOnSuccessListener(account -> {
+                                String authCode = account.getServerAuthCode();
+                                if (authCode != null) OverloadedApi.get().linkGames(authCode);
+                            });
                 });
     }
 
