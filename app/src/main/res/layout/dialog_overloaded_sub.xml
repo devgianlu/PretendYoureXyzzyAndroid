@@ -163,14 +163,19 @@
             android:textColor="#000000"
             android:textSize="18sp" />
 
-        <LinearLayout
-            android:id="@+id/overloadedSubDialog_providers"
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/overloadedSubDialog_providersLoading"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:orientation="vertical" />
+            android:layout_marginEnd="16dp">
 
+            <LinearLayout
+                android:id="@+id/overloadedSubDialog_providers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </com.facebook.shimmer.ShimmerFrameLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -192,23 +197,29 @@
             android:textColor="#000000"
             android:textSize="18sp" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/overloadedSubDialog_username"
-            style="@style/TextInputLayoutStyle"
+        <com.facebook.shimmer.ShimmerFrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:id="@+id/overloadedSubDialog_usernameLoading"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            app:helperText="@string/overloadedSub_usernameInfo">
+            android:layout_marginEnd="24dp">
 
-            <com.google.android.material.textfield.TextInputEditText
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/overloadedSubDialog_username"
+                style="@style/TextInputLayoutStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:importantForAutofill="no"
-                android:inputType="textNoSuggestions"
-                android:maxLength="30"
-                android:maxLines="1" />
-        </com.google.android.material.textfield.TextInputLayout>
+                app:helperText="@string/overloadedSub_usernameInfo">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:importantForAutofill="no"
+                    android:inputType="textNoSuggestions"
+                    android:maxLength="30"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </com.facebook.shimmer.ShimmerFrameLayout>
     </LinearLayout>
 
     <Button

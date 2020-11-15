@@ -1,8 +1,9 @@
 package com.gianlu.pretendyourexyzzy.overloaded;
 
 import android.app.Dialog;
-import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,15 +17,24 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.dialogs.DialogUtils;
+import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.main.NewProfileFragment;
+import com.gianlu.pretendyourexyzzy.main.NewSettingsFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper.SignInProvider;
+import com.google.firebase.auth.AuthCredential;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+
 public final class OverloadedChooseProviderDialog extends DialogFragment {
-    private Listener listener;
+    private static final int RC_SIGN_IN = 88;
+    private static final String TAG = OverloadedChooseProviderDialog.class.getSimpleName();
+    private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
 
     @NonNull
     private static OverloadedChooseProviderDialog getInstance(boolean link, @NonNull List<String> providers) {
@@ -49,19 +59,6 @@ public final class OverloadedChooseProviderDialog extends DialogFragment {
     }
 
     @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        if (context instanceof Listener)
-            listener = (Listener) context;
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        listener = null;
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
 
@@ -76,10 +73,42 @@ public final class OverloadedChooseProviderDialog extends DialogFragment {
         ((ImageView) item.findViewById(R.id.overloadedSignInProvider_icon)).setImageResource(provider.iconRes);
         ((TextView) item.findViewById(R.id.overloadedSignInProvider_name)).setText(provider.nameRes);
         item.setOnClickListener(v -> {
-            if (listener != null) listener.onSelectedSignInProvider(provider);
-            dismissAllowingStateLoss();
+            if (getActivity() == null) return;
+            startActivityForResult(signInHelper.startFlow(requireActivity(), provider), RC_SIGN_IN);
         });
         return item;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == RC_SIGN_IN && data != null && requireArguments().getBoolean("link", false)) {
+            AuthCredential credential = signInHelper.extractCredential(data);
+            if (credential == null) {
+                Log.w(TAG, "Couldn't extract credentials: " + data);
+                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSigningIn));
+                dismissAllowingStateLoss();
+                return;
+            }
+
+            OverloadedApi.get().link(credential)
+                    .addOnSuccessListener(aVoid -> {
+                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.accountLinked));
+
+                        if (getParentFragment() instanceof NewSettingsFragment.PrefsChildFragment)
+                            ((NewSettingsFragment.PrefsChildFragment) getParentFragment()).rebuildPreferences();
+                        else if (getParentFragment() instanceof NewProfileFragment)
+                            ((NewProfileFragment) getParentFragment()).refreshOverloaded();
+
+                        dismissAllowingStateLoss();
+                    })
+                    .addOnFailureListener(ex -> {
+                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLinkingAccount));
+                        Log.e(TAG, "Failed linking account.", ex);
+                        dismissAllowingStateLoss();
+                    });
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @NotNull
@@ -112,9 +141,5 @@ public final class OverloadedChooseProviderDialog extends DialogFragment {
         }
 
         return layout;
-    }
-
-    public interface Listener {
-        void onSelectedSignInProvider(@NonNull SignInProvider provider);
     }
 }

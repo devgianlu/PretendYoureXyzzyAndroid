@@ -19,7 +19,6 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthCredential;
@@ -70,7 +69,6 @@ import okio.BufferedSink;
 import okio.GzipSink;
 import okio.Okio;
 import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
-import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 import xyz.gianlu.pyxoverloaded.model.UserProfile;
@@ -437,6 +435,7 @@ public class OverloadedApi {
     //endregion
 
     //region Misc
+
     /**
      * Uploads an image and gets a reference ID in return.
      *
@@ -463,17 +462,14 @@ public class OverloadedApi {
      * Links the current profile with another provider.
      *
      * @param credential The credentials of the new provider
-     * @param listener   A listener for completion
+     * @return A task resolving to the link operation
      */
-    public void link(@NonNull AuthCredential credential, @NonNull OnCompleteListener<Void> listener) {
-        if (user == null && updateUser()) {
-            listener.onComplete(Tasks.forException(new NotSignedInException()));
-            return;
-        }
+    @NonNull
+    public Task<Void> link(@NonNull AuthCredential credential) {
+        if (user == null && updateUser())
+            return Tasks.forException(new NotSignedInException());
 
-        user.linkWithCredential(credential)
-                .continueWithTask(task -> user.reload())
-                .addOnCompleteListener(listener);
+        return user.linkWithCredential(credential).continueWithTask(task -> user.reload());
     }
 
     /**
@@ -508,20 +504,17 @@ public class OverloadedApi {
      * @param username      The username, may be {@code null}
      * @param sku           The product/subscription SKU
      * @param purchaseToken The purchase token
-     * @param activity      The caller {@link Activity}
-     * @param callback      The callback containing the latest {@link UserData}
      */
-    @Contract("null, null, null, _, _ -> fail")
-    public void registerUser(@Nullable String username, @Nullable String sku, @Nullable String purchaseToken, @Nullable Activity activity, @NonNull UserDataCallback callback) {
+    @NonNull
+    @Contract("null, null, null -> fail")
+    public Task<UserData> registerUser(@Nullable String username, @Nullable String sku, @Nullable String purchaseToken) {
         if (username == null && (sku == null && purchaseToken == null))
             throw new IllegalStateException();
 
-        if (user == null && updateUser()) {
-            callback.onFailed(new NotSignedInException());
-            return;
-        }
+        if (user == null && updateUser())
+            return Tasks.forException(new NotSignedInException());
 
-        Task<UserData> task = user.getIdToken(true)
+        return user.getIdToken(true)
                 .continueWith(new NonNullContinuation<GetTokenResult, OverloadedToken>() {
                     @Override
                     public OverloadedToken then(@NonNull GetTokenResult result) {
@@ -540,8 +533,6 @@ public class OverloadedApi {
                         return userDataCached = new UserData(obj.getJSONObject("userData"));
                     }
                 });
-
-        callbacks(task, activity, callback::onUserData, callback::onFailed);
     }
 
     /**
@@ -658,6 +649,7 @@ public class OverloadedApi {
     //endregion
 
     //region Maintenance
+
     /**
      * @return Whether the server is under maintenance (without requesting the server).
      */
@@ -675,7 +667,6 @@ public class OverloadedApi {
     //endregion
 
     //region User data
-
     @NonNull
     public Task<UserData> userData() {
         return userData(false);
@@ -722,11 +713,9 @@ public class OverloadedApi {
             return null;
         }), activity, aVoid -> callback.onSuccessful(), callback::onFailed);
     }
-
     //endregion
 
     //region Friends
-
     @Nullable
     public Map<String, FriendStatus> friendsStatusCache() {
         return friendsStatusCached;
@@ -782,11 +771,9 @@ public class OverloadedApi {
             return map;
         });
     }
-
     //endregion
 
     //region Events
-
     void dispatchLocalEvent(@NonNull Event.Type type, @NonNull Object data) {
         webSocket.dispatchEvent(new Event(type, null, data));
     }
@@ -819,7 +806,6 @@ public class OverloadedApi {
                 serverOverloadedUsersCached.add(event.data.getString("nick"));
         }
     }
-
     //endregion
 
     @UiThread

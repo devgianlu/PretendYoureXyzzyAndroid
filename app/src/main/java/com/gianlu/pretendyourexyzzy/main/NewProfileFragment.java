@@ -163,7 +163,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
         OverloadedApi.get().addEventListener(this);
 
-        binding.profileFragmentProfileImage.setOnClickListener(v -> OverloadedSubDialog.get().show(getChildFragmentManager(), null)); // FIXME
+        binding.profileFragmentProfileImage.setOnClickListener(v -> OverloadedSubDialog.get().show(getChildFragmentManager(), null));
         // TODO: Show subscription warnings
 
         //region Starred cards
@@ -194,43 +194,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
             showDialog(builder);
         });
-
         binding.profileFragmentFriendsList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
-        binding.profileFragmentFriendsLoading.setVisibility(View.VISIBLE);
-        OverloadedUtils.waitReady()
-                .addOnSuccessListener(signedIn -> {
-                    if (signedIn) {
-                        binding.profileFragmentFriendsOverloaded.setVisibility(View.GONE);
-                        binding.profileFragmentFriendsAdd.setVisibility(View.VISIBLE);
-
-                        OverloadedApi.get().friendsStatus()
-                                .addOnSuccessListener(friends -> {
-                                    binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
-
-                                    friendsAdapter = new FriendsAdapter(friends.values());
-                                    binding.profileFragmentFriendsList.setAdapter(friendsAdapter);
-                                })
-                                .addOnFailureListener(ex -> {
-                                    Log.e(TAG, "Failed loading friends.", ex);
-                                    binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
-                                    binding.profileFragmentFriendsError.setVisibility(View.VISIBLE);
-                                });
-                    } else {
-                        binding.profileFragmentFriendsOverloaded.setVisibility(View.VISIBLE);
-                        binding.profileFragmentFriendsOverloaded.setOnClickListener(v -> OverloadedSubDialog.get().show(getChildFragmentManager(), null));
-
-                        binding.profileFragmentFriendsList.setVisibility(View.GONE);
-                        binding.profileFragmentFriendsEmpty.setVisibility(View.GONE);
-                        binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
-                        binding.profileFragmentFriendsAdd.setVisibility(View.GONE);
-                        binding.profileFragmentFriendsError.setVisibility(View.GONE);
-                    }
-                })
-                .addOnFailureListener(ex -> {
-                    Log.e(TAG, "Failed waiting ready.", ex);
-                    binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
-                    binding.profileFragmentFriendsError.setVisibility(View.VISIBLE);
-                });
         //endregion
 
         //region Achievements
@@ -334,25 +298,6 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         //region Preferences
         binding.profileFragmentChat.setVisibility(View.GONE);
         binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
-
-        OverloadedUtils.waitReady()
-                .addOnSuccessListener(signedIn -> {
-                    if (signedIn) {
-                        binding.profileFragmentOverloadedPreferences.setVisibility(View.VISIBLE);
-                        setupPreferencesCheckBox(binding.profileFragmentOverloadedPublicCustomDecks, UserData.PropertyKey.PUBLIC_CUSTOM_DECKS);
-                        setupPreferencesCheckBox(binding.profileFragmentOverloadedPublicStarredCards, UserData.PropertyKey.PUBLIC_STARRED_CARDS);
-
-                        binding.profileFragmentChat.setVisibility(View.VISIBLE);
-                        binding.profileFragmentChat.setOnClickListener(v -> startActivity(new Intent(requireContext(), ChatsListActivity.class)));
-                    } else {
-                        binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
-                    }
-                })
-                .addOnFailureListener(ex -> {
-                    Log.e(TAG, "Failed waiting ready.", ex);
-                    binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
-                    binding.profileFragmentChat.setVisibility(View.GONE);
-                });
         //endregion
 
         return binding.getRoot();
@@ -477,6 +422,8 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         refreshCrCastDecks();
 
         refreshStarredCards();
+
+        refreshOverloaded();
     }
 
     @Override
@@ -524,6 +471,67 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         binding.profileFragmentCustomDecksCrCastLogin.setVisibility(View.GONE);
         if (getActivity() != null) getActivity().invalidateOptionsMenu();
         refreshCrCastDecks();
+    }
+
+    public void refreshOverloaded() {
+        binding.profileFragmentFriendsLoading.setVisibility(View.VISIBLE);
+        OverloadedUtils.waitReady()
+                .addOnSuccessListener(signedIn -> {
+                    if (signedIn) {
+                        binding.profileFragmentFriendsOverloaded.setVisibility(View.GONE);
+                        binding.profileFragmentFriendsAdd.setVisibility(View.VISIBLE);
+
+                        OverloadedApi.get().friendsStatus()
+                                .addOnSuccessListener(friends -> {
+                                    binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
+
+                                    friendsAdapter = new FriendsAdapter(friends.values());
+                                    binding.profileFragmentFriendsList.setAdapter(friendsAdapter);
+                                })
+                                .addOnFailureListener(ex -> {
+                                    Log.e(TAG, "Failed loading friends.", ex);
+                                    binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
+                                    binding.profileFragmentFriendsError.setVisibility(View.VISIBLE);
+                                });
+                    } else {
+                        binding.profileFragmentFriendsOverloaded.setVisibility(View.VISIBLE);
+                        binding.profileFragmentFriendsOverloaded.setOnClickListener(v -> OverloadedSubDialog.get().show(getChildFragmentManager(), null));
+
+                        binding.profileFragmentFriendsList.setVisibility(View.GONE);
+                        binding.profileFragmentFriendsEmpty.setVisibility(View.GONE);
+                        binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
+                        binding.profileFragmentFriendsAdd.setVisibility(View.GONE);
+                        binding.profileFragmentFriendsError.setVisibility(View.GONE);
+                    }
+                })
+                .addOnFailureListener(ex -> {
+                    Log.e(TAG, "Failed waiting ready.", ex);
+                    binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
+                    binding.profileFragmentFriendsError.setVisibility(View.VISIBLE);
+                });
+
+
+        binding.profileFragmentChat.setVisibility(View.GONE);
+        binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
+
+        OverloadedUtils.waitReady()
+                .addOnSuccessListener(signedIn -> {
+                    if (signedIn) {
+                        binding.profileFragmentOverloadedPreferences.setVisibility(View.VISIBLE);
+                        setupPreferencesCheckBox(binding.profileFragmentOverloadedPublicCustomDecks, UserData.PropertyKey.PUBLIC_CUSTOM_DECKS);
+                        setupPreferencesCheckBox(binding.profileFragmentOverloadedPublicStarredCards, UserData.PropertyKey.PUBLIC_STARRED_CARDS);
+
+                        binding.profileFragmentChat.setVisibility(View.VISIBLE);
+                        binding.profileFragmentChat.setOnClickListener(v -> startActivity(new Intent(requireContext(), ChatsListActivity.class)));
+                    } else {
+                        binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
+                    }
+                })
+                .addOnFailureListener(ex -> {
+                    Log.e(TAG, "Failed waiting ready.", ex);
+                    binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
+                    binding.profileFragmentChat.setVisibility(View.GONE);
+                });
     }
 
     private void refreshStarredCards() {

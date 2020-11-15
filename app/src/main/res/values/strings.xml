@@ -433,4 +433,6 @@
     <string name="overloadedSub_signInInfo">Sign in with one of these accounts to get started:</string>
     <string name="priceSlashMonth">/month</string>
     <string name="overloadedSubscribed">You have subscribed successfully!</string>
+    <string name="failedRegistering_tryAgain">Failed registering, please try again later or contact support.</string>
+    <string name="overloadedSub_usernameLocked">You previously registered with this username.</string>
 </resources>

@@ -103,10 +103,7 @@ public class NewMainActivity extends ActivityWithDialog {
                 .addOnSuccessListener(signedId -> {
                     if (!signedId) return;
 
-                    // TODO: Proper Overloaded init (make sure renewing is also working)
-
-                    OverloadedApi.get().openWebSocket();
-                    OverloadedApi.chat(this).shareKeysIfNeeded();
+                    OverloadedUtils.doInitChecks(this);
 
                     SyncUtils.syncStarredCards(this, null);
                     SyncUtils.syncCustomDecks(this, null);

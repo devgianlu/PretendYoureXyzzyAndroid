@@ -21,7 +21,6 @@ import androidx.fragment.app.Fragment;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.FossUtils;
-import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.logs.LogsHelper;
 import com.gianlu.commonutils.preferences.PreferencesBillingHelper;
@@ -41,7 +40,6 @@ import com.gianlu.pretendyourexyzzy.metrics.MetricsFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
@@ -236,34 +234,34 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
 
         protected abstract void buildPreferences(@NonNull Context context);
 
-        protected final void addCategory(@StringRes int title) {
+        public final void addCategory(@StringRes int title) {
             MaterialPreferenceCategory category = new MaterialPreferenceCategory(requireContext());
             category.setTitle(getString(title));
             binding.settingsPrefsFragmentScreen.addView(category);
             lastCategory = category;
         }
 
-        protected final void addPreference(@NonNull AbsMaterialPreference<?> preference) {
+        public final void addPreference(@NonNull AbsMaterialPreference<?> preference) {
             preference.setStorageModule(storageModule);
             if (lastCategory == null) binding.settingsPrefsFragmentScreen.addView(preference);
             else lastCategory.addView(preference);
         }
 
-        protected final void removePreference(@NonNull AbsMaterialPreference<?> preference) {
+        public final void removePreference(@NonNull AbsMaterialPreference<?> preference) {
             if (lastCategory == null) binding.settingsPrefsFragmentScreen.removeView(preference);
             else lastCategory.removeView(preference);
         }
 
-        protected final void clearPreferences() {
+        public final void clearPreferences() {
             binding.settingsPrefsFragmentScreen.useLinearLayout();
         }
 
-        protected final void rebuildPreferences() {
+        public final void rebuildPreferences() {
             clearPreferences();
             buildPreferences(binding.settingsPrefsFragmentScreen.getContext());
         }
 
-        protected final void addController(AbsMaterialCheckablePreference controller, boolean showWhenChecked, AbsMaterialPreference<?>... dependent) {
+        public final void addController(AbsMaterialCheckablePreference controller, boolean showWhenChecked, AbsMaterialPreference<?>... dependent) {
             binding.settingsPrefsFragmentScreen.setVisibilityController(controller, dependent, showWhenChecked);
         }
 
@@ -415,52 +413,7 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
         }
     }
 
-    public static class OverloadedPrefsFragment extends PrefsChildFragment implements OverloadedChooseProviderDialog.Listener {
-        private static final int RC_SIGN_IN = 3;
-        private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
-        private boolean link;
-
-        @Override
-        public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-            if (requestCode == RC_SIGN_IN && data != null) {
-                if (link) {
-                    AuthCredential credential = signInHelper.extractCredential(data);
-                    if (credential == null) {
-                        Log.w(TAG, "Couldn't extract credentials: " + data);
-                        showToast(Toaster.build().message(R.string.failedSigningIn));
-                        return;
-                    }
-
-                    OverloadedApi.get().link(credential, task -> {
-                        if (task.isSuccessful()) {
-                            showToast(Toaster.build().message(R.string.accountLinked));
-                        } else {
-                            showToast(Toaster.build().message(R.string.failedLinkingAccount));
-                            Log.e(TAG, "Failed linking account.", task.getException());
-                        }
-
-                        onBackPressed();
-                    });
-                } else {
-                    signInHelper.processSignInData(data, new OverloadedSignInHelper.SignInCallback() {
-                        @Override
-                        public void onSignInSuccessful(@NonNull FirebaseUser user) {
-                            showToast(Toaster.build().message(R.string.signInSuccessful));
-                            onBackPressed();
-                        }
-
-                        @Override
-                        public void onSignInFailed() {
-                            showToast(Toaster.build().message(R.string.failedSigningIn));
-                            onBackPressed();
-                        }
-                    });
-                }
-            } else {
-                super.onActivityResult(requestCode, resultCode, data);
-            }
-        }
-
+    public static class OverloadedPrefsFragment extends PrefsChildFragment {
         private boolean hasLinked() {
             FirebaseUser user = OverloadedApi.get().firebaseUser();
             return user != null && user.getProviderData().size() > 0;
@@ -537,10 +490,7 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
                     MaterialStandardPreference linkAccount = new MaterialStandardPreference(context);
                     linkAccount.setTitle(R.string.linkAccount);
                     linkAccount.setSummary(CommonUtils.join(linkableProviderNames(context), ", "));
-                    linkAccount.setOnClickListener(v -> {
-                        link = true;
-                        DialogUtils.showDialog(getActivity(), OverloadedChooseProviderDialog.getLinkInstance(linkableProviderIds()), null); // FIXME
-                    });
+                    linkAccount.setOnClickListener(v -> OverloadedChooseProviderDialog.getLinkInstance(linkableProviderIds()).show(getChildFragmentManager(), null));
                     addPreference(linkAccount);
                 }
 
@@ -602,10 +552,7 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
                 MaterialStandardPreference login = new MaterialStandardPreference(context);
                 login.setTitle(R.string.subscribe);
                 login.setSummary(R.string.getOverloadedNow_desc);
-                login.setOnClickListener(v -> {
-                    link = false;
-                    OverloadedSubDialog.get().show(getChildFragmentManager(), null);
-                });
+                login.setOnClickListener(v -> OverloadedSubDialog.get().show(getChildFragmentManager(), null));
                 addPreference(login);
             }
         }
@@ -613,12 +560,6 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
         @Override
         public int getTitleRes() {
             return R.string.overloaded;
-        }
-
-        @Override
-        public void onSelectedSignInProvider(@NonNull OverloadedSignInHelper.SignInProvider provider) {
-            if (getActivity() == null) return;
-            startActivityForResult(signInHelper.startFlow(getActivity(), provider), RC_SIGN_IN);
         }
     }
 

@@ -32,13 +32,15 @@ import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.ui.Toaster;
-import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.databinding.DialogOverloadedSubBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemOverloadedSignInProviderBinding;
+import com.gianlu.pretendyourexyzzy.main.NewProfileFragment;
+import com.gianlu.pretendyourexyzzy.main.NewSettingsFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PlayGamesAuthProvider;
@@ -52,17 +54,17 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
-import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
-import xyz.gianlu.pyxoverloaded.model.UserData;
+
+import static com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils.ACTIVE_SKU;
 
 public final class OverloadedSubDialog extends DialogFragment implements PurchasesUpdatedListener {
     private static final String TAG = OverloadedSubDialog.class.getSimpleName();
-    private static final Sku ACTIVE_SKU = Sku.OVERLOADED_MONTHLY_SKU;
     private static final int RC_SIGN_IN = 56;
     private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
     private BillingClient billingClient;
     private SkuDetails skuDetails;
     private DialogOverloadedSubBinding binding;
+    private boolean usernameLocked = false;
 
     @NonNull
     public static OverloadedSubDialog get() {
@@ -162,7 +164,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
                     @Override
                     public void run() {
                         String username = CommonUtils.getText(binding.overloadedSubDialogUsername);
-                        if (username.trim().isEmpty()) return;
+                        if (username.trim().isEmpty() || usernameLocked) return;
 
                         if (OverloadedUtils.checkUsernameValid(username)) {
                             OverloadedApi.get().isUsernameUnique(username)
@@ -192,6 +194,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
             signInHelper.processSignInData(data, new OverloadedSignInHelper.SignInCallback() {
                 @Override
                 public void onSignInSuccessful(@NonNull FirebaseUser user) {
+                    binding.overloadedSubDialogProvidersLoading.hideShimmer();
                     binding.overloadedSubDialogProviders.setEnabled(true);
                     DialogUtils.showToast(getContext(), Toaster.build().message(R.string.signInSuccessful));
                     updateStatus(Status.USERNAME);
@@ -199,6 +202,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
 
                 @Override
                 public void onSignInFailed() {
+                    binding.overloadedSubDialogProvidersLoading.hideShimmer();
                     binding.overloadedSubDialogProviders.setEnabled(true);
                     DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSigningIn));
                 }
@@ -235,10 +239,14 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
                 OnProviderClickListener listener = provider -> {
                     if (getActivity() == null) return;
 
+                    binding.overloadedSubDialogProvidersLoading.showShimmer(true);
                     binding.overloadedSubDialogProviders.setEnabled(false);
+
+                    FirebaseAuth.getInstance().signOut();
                     startActivityForResult(signInHelper.startFlow(requireActivity(), provider), RC_SIGN_IN);
                 };
 
+                binding.overloadedSubDialogProvidersLoading.hideShimmer();
                 binding.overloadedSubDialogProviders.removeAllViews();
                 for (OverloadedSignInHelper.SignInProvider provider : OverloadedSignInHelper.SIGN_IN_PROVIDERS)
                     createProviderItem(provider, listener);
@@ -252,19 +260,23 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
                 binding.overloadedSubDialogButton.setOnClickListener(v -> {
                     String username = CommonUtils.getText(binding.overloadedSubDialogUsername);
                     if (OverloadedUtils.checkUsernameValid(username)) {
-                        setLoading(true);
-                        OverloadedApi.get().isUsernameUnique(username)
+                        setRegisterLoading(true);
+                        Tasks.forResult(usernameLocked)
+                                .continueWithTask(task -> {
+                                    if (task.getResult()) return Tasks.forResult(true);
+                                    else return OverloadedApi.get().isUsernameUnique(username);
+                                })
                                 .addOnSuccessListener(result -> {
                                     if (result) {
                                         registerUser(username);
                                     } else {
-                                        setLoading(false);
+                                        setRegisterLoading(false);
                                         binding.overloadedSubDialogUsername.setError(getString(R.string.overloaded_usernameAlreadyInUse));
                                     }
                                 })
                                 .addOnFailureListener(ex -> {
                                     binding.overloadedSubDialogUsername.setError(getString(R.string.failedCheckingUsername));
-                                    setLoading(false);
+                                    setRegisterLoading(false);
                                     Log.e(TAG, "Failed checking username unique.", ex);
                                 });
                     } else {
@@ -272,26 +284,54 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
                     }
                 });
 
-                UserInfo playGamesInfo;
-                if ((playGamesInfo = OverloadedApi.get().getProviderUserInfo(PlayGamesAuthProvider.PROVIDER_ID)) != null)
-                    CommonUtils.setText(binding.overloadedSubDialogUsername, playGamesInfo.getDisplayName());
+                binding.overloadedSubDialogUsernameLoading.showShimmer(true);
+                OverloadedApi.get().userData()
+                        .addOnSuccessListener(userData -> {
+                            binding.overloadedSubDialogUsernameLoading.hideShimmer();
+                            usernameLocked = true;
+                            CommonUtils.setText(binding.overloadedSubDialogUsername, userData.username);
+                            binding.overloadedSubDialogUsername.setEnabled(false);
+                            binding.overloadedSubDialogUsername.setHelperText(getString(R.string.overloadedSub_usernameLocked));
+
+                            if (userData.purchaseStatus.ok)
+                                subscriptionCompleteOk();
+                        })
+                        .addOnFailureListener(ex -> {
+                            usernameLocked = false;
+                            binding.overloadedSubDialogUsernameLoading.hideShimmer();
+                            binding.overloadedSubDialogUsername.setHelperText(getString(R.string.overloadedSub_usernameInfo));
+
+                            UserInfo playGamesInfo;
+                            if ((playGamesInfo = OverloadedApi.get().getProviderUserInfo(PlayGamesAuthProvider.PROVIDER_ID)) != null)
+                                CommonUtils.setText(binding.overloadedSubDialogUsername, playGamesInfo.getDisplayName());
+                        });
                 break;
         }
     }
 
-    private void setLoading(boolean loading) {
+    private void setRegisterLoading(boolean loading) {
         binding.overloadedSubDialogButton.setEnabled(!loading);
-        binding.overloadedSubDialogUsername.setEnabled(!loading);
+        binding.overloadedSubDialogUsername.setEnabled(!usernameLocked && !loading);
+
+        if (loading) binding.overloadedSubDialogUsernameLoading.showShimmer(true);
+        else binding.overloadedSubDialogUsernameLoading.hideShimmer();
     }
 
     private void setRegisterError() {
-        // TODO: Show registration error
+        setRegisterLoading(false);
+        binding.overloadedSubDialogUsername.setError(getString(R.string.failedRegistering_tryAgain));
     }
 
     private void subscriptionCompleteOk() {
         OverloadedApi.get().openWebSocket();
         if (getContext() != null) OverloadedApi.chat(requireContext()).shareKeysIfNeeded();
         DialogUtils.showToast(getContext(), Toaster.build().message(R.string.overloadedSubscribed));
+
+        if (getParentFragment() instanceof NewSettingsFragment.PrefsChildFragment)
+            ((NewSettingsFragment.PrefsChildFragment) getParentFragment()).rebuildPreferences();
+        else if (getParentFragment() instanceof NewProfileFragment)
+            ((NewProfileFragment) getParentFragment()).refreshOverloaded();
+
         dismissAllowingStateLoss();
     }
 
@@ -301,40 +341,36 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
      * @param username The username chosen
      */
     private void registerUser(@NonNull String username) {
-        Purchase purchase = getLatestPurchase();
+        Purchase purchase = OverloadedUtils.getLatestPurchase(billingClient);
 
-        setLoading(true);
-        OverloadedApi.get().registerUser(username, purchase != null ? purchase.getSku() : null, purchase != null ? purchase.getPurchaseToken() : null, null, new UserDataCallback() {
-            @Override
-            public void onUserData(@NonNull UserData data) {
-                if (data.purchaseStatus.ok) {
-                    subscriptionCompleteOk();
-                    return;
-                }
+        setRegisterLoading(true);
+        OverloadedApi.get().registerUser(username, purchase != null ? purchase.getSku() : null, purchase != null ? purchase.getPurchaseToken() : null)
+                .addOnSuccessListener(data -> {
+                    if (data.purchaseStatus.ok) {
+                        subscriptionCompleteOk();
+                        return;
+                    }
 
-                if (skuDetails != null) {
-                    startBillingFlow(skuDetails);
-                } else {
-                    getSkuDetails(new SkuDetailsCallback() {
-                        @Override
-                        public void onSuccess(@NonNull SkuDetails details) {
-                            startBillingFlow(details);
-                        }
+                    if (skuDetails != null) {
+                        startBillingFlow(skuDetails);
+                    } else {
+                        getSkuDetails(new SkuDetailsCallback() {
+                            @Override
+                            public void onSuccess(@NonNull SkuDetails details) {
+                                startBillingFlow(details);
+                            }
 
-                        @Override
-                        public void onFailed(int code) {
-                            setRegisterError();
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onFailed(@NonNull Exception ex) {
-                Log.e(TAG, "Failed registering user.", ex);
-                setRegisterError();
-            }
-        });
+                            @Override
+                            public void onFailed(int code) {
+                                setRegisterError();
+                            }
+                        });
+                    }
+                })
+                .addOnFailureListener(ex -> {
+                    Log.e(TAG, "Failed registering user.", ex);
+                    setRegisterError();
+                });
     }
 
     @Override
@@ -377,31 +413,6 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
     }
 
     /**
-     * Get the latest purchase of Overloaded (cached).
-     *
-     * @return The {@link Purchase} or {@code null} if none was present
-     */
-    @Nullable
-    private Purchase getLatestPurchase() {
-        if (billingClient == null || !billingClient.isReady())
-            return null;
-
-        List<Purchase> purchases = billingClient.queryPurchases(ACTIVE_SKU.skuType).getPurchasesList();
-        if (purchases == null || purchases.isEmpty()) return null;
-
-        Purchase latestPurchase = null;
-        for (Purchase p : purchases) {
-            if (!ACTIVE_SKU.sku.equals(p.getSku()) || !BuildConfig.APPLICATION_ID.equals(p.getPackageName()))
-                continue;
-
-            if (latestPurchase == null || latestPurchase.getPurchaseTime() < p.getPurchaseTime())
-                latestPurchase = p;
-        }
-
-        return latestPurchase;
-    }
-
-    /**
      * Starts the billing flow for the given SKU.
      *
      * @param product The {@link SkuDetails} for this flow
@@ -419,7 +430,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
 
         BillingResult result = billingClient.launchBillingFlow(requireActivity(), flowParams);
         if (result.getResponseCode() == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
-            Purchase purchase = getLatestPurchase();
+            Purchase purchase = OverloadedUtils.getLatestPurchase(billingClient);
             if (purchase == null) {
                 Log.e(TAG, "Couldn't find latest purchase.");
                 return;
@@ -440,7 +451,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
      * @param purchase The latest Overloaded purchase, may be used to update the token
      */
     private void purchaseComplete(@NonNull Purchase purchase) {
-        setLoading(true);
+        setRegisterLoading(true);
         OverloadedApi.get().userData()
                 .addOnSuccessListener(data -> {
                     if (data.purchaseStatus.ok) {
@@ -448,19 +459,15 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
                         return;
                     }
 
-                    OverloadedApi.get().registerUser(null, purchase.getSku(), purchase.getPurchaseToken(), null, new UserDataCallback() {
-                        @Override
-                        public void onUserData(@NonNull UserData data) {
-                            if (data.purchaseStatus.ok) subscriptionCompleteOk();
-                            else setRegisterError();
-                        }
-
-                        @Override
-                        public void onFailed(@NonNull Exception ex) {
-                            Log.e(TAG, "Failed updating purchase token.", ex);
-                            setRegisterError();
-                        }
-                    });
+                    OverloadedApi.get().registerUser(null, purchase.getSku(), purchase.getPurchaseToken())
+                            .addOnSuccessListener(data1 -> {
+                                if (data1.purchaseStatus.ok) subscriptionCompleteOk();
+                                else setRegisterError();
+                            })
+                            .addOnFailureListener(ex -> {
+                                Log.e(TAG, "Failed updating purchase token.", ex);
+                                setRegisterError();
+                            });
                 })
                 .addOnFailureListener(ex -> {
                     Log.e(TAG, "Failed getting user data.", ex);
@@ -468,18 +475,6 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
                 });
     }
 
-    public enum Sku {
-        OVERLOADED_INFINITE_SKU("overloaded.infinite", BillingClient.SkuType.INAPP),
-        OVERLOADED_MONTHLY_SKU("overloaded.monthly", BillingClient.SkuType.SUBS);
-
-        public final String sku;
-        final String skuType;
-
-        Sku(@NotNull String sku, @NotNull String skuType) {
-            this.sku = sku;
-            this.skuType = skuType;
-        }
-    }
 
     private enum Status {
         FEATURES, SIGN_IN, USERNAME
