@@ -1,7 +1,6 @@
 package xyz.gianlu.pyxoverloaded;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -68,15 +67,12 @@ import okhttp3.internal.Util;
 import okio.BufferedSink;
 import okio.GzipSink;
 import okio.Okio;
-import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 import xyz.gianlu.pyxoverloaded.model.UserProfile;
 import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
 import static com.gianlu.commonutils.CommonUtils.singletonJsonObject;
-import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
-import static xyz.gianlu.pyxoverloaded.TaskUtils.loggingCallbacks;
 import static xyz.gianlu.pyxoverloaded.Utils.overloadedServerUrl;
 
 public class OverloadedApi {
@@ -151,8 +147,13 @@ public class OverloadedApi {
         instance.webSocket.close();
     }
 
-    //region Internal
+    @NonNull
+    public static <R> Task<R> loggingCallbacks(@NonNull Task<R> task, @NonNull String taskName) {
+        return task.addOnFailureListener(ex -> Log.d(TAG, String.format("Failed processing task %s!", taskName), ex))
+                .addOnSuccessListener(r -> Log.d(TAG, String.format("Task %s completed successfully, result: %s", taskName, r)));
+    }
 
+    //region Internal
     @NonNull
     @WorkerThread
     JSONObject makePostRequest(@NonNull String suffix, @Nullable JSONObject json) throws OverloadedException, MaintenanceException {
@@ -615,17 +616,14 @@ public class OverloadedApi {
     /**
      * Deletes the current account (from the server too) and signs out.
      *
-     * @param activity The caller {@link Activity}
-     * @param callback The callback for completion
+     * @return A task resolving to the account deletion operation
      */
-    public void deleteAccount(@Nullable Activity activity, @NonNull SuccessCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
+    @NonNull
+    public Task<Void> deleteAccount() {
+        return Tasks.call(executorService, (Callable<Void>) () -> {
             makePostRequest("User/Delete", null);
             return null;
-        }), activity, a -> {
-            logout();
-            callback.onSuccessful();
-        }, callback::onFailed);
+        }).addOnFailureListener(ex -> logout());
     }
 
     /**
@@ -699,19 +697,19 @@ public class OverloadedApi {
     /**
      * Sets an user property to the specified value.
      *
-     * @param key      The property key
-     * @param value    The new property value
-     * @param activity The caller {@link Activity}
-     * @param callback The callback for success
+     * @param key   The property key
+     * @param value The new property value
+     * @return A task resolving to the user property set operation
      */
-    public void setUserProperty(@NonNull UserData.PropertyKey key, @Nullable String value, @Nullable Activity activity, @NonNull SuccessCallback callback) {
-        callbacks(Tasks.call(executorService, (Callable<Void>) () -> {
+    @NonNull
+    public Task<Void> setUserProperty(@NonNull UserData.PropertyKey key, @Nullable String value) {
+        return Tasks.call(executorService, (Callable<Void>) () -> {
             JSONObject body = new JSONObject();
             body.put("key", key.val);
             if (value != null) body.put("value", value);
             makePostRequest("User/SetProperty", body);
             return null;
-        }), activity, aVoid -> callback.onSuccessful(), callback::onFailed);
+        });
     }
     //endregion
 

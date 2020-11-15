@@ -42,7 +42,6 @@ import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsUpdateResponse;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCustomDecksPatchOp;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCustomDecksSyncResponse;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCustomDecksUpdateResponse;
-import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 
 public final class SyncUtils {
     private static final String TAG = SyncUtils.class.getSimpleName();
@@ -126,12 +125,12 @@ public final class SyncUtils {
 
         StarredCardsDatabase db = StarredCardsDatabase.get(context);
         long ourRevision = StarredCardsDatabase.getRevision();
-        OverloadedSyncApi.get().syncStarredCards(ourRevision, new GeneralCallback<StarredCardsSyncResponse>() {
+        OverloadedSyncApi.get().syncStarredCards(ourRevision, new OverloadedSyncApi.Callback<StarredCardsSyncResponse>() {
             @Override
             public void onResult(@NonNull StarredCardsSyncResponse result) {
                 if (result.needsUpdate) {
                     StarredCardsDatabase.UpdatePair update = db.getUpdate();
-                    OverloadedSyncApi.get().updateStarredCards(ourRevision, update.update, new GeneralCallback<StarredCardsUpdateResponse>() {
+                    OverloadedSyncApi.get().updateStarredCards(ourRevision, update.update, new OverloadedSyncApi.Callback<StarredCardsUpdateResponse>() {
                         @Override
                         public void onResult(@NonNull StarredCardsUpdateResponse result) {
                             if (result.remoteIds == null) {
@@ -177,7 +176,7 @@ public final class SyncUtils {
                             continue;
                         }
 
-                        OverloadedSyncApi.get().patchStarredCards(result.revision, OverloadedSyncApi.StarredCardsPatchOp.ADD, null, obj, new GeneralCallback<StarredCardsUpdateResponse>() {
+                        OverloadedSyncApi.get().patchStarredCards(result.revision, OverloadedSyncApi.StarredCardsPatchOp.ADD, null, obj, new OverloadedSyncApi.Callback<StarredCardsUpdateResponse>() {
                             @Override
                             public void onResult(@NonNull StarredCardsUpdateResponse result) {
                                 if (result.remoteId != null) {
@@ -238,7 +237,7 @@ public final class SyncUtils {
         }
 
         Log.d(TAG, String.format("Sending %d sync items for custom decks.", syncItems.length()));
-        OverloadedSyncApi.get().syncCustomDecks(syncItems, new GeneralCallback<List<CustomDecksSyncResponse>>() {
+        OverloadedSyncApi.get().syncCustomDecks(syncItems, new OverloadedSyncApi.Callback<List<CustomDecksSyncResponse>>() {
             @Override
             public void onResult(@NonNull List<CustomDecksSyncResponse> result) {
                 for (CustomDecksSyncResponse resp : result) {
@@ -286,7 +285,7 @@ public final class SyncUtils {
         }
 
         Log.d(TAG, "Sending update for custom deck: " + deck);
-        OverloadedSyncApi.get().updateCustomDeck(deck.revision, update, new GeneralCallback<CustomDecksUpdateResponse>() {
+        OverloadedSyncApi.get().updateCustomDeck(deck.revision, update, new OverloadedSyncApi.Callback<CustomDecksUpdateResponse>() {
             @Override
             public void onResult(@NonNull CustomDecksUpdateResponse result) {
                 if (result.cardsIds == null || result.deckId == null) {
@@ -325,12 +324,12 @@ public final class SyncUtils {
 
         CustomDecksDatabase db = CustomDecksDatabase.get(context);
         long ourRevision = CustomDecksDatabase.getStaredCustomDecksRevision();
-        OverloadedSyncApi.get().syncStarredCustomDecks(ourRevision, new GeneralCallback<StarredCustomDecksSyncResponse>() {
+        OverloadedSyncApi.get().syncStarredCustomDecks(ourRevision, new OverloadedSyncApi.Callback<StarredCustomDecksSyncResponse>() {
             @Override
             public void onResult(@NonNull StarredCustomDecksSyncResponse result) {
                 if (result.needsUpdate) {
                     CustomDecksDatabase.UpdatePair update = db.getStarredDecksUpdate();
-                    OverloadedSyncApi.get().updateStarredCustomDecks(ourRevision, update.update, new GeneralCallback<StarredCustomDecksUpdateResponse>() {
+                    OverloadedSyncApi.get().updateStarredCustomDecks(ourRevision, update.update, new OverloadedSyncApi.Callback<StarredCustomDecksUpdateResponse>() {
                         @Override
                         public void onResult(@NonNull StarredCustomDecksUpdateResponse result) {
                             if (result.remoteIds == null) {
@@ -366,7 +365,7 @@ public final class SyncUtils {
 
                     List<StarredDeck> leftover = db.getStarredDecks(true);
                     for (StarredDeck deck : leftover) {
-                        OverloadedSyncApi.get().patchStarredCustomDecks(result.revision, StarredCustomDecksPatchOp.ADD, null, deck.shareCode, new GeneralCallback<StarredCustomDecksUpdateResponse>() {
+                        OverloadedSyncApi.get().patchStarredCustomDecks(result.revision, StarredCustomDecksPatchOp.ADD, null, deck.shareCode, new OverloadedSyncApi.Callback<StarredCustomDecksUpdateResponse>() {
                             @Override
                             public void onResult(@NonNull StarredCustomDecksUpdateResponse result) {
                                 if (result.remoteId != null) {

@@ -33,7 +33,6 @@ import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.CustomDecksPatchOp;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.RemoteId;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCustomDecksPatchOp;
-import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 
 public final class CustomDecksDatabase extends SQLiteOpenHelper {
     private static final int CARD_TYPE_BLACK = 0;
@@ -124,7 +123,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
         try {
             Log.d(TAG, "Sending custom deck patch: " + op);
-            OverloadedSyncApi.get().patchCustomDeck(revision, remoteId, op, deck == null ? null : deck.toSyncJson(), card == null ? null : card.toSyncJson(), cardRemoteId, cardsJson, new GeneralCallback<OverloadedSyncApi.CustomDecksUpdateResponse>() {
+            OverloadedSyncApi.get().patchCustomDeck(revision, remoteId, op, deck == null ? null : deck.toSyncJson(), card == null ? null : card.toSyncJson(), cardRemoteId, cardsJson, new OverloadedSyncApi.Callback<OverloadedSyncApi.CustomDecksUpdateResponse>() {
                 @Override
                 public void onResult(@NonNull OverloadedSyncApi.CustomDecksUpdateResponse result) {
                     if (op == CustomDecksPatchOp.ADD_EDIT_CARD && result.cardId != null && card != null) {
@@ -159,7 +158,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         if (!OverloadedUtils.isSignedIn())
             return;
 
-        OverloadedSyncApi.get().patchStarredCustomDecks(revision, op, remoteId, shareCode, new GeneralCallback<OverloadedSyncApi.StarredCustomDecksUpdateResponse>() {
+        OverloadedSyncApi.get().patchStarredCustomDecks(revision, op, remoteId, shareCode, new OverloadedSyncApi.Callback<OverloadedSyncApi.StarredCustomDecksUpdateResponse>() {
             @Override
             public void onResult(@NonNull OverloadedSyncApi.StarredCustomDecksUpdateResponse result) {
                 if (op == StarredCustomDecksPatchOp.ADD && result.remoteId != null && deckId != null)

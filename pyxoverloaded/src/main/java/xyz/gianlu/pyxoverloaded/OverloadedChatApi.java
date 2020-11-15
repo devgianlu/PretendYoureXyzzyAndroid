@@ -39,7 +39,7 @@ import xyz.gianlu.pyxoverloaded.signal.OverloadedUserAddress;
 import xyz.gianlu.pyxoverloaded.signal.SignalPK;
 import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
-import static xyz.gianlu.pyxoverloaded.TaskUtils.loggingCallbacks;
+import static xyz.gianlu.pyxoverloaded.OverloadedApi.loggingCallbacks;
 
 public class OverloadedChatApi implements Closeable {
     private static final String TAG = OverloadedApi.class.getSimpleName();

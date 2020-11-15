@@ -32,7 +32,6 @@ import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsPatchOp;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsUpdateResponse;
-import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 
 public final class StarredCardsDatabase extends SQLiteOpenHelper {
     private static final String TAG = StarredCardsDatabase.class.getSimpleName();
@@ -144,7 +143,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             }
 
             Log.d(TAG, "Sending starred cards patch: " + op);
-            OverloadedSyncApi.get().patchStarredCards(getRevision(), op, remoteId, obj, new GeneralCallback<StarredCardsUpdateResponse>() {
+            OverloadedSyncApi.get().patchStarredCards(getRevision(), op, remoteId, obj, new OverloadedSyncApi.Callback<StarredCardsUpdateResponse>() {
                 @Override
                 public void onResult(@NonNull StarredCardsUpdateResponse result) {
                     if (op == StarredCardsPatchOp.ADD && result.remoteId != null)

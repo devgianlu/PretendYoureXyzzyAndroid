@@ -62,7 +62,6 @@ import java.util.List;
 import java.util.Objects;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
-import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
 
 public class NewSettingsFragment extends NewMainActivity.ChildFragment {
     private static final String TAG = NewSettingsFragment.class.getSimpleName();
@@ -528,21 +527,17 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
                             .setNegativeButton(android.R.string.no, null)
                             .setPositiveButton(android.R.string.yes, (d, which) -> {
                                 showProgress(R.string.loading);
-                                OverloadedApi.get().deleteAccount(getActivity(), new SuccessCallback() {
-                                    @Override
-                                    public void onSuccessful() {
-                                        dismissDialog();
-                                        showToast(Toaster.build().message(R.string.accountDeleted));
-                                        onBackPressed();
-                                    }
-
-                                    @Override
-                                    public void onFailed(@NonNull Exception ex) {
-                                        Log.e(TAG, "Failed deleting account.", ex);
-                                        dismissDialog();
-                                        showToast(Toaster.build().message(R.string.failedDeletingAccount));
-                                    }
-                                });
+                                OverloadedApi.get().deleteAccount()
+                                        .addOnSuccessListener(aVoid -> {
+                                            dismissDialog();
+                                            showToast(Toaster.build().message(R.string.accountDeleted));
+                                            onBackPressed();
+                                        })
+                                        .addOnFailureListener(ex -> {
+                                            Log.e(TAG, "Failed deleting account.", ex);
+                                            dismissDialog();
+                                            showToast(Toaster.build().message(R.string.failedDeletingAccount));
+                                        });
                             });
 
                     showDialog(dialog);

@@ -78,7 +78,6 @@ import java.util.List;
 import java.util.Map;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
-import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
@@ -136,21 +135,17 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
             if (!checkBox.isEnabled()) return;
 
             buttonView.setEnabled(false);
-            OverloadedApi.get().setUserProperty(key, String.valueOf(isChecked), null, new SuccessCallback() {
-                @Override
-                public void onSuccessful() {
-                    checkBox.setChecked(isChecked);
-                    checkBox.setEnabled(true);
-                }
+            OverloadedApi.get().setUserProperty(key, String.valueOf(isChecked))
+                    .addOnSuccessListener(aVoid -> {
+                        checkBox.setChecked(isChecked);
+                        checkBox.setEnabled(true);
+                    })
+                    .addOnFailureListener(ex -> {
+                        Log.e(TAG, "Failed updating user property: " + key, ex);
 
-                @Override
-                public void onFailed(@NonNull Exception ex) {
-                    Log.e(TAG, "Failed updating user property: " + key, ex);
-
-                    checkBox.setChecked(!isChecked); // Revert operation
-                    checkBox.setEnabled(true);
-                }
-            });
+                        checkBox.setChecked(!isChecked); // Revert operation
+                        checkBox.setEnabled(true);
+                    });
         });
     }
 

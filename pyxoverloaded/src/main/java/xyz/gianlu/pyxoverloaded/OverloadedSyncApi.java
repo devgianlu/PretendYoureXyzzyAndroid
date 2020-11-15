@@ -5,6 +5,7 @@ import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.misc.NamedThreadFactory;
@@ -24,7 +25,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 import xyz.gianlu.pyxoverloaded.model.UserProfile;
 
 import static com.gianlu.commonutils.CommonUtils.singletonJsonObject;
@@ -72,7 +72,7 @@ public class OverloadedSyncApi {
     //endregion
 
     //region Starred cards
-    public void syncStarredCards(long revision, @NonNull GeneralCallback<StarredCardsSyncResponse> callback) {
+    public void syncStarredCards(long revision, @NonNull Callback<StarredCardsSyncResponse> callback) {
         executorService.execute(() -> {
             try {
                 dispatchSyncUpdate(SyncProduct.STARRED_CARDS, true, false);
@@ -91,7 +91,7 @@ public class OverloadedSyncApi {
         });
     }
 
-    public void updateStarredCards(long revision, @NonNull JSONArray update, @NonNull GeneralCallback<StarredCardsUpdateResponse> callback) {
+    public void updateStarredCards(long revision, @NonNull JSONArray update, @NonNull Callback<StarredCardsUpdateResponse> callback) {
         executorService.execute(() -> {
             try {
                 dispatchSyncUpdate(SyncProduct.STARRED_CARDS, true, false);
@@ -115,7 +115,7 @@ public class OverloadedSyncApi {
     }
 
     @Contract("_, _, null, null, _ -> fail")
-    public void patchStarredCards(long revision, @NonNull StarredCardsPatchOp op, @Nullable Long remoteId, @Nullable JSONObject item, @NonNull GeneralCallback<StarredCardsUpdateResponse> callback) {
+    public void patchStarredCards(long revision, @NonNull StarredCardsPatchOp op, @Nullable Long remoteId, @Nullable JSONObject item, @NonNull Callback<StarredCardsUpdateResponse> callback) {
         if (remoteId == null && item == null)
             throw new IllegalArgumentException();
 
@@ -146,7 +146,7 @@ public class OverloadedSyncApi {
     //endregion
 
     //region Custom decks
-    public void syncCustomDecks(@NonNull JSONArray syncItems, @NonNull GeneralCallback<List<CustomDecksSyncResponse>> callback) {
+    public void syncCustomDecks(@NonNull JSONArray syncItems, @NonNull Callback<List<CustomDecksSyncResponse>> callback) {
         executorService.execute(() -> {
             try {
                 dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, true, false);
@@ -170,7 +170,7 @@ public class OverloadedSyncApi {
         });
     }
 
-    public void updateCustomDeck(long revision, @NonNull JSONObject update, @NonNull GeneralCallback<CustomDecksUpdateResponse> callback) {
+    public void updateCustomDeck(long revision, @NonNull JSONObject update, @NonNull Callback<CustomDecksUpdateResponse> callback) {
         executorService.execute(() -> {
             try {
                 dispatchSyncUpdate(SyncProduct.CUSTOM_DECKS, true, false);
@@ -193,7 +193,7 @@ public class OverloadedSyncApi {
     }
 
     public void patchCustomDeck(long revision, @Nullable RemoteId remoteId, @NonNull CustomDecksPatchOp op, @Nullable JSONObject deck, @Nullable JSONObject card,
-                                @Nullable RemoteId cardRemoteId, @Nullable JSONArray cards, @NonNull GeneralCallback<CustomDecksUpdateResponse> callback) {
+                                @Nullable RemoteId cardRemoteId, @Nullable JSONArray cards, @NonNull Callback<CustomDecksUpdateResponse> callback) {
         executorService.execute(() -> {
             try {
                 String type;
@@ -252,6 +252,7 @@ public class OverloadedSyncApi {
         });
     }
 
+    @NonNull
     public Task<UserProfile.CustomDeckWithCards> searchPublicCustomDeck(@NonNull String name, @NonNull String watermark, @NonNull String desc, int blackCards, int whiteCards) {
         return Tasks.call(api.executorService /* Using main executor because this is not sensible to concurrency */, () -> {
             JSONObject body = new JSONObject();
@@ -314,7 +315,7 @@ public class OverloadedSyncApi {
     //endregion
 
     //region Starred custom decks
-    public void syncStarredCustomDecks(long revision, @NonNull GeneralCallback<StarredCustomDecksSyncResponse> callback) {
+    public void syncStarredCustomDecks(long revision, @NonNull Callback<StarredCustomDecksSyncResponse> callback) {
         executorService.execute(() -> {
             try {
                 dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, true, false);
@@ -332,7 +333,7 @@ public class OverloadedSyncApi {
         });
     }
 
-    public void updateStarredCustomDecks(long revision, @NonNull JSONArray update, @NonNull GeneralCallback<StarredCustomDecksUpdateResponse> callback) {
+    public void updateStarredCustomDecks(long revision, @NonNull JSONArray update, @NonNull Callback<StarredCustomDecksUpdateResponse> callback) {
         executorService.execute(() -> {
             try {
                 dispatchSyncUpdate(SyncProduct.STARRED_CUSTOM_DECKS, true, false);
@@ -355,7 +356,7 @@ public class OverloadedSyncApi {
     }
 
     @Contract("_, _, null, null, _ -> fail")
-    public void patchStarredCustomDecks(long revision, @NonNull StarredCustomDecksPatchOp op, @Nullable RemoteId remoteId, @Nullable String shareCode, @NonNull GeneralCallback<StarredCustomDecksUpdateResponse> callback) {
+    public void patchStarredCustomDecks(long revision, @NonNull StarredCustomDecksPatchOp op, @Nullable RemoteId remoteId, @Nullable String shareCode, @NonNull Callback<StarredCustomDecksUpdateResponse> callback) {
         if (remoteId == null && shareCode == null)
             throw new IllegalArgumentException();
 
@@ -406,6 +407,16 @@ public class OverloadedSyncApi {
 
     public interface SyncStatusListener {
         void syncStatusUpdated(@NonNull SyncProduct product, boolean isSyncing, boolean error);
+    }
+
+    /**
+     * Listener used to dispatch sync updates synchronously. This cannot be replaced with tasks.
+     */
+    @WorkerThread
+    public interface Callback<T> {
+        void onResult(@NonNull T result);
+
+        void onFailed(@NonNull Exception ex);
     }
 
     public abstract static class RemoteId {
