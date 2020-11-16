@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -541,6 +542,7 @@ public final class NewChatDialog extends DialogFragment {
         }
     }
 
+    @UiThread
     private class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         private static final int TYPE_SENT = 0;
         private static final int TYPE_RECEIVED = 1;
@@ -550,6 +552,8 @@ public final class NewChatDialog extends DialogFragment {
         ChatAdapter(@NotNull List<ChatMessage> list, boolean showSender) {
             this.list = new LinkedList<>(list);
             this.showSender = showSender;
+
+            onUpdatedItemCount(list.size());
         }
 
         @Override
@@ -584,15 +588,22 @@ public final class NewChatDialog extends DialogFragment {
         public void addMessage(@NotNull ChatMessage msg) {
             list.add(msg);
             notifyItemInserted(list.size() - 1);
+            onUpdatedItemCount(list.size());
         }
 
         public void addMessages(List<ChatMessage> messages) {
             list.addAll(0, messages);
             notifyItemRangeInserted(0, messages.size());
+            onUpdatedItemCount(list.size());
         }
 
         public long olderTimestamp() {
             return list.isEmpty() ? 0 : list.get(list.size() - 1).timestamp;
+        }
+
+        private void onUpdatedItemCount(int count) {
+            binding.chatFragmentListEmpty.setVisibility(count == 0 ? View.VISIBLE : View.GONE);
+            binding.chatFragmentList.setVisibility(count == 0 ? View.GONE : View.VISIBLE);
         }
 
         final class ViewHolder extends RecyclerView.ViewHolder {

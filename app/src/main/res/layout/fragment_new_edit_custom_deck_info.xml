@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -43,7 +44,9 @@
         android:id="@+id/editCustomDeckInfo_watermark"
         style="@style/TextInputLayoutStyle"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:helperText="@string/editCustomDeck_watermarkDetails">
 
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
@@ -58,18 +61,6 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:layout_marginBottom="16dp"
-        android:fontFamily="@font/roboto_light"
-        android:justificationMode="inter_word"
-        android:text="@string/editCustomDeck_watermarkDetails"
-        android:textColor="#868686"
-        android:textSize="12sp"
-        tools:targetApi="o" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:text="@string/description"
         android:textAppearance="@style/TextAppearance.Regular"
         android:textColor="#000000"
@@ -79,7 +70,9 @@
         android:id="@+id/editCustomDeckInfo_desc"
         style="@style/TextInputLayoutStyle"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:helperText="@string/editCustomDeck_descDetails">
 
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
@@ -88,18 +81,6 @@
             android:inputType="textMultiLine|textLongMessage"
             android:maxLength="256" />
     </com.google.android.material.textfield.TextInputLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:layout_marginBottom="16dp"
-        android:fontFamily="@font/roboto_light"
-        android:justificationMode="inter_word"
-        android:text="@string/editCustomDeck_descDetails"
-        android:textColor="#868686"
-        android:textSize="12sp"
-        tools:targetApi="o" />
 
     <LinearLayout
         android:layout_width="match_parent"

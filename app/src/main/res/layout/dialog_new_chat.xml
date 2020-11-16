@@ -47,6 +47,31 @@
         android:layout_weight="1" />
 
     <LinearLayout
+        android:id="@+id/chatFragment_listEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingStart="48dp"
+        android:paddingEnd="48dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="200dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_undraw_begin_chat" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/noChatMessages"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.Undraw" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
@@ -64,11 +89,11 @@
             android:layout_weight="1"
             android:background="@drawable/bg_chat_input"
             android:fontFamily="@font/roboto_regular"
+            android:imeOptions="actionSend"
             android:importantForAutofill="no"
             android:inputType="textAutoCorrect"
             android:paddingStart="12dp"
             android:paddingTop="8dp"
-            android:imeOptions="actionSend"
             android:paddingEnd="12dp"
             android:paddingBottom="8dp"
             android:textColor="#000000"

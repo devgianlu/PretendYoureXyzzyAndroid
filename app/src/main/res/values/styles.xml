@@ -14,8 +14,6 @@
         <item name="colorAccent">?colorSecondary</item>
     </style>
 
-    <style name="AppTheme.FullDark" parent="AppTheme" />
-
     <!-- Toolbar icons -->
     <style name="ToolbarIconStyle">
         <item name="android:elevation">10dp</item>

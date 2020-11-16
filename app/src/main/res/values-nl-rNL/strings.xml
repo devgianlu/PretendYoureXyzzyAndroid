@@ -35,23 +35,6 @@
     <string name="tutorial_fourthDesc">Overloaded is een spel uitbreiding die coole functies zoals <![CDATA[<b>E2EE chat</b>]]>mogelijk maakt, <![CDATA[<b>gebruikersprofielen</b>]]>, eigen sets en favoriete kaarten <![CDATA[<b>synchronisatie</b>]]> en meer. Je kunt je sets<![CDATA[<b>delen</b>]]> met andere spelers.</string>
     <string name="tutorial_fifthTitle">Meer functies</string>
     <string name="tutorial_fifthDesc">Er zijn meer functies beschikbaar in deze app, je zal ze leren terwijl je bezig bent. Veel plezier!</string>
-    <string name="tutorial_chooseNickname">Kies een naam om mee te spelen. Deze naam is niet permanent.</string>
-    <string name="tutorial_changeServer">Er zijn meerdere servers beschikbaar. Kies de server waar je het liefst op speelt.</string>
-    <string name="tutorial_joinTheServer">Maak je klaar om te spelen en neem deel aan de lobby, daar zal je tevreden zijn met veel spellen.</string>
-    <string name="tutorial_gameStatus">Dit geeft aan of het spel is gestart of niet. Je kunt het nog steeds betreden, zolang er plaats voor je is.</string>
-    <string name="tutorial_gameLocked">Een spel kan vergrendeld worden met een wachtwoord om de toegang te beperken, dat is ingesteld door de game host bij het maken van het spel.</string>
-    <string name="tutorial_spectateGame">Toeschouwers kunnen alleen zien wat er gebeurt en niet spelen, maar ze kunnen wel praten in de chat.</string>
-    <string name="tutorial_joinGame">Doe mee met het spel en begin meteen met spelen.</string>
-    <string name="tutorial_createGame">Je kunt je eigen spel maken en je eigen instellingen instellen.</string>
-    <string name="tutorial_setupGame">Hier kun je jouw spel opties aanpassen. Vergeet niet dat je ook eigen sets in het menu hier kunt toevoegen (indien ondersteund op de server).</string>
-    <string name="tutorial_startGame">Zodra je klaar bent start je het spel. Om dat te doen moet je ten minste 3 spelers en een bepaald aantal kaarten hebben.</string>
-    <string name="tutorial_chooseIdCode">Voer een identificatiecode in of genereer deze zodat iemand je moeilijk kan imiteren.</string>
-    <string name="tutorial_blackCard">Dit is een blokkaart: je moet de zin met de witte kaarten hieronder voltooien.</string>
-    <string name="tutorial_whiteCard">Speel één of meerdere witte kaarten om de zin te voltooien. Als je de betekenis van een woord niet kent, gebruik dan de definitiefunctie in het menu rechtsboven.</string>
-    <string name="tutorial_playCard">Om een kaart te spelen tik je er op. Er wordt dan een bevestigingsdialoog weergegeven.</string>
-    <string name="tutorial_player">Zodra een speler het score doel heeft bereikt, wint hij. Je kunt op spelers tikken om extra informatie te onthullen.</string>
-    <string name="tutorial_overloaded">Overloaded zet een hele boel gave functies aan die niet in de standaard game zitten. Het is een maandelijks abonnement.</string>
-    <string name="tutorial_addCustomDeck">Here you can create your own custom decks (with text and images) or import and recover old Cardcast decks.</string>
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
     <string name="nickname">Gebruikersnaam</string>

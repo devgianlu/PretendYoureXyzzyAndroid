@@ -35,23 +35,6 @@
     <string name="tutorial_fourthDesc">Overloaded è un aggiunta al gioco che aggiunge funzioni come <![CDATA[<b>chat E2EE</b>]]>, <![CDATA[<b>profili utente</b>]]>, <![CDATA[<b>sincronizzazione</b>]]> mazzi personalizzati e carte preferite e tanto altro. Puoi anche <![CDATA[<b>condividere</b>]]> i tuoi mazzi con altri giocatori.</string>
     <string name="tutorial_fifthTitle">Altre funzionalità</string>
     <string name="tutorial_fifthDesc">Altre funzionalità sono disponibili nell\'app, le conoscerai giocando. Buon gioco!</string>
-    <string name="tutorial_chooseNickname">Scegli un nome per giocare, non sarà permanente.</string>
-    <string name="tutorial_changeServer">Sono disponibili più server, scegli quello che preferisci.</string>
-    <string name="tutorial_joinTheServer">Entra nella lobby, ti attendono molte partite.</string>
-    <string name="tutorial_gameStatus">Questo indica se il gioco è stato avviato o meno. Puoi unirti comunque, purché ci sia spazio per te.</string>
-    <string name="tutorial_gameLocked">Un gioco può essere bloccato con una password, che viene impostata dal creatore del gioco, per limitarne l\'accesso.</string>
-    <string name="tutorial_spectateGame">Gli spettatori possono solo vedere cosa sta succedendo e non possono giocare, ma possono scrivere in chat.</string>
-    <string name="tutorial_joinGame">Entra nella partita per iniziare subito a giocare.</string>
-    <string name="tutorial_createGame">Puoi creare il tuo gioco e scegliere le tue impostazioni.</string>
-    <string name="tutorial_setupGame">Qui puoi personalizzare la tua partita. Non dimenticare che puoi anche aggiungere mazzi personalizzati dal menu (se sono supportati dal server).</string>
-    <string name="tutorial_startGame">Una volta che hai finito, inizia il gioco. Per farlo devi avere almeno 3 giocatori e un determinato numero di carte.</string>
-    <string name="tutorial_chooseIdCode">Scegli un codice o generane uno per rendere più difficile per qualcuno impersonarti.</string>
-    <string name="tutorial_blackCard">Questa è una carta nera: devi completare la frase con le carte bianche qui sotto.</string>
-    <string name="tutorial_whiteCard">Gioca una o più carte per completare la frase. Se non conosci il significato di una parola, usa la funzione dizionario nel menu in alto a destra.</string>
-    <string name="tutorial_playCard">Per selezionare una carta basta toccarla: apparirà una finestra di conferma.</string>
-    <string name="tutorial_player">Una volta che un giocatore raggiunge l\'obiettivo, vince. Puoi toccare sul nome per rivelare ulteriori informazioni.</string>
-    <string name="tutorial_overloaded">Overloaded abilita tante funzionalità aggiuntive non presenti nel gioco. Richiede una sottoscrizione mensile.</string>
-    <string name="tutorial_addCustomDeck">Qui puoi create i tuoi mazzi personalizzati (con testo e immagini), importarli o recuperare vecchi mazzi Cardcast.</string>
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
     <string name="nickname">Nome</string>

@@ -35,23 +35,6 @@
     <string name="tutorial_fourthDesc">Overloaded is a game expansion that enables cool features like <![CDATA[<b>E2EE chat</b>]]>, <![CDATA[<b>user profiles</b>]]>, custom decks and starred cards <![CDATA[<b>synchronization</b>]]> and more. You can also <![CDATA[<b>share</b>]]> your decks with other players.</string>
     <string name="tutorial_fifthTitle">More features</string>
     <string name="tutorial_fifthDesc">More features are available in this app, you\'ll learn them as you go. Good game!</string>
-    <string name="tutorial_chooseNickname">Choose a nickname to play, this won\'t be permanent.</string>
-    <string name="tutorial_changeServer">There are multiple servers available, choose the one you prefer.</string>
-    <string name="tutorial_joinTheServer">Get ready to play and join the lobby, there you\'ll be pleased with many games.</string>
-    <string name="tutorial_gameStatus">This indicates whether the game has been started or not. You can join it anyway, as long as there is room for you.</string>
-    <string name="tutorial_gameLocked">A game can be locked with a password to restrict access, that is set by the game host when creating the game.</string>
-    <string name="tutorial_spectateGame">Spectators can only see what\'s happening and cannot play, but they can write on the chat.</string>
-    <string name="tutorial_joinGame">Join the game to start playing immediately.</string>
-    <string name="tutorial_createGame">You can create your own game and define your own settings.</string>
-    <string name="tutorial_setupGame">Here you can customize your game options. Don\'t forget you can also add custom decks from the menu up here (if supported on the server).</string>
-    <string name="tutorial_startGame">Once you\'re done, start the game. To do that you must have at least 3 players and a given number of cards.</string>
-    <string name="tutorial_chooseIdCode">Enter or generate an identification code to make it difficult for someone to impersonate you.</string>
-    <string name="tutorial_blackCard">This is a block card: you have to complete the sentence with the white cards below.</string>
-    <string name="tutorial_whiteCard">Play one or multiple white cards to complete the sentence. If you don\'t know the meaning of a word, use the definition function in the upper right menu.</string>
-    <string name="tutorial_playCard">To play a card just tap it: a confirmation dialog will appear.</string>
-    <string name="tutorial_player">Once a player reaches the score goal, it wins. You can tap on players to reveal additional information.</string>
-    <string name="tutorial_overloaded">Overloaded enables many cool features not present in the standard game experience. It\'s a monthly subscription.</string>
-    <string name="tutorial_addCustomDeck">Here you can create your own custom decks (with text and images) or import and recover old Cardcast decks.</string>
 
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
@@ -436,4 +419,5 @@
     <string name="failedRegistering_tryAgain">Failed registering, please try again later or contact support.</string>
     <string name="overloadedSub_usernameLocked">You previously registered with this username.</string>
     <string name="failedLoading_changeServerRetry">Failed loading… Try changing server or retry.</string>
+    <string name="noChatMessages">No messages so far… Start chatting!</string>
 </resources>

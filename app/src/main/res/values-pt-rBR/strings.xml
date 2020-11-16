@@ -35,23 +35,6 @@
     <string name="tutorial_fourthDesc">Sobrecarregado é uma expansão de jogo que permite recursos legais como <![CDATA[<b>Bate-papo E2EE</b>]]>, <![CDATA[<b>perfis de usuário</b>]]>decks personalizados e cartões favoritos <![CDATA[<b>sincronização</b>]]> e mais. Você também pode <![CDATA[<b>compartilhar</b>]]> decks com outros jogadores.</string>
     <string name="tutorial_fifthTitle">Mais recursos</string>
     <string name="tutorial_fifthDesc">Mais recursos estão disponíveis neste aplicativo, você os aprenderá à medida que partir. Bom jogo!</string>
-    <string name="tutorial_chooseNickname">Escolha um apelido para jogar. Este não será permanente.</string>
-    <string name="tutorial_changeServer">Existem vários servidores disponíveis, escolha o que você prefere.</string>
-    <string name="tutorial_joinTheServer">Prepare-se para jogar e se junte ao lobby, lá você ficará satisfeito com vários jogos.</string>
-    <string name="tutorial_gameStatus">Isso indica se o jogo foi iniciado ou não. Você pode se juntar a ele mesmo desde que haja espaço para você.</string>
-    <string name="tutorial_gameLocked">Um jogo pode ser bloqueado com uma senha para restringir o acesso, definida pelo host do jogo ao criar o jogo.</string>
-    <string name="tutorial_spectateGame">Os espectadores só podem ver o que está acontecendo e não podem jogar, mas podem escrever no bate-papo.</string>
-    <string name="tutorial_joinGame">Entre no jogo para começar a jogar imediatamente.</string>
-    <string name="tutorial_createGame">Você pode criar seu próprio jogo e definir suas próprias configurações.</string>
-    <string name="tutorial_setupGame">Aqui você pode personalizar as opções do seu jogo. Não se esqueça que você também pode adicionar baralhos personalizados do menu para cima aqui (se suportado no servidor).</string>
-    <string name="tutorial_startGame">Quando terminar, inicie o jogo. Para fazer isso, você deve ter pelo menos 3 jogadores e um determinado número de cartas.</string>
-    <string name="tutorial_chooseIdCode">Insira ou gere um código de identificação para dificultar a personificação de alguém.</string>
-    <string name="tutorial_blackCard">Este é um cartão-bloco: você deve completar a frase com os cartões brancos abaixo.</string>
-    <string name="tutorial_whiteCard">Jogue um ou vários cartões brancos para completar a frase. Se você não sabe o significado de uma palavra, use a função de definição no menu superior direito.</string>
-    <string name="tutorial_playCard">Para jogar uma carta, basta tocá-la: um diálogo de confirmação aparecerá.</string>
-    <string name="tutorial_player">Quando um jogador atingir o objetivo da pontuação, ele ganha. Você pode tocar nos jogadores para revelar informações adicionais.</string>
-    <string name="tutorial_overloaded">Sobrecarregado habilita muitos recursos interessantes que não estão presentes na experiência padrão de jogo. Ele é uma assinatura mensal.</string>
-    <string name="tutorial_addCustomDeck">Aqui você pode criar seus próprios decks personalizados (com texto e imagens) ou importar e recuperar decks de Cardcast antigos.</string>
     <!-- General -->
     <string name="app_name">Você está no Xyzzy</string>
     <string name="nickname">Apelido</string>
