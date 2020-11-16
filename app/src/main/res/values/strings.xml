@@ -435,4 +435,5 @@
     <string name="overloadedSubscribed">You have subscribed successfully!</string>
     <string name="failedRegistering_tryAgain">Failed registering, please try again later or contact support.</string>
     <string name="overloadedSub_usernameLocked">You previously registered with this username.</string>
+    <string name="failedLoading_changeServerRetry">Failed loading… Try changing server or retry.</string>
 </resources>

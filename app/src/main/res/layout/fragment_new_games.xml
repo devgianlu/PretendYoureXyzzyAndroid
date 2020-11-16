@@ -34,8 +34,6 @@
             android:src="@drawable/ic_dots_vertical_white_24" />
     </LinearLayout>
 
-    <!-- TODO: Scroll behaviour -->
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -92,6 +90,18 @@
                     android:tint="#000000" />
             </LinearLayout>
         </com.facebook.shimmer.ShimmerFrameLayout>
+
+        <TextView
+            android:id="@+id/gamesFragment_serverError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="16dp"
+            android:textAppearance="@style/TextAppearance.Regular"
+            android:textColor="#EC4040"
+            android:textSize="14sp"
+            android:visibility="gone" />
     </LinearLayout>
 
     <LinearLayout
@@ -170,9 +180,9 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textAlignment="center"
                         android:layout_marginTop="16dp"
                         android:text="@string/noGamesMessage"
+                        android:textAlignment="center"
                         android:textAppearance="@style/TextAppearance.Undraw" />
 
                     <!-- Move it a bit further up -->
@@ -200,9 +210,9 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textAlignment="center"
                         android:layout_marginTop="16dp"
                         android:text="@string/gamesErrorMessage"
+                        android:textAlignment="center"
                         android:textAppearance="@style/TextAppearance.Undraw" />
 
                     <!-- Move it a bit further up -->

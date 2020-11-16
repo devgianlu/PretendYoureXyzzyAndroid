@@ -3,6 +3,8 @@ package com.gianlu.pretendyourexyzzy.main;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -40,6 +42,7 @@ import com.gianlu.pretendyourexyzzy.adapters.NewCustomDecksAdapter;
 import com.gianlu.pretendyourexyzzy.adapters.NewStarredCardsAdapter;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.StatusCodeException;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastApi;
@@ -61,6 +64,7 @@ import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.achievement.Achievement;
 import com.google.android.gms.games.event.Event;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputLayout;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -149,11 +153,21 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         });
     }
 
+    private static void setInputBackgroundTint(@NonNull TextInputLayout layout, @Nullable Integer color) {
+        EditText editText = CommonUtils.getEditText(layout);
+        if (color == null) editText.setBackgroundTintList(null);
+        else editText.setBackgroundTintList(ColorStateList.valueOf(color));
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentNewProfileBinding.inflate(inflater, container, false);
+
+        CommonUtils.clearErrorOnEdit(binding.profileFragmentInputs.idCodeInput);
+        CommonUtils.clearErrorOnEdit(binding.profileFragmentInputs.usernameInput);
         binding.profileFragmentInputs.idCodeInput.setEndIconOnClickListener(v -> CommonUtils.setText(binding.profileFragmentInputs.idCodeInput, CommonUtils.randomString(100)));
+
         binding.profileFragmentMenu.setOnClickListener((v) -> showPopupMenu());
 
         OverloadedApi.get().addEventListener(this);
@@ -364,18 +378,55 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         binding.profileFragmentRegisterLoading.hideShimmer();
         binding.profileFragmentInputs.usernameInput.setEnabled(true);
         binding.profileFragmentInputs.idCodeInput.setEnabled(true);
+        binding.profileFragmentInputs.usernameInput.setErrorEnabled(false);
+        binding.profileFragmentInputs.idCodeInput.setErrorEnabled(false);
+
+        setInputBackgroundTint(binding.profileFragmentInputs.usernameInput, null);
+        setInputBackgroundTint(binding.profileFragmentInputs.idCodeInput, null);
 
         CommonUtils.setText(binding.profileFragmentInputs.usernameInput, pyx.user().nickname);
         CommonUtils.setText(binding.profileFragmentInputs.idCodeInput, Prefs.getString(PK.LAST_ID_CODE, null));
     }
 
     @Override
-    public void onPyxInvalid() {
+    public void onPyxInvalid(@Nullable Exception ex) {
         this.pyx = null;
 
-        binding.profileFragmentRegisterLoading.showShimmer(true);
-        binding.profileFragmentInputs.usernameInput.setEnabled(false);
-        binding.profileFragmentInputs.idCodeInput.setEnabled(false);
+        if (binding != null) {
+            CommonUtils.setText(binding.profileFragmentInputs.usernameInput, Prefs.getString(PK.LAST_NICKNAME, null));
+            CommonUtils.setText(binding.profileFragmentInputs.idCodeInput, Prefs.getString(PK.LAST_ID_CODE, null));
+
+            setInputBackgroundTint(binding.profileFragmentInputs.usernameInput, null);
+            setInputBackgroundTint(binding.profileFragmentInputs.idCodeInput, null);
+
+            if (ex == null) { // Loading
+                binding.profileFragmentRegisterLoading.showShimmer(true);
+                binding.profileFragmentInputs.usernameInput.setEnabled(false);
+                binding.profileFragmentInputs.idCodeInput.setEnabled(false);
+                binding.profileFragmentInputs.usernameInput.setErrorEnabled(false);
+                binding.profileFragmentInputs.idCodeInput.setErrorEnabled(false);
+            } else { // Actual error
+                binding.profileFragmentRegisterLoading.hideShimmer();
+                binding.profileFragmentInputs.usernameInput.setEnabled(true);
+                binding.profileFragmentInputs.idCodeInput.setEnabled(true);
+
+                binding.profileFragmentInputs.usernameInput.setErrorEnabled(false);
+                binding.profileFragmentInputs.idCodeInput.setErrorEnabled(false);
+
+                int errorRes;
+                if (ex instanceof PyxException) errorRes = ((PyxException) ex).getPyxMessage();
+                else errorRes = R.string.failedLoading_changeServerRetry;
+
+                TextInputLayout destField;
+                if (ex instanceof PyxException && ((PyxException) ex).errorCode.equals("iid"))
+                    destField = binding.profileFragmentInputs.idCodeInput;
+                else
+                    destField = binding.profileFragmentInputs.usernameInput;
+
+                destField.setError(getString(errorRes));
+                setInputBackgroundTint(destField, Color.rgb(255, 204, 204));
+            }
+        }
     }
 
     @Override

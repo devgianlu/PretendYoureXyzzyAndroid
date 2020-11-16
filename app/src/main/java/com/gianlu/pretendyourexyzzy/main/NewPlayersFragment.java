@@ -146,12 +146,12 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
     }
 
     @Override
-    protected void onPyxInvalid() {
+    protected void onPyxInvalid(@Nullable Exception ex) {
         if (pyx != null) pyx.polling().removeListener(this);
         this.pyx = null;
 
         if (binding != null) {
-            setPlayersStatus(true, false);
+            setPlayersStatus(ex == null, ex != null);
             binding.playersFragmentSwipeRefresh.setEnabled(false);
         }
     }

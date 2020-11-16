@@ -1,9 +1,8 @@
 package com.gianlu.pretendyourexyzzy.api;
 
-import android.content.Context;
-
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+
+import com.gianlu.pretendyourexyzzy.R;
 
 import org.json.JSONObject;
 
@@ -21,33 +20,24 @@ public class PyxException extends Exception {
         this.obj = obj;
     }
 
-    public static boolean solveNotRegistered(@Nullable Context context, @Nullable Exception ex) {
-        if (isNotRegistered(ex)) {
-            if (context == null) return true;
-
-            InstanceHolder.holder().invalidate();
-            // TODO: Launch something?
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static boolean isNotRegistered(@Nullable Exception ex) {
-        return ex instanceof PyxException && Objects.equals(((PyxException) ex).errorCode, "nr");
-    }
-
-    public boolean hadException(@NonNull Class<? extends Exception> clazz) {
-        if (exceptions == null) return false;
-
-        for (Exception ex : exceptions)
-            if (ex.getClass() == clazz)
-                return true;
-
-        return false;
-    }
-
     public boolean shouldRetry() {
         return Objects.equals(errorCode, "se") || Objects.equals(errorCode, "nr");
+    }
+
+    public int getPyxMessage() {
+        switch (errorCode) {
+            case "rn":
+                return R.string.reservedNickname;
+            case "in":
+                return R.string.invalidNickname;
+            case "niu":
+                return R.string.alreadyUsedNickname;
+            case "tmu":
+                return R.string.tooManyUsers;
+            case "iid":
+                return R.string.invalidIdCode;
+            default:
+                return R.string.failedLoading_changeServerRetry;
+        }
     }
 }

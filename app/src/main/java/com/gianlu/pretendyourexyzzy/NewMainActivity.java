@@ -47,6 +47,7 @@ public class NewMainActivity extends ActivityWithDialog {
     private NewGamesFragment gamesFragment;
     private NewProfileFragment profileFragment;
     private RegisteredPyx pyx;
+    private Task<RegisteredPyx> prepareTask;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -118,15 +119,15 @@ public class NewMainActivity extends ActivityWithDialog {
     }
 
     public void checkReloadNeeded() {
-        if (profileFragment == null || pyx == null)
+        if (profileFragment == null || prepareTask == null || !prepareTask.isComplete() || !prepareTask.isCanceled())
             return;
 
         String newUsername = profileFragment.getUsername();
         String newIdCode = profileFragment.getIdCode();
-        if (newUsername.equals(pyx.user().nickname) && Objects.equals(Prefs.getString(PK.LAST_ID_CODE, null), newIdCode))
+        if (pyx != null && newUsername.equals(pyx.user().nickname) && Objects.equals(Prefs.getString(PK.LAST_ID_CODE, null), newIdCode))
             return;
 
-        pyx.logout();
+        if (pyx != null) pyx.logout();
         preparePyxInstance(newUsername, newIdCode)
                 .addOnSuccessListener(this, this::pyxReady)
                 .addOnFailureListener(this, this::pyxError);
@@ -154,21 +155,19 @@ public class NewMainActivity extends ActivityWithDialog {
         });
     }
 
-    private void pyxInvalid() {
+    private void pyxInvalid(@Nullable Exception ex) {
         this.pyx = null;
 
         runOnUiThread(() -> {
-            if (settingsFragment != null) settingsFragment.callPyxInvalid();
-            if (gamesFragment != null) gamesFragment.callPyxInvalid();
-            if (profileFragment != null) profileFragment.callPyxInvalid();
+            if (settingsFragment != null) settingsFragment.callPyxInvalid(ex);
+            if (gamesFragment != null) gamesFragment.callPyxInvalid(ex);
+            if (profileFragment != null) profileFragment.callPyxInvalid(ex);
         });
     }
 
     private void pyxError(@NotNull Exception ex) {
         Log.e(TAG, "Failed loading Pyx instance.", ex);
-        pyxInvalid();
-
-        // TODO: Show PYX error somewhere
+        pyxInvalid(ex);
     }
 
     @NotNull
@@ -192,21 +191,20 @@ public class NewMainActivity extends ActivityWithDialog {
             else return task.getResult().register(username, idCode);
         };
 
-        pyxInvalid();
+        pyxInvalid(null);
         Prefs.putString(PK.LAST_NICKNAME, username);
         Prefs.putString(PK.LAST_ID_CODE, idCode);
 
         try {
             Pyx local = Pyx.get();
-            if (local instanceof RegisteredPyx) {
-                return Tasks.forResult((RegisteredPyx) local);
-            } else if (local instanceof FirstLoadedPyx) {
-                return ((FirstLoadedPyx) local).register(username, idCode);
-            } else {
-                return local.doFirstLoad().continueWithTask(firstLoadContinuation);
-            }
+            if (local instanceof RegisteredPyx)
+                return prepareTask = Tasks.forResult((RegisteredPyx) local);
+            else if (local instanceof FirstLoadedPyx)
+                return prepareTask = ((FirstLoadedPyx) local).register(username, idCode);
+            else
+                return prepareTask = local.doFirstLoad().continueWithTask(firstLoadContinuation);
         } catch (LevelMismatchException ex) {
-            return PyxDiscoveryApi.get().firstLoad(this).continueWithTask(firstLoadContinuation);
+            return prepareTask = PyxDiscoveryApi.get().firstLoad(this).continueWithTask(firstLoadContinuation);
         }
     }
 
@@ -245,6 +243,7 @@ public class NewMainActivity extends ActivityWithDialog {
         private boolean callReady = false;
         private boolean callInvalid = false;
         private RegisteredPyx pyx = null;
+        private Exception ex = null;
 
         @CallSuper
         @Override
@@ -253,7 +252,7 @@ public class NewMainActivity extends ActivityWithDialog {
             mStarted = true;
 
             if (callReady && pyx != null) onPyxReady(pyx);
-            else if (callInvalid) onPyxInvalid();
+            else if (callInvalid) onPyxInvalid(ex);
 
             callReady = false;
             callInvalid = false;
@@ -270,20 +269,21 @@ public class NewMainActivity extends ActivityWithDialog {
             }
         }
 
-        public void callPyxInvalid() {
+        public void callPyxInvalid(@Nullable Exception ex) {
             if (mStarted && isAdded()) {
-                onPyxInvalid();
+                onPyxInvalid(ex);
             } else {
                 callInvalid = true;
                 callReady = false;
                 this.pyx = null;
+                this.ex = null;
             }
         }
 
         protected void onPyxReady(@NotNull RegisteredPyx pyx) {
         }
 
-        protected void onPyxInvalid() {
+        protected void onPyxInvalid(@Nullable Exception ex) {
         }
 
         /**

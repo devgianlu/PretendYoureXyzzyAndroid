@@ -2,6 +2,8 @@ package com.gianlu.pretendyourexyzzy.main;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -30,6 +32,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.activities.ManageServersActivity;
 import com.gianlu.pretendyourexyzzy.adapters.ServersAdapter;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.Deck;
@@ -264,6 +267,8 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
         binding.gamesFragmentChangeServer.setEnabled(true);
         binding.gamesFragmentServer.setText(pyx.server.name);
         binding.gamesFragmentServerLoading.hideShimmer();
+        binding.gamesFragmentServerError.setVisibility(View.GONE);
+        setServerBoxTint(null);
 
         if (pyx.config().gameChatEnabled()) {
             binding.gamesFragmentChat.setVisibility(View.VISIBLE);
@@ -274,20 +279,48 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
     }
 
     @Override
-    public void onPyxInvalid() {
+    public void onPyxInvalid(@Nullable Exception ex) {
         if (pyx != null) pyx.polling().removeListener(this);
         this.pyx = null;
 
         if (binding != null) {
-            setGamesStatus(true, false, false);
+            setGamesStatus(ex == null, ex != null, false);
+
+            Pyx.Server lastServer = Pyx.Server.lastServerNoThrow();
+            binding.gamesFragmentServer.setText(lastServer == null ? "..." : lastServer.name);
 
             binding.gamesFragmentCreateGame.setEnabled(false);
             binding.gamesFragmentSwipeRefresh.setEnabled(false);
-            binding.gamesFragmentChangeServer.setEnabled(false);
-            binding.gamesFragmentServer.setText(null);
-            binding.gamesFragmentServerLoading.showShimmer(true);
             binding.gamesFragmentChat.setVisibility(View.GONE);
+
+            if (ex == null) { // Loading
+                binding.gamesFragmentChangeServer.setEnabled(false);
+                binding.gamesFragmentServer.setText(null);
+                binding.gamesFragmentServerLoading.showShimmer(true);
+                binding.gamesFragmentServerError.setVisibility(View.GONE);
+                setServerBoxTint(null);
+            } else { // Actual error
+                binding.gamesFragmentChangeServer.setEnabled(true);
+                binding.gamesFragmentServerLoading.hideShimmer();
+
+                int errorRes;
+                if (ex instanceof PyxException) errorRes = ((PyxException) ex).getPyxMessage();
+                else errorRes = R.string.failedLoading_changeServerRetry;
+
+                binding.gamesFragmentServerError.setVisibility(View.VISIBLE);
+                binding.gamesFragmentServerError.setText(errorRes);
+                setServerBoxTint(Color.rgb(255, 204, 204));
+            }
         }
+    }
+
+    private void setServerBoxTint(@Nullable Integer color) {
+        if (binding == null) return;
+
+        if (color == null)
+            binding.gamesFragmentServerLoading.getChildAt(0).setBackgroundTintList(null);
+        else
+            binding.gamesFragmentServerLoading.getChildAt(0).setBackgroundTintList(ColorStateList.valueOf(color));
     }
 
     @Override

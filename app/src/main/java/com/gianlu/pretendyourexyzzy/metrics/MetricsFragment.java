@@ -82,7 +82,7 @@ public class MetricsFragment extends NewSettingsFragment.ChildFragment implement
     }
 
     @Override
-    protected void onPyxInvalid() {
+    protected void onPyxInvalid(@Nullable Exception ex) {
         this.pyx = null;
     }
 

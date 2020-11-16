@@ -98,9 +98,9 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
     }
 
     @Override
-    public void onPyxInvalid() {
+    public void onPyxInvalid(@Nullable Exception ex) {
         for (ChildFragment frag : fragments.values())
-            frag.callPyxInvalid();
+            frag.callPyxInvalid(ex);
 
         this.pyx = null;
     }
@@ -133,7 +133,7 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
                 .replace(CONTAINER_ID, frag)
                 .runOnCommit(() -> {
                     if (pyx != null) frag.callPyxReady(pyx);
-                    else frag.callPyxInvalid();
+                    else frag.callPyxInvalid(null);
                 }).commit();
 
         currentPage = page;
@@ -165,6 +165,7 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
         private boolean callReady = false;
         private boolean callInvalid = false;
         private RegisteredPyx pyx = null;
+        private Exception ex = null;
 
         protected final void openLink(@NonNull String uri) {
             try {
@@ -192,7 +193,7 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
             mStarted = true;
 
             if (callReady && pyx != null) onPyxReady(pyx);
-            else if (callInvalid) onPyxInvalid();
+            else if (callInvalid) onPyxInvalid(ex);
 
             callReady = false;
             callInvalid = false;
@@ -209,20 +210,21 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
             }
         }
 
-        final void callPyxInvalid() {
+        final void callPyxInvalid(@Nullable Exception ex) {
             if (mStarted && isAdded()) {
-                onPyxInvalid();
+                onPyxInvalid(ex);
             } else {
                 callInvalid = true;
                 callReady = false;
                 this.pyx = null;
+                this.ex = ex;
             }
         }
 
         protected void onPyxReady(@NonNull RegisteredPyx pyx) {
         }
 
-        protected void onPyxInvalid() {
+        protected void onPyxInvalid(@Nullable Exception ex) {
         }
     }
 
@@ -287,12 +289,14 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
 
         @Override
         protected void onPyxReady(@NonNull RegisteredPyx pyx) {
+            binding.settingsPlayers.setVisibility(View.VISIBLE);
             binding.settingsMetrics.setVisibility(pyx.hasMetrics() ? View.VISIBLE : View.GONE);
         }
 
         @Override
-        protected void onPyxInvalid() {
+        protected void onPyxInvalid(@Nullable Exception ex) {
             binding.settingsMetrics.setVisibility(View.GONE);
+            binding.settingsPlayers.setVisibility(View.GONE);
         }
 
         @Nullable
@@ -500,7 +504,7 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
                 addPreference(purchaseStatus);
                 OverloadedApi.get().userData()
                         .addOnSuccessListener(userData -> {
-                            purchaseStatus.setSummary(String.format("%s (%s)", userData.purchaseStatus.toString(context), userData.username));
+                            purchaseStatus.setSummary(String.format("%s (%s)", getString(userData.purchaseStatusGranular.getName()), userData.username));
                             purchaseStatus.setLoading(false);
                         })
                         .addOnFailureListener(ex -> {

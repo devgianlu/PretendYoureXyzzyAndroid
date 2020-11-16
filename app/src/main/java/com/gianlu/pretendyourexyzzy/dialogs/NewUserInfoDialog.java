@@ -126,7 +126,6 @@ public final class NewUserInfoDialog extends DialogFragment {
                         if (game != null) {
                             binding.userInfoDialogGame.setTypeface(binding.userInfoDialogGame.getTypeface(), Typeface.NORMAL);
                             binding.userInfoDialogGame.setText(game.host);
-                            // TODO: View game (?)
                         } else {
                             binding.userInfoDialogGame.setTypeface(binding.userInfoDialogGame.getTypeface(), Typeface.ITALIC);
                             binding.userInfoDialogGame.setText(R.string.none);

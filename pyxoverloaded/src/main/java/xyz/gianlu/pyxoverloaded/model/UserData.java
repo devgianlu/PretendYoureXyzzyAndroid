@@ -182,23 +182,5 @@ public class UserData {
 
             throw new IllegalArgumentException("Unknown purchaseStatus: " + val);
         }
-
-        @NonNull
-        public String toString(@NonNull Context context) {
-            int res;
-            switch (this) {
-                case OK:
-                    res = R.string.ok;
-                    break;
-                case NONE:
-                    res = R.string.none;
-                    break;
-                default:
-                    res = R.string.unknown;
-                    break;
-            }
-
-            return context.getString(res);
-        }
     }
 }
