@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -159,6 +160,18 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         else editText.setBackgroundTintList(ColorStateList.valueOf(color));
     }
 
+    private void launchSubscriptions(@Nullable OverloadedUtils.Sku sku) {
+        String url;
+        if (sku == null)
+            url = "https://play.google.com/store/account/subscriptions";
+        else
+            url = String.format("https://play.google.com/store/account/subscriptions?sku=%s&package=%s", sku.sku, requireContext().getApplicationContext().getPackageName());
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+        startActivity(intent);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -173,7 +186,6 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         OverloadedApi.get().addEventListener(this);
 
         binding.profileFragmentProfileImage.setOnClickListener(v -> OverloadedSubDialog.get().show(getChildFragmentManager(), null));
-        // TODO: Show subscription warnings
 
         //region Starred cards
         binding.profileFragmentStarredCardsList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
@@ -521,6 +533,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
     public void refreshOverloaded() {
         binding.profileFragmentFriendsLoading.setVisibility(View.VISIBLE);
+
         OverloadedUtils.waitReady()
                 .addOnSuccessListener(signedIn -> {
                     if (signedIn) {
@@ -559,6 +572,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
         binding.profileFragmentChat.setVisibility(View.GONE);
         binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
+        binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
 
         OverloadedUtils.waitReady()
                 .addOnSuccessListener(signedIn -> {
@@ -569,14 +583,41 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
                         binding.profileFragmentChat.setVisibility(View.VISIBLE);
                         binding.profileFragmentChat.setOnClickListener(v -> startActivity(new Intent(requireContext(), ChatsListActivity.class)));
+
+                        binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
+
+                        OverloadedApi.get().userData(true)
+                                .addOnSuccessListener(data -> {
+                                    if (data != null && data.purchaseStatusGranular.message) {
+                                        UserData.PurchaseStatusGranular status = data.purchaseStatusGranular;
+                                        binding.profileFragmentOverloadedWarn.setVisibility(View.VISIBLE);
+                                        binding.profileFragmentOverloadedWarnText.setText(status.getMessage(requireContext(), data.expireTime));
+
+                                        if (status == UserData.PurchaseStatusGranular.PAUSED) {
+                                            binding.profileFragmentOverloadedWarnAction.setText(R.string.resume);
+                                            binding.profileFragmentOverloadedWarnAction.setOnClickListener(v -> launchSubscriptions(OverloadedUtils.ACTIVE_SKU));
+                                        } else if (status == UserData.PurchaseStatusGranular.ACCOUNT_HOLD || status == UserData.PurchaseStatusGranular.GRACE_PERIOD) {
+                                            binding.profileFragmentOverloadedWarnAction.setText(R.string.fixPayment);
+                                            binding.profileFragmentOverloadedWarnAction.setOnClickListener(v -> launchSubscriptions(OverloadedUtils.ACTIVE_SKU));
+                                        } else {
+                                            binding.profileFragmentOverloadedWarnAction.setText(R.string.subscriptions);
+                                            binding.profileFragmentOverloadedWarnAction.setOnClickListener(v -> launchSubscriptions(null));
+                                        }
+                                    } else {
+                                        binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
+                                    }
+                                })
+                                .addOnFailureListener(ex -> binding.profileFragmentOverloadedWarn.setVisibility(View.GONE));
                     } else {
                         binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
+                        binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
                     }
                 })
                 .addOnFailureListener(ex -> {
                     Log.e(TAG, "Failed waiting ready.", ex);
                     binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
                     binding.profileFragmentChat.setVisibility(View.GONE);
+                    binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
                 });
     }
 
