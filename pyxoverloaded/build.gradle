@@ -35,16 +35,16 @@ android {
 dependencies {
     implementation project(':CommonUtils')
 
-    api 'com.google.android.gms:play-services-games:20.0.0'
-    api 'com.google.android.gms:play-services-auth:18.1.0'
-    api 'com.google.firebase:firebase-auth:19.3.2'
+    api 'com.google.android.gms:play-services-games:21.0.0'
+    api 'com.google.android.gms:play-services-auth:19.0.0'
+    api 'com.google.firebase:firebase-auth:20.0.1'
 
-    implementation 'com.squareup.okhttp3:okhttp:4.8.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
     implementation 'org.whispersystems:signal-protocol-android:2.8.1'
 
     implementation 'com.github.instacart.truetime-android:library:3.4'
 
-    implementation('com.google.firebase:firebase-perf:19.0.8') {
+    implementation('com.google.firebase:firebase-perf:19.0.10') {
         exclude group: 'com.google.protobuf'
     }
 }
