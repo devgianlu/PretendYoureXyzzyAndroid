@@ -73,14 +73,6 @@ public class GameInfo {
             return list;
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Player player = (Player) o;
-            return name.equals(player.name);
-        }
-
         @Nullable
         @Override
         public Void[] getMatchingFilters() {

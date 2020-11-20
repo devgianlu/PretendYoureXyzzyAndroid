@@ -4,31 +4,34 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
+import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
+import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
-import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
-import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.databinding.ActivityNewGameBinding;
-import com.gianlu.pretendyourexyzzy.dialogs.Dialogs;
-import com.gianlu.pretendyourexyzzy.dialogs.EditGameOptionsDialog;
+import com.gianlu.pretendyourexyzzy.dialogs.GameRoundDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.NewChatDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
 
-public class GameActivity extends ActivityWithDialog implements AnotherGameManager.Listener, GameUi.Listener {
+public class GameActivity extends ActivityWithDialog implements AnotherGameManager.Listener {
     private static final String TAG = GameActivity.class.getSimpleName();
     private GamePermalink game;
     private ActivityNewGameBinding binding;
@@ -55,16 +58,17 @@ public class GameActivity extends ActivityWithDialog implements AnotherGameManag
         binding = ActivityNewGameBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        binding.gameActivityMenu.setOnClickListener(v -> showPopupMenu());
+
         game = (GamePermalink) getIntent().getSerializableExtra("game");
         if (game == null) {
             finishAfterTransition();
             return;
         }
 
-        ui = new GameUi(this, binding, this);
-
         try {
             pyx = RegisteredPyx.get();
+            ui = new GameUi(this, binding, pyx);
             manager = new AnotherGameManager(this, game, pyx, ui, this);
         } catch (LevelMismatchException ex) {
             Log.e(TAG, "Failed getting PYX instance.", ex);
@@ -83,14 +87,56 @@ public class GameActivity extends ActivityWithDialog implements AnotherGameManag
         binding.gameActivityLoading.setVisibility(View.VISIBLE);
 
         manager.begin();
-        AnalyticsApplication.sendAnalytics(Utils.ACTION_JOIN_GAME);
 
+        setKeepScreenOn(Prefs.getBoolean(PK.KEEP_SCREEN_ON));
+    }
 
-        // UserInfoDialog.loadAndShow(pyx, activity, player.name);
-        // MetricsActivity.startActivity(getContext(), perm);
-        // showDialog(GameRoundDialog.get(roundId));
-        // showDialog(Dialogs.askDefinitionWord(getContext(), text -> UrbanDictSheet.get().show(getActivity(), text)));
-        // CustomDecksSheet.get().show(this, perm.gid);
+    private void showPopupMenu() {
+        PopupMenu popup = new PopupMenu(this, binding.gameActivityMenu);
+        popup.inflate(R.menu.game);
+
+        Menu menu = popup.getMenu();
+        menu.findItem(R.id.game_keepScreenOn).setChecked(Prefs.getBoolean(PK.KEEP_SCREEN_ON));
+
+        if (manager == null || manager.getLastRoundMetricsId() == null)
+            menu.removeItem(R.id.game_lastRound);
+
+        if (pyx == null || !pyx.hasMetrics())
+            menu.removeItem(R.id.game_gameMetrics);
+
+        popup.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.game_keepScreenOn) {
+                boolean on = !item.isChecked();
+                item.setChecked(on);
+                setKeepScreenOn(on);
+                return true;
+            } else if (item.getItemId() == R.id.game_gameMetrics) {
+                // TODO: Show game metrics
+                return true;
+            } else if (item.getItemId() == R.id.game_lastRound) {
+                if (manager == null)
+                    return false;
+
+                String roundId = manager.getLastRoundMetricsId();
+                if (roundId != null) {
+                    showDialog(GameRoundDialog.get(roundId));
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            return false;
+        });
+        popup.show();
+    }
+
+    private void setKeepScreenOn(boolean on) {
+        Prefs.putBoolean(PK.KEEP_SCREEN_ON, on);
+
+        Window window = getWindow();
+        if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     private void leaveGame() {
@@ -118,41 +164,6 @@ public class GameActivity extends ActivityWithDialog implements AnotherGameManag
     public void justLeaveGame() {
         AnalyticsApplication.sendAnalytics(Utils.ACTION_LEFT_GAME);
         finishAfterTransition();
-    }
-
-    @Override
-    public void onCardSelected(@NonNull BaseCard card) {
-        /*
-        if (action == GameCardView.Action.SELECT) {
-            if (listener != null) listener.onCardSelected(card);
-        } else if (action == GameCardView.Action.TOGGLE_STAR) {
-            AnalyticsApplication.sendAnalytics(Utils.ACTION_STARRED_CARD_ADD);
-
-            BaseCard bc = blackCard();
-            if (bc != null && starredCards.putCard((GameCard) bc, group))
-                Toaster.with(getContext()).message(R.string.addedCardToStarred).show();
-        } else if (action == GameCardView.Action.SELECT_IMG) {
-            listener.showDialog(CardImageZoomDialog.get(card));
-        }
-         */
-
-        if (manager != null) manager.onCardSelected(card);
-    }
-
-    @Override
-    public void showOptions() {
-        Game.Options options = manager.gameOptions();
-        if (options == null) return;
-
-        if (manager.amHost() && manager.isStatus(Game.Status.LOBBY))
-            showDialog(EditGameOptionsDialog.get(game.gid, options), null);
-        else
-            showDialog(Dialogs.gameOptions(this, options, pyx.firstLoad()));
-    }
-
-    @Override
-    public void startGame() {
-        if (manager != null) manager.startGame();
     }
 
     @Override

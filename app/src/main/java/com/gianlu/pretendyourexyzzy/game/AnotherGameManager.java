@@ -25,6 +25,7 @@ import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
 import com.gianlu.pretendyourexyzzy.dialogs.Dialogs;
+import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -34,14 +35,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+
 import static com.gianlu.commonutils.CommonUtils.optString;
 
-public class AnotherGameManager implements Pyx.OnEventListener, SensitiveGameData.Listener {
+public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listener, GameUi.Listener {
     private static final String TAG = AnotherGameManager.class.getSimpleName();
     private final GamePermalink permalink;
     private final RegisteredPyx pyx;
     private final GameUi ui;
-    private final SensitiveGameData gameData;
+    private final GameData gameData;
     private final Listener listener;
     private final int gid;
     private final Context context;
@@ -52,7 +55,8 @@ public class AnotherGameManager implements Pyx.OnEventListener, SensitiveGameDat
         this.pyx = pyx;
         this.gid = permalink.gid;
         this.ui = ui;
-        this.gameData = new SensitiveGameData(pyx, this);
+        this.ui.setListener(this);
+        this.gameData = new GameData(pyx.user().nickname, this);
         this.listener = listener;
     }
 
@@ -68,7 +72,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, SensitiveGameDat
                 judgeSkipped();
                 break;
             case GAME_OPTIONS_CHANGED:
-                gameData.update(new Game(msg.obj.getJSONObject("gi")));
+                gameData.updateGame(new Game(msg.obj.getJSONObject("gi")));
                 break;
             case GAME_PLAYER_INFO_CHANGE:
                 gameData.playerChange(new GameInfo.Player(msg.obj.getJSONObject("pi")));
@@ -168,7 +172,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, SensitiveGameDat
 
     private void gameStateChange(@NonNull PollMessage msg) throws JSONException {
         Game.Status status = Game.Status.parse(msg.obj.getString("gs"));
-        gameData.update(status);
+        gameData.updateStatus(status);
         switch (status) {
             case JUDGING:
                 ui.hideLobby();
@@ -279,6 +283,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, SensitiveGameDat
 
     public void reset() {
         pyx.polling().removeListener(this);
+        ui.setListener(null);
         ui.resetTimer();
     }
 
@@ -294,7 +299,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, SensitiveGameDat
     private void updateGameInfo() {
         pyx.request(PyxRequests.getGameInfo(gid))
                 .addOnSuccessListener(result -> {
-                    gameData.update(result);
+                    gameData.update(result, null, null);
 
                     if (gameData.amHost()) {
                         int players = result.players.size() - 1; // Do not include ourselves
@@ -416,8 +421,34 @@ public class AnotherGameManager implements Pyx.OnEventListener, SensitiveGameDat
                 });
     }
 
-    public boolean isStatus(@NonNull Game.Status status) {
-        return gameData.status == status;
+    @Override
+    public void showOptions() {
+        // TODO: Show options dialog
+
+        /*
+        Game.Options options = manager.gameOptions();
+        if (options == null) return;
+
+        if (manager.amHost() && manager.isStatus(Game.Status.LOBBY))
+            showDialog(EditGameOptionsDialog.get(game.gid, options), null);
+        else
+            showDialog(Dialogs.gameOptions(this, options, pyx.firstLoad()));
+         */
+    }
+
+    @Override
+    public boolean isLobby() {
+        return gameData.status == Game.Status.LOBBY;
+    }
+
+    @Override
+    public void onPlayerSelected(@NonNull String name) {
+        listener.showDialog(NewUserInfoDialog.get(name, true, OverloadedApi.get().isOverloadedUserOnServerCached(name)));
+    }
+
+    @Override
+    public void showCustomDecks() {
+        // TODO: Show custom decks dialog
     }
 
     @NonNull

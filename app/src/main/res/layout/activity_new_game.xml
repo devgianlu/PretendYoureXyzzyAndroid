@@ -41,7 +41,6 @@
         <TextView
             android:id="@+id/gameActivity_counter"
             android:layout_width="wrap_content"
-            android:visibility="gone"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:background="@drawable/bg_game_counter"
@@ -49,7 +48,8 @@
             android:padding="8dp"
             android:textColor="#000000"
             android:textSize="20sp"
-            android:textStyle="italic" />
+            android:textStyle="italic"
+            android:visibility="gone" />
     </FrameLayout>
 
     <TextView
@@ -161,6 +161,14 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
             android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/gameActivity_customDecks"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:textAppearance="@style/TextAppearance.Regular"
+            android:textSize="16sp" />
 
         <LinearLayout
             android:layout_width="match_parent"

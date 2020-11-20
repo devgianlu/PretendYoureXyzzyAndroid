@@ -23,12 +23,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.NewMainActivity;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.activities.ManageServersActivity;
 import com.gianlu.pretendyourexyzzy.adapters.ServersAdapter;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
@@ -439,7 +441,10 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
 
             holder.binding.gameItemSpectate.setOnClickListener(v -> askPassword(game)
                     .continueWithTask(task -> pyx.request(PyxRequests.spectateGame(game.gid, task.getResult())))
-                    .addOnSuccessListener((gamePermalink) -> startActivity(GameActivity.gameIntent(requireContext(), gamePermalink)))
+                    .addOnSuccessListener((gamePermalink) -> {
+                        AnalyticsApplication.sendAnalytics(Utils.ACTION_JOIN_GAME);
+                        startActivity(GameActivity.gameIntent(requireContext(), gamePermalink));
+                    })
                     .addOnFailureListener(ex -> {
                         Log.e(TAG, "Failed spectating game.", ex);
                         showToast(Toaster.build().message(R.string.failedSpectating).extra(game.gid));
@@ -447,7 +452,10 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
 
             holder.binding.gameItemJoin.setOnClickListener(v -> askPassword(game)
                     .continueWithTask(task -> pyx.request(PyxRequests.joinGame(game.gid, task.getResult())))
-                    .addOnSuccessListener((gamePermalink) -> startActivity(GameActivity.gameIntent(requireContext(), gamePermalink)))
+                    .addOnSuccessListener((gamePermalink) -> {
+                        startActivity(GameActivity.gameIntent(requireContext(), gamePermalink));
+                        AnalyticsApplication.sendAnalytics(Utils.ACTION_JOIN_GAME);
+                    })
                     .addOnFailureListener(ex -> {
                         Log.e(TAG, "Failed joining game.", ex);
                         showToast(Toaster.build().message(R.string.failedJoiningGame).extra(game.gid));

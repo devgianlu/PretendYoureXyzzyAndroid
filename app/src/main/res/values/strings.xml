@@ -420,4 +420,6 @@
     <string name="overloadedSub_usernameLocked">You previously registered with this username.</string>
     <string name="failedLoading_changeServerRetry">Failed loading… Try changing server or retry.</string>
     <string name="noChatMessages">No messages so far… Start chatting!</string>
+    <string name="status">Status</string>
+    <string name="playWith">"Play with "</string>
 </resources>

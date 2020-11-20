@@ -1,8 +1,15 @@
 package com.gianlu.pretendyourexyzzy.game;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,14 +18,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.UiThread;
-import androidx.recyclerview.widget.DiffUtil;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
-import com.gianlu.commonutils.dialogs.DialogUtils;
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
@@ -31,41 +38,64 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import xyz.gianlu.pyxoverloaded.OverloadedApi;
+
 public class GameUi {
     private final Context context;
     private final com.gianlu.pretendyourexyzzy.databinding.ActivityNewGameBinding binding;
     private final Timer timer = new Timer();
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private final Listener listener;
+    private Listener listener = null;
     private CountdownTask countdownTask;
     private PlayersAdapter playersAdapter;
     private CardsAdapter tableAdapter;
     private CardsAdapter handAdapter;
     private BaseCard blackCard;
 
-    public GameUi(@NotNull Context context, @NotNull ActivityNewGameBinding binding, @NotNull Listener listener) {
+    public GameUi(@NotNull Context context, @NotNull ActivityNewGameBinding binding, @NonNull RegisteredPyx pyx) {
         this.context = context;
         this.binding = binding;
-        this.listener = listener;
 
         binding.gameActivityPlayers.setLayoutManager(new LinearLayoutManager(context, RecyclerView.HORIZONTAL, false));
         binding.gameActivityLobbyPlayers.setLayoutManager(new GridLayoutManager(context, 3, RecyclerView.VERTICAL, false));
 
-        binding.gameActivityStart.setOnClickListener(v -> listener.startGame());
-        binding.gameActivityOptions.setOnClickListener(v -> listener.showOptions());
+        binding.gameActivityStart.setOnClickListener(v -> {
+            if (listener != null) listener.startGame();
+        });
+        binding.gameActivityOptions.setOnClickListener(v -> {
+            if (listener != null) listener.showOptions();
+        });
+
+        if (pyx.config().crCastEnabled() || pyx.config().customDecksEnabled()) {
+            SpannableString clickableSpan = SpannableString.valueOf(context.getString(R.string.customDecks));
+            clickableSpan.setSpan(new ForegroundColorSpan(ContextCompat.getColor(context, R.color.appColor_400)), 0, clickableSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            clickableSpan.setSpan(new ClickSpan(() -> {
+                if (listener != null) listener.showCustomDecks();
+            }), 0, clickableSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            binding.gameActivityCustomDecks.setMovementMethod(LinkMovementMethod.getInstance());
+            binding.gameActivityCustomDecks.setVisibility(View.VISIBLE);
+            binding.gameActivityCustomDecks.setText(new SpannableStringBuilder()
+                    .append(context.getString(R.string.playWith))
+                    .append(clickableSpan));
+        } else {
+            binding.gameActivityCustomDecks.setVisibility(View.GONE);
+        }
     }
 
-    public void setup(@NonNull SensitiveGameData gameData) {
-        playersAdapter = new PlayersAdapter(gameData.players);
-        gameData.playersInterface = playersAdapter;
-        binding.gameActivityPlayers.setAdapter(playersAdapter);
+    public void setListener(@Nullable Listener listener) {
+        this.listener = listener;
+    }
+
+    public void setup(@NonNull GameData gameData) {
+        playersAdapter = new PlayersAdapter(gameData.players /* Pass this directly */);
+        gameData.playersAdapter = playersAdapter;
 
         tableAdapter = new CardsAdapter();
         handAdapter = new CardsAdapter();
@@ -97,7 +127,6 @@ public class GameUi {
         if (countdownTask != null) countdownTask.cancel();
         binding.gameActivityCounter.setVisibility(View.GONE);
     }
-    //endregion
 
     //region Black card
     public void setBlackCard(@Nullable BaseCard card) {
@@ -113,17 +142,18 @@ public class GameUi {
             binding.gameActivityBlackCardWatermark.setText(null);
         }
     }
+    //endregion
 
     @Nullable
     public BaseCard blackCard() {
         return blackCard;
     }
-    //endregion
 
     //region White cards
     public void clearHand() {
         handAdapter.clear();
     }
+    //endregion
 
     public void showHand(boolean selectable) {
         handAdapter.setSelectable(selectable);
@@ -181,7 +211,6 @@ public class GameUi {
     public void notifyWinnerCard(int winnerCardId) {
         if (tableAdapter != null) tableAdapter.notifyWinnerCard(winnerCardId);
     }
-    //endregion
 
     //region Lobby
     public void showLobby() {
@@ -197,6 +226,7 @@ public class GameUi {
         binding.gameActivityPlayers.setAdapter(null);
         binding.gameActivityLobbyPlayers.setAdapter(playersAdapter);
     }
+    //endregion
 
     public void hideLobby() {
         binding.gameActivityNotLobby.setVisibility(View.VISIBLE);
@@ -205,14 +235,37 @@ public class GameUi {
         binding.gameActivityLobbyPlayers.setAdapter(null);
         binding.gameActivityPlayers.setAdapter(playersAdapter);
     }
-    //endregion
 
-    public interface Listener extends DialogUtils.ShowStuffInterface {
+    public interface Listener {
         void onCardSelected(@NonNull BaseCard card);
 
         void showOptions();
 
         void startGame();
+
+        boolean isLobby();
+
+        void onPlayerSelected(@NonNull String name);
+
+        void showCustomDecks();
+    }
+    //endregion
+
+    private static class ClickSpan extends ClickableSpan {
+        private final OnClickListener mListener;
+
+        ClickSpan(@NonNull OnClickListener listener) {
+            mListener = listener;
+        }
+
+        @Override
+        public void onClick(@NonNull View widget) {
+            mListener.onClick();
+        }
+
+        public interface OnClickListener {
+            void onClick();
+        }
     }
 
     @UiThread
@@ -341,45 +394,40 @@ public class GameUi {
         }
     }
 
-    private class PlayersAdapter extends OrderedRecyclerViewAdapter<PlayersAdapter.ViewHolder, GameInfo.Player, Void, Void> implements SensitiveGameData.AdapterInterface {
+    private class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.ViewHolder> {
         private final LayoutInflater inflater;
-        private RecyclerView list;
+        private final List<GameInfo.Player> list;
 
         PlayersAdapter(@NotNull List<GameInfo.Player> list) {
-            super(list, null);
+            this.list = list;
             this.inflater = LayoutInflater.from(context);
         }
 
         @Override
-        protected boolean matchQuery(@NonNull GameInfo.Player item, @Nullable String query) {
-            return true;
-        }
-
-        @Override
-        protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull GameInfo.Player player) {
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            GameInfo.Player player = list.get(position);
             holder.binding.playerItemName.setText(player.name);
-            holder.update(player);
+
+            if (OverloadedApi.get().isOverloadedUserOnServerCached(player.name))
+                CommonUtils.setTextColor(holder.binding.playerItemName, R.color.appColor_500);
+            else
+                holder.binding.playerItemName.setTextColor(Color.BLACK);
 
             holder.binding.getRoot().setOnClickListener(v -> {
-                // TODO: Player menu
+                if (listener != null) listener.onPlayerSelected(player.name);
             });
+
+            holder.update(player, listener != null && listener.isLobby());
         }
 
         @Override
-        protected void onUpdateViewHolder(@NonNull ViewHolder holder, int position, @NonNull GameInfo.Player player) {
-            holder.update(player);
-        }
-
-        @Override
-        protected void shouldUpdateItemCount(int count) {
-        }
-
-        @NonNull
-        @Override
-        public Comparator<GameInfo.Player> getComparatorFor(@NonNull Void sorting) {
-            return (o1, o2) -> {
-                return 0; // TODO: Sort players list
-            };
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
+            if (payloads.isEmpty()) {
+                super.onBindViewHolder(holder, position, payloads);
+            } else {
+                GameInfo.Player player = (GameInfo.Player) payloads.get(0);
+                holder.update(player, listener != null && listener.isLobby());
+            }
         }
 
         @NonNull
@@ -389,58 +437,48 @@ public class GameUi {
         }
 
         @Override
-        public void dispatchUpdate(@NonNull DiffUtil.DiffResult result) {
-            result.dispatchUpdatesTo(this);
-        }
-
-        @Override
-        public void onAttachedToRecyclerView(@NonNull RecyclerView list) {
-            super.onAttachedToRecyclerView(list);
-            this.list = list;
-        }
-
-        @Override
-        public void onDetachedFromRecyclerView(@NonNull RecyclerView list) {
-            super.onDetachedFromRecyclerView(list);
-            this.list = null;
-        }
-
-        @Override
-        public void clearPool() {
-            if (list != null) list.getRecycledViewPool().clear();
+        public int getItemCount() {
+            return list.size();
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
             final ItemNewPlayerBinding binding;
 
             ViewHolder(@NonNull ViewGroup parent) {
-                super(inflater.inflate(R.layout.item_new_player, parent, false));
-                binding = ItemNewPlayerBinding.bind(itemView);
+                super(inflater.inflate(R.layout.item_grid_player, parent, false));
+                binding = ItemNewPlayerBinding.bind(((ViewGroup) itemView).getChildAt(0));
             }
 
-            void update(@NotNull GameInfo.Player player) {
+            void update(@NotNull GameInfo.Player player, boolean lobby) {
                 binding.playerItemPoints.setText(String.valueOf(player.score));
 
                 int iconRes;
-                switch (player.status) {
-                    case WINNER:
-                        iconRes = R.drawable.baseline_star_24; // TODO
-                        break;
-                    case HOST:
-                        iconRes = R.drawable.baseline_person_24; // TODO
-                        break;
-                    case IDLE:
-                        iconRes = R.drawable.ic_status_done_24;
-                        break;
-                    case JUDGE:
-                    case JUDGING:
-                        iconRes = R.drawable.ic_status_hammer_24;
-                        break;
-                    default:
-                    case SPECTATOR:
-                    case PLAYING:
-                        iconRes = 0;
-                        break;
+                if (lobby) {
+                    binding.playerItemPoints.setVisibility(View.INVISIBLE);
+                    iconRes = 0;
+                } else {
+                    binding.playerItemPoints.setVisibility(View.VISIBLE);
+
+                    switch (player.status) {
+                        case WINNER:
+                            iconRes = R.drawable.baseline_star_24; // TODO
+                            break;
+                        case HOST:
+                            iconRes = R.drawable.baseline_person_24; // TODO
+                            break;
+                        case IDLE:
+                            iconRes = R.drawable.ic_status_done_24;
+                            break;
+                        case JUDGE:
+                        case JUDGING:
+                            iconRes = R.drawable.ic_status_hammer_24;
+                            break;
+                        default:
+                        case SPECTATOR:
+                        case PLAYING:
+                            iconRes = 0;
+                            break;
+                    }
                 }
 
                 if (iconRes == 0) {
