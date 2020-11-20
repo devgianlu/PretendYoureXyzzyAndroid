@@ -39,6 +39,9 @@ import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
 import static com.gianlu.commonutils.CommonUtils.optString;
 
+/**
+ * The class handling all the game logic. Storing data is delegated to {@link GameData} and managing the UI to {@link GameUi}.
+ */
 public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listener, GameUi.Listener {
     private static final String TAG = AnotherGameManager.class.getSimpleName();
     private final GamePermalink permalink;
@@ -60,6 +63,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
         this.listener = listener;
     }
 
+    //region Events handling
     @Override
     public void onPollMessage(@NonNull PollMessage msg) throws JSONException {
         Log.v(TAG, msg.event + " -> " + msg.obj.toString());
@@ -138,13 +142,6 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
         ui.setBlackCard(null);
 
         ui.countFrom(intermission);
-    }
-
-    @Nullable
-    public String getLastRoundMetricsId() {
-        if (gameData.lastRoundPermalink == null) return null;
-        String[] split = gameData.lastRoundPermalink.split("/");
-        return split[split.length - 1];
     }
 
     private void roundComplete(int winnerCard, @NonNull String roundWinner, int intermission, @Nullable String lastRoundPermalink) {
@@ -255,10 +252,6 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
         }
     }
 
-    public boolean isPlayerStatus(@NonNull GameInfo.PlayerStatus status) {
-        return gameData.isPlayerStatus(gameData.me, status);
-    }
-
     @Override
     public void anyPlayerChanged(@NonNull GameInfo.Player player, @Nullable GameInfo.PlayerStatus oldStatus) {
     }
@@ -280,22 +273,9 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
         ui.showTable(false);
         event(UiEvent.SPECTATOR_TEXT);
     }
+    //endregion
 
-    public void reset() {
-        pyx.polling().removeListener(this);
-        ui.setListener(null);
-        ui.resetTimer();
-    }
-
-    public void destroy() {
-        reset();
-        listener.justLeaveGame();
-    }
-
-    public boolean amHost() {
-        return gameData.amHost();
-    }
-
+    //region Internals
     private void updateGameInfo() {
         pyx.request(PyxRequests.getGameInfo(gid))
                 .addOnSuccessListener(result -> {
@@ -318,42 +298,10 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
                 });
     }
 
-    public void begin() {
-        pyx.getGameInfoAndCards(gid)
-                .addOnSuccessListener(result -> {
-                    gameData.update(result.info, result.cards, ui);
-                    listener.onGameLoaded();
-                    pyx.polling().addListener(this);
-                })
-                .addOnFailureListener(listener::onFailedLoadingGame);
-    }
-
-    public void onCardSelected(@NonNull BaseCard card) {
-        if (gameData.amJudge()) {
-            listener.showDialog(Dialogs.confirmation(context, R.string.areYouSureJudgeCard, () -> judgeCardInternal((GameCard) card)));
-        } else {
-            if (((GameCard) card).writeIn) {
-                listener.showDialog(Dialogs.askText(context, text -> playCardInternal((GameCard) card, text)));
-            } else {
-                listener.showDialog(Dialogs.confirmation(context, R.string.areYouSurePlayCard, () -> playCardInternal((GameCard) card, null)));
-            }
-        }
-    }
-
-    public void startGame() {
-        pyx.request(PyxRequests.startGame(gid))
-                .addOnSuccessListener(aVoid -> Toaster.with(context).message(R.string.gameStarted).show())
-                .addOnFailureListener(ex -> {
-                    Log.e(TAG, "Failed starting game.", ex);
-                    if (!(ex instanceof PyxException) || !handleStartGameException((PyxException) ex))
-                        Toaster.with(context).message(R.string.failedStartGame).show();
-                });
-    }
-
     /**
      * @return Whether the exception has been handled
      */
-    public boolean handleStartGameException(@NonNull PyxException ex) {
+    private boolean handleStartGameException(@NonNull PyxException ex) {
         if (Objects.equals(ex.errorCode, "nep")) {
             Toaster.with(context).message(R.string.notEnoughPlayers).show();
             return true;
@@ -420,6 +368,53 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
                     listener.showToast(Toaster.build().message(R.string.failedPlayingCard));
                 });
     }
+    //endregion
+
+    //region Public methods
+    public void reset() {
+        pyx.polling().removeListener(this);
+        ui.setListener(null);
+        ui.resetTimer();
+    }
+
+    public void destroy() {
+        reset();
+        listener.justLeaveGame();
+    }
+
+    public void begin() {
+        pyx.getGameInfoAndCards(gid)
+                .addOnSuccessListener(result -> {
+                    gameData.update(result.info, result.cards, ui);
+                    listener.onGameLoaded();
+                    pyx.polling().addListener(this);
+                })
+                .addOnFailureListener(listener::onFailedLoadingGame);
+    }
+
+    public void startGame() {
+        pyx.request(PyxRequests.startGame(gid))
+                .addOnSuccessListener(aVoid -> Toaster.with(context).message(R.string.gameStarted).show())
+                .addOnFailureListener(ex -> {
+                    Log.e(TAG, "Failed starting game.", ex);
+                    if (!(ex instanceof PyxException) || !handleStartGameException((PyxException) ex))
+                        Toaster.with(context).message(R.string.failedStartGame).show();
+                });
+    }
+    //endregion
+
+    //region Listener callbacks
+    public void onCardSelected(@NonNull BaseCard card) {
+        if (gameData.amJudge()) {
+            listener.showDialog(Dialogs.confirmation(context, R.string.areYouSureJudgeCard, () -> judgeCardInternal((GameCard) card)));
+        } else {
+            if (((GameCard) card).writeIn) {
+                listener.showDialog(Dialogs.askText(context, text -> playCardInternal((GameCard) card, text)));
+            } else {
+                listener.showDialog(Dialogs.confirmation(context, R.string.areYouSurePlayCard, () -> playCardInternal((GameCard) card, null)));
+            }
+        }
+    }
 
     @Override
     public void showOptions() {
@@ -437,18 +432,46 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
     }
 
     @Override
-    public boolean isLobby() {
-        return gameData.status == Game.Status.LOBBY;
-    }
-
-    @Override
     public void onPlayerSelected(@NonNull String name) {
-        listener.showDialog(NewUserInfoDialog.get(name, true, OverloadedApi.get().isOverloadedUserOnServerCached(name)));
+        if (name.equals(gameData.me))
+            listener.showToast(Toaster.build().message(R.string.thisIsYou));
+        else
+            listener.showDialog(NewUserInfoDialog.get(name, true, OverloadedApi.get().isOverloadedUserOnServerCached(name)));
     }
 
     @Override
     public void showCustomDecks() {
         // TODO: Show custom decks dialog
+    }
+    //endregion
+
+    //region Getters
+    @Nullable
+    public String getLastRoundMetricsId() {
+        if (gameData.lastRoundPermalink == null) return null;
+        String[] split = gameData.lastRoundPermalink.split("/");
+        return split[split.length - 1];
+    }
+
+    public boolean isPlayerStatus(@NonNull GameInfo.PlayerStatus status) {
+        return gameData.isPlayerStatus(gameData.me, status);
+    }
+
+    @Override
+    public boolean amHost() {
+        return gameData.amHost();
+    }
+
+    @Override
+    public boolean isLobby() {
+        return gameData.status == Game.Status.LOBBY;
+    }
+
+    public boolean hasPassword(boolean knowsPassword) {
+        if (knowsPassword)
+            return gameData.options.password != null && !gameData.options.password.isEmpty();
+        else
+            return gameData.hasPassword;
     }
 
     @NonNull
@@ -470,6 +493,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
     public String host() {
         return gameData.host;
     }
+    //endregion
 
     private void event(@NonNull UiEvent ev, Object... args) {
         switch (ev.kind) {
@@ -486,13 +510,6 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
                     ui.setInstructions(ev.text, args);
                 break;
         }
-    }
-
-    public boolean hasPassword(boolean knowsPassword) {
-        if (knowsPassword)
-            return gameData.options.password != null && !gameData.options.password.isEmpty();
-        else
-            return gameData.hasPassword;
     }
 
     private enum UiEvent {

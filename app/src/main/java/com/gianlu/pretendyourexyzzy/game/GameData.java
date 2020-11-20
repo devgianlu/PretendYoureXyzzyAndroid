@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * A class to keep the game data organized. This will mostly take care of updating stuff and notifying listeners and adapters.
+ */
 @UiThread
 public class GameData {
     public final PlayersList players = new PlayersList();
@@ -38,10 +41,13 @@ public class GameData {
         this.listener = listener;
     }
 
-    boolean amHost() {
-        return Objects.equals(host, me);
-    }
-
+    /**
+     * Updates everything, setup the UI if provided, notify players listeners and adapter
+     *
+     * @param info  The new {@link GameInfo}
+     * @param cards The new {@link GameCards}
+     * @param ui    The {@link GameUi}
+     */
     @UiThread
     void update(@NonNull GameInfo info, @Nullable GameCards cards, @Nullable GameUi ui) {
         updateGame(info.game);
@@ -72,6 +78,11 @@ public class GameData {
             DiffUtil.calculateDiff(new PlayersDiff(oldPlayers, players)).dispatchUpdatesTo(playersAdapter);
     }
 
+    /**
+     * Updates only "basic" data without notifying anything.
+     *
+     * @param game The new {@link Game}
+     */
     void updateGame(@NonNull Game game) {
         spectators.clear();
         spectators.addAll(game.spectators);
@@ -82,20 +93,31 @@ public class GameData {
         options = game.options;
     }
 
+    /**
+     * A spectator joined the game.
+     *
+     * @param name The spectator name
+     */
     void spectatorJoin(@NonNull String name) {
         spectators.add(name);
     }
 
+    /**
+     * A spectator left the game.
+     *
+     * @param name The spectator name
+     */
     void spectatorLeave(@NonNull String name) {
         spectators.remove(name);
     }
 
+    /**
+     * Update the game status
+     *
+     * @param status The new {@link Game.Status}
+     */
     void updateStatus(@NonNull Game.Status status) {
         this.status = status;
-    }
-
-    boolean amJudge() {
-        return me.equals(judge);
     }
 
     /**
@@ -136,11 +158,9 @@ public class GameData {
         listener.anyPlayerChanged(player, oldStatus);
     }
 
-    boolean amSpectator() {
-        return spectators.contains(me);
-    }
-
-    @UiThread
+    /**
+     * The game is in lobby state, reset everything.
+     */
     void resetToIdleAndHost() {
         for (GameInfo.Player player : players) {
             if (player.name.equals(host)) player.status = GameInfo.PlayerStatus.HOST;
@@ -150,10 +170,41 @@ public class GameData {
         playersAdapter.notifyDataSetChanged();
     }
 
+    //region Getters
+
+    /**
+     * @return Whether "our player" is the judge
+     */
+    boolean amJudge() {
+        return Objects.equals(judge, me);
+    }
+
+    /**
+     * @return Whether "our player" is the host
+     */
+    boolean amHost() {
+        return Objects.equals(host, me);
+    }
+
+    /**
+     * @return Whether "our player" is a spectator
+     */
+    boolean amSpectator() {
+        return spectators.contains(me);
+    }
+
+    /**
+     * Check if the given player exists and is in the given status.
+     *
+     * @param name   The player username
+     * @param status The player status to check
+     * @return Whether the player is in the given status
+     */
     boolean isPlayerStatus(@NonNull String name, @NonNull GameInfo.PlayerStatus status) {
         GameInfo.Player player = players.findByName(name);
         return player != null && player.status == status;
     }
+    //endregion
 
     public interface Listener {
         void ourPlayerChanged(@NonNull GameInfo.Player player, @Nullable GameInfo.PlayerStatus oldStatus);

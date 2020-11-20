@@ -46,11 +46,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
+/**
+ * Handles all the UI/layout operations.
+ */
 public class GameUi {
     private final Context context;
     private final com.gianlu.pretendyourexyzzy.databinding.ActivityNewGameBinding binding;
     private final Timer timer = new Timer();
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private final boolean customDecksEnabled;
     private Listener listener = null;
     private CountdownTask countdownTask;
     private PlayersAdapter playersAdapter;
@@ -61,9 +65,10 @@ public class GameUi {
     public GameUi(@NotNull Context context, @NotNull ActivityNewGameBinding binding, @NonNull RegisteredPyx pyx) {
         this.context = context;
         this.binding = binding;
+        this.customDecksEnabled = pyx.config().customDecksEnabled() || pyx.config().crCastEnabled();
 
         binding.gameActivityPlayers.setLayoutManager(new LinearLayoutManager(context, RecyclerView.HORIZONTAL, false));
-        binding.gameActivityLobbyPlayers.setLayoutManager(new GridLayoutManager(context, 3, RecyclerView.VERTICAL, false));
+        binding.gameActivityLobbyPlayers.setLayoutManager(new GridLayoutManager(context, 4, RecyclerView.VERTICAL, false));
 
         binding.gameActivityStart.setOnClickListener(v -> {
             if (listener != null) listener.startGame();
@@ -71,28 +76,17 @@ public class GameUi {
         binding.gameActivityOptions.setOnClickListener(v -> {
             if (listener != null) listener.showOptions();
         });
-
-        if (pyx.config().crCastEnabled() || pyx.config().customDecksEnabled()) {
-            SpannableString clickableSpan = SpannableString.valueOf(context.getString(R.string.customDecks));
-            clickableSpan.setSpan(new ForegroundColorSpan(ContextCompat.getColor(context, R.color.appColor_400)), 0, clickableSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            clickableSpan.setSpan(new ClickSpan(() -> {
-                if (listener != null) listener.showCustomDecks();
-            }), 0, clickableSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            binding.gameActivityCustomDecks.setMovementMethod(LinkMovementMethod.getInstance());
-            binding.gameActivityCustomDecks.setVisibility(View.VISIBLE);
-            binding.gameActivityCustomDecks.setText(new SpannableStringBuilder()
-                    .append(context.getString(R.string.playWith))
-                    .append(clickableSpan));
-        } else {
-            binding.gameActivityCustomDecks.setVisibility(View.GONE);
-        }
     }
 
     public void setListener(@Nullable Listener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Create the adapters and attach the {@link PlayersAdapter} to {@link GameData}.
+     *
+     * @param gameData The {@link GameData} instance
+     */
     public void setup(@NonNull GameData gameData) {
         playersAdapter = new PlayersAdapter(gameData.players /* Pass this directly */);
         gameData.playersAdapter = playersAdapter;
@@ -127,6 +121,7 @@ public class GameUi {
         if (countdownTask != null) countdownTask.cancel();
         binding.gameActivityCounter.setVisibility(View.GONE);
     }
+    //endregion
 
     //region Black card
     public void setBlackCard(@Nullable BaseCard card) {
@@ -142,18 +137,18 @@ public class GameUi {
             binding.gameActivityBlackCardWatermark.setText(null);
         }
     }
-    //endregion
 
     @Nullable
     public BaseCard blackCard() {
         return blackCard;
     }
+    //endregion
 
     //region White cards
     public void clearHand() {
         handAdapter.clear();
     }
-    //endregion
+
 
     public void showHand(boolean selectable) {
         handAdapter.setSelectable(selectable);
@@ -211,6 +206,7 @@ public class GameUi {
     public void notifyWinnerCard(int winnerCardId) {
         if (tableAdapter != null) tableAdapter.notifyWinnerCard(winnerCardId);
     }
+    //endregion
 
     //region Lobby
     public void showLobby() {
@@ -225,8 +221,23 @@ public class GameUi {
 
         binding.gameActivityPlayers.setAdapter(null);
         binding.gameActivityLobbyPlayers.setAdapter(playersAdapter);
+
+        if (customDecksEnabled && listener != null && listener.amHost()) {
+            SpannableString clickableSpan = SpannableString.valueOf(context.getString(R.string.customDecks));
+            clickableSpan.setSpan(new ForegroundColorSpan(ContextCompat.getColor(context, R.color.appColor_400)), 0, clickableSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            clickableSpan.setSpan(new ClickSpan(() -> {
+                if (listener != null) listener.showCustomDecks();
+            }), 0, clickableSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            binding.gameActivityCustomDecks.setMovementMethod(LinkMovementMethod.getInstance());
+            binding.gameActivityCustomDecks.setVisibility(View.VISIBLE);
+            binding.gameActivityCustomDecks.setText(new SpannableStringBuilder()
+                    .append(context.getString(R.string.playWith))
+                    .append(clickableSpan));
+        } else {
+            binding.gameActivityCustomDecks.setVisibility(View.GONE);
+        }
     }
-    //endregion
 
     public void hideLobby() {
         binding.gameActivityNotLobby.setVisibility(View.VISIBLE);
@@ -235,6 +246,7 @@ public class GameUi {
         binding.gameActivityLobbyPlayers.setAdapter(null);
         binding.gameActivityPlayers.setAdapter(playersAdapter);
     }
+    //endregion
 
     public interface Listener {
         void onCardSelected(@NonNull BaseCard card);
@@ -244,6 +256,8 @@ public class GameUi {
         void startGame();
 
         boolean isLobby();
+
+        boolean amHost();
 
         void onPlayerSelected(@NonNull String name);
 
@@ -445,8 +459,8 @@ public class GameUi {
             final ItemNewPlayerBinding binding;
 
             ViewHolder(@NonNull ViewGroup parent) {
-                super(inflater.inflate(R.layout.item_grid_player, parent, false));
-                binding = ItemNewPlayerBinding.bind(((ViewGroup) itemView).getChildAt(0));
+                super(inflater.inflate(R.layout.item_new_player, parent, false));
+                binding = ItemNewPlayerBinding.bind(itemView);
             }
 
             void update(@NotNull GameInfo.Player player, boolean lobby) {
@@ -455,16 +469,20 @@ public class GameUi {
                 int iconRes;
                 if (lobby) {
                     binding.playerItemPoints.setVisibility(View.INVISIBLE);
-                    iconRes = 0;
+
+                    if (player.status == GameInfo.PlayerStatus.HOST)
+                        iconRes = R.drawable.ic_status_idle_24;
+                    else
+                        iconRes = 0;
                 } else {
                     binding.playerItemPoints.setVisibility(View.VISIBLE);
 
                     switch (player.status) {
                         case WINNER:
-                            iconRes = R.drawable.baseline_star_24; // TODO
+                            iconRes = R.drawable.ic_status_winner_24;
                             break;
                         case HOST:
-                            iconRes = R.drawable.baseline_person_24; // TODO
+                            iconRes = R.drawable.ic_status_idle_24;
                             break;
                         case IDLE:
                             iconRes = R.drawable.ic_status_done_24;
