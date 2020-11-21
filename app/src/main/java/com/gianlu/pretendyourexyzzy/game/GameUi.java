@@ -13,6 +13,8 @@ import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,6 +33,7 @@ import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.UnknownCard;
+import com.gianlu.pretendyourexyzzy.cards.NewCardsGroupView;
 import com.gianlu.pretendyourexyzzy.databinding.ActivityNewGameBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemNewPlayerBinding;
 
@@ -67,6 +70,7 @@ public class GameUi {
         this.binding = binding;
         this.customDecksEnabled = pyx.config().customDecksEnabled() || pyx.config().crCastEnabled();
 
+        binding.gameActivityWhiteCards.setLayoutManager(new LinearLayoutManager(context, RecyclerView.HORIZONTAL, false));
         binding.gameActivityPlayers.setLayoutManager(new LinearLayoutManager(context, RecyclerView.HORIZONTAL, false));
         binding.gameActivityLobbyPlayers.setLayoutManager(new GridLayoutManager(context, 4, RecyclerView.VERTICAL, false));
 
@@ -108,6 +112,8 @@ public class GameUi {
     public void countFrom(int ms) {
         if (countdownTask != null) countdownTask.cancel();
 
+        // TODO: ∞ looks ugly as hell as single digit numbers
+
         binding.gameActivityCounter.setVisibility(View.VISIBLE);
         if (ms < 2147000) {
             countdownTask = new CountdownTask(ms / 1000);
@@ -147,33 +153,39 @@ public class GameUi {
     //region White cards
     public void clearHand() {
         handAdapter.clear();
+        adjustBlackCard();
     }
-
 
     public void showHand(boolean selectable) {
         handAdapter.setSelectable(selectable);
         binding.gameActivityWhiteCards.swapAdapter(handAdapter, true);
+        adjustBlackCard();
     }
 
     public void setHand(@NotNull List<BaseCard> cards) {
         handAdapter.setSingles(cards);
+        adjustBlackCard();
     }
 
     public void addHand(@NotNull List<BaseCard> cards) {
         handAdapter.addSingles(cards);
+        adjustBlackCard();
     }
 
     public void removeHand(@NotNull BaseCard card) {
         handAdapter.removeWithGroup(card);
+        adjustBlackCard();
     }
 
     public void clearTable() {
         tableAdapter.clear();
+        adjustBlackCard();
     }
 
     public void showTable(boolean selectable) {
         tableAdapter.setSelectable(selectable);
         binding.gameActivityWhiteCards.swapAdapter(tableAdapter, true);
+        adjustBlackCard();
     }
 
     public void setTable(@NotNull List<CardsGroup> cards, BaseCard blackCard) {
@@ -187,6 +199,7 @@ public class GameUi {
         }
 
         tableAdapter.setGroups(cards);
+        adjustBlackCard();
     }
 
     public void addTable(@NotNull GameCard card, BaseCard blackCard) {
@@ -197,14 +210,36 @@ public class GameUi {
         } else {
             tableAdapter.addSingles(Collections.singletonList(card));
         }
+
+        adjustBlackCard();
     }
 
     public void addBlankCardTable() {
         if (blackCard != null) tableAdapter.addGroup(CardsGroup.unknown(blackCard.numPick()));
+        adjustBlackCard();
     }
 
     public void notifyWinnerCard(int winnerCardId) {
         if (tableAdapter != null) tableAdapter.notifyWinnerCard(winnerCardId);
+        adjustBlackCard();
+    }
+
+    private void adjustBlackCard() {
+        RecyclerView.Adapter<?> adapter = binding.gameActivityWhiteCards.getAdapter();
+        if (adapter == null)
+            return;
+
+        binding.gameActivityWhiteCards.post(() -> {
+            int margin;
+            if (adapter.getItemCount() > 0)
+                margin = binding.gameActivityWhiteCards.getHeight() - ((FrameLayout.LayoutParams) binding.gameActivityBlackCard.getLayoutParams()).bottomMargin;
+            else
+                margin = 0;
+
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.gameActivityBlackCardInfo.getLayoutParams();
+            params.bottomMargin = margin;
+            binding.gameActivityBlackCardInfo.setLayoutParams(params);
+        });
     }
     //endregion
 
@@ -262,8 +297,9 @@ public class GameUi {
         void onPlayerSelected(@NonNull String name);
 
         void showCustomDecks();
+
+        void onStarCard(@NotNull CardsGroup group);
     }
-    //endregion
 
     private static class ClickSpan extends ClickableSpan {
         private final OnClickListener mListener;
@@ -286,6 +322,7 @@ public class GameUi {
     private class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> {
         private final List<CardsGroup> cards = new ArrayList<>(10);
         private RecyclerView list;
+        private boolean selectable = false;
 
         CardsAdapter() {
         }
@@ -299,8 +336,14 @@ public class GameUi {
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             CardsGroup group = cards.get(position);
-
-            // TODO: Setup card group and call listener
+            holder.group.setCards(group);
+            holder.group.setLeftAction(R.drawable.baseline_star_outline_24, card -> {
+                if (listener != null) listener.onStarCard(group);
+            });
+            holder.group.setOnClickListener((NewCardsGroupView.OnClickListener) card -> {
+                if (listener != null && selectable) listener.onCardSelected(card);
+            });
+            holder.group.setSelectable(selectable);
         }
 
         @Override
@@ -376,7 +419,11 @@ public class GameUi {
         }
 
         void setSelectable(boolean selectable) {
-            // TODO: Set cards selectable
+            if (this.selectable == selectable)
+                return;
+
+            this.selectable = selectable;
+            notifyItemRangeChanged(0, cards.size());
         }
 
         public void notifyWinnerCard(int winnerCardId) {
@@ -402,8 +449,11 @@ public class GameUi {
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
+            final NewCardsGroupView group;
+
             ViewHolder(@NonNull ViewGroup parent) {
-                super(new View(parent.getContext()) /* TODO: Game card group item */);
+                super(new NewCardsGroupView(parent.getContext()));
+                group = (NewCardsGroupView) itemView;
             }
         }
     }

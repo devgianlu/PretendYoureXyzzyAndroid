@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -57,6 +58,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fontFamily="@font/roboto_bold"
+        android:minHeight="48dp"
         android:textAlignment="center"
         android:textColor="#7B7B7B"
         android:textSize="20sp" />
@@ -83,13 +85,20 @@
         android:orientation="vertical"
         android:visibility="gone">
 
-        <FrameLayout
-            android:layout_width="match_parent"
+        <Space
+            android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_weight="1" />
+
+        <com.gianlu.pretendyourexyzzy.AspectRationFrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:adjust="height"
+            app:ratio="16:5">
 
             <LinearLayout
-                android:layout_width="260dp"
+                android:id="@+id/gameActivity_blackCard"
+                android:layout_width="240dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
@@ -108,12 +117,18 @@
                     android:textColor="@color/white"
                     android:textSize="20sp" />
 
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
                 <LinearLayout
+                    android:id="@+id/gameActivity_blackCardInfo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:layout_marginBottom="156dp"
                     android:orientation="horizontal">
-
-                    <!-- TODO: Should be aligned at the top of white cards -->
 
                     <com.gianlu.commonutils.misc.SuperTextView
                         android:id="@+id/gameActivity_blackCardPick"
@@ -130,6 +145,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/roboto_regular"
+                        android:textAlignment="viewEnd"
                         android:textColor="#8E8E8E"
                         android:textSize="14sp" />
                 </LinearLayout>
@@ -139,13 +155,20 @@
                 android:id="@+id/gameActivity_whiteCards"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom" />
-        </FrameLayout>
+                android:layout_gravity="bottom"
+                android:elevation="7dp" />
+        </com.gianlu.pretendyourexyzzy.AspectRationFrameLayout>
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/gameActivity_players"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" />
     </LinearLayout>
 
     <LinearLayout

@@ -23,6 +23,9 @@ import com.bumptech.glide.request.target.Target;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.UnknownCard;
+import com.gianlu.pretendyourexyzzy.databinding.ViewNewCardBiggerBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ViewNewCardBinding;
 
 import org.jetbrains.annotations.NotNull;
@@ -32,17 +35,23 @@ public final class NewGameCardView extends CardView {
     private final ViewNewCardBinding binding;
     private BaseCard card;
 
-    public NewGameCardView(@NonNull Context context) {
-        this(context, null, 0);
+    public NewGameCardView(@NonNull Context context, boolean bigger) {
+        this(context, null, 0, bigger);
     }
 
     public NewGameCardView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, 0);
+        this(context, attrs, 0, false);
     }
 
     public NewGameCardView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        this(context, attrs, defStyleAttr, false);
+    }
+
+    private NewGameCardView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, boolean bigger) {
         super(context, attrs, defStyleAttr);
-        binding = ViewNewCardBinding.inflate(LayoutInflater.from(context), this);
+        if (bigger) ViewNewCardBiggerBinding.inflate(LayoutInflater.from(context), this);
+        else ViewNewCardBinding.inflate(LayoutInflater.from(context), this);
+        binding = ViewNewCardBinding.bind(this);
 
         int dp4 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, context.getResources().getDisplayMetrics());
         setElevation(dp4);
@@ -78,11 +87,31 @@ public final class NewGameCardView extends CardView {
 
     public void setCard(@NotNull BaseCard card) {
         this.card = card;
-        setType(card.black() ? Type.BLACK : Type.WHITE);
+
+        if (card instanceof GameCard && ((GameCard) card).isWinner())
+            setType(Type.WINNER);
+        else if (card instanceof UnknownCard)
+            setType(Type.UNKNOWN);
+        else
+            setType(card.black() ? Type.BLACK : Type.WHITE);
     }
 
     private void setType(@NotNull Type type) {
         if (card == null) throw new IllegalStateException();
+        if (type == Type.UNKNOWN) {
+            binding.cardItemPick.setVisibility(GONE);
+            binding.cardItemText.setVisibility(GONE);
+            binding.cardItemWatermark.setVisibility(GONE);
+            binding.cardItemActionRight.setVisibility(GONE);
+            binding.cardItemActionLeft.setVisibility(GONE);
+
+            binding.cardItemImage.setVisibility(VISIBLE);
+            binding.cardItemImage.setImageResource(R.drawable.baseline_question_mark_192);
+            return;
+        }
+
+        binding.cardItemActionRight.setVisibility(binding.cardItemActionRight.hasOnClickListeners() ? VISIBLE : GONE);
+        binding.cardItemActionLeft.setVisibility(binding.cardItemActionLeft.hasOnClickListeners() ? VISIBLE : GONE);
 
         binding.cardItemWatermark.setText(card.watermark());
 
@@ -114,10 +143,15 @@ public final class NewGameCardView extends CardView {
         }
 
         switch (type) {
+            case WINNER:
             case WHITE:
                 binding.cardItemPick.setVisibility(GONE);
 
-                setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
+                if (type == Type.WINNER)
+                    setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getContext(), R.color.appColor_500)));
+                else
+                    setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
+
                 binding.cardItemText.setTextColor(Color.BLACK);
 
                 binding.cardItemActionRight.setImageTintList(ColorStateList.valueOf(Color.BLACK));
@@ -142,7 +176,11 @@ public final class NewGameCardView extends CardView {
         }
     }
 
+    public void setSelectable(boolean selectable) {
+        setClickable(selectable);
+    }
+
     public enum Type {
-        WHITE, BLACK
+        WHITE, BLACK, WINNER, UNKNOWN
     }
 }

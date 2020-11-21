@@ -57,7 +57,7 @@ public final class GameCard extends BaseCard {
     }
 
     @NonNull
-    public static List<BaseCard> list(JSONArray array) throws JSONException {
+    public static List<BaseCard> list(@NonNull JSONArray array) throws JSONException {
         List<BaseCard> list = new ArrayList<>(array.length());
         for (int i = 0; i < array.length(); i++) list.add(parse(array.getJSONObject(i)));
         return list;

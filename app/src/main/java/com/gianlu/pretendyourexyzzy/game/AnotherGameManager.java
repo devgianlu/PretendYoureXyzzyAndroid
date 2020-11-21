@@ -26,6 +26,7 @@ import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
 import com.gianlu.pretendyourexyzzy.dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
+import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -51,6 +52,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
     private final Listener listener;
     private final int gid;
     private final Context context;
+    private final StarredCardsDatabase starredDb;
 
     public AnotherGameManager(@NotNull Context context, @NonNull GamePermalink permalink, @NonNull RegisteredPyx pyx, @NonNull GameUi ui, @NonNull Listener listener) {
         this.context = context;
@@ -59,6 +61,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
         this.gid = permalink.gid;
         this.ui = ui;
         this.ui.setListener(this);
+        this.starredDb = StarredCardsDatabase.get(context);
         this.gameData = new GameData(pyx.user().nickname, this);
         this.listener = listener;
     }
@@ -232,7 +235,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
                 break;
             case JUDGE:
                 if (oldStatus != GameInfo.PlayerStatus.JUDGING) event(UiEvent.YOU_JUDGE);
-                ui.showTable(true);
+                ui.showTable(false);
                 break;
             case JUDGING:
                 event(UiEvent.SELECT_WINNING_CARD);
@@ -267,13 +270,13 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
         if (oldStatus == GameInfo.PlayerStatus.PLAYING && player.status == GameInfo.PlayerStatus.IDLE && gameData.status == Game.Status.PLAYING)
             ui.addBlankCardTable();
     }
+    //endregion
 
     @Override
     public void playerIsSpectator() {
         ui.showTable(false);
         event(UiEvent.SPECTATOR_TEXT);
     }
-    //endregion
 
     //region Internals
     private void updateGameInfo() {
@@ -340,6 +343,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
                     listener.showToast(Toaster.build().message(R.string.failedJudging));
                 });
     }
+    //endregion
 
     private void playCardInternal(@NonNull GameCard card, @Nullable String text) {
         listener.showProgress(R.string.loading);
@@ -368,7 +372,6 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
                     listener.showToast(Toaster.build().message(R.string.failedPlayingCard));
                 });
     }
-    //endregion
 
     //region Public methods
     public void reset() {
@@ -391,6 +394,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
                 })
                 .addOnFailureListener(listener::onFailedLoadingGame);
     }
+    //endregion
 
     public void startGame() {
         pyx.request(PyxRequests.startGame(gid))
@@ -401,7 +405,6 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
                         Toaster.with(context).message(R.string.failedStartGame).show();
                 });
     }
-    //endregion
 
     //region Listener callbacks
     public void onCardSelected(@NonNull BaseCard card) {
@@ -442,6 +445,12 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
     @Override
     public void showCustomDecks() {
         // TODO: Show custom decks dialog
+    }
+
+    @Override
+    public void onStarCard(@NotNull CardsGroup group) {
+        BaseCard bc = ui.blackCard();
+        if (bc != null) starredDb.putCard((GameCard) bc, group);
     }
     //endregion
 
