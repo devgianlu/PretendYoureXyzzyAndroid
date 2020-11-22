@@ -50,26 +50,10 @@ public class Game implements Filterable<Game.Filters>, Serializable {
         if (customDecksArray != null) {
             customDecks = new ArrayList<>(customDecksArray.length());
             for (int i = 0; i < customDecksArray.length(); i++)
-                customDecks.add(new Deck(customDecksArray.getJSONObject(i)));
+                customDecks.add(new Deck(customDecksArray.getJSONObject(i), false));
         } else {
             customDecks = new ArrayList<>();
         }
-    }
-
-    public static int indexOf(@NonNull List<Game> games, int gid) {
-        for (int i = 0; i < games.size(); i++)
-            if (games.get(i).gid == gid) return i;
-
-        return -1;
-    }
-
-    @Nullable
-    public static Game findGame(@NonNull List<Game> games, int gid) {
-        for (Game game : games)
-            if (game.gid == gid)
-                return game;
-
-        return null;
     }
 
     @Override

@@ -23,13 +23,10 @@ import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
-import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.databinding.ActivityNewGameBinding;
 import com.gianlu.pretendyourexyzzy.dialogs.GameRoundDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.NewChatDialog;
-import com.gianlu.pretendyourexyzzy.dialogs.NewEditGameOptionsDialog;
-import com.gianlu.pretendyourexyzzy.dialogs.NewViewGameOptionsDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
@@ -128,16 +125,12 @@ public class GameActivity extends ActivityWithDialog implements AnotherGameManag
                     return false;
                 }
             } else if (item.getItemId() == R.id.game_gameOptions) {
-                Game.Options gameOptions;
-                if (manager == null || game == null || (gameOptions = manager.gameOptions()) == null)
+                if (manager != null) {
+                    manager.showOptions(false);
+                    return true;
+                } else {
                     return false;
-
-                if (manager.amHost() && manager.isLobby())
-                    showDialog(NewEditGameOptionsDialog.get(game.gid, gameOptions));
-                else
-                    showDialog(NewViewGameOptionsDialog.get(gameOptions));
-
-                return true;
+                }
             }
 
             return false;

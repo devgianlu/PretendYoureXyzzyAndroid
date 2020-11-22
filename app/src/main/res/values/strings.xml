@@ -220,7 +220,7 @@
     <string name="addCustomDeck">Add custom deck</string>
     <string name="failedAddingCustomDeck">Failed adding custom deck!</string>
     <string name="customDeckAdded">Custom deck added!</string>
-    <string name="noCustomDecksToAdd">You have no custom decks to add.</string>
+    <string name="noCustomDecksToAdd">You have no custom decks that can be added to this game… Get some!</string>
     <string name="failedSigningIn">Failed signing in!</string>
     <string name="overloaded_requiresSignIn">Overloaded requires sign in</string>
     <string name="overloaded_requiresSignIn_desc">Before joining Overloaded, you must sign in with one of the following providers!</string>
@@ -424,4 +424,5 @@
     <string name="playWith">"Play with "</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
+    <string name="decks">Decks</string>
 </resources>

@@ -78,7 +78,7 @@ public class GameUi {
             if (listener != null) listener.startGame();
         });
         binding.gameActivityOptions.setOnClickListener(v -> {
-            if (listener != null) listener.showOptions();
+            if (listener != null) listener.showOptions(false);
         });
     }
 
@@ -132,11 +132,11 @@ public class GameUi {
         this.blackCard = card;
 
         if (card != null) {
-            binding.gameActivityBlackCardText.setText(card.textUnescaped());
+            binding.gameActivityBlackCardText.setHtml(card.textUnescaped());
             binding.gameActivityBlackCardPick.setHtml(R.string.numPick, card.numPick());
             binding.gameActivityBlackCardWatermark.setText(card.watermark());
         } else {
-            binding.gameActivityBlackCardText.setText(null);
+            binding.gameActivityBlackCardText.setHtml(null);
             binding.gameActivityBlackCardPick.setHtml(null);
             binding.gameActivityBlackCardWatermark.setText(null);
         }
@@ -259,7 +259,7 @@ public class GameUi {
             SpannableString clickableSpan = SpannableString.valueOf(context.getString(R.string.customDecks));
             clickableSpan.setSpan(new ForegroundColorSpan(ContextCompat.getColor(context, R.color.appColor_400)), 0, clickableSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             clickableSpan.setSpan(new ClickSpan(() -> {
-                if (listener != null) listener.showCustomDecks();
+                if (listener != null) listener.showOptions(true);
             }), 0, clickableSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
             binding.gameActivityCustomDecks.setMovementMethod(LinkMovementMethod.getInstance());
@@ -284,7 +284,7 @@ public class GameUi {
     public interface Listener {
         void onCardSelected(@NonNull BaseCard card);
 
-        void showOptions();
+        void showOptions(boolean goToCustomDecks);
 
         void startGame();
 
@@ -293,8 +293,6 @@ public class GameUi {
         boolean amHost();
 
         void onPlayerSelected(@NonNull String name);
-
-        void showCustomDecks();
 
         void onStarCard(@NotNull CardsGroup group);
     }

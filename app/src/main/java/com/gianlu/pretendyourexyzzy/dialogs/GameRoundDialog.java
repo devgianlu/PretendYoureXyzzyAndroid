@@ -40,7 +40,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class GameRoundDialog extends DialogFragment {
+public final class GameRoundDialog extends DialogFragment {
     private static final String TAG = GameRoundDialog.class.getSimpleName();
     private GameRoundSummary summary;
     private ImageView image;

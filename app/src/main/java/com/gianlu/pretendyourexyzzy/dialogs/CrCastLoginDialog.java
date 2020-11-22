@@ -21,7 +21,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastApi;
 import com.google.android.material.textfield.TextInputLayout;
 
-public class CrCastLoginDialog extends DialogFragment {
+public final class CrCastLoginDialog extends DialogFragment {
     private static final String TAG = CrCastLoginDialog.class.getSimpleName();
     private LoginListener listener;
 

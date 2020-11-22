@@ -203,6 +203,37 @@
                     android:dividerPadding="2dp"
                     android:orientation="vertical"
                     android:showDividers="middle" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/customDecks"
+                        android:textAppearance="@style/TextAppearance.Regular"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/viewGameOptions_customDecksCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.Regular"
+                        android:textColor="#868686"
+                        android:textSize="18sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/viewGameOptions_customDecks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:dividerPadding="2dp"
+                    android:orientation="vertical"
+                    android:showDividers="middle" />
             </LinearLayout>
         </ScrollView>
 

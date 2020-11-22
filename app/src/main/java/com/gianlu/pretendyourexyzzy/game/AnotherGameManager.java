@@ -18,6 +18,7 @@ import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
+import com.gianlu.pretendyourexyzzy.api.models.Deck;
 import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
@@ -33,6 +34,7 @@ import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -55,6 +57,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
     private final int gid;
     private final Context context;
     private final StarredCardsDatabase starredDb;
+    private final ArrayList<Deck> customDecks = new ArrayList<>(10);
 
     public AnotherGameManager(@NotNull Context context, @NonNull GamePermalink permalink, @NonNull RegisteredPyx pyx, @NonNull GameUi ui, @NonNull Listener listener) {
         this.context = context;
@@ -118,13 +121,19 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
             case GAME_SPECTATOR_LEAVE:
                 gameData.spectatorLeave(msg.obj.getString("n"));
                 break;
+            case ADD_CR_CAST_CARDSET:
+            case ADD_CARDSET:
+                customDecks.add(new Deck(msg.obj.getJSONObject("cdi"), true));
+                break;
+            case REMOVE_CR_CAST_CARDSET:
+            case REMOVE_CARDSET:
+                customDecks.remove(new Deck(msg.obj.getJSONObject("cdi"), true));
+                break;
             case GAME_LIST_REFRESH:
             case GAME_BLACK_RESHUFFLE:
             case GAME_WHITE_RESHUFFLE:
             case KICKED:
             case BANNED:
-            case ADD_CARDSET:
-            case REMOVE_CARDSET:
             case CHAT:
             case PLAYER_LEAVE:
             case NEW_PLAYER:
@@ -272,13 +281,13 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
         if (oldStatus == GameInfo.PlayerStatus.PLAYING && player.status == GameInfo.PlayerStatus.IDLE && gameData.status == Game.Status.PLAYING)
             ui.addBlankCardTable();
     }
-    //endregion
 
     @Override
     public void playerIsSpectator() {
         ui.showTable(false);
         event(UiEvent.SPECTATOR_TEXT);
     }
+    //endregion
 
     //region Internals
     private void updateGameInfo() {
@@ -345,7 +354,6 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
                     listener.showToast(Toaster.build().message(R.string.failedJudging));
                 });
     }
-    //endregion
 
     private void playCardInternal(@NonNull GameCard card, @Nullable String text) {
         listener.showProgress(R.string.loading);
@@ -374,6 +382,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
                     listener.showToast(Toaster.build().message(R.string.failedPlayingCard));
                 });
     }
+    //endregion
 
     //region Public methods
     public void reset() {
@@ -395,8 +404,15 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
                     pyx.polling().addListener(this);
                 })
                 .addOnFailureListener(listener::onFailedLoadingGame);
+
+        pyx.request(PyxRequests.listCrCastDecks(gid))
+                .addOnSuccessListener(customDecks::addAll)
+                .addOnFailureListener(ex -> Log.e(TAG, "Failed getting game CrCast decks.", ex));
+
+        pyx.request(PyxRequests.listCustomDecks(gid))
+                .addOnSuccessListener(customDecks::addAll)
+                .addOnFailureListener(ex -> Log.e(TAG, "Failed getting game custom decks.", ex));
     }
-    //endregion
 
     public void startGame() {
         pyx.request(PyxRequests.startGame(gid))
@@ -407,6 +423,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
                         Toaster.with(context).message(R.string.failedStartGame).show();
                 });
     }
+    //endregion
 
     //region Listener callbacks
     public void onCardSelected(@NonNull BaseCard card) {
@@ -422,14 +439,14 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
     }
 
     @Override
-    public void showOptions() {
+    public void showOptions(boolean goToCustomDecks) {
         if (gameData.options == null)
             return;
 
         if (amHost() && gameData.status == Game.Status.LOBBY)
-            listener.showDialog(NewEditGameOptionsDialog.get(gid, gameData.options));
+            listener.showDialog(NewEditGameOptionsDialog.get(gid, gameData.options, customDecks, goToCustomDecks));
         else
-            listener.showDialog(NewViewGameOptionsDialog.get(gameData.options));
+            listener.showDialog(NewViewGameOptionsDialog.get(gameData.options, customDecks));
     }
 
     @Override
@@ -438,11 +455,6 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
             listener.showToast(Toaster.build().message(R.string.thisIsYou));
         else
             listener.showDialog(NewUserInfoDialog.get(name, true, OverloadedApi.get().isOverloadedUserOnServerCached(name)));
-    }
-
-    @Override
-    public void showCustomDecks() {
-        // TODO: Show custom decks dialog
     }
 
     @Override
@@ -460,10 +472,6 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
         return split[split.length - 1];
     }
 
-    public boolean isPlayerStatus(@NonNull GameInfo.PlayerStatus status) {
-        return gameData.isPlayerStatus(gameData.me, status);
-    }
-
     @Override
     public boolean amHost() {
         return gameData.amHost();
@@ -472,13 +480,6 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
     @Override
     public boolean isLobby() {
         return gameData.status == Game.Status.LOBBY;
-    }
-
-    public boolean hasPassword(boolean knowsPassword) {
-        if (knowsPassword)
-            return gameData.options.password != null && !gameData.options.password.isEmpty();
-        else
-            return gameData.hasPassword;
     }
 
     @NonNull
