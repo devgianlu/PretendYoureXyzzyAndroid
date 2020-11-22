@@ -112,8 +112,6 @@ public class GameUi {
     public void countFrom(int ms) {
         if (countdownTask != null) countdownTask.cancel();
 
-        // TODO: ∞ looks ugly as hell as single digit numbers
-
         binding.gameActivityCounter.setVisibility(View.VISIBLE);
         if (ms < 2147000) {
             countdownTask = new CountdownTask(ms / 1000);

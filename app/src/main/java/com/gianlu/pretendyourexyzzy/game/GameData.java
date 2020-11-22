@@ -117,7 +117,16 @@ public class GameData {
      * @param status The new {@link Game.Status}
      */
     void updateStatus(@NonNull Game.Status status) {
+        boolean resort = status == Game.Status.LOBBY || this.status == Game.Status.LOBBY;
         this.status = status;
+
+        if (resort) {
+            PlayersList oldPlayers = players.copy();
+            players.resort();
+
+            if (playersAdapter != null)
+                DiffUtil.calculateDiff(new PlayersDiff(oldPlayers, players)).dispatchUpdatesTo(playersAdapter);
+        }
     }
 
     /**
@@ -216,7 +225,45 @@ public class GameData {
         void playerIsSpectator();
     }
 
-    private static class PlayersList extends ArrayList<GameInfo.Player> {
+    private static class PlayersDiff extends DiffUtil.Callback {
+        private final List<GameInfo.Player> oldList;
+        private final List<GameInfo.Player> newList;
+
+        PlayersDiff(List<GameInfo.Player> oldList, List<GameInfo.Player> newList) {
+            this.oldList = oldList;
+            this.newList = newList;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldList.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newList.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldPos, int newPos) {
+            return oldList.get(oldPos).name.equals(newList.get(newPos).name);
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldPos, int newPos) {
+            GameInfo.Player oldPlayer = oldList.get(oldPos);
+            GameInfo.Player newPlayer = newList.get(newPos);
+            return oldPlayer.score == newPlayer.score && oldPlayer.status == newPlayer.status;
+        }
+
+        @Nullable
+        @Override
+        public Object getChangePayload(int oldPos, int newPos) {
+            return newList.get(newPos);
+        }
+    }
+
+    private class PlayersList extends ArrayList<GameInfo.Player> {
         PlayersList() {
             super(10);
         }
@@ -227,14 +274,18 @@ public class GameData {
 
         private void resort() {
             Collections.sort(this, (o1, o2) -> {
-                if (o1.status == GameInfo.PlayerStatus.HOST)
-                    return -1;
-                else if (o2.status == GameInfo.PlayerStatus.HOST)
-                    return 1;
+                if (status == Game.Status.LOBBY) {
+                    if (o1.status == GameInfo.PlayerStatus.HOST)
+                        return -1;
+                    else if (o2.status == GameInfo.PlayerStatus.HOST)
+                        return 1;
 
-                // TODO: Finish sorting
-
-                return o1.name.compareToIgnoreCase(o2.name);
+                    return o1.name.compareToIgnoreCase(o2.name);
+                } else {
+                    int res = o1.status.compareTo(o2.status);
+                    if (res == 0) res = o1.name.compareToIgnoreCase(o2.name);
+                    return res;
+                }
             });
         }
 
@@ -275,44 +326,6 @@ public class GameData {
         @NonNull
         PlayersList copy() {
             return new PlayersList(this);
-        }
-    }
-
-    private static class PlayersDiff extends DiffUtil.Callback {
-        private final List<GameInfo.Player> oldList;
-        private final List<GameInfo.Player> newList;
-
-        PlayersDiff(List<GameInfo.Player> oldList, List<GameInfo.Player> newList) {
-            this.oldList = oldList;
-            this.newList = newList;
-        }
-
-        @Override
-        public int getOldListSize() {
-            return oldList.size();
-        }
-
-        @Override
-        public int getNewListSize() {
-            return newList.size();
-        }
-
-        @Override
-        public boolean areItemsTheSame(int oldPos, int newPos) {
-            return oldList.get(oldPos).name.equals(newList.get(newPos).name);
-        }
-
-        @Override
-        public boolean areContentsTheSame(int oldPos, int newPos) {
-            GameInfo.Player oldPlayer = oldList.get(oldPos);
-            GameInfo.Player newPlayer = newList.get(newPos);
-            return oldPlayer.score == newPlayer.score && oldPlayer.status == newPlayer.status;
-        }
-
-        @Nullable
-        @Override
-        public Object getChangePayload(int oldPos, int newPos) {
-            return newList.get(newPos);
         }
     }
 }

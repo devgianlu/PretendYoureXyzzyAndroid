@@ -23,13 +23,16 @@ public class GameInfo {
         players = Collections.unmodifiableList(Player.list(obj.getJSONArray("pi")));
     }
 
+    /**
+     * All the statuses for the player. Order is important and is used to sort the players in the UI.
+     */
     public enum PlayerStatus {
+        WINNER("sw" /* You have won! */),
         HOST("sh" /* Wait for players then click Start Game. */),
-        IDLE("si" /* Waiting for players..." */),
         JUDGE("sj" /* You are the CardcastCard Czar. */),
         JUDGING("sjj" /* Select a winning card. */),
         PLAYING("sp" /* "Select a card to play. */),
-        WINNER("sw" /* You have won! */),
+        IDLE("si" /* Waiting for players..." */),
         SPECTATOR("sv" /* You are just spectating. */);
 
         private final String val;
@@ -57,12 +60,6 @@ public class GameInfo {
             name = obj.getString("N");
             score = obj.getInt("sc");
             status = PlayerStatus.parse(obj.getString("st"));
-        }
-
-        public Player(String name, int score, PlayerStatus status) {
-            this.name = name;
-            this.score = score;
-            this.status = status;
         }
 
         @NonNull
