@@ -95,6 +95,7 @@
         <item name="android:outlineSpotShadowColor" tools:targetApi="p">#CCEFFF</item>
         <item name="android:elevation">8dp</item>
         <item name="endIconTint">#000000</item>
+        <item name="errorTextColor">#EC4040</item>
     </style>
 
     <style name="TextInputEditTextThemeOverlay" parent="ThemeOverlay.MaterialComponents.TextInputEditText.OutlinedBox">
@@ -108,6 +109,19 @@
         <item name="android:textColor">#000000</item>
         <item name="android:fontFamily">@font/montserrat_regular</item>
         <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- TextInputLayout/TextInputEditText for dropdown -->
+    <style name="TextInputLayoutStyle.ExposedDropdownMenu" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <item name="materialThemeOverlay">@style/TextInputEditTextThemeOverlay</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="boxStrokeWidthFocused">0dp</item>
+        <item name="errorTextAppearance">@style/TextAppearance.Regular</item>
+        <item name="android:outlineAmbientShadowColor" tools:targetApi="p">#CCEFFF</item>
+        <item name="android:outlineSpotShadowColor" tools:targetApi="p">#CCEFFF</item>
+        <item name="android:elevation">8dp</item>
+        <item name="endIconTint">#000000</item>
+        <item name="errorTextColor">#EC4040</item>
     </style>
 
     <!-- Overloaded subscription page -->

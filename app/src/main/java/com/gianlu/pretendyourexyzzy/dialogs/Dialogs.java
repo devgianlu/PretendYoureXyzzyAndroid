@@ -4,11 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,20 +15,15 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxException;
-import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
-import com.gianlu.pretendyourexyzzy.api.models.Game;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONException;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 
 import okhttp3.HttpUrl;
@@ -89,45 +82,6 @@ public final class Dialogs {
 
         dialog.setOnDismissListener(d -> listener.startTests());
         return dialog;
-    }
-
-    @NonNull
-    @SuppressLint("InflateParams")
-    public static MaterialAlertDialogBuilder gameOptions(@NonNull Context context, Game.Options options, @NonNull FirstLoad firstLoad) {
-        ScrollView layout = (ScrollView) LayoutInflater.from(context).inflate(R.layout.dialog_game_options, null, false);
-
-        SuperTextView scoreLimit = layout.findViewById(R.id.gameOptions_scoreLimit);
-        scoreLimit.setHtml(R.string.scoreLimit, options.scoreLimit);
-
-        SuperTextView playerLimit = layout.findViewById(R.id.gameOptions_playerLimit);
-        playerLimit.setHtml(R.string.playerLimit, options.playersLimit);
-
-        SuperTextView spectatorLimit = layout.findViewById(R.id.gameOptions_spectatorLimit);
-        spectatorLimit.setHtml(R.string.spectatorLimit, options.spectatorsLimit);
-
-        SuperTextView timerMultiplier = layout.findViewById(R.id.gameOptions_timerMultiplier);
-        timerMultiplier.setHtml(R.string.timerMultiplier, options.timerMultiplier);
-
-        List<String> deckNames = new LinkedList<>();
-        for (int id : options.cardSets) deckNames.add(firstLoad.cardSetName(id));
-        SuperTextView cardSets = layout.findViewById(R.id.gameOptions_cardSets);
-        cardSets.setHtml(R.string.cardSets, deckNames.isEmpty() ? "<i>none</i>" : CommonUtils.join(deckNames, ", "));
-
-        SuperTextView blankCards = layout.findViewById(R.id.gameOptions_blankCards);
-        blankCards.setHtml(R.string.blankCards, options.blanksLimit);
-
-        SuperTextView password = layout.findViewById(R.id.gameOptions_password);
-        if (options.password == null || options.password.isEmpty())
-            password.setVisibility(View.GONE);
-        else
-            password.setHtml(R.string.password, options.password);
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-        builder.setTitle(R.string.gameOptions)
-                .setView(layout)
-                .setPositiveButton(android.R.string.ok, null);
-
-        return builder;
     }
 
     @NonNull

@@ -108,7 +108,7 @@
     <string name="playersLimitLabel">Players limit</string>
     <string name="invalidTimerMultiplier">Invalid timer multiplier!</string>
     <string name="invalidNumber">Invalid number!</string>
-    <string name="outOfRange">The value is out of range! Min: %1$d. Max: %2$d</string>
+    <string name="outOfRange">The value is out of range! Min: %1$d, max: %2$d</string>
     <string name="cardSetsLabel">Card sets</string>
     <string name="add">Add</string>
     <string name="notEnoughPlayers">Not enough players!</string>
@@ -422,4 +422,6 @@
     <string name="noChatMessages">No messages so far… Start chatting!</string>
     <string name="status">Status</string>
     <string name="playWith">"Play with "</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
 </resources>

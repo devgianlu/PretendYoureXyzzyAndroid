@@ -25,7 +25,9 @@ import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
 import com.gianlu.pretendyourexyzzy.dialogs.Dialogs;
+import com.gianlu.pretendyourexyzzy.dialogs.NewEditGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
+import com.gianlu.pretendyourexyzzy.dialogs.NewViewGameOptionsDialog;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 
 import org.jetbrains.annotations.NotNull;
@@ -421,17 +423,13 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
 
     @Override
     public void showOptions() {
-        // TODO: Show options dialog
+        if (gameData.options == null)
+            return;
 
-        /*
-        Game.Options options = manager.gameOptions();
-        if (options == null) return;
-
-        if (manager.amHost() && manager.isStatus(Game.Status.LOBBY))
-            showDialog(EditGameOptionsDialog.get(game.gid, options), null);
+        if (amHost() && gameData.status == Game.Status.LOBBY)
+            listener.showDialog(NewEditGameOptionsDialog.get(gid, gameData.options));
         else
-            showDialog(Dialogs.gameOptions(this, options, pyx.firstLoad()));
-         */
+            listener.showDialog(NewViewGameOptionsDialog.get(gameData.options));
     }
 
     @Override
