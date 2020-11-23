@@ -428,4 +428,6 @@
     <string name="users">Users</string>
     <string name="offline">Offline</string>
     <string name="error">Error</string>
+    <string name="customServers">Custom servers</string>
+    <string name="customServers_summary">Edit your custom servers list.</string>
 </resources>

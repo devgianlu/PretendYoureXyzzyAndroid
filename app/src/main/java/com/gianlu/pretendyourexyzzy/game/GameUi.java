@@ -294,7 +294,10 @@ public class GameUi {
 
         void onPlayerSelected(@NonNull String name);
 
-        void onStarCard(@NotNull CardsGroup group);
+        /**
+         * @return Whether the operation was successful
+         */
+        boolean onStarCard(@NotNull CardsGroup group);
     }
 
     private static class ClickSpan extends ClickableSpan {
@@ -334,7 +337,8 @@ public class GameUi {
             CardsGroup group = cards.get(position);
             holder.group.setCards(group);
             holder.group.setLeftAction(R.drawable.baseline_star_outline_24, card -> {
-                if (listener != null) listener.onStarCard(group);
+                if (listener != null && listener.onStarCard(group))
+                    holder.group.setLeftAction(R.drawable.baseline_star_24, null);
             });
             holder.group.setOnClickListener((NewCardsGroupView.OnClickListener) card -> {
                 if (listener != null && selectable) listener.onCardSelected(card);

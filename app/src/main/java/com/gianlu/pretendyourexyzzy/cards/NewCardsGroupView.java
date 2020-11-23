@@ -17,8 +17,6 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
 
 public class NewCardsGroupView extends LinearLayout {
@@ -78,17 +76,17 @@ public class NewCardsGroupView extends LinearLayout {
         }
     }
 
-    public void setLeftAction(@DrawableRes int iconRes, @NotNull OnClickListener listener) {
+    public void setLeftAction(@DrawableRes int iconRes, @Nullable OnClickListener listener) {
         for (int i = 0; i < getChildCount(); i++) {
             int finalI = i;
-            ((NewGameCardView) getChildAt(i)).setLeftAction(iconRes, v -> listener.onClick(cards.get(finalI)));
+            ((NewGameCardView) getChildAt(i)).setLeftAction(iconRes, listener == null ? null : v -> listener.onClick(cards.get(finalI)));
         }
     }
 
-    public void setRightAction(@DrawableRes int iconRes, @NotNull OnClickListener listener) {
+    public void setRightAction(@DrawableRes int iconRes, @Nullable OnClickListener listener) {
         for (int i = 0; i < getChildCount(); i++) {
             int finalI = i;
-            ((NewGameCardView) getChildAt(i)).setRightAction(iconRes, v -> listener.onClick(cards.get(finalI)));
+            ((NewGameCardView) getChildAt(i)).setRightAction(iconRes, listener == null ? null : v -> listener.onClick(cards.get(finalI)));
         }
     }
 

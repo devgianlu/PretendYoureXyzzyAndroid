@@ -458,9 +458,10 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
     }
 
     @Override
-    public void onStarCard(@NotNull CardsGroup group) {
+    public boolean onStarCard(@NotNull CardsGroup group) {
         BaseCard bc = ui.blackCard();
-        if (bc != null) starredDb.putCard((GameCard) bc, group);
+        if (bc != null) return starredDb.putCard((GameCard) bc, group);
+        else return false;
     }
     //endregion
 

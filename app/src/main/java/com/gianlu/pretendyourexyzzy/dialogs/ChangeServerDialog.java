@@ -29,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Locale;
 
-public class ChangeServerDialog extends DialogFragment {
+public final class ChangeServerDialog extends DialogFragment {
     private ServersAdapter adapter;
     private NewMainActivity parent;
 

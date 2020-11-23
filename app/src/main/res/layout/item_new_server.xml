@@ -6,8 +6,8 @@
     android:background="?selectableItemBackground"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingTop="6dp"
-    android:paddingBottom="6dp">
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp">
 
     <com.facebook.shimmer.ShimmerFrameLayout
         android:id="@+id/serverItem_featuresLoading"

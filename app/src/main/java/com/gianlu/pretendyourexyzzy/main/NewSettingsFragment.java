@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 
 import androidx.annotation.CallSuper;
@@ -32,9 +33,11 @@ import com.gianlu.pretendyourexyzzy.NewMainActivity;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
+import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewMainSettingsBinding;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewPrefsSettingsBinding;
+import com.gianlu.pretendyourexyzzy.dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.dialogs.OverloadedSubDialog;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
@@ -391,6 +394,27 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
             showDialog(builder);
         }
 
+        private void showEditCustomServersDialog(@NotNull Context context) {
+            List<Pyx.Server> servers = Pyx.Server.loadCustomServers();
+            String[] serversStr = new String[servers.size()];
+            for (int i = 0; i < servers.size(); i++)
+                serversStr[i] = servers.get(i).name;
+
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+            builder.setTitle(R.string.customServers)
+                    .setAdapter(new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, serversStr), (di, which) -> {
+                        di.dismiss();
+                        showDialog(Dialogs.addServer(context, servers.get(which)));
+                    })
+                    .setNeutralButton(R.string.addServer, (di, which) -> {
+                        di.dismiss();
+                        showDialog(Dialogs.addServer(context, null));
+                    })
+                    .setNegativeButton(android.R.string.cancel, null);
+
+            showDialog(builder);
+        }
+
         @Override
         protected void buildPreferences(@NonNull Context context) {
             MaterialCheckboxPreference nightMode = new MaterialCheckboxPreference.Builder(context)
@@ -400,6 +424,12 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
             nightMode.setTitle(R.string.prefs_nightMode);
             nightMode.setSummary(R.string.prefs_nightMode_summary);
             addPreference(nightMode);
+
+            MaterialStandardPreference customServers = new MaterialStandardPreference(context);
+            customServers.setTitle(R.string.customServers);
+            customServers.setSummary(R.string.customServers_summary);
+            customServers.setOnClickListener(v -> showEditCustomServersDialog(context));
+            addPreference(customServers);
 
             if (!Prefs.isSetEmpty(PK.BLOCKED_USERS)) {
                 MaterialStandardPreference unblock = new MaterialStandardPreference(context);

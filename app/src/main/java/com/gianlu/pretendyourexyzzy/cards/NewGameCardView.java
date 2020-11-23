@@ -63,7 +63,7 @@ public final class NewGameCardView extends CardView {
         unsetRightAction();
     }
 
-    public void setLeftAction(@DrawableRes int iconRes, @NotNull OnClickListener listener) {
+    public void setLeftAction(@DrawableRes int iconRes, @Nullable OnClickListener listener) {
         binding.cardItemActionLeft.setVisibility(VISIBLE);
         binding.cardItemActionLeft.setImageResource(iconRes);
         binding.cardItemActionLeft.setOnClickListener(listener);
@@ -74,7 +74,7 @@ public final class NewGameCardView extends CardView {
         binding.cardItemActionLeft.setOnClickListener(null);
     }
 
-    public void setRightAction(@DrawableRes int iconRes, @NotNull OnClickListener listener) {
+    public void setRightAction(@DrawableRes int iconRes, @Nullable OnClickListener listener) {
         binding.cardItemActionRight.setVisibility(VISIBLE);
         binding.cardItemActionRight.setImageResource(iconRes);
         binding.cardItemActionRight.setOnClickListener(listener);

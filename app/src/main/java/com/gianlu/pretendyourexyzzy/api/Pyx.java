@@ -546,6 +546,11 @@ public class Pyx implements Closeable {
         }
 
         @NonNull
+        public static List<Server> loadCustomServers() {
+            return loadServers(PK.USER_SERVERS);
+        }
+
+        @NonNull
         public static List<Server> loadAllServers() {
             List<Server> all = new ArrayList<>(10);
             all.addAll(loadServers(PK.USER_SERVERS));
