@@ -97,9 +97,10 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
                     updateStatus(data, null);
 
                     Purchase purchase;
-                    if (data.purchaseStatus.ok) {
+                    if (data.purchaseStatus.ok)
                         doOkStuff();
-                    } else if ((purchase = getLatestPurchase()) != null) {
+
+                    if ((purchase = getLatestPurchase()) != null && (!data.purchaseStatus.ok || (data.expireTime != null && data.expireTime <= System.currentTimeMillis()))) {
                         OverloadedApi.get().registerUser(null, purchase.getSku(), purchase.getPurchaseToken(), null, new UserDataCallback() {
                             @Override
                             public void onUserData(@NonNull UserData data) {
@@ -142,6 +143,7 @@ public final class OverloadedBillingHelper implements PurchasesUpdatedListener, 
     //endregion
 
     //region Billing
+
     /**
      * Get the latest purchase of Overloaded (cached).
      *
