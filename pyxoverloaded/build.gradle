@@ -22,6 +22,10 @@ android {
             dimension 'main'
         }
     }
+    
+    lintOptions {
+        warning 'MissingTranslation'
+    }
 
     buildTypes {
         release {
