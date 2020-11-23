@@ -126,16 +126,6 @@ public final class Dialogs {
                 .setNegativeButton(android.R.string.no, null);
     }
 
-    @NonNull
-    public static MaterialAlertDialogBuilder askDefinitionWord(@NonNull Context context, @NonNull final OnText listener) {
-        final EditText text = new EditText(context);
-
-        return new MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.definition)
-                .setView(text)
-                .setPositiveButton(R.string.search, (dialog, which) -> listener.onText(text.getText().toString())).setNegativeButton(android.R.string.cancel, null);
-    }
-
     public interface OnAddServer {
         void loadServers();
 

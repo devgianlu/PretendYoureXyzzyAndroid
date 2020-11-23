@@ -1,7 +1,5 @@
 package com.gianlu.pretendyourexyzzy.main;
 
-import android.content.Context;
-import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -13,7 +11,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
@@ -24,15 +21,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
-import com.gianlu.commonutils.misc.RecyclerMessageView;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.NewMainActivity;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
-import com.gianlu.pretendyourexyzzy.activities.ManageServersActivity;
-import com.gianlu.pretendyourexyzzy.adapters.ServersAdapter;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
@@ -43,6 +37,7 @@ import com.gianlu.pretendyourexyzzy.api.models.GamesList;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewGamesBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemNewGameBinding;
+import com.gianlu.pretendyourexyzzy.dialogs.ChangeServerDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.NewChatDialog;
 import com.gianlu.pretendyourexyzzy.game.GameActivity;
 import com.google.android.gms.tasks.CancellationTokenSource;
@@ -61,27 +56,11 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
     private static final String TAG = NewGamesFragment.class.getSimpleName();
     private FragmentNewGamesBinding binding;
     private RegisteredPyx pyx;
-    private NewMainActivity parent;
     private GamesAdapter adapter;
 
     @NonNull
     public static NewGamesFragment get() {
         return new NewGamesFragment();
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-
-        if (context instanceof NewMainActivity)
-            parent = (NewMainActivity) context;
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-
-        parent = null;
     }
 
     private void setGamesStatus(boolean loading, boolean error, boolean empty) {
@@ -137,7 +116,7 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
             binding.gamesFragmentSwipeRefresh.setRefreshing(false);
         });
 
-        binding.gamesFragmentChangeServer.setOnClickListener(v -> changeServerDialog(true));
+        binding.gamesFragmentChangeServer.setOnClickListener(v -> ChangeServerDialog.get().show(getFragmentManager(), null));
 
         binding.gamesFragmentFilterLocked.setOnClickListener(v -> {
             boolean filter = !Prefs.getBoolean(PK.FILTER_LOCKED_LOBBIES);
@@ -198,40 +177,6 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
                 }
                 break;
         }
-    }
-
-    private void changeServerDialog(boolean dismissible) {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
-        builder.setTitle(R.string.changeServer)
-                .setCancelable(dismissible)
-                .setNeutralButton(R.string.manage, (dialog, which) -> {
-                    startActivity(new Intent(requireContext(), ManageServersActivity.class));
-                    dialog.dismiss();
-                });
-
-        if (dismissible)
-            builder.setNegativeButton(android.R.string.cancel, null);
-
-        LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.activity_dialog_manage_servers, null, false);
-        builder.setView(layout);
-
-        RecyclerMessageView rmv = layout.findViewById(R.id.manageServers_list);
-        rmv.disableSwipeRefresh();
-        rmv.linearLayoutManager(RecyclerView.VERTICAL, false);
-        rmv.dividerDecoration(RecyclerView.VERTICAL);
-        rmv.loadListData(new ServersAdapter(requireContext(), Pyx.Server.loadAllServers(), new ServersAdapter.Listener() {
-            @Override
-            public void shouldUpdateItemCount(int count) {
-            }
-
-            @Override
-            public void serverSelected(@NonNull Pyx.Server server) {
-                if (parent != null) parent.changeServer(server);
-                dismissDialog();
-            }
-        }));
-
-        showDialog(builder);
     }
 
     private void gamesLoaded(@NonNull GamesList games) {

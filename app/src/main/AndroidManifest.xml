@@ -83,6 +83,7 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateHidden" />
 
+        <!-- Overloaded chats list activity -->
         <activity
             android:name=".overloaded.ChatsListActivity"
             android:configChanges="uiMode"

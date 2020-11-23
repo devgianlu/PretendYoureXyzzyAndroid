@@ -425,4 +425,7 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
     <string name="decks">Decks</string>
+    <string name="users">Users</string>
+    <string name="offline">Offline</string>
+    <string name="error">Error</string>
 </resources>
