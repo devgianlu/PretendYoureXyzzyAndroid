@@ -12,11 +12,14 @@ import androidx.annotation.StringRes;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
+import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
+import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.StatusCodeException;
 import com.gianlu.pretendyourexyzzy.api.UserAgentInterceptor;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
@@ -32,6 +35,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -51,15 +55,20 @@ public final class CrCastApi {
     private final LifecycleAwareHandler handler;
 
     private CrCastApi() {
-        executorService = Executors.newSingleThreadExecutor();
+        executorService = Executors.newSingleThreadExecutor(new NamedThreadFactory("cr-cast-"));
         client = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
         handler = new LifecycleAwareHandler(new Handler(Looper.getMainLooper()));
     }
 
-    @NonNull
     @SuppressLint("SimpleDateFormat")
-    static SimpleDateFormat getApiDateTimeFormat() {
-        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    static long parseApiDate(@NonNull String text) {
+        try {
+            Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(text);
+            return date == null ? 0 : date.getTime();
+        } catch (ParseException ex) {
+            Log.e(TAG, "Failed parsing date: " + text, ex);
+            return 0;
+        }
     }
 
     @NonNull
@@ -137,6 +146,9 @@ public final class CrCastApi {
     @NonNull
     private String loginSync(@NonNull String username, @NonNull String hashedPassword) throws JSONException, IOException, CrCastException {
         JSONObject obj = request("user/token/?username=" + username + "&password=" + hashedPassword);
+        Prefs.putString(PK.CR_CAST_USER, username);
+        Prefs.putString(PK.CR_CAST_PASSWORD, hashedPassword);
+
         String token = obj.getString("token");
         Prefs.putString(PK.CR_CAST_TOKEN, token);
         return token;
@@ -153,6 +165,7 @@ public final class CrCastApi {
 
                     loginSync(username, hex.toString());
                     post(callback::onLoginSuccessful);
+                    AnalyticsApplication.sendAnalytics(Utils.ACTION_CR_CAST_LOGIN);
                 } catch (IOException | JSONException | NoSuchAlgorithmException | CrCastException ex) {
                     post(() -> callback.onException(ex));
                 }
@@ -168,7 +181,7 @@ public final class CrCastApi {
                     JSONObject obj = request("user/" + getToken());
                     CrCastUser user = new CrCastUser(obj);
                     post(() -> callback.onUser(user));
-                } catch (IOException | JSONException | ParseException | CrCastException | NotSignedInException ex) {
+                } catch (IOException | JSONException | CrCastException | NotSignedInException ex) {
                     post(() -> callback.onException(ex));
                 }
             }
@@ -212,6 +225,7 @@ public final class CrCastApi {
         Prefs.remove(PK.CR_CAST_TOKEN);
         Prefs.remove(PK.CR_CAST_USER);
         Prefs.remove(PK.CR_CAST_PASSWORD);
+        AnalyticsApplication.sendAnalytics(Utils.ACTION_CR_CAST_LOGOUT);
     }
 
     public enum State {

@@ -16,6 +16,7 @@ import androidx.annotation.WorkerThread;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
+import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.preferences.json.JsonStoring;
 import com.gianlu.commonutils.ui.OfflineActivity;
@@ -70,7 +71,7 @@ public class Pyx implements Closeable {
     public final Server server;
     protected final LifecycleAwareHandler handler;
     protected final OkHttpClient client;
-    protected final ExecutorService executor = Executors.newFixedThreadPool(5);
+    protected final ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("pyx-"));
 
     Pyx() throws NoServersException {
         this.handler = new LifecycleAwareHandler(new Handler(Looper.getMainLooper()));

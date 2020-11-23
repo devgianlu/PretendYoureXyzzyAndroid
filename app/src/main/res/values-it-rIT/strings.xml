@@ -51,7 +51,7 @@
     <string name="tutorial_playCard">Per selezionare una carta basta toccarla: apparirà una finestra di conferma.</string>
     <string name="tutorial_player">Una volta che un giocatore raggiunge l\'obiettivo, vince. Puoi toccare sul nome per rivelare ulteriori informazioni.</string>
     <string name="tutorial_overloaded">Overloaded abilita tante funzionalità aggiuntive non presenti nel gioco. Richiede una sottoscrizione mensile.</string>
-    <string name="tutorial_addCustomDeck">Qui puoi create i tuoi mazzi personalizzati, importarli o recuperare vecchi mazzi Cardcast.</string>
+    <string name="tutorial_addCustomDeck">Qui puoi create i tuoi mazzi personalizzati (con testo e immagini), importarli o recuperare vecchi mazzi Cardcast.</string>
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
     <string name="nickname">Nome</string>
@@ -206,7 +206,6 @@
     <string name="loggedIn">Accesso eseguito</string>
     <string name="login">Accedi</string>
     <string name="customDecks">Mazzi personalizzati</string>
-    <string name="importDeck">Importa mazzo</string>
     <string name="noCustomDecks_create">Non hai mazzi personalizzati. Creane uno subito!</string>
     <string name="noCustomDecks_game">Non ci sono mazzi personalizzati in questa partita.</string>
     <string name="editCustomDeck">Modifica mazzo personalizzato</string>
@@ -222,7 +221,7 @@
     <string name="cardText">Testo carta</string>
     <string name="createCustomCardInfo_white">Le carte bianche contengono risposte alle carte nere. Non sono necessari segnaposti.</string>
     <string name="createCustomCardInfo_black">Le carte nere contengono domande o frasi da completare. Usa ____ (4 trattini bassi) come segnaposto per la risposta.</string>
-    <string name="createCustomCardInfo_image">White cards can contain images as responses to black cards: paste the link here or upload an image. Uploaded images will also be optimized.</string>
+    <string name="createCustomCardInfo_image">Le carte bianche possono contenere immagini come risposte alle carte nere: incolla il link qui o carica un\'immagine. Le immagini caricate saranno ottimizzate.</string>
     <string name="failedAddingCustomCard">Impossibile aggiungere carta personalizzata.</string>
     <string name="editCard">Modifica carta</string>
     <string name="completeDeckInfoFirst">Completa le info del mazzo prima.</string>
@@ -250,7 +249,6 @@
     <string name="overloaded_linkAccount_desc">Collega un altro account al tuo profilo corrente</string>
     <string name="accountLinked">Account collegato!</string>
     <string name="failedLinkingAccount">Impossibile collegare l\'account!</string>
-    <string name="overloadedStatus_purchasePending">Il tuo pagamento è ancora in corso, riprova più tardi!</string>
     <string name="username">Nome utente</string>
     <string name="askOverloadedUsername_title">Scegli il tuo nome utente per Overloaded</string>
     <string name="askOverloadedUsername_desc">Scegli un nome utente per il tuo account Overloaded. Puoi comunque usare un nome utente diverso per PYX.</string>
@@ -308,8 +306,6 @@
     <string name="friendRequest">Richiesta di amicizia</string>
     <string name="failedCheckingUsername">Impossibile controllare il nome utente!</string>
     <string name="deleteChat">Elimina conversazione</string>
-    <string name="chatDeleted">Conversazione eliminata</string>
-    <string name="failedDeletingChat">Impossibile eliminare la conversazione!</string>
     <string name="publicStarredCards">Carte preferite pubbliche</string>
     <string name="publicCustomDecks">Mazzi personalizzati pubblici</string>
     <string name="overloadedSyncing">Sincronizzando…</string>
@@ -337,7 +333,7 @@
     <string name="removeFromStarredDecks">Rimuovi dai mazzi preferiti</string>
     <string name="deckDoesNotExist">Questo mazzo non esiste più.</string>
     <string name="cannotFindCustomDeck">Impossibile trovare questo mazzo.</string>
-    <string name="featureOverloadedOnly">This feature is supported only for Overloaded users.</string>
+    <string name="featureOverloadedOnly">Questa funzione è supportata solo per gli utenti di Overloaded.</string>
     <string name="recoverCardcastDeck">Recupera mazzo Cardcast</string>
     <string name="recover">Recupera</string>
     <string name="invalidDeckCode">Il codice del mazzo non è valido!</string>
@@ -355,7 +351,7 @@
     <string name="areYouSureJudgeCard">Sei sicuro di voler selezionare questa carta come vincitrice?</string>
     <string name="connectCrCast">Connetti CrCast</string>
     <string name="connectCrCast_details">Connettiti con CrCast per utilizzare facilmente i tuoi mazzi su altri server.</string>
-    <string name="wrongUsernameOrPassword">Wrong username/password.</string>
+    <string name="wrongUsernameOrPassword">Username/password sbagliata.</string>
     <string name="logoutCrCast">Esci da CrCast</string>
     <string name="crCastBanned">Il tuo account CrCast è stato bannato.</string>
     <string name="privateDeck">Mazzo privato</string>
@@ -369,10 +365,21 @@
     <string name="declined">Rifiutato</string>
     <string name="blackCardsWithCount">Carte nere (%d)</string>
     <string name="whiteCardsWithCount">Carte bianche (%d)</string>
-    <string name="addTextCard">Add text card</string>
-    <string name="addImageCard">Add image card</string>
-    <string name="imageLink">Image link</string>
-    <string name="uploadImage">Upload image</string>
-    <string name="invalidImageUrl">The given image URL is invalid.</string>
-    <string name="failedUploadingImage">Failed uploading image!</string>
+    <string name="addTextCard">Aggiungi carta con testo</string>
+    <string name="addImageCard">Aggiunga carta con immagine</string>
+    <string name="imageLink">Link immagine</string>
+    <string name="uploadImage">Carica immagine</string>
+    <string name="invalidImageUrl">L\'URL dell\'immagine fornito non è valido.</string>
+    <string name="failedUploadingImage">Impossibile caricare l\'immagine!</string>
+    <string name="collaborators">Collaboratori</string>
+    <string name="collaboratorsDeckNotSynced">Devi sincronizzare il tuo mazzo prima di accedere ai collaboratori.</string>
+    <string name="addCollaborator">Aggiungere collaboratore</string>
+    <string name="failedAddingCollaborator">Impossibile aggiungere il collaboratore!</string>
+    <string name="noCollaboratorsToAdd">Non ci sono collaboratori da aggiungere, aggiungili prima ai tuoi amici.</string>
+    <string name="removeCollaborator">Rimuovi collaboratore</string>
+    <string name="failedRemovingCollaborator">Impossibile rimuovere il collaboratore!</string>
+    <string name="noCollaborators">Questo mazzo non ha collaboratori, è possibile aggiungerne uno dai tuoi amici toccando il pulsante qui sopra.</string>
+    <string name="canCollaborate">Può collaborare</string>
+    <string name="failedRemovingCard">Impossibile rimuovere la carta!</string>
+    <string name="failedUpdatingCard">Impossibile aggiornare la carta!</string>
 </resources>

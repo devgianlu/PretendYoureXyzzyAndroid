@@ -23,7 +23,8 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        tools:targetApi="n">
 
         <meta-data
             android:name="com.google.android.gms.games.APP_ID"

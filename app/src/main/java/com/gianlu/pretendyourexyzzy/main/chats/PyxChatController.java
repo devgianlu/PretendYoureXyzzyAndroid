@@ -37,6 +37,11 @@ class PyxChatController {
         return new PyxChatController(gid);
     }
 
+    @Nullable
+    String username() {
+        return pyx == null ? null : pyx.user().nickname;
+    }
+
     @NonNull
     List<PollMessage> init() throws LevelMismatchException {
         pyx = RegisteredPyx.get();
@@ -117,10 +122,14 @@ class PyxChatController {
     }
 
     void showUserInfo(@NonNull FragmentActivity activity, @NonNull String sender) {
+        if (pyx == null) return;
+
         UserInfoDialog.loadAndShow(pyx, activity, sender);
     }
 
     void readAllMessages(long timestamp) {
+        if (pyx == null) return;
+
         if (gid == -1) pyx.chat().resetGlobalUnread(timestamp);
         else pyx.chat().resetGameUnread(timestamp);
     }

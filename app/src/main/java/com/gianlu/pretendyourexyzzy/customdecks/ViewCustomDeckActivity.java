@@ -34,7 +34,7 @@ import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 import xyz.gianlu.pyxoverloaded.model.UserProfile.CustomDeckWithCards;
 
-public class ViewCustomDeckActivity extends ActivityWithDialog {
+public class ViewCustomDeckActivity extends ActivityWithDialog implements AbsCardsFragment.Listener {
     private static final String TAG = ViewCustomDeckActivity.class.getSimpleName();
     private CustomDecksDatabase db;
     private ViewPager pager;
@@ -200,8 +200,15 @@ public class ViewCustomDeckActivity extends ActivityWithDialog {
     }
 
     @NonNull
+    @Override
     public String getWatermark() {
         return generalInfoFragment != null ? generalInfoFragment.getWatermark() : "";
+    }
+
+    @Override
+    public void refreshTabs() {
+        if (pager != null && pager.getAdapter() != null)
+            pager.getAdapter().notifyDataSetChanged();
     }
 
     private void deckLoaded(@NonNull CrCastDeck result) {

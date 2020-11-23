@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.main.chats;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -42,8 +43,15 @@ class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         PollMessage message = messages.get(position);
-        holder.text.setHtml(SuperTextView.makeBold(message.sender) + ": " + message.message);
         holder.itemView.setOnClickListener(v -> listener.onChatItemSelected(message.sender));
+
+        if (listener.isMe(message.sender)) {
+            holder.text.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+            holder.text.setHtml(message.message);
+        } else {
+            holder.text.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
+            holder.text.setHtml(SuperTextView.makeBold(message.sender) + ": " + message.message);
+        }
 
         if (message.emote) CommonUtils.setTextColor(holder.text, R.color.purple);
         else if (message.wall) CommonUtils.setTextColor(holder.text, R.color.red);
@@ -78,13 +86,15 @@ class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         void onItemCountChanged(int count);
 
         void onChatItemSelected(@NonNull String sender);
+
+        boolean isMe(@NonNull String sender);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         final SuperTextView text;
 
         ViewHolder(ViewGroup parent) {
-            super(inflater.inflate(R.layout.item_chat, parent, false));
+            super(inflater.inflate(R.layout.item_pyx_chat_message, parent, false));
             text = (SuperTextView) itemView;
         }
     }

@@ -50,8 +50,11 @@ public final class Utils {
     public static final String ACTION_EXPORTED_CUSTOM_DECK = "exported_custom_deck";
     public static final String ACTION_CREATED_CUSTOM_DECK = "created_custom_deck";
     public static final String ACTION_DELETED_CUSTOM_DECK = "created_custom_deck";
-    public static final String ACTION_ADDED_CUSTOM_DECK_CARD = "added_custom_deck_card";
+    public static final String ACTION_ADDED_CUSTOM_DECK_TEXT_CARD = "added_custom_deck_text_card";
+    public static final String ACTION_ADDED_CUSTOM_DECK_IMAGE_CARD = "added_custom_deck_image_card";
     public static final String ACTION_REMOVED_CUSTOM_DECK_CARD = "added_custom_deck_card";
+    public static final String ACTION_CR_CAST_LOGIN = "cr_cast_login";
+    public static final String ACTION_CR_CAST_LOGOUT = "cr_cast_logout";
     private static final String TAG = Utils.class.getSimpleName();
 
     private Utils() {

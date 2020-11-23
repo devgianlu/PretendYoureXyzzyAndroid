@@ -16,6 +16,7 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -47,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -85,7 +87,8 @@ public class OverloadedApi {
     private final static OverloadedApi instance = new OverloadedApi();
     private static final String TAG = OverloadedApi.class.getSimpleName();
     private static OverloadedChatApi chatInstance;
-    final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    final ExecutorService executorService = Executors.newCachedThreadPool(new NamedThreadFactory("overloaded-"));
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("overloaded-scheduler-"));
     private final OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new GzipRequestInterceptor()).build();
     private final WebSocketHolder webSocket = new WebSocketHolder();
     private volatile FirebaseUser user;
@@ -1087,7 +1090,7 @@ public class OverloadedApi {
             if (client == null) return;
 
             Log.e(TAG, "Failure in WebSocket connection.", t);
-            executorService.schedule(OverloadedApi.this::openWebSocket, (tries++ + 1) * 500, TimeUnit.MILLISECONDS);
+            scheduler.schedule(OverloadedApi.this::openWebSocket, (tries++ + 1) * 500, TimeUnit.MILLISECONDS);
         }
 
         void close() {

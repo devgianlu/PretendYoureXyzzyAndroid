@@ -1,9 +1,8 @@
 ### Added
-- Added support for CrCast (view and use decks)
-- Added ability to create image cards
+- Added collaborative decks (Overloaded)
+- Added cards count for custom decks
 
 ### Fixed
-- Fixed crash when using some cards
-- Fixed metrics not viewing correctly
-- Fixed exporting cards
-- Fixed app crashing on startup
+- Fixed some CrCast issues
+- Fixed Overloaded sync issues
+- Other minor fixes

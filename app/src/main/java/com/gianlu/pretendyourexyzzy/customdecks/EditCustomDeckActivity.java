@@ -36,7 +36,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class EditCustomDeckActivity extends ActivityWithDialog {
+public class EditCustomDeckActivity extends ActivityWithDialog implements AbsCardsFragment.Listener {
     private static final String TAG = EditCustomDeckActivity.class.getSimpleName();
     private GeneralInfoFragment generalInfoFragment;
     private ViewPager pager;
@@ -205,8 +205,15 @@ public class EditCustomDeckActivity extends ActivityWithDialog {
     }
 
     @NonNull
+    @Override
     public String getWatermark() {
         return generalInfoFragment == null ? "" : generalInfoFragment.getWatermark();
+    }
+
+    @Override
+    public void refreshTabs() {
+        if (pager != null && pager.getAdapter() != null)
+            pager.getAdapter().notifyDataSetChanged();
     }
 
     @NonNull

@@ -90,17 +90,16 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.customDecks_logoutCrCast:
-                CrCastApi.get().logout();
-                connectCrCast.setVisibility(View.VISIBLE);
-                if (getActivity() != null) getActivity().invalidateOptionsMenu();
-                CustomDecksAdapter adapter = (CustomDecksAdapter) rmv.list().getAdapter();
-                if (adapter != null) adapter.removeAllCrCastDecks();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == R.id.customDecks_logoutCrCast) {
+            CrCastApi.get().logout();
+            connectCrCast.setVisibility(View.VISIBLE);
+            if (getActivity() != null) getActivity().invalidateOptionsMenu();
+            CustomDecksAdapter adapter = (CustomDecksAdapter) rmv.list().getAdapter();
+            if (adapter != null) adapter.removeAllCrCastDecks();
+            return true;
         }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Nullable
@@ -132,6 +131,9 @@ public class CustomDecksFragment extends FragmentWithDialog implements Overloade
 
             Dialog dialog = builder.create();
             dialog.setOnShowListener(d -> {
+                if (dialog.getWindow() == null)
+                    return;
+
                 TextView text = dialog.getWindow().findViewById(android.R.id.message);
                 text.setAutoLinkMask(Linkify.WEB_URLS);
                 text.setMovementMethod(LinkMovementMethod.getInstance());

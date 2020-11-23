@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
 import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
+import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.preferences.json.JsonStoring;
 import com.gianlu.pretendyourexyzzy.PK;
@@ -38,7 +39,7 @@ public class PyxDiscoveryApi {
     private static final String TAG = PyxDiscoveryApi.class.getSimpleName();
     private static PyxDiscoveryApi instance;
     private final OkHttpClient client;
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("pyx-discovery-"));
     private final LifecycleAwareHandler handler;
 
     private PyxDiscoveryApi() {
