@@ -50,7 +50,7 @@
         android:layout_weight="1"
         android:paddingStart="96dp"
         android:paddingEnd="96dp"
-        android:src="@drawable/ic_undraw_loading_animated" />
+        android:src="@drawable/ic_undraw_loading" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/customDeck_pager"

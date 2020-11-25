@@ -453,6 +453,8 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         android.widget.PopupMenu menu = new android.widget.PopupMenu(requireContext(), binding.profileFragmentMenu);
         menu.inflate(R.menu.new_profile);
 
+        // TODO: Add something to this menu so that it can be always visible
+
         if (!CrCastApi.hasCredentials())
             menu.getMenu().removeItem(R.id.profileFragment_logoutCrCast);
 
@@ -533,6 +535,10 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
     public void refreshOverloaded() {
         binding.profileFragmentFriendsLoading.setVisibility(View.VISIBLE);
+        binding.profileFragmentFriendsList.setVisibility(View.GONE);
+        binding.profileFragmentFriendsError.setVisibility(View.GONE);
+        binding.profileFragmentFriendsEmpty.setVisibility(View.GONE);
+        binding.profileFragmentFriendsOverloaded.setVisibility(View.GONE);
 
         OverloadedUtils.waitReady()
                 .addOnSuccessListener(signedIn -> {
@@ -566,6 +572,9 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                 .addOnFailureListener(ex -> {
                     Log.e(TAG, "Failed waiting ready.", ex);
                     binding.profileFragmentFriendsLoading.setVisibility(View.GONE);
+                    binding.profileFragmentFriendsList.setVisibility(View.GONE);
+                    binding.profileFragmentFriendsEmpty.setVisibility(View.GONE);
+                    binding.profileFragmentFriendsAdd.setVisibility(View.GONE);
                     binding.profileFragmentFriendsError.setVisibility(View.VISIBLE);
                 });
 

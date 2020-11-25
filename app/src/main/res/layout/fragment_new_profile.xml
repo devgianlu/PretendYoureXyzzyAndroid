@@ -10,13 +10,15 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp">
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
             android:layout_weight="1"
             android:text="@string/profile"
             android:textAppearance="@style/TextAppearance.Medium"
@@ -25,12 +27,17 @@
         <ImageButton
             android:id="@+id/profileFragment_chat"
             style="@style/ToolbarIconStyle"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
+            android:layout_marginBottom="16dp"
             android:src="@drawable/ic_chat_white_24" />
 
         <ImageButton
             android:id="@+id/profileFragment_menu"
             style="@style/ToolbarIconStyle"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
             android:src="@drawable/ic_dots_vertical_white_24" />
     </LinearLayout>
 
@@ -531,6 +538,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="36dp"
                         android:layout_gravity="end"
+                        android:layout_marginBottom="4dp"
                         android:layout_marginEnd="20dp"
                         android:text="@string/seeAll"
                         android:visibility="gone" />

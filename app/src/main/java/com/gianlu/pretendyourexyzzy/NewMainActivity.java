@@ -53,7 +53,7 @@ public class NewMainActivity extends ActivityWithDialog {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!Prefs.getBoolean(PK.ONE_TIME_LOGIN_SHOWN) || Prefs.getString(PK.LAST_NICKNAME, null) == null) {
+        if (!Prefs.getBoolean(PK.ONE_TIME_LOGIN_SHOWN) && Prefs.getString(PK.LAST_NICKNAME, null) == null) {
             startActivity(new Intent(this, OneTimeLoginActivity.class)
                     .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
             return;
@@ -69,29 +69,28 @@ public class NewMainActivity extends ActivityWithDialog {
                 .commitNow();
 
         binding.mainNavigation.setOnNavigationItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.mainNavigation_settings:
-                    checkReloadNeeded();
-                    getSupportFragmentManager().beginTransaction()
-                            .hide(gamesFragment).hide(profileFragment)
-                            .show(settingsFragment)
-                            .commitNow();
-                    return true;
-                case R.id.mainNavigation_home:
-                    checkReloadNeeded();
-                    getSupportFragmentManager().beginTransaction()
-                            .hide(settingsFragment).hide(profileFragment)
-                            .show(gamesFragment)
-                            .commitNow();
-                    return true;
-                case R.id.mainNavigation_profile:
-                    getSupportFragmentManager().beginTransaction()
-                            .hide(gamesFragment).hide(settingsFragment)
-                            .show(profileFragment)
-                            .commitNow();
-                    return true;
-                default:
-                    return false;
+            if (item.getItemId() == R.id.mainNavigation_settings) {
+                checkReloadNeeded();
+                getSupportFragmentManager().beginTransaction()
+                        .hide(gamesFragment).hide(profileFragment)
+                        .show(settingsFragment)
+                        .commitNow();
+                return true;
+            } else if (item.getItemId() == R.id.mainNavigation_home) {
+                checkReloadNeeded();
+                getSupportFragmentManager().beginTransaction()
+                        .hide(settingsFragment).hide(profileFragment)
+                        .show(gamesFragment)
+                        .commitNow();
+                return true;
+            } else if (item.getItemId() == R.id.mainNavigation_profile) {
+                getSupportFragmentManager().beginTransaction()
+                        .hide(gamesFragment).hide(settingsFragment)
+                        .show(profileFragment)
+                        .commitNow();
+                return true;
+            } else {
+                return false;
             }
         });
         binding.mainNavigation.setSelectedItemId(R.id.mainNavigation_home);
@@ -119,7 +118,7 @@ public class NewMainActivity extends ActivityWithDialog {
     }
 
     public void checkReloadNeeded() {
-        if (profileFragment == null || prepareTask == null || !prepareTask.isComplete() || !prepareTask.isCanceled())
+        if (profileFragment == null || prepareTask == null || !(prepareTask.isComplete() || prepareTask.isCanceled()))
             return;
 
         String newUsername = profileFragment.getUsername();

@@ -1,6 +1,5 @@
 package com.gianlu.pretendyourexyzzy.customdecks;
 
-import android.graphics.drawable.Animatable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -151,7 +150,6 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
         binding.customDeckPager.setAdapter(null);
         binding.customDeckPager.setVisibility(View.GONE);
         binding.customDeckLoading.setVisibility(View.VISIBLE);
-        ((Animatable) binding.customDeckLoading.getDrawable()).start();
     }
 
     protected final void loaded(@NotNull Fragment... frags) {

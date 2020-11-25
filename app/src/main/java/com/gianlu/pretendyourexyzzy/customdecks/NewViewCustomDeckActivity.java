@@ -189,7 +189,7 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
 
         loaded(InfoFragment.get(deck),
                 BlacksFragment.get(ContentCard.fromOverloadedCards(deck.blackCards()), deck.watermark, handler),
-                WhitesFragment.get(ContentCard.fromOverloadedCards(deck.blackCards()), deck.watermark, handler));
+                WhitesFragment.get(ContentCard.fromOverloadedCards(deck.whiteCards()), deck.watermark, handler));
     }
 
     private enum Type {

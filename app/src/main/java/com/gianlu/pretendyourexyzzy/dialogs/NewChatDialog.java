@@ -173,7 +173,7 @@ public final class NewChatDialog extends DialogFragment {
         AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_OPEN_CHAT);
 
         controller.attach(msg -> {
-            if (adapter != null) adapter.addMessage(msg);
+            if (adapter != null) adapter.addNewMessage(msg);
             controller.readAllMessages();
         });
 
@@ -200,7 +200,7 @@ public final class NewChatDialog extends DialogFragment {
 
                     List<ChatMessage> list = ((OverloadedController) controller).getLocalMessages(adapter.olderTimestamp());
                     if (list != null && !list.isEmpty())
-                        handler.post(() -> adapter.addMessages(list));
+                        handler.post(() -> adapter.addOlderMessages(list));
                     else
                         willLoadMore = false;
 
@@ -585,20 +585,20 @@ public final class NewChatDialog extends DialogFragment {
             return list.size();
         }
 
-        public void addMessage(@NotNull ChatMessage msg) {
+        public void addNewMessage(@NotNull ChatMessage msg) {
             list.add(msg);
             notifyItemInserted(list.size() - 1);
             onUpdatedItemCount(list.size());
         }
 
-        public void addMessages(List<ChatMessage> messages) {
+        public void addOlderMessages(List<ChatMessage> messages) {
             list.addAll(0, messages);
             notifyItemRangeInserted(0, messages.size());
             onUpdatedItemCount(list.size());
         }
 
         public long olderTimestamp() {
-            return list.isEmpty() ? 0 : list.get(list.size() - 1).timestamp;
+            return list.isEmpty() ? 0 : list.get(0).timestamp;
         }
 
         private void onUpdatedItemCount(int count) {

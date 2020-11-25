@@ -182,7 +182,6 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
     private void gamesLoaded(@NonNull GamesList games) {
         adapter = new GamesAdapter(games);
         binding.gamesFragmentList.setAdapter(adapter);
-        setGamesStatus(false, false, false);
 
         if (Prefs.getBoolean(PK.FILTER_LOCKED_LOBBIES)) {
             adapter.setFilterOutLockedLobbies(true);
