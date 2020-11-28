@@ -98,20 +98,15 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
         Utils.generateUsernamePlaceholders(requireContext(), binding.playersFragmentListLoadingChild, 14, 12, 40);
         setPlayersStatus(true, false);
 
-        if (OverloadedUtils.isSignedIn()) {
-            OverloadedApi.get().addEventListener(this);
-            loadOverloadedUsers();
-        }
+        loadOverloadedUsers();
+        OverloadedApi.get().addEventListener(this);
 
         return binding.getRoot();
     }
 
     @NonNull
     private Task<List<String>> loadOverloadedUsers() {
-        if (!OverloadedUtils.isSignedIn())
-            return overloadedUsersTask = Tasks.forException(new Exception("Overloaded not signed in."));
-
-        if (overloadedUsersTask != null && !overloadedUsersTask.isComplete())
+        if (overloadedUsersTask != null && !(overloadedUsersTask.isComplete() || overloadedUsersTask.isCanceled()))
             return overloadedUsersTask;
 
         if (pyx == null)

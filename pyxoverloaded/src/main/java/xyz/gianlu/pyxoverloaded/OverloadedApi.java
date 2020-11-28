@@ -81,7 +81,11 @@ public class OverloadedApi {
     private static OverloadedChatApi chatInstance;
     final ExecutorService executorService = Executors.newCachedThreadPool(new NamedThreadFactory("overloaded-"));
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("overloaded-scheduler-"));
-    private final OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new GzipRequestInterceptor()).build();
+    private final OkHttpClient client = new OkHttpClient.Builder()
+            .readTimeout(5000, TimeUnit.MILLISECONDS)
+            .connectTimeout(5000, TimeUnit.MILLISECONDS)
+            .addInterceptor(new GzipRequestInterceptor())
+            .build();
     private final WebSocketHolder webSocket = new WebSocketHolder();
     private volatile FirebaseUser user;
     private volatile OverloadedToken lastToken;
@@ -157,18 +161,24 @@ public class OverloadedApi {
     @NonNull
     @WorkerThread
     JSONObject makePostRequest(@NonNull String suffix, @Nullable JSONObject json) throws OverloadedException, MaintenanceException {
+        return makePostRequest(suffix, json, true);
+    }
+
+    @NonNull
+    @WorkerThread
+    JSONObject makePostRequest(@NonNull String suffix, @Nullable JSONObject json, boolean auth) throws OverloadedException, MaintenanceException {
         RequestBody body;
         if (json == null)
             body = Util.EMPTY_REQUEST;
         else
             body = RequestBody.create(json.toString().getBytes(), MediaType.get("application/json"));
 
-        return makeRequest(suffix, body);
+        return makeRequest(suffix, body, auth);
     }
 
     @NonNull
     @WorkerThread
-    private JSONObject makeRequest(@NonNull String suffix, @NonNull RequestBody body) throws OverloadedException, MaintenanceException {
+    private JSONObject makeRequest(@NonNull String suffix, @NonNull RequestBody body, boolean auth) throws OverloadedException, MaintenanceException {
         Trace trace = FirebasePerformance.startTrace("overloaded_request");
         trace.putAttribute("dest", suffix);
 
@@ -189,7 +199,7 @@ public class OverloadedApi {
                     MediaType contentType = body.contentType();
                     if (contentType != null) req.addHeader("Content-Type", contentType.toString());
 
-                    return makeRequestInternal(req, trace);
+                    return makeRequestInternal(req, trace, auth);
                 } catch (IOException ex) {
                     lastEx = new OverloadedException(req.build().toString(), ex);
 
@@ -216,7 +226,7 @@ public class OverloadedApi {
 
     @NonNull
     @WorkerThread
-    private JSONObject makeRequestInternal(@NonNull Request.Builder reqBuilder, @NonNull Trace trace) throws OverloadedException, MaintenanceException, IOException {
+    private JSONObject makeRequestInternal(@NonNull Request.Builder reqBuilder, @NonNull Trace trace, boolean auth) throws OverloadedException, MaintenanceException, IOException {
         if (isFirstRequest || isUnderMaintenance()) {
             for (int i = 0; i < 3; i++) {
                 try {
@@ -230,19 +240,23 @@ public class OverloadedApi {
             }
         }
 
-        if (lastToken == null || lastToken.expired()) {
-            if (user == null && updateUser())
-                throw new NotSignedInException();
+        if (auth) {
+            if (lastToken == null || lastToken.expired()) {
+                if (user == null && updateUser())
+                    throw new NotSignedInException();
 
-            updateTokenSync();
-            if (lastToken == null)
-                throw new NotSignedInException();
+                updateTokenSync();
+                if (lastToken == null)
+                    throw new NotSignedInException();
+            }
+
+            reqBuilder.addHeader("Authorization", lastToken.authHeader());
         }
 
+        trace.putAttribute("auth", String.valueOf(auth));
         trace.putAttribute("has_server_token", String.valueOf(lastToken != null && lastToken.serverToken != null));
 
         Request req = reqBuilder
-                .addHeader("Authorization", lastToken.authHeader())
                 .addHeader("X-Client-Version", clientVersion)
                 .addHeader("X-Device-Id", String.valueOf(SignalProtocolHelper.getLocalDeviceId())).build();
         try (Response resp = client.newCall(req).execute()) {
@@ -300,7 +314,6 @@ public class OverloadedApi {
             return maintenanceEnd;
         }
     }
-
     //endregion
 
     //region Pyx
@@ -341,7 +354,6 @@ public class OverloadedApi {
             }
         }), "logIntoPyx");
     }
-
     //endregion
 
     //region User and providers
@@ -559,14 +571,14 @@ public class OverloadedApi {
     }
 
     /**
-     * Gets all online users on the specified server.
+     * Gets all online users on the specified server, everyone can fetch this.
      *
      * @param serverUrl The server URL
      * @return A task resolving to the list of users
      */
     public Task<List<String>> listUsersOnServer(@NonNull HttpUrl serverUrl) {
         return Tasks.call(executorService, () -> {
-            JSONObject obj = makePostRequest("Pyx/ListOnline", singletonJsonObject("serverUrl", serverUrl.toString()));
+            JSONObject obj = makePostRequest("Pyx/ListOnline", singletonJsonObject("serverUrl", serverUrl.toString()), false);
 
             JSONArray array = obj.getJSONArray("users");
             List<String> list = new ArrayList<>(array.length());
@@ -708,6 +720,22 @@ public class OverloadedApi {
             body.put("key", key.val);
             if (value != null) body.put("value", value);
             makePostRequest("User/SetProperty", body);
+            return null;
+        });
+    }
+
+    @NotNull
+    public Task<Void> uploadProfileImage(@NotNull InputStream in) {
+        return Tasks.call(executorService, () -> {
+            ByteArrayOutputStream out = new ByteArrayOutputStream(512 * 1024);
+            try {
+                CommonUtils.copy(in, out);
+            } finally {
+                in.close();
+            }
+
+            String imageEncoded = Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
+            makePostRequest("Profile/UploadImage", singletonJsonObject("image", imageEncoded));
             return null;
         });
     }
@@ -890,6 +918,7 @@ public class OverloadedApi {
         public static final String REASON_NO_SUCH_USER = "noSuchUser";
         public static final String REASON_EXPIRED_TOKEN = "expiredToken";
         public static final String REASON_INVALID_AUTH = "invalidAuth";
+        public static final String REASON_NSFW_DETECTED = "nsfwDetected";
         public final int httpCode;
         public final String reason;
         public final JSONObject details;

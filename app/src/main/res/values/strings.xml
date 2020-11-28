@@ -430,4 +430,9 @@
     <string name="error">Error</string>
     <string name="customServers">Custom servers</string>
     <string name="customServers_summary">Edit your custom servers list.</string>
+    <string name="nsfwDetectedMessage">NSFW content has been detected. You may not upload this image.</string>
+    <string name="changeProfileImageConfirmation">Are you sure you want to change your profile image?</string>
+    <string name="profileImageChanged">Profile image updated!</string>
+    <string name="customDecksSupported">Custom decks are supported.</string>
+    <string name="profileImage_message">You can upload your profile picture here: square images will appear better. GIFs are also supported.</string>
 </resources>

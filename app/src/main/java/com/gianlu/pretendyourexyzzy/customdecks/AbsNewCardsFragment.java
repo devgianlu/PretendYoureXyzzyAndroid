@@ -57,6 +57,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
 
 public abstract class AbsNewCardsFragment extends FragmentWithDialog implements AbsNewCustomDeckActivity.SavableFragment {
     private static final int MAX_CARD_TEXT_LENGTH = 256;
@@ -303,23 +304,23 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
                     OverloadedApi.get().uploadCardImage(in)
                             .addOnSuccessListener(result -> {
                                 pd.dismiss();
-                                CommonUtils.setText(dialogBinding.askImageUrlLink, OverloadedUtils.getCardImageUrl(result));
+                                CommonUtils.setText(dialogBinding.askImageUrlLink, OverloadedUtils.getImageUrl(result));
                             })
                             .addOnFailureListener(ex -> {
                                 Log.e(TAG, "Failed uploading image to Overloaded.", ex);
 
                                 pd.dismiss();
-                                showToast(Toaster.build().message(R.string.failedUploadingImage));
+                                if (ex instanceof OverloadedServerException && ((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NSFW_DETECTED))
+                                    showToast(Toaster.build().message(R.string.nsfwDetectedMessage));
+                                else
+                                    showToast(Toaster.build().message(R.string.failedUploadingImage));
                             });
                 } catch (IOException ex) {
                     Log.e(TAG, "Failed opening image stream.", ex);
                 }
             };
 
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.setType("*/*");
-            intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/jpeg", "image/png", "image/bmp", "image/gif"});
+            Intent intent = OverloadedUtils.getImageUploadIntent();
             startActivityForResult(Intent.createChooser(intent, "Pick an image to upload..."), RC_OPEN_CARD_IMAGE);
         });
 

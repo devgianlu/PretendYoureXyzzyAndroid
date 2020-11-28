@@ -137,11 +137,16 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
         });
     }
 
-    @NonNull
+    @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = DialogOverloadedSubBinding.inflate(inflater, container, false);
         binding.overloadedSubDialogBack.setOnClickListener(v -> dismissAllowingStateLoss());
+
+        if (OverloadedUtils.isSignedIn()) {
+            dismissAllowingStateLoss();
+            return null;
+        }
 
         CommonUtils.getEditText(binding.overloadedSubDialogUsername).addTextChangedListener(new TextWatcher() {
             private final Timer timer = new Timer();
@@ -330,7 +335,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
         if (getParentFragment() instanceof NewSettingsFragment.PrefsChildFragment)
             ((NewSettingsFragment.PrefsChildFragment) getParentFragment()).rebuildPreferences();
         else if (getParentFragment() instanceof NewProfileFragment)
-            ((NewProfileFragment) getParentFragment()).refreshOverloaded();
+            ((NewProfileFragment) getParentFragment()).refreshOverloaded(true);
 
         dismissAllowingStateLoss();
     }

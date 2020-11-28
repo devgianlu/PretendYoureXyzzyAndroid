@@ -16,6 +16,8 @@
         android:text="@string/createCustomCardInfo_image"
         tools:targetApi="o" />
 
+    <!-- FIXME -->
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/askImageUrl_link"
         style="@style/TextInputLayoutStyle"

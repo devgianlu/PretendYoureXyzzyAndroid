@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.overloaded;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -85,8 +86,17 @@ public final class OverloadedUtils {
     }
 
     @NonNull
-    public static String getCardImageUrl(@NonNull String id) {
+    public static String getImageUrl(@NonNull String id) {
         return Utils.overloadedServerUrl("Images/GetCardImage") + "?id=" + id;
+    }
+
+    @NotNull
+    public static Intent getImageUploadIntent() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/jpeg", "image/png", "image/bmp", "image/gif"});
+        return intent;
     }
 
     /**
@@ -176,6 +186,11 @@ public final class OverloadedUtils {
                     Log.e(TAG, "Failed getting user data.", ex);
                     billingClient.endConnection();
                 });
+    }
+
+    @NotNull
+    public static String getProfileImageUrl(@NotNull String username) {
+        return Utils.overloadedServerUrl("Profile/GetImage") + "?username=" + username;
     }
 
     public enum Sku {

@@ -97,7 +97,7 @@ public final class OverloadedChooseProviderDialog extends DialogFragment {
                         if (getParentFragment() instanceof NewSettingsFragment.PrefsChildFragment)
                             ((NewSettingsFragment.PrefsChildFragment) getParentFragment()).rebuildPreferences();
                         else if (getParentFragment() instanceof NewProfileFragment)
-                            ((NewProfileFragment) getParentFragment()).refreshOverloaded();
+                            ((NewProfileFragment) getParentFragment()).refreshOverloaded(true);
 
                         dismissAllowingStateLoss();
                     })

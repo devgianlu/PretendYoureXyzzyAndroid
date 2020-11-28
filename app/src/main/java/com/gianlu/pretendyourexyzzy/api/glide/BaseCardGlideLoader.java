@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.api;
+package com.gianlu.pretendyourexyzzy.api.glide;
 
 import androidx.annotation.NonNull;
 
@@ -13,11 +13,11 @@ import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import java.io.InputStream;
 import java.util.regex.Pattern;
 
-public class BaseCardUrlLoader extends BaseGlideUrlLoader<BaseCard> {
+public final class BaseCardGlideLoader extends BaseGlideUrlLoader<BaseCard> {
     private static final Pattern IMGUR_PATTERN = Pattern.compile("^http(?:s|)://imgur\\.com/(.*)\\.(.+)$");
     private static final Pattern IS_IMGUR_PATTERN = Pattern.compile("^http(?:s|)://imgur\\.com");
 
-    private BaseCardUrlLoader() {
+    private BaseCardGlideLoader() {
         super(new HttpGlideUrlLoader());
     }
 
@@ -35,7 +35,7 @@ public class BaseCardUrlLoader extends BaseGlideUrlLoader<BaseCard> {
     }
 
     @Override
-    protected String getUrl(BaseCard card, int width, int height, Options options) {
+    protected String getUrl(@NonNull BaseCard card, int width, int height, Options options) {
         String url = card.getImageUrl();
         if (url == null) throw new NullPointerException();
         return extractUrl(url);
@@ -51,7 +51,7 @@ public class BaseCardUrlLoader extends BaseGlideUrlLoader<BaseCard> {
         @NonNull
         @Override
         public ModelLoader<BaseCard, InputStream> build(@NonNull MultiModelLoaderFactory multiFactory) {
-            return new BaseCardUrlLoader();
+            return new BaseCardGlideLoader();
         }
 
         @Override

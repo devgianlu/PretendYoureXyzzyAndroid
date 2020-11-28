@@ -48,6 +48,7 @@ import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.StatusCodeException;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastApi;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
+import com.gianlu.pretendyourexyzzy.api.glide.GlideUtils;
 import com.gianlu.pretendyourexyzzy.cards.CardSize;
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
@@ -55,6 +56,7 @@ import com.gianlu.pretendyourexyzzy.customdecks.NewEditCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewProfileBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemFriendBinding;
 import com.gianlu.pretendyourexyzzy.dialogs.CrCastLoginDialog;
+import com.gianlu.pretendyourexyzzy.dialogs.Dialogs;
 import com.gianlu.pretendyourexyzzy.dialogs.NewChatDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.OverloadedSubDialog;
@@ -83,6 +85,7 @@ import java.util.List;
 import java.util.Map;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
@@ -91,6 +94,7 @@ import static com.gianlu.pretendyourexyzzy.GPGamesHelper.setEventCount;
 public class NewProfileFragment extends NewMainActivity.ChildFragment implements OverloadedApi.EventListener, CrCastLoginDialog.LoginListener {
     private static final String TAG = NewProfileFragment.class.getSimpleName();
     private static final int RC_IMPORT_JSON = 420;
+    private static final int RC_UPLOAD_PROFILE_IMAGE = 9;
     private FragmentNewProfileBinding binding;
     private RegisteredPyx pyx;
     private FriendsAdapter friendsAdapter;
@@ -183,9 +187,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
         binding.profileFragmentMenu.setOnClickListener((v) -> showPopupMenu());
 
-        OverloadedApi.get().addEventListener(this);
-
-        binding.profileFragmentProfileImage.setOnClickListener(v -> OverloadedSubDialog.get().show(getChildFragmentManager(), null));
+        // TODO: Lock username when using Overloaded (add helper text)
 
         //region Starred cards
         binding.profileFragmentStarredCardsList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
@@ -378,6 +380,30 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                     Log.e(TAG, "Failed importing JSON file: " + data, ex);
                 }
             }
+        } else if (requestCode == RC_UPLOAD_PROFILE_IMAGE) {
+            if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
+                try {
+                    InputStream in = requireContext().getContentResolver().openInputStream(data.getData());
+                    if (in == null) return;
+
+                    OverloadedApi.get().uploadProfileImage(in)
+                            .addOnSuccessListener(imageId -> {
+                                showToast(Toaster.build().message(R.string.profileImageChanged));
+                                refreshOverloaded(true);
+                            })
+                            .addOnFailureListener(ex -> {
+                                Log.e(TAG, "Failed uploading profile image.", ex);
+
+                                if (ex instanceof OverloadedServerException && ((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NSFW_DETECTED))
+                                    showToast(Toaster.build().message(R.string.nsfwDetectedMessage));
+                                else
+                                    showToast(Toaster.build().message(R.string.failedUploadingImage));
+                            });
+                } catch (IOException ex) {
+                    Log.e(TAG, "Failed reading image data: " + data, ex);
+                    showToast(Toaster.build().message(R.string.failedUploadingImage));
+                }
+            }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
@@ -442,9 +468,14 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        OverloadedApi.get().addEventListener(this);
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
-
         OverloadedApi.get().removeEventListener(this);
         this.pyx = null;
     }
@@ -483,7 +514,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
         refreshStarredCards();
 
-        refreshOverloaded();
+        refreshOverloaded(false);
     }
 
     @Override
@@ -533,7 +564,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         refreshCrCastDecks();
     }
 
-    public void refreshOverloaded() {
+    public void refreshOverloaded(boolean forced) {
         binding.profileFragmentFriendsLoading.setVisibility(View.VISIBLE);
         binding.profileFragmentFriendsList.setVisibility(View.GONE);
         binding.profileFragmentFriendsError.setVisibility(View.GONE);
@@ -582,6 +613,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         binding.profileFragmentChat.setVisibility(View.GONE);
         binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
         binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
+        binding.profileFragmentProfileImageMessage.setVisibility(View.GONE);
 
         OverloadedUtils.waitReady()
                 .addOnSuccessListener(signedIn -> {
@@ -595,9 +627,31 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
                         binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
 
-                        OverloadedApi.get().userData(true)
+                        OverloadedApi.get().userData(!forced)
                                 .addOnSuccessListener(data -> {
-                                    if (data != null && data.purchaseStatusGranular.message) {
+                                    if (data.profileImageId != null) {
+                                        binding.profileFragmentProfileImageMessage.setVisibility(View.GONE);
+                                        binding.profileFragmentProfileImage.setBackground(null);
+                                        CommonUtils.setPaddingDip(binding.profileFragmentProfileImage, 0);
+                                        GlideUtils.loadProfileImage(binding.profileFragmentProfileImage, data);
+                                        binding.profileFragmentProfileImage.setOnClickListener(v -> {
+                                            Dialogs.confirmation(requireContext(), R.string.changeProfileImageConfirmation, () -> {
+                                                Intent intent = OverloadedUtils.getImageUploadIntent();
+                                                startActivityForResult(Intent.createChooser(intent, "Pick an image to upload..."), RC_UPLOAD_PROFILE_IMAGE);
+                                            });
+                                        });
+                                    } else {
+                                        binding.profileFragmentProfileImageMessage.setVisibility(View.VISIBLE);
+                                        binding.profileFragmentProfileImage.setBackgroundResource(R.drawable.bg_circle_gray);
+                                        binding.profileFragmentProfileImage.setImageResource(R.drawable.baseline_add_24);
+                                        CommonUtils.setPaddingDip(binding.profileFragmentProfileImage, 48);
+                                        binding.profileFragmentProfileImage.setOnClickListener(v -> {
+                                            Intent intent = OverloadedUtils.getImageUploadIntent();
+                                            startActivityForResult(Intent.createChooser(intent, "Pick an image to upload..."), RC_UPLOAD_PROFILE_IMAGE);
+                                        });
+                                    }
+
+                                    if (data.purchaseStatusGranular.message) {
                                         UserData.PurchaseStatusGranular status = data.purchaseStatusGranular;
                                         binding.profileFragmentOverloadedWarn.setVisibility(View.VISIBLE);
                                         binding.profileFragmentOverloadedWarnText.setText(status.getMessage(requireContext(), data.expireTime));
@@ -620,6 +674,12 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                     } else {
                         binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
                         binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
+
+                        binding.profileFragmentProfileImageMessage.setVisibility(View.GONE);
+                        binding.profileFragmentProfileImage.setBackgroundResource(R.drawable.bg_circle_gray);
+                        binding.profileFragmentProfileImage.setImageResource(R.drawable.ic_overloaded_feature);
+                        CommonUtils.setPaddingDip(binding.profileFragmentProfileImage, 16);
+                        binding.profileFragmentProfileImage.setOnClickListener(v -> OverloadedSubDialog.get().show(getChildFragmentManager(), null));
                     }
                 })
                 .addOnFailureListener(ex -> {
@@ -627,6 +687,12 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                     binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
                     binding.profileFragmentChat.setVisibility(View.GONE);
                     binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
+
+                    binding.profileFragmentProfileImageMessage.setVisibility(View.GONE);
+                    binding.profileFragmentProfileImage.setBackgroundResource(R.drawable.bg_circle_gray);
+                    binding.profileFragmentProfileImage.setImageResource(R.drawable.baseline_broken_image_24);
+                    CommonUtils.setPaddingDip(binding.profileFragmentProfileImage, 48);
+                    binding.profileFragmentProfileImage.setOnClickListener(null);
                 });
     }
 
@@ -719,6 +785,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         @Override
         protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull FriendStatus friend) {
             holder.itemView.setOnClickListener(v -> showPopup(holder.itemView, friend));
+            GlideUtils.loadProfileImage(holder.binding.friendItemImage, friend);
             holder.binding.friendItemName.setText(friend.username);
             holder.setStatus(friend.getStatus());
         }
@@ -797,44 +864,42 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
             }
 
             popup.setOnMenuItemClickListener(item -> {
-                switch (item.getItemId()) {
-                    case R.id.overloadedUserItemMenu_showProfile:
-                        NewUserInfoDialog.get(friend.username, pyx != null && OverloadedUtils.getServerId(pyx.server).equals(friend.serverId), true)
-                                .show(getChildFragmentManager(), null);
-                        return true;
-                    case R.id.overloadedUserItemMenu_openChat:
-                        OverloadedApi.chat(context).startChat(friend.username)
-                                .addOnSuccessListener(chat -> NewChatDialog.getOverloaded(chat).show(getChildFragmentManager(), null))
-                                .addOnFailureListener(ex -> {
-                                    Log.e(TAG, "Failed opening chat.", ex);
-                                    showToast(Toaster.build().message(R.string.failedCreatingChat).extra(friend));
-                                });
-                        return true;
-                    case R.id.overloadedUserItemMenu_rejectRequest:
-                    case R.id.overloadedUserItemMenu_removeFriend:
-                        OverloadedApi.get().removeFriend(friend.username)
-                                .addOnSuccessListener(map -> {
-                                    AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_REMOVE_FRIEND);
-                                    showToast(Toaster.build().message(R.string.removedFriend).extra(friend));
-                                })
-                                .addOnFailureListener(ex -> {
-                                    Log.e(TAG, "Failed removing friend.", ex);
-                                    showToast(Toaster.build().message(R.string.failedRemovingFriend).extra(friend));
-                                });
-                        return true;
-                    case R.id.overloadedUserItemMenu_acceptRequest:
-                        OverloadedApi.get().addFriend(friend.username)
-                                .addOnSuccessListener(map -> {
-                                    AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_ADD_FRIEND);
-                                    showToast(Toaster.build().message(R.string.friendAdded).extra(friend));
-                                })
-                                .addOnFailureListener(ex -> {
-                                    Log.e(TAG, "Failed adding friend.", ex);
-                                    showToast(Toaster.build().message(R.string.failedAddingFriend).extra(friend));
-                                });
-                        return true;
-                    default:
-                        return false;
+                if (item.getItemId() == R.id.overloadedUserItemMenu_showProfile) {
+                    NewUserInfoDialog.get(friend.username, pyx != null && OverloadedUtils.getServerId(pyx.server).equals(friend.serverId), true)
+                            .show(getChildFragmentManager(), null);
+                    return true;
+                } else if (item.getItemId() == R.id.overloadedUserItemMenu_openChat) {
+                    OverloadedApi.chat(context).startChat(friend.username)
+                            .addOnSuccessListener(chat -> NewChatDialog.getOverloaded(chat).show(getChildFragmentManager(), null))
+                            .addOnFailureListener(ex -> {
+                                Log.e(TAG, "Failed opening chat.", ex);
+                                showToast(Toaster.build().message(R.string.failedCreatingChat).extra(friend));
+                            });
+                    return true;
+                } else if (item.getItemId() == R.id.overloadedUserItemMenu_rejectRequest || item.getItemId() == R.id.overloadedUserItemMenu_removeFriend) {
+                    OverloadedApi.get().removeFriend(friend.username)
+                            .addOnSuccessListener(map -> {
+                                AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_REMOVE_FRIEND);
+                                showToast(Toaster.build().message(R.string.removedFriend).extra(friend));
+                            })
+                            .addOnFailureListener(ex -> {
+                                Log.e(TAG, "Failed removing friend.", ex);
+                                showToast(Toaster.build().message(R.string.failedRemovingFriend).extra(friend));
+                            });
+                    return true;
+                } else if (item.getItemId() == R.id.overloadedUserItemMenu_acceptRequest) {
+                    OverloadedApi.get().addFriend(friend.username)
+                            .addOnSuccessListener(map -> {
+                                AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_ADD_FRIEND);
+                                showToast(Toaster.build().message(R.string.friendAdded).extra(friend));
+                            })
+                            .addOnFailureListener(ex -> {
+                                Log.e(TAG, "Failed adding friend.", ex);
+                                showToast(Toaster.build().message(R.string.failedAddingFriend).extra(friend));
+                            });
+                    return true;
+                } else {
+                    return false;
                 }
             });
 

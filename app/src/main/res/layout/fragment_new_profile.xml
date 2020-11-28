@@ -55,19 +55,29 @@
                 android:layout_width="152dp"
                 android:layout_height="152dp"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="16dp"
-                android:background="@drawable/bg_circle_gray"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:src="@drawable/ic_overloaded_feature" />
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bg_circle_gray" />
+
+            <TextView
+                android:id="@+id/profileFragment_profileImageMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="48dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="48dp"
+                android:layout_marginBottom="8dp"
+                android:fontFamily="@font/roboto_regular"
+                android:text="@string/profileImage_message"
+                android:textSize="10sp" />
 
             <LinearLayout
                 android:id="@+id/profileFragment_overloadedWarn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginEnd="24dp"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="8dp"
                 android:background="@drawable/bg_card_6"
                 android:backgroundTint="@color/yellow"
                 android:orientation="vertical">
@@ -116,7 +126,8 @@
             <com.facebook.shimmer.ShimmerFrameLayout
                 android:id="@+id/profileFragment_registerLoading"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp">
 
                 <include
                     android:id="@+id/profileFragment_inputs"
@@ -538,8 +549,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="36dp"
                         android:layout_gravity="end"
-                        android:layout_marginBottom="4dp"
                         android:layout_marginEnd="20dp"
+                        android:layout_marginBottom="4dp"
                         android:text="@string/seeAll"
                         android:visibility="gone" />
                 </LinearLayout>

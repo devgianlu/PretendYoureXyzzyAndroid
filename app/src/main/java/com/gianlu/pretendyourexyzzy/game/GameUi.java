@@ -4,12 +4,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
-import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +14,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.UiThread;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
+import com.gianlu.pretendyourexyzzy.api.glide.GlideUtils;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.GameInfo;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
@@ -255,21 +249,10 @@ public class GameUi {
         binding.gameActivityPlayers.setAdapter(null);
         binding.gameActivityLobbyPlayers.setAdapter(playersAdapter);
 
-        if (customDecksEnabled && listener != null && listener.amHost()) {
-            SpannableString clickableSpan = SpannableString.valueOf(context.getString(R.string.customDecks));
-            clickableSpan.setSpan(new ForegroundColorSpan(ContextCompat.getColor(context, R.color.appColor_400)), 0, clickableSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            clickableSpan.setSpan(new ClickSpan(() -> {
-                if (listener != null) listener.showOptions(true);
-            }), 0, clickableSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            binding.gameActivityCustomDecks.setMovementMethod(LinkMovementMethod.getInstance());
+        if (customDecksEnabled && listener != null && listener.amHost())
             binding.gameActivityCustomDecks.setVisibility(View.VISIBLE);
-            binding.gameActivityCustomDecks.setText(new SpannableStringBuilder()
-                    .append(context.getString(R.string.playWith))
-                    .append(clickableSpan));
-        } else {
+        else
             binding.gameActivityCustomDecks.setVisibility(View.GONE);
-        }
     }
 
     public void hideLobby() {
@@ -298,23 +281,6 @@ public class GameUi {
          * @return Whether the operation was successful
          */
         boolean onStarCard(@NotNull CardsGroup group);
-    }
-
-    private static class ClickSpan extends ClickableSpan {
-        private final OnClickListener mListener;
-
-        ClickSpan(@NonNull OnClickListener listener) {
-            mListener = listener;
-        }
-
-        @Override
-        public void onClick(@NonNull View widget) {
-            mListener.onClick();
-        }
-
-        public interface OnClickListener {
-            void onClick();
-        }
     }
 
     @UiThread
@@ -471,6 +437,7 @@ public class GameUi {
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             GameInfo.Player player = list.get(position);
             holder.binding.playerItemName.setText(player.name);
+            GlideUtils.loadProfileImage(holder.binding.playerItemImage, player);
 
             if (OverloadedApi.get().isOverloadedUserOnServerCached(player.name))
                 CommonUtils.setTextColor(holder.binding.playerItemName, R.color.appColor_500);

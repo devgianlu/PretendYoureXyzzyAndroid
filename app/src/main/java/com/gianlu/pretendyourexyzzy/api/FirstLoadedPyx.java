@@ -57,6 +57,8 @@ public class FirstLoadedPyx extends Pyx {
                     }
                 }
 
+                Tasks.await(OverloadedApi.get().listUsersOnServer(server.url));
+
                 return upgrade(user, true);
             });
         }
@@ -69,6 +71,8 @@ public class FirstLoadedPyx extends Pyx {
 
         if (OverloadedUtils.isSignedIn() && !internal)
             OverloadedApi.get().loggedIntoPyxServer(server.url, user.nickname);
+
+        OverloadedApi.get().listUsersOnServer(server.url);
 
         return pyx;
     }
