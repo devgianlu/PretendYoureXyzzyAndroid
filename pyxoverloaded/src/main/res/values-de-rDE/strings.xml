@@ -1,18 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Subscription messages -->
-    <string name="subscriptionPaused_message">Your subscription is paused and you don\'t have access to Overloaded. You can resume your subscription at any time.</string>
-    <string name="subscriptionGracePeriod_message">You have entered the grace period. You still have access to Overloaded, but you\'ll lose it on %s if you don\'t update your payment method.</string>
-    <string name="subscriptionAccountHold_message">The grace period ended, you are in account hold. You won\'t have access to Overloaded until you fix your payment method.</string>
-    <string name="subscriptionCancelled_message">Your subscription has been cancelled. You\'ll lose Overloaded access after this billing period ends on %s.</string>
     <!-- Subscription statuses -->
-    <string name="active">Active</string>
-    <string name="expired">Expired</string>
-    <string name="paused">Paused</string>
-    <string name="accountHold">Account hold</string>
-    <string name="gracePeriod">Grace period</string>
-    <string name="cancelled">Cancelled</string>
-    <string name="ok">OK</string>
-    <string name="none">None</string>
-    <string name="overloadedStatus_maintenance">Server is under maintenance. We expect to be online at %s.</string>
 </resources>
