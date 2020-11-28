@@ -186,7 +186,7 @@ public class NewMainActivity extends ActivityWithDialog {
         Continuation<FirstLoadedPyx, Task<RegisteredPyx>> firstLoadContinuation = task -> {
             FirstLoadedPyx pyx = task.getResult();
             FirstLoad fl = pyx.firstLoad();
-            if (fl.inProgress && fl.user != null) return Tasks.forResult(pyx.upgrade(fl.user));
+            if (fl.inProgress && fl.user != null) return pyx.upgrade(fl.user);
             else return task.getResult().register(username, idCode);
         };
 
@@ -210,18 +210,15 @@ public class NewMainActivity extends ActivityWithDialog {
     @Override
     public void onBackPressed() {
         ChildFragment visible;
-        switch (binding.mainNavigation.getSelectedItemId()) {
-            case R.id.mainNavigation_settings:
-                visible = settingsFragment;
-                break;
-            case R.id.mainNavigation_home:
-                visible = gamesFragment;
-                break;
-            case R.id.mainNavigation_profile:
-                visible = profileFragment;
-                break;
-            default:
-                visible = null;
+        int itemId = binding.mainNavigation.getSelectedItemId();
+        if (itemId == R.id.mainNavigation_settings) {
+            visible = settingsFragment;
+        } else if (itemId == R.id.mainNavigation_home) {
+            visible = gamesFragment;
+        } else if (itemId == R.id.mainNavigation_profile) {
+            visible = profileFragment;
+        } else {
+            visible = null;
         }
 
         if (visible == null || !visible.goBack()) {

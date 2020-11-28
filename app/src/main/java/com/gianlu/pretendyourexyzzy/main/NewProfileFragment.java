@@ -187,8 +187,6 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
         binding.profileFragmentMenu.setOnClickListener((v) -> showPopupMenu());
 
-        // TODO: Lock username when using Overloaded (add helper text)
-
         //region Starred cards
         binding.profileFragmentStarredCardsList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
         //endregion
@@ -627,6 +625,9 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
                         binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
 
+                        binding.profileFragmentInputs.usernameInput.setEnabled(false);
+                        binding.profileFragmentInputs.usernameInput.setHelperText(getString(R.string.usernameInput_lockedOverloaded));
+
                         OverloadedApi.get().userData(!forced)
                                 .addOnSuccessListener(data -> {
                                     if (data.profileImageId != null) {
@@ -634,12 +635,11 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                                         binding.profileFragmentProfileImage.setBackground(null);
                                         CommonUtils.setPaddingDip(binding.profileFragmentProfileImage, 0);
                                         GlideUtils.loadProfileImage(binding.profileFragmentProfileImage, data);
-                                        binding.profileFragmentProfileImage.setOnClickListener(v -> {
-                                            Dialogs.confirmation(requireContext(), R.string.changeProfileImageConfirmation, () -> {
-                                                Intent intent = OverloadedUtils.getImageUploadIntent();
-                                                startActivityForResult(Intent.createChooser(intent, "Pick an image to upload..."), RC_UPLOAD_PROFILE_IMAGE);
-                                            });
-                                        });
+                                        binding.profileFragmentProfileImage.setOnClickListener(v -> showDialog(
+                                                Dialogs.confirmation(requireContext(), R.string.changeProfileImageConfirmation, () -> {
+                                                    Intent intent = OverloadedUtils.getImageUploadIntent();
+                                                    startActivityForResult(Intent.createChooser(intent, "Pick an image to upload..."), RC_UPLOAD_PROFILE_IMAGE);
+                                                })));
                                     } else {
                                         binding.profileFragmentProfileImageMessage.setVisibility(View.VISIBLE);
                                         binding.profileFragmentProfileImage.setBackgroundResource(R.drawable.bg_circle_gray);
@@ -675,6 +675,9 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                         binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
                         binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
 
+                        binding.profileFragmentInputs.usernameInput.setEnabled(true);
+                        binding.profileFragmentInputs.usernameInput.setHelperText(null);
+
                         binding.profileFragmentProfileImageMessage.setVisibility(View.GONE);
                         binding.profileFragmentProfileImage.setBackgroundResource(R.drawable.bg_circle_gray);
                         binding.profileFragmentProfileImage.setImageResource(R.drawable.ic_overloaded_feature);
@@ -687,6 +690,9 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                     binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
                     binding.profileFragmentChat.setVisibility(View.GONE);
                     binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
+
+                    binding.profileFragmentInputs.usernameInput.setEnabled(true);
+                    binding.profileFragmentInputs.usernameInput.setHelperText(null);
 
                     binding.profileFragmentProfileImageMessage.setVisibility(View.GONE);
                     binding.profileFragmentProfileImage.setBackgroundResource(R.drawable.bg_circle_gray);

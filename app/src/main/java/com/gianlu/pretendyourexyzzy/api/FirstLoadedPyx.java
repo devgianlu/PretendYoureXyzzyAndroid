@@ -59,26 +59,30 @@ public class FirstLoadedPyx extends Pyx {
 
                 Tasks.await(OverloadedApi.get().listUsersOnServer(server.url));
 
-                return upgrade(user, true);
-            });
+                return user;
+            }).continueWithTask(task -> upgrade(task.getResult(), true));
         }
     }
 
     @NonNull
-    private RegisteredPyx upgrade(@NonNull User user, boolean internal) {
+    private Task<RegisteredPyx> upgrade(@NonNull User user, boolean internal) {
         RegisteredPyx pyx = new RegisteredPyx(server, client, firstLoadAndConfig, user);
         InstanceHolder.holder().set(pyx);
 
+        Task<?> task = null;
         if (OverloadedUtils.isSignedIn() && !internal)
-            OverloadedApi.get().loggedIntoPyxServer(server.url, user.nickname);
+            task = OverloadedApi.get().loggedIntoPyxServer(server.url, user.nickname);
 
-        OverloadedApi.get().listUsersOnServer(server.url);
+        if (task == null)
+            task = OverloadedApi.get().listUsersOnServer(server.url);
+        else
+            task = task.continueWithTask(task1 -> OverloadedApi.get().listUsersOnServer(server.url));
 
-        return pyx;
+        return task.continueWithTask(task1 -> Tasks.forResult(pyx));
     }
 
     @NotNull
-    public RegisteredPyx upgrade(@NonNull User user) {
+    public Task<RegisteredPyx> upgrade(@NonNull User user) {
         return upgrade(user, false);
     }
 }
