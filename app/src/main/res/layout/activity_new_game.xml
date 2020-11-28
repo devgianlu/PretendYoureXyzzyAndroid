@@ -5,8 +5,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <!-- TODO: Completely broken on small devices -->
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -104,11 +102,10 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <com.gianlu.pretendyourexyzzy.AspectRationFrameLayout
+        <com.gianlu.pretendyourexyzzy.MaxHeightFrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:adjust="height"
-            app:ratio="16:5">
+            android:layout_height="match_parent"
+            app:maxHeight="380dp">
 
             <LinearLayout
                 android:id="@+id/gameActivity_blackCard"
@@ -116,7 +113,7 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
-                android:layout_marginBottom="96dp"
+                android:layout_marginBottom="80dp"
                 android:background="@drawable/bg_card_6"
                 android:backgroundTint="#000000"
                 android:elevation="6dp"
@@ -129,7 +126,9 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/roboto_regular"
                     android:textColor="@color/white"
-                    android:textSize="20sp" />
+                    android:textSize="20sp"
+                    app:autoSizeMaxTextSize="20sp"
+                    app:autoSizeMinTextSize="12sp" />
 
                 <Space
                     android:layout_width="wrap_content"
@@ -141,7 +140,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom"
-                    android:layout_marginBottom="156dp"
                     android:orientation="horizontal">
 
                     <com.gianlu.commonutils.misc.SuperTextView
@@ -171,7 +169,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
                 android:elevation="7dp" />
-        </com.gianlu.pretendyourexyzzy.AspectRationFrameLayout>
+        </com.gianlu.pretendyourexyzzy.MaxHeightFrameLayout>
 
         <Space
             android:layout_width="wrap_content"
@@ -204,9 +202,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="@string/customDecksSupported"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
+            android:text="@string/customDecksSupported"
             android:textAppearance="@style/TextAppearance.Regular"
             android:textSize="16sp" />
 

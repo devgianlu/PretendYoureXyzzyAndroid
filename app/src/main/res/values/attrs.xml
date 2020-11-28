@@ -35,12 +35,8 @@
         <attr name="fgColor" format="color" />
     </declare-styleable>
 
-    <!-- Aspect ratio FrameLayout -->
-    <declare-styleable name="AspectRationFrameLayout">
-        <attr name="adjust" format="enum">
-            <enum name="width" value="0" />
-            <enum name="height" value="1" />
-        </attr>
-        <attr name="ratio" format="string" />
+    <!-- MaxHeightFrameLayout -->
+    <declare-styleable name="MaxHeightFrameLayout">
+        <attr name="maxHeight" format="dimension" />
     </declare-styleable>
 </resources>
