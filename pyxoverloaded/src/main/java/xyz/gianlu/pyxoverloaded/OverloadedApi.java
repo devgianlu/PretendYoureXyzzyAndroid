@@ -859,8 +859,11 @@ public class OverloadedApi {
     }
 
     public static class MaintenanceException extends Exception {
+        public final long maintenanceEnd;
+
         private MaintenanceException(long maintenanceEnd) {
             super("Estimated end: " + maintenanceEnd);
+            this.maintenanceEnd = maintenanceEnd;
         }
     }
 

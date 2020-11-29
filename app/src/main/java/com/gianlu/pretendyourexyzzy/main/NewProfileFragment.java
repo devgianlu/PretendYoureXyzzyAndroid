@@ -23,6 +23,7 @@ import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -76,15 +77,18 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedApi.MaintenanceException;
 import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
@@ -610,8 +614,8 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
         binding.profileFragmentChat.setVisibility(View.GONE);
         binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
-        binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
         binding.profileFragmentProfileImageMessage.setVisibility(View.GONE);
+        setOverloadedWarn(null, 0, null);
 
         OverloadedUtils.waitReady()
                 .addOnSuccessListener(signedIn -> {
@@ -623,7 +627,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                         binding.profileFragmentChat.setVisibility(View.VISIBLE);
                         binding.profileFragmentChat.setOnClickListener(v -> startActivity(new Intent(requireContext(), ChatsListActivity.class)));
 
-                        binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
+                        setOverloadedWarn(null, 0, null);
 
                         binding.profileFragmentInputs.usernameInput.setEnabled(false);
                         binding.profileFragmentInputs.usernameInput.setHelperText(getString(R.string.usernameInput_lockedOverloaded));
@@ -653,27 +657,22 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
                                     if (data.purchaseStatusGranular.message) {
                                         UserData.PurchaseStatusGranular status = data.purchaseStatusGranular;
-                                        binding.profileFragmentOverloadedWarn.setVisibility(View.VISIBLE);
-                                        binding.profileFragmentOverloadedWarnText.setText(status.getMessage(requireContext(), data.expireTime));
+                                        String warnText = status.getMessage(requireContext(), data.expireTime);
 
-                                        if (status == UserData.PurchaseStatusGranular.PAUSED) {
-                                            binding.profileFragmentOverloadedWarnAction.setText(R.string.resume);
-                                            binding.profileFragmentOverloadedWarnAction.setOnClickListener(v -> launchSubscriptions(OverloadedUtils.ACTIVE_SKU));
-                                        } else if (status == UserData.PurchaseStatusGranular.ACCOUNT_HOLD || status == UserData.PurchaseStatusGranular.GRACE_PERIOD) {
-                                            binding.profileFragmentOverloadedWarnAction.setText(R.string.fixPayment);
-                                            binding.profileFragmentOverloadedWarnAction.setOnClickListener(v -> launchSubscriptions(OverloadedUtils.ACTIVE_SKU));
-                                        } else {
-                                            binding.profileFragmentOverloadedWarnAction.setText(R.string.subscriptions);
-                                            binding.profileFragmentOverloadedWarnAction.setOnClickListener(v -> launchSubscriptions(null));
-                                        }
+                                        if (status == UserData.PurchaseStatusGranular.PAUSED)
+                                            setOverloadedWarn(warnText, R.string.resume, v -> launchSubscriptions(OverloadedUtils.ACTIVE_SKU));
+                                        else if (status == UserData.PurchaseStatusGranular.ACCOUNT_HOLD || status == UserData.PurchaseStatusGranular.GRACE_PERIOD)
+                                            setOverloadedWarn(warnText, R.string.fixPayment, v -> launchSubscriptions(OverloadedUtils.ACTIVE_SKU));
+                                        else
+                                            setOverloadedWarn(warnText, R.string.subscriptions, v -> launchSubscriptions(null));
                                     } else {
-                                        binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
+                                        setOverloadedWarn(null, 0, null);
                                     }
                                 })
-                                .addOnFailureListener(ex -> binding.profileFragmentOverloadedWarn.setVisibility(View.GONE));
+                                .addOnFailureListener(ex -> setOverloadedWarn(null, 0, null));
                     } else {
                         binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
-                        binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
+                        setOverloadedWarn(null, 0, null);
 
                         binding.profileFragmentInputs.usernameInput.setEnabled(true);
                         binding.profileFragmentInputs.usernameInput.setHelperText(null);
@@ -689,7 +688,6 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                     Log.e(TAG, "Failed waiting ready.", ex);
                     binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
                     binding.profileFragmentChat.setVisibility(View.GONE);
-                    binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
 
                     binding.profileFragmentInputs.usernameInput.setEnabled(true);
                     binding.profileFragmentInputs.usernameInput.setHelperText(null);
@@ -699,7 +697,35 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                     binding.profileFragmentProfileImage.setImageResource(R.drawable.baseline_broken_image_24);
                     CommonUtils.setPaddingDip(binding.profileFragmentProfileImage, 48);
                     binding.profileFragmentProfileImage.setOnClickListener(null);
+
+                    if (ex instanceof MaintenanceException) {
+                        setOverloadedWarn(getString(R.string.overloadedStatus_maintenance,
+                                new SimpleDateFormat("hh:mm", Locale.getDefault())
+                                        .format(((MaintenanceException) ex).maintenanceEnd)),
+                                0, null);
+                    } else if (ex instanceof OverloadedServerException && ((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_DEVICE_CONFLICT)) {
+                        setOverloadedWarn(getString(R.string.overloadedStatus_twoDevices), 0, null);
+                    } else {
+                        setOverloadedWarn(null, 0, null);
+                    }
                 });
+    }
+
+    private void setOverloadedWarn(@Nullable String text, @StringRes int actionText, @Nullable View.OnClickListener listener) {
+        if (text == null) {
+            binding.profileFragmentOverloadedWarn.setVisibility(View.GONE);
+        } else {
+            binding.profileFragmentOverloadedWarn.setVisibility(View.VISIBLE);
+            binding.profileFragmentOverloadedWarnText.setText(text);
+
+            if (listener == null) {
+                binding.profileFragmentOverloadedWarnAction.setVisibility(View.GONE);
+            } else {
+                binding.profileFragmentOverloadedWarnAction.setVisibility(View.VISIBLE);
+                binding.profileFragmentOverloadedWarnAction.setText(actionText);
+                binding.profileFragmentOverloadedWarnAction.setOnClickListener(listener);
+            }
+        }
     }
 
     private void refreshStarredCards() {

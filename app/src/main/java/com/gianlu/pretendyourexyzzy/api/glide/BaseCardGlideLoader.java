@@ -34,6 +34,7 @@ public final class BaseCardGlideLoader extends BaseGlideUrlLoader<BaseCard> {
         return url;
     }
 
+    @NonNull
     @Override
     protected String getUrl(@NonNull BaseCard card, int width, int height, Options options) {
         String url = card.getImageUrl();

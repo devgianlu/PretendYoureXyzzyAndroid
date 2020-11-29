@@ -19,6 +19,7 @@ public final class FriendStatusGlideLoader extends BaseGlideUrlLoader<FriendStat
         super(concreteLoader);
     }
 
+    @NonNull
     @Override
     protected String getUrl(@NonNull FriendStatus friendStatus, int width, int height, Options options) {
         return OverloadedUtils.getProfileImageUrl(friendStatus.username);
