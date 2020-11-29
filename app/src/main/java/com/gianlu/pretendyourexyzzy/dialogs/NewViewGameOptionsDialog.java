@@ -71,6 +71,7 @@ public final class NewViewGameOptionsDialog extends DialogFragment {
 
     @Nullable
     @Override
+    @SuppressWarnings("unchecked")
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         DialogNewViewGameOptionsBinding binding = DialogNewViewGameOptionsBinding.inflate(inflater, container, false);
         binding.viewGameOptionsOk.setOnClickListener(v -> dismissAllowingStateLoss());

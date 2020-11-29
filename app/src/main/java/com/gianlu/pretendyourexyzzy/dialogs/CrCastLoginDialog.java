@@ -45,7 +45,7 @@ public final class CrCastLoginDialog extends DialogFragment {
         listener = null;
     }
 
-    @Nullable
+    @NonNull
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_cr_cast_login, container, false);

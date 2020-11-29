@@ -144,6 +144,7 @@ public final class NewEditGameOptionsDialog extends DialogFragment {
 
     @Nullable
     @Override
+    @SuppressWarnings("unchecked")
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = DialogNewEditGameOptionsBinding.inflate(inflater, container, false);
         Game.Options options = (Game.Options) requireArguments().getSerializable("options");
@@ -171,7 +172,7 @@ public final class NewEditGameOptionsDialog extends DialogFragment {
         CommonUtils.setText(binding.editGameOptionsPassword, String.valueOf(options.password));
 
         AutoCompleteTextView timerMultiplierEditText = (AutoCompleteTextView) CommonUtils.getEditText(binding.editGameOptionsTimerMultiplier);
-        timerMultiplierEditText.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, Game.Options.VALID_TIMER_MULTIPLIERS));
+        timerMultiplierEditText.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, Game.Options.VALID_TIMER_MULTIPLIERS));
         timerMultiplierEditText.setText(options.timerMultiplier, false);
         timerMultiplierEditText.setValidator(new AutoCompleteTextView.Validator() {
             @Override
@@ -242,7 +243,7 @@ public final class NewEditGameOptionsDialog extends DialogFragment {
         else if (pyx.config().crCastEnabled())
             supported.add(CrCastDeck.class);
 
-        if (supported == null || supported.isEmpty())
+        if (supported.isEmpty())
             return Collections.emptyList();
 
         List<BasicCustomDeck> customDecks = db.getAllDecks();

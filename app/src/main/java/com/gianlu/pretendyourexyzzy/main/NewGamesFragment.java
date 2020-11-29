@@ -116,7 +116,7 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
             binding.gamesFragmentSwipeRefresh.setRefreshing(false);
         });
 
-        binding.gamesFragmentChangeServer.setOnClickListener(v -> ChangeServerDialog.get().show(getFragmentManager(), null));
+        binding.gamesFragmentChangeServer.setOnClickListener(v -> ChangeServerDialog.get().show(requireFragmentManager(), null));
 
         binding.gamesFragmentFilterLocked.setOnClickListener(v -> {
             boolean filter = !Prefs.getBoolean(PK.FILTER_LOCKED_LOBBIES);

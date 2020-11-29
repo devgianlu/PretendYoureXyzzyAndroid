@@ -59,7 +59,7 @@ public final class ChangeServerDialog extends DialogFragment {
         }
     }
 
-    @Nullable
+    @NonNull
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         DialogChangeServerBinding binding = DialogChangeServerBinding.inflate(inflater, container, false);

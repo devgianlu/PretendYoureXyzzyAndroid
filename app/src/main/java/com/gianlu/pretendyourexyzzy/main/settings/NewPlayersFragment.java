@@ -257,29 +257,28 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
             }
 
             popup.setOnMenuItemClickListener(item -> {
-                switch (item.getItemId()) {
-                    case R.id.nameItemMenu_showInfo:
-                        NewUserInfoDialog.get(username, true, hasOverloadedUser(username)).show(getChildFragmentManager(), null);
-                        return true;
-                    case R.id.nameItemMenu_unblock:
-                        BlockedUsers.unblock(username);
-                        return true;
-                    case R.id.nameItemMenu_block:
-                        BlockedUsers.block(username);
-                        return true;
-                    case R.id.nameItemMenu_addFriend:
-                        OverloadedApi.get().addFriend(username)
-                                .addOnSuccessListener(map -> {
-                                    AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_ADD_FRIEND);
-                                    showToast(Toaster.build().message(R.string.friendAdded).extra(username));
-                                })
-                                .addOnFailureListener(ex -> {
-                                    Log.e(TAG, "Failed adding friend.", ex);
-                                    showToast(Toaster.build().message(R.string.failedAddingFriend).extra(username));
-                                });
-                        return true;
-                    default:
-                        return false;
+                if (item.getItemId() == R.id.nameItemMenu_showInfo) {
+                    NewUserInfoDialog.get(username, true, hasOverloadedUser(username)).show(getChildFragmentManager(), null);
+                    return true;
+                } else if (item.getItemId() == R.id.nameItemMenu_unblock) {
+                    BlockedUsers.unblock(username);
+                    return true;
+                } else if (item.getItemId() == R.id.nameItemMenu_block) {
+                    BlockedUsers.block(username);
+                    return true;
+                } else if (item.getItemId() == R.id.nameItemMenu_addFriend) {
+                    OverloadedApi.get().addFriend(username)
+                            .addOnSuccessListener(map -> {
+                                AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_ADD_FRIEND);
+                                showToast(Toaster.build().message(R.string.friendAdded).extra(username));
+                            })
+                            .addOnFailureListener(ex -> {
+                                Log.e(TAG, "Failed adding friend.", ex);
+                                showToast(Toaster.build().message(R.string.failedAddingFriend).extra(username));
+                            });
+                    return true;
+                } else {
+                    return false;
                 }
             });
 

@@ -27,7 +27,8 @@ public final class GlideUtils {
     public static void loadProfileImage(@NotNull ImageView into, @NotNull Object model) {
         if (profilePlaceholderDrawable == null) {
             profilePlaceholderDrawable = ContextCompat.getDrawable(into.getContext(), R.drawable.ic_person_circle_900_96);
-            profilePlaceholderDrawable.setTint(Color.rgb(161, 161, 161));
+            if (profilePlaceholderDrawable != null)
+                profilePlaceholderDrawable.setTint(Color.rgb(161, 161, 161));
         }
 
         Glide.with(into)

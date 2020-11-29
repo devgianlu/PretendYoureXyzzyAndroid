@@ -147,27 +147,26 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
 
     @Override
     protected boolean onMenuItemSelected(@NotNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.editCustomDeck_export:
-                AnalyticsApplication.sendAnalytics(Utils.ACTION_EXPORTED_CUSTOM_DECK);
-                exportCustomDeckJson();
-                return true;
-            case R.id.editCustomDeck_delete:
-                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-                builder.setTitle(R.string.delete).setMessage(getString(R.string.deleteDeckConfirmation, getName()))
-                        .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                            Integer deckId = getDeckId();
-                            if (deckId == null) return;
+        if (item.getItemId() == R.id.editCustomDeck_export) {
+            AnalyticsApplication.sendAnalytics(Utils.ACTION_EXPORTED_CUSTOM_DECK);
+            exportCustomDeckJson();
+            return true;
+        } else if (item.getItemId() == R.id.editCustomDeck_delete) {
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+            builder.setTitle(R.string.delete).setMessage(getString(R.string.deleteDeckConfirmation, getName()))
+                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                        Integer deckId = getDeckId();
+                        if (deckId == null) return;
 
-                            ThisApplication.sendAnalytics(Utils.ACTION_DELETED_CUSTOM_DECK);
-                            CustomDecksDatabase.get(this).deleteDeckAndCards(deckId, true);
-                            onBackPressed();
-                        }).setNegativeButton(android.R.string.no, null);
+                        ThisApplication.sendAnalytics(Utils.ACTION_DELETED_CUSTOM_DECK);
+                        CustomDecksDatabase.get(this).deleteDeckAndCards(deckId, true);
+                        onBackPressed();
+                    }).setNegativeButton(android.R.string.no, null);
 
-                showDialog(builder);
-                return true;
-            default:
-                return super.onMenuItemSelected(item);
+            showDialog(builder);
+            return true;
+        } else {
+            return super.onMenuItemSelected(item);
         }
     }
 

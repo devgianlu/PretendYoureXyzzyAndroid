@@ -166,18 +166,18 @@ public class ChatsListActivity extends ActivityWithDialog implements OverloadedA
             popup.inflate(R.menu.item_chat);
 
             popup.setOnMenuItemClickListener(item -> {
-                switch (item.getItemId()) {
-                    case R.id.chatItemMenu_showProfile:
-                        NewUserInfoDialog.get(chat.recipient, false, true).show(getSupportFragmentManager(), null);
-                        return true;
-                    case R.id.chatItemMenu_delete:
-                        if (chatApi != null) {
-                            chatApi.deleteChat(chat);
-                            removeItem(chat);
-                        }
-                        return true;
-                    default:
-                        return false;
+                if (item.getItemId() == R.id.chatItemMenu_showProfile) {
+                    NewUserInfoDialog.get(chat.recipient, false, true).show(getSupportFragmentManager(), null);
+                    return true;
+                } else if (item.getItemId() == R.id.chatItemMenu_delete) {
+                    if (chatApi != null) {
+                        chatApi.deleteChat(chat);
+                        removeItem(chat);
+                    }
+
+                    return true;
+                } else {
+                    return false;
                 }
             });
 

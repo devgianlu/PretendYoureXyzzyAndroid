@@ -67,7 +67,7 @@ public final class GameRoundDialog extends DialogFragment {
         return dialog;
     }
 
-    @Nullable
+    @NonNull
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
         LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.dialog_game_round, container, false);

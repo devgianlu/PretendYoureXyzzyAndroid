@@ -30,6 +30,7 @@ import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.BlockedUsers;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
+import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
@@ -297,7 +298,7 @@ public final class NewChatDialog extends DialogFragment {
 
     private interface ChatController {
         @NotNull
-        List<ChatMessage> init() throws Exception;
+        List<ChatMessage> init() throws LevelMismatchException;
 
         void send(@NonNull String msg, @NonNull SendCallback callback);
 
@@ -415,7 +416,7 @@ public final class NewChatDialog extends DialogFragment {
 
         @NonNull
         @Override
-        public List<ChatMessage> init() throws Exception {
+        public List<ChatMessage> init() throws LevelMismatchException {
             pyx = RegisteredPyx.get();
             return ChatMessage.fromPyx(gid == -1 ? pyx.chat().getMessagesForGlobal() : pyx.chat().getMessagesForGame(gid));
         }

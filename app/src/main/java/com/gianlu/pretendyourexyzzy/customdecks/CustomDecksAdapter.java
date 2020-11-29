@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
@@ -57,9 +58,9 @@ public final class CustomDecksAdapter extends OrderedRecyclerViewAdapter<CustomD
 
         Drawable startDrawable = null;
         if (deck instanceof CustomDecksDatabase.StarredDeck) {
-            startDrawable = holder.name.getContext().getDrawable(R.drawable.baseline_star_24);
+            startDrawable = ContextCompat.getDrawable(holder.name.getContext(), R.drawable.baseline_star_24);
         } else if (deck instanceof CrCastDeck) {
-            startDrawable = holder.name.getContext().getDrawable(R.drawable.baseline_contactless_24);
+            startDrawable = ContextCompat.getDrawable(holder.name.getContext(), R.drawable.baseline_contactless_24);
         }
 
         holder.name.setCompoundDrawablesRelativeWithIntrinsicBounds(startDrawable, null, null, null);

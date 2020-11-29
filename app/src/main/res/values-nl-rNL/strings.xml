@@ -37,7 +37,6 @@
     <string name="tutorial_fifthDesc">Er zijn meer functies beschikbaar in deze app, je zal ze leren terwijl je bezig bent. Veel plezier!</string>
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
-    <string name="nickname">Gebruikersnaam</string>
     <string name="submit">Versturen</string>
     <string name="changeServer">Server wijzigen</string>
     <string name="reservedNickname">Bijnaam is gereserveerd!</string>
@@ -51,7 +50,6 @@
     <string name="failedLoading_reason">Laden mislukt: %s</string>
     <string name="players"><![CDATA[<b>Spelers:</b>]]> %1$d/%2$d</string>
     <string name="spectators"><![CDATA[<b>Toeschouwers:</b>]]> %1$d/%2$d</string>
-    <string name="noMessages">Er zijn geen berichten.</string>
     <string name="failedSendMessage">Bericht versturen mislukt!</string>
     <string name="logout">Afmelden</string>
     <string name="spectate">Toeschouwen</string>
@@ -60,24 +58,16 @@
     <string name="playersLabel">Spelers</string>
     <string name="gamePassword">Voer wachtwoord in</string>
     <string name="failedJoiningGame">Kan niet deelnemen aan het spel!</string>
-    <string name="wrongGamePassword">Verkeerd wachtwoord voor dit spel!</string>
     <string name="gameFull">Het spel is vol! Probeer het later.</string>
     <string name="failedSpectating">Toeschouwen van het spel mislukt!</string>
     <string name="ongoingGame">Lopend spel</string>
     <string name="gameLabel">Spel</string>
     <string name="leaveGame">Spel verlaten</string>
     <string name="failedLeaving">Verlaten van het spel mislukt!</string>
-    <string name="search">Zoeken</string>
-    <string name="score"><![CDATA[<b>Score:</b>]]> %d</string>
     <string name="numPick"><![CDATA[<b>Kies</b>]]> %d</string>
     <string name="gameOptions">Spelinstellingen</string>
     <string name="addedCardToStarred">Deze kaart heeft een ster gekregen.</string>
     <string name="general">Algemeen</string>
-    <string name="showBeginnerTutorial">Toon beginnerscursus</string>
-    <string name="showBeginnerTutorial_summary">Toon de introductie tutorial voor de app</string>
-    <string name="manage">Beheer</string>
-    <string name="manageServers">Servers beheren</string>
-    <string name="noServers">Er zijn geen aangepaste servers.</string>
     <string name="addServer">Server toevoegen</string>
     <string name="serverUrl">Server URL</string>
     <string name="invalidServerName">Naam is ongeldig.</string>
@@ -85,5 +75,4 @@
     <string name="failedAddingServer">Het toevoegen van nieuwe server is mislukt!</string>
     <string name="remove">Verwijderen</string>
     <string name="idCodeLabel">Identificatiecode</string>
-    <string name="idCode"><![CDATA[<b>ID-code:</b>]]> %s</string>
 </resources>

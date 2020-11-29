@@ -255,6 +255,9 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
                         ImageManager im = ImageManager.create(requireContext());
                         for (Achievement ach : getAchievementsInProgress(data)) {
+                            Uri imageUri = ach.getUnlockedImageUri();
+                            if (imageUri == null) continue;
+
                             AchievementProgressView view = new AchievementProgressView(requireContext());
                             view.setCompleteColor(colorComplete);
                             view.setIncompleteColor(colorIncomplete);
@@ -268,7 +271,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                             im.loadImage((uri, drawable, isRequestedDrawable) -> {
                                 if (!isRequestedDrawable || drawable == null) return;
                                 view.setIconDrawable(drawable);
-                            }, ach.getUnlockedImageUri());
+                            }, imageUri);
                         }
 
                         data.release();

@@ -59,10 +59,7 @@ public class OneTimeLoginActivity extends ActivityWithDialog {
     }
 
     private void register(@NonNull FirstLoadedPyx pyx) {
-        if (!pyx.isServerSecure() && !pyx.config().insecureIdAllowed())
-            binding.oneTimeLoginInputs.idCodeInput.setEnabled(false);
-        else
-            binding.oneTimeLoginInputs.idCodeInput.setEnabled(true);
+        binding.oneTimeLoginInputs.idCodeInput.setEnabled(pyx.isServerSecure() || pyx.config().insecureIdAllowed());
 
         String idCode = getIdCode();
         String username = CommonUtils.getText(binding.oneTimeLoginInputs.usernameInput);
