@@ -5,7 +5,6 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -129,8 +128,6 @@ public final class AchievementProgressView extends View {
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
         if (mIconDrawable == null || mDesc == null) return;
-
-        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 
         int minX = getPaddingLeft() + mIconW / 2;
         int maxW = getWidth() - getPaddingRight() - mIconW / 2 - minX;

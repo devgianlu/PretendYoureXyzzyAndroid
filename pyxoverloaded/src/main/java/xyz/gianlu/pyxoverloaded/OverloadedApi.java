@@ -715,7 +715,7 @@ public class OverloadedApi {
      */
     @NonNull
     public Task<Void> setUserProperty(@NonNull UserData.PropertyKey key, @Nullable String value) {
-        return Tasks.call(executorService, (Callable<Void>) () -> {
+        return Tasks.call(executorService, () -> {
             JSONObject body = new JSONObject();
             body.put("key", key.val);
             if (value != null) body.put("value", value);
@@ -724,6 +724,25 @@ public class OverloadedApi {
         });
     }
 
+    /**
+     * Removes the user profile image.
+     *
+     * @return A task resolving to the remove result
+     */
+    @NotNull
+    public Task<Void> removeProfileImage() {
+        return Tasks.call(executorService, () -> {
+            makePostRequest("Profile/UploadImage", singletonJsonObject("remove", true));
+            return null;
+        });
+    }
+
+    /**
+     * Uploads the user profile image.
+     *
+     * @param in The {@link InputStream} to read the image from
+     * @return A task resolving to the upload result
+     */
     @NotNull
     public Task<Void> uploadProfileImage(@NotNull InputStream in) {
         return Tasks.call(executorService, () -> {

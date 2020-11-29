@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,10 +19,10 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
 
-import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.FossUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.logs.LogsHelper;
+import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.preferences.PreferencesBillingHelper;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.preferences.Translators;
@@ -32,39 +31,29 @@ import com.gianlu.pretendyourexyzzy.BlockedUsers;
 import com.gianlu.pretendyourexyzzy.NewMainActivity;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewMainSettingsBinding;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewPrefsSettingsBinding;
 import com.gianlu.pretendyourexyzzy.dialogs.Dialogs;
-import com.gianlu.pretendyourexyzzy.dialogs.OverloadedSubDialog;
+import com.gianlu.pretendyourexyzzy.main.settings.NewPlayersFragment;
+import com.gianlu.pretendyourexyzzy.main.settings.OverloadedPrefsFragment;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsFragment;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
-import com.gianlu.pretendyourexyzzy.overloaded.OverloadedSignInHelper;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserInfo;
 import com.yarolegovich.mp.AbsMaterialCheckablePreference;
 import com.yarolegovich.mp.AbsMaterialPreference;
 import com.yarolegovich.mp.MaterialCheckboxPreference;
-import com.yarolegovich.mp.MaterialPreferenceCategory;
+import com.yarolegovich.mp.MaterialPreferenceScreen;
 import com.yarolegovich.mp.MaterialStandardPreference;
 import com.yarolegovich.mp.io.MaterialPreferences;
 import com.yarolegovich.mp.io.StorageModule;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.EnumMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
-
-import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
 public class NewSettingsFragment extends NewMainActivity.ChildFragment {
     private static final String TAG = NewSettingsFragment.class.getSimpleName();
@@ -232,17 +221,32 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
     }
 
     public abstract static class PrefsChildFragment extends ChildFragment {
-        private MaterialPreferenceCategory lastCategory;
+        private MaterialPreferenceScreen lastCategory;
         private StorageModule storageModule;
         private FragmentNewPrefsSettingsBinding binding;
 
         protected abstract void buildPreferences(@NonNull Context context);
 
         public final void addCategory(@StringRes int title) {
-            MaterialPreferenceCategory category = new MaterialPreferenceCategory(requireContext());
-            category.setTitle(getString(title));
-            binding.settingsPrefsFragmentScreen.addView(category);
-            lastCategory = category;
+            MaterialPreferenceScreen category = new MaterialPreferenceScreen(requireContext());
+            category.useLinearLayout();
+            category.setTag(title);
+            category.addView(SuperTextView.builder(requireContext())
+                    .text(title).typeface(R.font.montserrat_semibold).sizeSp(18)
+                    .colorRes(R.color.appColor_600).paddingDp(16, 8, 0, 0)
+                    .build());
+            binding.settingsPrefsFragmentScreen.addView(lastCategory = category);
+        }
+
+        public final void removeCategory(@StringRes int titleRes) {
+            ViewGroup parent = (ViewGroup) binding.settingsPrefsFragmentScreen.getChildAt(0);
+            for (int i = 0; i < parent.getChildCount(); i++) {
+                View child = parent.getChildAt(i);
+                if (child instanceof MaterialPreferenceScreen && (int) child.getTag() == titleRes) {
+                    parent.removeViewAt(i);
+                    break;
+                }
+            }
         }
 
         public final void addPreference(@NonNull AbsMaterialPreference<?> preference) {
@@ -443,152 +447,6 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
         @Override
         public int getTitleRes() {
             return R.string.general;
-        }
-    }
-
-    public static class OverloadedPrefsFragment extends PrefsChildFragment {
-        private boolean hasLinked() {
-            FirebaseUser user = OverloadedApi.get().firebaseUser();
-            return user != null && user.getProviderData().size() > 0;
-        }
-
-        @NonNull
-        private List<String> linkedProviderNames(@NonNull Context context) {
-            List<String> names = new ArrayList<>();
-            for (OverloadedSignInHelper.SignInProvider provider : OverloadedSignInHelper.SIGN_IN_PROVIDERS) {
-                if (OverloadedApi.get().hasLinkedProvider(provider.id))
-                    names.add(context.getString(provider.nameRes));
-            }
-
-            return names;
-        }
-
-        private boolean canLink() {
-            FirebaseUser user = OverloadedApi.get().firebaseUser();
-            if (user == null) return false;
-
-            List<String> providers = new ArrayList<>(OverloadedSignInHelper.providerIds());
-            for (UserInfo info : user.getProviderData()) {
-                Iterator<String> iterator = providers.iterator();
-                while (iterator.hasNext()) {
-                    if (Objects.equals(iterator.next(), info.getProviderId()))
-                        iterator.remove();
-                }
-            }
-
-            return providers.size() > 0;
-        }
-
-        @NonNull
-        private List<String> linkableProviderNames(@NonNull Context context) {
-            List<String> names = new ArrayList<>();
-            for (OverloadedSignInHelper.SignInProvider provider : OverloadedSignInHelper.SIGN_IN_PROVIDERS) {
-                if (!OverloadedApi.get().hasLinkedProvider(provider.id))
-                    names.add(context.getString(provider.nameRes));
-            }
-
-            return names;
-        }
-
-        @NonNull
-        private List<String> linkableProviderIds() {
-            List<String> ids = new ArrayList<>();
-            for (OverloadedSignInHelper.SignInProvider provider : OverloadedSignInHelper.SIGN_IN_PROVIDERS) {
-                if (!OverloadedApi.get().hasLinkedProvider(provider.id))
-                    ids.add(provider.id);
-            }
-
-            return ids;
-        }
-
-        @Override
-        protected void buildPreferences(@NonNull Context context) {
-            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-            if (currentUser != null) {
-                MaterialStandardPreference loggedInAs = new MaterialStandardPreference(context);
-                loggedInAs.setTitle(R.string.loggedIn);
-                loggedInAs.setSummary(Utils.getDisplayableName(currentUser));
-                loggedInAs.setClickable(false);
-                addPreference(loggedInAs);
-
-                if (hasLinked()) {
-                    MaterialStandardPreference linkedAccounts = new MaterialStandardPreference(context);
-                    linkedAccounts.setTitle(R.string.linkedAccounts);
-                    linkedAccounts.setSummary(CommonUtils.join(linkedProviderNames(context), ", "));
-                    linkedAccounts.setClickable(false);
-                    addPreference(linkedAccounts);
-                }
-
-                if (canLink()) {
-                    MaterialStandardPreference linkAccount = new MaterialStandardPreference(context);
-                    linkAccount.setTitle(R.string.linkAccount);
-                    linkAccount.setSummary(CommonUtils.join(linkableProviderNames(context), ", "));
-                    linkAccount.setOnClickListener(v -> OverloadedChooseProviderDialog.getLinkInstance(linkableProviderIds()).show(getChildFragmentManager(), null));
-                    addPreference(linkAccount);
-                }
-
-                MaterialStandardPreference purchaseStatus = new MaterialStandardPreference(context);
-                purchaseStatus.setTitle(R.string.purchaseStatus);
-                purchaseStatus.setClickable(false);
-                purchaseStatus.setLoading(true);
-                addPreference(purchaseStatus);
-                OverloadedApi.get().userData()
-                        .addOnSuccessListener(userData -> {
-                            purchaseStatus.setSummary(String.format("%s (%s)", getString(userData.purchaseStatusGranular.getName()), userData.username));
-                            purchaseStatus.setLoading(false);
-                        })
-                        .addOnFailureListener(ex -> {
-                            Log.e(TAG, "Failed getting user data.", ex);
-                            purchaseStatus.setSummary("<error>");
-                            purchaseStatus.setLoading(false);
-                        });
-
-                MaterialStandardPreference logout = new MaterialStandardPreference(context);
-                logout.setTitle(R.string.logout);
-                logout.setIcon(R.drawable.outline_exit_to_app_24);
-                logout.setOnClickListener(v -> {
-                    OverloadedApi.get().logout();
-                    onBackPressed();
-                });
-                addPreference(logout);
-
-                MaterialStandardPreference delete = new MaterialStandardPreference(context);
-                delete.setTitle(R.string.deleteAccount);
-                delete.setIcon(R.drawable.baseline_delete_forever_24);
-                delete.setOnClickListener(v -> {
-                    MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(requireContext());
-                    dialog.setTitle(R.string.deleteAccount).setMessage(Html.fromHtml(getString(R.string.deleteAccount_confirmation)))
-                            .setNegativeButton(android.R.string.no, null)
-                            .setPositiveButton(android.R.string.yes, (d, which) -> {
-                                showProgress(R.string.loading);
-                                OverloadedApi.get().deleteAccount()
-                                        .addOnSuccessListener(aVoid -> {
-                                            dismissDialog();
-                                            showToast(Toaster.build().message(R.string.accountDeleted));
-                                            onBackPressed();
-                                        })
-                                        .addOnFailureListener(ex -> {
-                                            Log.e(TAG, "Failed deleting account.", ex);
-                                            dismissDialog();
-                                            showToast(Toaster.build().message(R.string.failedDeletingAccount));
-                                        });
-                            });
-
-                    showDialog(dialog);
-                });
-                addPreference(delete);
-            } else {
-                MaterialStandardPreference login = new MaterialStandardPreference(context);
-                login.setTitle(R.string.subscribe);
-                login.setSummary(R.string.getOverloadedNow_desc);
-                login.setOnClickListener(v -> OverloadedSubDialog.get().show(getChildFragmentManager(), null));
-                addPreference(login);
-            }
-        }
-
-        @Override
-        public int getTitleRes() {
-            return R.string.overloaded;
         }
     }
 

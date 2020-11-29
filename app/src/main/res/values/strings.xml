@@ -436,4 +436,11 @@
     <string name="customDecksSupported">Custom decks are supported.</string>
     <string name="profileImage_message">You can upload your profile picture here: square images will appear better. GIFs are also supported.</string>
     <string name="usernameInput_lockedOverloaded">This is your username. To change it, logout from Overloaded.</string>
+    <string name="profileImage">Profile image</string>
+    <string name="removeProfileImage">Remove profile image</string>
+    <string name="uploadProfileImage">Upload profile image</string>
+    <string name="editProfileImage">Edit profile image</string>
+    <string name="changeProfileImage">Change profile image</string>
+    <string name="failedRemovingProfileImage">Failed removing the profile image!</string>
+    <string name="profileImageRemoved">Profile image removed!</string>
 </resources>

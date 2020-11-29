@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.main;
+package com.gianlu.pretendyourexyzzy.main.settings;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -30,6 +30,7 @@ import com.gianlu.pretendyourexyzzy.api.models.Name;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewPlayersSettingsBinding;
 import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
+import com.gianlu.pretendyourexyzzy.main.NewSettingsFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
