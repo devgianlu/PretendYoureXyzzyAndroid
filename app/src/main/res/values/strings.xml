@@ -2,7 +2,7 @@
     <!-- Game messages -->
     <string name="game_spectator">You\'re a spectator. Just watch!</string>
     <string name="game_youJudge">You\'re the Card Czar! Waiting for other players…</string>
-    <string name="game_selectWinningCard">Select the winning card(s):</string>
+    <string name="game_selectWinningCard">You\'re the Card Czar! Select the winner.</string>
     <string name="game_youRoundWinner_long">You won this round! A new round will begin shortly…</string>
     <string name="game_youRoundWinner_short">You won this round!</string>
     <string name="game_youGameHost">You\'re the game host! Start the game when you\'re ready.</string>
@@ -11,9 +11,9 @@
     <string name="game_isJudging">%s is judging…</string>
     <string name="game_waitingForPlayers">Waiting for other players…</string>
     <string name="game_playerSkipped">%s has been skipped.</string>
-    <string name="game_pickCards">Select %d card(s) to play. Your hand:</string>
+    <string name="game_pickCards">Select %s to play.</string>
     <string name="game_judgeSkipped">Judge %s has been skipped.</string>
-    <string name="game_notYourTurn">Not your turn! If you think that\'s wrong, refresh from the menu.</string>
+    <string name="game_notYourTurn">Not your turn!</string>
     <string name="game_playerKickedIdle">%s has been kicked for being idle.</string>
     <string name="game_judgeLeft_long">Judge %s left. A new round will begin shortly.</string>
     <string name="game_judgeLeft_short">Judge %s left.</string>
@@ -23,6 +23,11 @@
     <string name="game_gameWinner_short">%s won the game!</string>
     <string name="game_youGameWinner_long">You won the game! Waiting for the host to start a new game…</string>
     <string name="game_youGameWinner_short">You won the game!</string>
+    <plurals name="game_cards">
+        <item quantity="one">one card</item>
+        <item quantity="two">two cards</item>
+        <item quantity="other">%d cards</item>
+    </plurals>
 
     <!-- Tutorial messages -->
     <string name="tutorial_firstTitle">Welcome to Pretend You\'re Xyzzy</string>
@@ -358,4 +363,5 @@
     <string name="changeProfileImage">Change profile image</string>
     <string name="failedRemovingProfileImage">Failed removing the profile image!</string>
     <string name="profileImageRemoved">Profile image removed!</string>
+    <string name="wrongGamePassword">Wrong game password!</string>
 </resources>

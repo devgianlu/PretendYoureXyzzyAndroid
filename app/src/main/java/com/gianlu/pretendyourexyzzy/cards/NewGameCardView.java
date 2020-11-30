@@ -64,6 +64,9 @@ public final class NewGameCardView extends CardView {
     }
 
     public void setLeftAction(@DrawableRes int iconRes, @Nullable OnClickListener listener) {
+        if (card instanceof UnknownCard)
+            return;
+
         binding.cardItemActionLeft.setVisibility(VISIBLE);
         binding.cardItemActionLeft.setImageResource(iconRes);
         binding.cardItemActionLeft.setOnClickListener(listener);
@@ -75,6 +78,9 @@ public final class NewGameCardView extends CardView {
     }
 
     public void setRightAction(@DrawableRes int iconRes, @Nullable OnClickListener listener) {
+        if (card instanceof UnknownCard)
+            return;
+
         binding.cardItemActionRight.setVisibility(VISIBLE);
         binding.cardItemActionRight.setImageResource(iconRes);
         binding.cardItemActionRight.setOnClickListener(listener);

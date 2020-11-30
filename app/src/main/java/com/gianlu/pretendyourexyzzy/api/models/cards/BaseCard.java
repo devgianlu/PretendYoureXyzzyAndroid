@@ -1,32 +1,44 @@
 package com.gianlu.pretendyourexyzzy.api.models.cards;
 
-import android.util.Log;
+import android.text.Html;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class BaseCard implements Serializable {
     private static final Pattern HTML_IMAGE_PATTERN = Pattern.compile("^<img.+src='(.*?)'.+/>$");
-    private static final String TAG = BaseCard.class.getSimpleName();
+    private static final Pattern HTML_UNESCAPE_PATTERN = Pattern.compile("&(.+?);");
     private transient String imageUrl = null;
+    private transient String textUnescaped = null;
+
+    @NotNull
+    private static String customUnescape(@NotNull String text) {
+        Matcher matcher = HTML_UNESCAPE_PATTERN.matcher(text);
+        if (matcher.find()) {
+            StringBuffer sb = new StringBuffer();
+            do {
+                matcher.appendReplacement(sb, Html.fromHtml(matcher.group()).toString());
+            } while (matcher.find());
+            matcher.appendTail(sb);
+            return sb.toString();
+        } else {
+            return text;
+        }
+    }
 
     @NonNull
     public abstract String text();
 
     @NonNull
     public final String textUnescaped() {
-        try {
-            return URLDecoder.decode(text(), "UTF-8");
-        } catch (UnsupportedEncodingException | IllegalArgumentException ex) {
-            Log.e(TAG, "Failed unescaping text: " + text(), ex);
-            return text();
-        }
+        if (textUnescaped == null) textUnescaped = customUnescape(text());
+        return textUnescaped;
     }
 
     @Nullable

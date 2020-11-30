@@ -35,7 +35,6 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -254,7 +253,8 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
                 break;
             case PLAYING:
                 BaseCard bc = ui.blackCard();
-                if (bc != null) event(UiEvent.PICK_CARDS, bc.numPick());
+                if (bc != null)
+                    event(UiEvent.PICK_CARDS, context.getResources().getQuantityString(R.plurals.game_cards, bc.numPick(), bc.numPick()));
                 ui.showHand(true);
                 break;
             case WINNER:
@@ -486,16 +486,6 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
     @NonNull
     public List<GameInfo.Player> players() {
         return Collections.unmodifiableList(gameData.players);
-    }
-
-    @NonNull
-    public Collection<String> spectators() {
-        return Collections.unmodifiableCollection(gameData.spectators);
-    }
-
-    @Nullable
-    public Game.Options gameOptions() {
-        return gameData.options;
     }
 
     @NonNull

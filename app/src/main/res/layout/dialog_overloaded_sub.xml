@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -58,55 +59,68 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center_vertical"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            tools:ignore="NestedWeights">
 
-            <TextView
-                style="@style/OverloadedFeatureStyle"
+            <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:text="@string/overloadedFeature_profilePicture" />
+                tools:ignore="UselessParent">
 
-            <TextView
-                style="@style/OverloadedFeatureStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:text="@string/overloadedFeature_customDecks" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-            <TextView
-                style="@style/OverloadedFeatureStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:text="@string/overloadedFeature_friendsChat" />
+                    <TextView
+                        style="@style/OverloadedFeatureStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="center_vertical"
+                        android:text="@string/overloadedFeature_profilePicture" />
 
-            <TextView
-                style="@style/OverloadedFeatureStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:text="@string/overloadedFeature_uploadDeckImage" />
+                    <TextView
+                        style="@style/OverloadedFeatureStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="center_vertical"
+                        android:text="@string/overloadedFeature_customDecks" />
 
-            <TextView
-                style="@style/OverloadedFeatureStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:text="@string/overloadedFeature_stats" />
+                    <TextView
+                        style="@style/OverloadedFeatureStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="center_vertical"
+                        android:text="@string/overloadedFeature_friendsChat" />
 
-            <TextView
-                style="@style/OverloadedFeatureStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:text="@string/overloadedFeature_sync" />
+                    <TextView
+                        style="@style/OverloadedFeatureStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="center_vertical"
+                        android:text="@string/overloadedFeature_uploadDeckImage" />
+
+                    <TextView
+                        style="@style/OverloadedFeatureStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="center_vertical"
+                        android:text="@string/overloadedFeature_stats" />
+
+                    <TextView
+                        style="@style/OverloadedFeatureStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="center_vertical"
+                        android:text="@string/overloadedFeature_sync" />
+                </LinearLayout>
+            </ScrollView>
         </LinearLayout>
 
         <LinearLayout
@@ -198,9 +212,9 @@
             android:textSize="18sp" />
 
         <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/overloadedSubDialog_usernameLoading"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/overloadedSubDialog_usernameLoading"
             android:layout_marginStart="24dp"
             android:layout_marginEnd="24dp">
 

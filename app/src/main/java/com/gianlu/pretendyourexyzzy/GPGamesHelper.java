@@ -51,25 +51,32 @@ public final class GPGamesHelper {
     private static EventsClient eventsClient;
     private static AchievementsClient achievementsClient;
     private static LeaderboardsClient leaderboardsClient;
+    private static boolean unrecoverableError = false;
 
     private GPGamesHelper() {
     }
 
-    @Contract("null -> false")
+    @Contract("_, null -> false")
     private static boolean checkAccount(@Nullable GoogleSignInAccount account) {
-        if (account == null)
+        if (account == null) {
+            unrecoverableError = true;
             return false;
-
-        for (Scope scope : account.getGrantedScopes()) {
-            if (scope.getScopeUri().equals("https://www.googleapis.com/auth/games_lite"))
-                return true;
         }
 
+        for (Scope scope : account.getGrantedScopes()) {
+            if (scope.getScopeUri().equals("https://www.googleapis.com/auth/games_lite")) {
+                unrecoverableError = false;
+                return true;
+            }
+        }
+
+        unrecoverableError = true;
         return false;
     }
 
     @Nullable
     private static EventsClient eventsClient(@NonNull Context context) {
+        if (unrecoverableError) return null;
         if (eventsClient != null) return eventsClient;
 
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
@@ -79,6 +86,7 @@ public final class GPGamesHelper {
 
     @Nullable
     private static AchievementsClient achievementsClient(@NonNull Context context) {
+        if (unrecoverableError) return null;
         if (achievementsClient != null) return achievementsClient;
 
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
@@ -90,6 +98,7 @@ public final class GPGamesHelper {
 
     @Nullable
     private static LeaderboardsClient leaderboardsClient(@NonNull Context context) {
+        if (unrecoverableError) return null;
         if (leaderboardsClient != null) return leaderboardsClient;
 
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
@@ -100,10 +109,10 @@ public final class GPGamesHelper {
     }
 
     public static boolean hasGooglePlayGames(@NotNull Context context) {
-        return checkAccount(GoogleSignIn.getLastSignedInAccount(context));
+        return !unrecoverableError && checkAccount(GoogleSignIn.getLastSignedInAccount(context));
     }
 
-    public static void setPopupView(@NonNull Activity activity, @MagicConstant(flagsFromClass = Gravity.class) int gravity) {
+    public static void setPopupView(@NonNull Activity activity, @MagicConstant(flagsFromClass = Gravity.class) int gravity) { // TODO
         View root = activity.getWindow().getDecorView().findViewById(android.R.id.content);
         if (root != null)
             GPGamesHelper.setPopupView(activity, root, gravity);
@@ -173,21 +182,21 @@ public final class GPGamesHelper {
     public static Task<AchievementBuffer> loadAchievements(@NonNull Context context) {
         AchievementsClient client = achievementsClient(context);
         if (client == null) return Tasks.forException(new Exception("Failed initializing client!"));
-        return client.load(false).continueWith(task -> task.getResult().get());
+        else return client.load(false).continueWith(task -> task.getResult().get());
     }
 
     @NonNull
     public static Task<Intent> loadAchievementsIntent(@NonNull Context context) {
         AchievementsClient client = achievementsClient(context);
         if (client == null) return Tasks.forException(new Exception("Failed initializing client!"));
-        return client.getAchievementsIntent();
+        else return client.getAchievementsIntent();
     }
 
     @NotNull
     public static Task<EventBuffer> loadEvents(@NonNull Context context) {
         EventsClient client = eventsClient(context);
         if (client == null) return Tasks.forException(new Exception("Failed initializing client!"));
-        return client.load(false).continueWith(task -> task.getResult().get());
+        else return client.load(false).continueWith(task -> task.getResult().get());
     }
 
     public static void setEventCount(@Nullable Long value, @NonNull TextView view) {
@@ -201,11 +210,5 @@ public final class GPGamesHelper {
             else formattedValue = String.format(Locale.getDefault(), "%.2fK", value / 1000f);
             view.setText(formattedValue);
         }
-    }
-
-    public interface LoadIterable<T> {
-        void onLoaded(@NonNull Iterable<T> result);
-
-        void onFailed(@NonNull Exception ex);
     }
 }

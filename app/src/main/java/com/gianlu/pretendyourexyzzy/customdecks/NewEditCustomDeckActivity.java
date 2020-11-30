@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
@@ -432,6 +433,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                     }
                 }
             });
+            CommonUtils.getEditText(binding.editCustomDeckInfoWatermark).setFilters(new InputFilter[]{new InputFilter.AllCaps()});
             CommonUtils.getEditText(binding.editCustomDeckInfoDesc).addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {

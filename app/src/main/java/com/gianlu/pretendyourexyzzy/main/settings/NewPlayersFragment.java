@@ -89,7 +89,7 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
             if (pyx == null) return;
 
             setPlayersStatus(true, false);
-            pyx.request(PyxRequests.getNamesList())
+            loadOverloadedUsers().continueWithTask(task -> pyx.request(PyxRequests.getNamesList()))
                     .addOnSuccessListener(this::playersLoaded)
                     .addOnFailureListener(this::failedLoadingPlayers);
 

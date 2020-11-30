@@ -123,17 +123,14 @@
                 <com.gianlu.commonutils.misc.SuperTextView
                     android:id="@+id/gameActivity_blackCardText"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
                     android:fontFamily="@font/roboto_regular"
                     android:textColor="@color/white"
                     android:textSize="20sp"
                     app:autoSizeMaxTextSize="20sp"
-                    app:autoSizeMinTextSize="12sp" />
-
-                <Space
-                    android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
+                    app:autoSizeMinTextSize="12sp"
+                    app:autoSizeTextType="uniform" />
 
                 <LinearLayout
                     android:id="@+id/gameActivity_blackCardInfo"

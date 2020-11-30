@@ -12,7 +12,6 @@
     <string name="game_isJudging">%s is aan het beoordelen…</string>
     <string name="game_waitingForPlayers">Wachten op andere spelers…</string>
     <string name="game_playerSkipped">%s is overgeslagen.</string>
-    <string name="game_pickCards">Selecteer %d kaart(en) om te spelen. Je hand:</string>
     <string name="game_judgeSkipped">Beoordelaar %s is overgeslagen.</string>
     <string name="game_notYourTurn">Niet jouw beurt! Als je denkt dat dat verkeerd is, ververs dan vanuit het menu.</string>
     <string name="game_playerKickedIdle">%s is verwijderd vanwege inactiviteit.</string>

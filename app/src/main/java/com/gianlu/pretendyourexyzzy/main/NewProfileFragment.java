@@ -224,8 +224,10 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
         //region Achievements
         if (GPGamesHelper.hasGooglePlayGames(requireContext())) {
+            binding.profileFragmentStats.setVisibility(View.GONE);
             GPGamesHelper.loadEvents(requireContext())
                     .addOnSuccessListener(events -> {
+                        binding.profileFragmentStats.setVisibility(View.VISIBLE);
                         for (Event event : events) {
                             if (GPGamesHelper.EVENT_CARDS_PLAYED.equals(event.getEventId())) {
                                 setEventCount(event.getValue(), binding.profileFragmentCardsPlayed);
@@ -239,7 +241,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                         events.release();
                     })
                     .addOnFailureListener(ex -> {
-                        Log.e(TAG, "Failed loading stats", ex);
+                        Log.e(TAG, "Failed loading stats.", ex);
                         binding.profileFragmentStats.setVisibility(View.GONE);
                     });
 
@@ -293,6 +295,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                     });
         } else {
             binding.profileFragmentStats.setVisibility(View.GONE);
+            binding.profileFragmentAchievementsError.setVisibility(View.GONE);
             binding.profileFragmentAchievementsNotEnabled.setVisibility(View.VISIBLE);
         }
         //endregion

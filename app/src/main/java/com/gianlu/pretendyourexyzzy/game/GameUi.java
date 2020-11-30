@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -224,7 +225,9 @@ public class GameUi {
         binding.gameActivityWhiteCards.post(() -> {
             int margin;
             if (adapter.getItemCount() > 0)
-                margin = binding.gameActivityWhiteCards.getHeight() - ((FrameLayout.LayoutParams) binding.gameActivityBlackCard.getLayoutParams()).bottomMargin;
+                margin = binding.gameActivityWhiteCards.getHeight()
+                        - ((FrameLayout.LayoutParams) binding.gameActivityBlackCard.getLayoutParams()).bottomMargin
+                        - (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, context.getResources().getDisplayMetrics());
             else
                 margin = 0;
 

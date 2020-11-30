@@ -9,17 +9,32 @@
     android:paddingTop="4dp"
     android:paddingBottom="4dp">
 
-    <com.facebook.shimmer.ShimmerFrameLayout
-        android:id="@+id/serverItem_featuresLoading"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_marginEnd="8dp">
+    <LinearLayout
+        android:layout_width="48dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical">
 
-        <com.gianlu.pretendyourexyzzy.ServerFeaturesView
-            android:id="@+id/serverItem_features"
-            android:layout_width="56dp"
-            android:layout_height="56dp" />
-    </com.facebook.shimmer.ShimmerFrameLayout>
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/serverItem_featuresLoading"
+            android:layout_width="48dp"
+            android:layout_height="48dp">
+
+            <com.gianlu.pretendyourexyzzy.ServerFeaturesView
+                android:id="@+id/serverItem_features"
+                android:layout_width="48dp"
+                android:layout_height="48dp" />
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
+        <TextView
+            android:id="@+id/serverItem_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:fontFamily="@font/roboto_regular"
+            android:textAlignment="center"
+            android:textSize="12sp" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -32,7 +47,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="marquee"
             android:maxLines="2"
-            android:minHeight="48dp"
+            android:minHeight="42dp"
             android:textAppearance="@style/TextAppearance.SemiBold"
             android:textColor="@color/appColor_600"
             android:textSize="18sp" />
@@ -57,14 +72,6 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/roboto_regular"
                 android:paddingEnd="8dp"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/serverItem_status"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/roboto_regular"
-                android:textAlignment="viewEnd"
                 android:textSize="12sp" />
         </LinearLayout>
 

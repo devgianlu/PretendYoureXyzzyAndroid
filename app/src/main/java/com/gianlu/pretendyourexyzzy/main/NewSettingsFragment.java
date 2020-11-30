@@ -261,6 +261,7 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
         }
 
         public final void clearPreferences() {
+            lastCategory = null;
             binding.settingsPrefsFragmentScreen.useLinearLayout();
         }
 
@@ -273,16 +274,20 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
             binding.settingsPrefsFragmentScreen.setVisibilityController(controller, dependent, showWhenChecked);
         }
 
+        @Override
+        public void onResume() {
+            super.onResume();
+            rebuildPreferences();
+        }
+
         @NonNull
         @Override
         public final View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
             binding = FragmentNewPrefsSettingsBinding.inflate(inflater, container, false);
-            binding.settingsPrefsFragmentScreen.useLinearLayout();
             binding.settingsPrefsFragmentTitle.setText(getTitleRes());
             binding.settingsPrefsFragmentBack.setOnClickListener((v) -> goBack());
 
             storageModule = MaterialPreferences.getStorageModule(requireContext());
-            buildPreferences(requireContext());
             return binding.getRoot();
         }
 

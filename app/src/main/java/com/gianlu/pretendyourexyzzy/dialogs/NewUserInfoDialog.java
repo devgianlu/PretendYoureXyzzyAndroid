@@ -1,7 +1,6 @@
 package com.gianlu.pretendyourexyzzy.dialogs;
 
 import android.app.Dialog;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
@@ -107,14 +106,7 @@ public final class NewUserInfoDialog extends DialogFragment {
         }
 
         binding.userInfoDialogUsername.setText(username);
-
-        if (OverloadedApi.get().isOverloadedUserOnServerCached(username)) {
-            binding.userInfoDialogProfileImage.setImageTintList(null);
-            GlideUtils.loadProfileImage(binding.userInfoDialogProfileImage, OverloadedUtils.getProfileImageUrl(username));
-        } else {
-            binding.userInfoDialogProfileImage.setImageTintList(ColorStateList.valueOf(Color.rgb(161, 161, 161)));
-            binding.userInfoDialogProfileImage.setBackgroundResource(R.drawable.ic_person_circle_900_96);
-        }
+        GlideUtils.loadProfileImage(binding.userInfoDialogProfileImage, username);
 
         boolean whois = requireArguments().getBoolean("whois");
         boolean overloaded = requireArguments().getBoolean("overloaded");

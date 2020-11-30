@@ -36,9 +36,7 @@
             <ImageView
                 android:id="@+id/userInfoDialog_profileImage"
                 android:layout_width="96dp"
-                android:layout_height="96dp"
-                android:src="@drawable/ic_person_circle_900_96"
-                app:tint="#c1c1c1" />
+                android:layout_height="96dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"

@@ -12,7 +12,6 @@
     <string name="game_isJudging">%s sta scegliendo…</string>
     <string name="game_waitingForPlayers">In attesa degli altri giocatori…</string>
     <string name="game_playerSkipped">%s è stato saltato.</string>
-    <string name="game_pickCards">Seleziona %d carta/e da giocare. La tue carte:</string>
     <string name="game_judgeSkipped">Il giudice %s è stato saltato.</string>
     <string name="game_notYourTurn">Non tocca a te! Se pensi che sia un errore, aggiorna il gioco dal menu.</string>
     <string name="game_playerKickedIdle">%s è stato cacciato dal gioco per inattività.</string>

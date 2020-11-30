@@ -5,9 +5,9 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -23,9 +23,9 @@ public final class NavigationView extends View {
     private final Paint fgPaint;
     private final Paint linePaint;
     private final Paint cardPaint;
-    private final int mRadiusAdd = 8;
-    private final int mCardWidth = 42;
-    private final int mCardHeight = 58;
+    private final int mRadiusAdd;
+    private final int mCardWidth;
+    private final int mCardHeight;
     private int mSelected = 0;
     private int mRadius;
     private OnSelectionChanged mSelectionChangedListener = null;
@@ -42,6 +42,11 @@ public final class NavigationView extends View {
         super(context, attrs, defStyleAttr);
         setWillNotDraw(false);
 
+        float strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3.8f, getResources().getDisplayMetrics());
+        mCardWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 19, getResources().getDisplayMetrics());
+        mCardHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 26, getResources().getDisplayMetrics());
+        mRadiusAdd = (int) (strokeWidth * 0.95);
+
         bgPaint = new Paint();
         bgPaint.setAntiAlias(true);
 
@@ -50,12 +55,12 @@ public final class NavigationView extends View {
 
         cardPaint = new Paint();
         cardPaint.setAntiAlias(true);
-        cardPaint.setShadowLayer(4, -2, 2, Color.argb(64, 0, 0, 0));
+        cardPaint.setShadowLayer(strokeWidth, -strokeWidth / 2f, strokeWidth / 2f, Color.argb(64, 0, 0, 0));
 
         linePaint = new Paint();
         linePaint.setAntiAlias(true);
         linePaint.setStrokeCap(Paint.Cap.ROUND);
-        linePaint.setStrokeWidth(12);
+        linePaint.setStrokeWidth(strokeWidth);
         linePaint.setStyle(Paint.Style.STROKE);
 
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.NavigationView, defStyleAttr, 0);
@@ -99,8 +104,8 @@ public final class NavigationView extends View {
 
         // Draw dashed line
         float lineY = getHeight() / 2f;
-        canvas.drawLine((mRadius + mRadiusAdd) * 2, lineY, getWidth() / 2f - mRadius - mRadiusAdd, lineY, linePaint);
-        canvas.drawLine(getWidth() / 2f + mRadius + mRadiusAdd, lineY, getWidth() - (mRadius - mRadiusAdd) * 2, lineY, linePaint);
+        canvas.drawLine(mRadius * 2, lineY, getWidth() / 2f - mRadius, lineY, linePaint);
+        canvas.drawLine(getWidth() / 2f + mRadius, lineY, getWidth() - mRadius * 2, lineY, linePaint);
 
         // Draw selected circle
         drawCircle(canvas, fgPaint, mSelected, mRadiusAdd);
@@ -132,20 +137,7 @@ public final class NavigationView extends View {
 
     private void drawCard(@NonNull Canvas canvas, float left, float top, @ColorInt int color) {
         cardPaint.setColor(color);
-        canvas.drawRoundRect(left, top, left + mCardWidth, top + mCardHeight, 4, 4, cardPaint);
-    }
-
-    @SuppressLint("DrawAllocation")
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-        int width = getMeasuredWidth();
-        width -= mRadius * 2 * 3;
-        if (width > 0) {
-            int dottedSpace = width / 2;
-            linePaint.setPathEffect(new DashPathEffect(new float[]{dottedSpace / 10f, dottedSpace / 15f}, 0));
-        }
+        canvas.drawRoundRect(left, top, left + mCardWidth, top + mCardHeight, 5, 5, cardPaint);
     }
 
     @SuppressLint("ClickableViewAccessibility")

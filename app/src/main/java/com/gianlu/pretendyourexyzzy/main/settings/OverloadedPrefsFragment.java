@@ -13,6 +13,7 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
+import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.dialogs.OverloadedSubDialog;
 import com.gianlu.pretendyourexyzzy.main.NewSettingsFragment;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedChooseProviderDialog;
@@ -170,6 +171,7 @@ public class OverloadedPrefsFragment extends NewSettingsFragment.PrefsChildFragm
         logout.setIcon(R.drawable.outline_exit_to_app_24);
         logout.setOnClickListener(v -> {
             OverloadedApi.get().logout();
+            CustomDecksDatabase.get(requireContext()).clearStarredDecks();
             onBackPressed();
         });
         addPreference(logout);

@@ -87,6 +87,7 @@ public class NewMainActivity extends ActivityWithDialog {
                 getSupportFragmentManager().beginTransaction()
                         .hide(gamesFragment).hide(settingsFragment)
                         .show(profileFragment)
+                        .runOnCommit(() -> profileFragment.onResume())
                         .commitNow();
                 return true;
             } else {

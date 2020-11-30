@@ -12,7 +12,6 @@
     <string name="game_isJudging">%s está julgando…</string>
     <string name="game_waitingForPlayers">Esperando outros jogadores…</string>
     <string name="game_playerSkipped">%s foi pulado.</string>
-    <string name="game_pickCards">Selecione %d cartão(ões) para jogar. Sua mão:</string>
     <string name="game_judgeSkipped">Juiz %s foi pulado.</string>
     <string name="game_notYourTurn">Não é sua vez. Se você que acha que ocorreu um erro, atualize no menu.</string>
     <string name="game_playerKickedIdle">%s foi expulso por estar inativo.</string>

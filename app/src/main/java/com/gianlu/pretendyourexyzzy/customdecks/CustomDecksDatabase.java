@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
+import com.gianlu.pretendyourexyzzy.api.crcast.CrCastApi;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
@@ -211,17 +212,22 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             sendCustomDeckPatch(-1, new FixedRemoteId(deck.remoteId), CustomDecksPatchOp.REM_DECK, null, null, null, null);
     }
 
+    /**
+     * Get all decks. This method MUST be used only to display UI because it filters decks:
+     * - Overloaded starred decks won't be displayed if Overloaded isn't signed in.
+     * - CrCast decks won't be displayed if CrCast isn't signed in.
+     *
+     * @return A safely modifiable list of decks
+     */
     @NonNull
     public List<BasicCustomDeck> getAllDecks() {
-        List<BasicCustomDeck> decks = new LinkedList<>();
-        decks.addAll(getDecks());
-        decks.addAll(getStarredDecks(false));
-        decks.addAll(getCachedCrCastDecks());
+        List<BasicCustomDeck> decks = new LinkedList<>(getDecks());
+        if (OverloadedUtils.isSignedIn()) decks.addAll(getStarredDecks(false));
+        if (CrCastApi.hasCredentials()) decks.addAll(getCachedCrCastDecks());
         return decks;
     }
 
     //region CrCast decks
-
     @NonNull
     public List<CrCastDeck> getCachedCrCastDecks() {
         SQLiteDatabase db = getReadableDatabase();
@@ -305,11 +311,9 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             db.endTransaction();
         }
     }
-
     //endregion
 
     //region Starred decks
-
     @NonNull
     public List<StarredDeck> getStarredDecks(boolean leftoverOnly) {
         SQLiteDatabase db = getReadableDatabase();
@@ -318,6 +322,18 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             List<StarredDeck> list = new ArrayList<>(cursor.getCount());
             while (cursor.moveToNext()) list.add(new StarredDeck(cursor));
             return list;
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public void clearStarredDecks() {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            db.execSQL("DELETE FROM starred_decks");
+            db.setTransactionSuccessful();
+            setStarredCustomDecksRevision(0);
         } finally {
             db.endTransaction();
         }
@@ -451,11 +467,9 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
         return new UpdatePair(array, localIds);
     }
-
     //endregion
 
     //region Decks
-
     @NonNull
     public List<CustomDeck> getDecks() {
         SQLiteDatabase db = getReadableDatabase();
@@ -639,11 +653,9 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             db.endTransaction();
         }
     }
-
     //endregion
 
     //region Cards
-
     @NonNull
     public List<CustomCard> getCards(int deckId) {
         CustomDeck deck = getDeck(deckId);
@@ -826,11 +838,9 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         sendCustomDeckPatch(deckId, new CustomDeckRemoteId(deckId), CustomDecksPatchOp.ADD_EDIT_CARD, null, card, new CustomDeckCardRemoteId(card.id), null);
         return card;
     }
-
     //endregion
 
     //region Remote IDs
-
     public void resetRemoteIds(int deckId) {
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
@@ -928,7 +938,6 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             db.endTransaction();
         }
     }
-
     //endregion
 
     public static class UpdatePair {
