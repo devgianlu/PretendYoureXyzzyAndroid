@@ -36,7 +36,7 @@ public class NewStarredCardsAdapter extends RecyclerView.Adapter<NewStarredCards
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         BaseCard card = list.get(position);
-        holder.binding.starredCardItemText.setHtml(card.textUnescaped());
+        holder.binding.starredCardItemText.setText(card.textUnescaped());
 
         if (listener != null && actionRes != 0) {
             holder.binding.starredCardItemAction.setVisibility(View.VISIBLE);

@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.api.models.cards;
 
 import android.text.Html;
+import android.text.Spanned;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,10 +16,10 @@ public abstract class BaseCard implements Serializable {
     private static final Pattern HTML_IMAGE_PATTERN = Pattern.compile("^<img.+src='(.*?)'.+/>$");
     private static final Pattern HTML_UNESCAPE_PATTERN = Pattern.compile("&(.+?);");
     private transient String imageUrl = null;
-    private transient String textUnescaped = null;
+    private transient Spanned textUnescaped = null;
 
     @NotNull
-    private static String customUnescape(@NotNull String text) {
+    private static String unescapeEntities(@NotNull String text) {
         Matcher matcher = HTML_UNESCAPE_PATTERN.matcher(text);
         if (matcher.find()) {
             StringBuffer sb = new StringBuffer();
@@ -36,8 +37,8 @@ public abstract class BaseCard implements Serializable {
     public abstract String text();
 
     @NonNull
-    public final String textUnescaped() {
-        if (textUnescaped == null) textUnescaped = customUnescape(text());
+    public final Spanned textUnescaped() {
+        if (textUnescaped == null) textUnescaped = Html.fromHtml(unescapeEntities(text()));
         return textUnescaped;
     }
 

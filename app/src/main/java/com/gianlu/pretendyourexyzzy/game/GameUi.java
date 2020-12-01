@@ -127,7 +127,7 @@ public class GameUi {
         this.blackCard = card;
 
         if (card != null) {
-            binding.gameActivityBlackCardText.setHtml(card.textUnescaped());
+            binding.gameActivityBlackCardText.setText(card.textUnescaped());
             binding.gameActivityBlackCardPick.setHtml(R.string.numPick, card.numPick());
             binding.gameActivityBlackCardWatermark.setText(card.watermark());
         } else {
@@ -197,9 +197,9 @@ public class GameUi {
 
     public void addTable(@NotNull GameCard card, BaseCard blackCard) {
         if (blackCard != null && blackCard.numPick() > 1) {
-            List<BaseCard> cards = tableAdapter.findAndRemoveFaceUpCards();
+            CardsGroup cards = CardsGroup.from(tableAdapter.findAndRemoveFaceUpCards());
             cards.add(card);
-            tableAdapter.addSingles(cards);
+            tableAdapter.addGroup(cards);
         } else {
             tableAdapter.addSingles(Collections.singletonList(card));
         }
