@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.metrics;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +22,7 @@ import com.gianlu.pretendyourexyzzy.api.models.metrics.GameHistory;
 public class GameHistoryFragment extends FragmentWithDialog {
     private static final String TAG = GameHistoryFragment.class.getSimpleName();
     private RecyclerMessageView rmv;
+    private RoundsAdapter.Listener listener;
 
     @NonNull
     public static GameHistoryFragment get(@NonNull String id) {
@@ -67,21 +69,31 @@ public class GameHistoryFragment extends FragmentWithDialog {
             }
 
             pyx.getGameHistory(id)
-                    .addOnSuccessListener(requireActivity(), this::loaded)
+                    .addOnSuccessListener(requireActivity(), result -> rmv.loadListData(new RoundsAdapter(requireContext(), result, listener)))
                     .addOnFailureListener(requireActivity(), ex -> {
                         Log.e(TAG, "Failed loading history.", ex);
                         rmv.showError(R.string.failedLoading_reason, ex.getMessage());
                     });
         } else {
-            loaded(history);
+            rmv.loadListData(new RoundsAdapter(requireContext(), history, listener));
         }
 
         return rmv;
     }
 
-    private void loaded(@NonNull GameHistory result) {
-        if (!isAdded()) return;
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
 
-        rmv.loadListData(new RoundsAdapter(requireContext(), result, (RoundsAdapter.Listener) getParentFragment()));
+        if (context instanceof RoundsAdapter.Listener)
+            listener = (RoundsAdapter.Listener) context;
+        if (getParentFragment() instanceof RoundsAdapter.Listener)
+            listener = (RoundsAdapter.Listener) getParentFragment();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
     }
 }

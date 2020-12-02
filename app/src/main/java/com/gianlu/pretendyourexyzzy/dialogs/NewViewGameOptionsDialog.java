@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.text.Html;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,6 +28,7 @@ import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.gianlu.pretendyourexyzzy.customdecks.NewEditCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.customdecks.NewViewCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.databinding.DialogNewViewGameOptionsBinding;
+import com.gianlu.pretendyourexyzzy.databinding.ItemDeckBinding;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import org.jetbrains.annotations.NotNull;
@@ -123,21 +123,16 @@ public final class NewViewGameOptionsDialog extends DialogFragment {
             binding.viewGameOptionsCustomDecksCount.setText(String.valueOf(customDecks.size()));
 
             for (Deck deck : customDecks) {
-                TextView view = new TextView(requireContext());
-                view.setTextAppearance(requireContext(), R.style.TextAppearance_Regular);
-                view.setTextColor(Color.rgb(134, 134, 134));
-                view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-                view.setText(Html.fromHtml(String.format("• %s (<i>%s</i>)", deck.name, deck.watermark)));
-                binding.viewGameOptionsCustomDecks.addView(view);
-
-                // TODO: View deck?
+                ItemDeckBinding item = ItemDeckBinding.inflate(getLayoutInflater(), binding.viewGameOptionsCustomDecks, true);
+                item.deckItemText.setHtml(String.format("• %s (<i>%s</i>)", deck.name, deck.watermark));
+                item.deckItemView.setOnClickListener(v -> viewDeck(deck));
             }
         }
 
         return binding.getRoot();
     }
 
-    public void onDeckSelected(@NonNull Deck deck) {
+    private void viewDeck(@NonNull Deck deck) {
         CustomDecksDatabase db = CustomDecksDatabase.get(requireContext());
 
         Intent intent = null;

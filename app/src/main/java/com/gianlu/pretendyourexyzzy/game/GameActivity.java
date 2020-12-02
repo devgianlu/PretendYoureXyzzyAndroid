@@ -27,6 +27,7 @@ import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
 import com.gianlu.pretendyourexyzzy.databinding.ActivityNewGameBinding;
 import com.gianlu.pretendyourexyzzy.dialogs.GameRoundDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.NewChatDialog;
+import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
@@ -111,7 +112,7 @@ public class GameActivity extends ActivityWithDialog implements AnotherGameManag
                 setKeepScreenOn(on);
                 return true;
             } else if (item.getItemId() == R.id.game_gameMetrics) {
-                // TODO: Show game metrics
+                startActivity(MetricsActivity.getGameIntent(this, game));
                 return true;
             } else if (item.getItemId() == R.id.game_lastRound) {
                 if (manager == null)

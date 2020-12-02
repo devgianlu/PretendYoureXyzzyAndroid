@@ -15,9 +15,7 @@
         android:layout_width="42dp"
         android:layout_height="42dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="8dp"
-        android:src="@drawable/ic_person_circle_900_96"
-        app:tint="#c1c1c1" />
+        android:layout_marginTop="8dp" />
 
     <ImageView
         android:id="@+id/friendItem_status"

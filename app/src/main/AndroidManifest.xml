@@ -55,6 +55,13 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
+        <!-- Metrics activity -->
+        <activity
+            android:name=".metrics.MetricsActivity"
+            android:configChanges="uiMode|screenSize|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+
         <!-- Tutorial activity -->
         <activity
             android:name=".activities.TutorialActivity"

@@ -122,9 +122,9 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
 
                             if (ex instanceof OverloadedServerException && (((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_DECK)
                                     || ((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NO_SUCH_USER))) {
-                                Toaster.with(NewViewCustomDeckActivity.this).message(R.string.cannotFindCustomDeck).show();
+                                Toaster.with(this).message(R.string.cannotFindCustomDeck).show();
                             } else {
-                                Toaster.with(NewViewCustomDeckActivity.this).message(R.string.failedLoading).show();
+                                Toaster.with(this).message(R.string.failedLoading).show();
                             }
 
                             onBackPressed();

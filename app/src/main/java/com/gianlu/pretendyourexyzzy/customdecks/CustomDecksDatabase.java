@@ -42,7 +42,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     private static CustomDecksDatabase instance;
 
     private CustomDecksDatabase(@Nullable Context context) {
-        super(context, "custom_decks.db", null, 12);
+        super(context, "custom_decks.db", null, 13);
     }
 
     @NonNull
@@ -63,7 +63,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     public void onCreate(@NotNull SQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS decks (id INTEGER PRIMARY KEY UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, description TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 0, remoteId INTEGER UNIQUE, lastUsed INTEGER NOT NULL DEFAULT 0)");
         db.execSQL("CREATE TABLE IF NOT EXISTS cards (id INTEGER PRIMARY KEY UNIQUE, deck_id INTEGER NOT NULL, type INTEGER NOT NULL, text TEXT NOT NULL, remoteId INTEGER UNIQUE)");
-        db.execSQL("CREATE TABLE IF NOT EXISTS starred_decks (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL, remoteId INTEGER UNIQUE, lastUsed INTEGER NOT NULL DEFAULT 0)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS starred_decks (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL, remoteId INTEGER UNIQUE, lastUsed INTEGER NOT NULL DEFAULT 0)");
         db.execSQL("CREATE TABLE IF NOT EXISTS cr_cast_decks (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER DEFAULT NULL, created INTEGER DEFAULT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL, favorite INTEGER NOT NULL DEFAULT 0)");
     }
 
@@ -99,6 +99,11 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
                 db.execSQL("INSERT INTO cr_cast_decks_tmp SELECT * FROM cr_cast_decks");
                 db.execSQL("DROP TABLE cr_cast_decks");
                 db.execSQL("ALTER TABLE cr_cast_decks_tmp RENAME TO cr_cast_decks");
+            case 13:
+                db.execSQL("CREATE TABLE starred_decks_tmp (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL, remoteId INTEGER UNIQUE, lastUsed INTEGER NOT NULL DEFAULT 0)");
+                db.execSQL("INSERT INTO starred_decks_tmp SELECT * FROM starred_decks");
+                db.execSQL("DROP TABLE starred_decks");
+                db.execSQL("ALTER TABLE starred_decks_tmp RENAME TO starred_decks");
         }
 
         Log.i(TAG, "Migrated database from " + oldVersion + " to " + newVersion);

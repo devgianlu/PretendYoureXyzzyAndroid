@@ -68,6 +68,7 @@
                 android:layout_marginBottom="8dp"
                 android:fontFamily="@font/roboto_regular"
                 android:text="@string/profileImage_message"
+                android:textAlignment="center"
                 android:textSize="10sp" />
 
             <LinearLayout

@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.metrics;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.MessageView;
 import com.gianlu.commonutils.misc.SuperTextView;
@@ -22,6 +24,12 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionHistory;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Date;
+import java.util.List;
 
 public class SessionHistoryFragment extends FragmentWithDialog {
     private static final String TAG = SessionHistoryFragment.class.getSimpleName();
@@ -34,6 +42,7 @@ public class SessionHistoryFragment extends FragmentWithDialog {
     private RecyclerView judgedRounds;
     private LinearLayout container;
     private MessageView message;
+    private Listener listener;
 
     @NonNull
     public static SessionHistoryFragment get(@NonNull String id) {
@@ -88,9 +97,7 @@ public class SessionHistoryFragment extends FragmentWithDialog {
         }
 
         pyx.getSessionHistory(id)
-                .addOnSuccessListener(requireActivity(), result -> {
-                    if (!isAdded()) return;
-
+                .addOnSuccessListener(result -> {
                     if (result.games.isEmpty() && result.judgedRounds.isEmpty() && result.playedRounds.isEmpty()) {
                         loading.setVisibility(View.GONE);
                         container.setVisibility(View.GONE);
@@ -99,14 +106,14 @@ public class SessionHistoryFragment extends FragmentWithDialog {
                         loading.setVisibility(View.GONE);
                         container.setVisibility(View.VISIBLE);
                         gamesLabel.setHtml(R.string.gamesCount, result.games.size());
-                        games.setAdapter(new GamesAdapter(requireContext(), result.games, (GamesAdapter.Listener) getParentFragment()));
+                        games.setAdapter(new GamesAdapter(result.games));
                         playedRoundsLabel.setHtml(R.string.playedRoundsCount, result.playedRounds.size());
-                        playedRounds.setAdapter(new RoundsAdapter(requireContext(), result.playedRounds, (RoundsAdapter.Listener) getParentFragment()));
+                        playedRounds.setAdapter(new RoundsAdapter(requireContext(), result.playedRounds, listener));
                         judgedRoundsLabel.setHtml(R.string.judgedRoundsCount, result.judgedRounds.size());
-                        judgedRounds.setAdapter(new RoundsAdapter(requireContext(), result.judgedRounds, (RoundsAdapter.Listener) getParentFragment()));
+                        judgedRounds.setAdapter(new RoundsAdapter(requireContext(), result.judgedRounds, listener));
                     }
                 })
-                .addOnFailureListener(requireActivity(), ex -> {
+                .addOnFailureListener(ex -> {
                     Log.e(TAG, "Failed loading history.", ex);
                     loading.setVisibility(View.GONE);
                     container.setVisibility(View.GONE);
@@ -114,5 +121,59 @@ public class SessionHistoryFragment extends FragmentWithDialog {
                 });
 
         return layout;
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        if (context instanceof Listener)
+            listener = (Listener) context;
+        if (getParentFragment() instanceof Listener)
+            listener = (Listener) getParentFragment();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
+    }
+
+    public interface Listener extends RoundsAdapter.Listener {
+        void onGameSelected(@NonNull SessionHistory.Game game);
+    }
+
+    private class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.ViewHolder> {
+        private final List<SessionHistory.Game> games;
+
+        GamesAdapter(List<SessionHistory.Game> games) {
+            this.games = games;
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new ViewHolder(parent);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            SessionHistory.Game game = games.get(position);
+            ((SuperTextView) holder.itemView).setHtml(R.string.gameStartedAt, CommonUtils.getFullVerbalDateFormatter().format(new Date(game.timestamp)));
+            holder.itemView.setOnClickListener(v -> {
+                if (listener != null) listener.onGameSelected(game);
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return games.size();
+        }
+
+        public class ViewHolder extends RecyclerView.ViewHolder {
+            public ViewHolder(@NotNull ViewGroup parent) {
+                super(getLayoutInflater().inflate(R.layout.item_metrics_game, parent, false));
+            }
+        }
     }
 }

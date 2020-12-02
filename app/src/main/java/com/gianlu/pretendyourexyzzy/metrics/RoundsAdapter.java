@@ -32,7 +32,7 @@ class RoundsAdapter extends RecyclerView.Adapter<RoundsAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        final SimpleRound round = rounds.get(position);
+        SimpleRound round = rounds.get(position);
         ((GameCardView) holder.itemView).setCard(round.blackCard);
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onRoundSelected(round);
@@ -48,8 +48,8 @@ class RoundsAdapter extends RecyclerView.Adapter<RoundsAdapter.ViewHolder> {
         void onRoundSelected(@NonNull SimpleRound round);
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        public ViewHolder(ViewGroup parent) {
+    class ViewHolder extends RecyclerView.ViewHolder {
+        ViewHolder(ViewGroup parent) {
             super(inflater.inflate(R.layout.item_metrics_round, parent, false));
         }
     }
