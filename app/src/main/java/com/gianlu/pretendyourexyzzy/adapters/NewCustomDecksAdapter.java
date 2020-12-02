@@ -2,6 +2,7 @@ package com.gianlu.pretendyourexyzzy.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -130,6 +131,9 @@ public class NewCustomDecksAdapter extends OrderedRecyclerViewAdapter<NewCustomD
         public ViewHolder(@NonNull ViewGroup parent) {
             super(inflater.inflate(R.layout.item_new_custom_deck, parent, false));
             binding = ItemNewCustomDeckBinding.bind(itemView);
+
+            binding.customDeckItemName.setTextSize(TypedValue.COMPLEX_UNIT_SP, size.titleSize);
+            binding.customDeckItemName.setLineSpacing(0, size.spacingMultiplier);
 
             int width = size.widthPx(parent.getContext());
             int height = size.heightPx(parent.getContext());

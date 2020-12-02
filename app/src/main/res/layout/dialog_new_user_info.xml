@@ -20,7 +20,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_margin="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="48dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="48dp"
         android:background="@drawable/bg_card_6"
         android:elevation="4dp"
         android:orientation="vertical"
@@ -154,239 +157,249 @@
             </LinearLayout>
         </com.facebook.shimmer.ShimmerFrameLayout>
 
-        <LinearLayout
-            android:id="@+id/userInfoDialog_overloadedInfo"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-            <LinearLayout
-                android:id="@+id/userInfoDialog_overloadedStats"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:baselineAligned="false"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content">
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:id="@+id/userInfoDialog_overloadedInfo"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:orientation="vertical">
 
+                    <LinearLayout
+                        android:id="@+id/userInfoDialog_overloadedStats"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/roboto_regular"
+                                android:fontFeatureSettings="smcp"
+                                android:text="@string/cardsPlayed"
+                                android:textAllCaps="true"
+                                android:textColor="#949494"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/userInfoDialog_cardsPlayed"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:textAppearance="@style/TextAppearance.Medium"
+                                android:textSize="18sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/roboto_regular"
+                                android:fontFeatureSettings="smcp"
+                                android:text="@string/roundsPlayed"
+                                android:textAllCaps="true"
+                                android:textColor="#949494"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/userInfoDialog_roundsPlayed"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:textAppearance="@style/TextAppearance.Medium"
+                                android:textSize="18sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/roboto_regular"
+                                android:fontFeatureSettings="smcp"
+                                android:text="@string/roundsWon"
+                                android:textAllCaps="true"
+                                android:textColor="#949494"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/userInfoDialog_roundsWon"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:textAppearance="@style/TextAppearance.Medium"
+                                android:textSize="18sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/roboto_regular"
                         android:fontFeatureSettings="smcp"
-                        android:text="@string/cardsPlayed"
+                        android:text="@string/customDecks"
                         android:textAllCaps="true"
                         android:textColor="#949494"
-                        android:textSize="12sp" />
+                        android:textSize="14sp" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/userInfoDialog_customDecks"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <LinearLayout
+                        android:id="@+id/userInfoDialog_customDecksEmpty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="48dp"
+                        android:paddingTop="8dp"
+                        android:paddingEnd="48dp"
+                        android:paddingBottom="8dp"
+                        android:visibility="gone"
+                        tools:ignore="UseCompoundDrawables">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="80dp"
+                            android:layout_marginStart="48dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginEnd="48dp"
+                            android:src="@drawable/ic_undraw_not_found" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="@string/profileNoCustomDecks"
+                            android:textAlignment="center"
+                            android:textAppearance="@style/TextAppearance.Undraw" />
+                    </LinearLayout>
 
                     <TextView
-                        android:id="@+id/userInfoDialog_cardsPlayed"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:textAppearance="@style/TextAppearance.Medium"
-                        android:textSize="18sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:fontFamily="@font/roboto_regular"
                         android:fontFeatureSettings="smcp"
-                        android:text="@string/roundsPlayed"
+                        android:text="@string/starredCards"
                         android:textAllCaps="true"
                         android:textColor="#949494"
-                        android:textSize="12sp" />
+                        android:textSize="14sp" />
 
-                    <TextView
-                        android:id="@+id/userInfoDialog_roundsPlayed"
-                        android:layout_width="wrap_content"
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/userInfoDialog_starredCards"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <LinearLayout
+                        android:id="@+id/userInfoDialog_starredCardsEmpty"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:textAppearance="@style/TextAppearance.Medium"
-                        android:textSize="18sp" />
+                        android:orientation="vertical"
+                        android:paddingStart="48dp"
+                        android:paddingTop="8dp"
+                        android:paddingEnd="48dp"
+                        android:paddingBottom="8dp"
+                        android:visibility="gone"
+                        tools:ignore="UseCompoundDrawables">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="80dp"
+                            android:layout_marginStart="48dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginEnd="48dp"
+                            android:src="@drawable/ic_undraw_not_found" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="@string/profileNoStarredCards"
+                            android:textAlignment="center"
+                            android:textAppearance="@style/TextAppearance.Undraw" />
+                    </LinearLayout>
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                <com.facebook.shimmer.ShimmerFrameLayout
+                    android:id="@+id/userInfoDialog_overloadedInfoLoading"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/roboto_regular"
-                        android:fontFeatureSettings="smcp"
-                        android:text="@string/roundsWon"
-                        android:textAllCaps="true"
-                        android:textColor="#949494"
-                        android:textSize="12sp" />
+                        android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/userInfoDialog_roundsWon"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:textAppearance="@style/TextAppearance.Medium"
-                        android:textSize="18sp" />
-                </LinearLayout>
-            </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_marginBottom="12dp"
+                            android:orientation="horizontal">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/roboto_regular"
-                android:fontFeatureSettings="smcp"
-                android:text="@string/customDecks"
-                android:textAllCaps="true"
-                android:textColor="#949494"
-                android:textSize="14sp" />
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_marginEnd="8dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/placeholder_general_square_item" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/userInfoDialog_customDecks"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_marginEnd="8dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/placeholder_general_square_item" />
 
-            <LinearLayout
-                android:id="@+id/userInfoDialog_customDecksEmpty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingStart="48dp"
-                android:paddingTop="8dp"
-                android:paddingEnd="48dp"
-                android:paddingBottom="8dp"
-                android:visibility="gone"
-                tools:ignore="UseCompoundDrawables">
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:background="@drawable/placeholder_general_square_item" />
+                        </LinearLayout>
 
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="80dp"
-                    android:layout_marginStart="48dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="48dp"
-                    android:src="@drawable/ic_undraw_not_found" />
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:layout_marginBottom="12dp"
+                            android:background="@drawable/placeholder_general_square_item" />
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/profileNoCustomDecks"
-                    android:textAlignment="center"
-                    android:textAppearance="@style/TextAppearance.Undraw" />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:fontFamily="@font/roboto_regular"
-                android:fontFeatureSettings="smcp"
-                android:text="@string/starredCards"
-                android:textAllCaps="true"
-                android:textColor="#949494"
-                android:textSize="14sp" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/userInfoDialog_starredCards"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <LinearLayout
-                android:id="@+id/userInfoDialog_starredCardsEmpty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingStart="48dp"
-                android:paddingTop="8dp"
-                android:paddingEnd="48dp"
-                android:paddingBottom="8dp"
-                android:visibility="gone"
-                tools:ignore="UseCompoundDrawables">
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="80dp"
-                    android:layout_marginStart="48dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="48dp"
-                    android:src="@drawable/ic_undraw_not_found" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/profileNoStarredCards"
-                    android:textAlignment="center"
-                    android:textAppearance="@style/TextAppearance.Undraw" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <com.facebook.shimmer.ShimmerFrameLayout
-            android:id="@+id/userInfoDialog_overloadedInfoLoading"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_marginBottom="12dp"
-                    android:orientation="horizontal">
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginEnd="8dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/placeholder_general_square_item" />
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginEnd="8dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/placeholder_general_square_item" />
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@drawable/placeholder_general_square_item" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:layout_marginBottom="12dp"
-                    android:background="@drawable/placeholder_general_square_item" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:background="@drawable/placeholder_general_square_item" />
-            </LinearLayout>
-        </com.facebook.shimmer.ShimmerFrameLayout>
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:background="@drawable/placeholder_general_square_item" />
+                    </LinearLayout>
+                </com.facebook.shimmer.ShimmerFrameLayout>
+            </FrameLayout>
+        </ScrollView>
     </LinearLayout>
 </FrameLayout>

@@ -84,6 +84,8 @@ public class NewStarredCardsAdapter extends RecyclerView.Adapter<NewStarredCards
             super(inflater.inflate(R.layout.item_starred_card, parent, false));
             binding = ItemStarredCardBinding.bind(itemView);
 
+            binding.starredCardItemText.setLineSpacing(0, size.spacingMultiplier);
+
             RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) binding.getRoot().getLayoutParams();
             params.width = size.widthPx(parent.getContext());
             params.height = size.heightPx(parent.getContext());
