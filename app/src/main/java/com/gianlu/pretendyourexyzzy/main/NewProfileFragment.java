@@ -50,6 +50,7 @@ import com.gianlu.pretendyourexyzzy.api.StatusCodeException;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastApi;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
 import com.gianlu.pretendyourexyzzy.api.glide.GlideUtils;
+import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.cards.CardSize;
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
@@ -737,17 +738,24 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
     private void refreshStarredCards() {
         StarredCardsDatabase starredDb = StarredCardsDatabase.get(requireContext());
         List<StarredCardsDatabase.StarredCard> starredCards = starredDb.getCards(false);
-        if (starredCards.isEmpty()) {
-            binding.profileFragmentStarredCardsEmpty.setVisibility(View.VISIBLE);
-            binding.profileFragmentStarredCardsList.setVisibility(View.GONE);
-        } else {
-            binding.profileFragmentStarredCardsEmpty.setVisibility(View.GONE);
-            binding.profileFragmentStarredCardsList.setVisibility(View.VISIBLE);
-            binding.profileFragmentStarredCardsList.setAdapter(new NewStarredCardsAdapter(requireContext(), starredCards, CardSize.REGULAR, R.drawable.ic_star_off_24, (adapter, card) -> {
+        binding.profileFragmentStarredCardsList.setAdapter(new NewStarredCardsAdapter(requireContext(), starredCards, CardSize.REGULAR, R.drawable.ic_star_off_24, new NewStarredCardsAdapter.Listener() {
+            @Override
+            public void onItemCountUpdated(int count) {
+                if (count == 0) {
+                    binding.profileFragmentStarredCardsEmpty.setVisibility(View.VISIBLE);
+                    binding.profileFragmentStarredCardsList.setVisibility(View.GONE);
+                } else {
+                    binding.profileFragmentStarredCardsEmpty.setVisibility(View.GONE);
+                    binding.profileFragmentStarredCardsList.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onCardAction(@NotNull NewStarredCardsAdapter adapter, @NotNull BaseCard card) {
                 starredDb.remove((StarredCardsDatabase.StarredCard) card);
                 adapter.removeCard(card);
-            }));
-        }
+            }
+        }));
     }
 
     private void refreshCustomDecks() {

@@ -124,7 +124,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    private void sendPatch(long revision, @NonNull StarredCardsPatchOp op, int localId, @Nullable Long remoteId, @Nullable ContentCard blackCard, @Nullable CardsGroup whiteCards) {
+    private void sendPatch(@NonNull StarredCardsPatchOp op, int localId, @Nullable Long remoteId, @Nullable ContentCard blackCard, @Nullable CardsGroup whiteCards) {
         if (!OverloadedUtils.isSignedIn())
             return;
 
@@ -142,8 +142,10 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
                 throw new IllegalArgumentException();
             }
 
+            long revision = OverloadedApi.now();
+
             Log.d(TAG, "Sending starred cards patch: " + op);
-            OverloadedSyncApi.get().patchStarredCards(getRevision(), op, remoteId, obj, new OverloadedSyncApi.Callback<StarredCardsUpdateResponse>() {
+            OverloadedSyncApi.get().patchStarredCards(revision, op, remoteId, obj, new OverloadedSyncApi.Callback<StarredCardsUpdateResponse>() {
                 @Override
                 public void onResult(@NonNull StarredCardsUpdateResponse result) {
                     if (op == StarredCardsPatchOp.ADD && result.remoteId != null)
@@ -185,7 +187,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             int id = (int) db.insert("cards", null, values);
             db.setTransactionSuccessful();
 
-            sendPatch(OverloadedApi.now(), StarredCardsPatchOp.ADD, id, null, blackCard, whiteCards);
+            sendPatch(StarredCardsPatchOp.ADD, id, null, blackCard, whiteCards);
 
             return id != -1;
         } catch (JSONException ex) {
@@ -212,7 +214,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             db.setTransactionSuccessful();
 
             if (card.remoteId != null)
-                sendPatch(OverloadedApi.now(), StarredCardsPatchOp.REM, card.id, card.remoteId, null, null);
+                sendPatch(StarredCardsPatchOp.REM, card.id, card.remoteId, null, null);
         } finally {
             db.endTransaction();
         }

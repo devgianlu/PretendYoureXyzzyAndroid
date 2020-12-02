@@ -155,9 +155,11 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
     }
 
-    private void sendStarredDeckPatch(long revision, @Nullable RemoteId remoteId, @NonNull StarredCustomDecksPatchOp op, @Nullable String shareCode, @Nullable Integer deckId) {
+    private void sendStarredDeckPatch(@Nullable RemoteId remoteId, @NonNull StarredCustomDecksPatchOp op, @Nullable String shareCode, @Nullable Integer deckId) {
         if (!OverloadedUtils.isSignedIn())
             return;
+
+        long revision = OverloadedApi.now();
 
         OverloadedSyncApi.get().patchStarredCustomDecks(revision, op, remoteId, shareCode, new OverloadedSyncApi.Callback<OverloadedSyncApi.StarredCustomDecksUpdateResponse>() {
             @Override
@@ -398,7 +400,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
 
         if (id != -1)
-            sendStarredDeckPatch(OverloadedApi.now(), null, StarredCustomDecksPatchOp.ADD, shareCode, id);
+            sendStarredDeckPatch(null, StarredCustomDecksPatchOp.ADD, shareCode, id);
     }
 
     public void removeStarredDeck(@NonNull String shareCode) {
@@ -414,7 +416,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         }
 
         if (remoteId != null)
-            sendStarredDeckPatch(OverloadedApi.now(), new FixedRemoteId(remoteId), StarredCustomDecksPatchOp.REM, null, null);
+            sendStarredDeckPatch(new FixedRemoteId(remoteId), StarredCustomDecksPatchOp.REM, null, null);
     }
 
     public void loadStarredDecksUpdate(@NonNull JSONArray update, boolean delete, @Nullable Long revision) {

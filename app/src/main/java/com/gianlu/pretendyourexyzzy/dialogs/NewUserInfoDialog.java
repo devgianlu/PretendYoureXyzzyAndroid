@@ -190,9 +190,16 @@ public final class NewUserInfoDialog extends DialogFragment {
                             StarredCardsDatabase db = StarredCardsDatabase.get(requireContext());
                             binding.userInfoDialogStarredCardsEmpty.setVisibility(View.GONE);
                             binding.userInfoDialogStarredCards.setVisibility(View.VISIBLE);
-                            binding.userInfoDialogStarredCards.setAdapter(new NewStarredCardsAdapter(requireContext(), StarredCard.fromOverloadedCards(profile.starredCards), CardSize.SMALL, R.drawable.baseline_star_24, (adapter, card) -> {
-                                if (db.putCard((StarredCard) card))
-                                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.addedCardToStarred));
+                            binding.userInfoDialogStarredCards.setAdapter(new NewStarredCardsAdapter(requireContext(), StarredCard.fromOverloadedCards(profile.starredCards), CardSize.SMALL, R.drawable.baseline_star_24, new NewStarredCardsAdapter.Listener() {
+                                @Override
+                                public void onItemCountUpdated(int count) {
+                                }
+
+                                @Override
+                                public void onCardAction(@NotNull NewStarredCardsAdapter adapter, @NotNull BaseCard card) {
+                                    if (db.putCard((StarredCard) card))
+                                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.addedCardToStarred));
+                                }
                             }));
                         }
 

@@ -25,12 +25,14 @@ public class NewStarredCardsAdapter extends RecyclerView.Adapter<NewStarredCards
     private final int actionRes;
     private final Listener listener;
 
-    public NewStarredCardsAdapter(Context context, List<? extends BaseCard> list, @NotNull CardSize size, @DrawableRes int actionRes, Listener listener) {
+    public NewStarredCardsAdapter(@NotNull Context context, @NonNull List<? extends BaseCard> list, @NotNull CardSize size, @DrawableRes int actionRes, @NonNull Listener listener) {
         this.list = list;
         this.inflater = LayoutInflater.from(context);
         this.size = size;
         this.actionRes = actionRes;
         this.listener = listener;
+
+        listener.onItemCountUpdated(list.size());
     }
 
     @Override
@@ -63,12 +65,15 @@ public class NewStarredCardsAdapter extends RecyclerView.Adapter<NewStarredCards
             if (card.equals(list.get(i))) {
                 list.remove(i);
                 notifyItemRemoved(i);
+                listener.onItemCountUpdated(list.size());
                 break;
             }
         }
     }
 
     public interface Listener {
+        void onItemCountUpdated(int count);
+
         void onCardAction(@NotNull NewStarredCardsAdapter adapter, @NotNull BaseCard card);
     }
 
