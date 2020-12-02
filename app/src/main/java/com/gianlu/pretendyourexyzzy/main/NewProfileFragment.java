@@ -17,6 +17,8 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -34,7 +36,6 @@ import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
-import com.gianlu.pretendyourexyzzy.AchievementProgressView;
 import com.gianlu.pretendyourexyzzy.GPGamesHelper;
 import com.gianlu.pretendyourexyzzy.NewMainActivity;
 import com.gianlu.pretendyourexyzzy.PK;
@@ -489,11 +490,22 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         this.pyx = null;
     }
 
+    private void setKeepScreenOn(boolean on) {
+        Prefs.putBoolean(PK.KEEP_SCREEN_ON, on);
+
+        Activity activity = getActivity();
+        Window window;
+        if (activity != null && (window = activity.getWindow()) != null) {
+            if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+    }
+
     private void showPopupMenu() {
         android.widget.PopupMenu menu = new android.widget.PopupMenu(requireContext(), binding.profileFragmentMenu);
         menu.inflate(R.menu.new_profile);
 
-        // TODO: Add something to this menu so that it can be always visible
+        menu.getMenu().getItem(R.id.profileFragment_keepScreenOn).setChecked(Prefs.getBoolean(PK.KEEP_SCREEN_ON));
 
         if (!CrCastApi.hasCredentials())
             menu.getMenu().removeItem(R.id.profileFragment_logoutCrCast);
@@ -506,6 +518,11 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                 binding.profileFragmentCustomDecksCrCastLogin.setVisibility(View.VISIBLE);
                 if (customDecksAdapter != null)
                     customDecksAdapter.removeItems(elm -> elm instanceof CrCastDeck);
+                return true;
+            } else if (item.getItemId() == R.id.profileFragment_keepScreenOn) {
+                boolean on = !item.isChecked();
+                item.setChecked(on);
+                setKeepScreenOn(on);
                 return true;
             }
 

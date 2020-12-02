@@ -112,7 +112,7 @@ public final class GPGamesHelper {
         return !unrecoverableError && checkAccount(GoogleSignIn.getLastSignedInAccount(context));
     }
 
-    public static void setPopupView(@NonNull Activity activity, @MagicConstant(flagsFromClass = Gravity.class) int gravity) { // TODO
+    public static void setPopupView(@NonNull Activity activity, @MagicConstant(flagsFromClass = Gravity.class) int gravity) {
         View root = activity.getWindow().getDecorView().findViewById(android.R.id.content);
         if (root != null)
             GPGamesHelper.setPopupView(activity, root, gravity);

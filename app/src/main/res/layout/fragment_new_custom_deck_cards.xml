@@ -97,7 +97,6 @@
             android:elevation="8dp"
             android:orientation="vertical">
 
-            <!-- TODO: Image stretched?? -->
             <ImageView
                 android:id="@+id/customDeckCards_createImage"
                 android:layout_width="match_parent"

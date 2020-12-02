@@ -16,14 +16,11 @@
         android:text="@string/createCustomCardInfo_image"
         tools:targetApi="o" />
 
-    <!-- FIXME -->
-
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/askImageUrl_link"
         style="@style/TextInputLayoutStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/imageLink"
         app:endIconCheckable="false"
         app:endIconContentDescription="@string/uploadImage"
         app:endIconDrawable="@drawable/baseline_publish_24"

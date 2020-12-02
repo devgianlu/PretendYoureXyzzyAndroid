@@ -11,9 +11,8 @@
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="8dp"
-        android:fontFamily="@font/montserrat_medium"
+        android:textAppearance="@style/TextAppearance.Medium"
         android:text="@string/username"
-        android:textColor="#000000"
         android:textSize="18sp" />
 
     <com.google.android.material.textfield.TextInputLayout
@@ -41,9 +40,8 @@
         android:layout_marginTop="18dp"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="8dp"
-        android:fontFamily="@font/montserrat_medium"
+        android:textAppearance="@style/TextAppearance.Medium"
         android:text="@string/idCodeLabel"
-        android:textColor="#000000"
         android:textSize="18sp" />
 
     <com.google.android.material.textfield.TextInputLayout

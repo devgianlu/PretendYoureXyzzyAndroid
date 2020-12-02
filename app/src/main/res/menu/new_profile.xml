@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/profileFragment_keepScreenOn"
+        android:checkable="true"
+        android:checked="true"
+        android:title="@string/keepScreenOn" />
+    <item
         android:id="@+id/profileFragment_logoutCrCast"
         android:title="@string/logoutCrCast"
         app:showAsAction="never" />

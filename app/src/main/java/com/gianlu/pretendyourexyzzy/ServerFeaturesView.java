@@ -46,7 +46,7 @@ public final class ServerFeaturesView extends View {
         if (server.hasMetrics())
             features.add(Feature.METRICS);
 
-        if (server.status != null) {
+        if (server.status != null && server.status.stats != null) {
             ServersChecker.CheckResult.Stats stats = server.status.stats;
             if (stats.gameChatEnabled()) features.add(Feature.GAME_CHAT);
             if (stats.globalChatEnabled()) features.add(Feature.GLOBAL_CHAT);

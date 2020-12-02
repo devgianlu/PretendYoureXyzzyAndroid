@@ -1,32 +1,23 @@
 package com.gianlu.pretendyourexyzzy.dialogs;
 
-import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.DialogFragment;
 
 import com.gianlu.commonutils.dialogs.DialogUtils;
-import com.gianlu.commonutils.permissions.AskPermission;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.ThisApplication;
@@ -35,6 +26,7 @@ import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.GameRound;
 import com.gianlu.pretendyourexyzzy.cards.GameRoundSummary;
+import com.gianlu.pretendyourexyzzy.databinding.DialogGameRoundBinding;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,12 +35,8 @@ import java.io.IOException;
 public final class GameRoundDialog extends DialogFragment {
     private static final String TAG = GameRoundDialog.class.getSimpleName();
     private GameRoundSummary summary;
-    private ImageView image;
-    private CheckBox rotate;
-    private ProgressBar loading;
     private GameRound round;
-    private Button save;
-    private Button share;
+    private DialogGameRoundBinding binding;
 
     @NonNull
     public static GameRoundDialog get(@NonNull String id) {
@@ -69,28 +57,16 @@ public final class GameRoundDialog extends DialogFragment {
 
     @NonNull
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
-        LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.dialog_game_round, container, false);
-        image = layout.findViewById(R.id.gameRoundDialog_image);
-        loading = layout.findViewById(R.id.gameRoundDialog_loading);
-        rotate = layout.findViewById(R.id.gameRoundDialog_rotate);
-        rotate.setOnCheckedChangeListener((buttonView, isChecked) -> generate());
-        save = layout.findViewById(R.id.gameRoundDialog_save);
-        save.setOnClickListener(v -> saveToExternalStorage());
-        share = layout.findViewById(R.id.gameRoundDialog_share);
-        share.setOnClickListener(v -> {
-            if (getContext() != null)
-                share(getContext());
-        });
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        binding = DialogGameRoundBinding.inflate(inflater, container, false);
+        binding.gameRoundDialogRotate.setOnCheckedChangeListener((buttonView, isChecked) -> generate());
+        binding.gameRoundDialogCancel.setOnClickListener(v -> dismissAllowingStateLoss());
+        binding.gameRoundDialogShare.setOnClickListener(v -> share(requireContext()));
 
-        Button cancel = layout.findViewById(R.id.gameRoundDialog_cancel);
-        cancel.setOnClickListener(v -> dismissAllowingStateLoss());
-
-        image.setVisibility(View.GONE);
-        loading.setVisibility(View.VISIBLE);
-        rotate.setEnabled(false);
-        share.setEnabled(false);
-        save.setEnabled(false);
+        binding.gameRoundDialogImage.setVisibility(View.GONE);
+        binding.gameRoundDialogLoading.setVisibility(View.VISIBLE);
+        binding.gameRoundDialogRotate.setEnabled(false);
+        binding.gameRoundDialogShare.setEnabled(false);
 
         Pyx pyx;
         try {
@@ -98,7 +74,7 @@ public final class GameRoundDialog extends DialogFragment {
         } catch (LevelMismatchException ex) {
             DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
             dismissAllowingStateLoss();
-            return layout;
+            return null;
         }
 
         Bundle args = getArguments();
@@ -106,7 +82,7 @@ public final class GameRoundDialog extends DialogFragment {
         if (args == null || (id = args.getString("id", null)) == null) {
             DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedLoading));
             dismissAllowingStateLoss();
-            return layout;
+            return null;
         }
 
         pyx.getGameRound(id)
@@ -114,11 +90,10 @@ public final class GameRoundDialog extends DialogFragment {
                     round = result;
                     generate();
 
-                    loading.setVisibility(View.GONE);
-                    image.setVisibility(View.VISIBLE);
-                    rotate.setEnabled(true);
-                    share.setEnabled(true);
-                    save.setEnabled(true);
+                    binding.gameRoundDialogImage.setVisibility(View.VISIBLE);
+                    binding.gameRoundDialogLoading.setVisibility(View.GONE);
+                    binding.gameRoundDialogRotate.setEnabled(true);
+                    binding.gameRoundDialogShare.setEnabled(true);
                 })
                 .addOnFailureListener(requireActivity(), ex -> {
                     Log.e(TAG, "Failed loading round.", ex);
@@ -126,35 +101,7 @@ public final class GameRoundDialog extends DialogFragment {
                     dismissAllowingStateLoss();
                 });
 
-        return layout;
-    }
-
-    private void saveToExternalStorage() {
-        if (getActivity() == null) return;
-
-        AskPermission.ask(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE, new AskPermission.Listener() {
-            @Override
-            public void permissionGranted(@NonNull String permission) {
-                File image = save(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
-                if (image == null) {
-                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSavingImage));
-                } else {
-                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.imageSavedTo, image.getAbsolutePath()).extra(image));
-                    dismissAllowingStateLoss();
-                }
-            }
-
-            @Override
-            public void permissionDenied(@NonNull String permission) {
-                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.deniedWritePermission));
-            }
-
-            @Override
-            public void askRationale(@NonNull AlertDialog.Builder builder) {
-                builder.setTitle(R.string.askWritePermission)
-                        .setMessage(R.string.askWritePermission_roundImage);
-            }
-        });
+        return binding.getRoot();
     }
 
     @Nullable
@@ -197,7 +144,7 @@ public final class GameRoundDialog extends DialogFragment {
     private void generate() {
         if (getContext() == null || round == null) return;
 
-        summary = new GameRoundSummary(getContext(), round, rotate.isChecked());
-        image.setImageBitmap(summary.getBitmap());
+        summary = new GameRoundSummary(getContext(), round, binding.gameRoundDialogRotate.isChecked());
+        binding.gameRoundDialogImage.setImageBitmap(summary.getBitmap());
     }
 }

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
+import android.view.Gravity;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
@@ -48,6 +49,12 @@ public class NewMainActivity extends ActivityWithDialog {
     private NewProfileFragment profileFragment;
     private RegisteredPyx pyx;
     private Task<RegisteredPyx> prepareTask;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        GPGamesHelper.setPopupView(this, Gravity.TOP);
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

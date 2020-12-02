@@ -186,7 +186,7 @@ public final class ServersChecker {
                 Response response = client.newCall(createRequest(server)).execute();
                 server.status = validateResponse(response, System.currentTimeMillis() - start);
             } catch (IOException ex) {
-                Log.e(TAG, "Failed checking server.", ex);
+                Log.e(TAG, "Failed checking server: " + server.url, ex);
                 server.status = handleException(ex);
             }
 
