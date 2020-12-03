@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0-alpha03] - 03-12-2020
+### Added
+- Show subscription and maintenance warnings
+- View deck from game info
+- Show metrics from game
+- Added chat badges
+- Transitions
+
+### Fixed
+- Fixed layout on small devices
+- Fixed card text escaping
+- Fixed starred cards sync
+- A lot more
+
+
 ## [5.0.0-alpha02] - 28-11-2020
 ### Added
 - Upload profile image
