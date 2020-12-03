@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.Gravity;
 
 import androidx.annotation.CallSuper;
+import androidx.annotation.IdRes;
 import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
@@ -15,6 +16,7 @@ import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.api.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.api.PyxChatHelper;
 import com.gianlu.pretendyourexyzzy.api.PyxDiscoveryApi;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
@@ -37,8 +39,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
 
-public class NewMainActivity extends ActivityWithDialog {
+public class NewMainActivity extends ActivityWithDialog implements OverloadedChatApi.UnreadCountListener, PyxChatHelper.UnreadCountListener {
     private static final String SETTINGS_FRAGMENT_TAG = "settings";
     private static final String GAMES_FRAGMENT_TAG = "games";
     private static final String PROFILE_FRAGMENT_TAG = "profile";
@@ -75,7 +78,11 @@ public class NewMainActivity extends ActivityWithDialog {
                 .add(R.id.main_container, profileFragment = NewProfileFragment.get(), PROFILE_FRAGMENT_TAG)
                 .commitNow();
 
+        binding.mainNavigation.setOnNavigationItemReselectedListener(item -> {
+            // Do nothing
+        });
         binding.mainNavigation.setOnNavigationItemSelectedListener(item -> {
+            updateBadges();
             if (item.getItemId() == R.id.mainNavigation_settings) {
                 checkReloadNeeded();
                 getSupportFragmentManager().beginTransaction()
@@ -117,6 +124,8 @@ public class NewMainActivity extends ActivityWithDialog {
                     SyncUtils.syncCustomDecks(this, null);
                     SyncUtils.syncStarredCustomDecks(this, null);
 
+                    OverloadedApi.chat(this).addUnreadCountListener(this);
+
                     OverloadedSignInHelper.signInSilently(this, PlayGamesAuthProvider.PROVIDER_ID)
                             .addOnSuccessListener(account -> {
                                 String authCode = account.getServerAuthCode();
@@ -152,6 +161,8 @@ public class NewMainActivity extends ActivityWithDialog {
     private void pyxReady(@NotNull RegisteredPyx pyx) {
         this.pyx = pyx;
 
+        pyx.chat().addUnreadCountListener(this);
+
         runOnUiThread(() -> {
             if (settingsFragment != null) settingsFragment.callPyxReady(pyx);
             if (gamesFragment != null) gamesFragment.callPyxReady(pyx);
@@ -163,6 +174,7 @@ public class NewMainActivity extends ActivityWithDialog {
     }
 
     private void pyxInvalid(@Nullable Exception ex) {
+        if (this.pyx != null) pyx.chat().removeUnreadCountListener(this);
         this.pyx = null;
 
         runOnUiThread(() -> {
@@ -234,12 +246,39 @@ public class NewMainActivity extends ActivityWithDialog {
             dialog.setTitle(R.string.logout).setMessage(Html.fromHtml(getString(R.string.logout_confirmation)))
                     .setNegativeButton(R.string.no, null)
                     .setPositiveButton(R.string.yes, (d, which) -> {
-                        pyx.logout();
+                        if (pyx != null) pyx.logout();
                         super.onBackPressed();
                     });
 
             showDialog(dialog);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (this.pyx != null) pyx.chat().removeUnreadCountListener(this);
+        OverloadedApi.chat(this).removeUnreadCountListener(this);
+    }
+
+    @Override
+    public void overloadedUnreadCountUpdated(int unread) {
+        setBadge(R.id.mainNavigation_profile, unread);
+    }
+
+    @Override
+    public void pyxUnreadCountUpdated(int globalUnread, int gameUnread) {
+        setBadge(R.id.mainNavigation_home, globalUnread);
+    }
+
+    private void setBadge(@IdRes int item, int count) {
+        if (count <= 0) binding.mainNavigation.removeBadge(item);
+        else binding.mainNavigation.getOrCreateBadge(item).setNumber(count);
+    }
+
+    private void updateBadges() {
+        setBadge(R.id.mainNavigation_home, pyx == null ? 0 : pyx.chat().getGlobalUnread());
+        setBadge(R.id.mainNavigation_profile, OverloadedApi.chat(this).countTotalUnread());
     }
 
     public static abstract class ChildFragment extends FragmentWithDialog {

@@ -309,10 +309,12 @@ public class OverloadedChatApi implements Closeable {
 
     //region Unread
     private void dispatchUnreadCountUpdate() {
+        int unread = countTotalUnread();
+
         synchronized (unreadCountListeners) {
             Handler handler = new Handler(Looper.getMainLooper());
             for (UnreadCountListener listener : unreadCountListeners)
-                handler.post(listener::mayUpdateUnreadCount);
+                handler.post(() -> listener.overloadedUnreadCountUpdated(unread));
         }
     }
 
@@ -378,6 +380,6 @@ public class OverloadedChatApi implements Closeable {
 
     @UiThread
     public interface UnreadCountListener {
-        void mayUpdateUnreadCount();
+        void overloadedUnreadCountUpdated(int unread);
     }
 }

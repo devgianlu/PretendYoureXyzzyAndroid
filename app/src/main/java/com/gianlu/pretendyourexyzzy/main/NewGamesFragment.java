@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.main;
 
+import android.annotation.SuppressLint;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -28,6 +29,7 @@ import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.api.PyxChatHelper;
 import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
@@ -44,6 +46,8 @@ import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
+import com.google.android.material.badge.BadgeDrawable;
+import com.google.android.material.badge.BadgeUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
@@ -54,11 +58,12 @@ import java.util.List;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
 
-public class NewGamesFragment extends NewMainActivity.ChildFragment implements Pyx.OnEventListener {
+public class NewGamesFragment extends NewMainActivity.ChildFragment implements Pyx.OnEventListener, PyxChatHelper.UnreadCountListener {
     private static final String TAG = NewGamesFragment.class.getSimpleName();
     private FragmentNewGamesBinding binding;
     private RegisteredPyx pyx;
     private GamesAdapter adapter;
+    private BadgeDrawable chatBadge;
 
     @NonNull
     public static NewGamesFragment get() {
@@ -205,6 +210,7 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
     public void onPyxReady(@NotNull RegisteredPyx pyx) {
         this.pyx = pyx;
         this.pyx.polling().addListener(this);
+        this.pyx.chat().addUnreadCountListener(this);
 
         this.pyx.request(PyxRequests.getGamesList())
                 .addOnSuccessListener(this::gamesLoaded)
@@ -218,17 +224,23 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
         binding.gamesFragmentServerError.setVisibility(View.GONE);
         setServerBoxTint(null);
 
-        if (pyx.config().gameChatEnabled()) {
+        if (pyx.config().globalChatEnabled()) {
             binding.gamesFragmentChat.setVisibility(View.VISIBLE);
             binding.gamesFragmentChat.setOnClickListener(v -> NewChatDialog.getGlobal().show(getChildFragmentManager(), null));
+            chatBadge = BadgeDrawable.createFromResource(requireContext(), R.xml.chat_badge);
         } else {
             binding.gamesFragmentChat.setVisibility(View.GONE);
+            chatBadge = null;
         }
     }
 
     @Override
     public void onPyxInvalid(@Nullable Exception ex) {
-        if (pyx != null) pyx.polling().removeListener(this);
+        if (pyx != null) {
+            pyx.polling().removeListener(this);
+            pyx.chat().removeUnreadCountListener(this);
+        }
+
         this.pyx = null;
 
         if (binding != null) {
@@ -304,7 +316,11 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (pyx != null) pyx.polling().removeListener(this);
+        if (pyx != null) {
+            pyx.polling().removeListener(this);
+            pyx.chat().removeUnreadCountListener(this);
+        }
+
         this.pyx = null;
     }
 
@@ -316,6 +332,18 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
                         if (adapter != null) adapter.itemsChanged(games);
                     })
                     .addOnFailureListener((ex) -> Log.e(TAG, "Failed refreshing game list."));
+        }
+    }
+
+    @SuppressLint("UnsafeExperimentalUsageError")
+    @Override
+    public void pyxUnreadCountUpdated(int globalUnread, int gameUnread) {
+        if (chatBadge != null) {
+            chatBadge.setNumber(globalUnread);
+            if (globalUnread == 0)
+                BadgeUtils.detachBadgeDrawable(chatBadge, binding.gamesFragmentChat);
+            else
+                BadgeUtils.attachBadgeDrawable(chatBadge, binding.gamesFragmentChat);
         }
     }
 

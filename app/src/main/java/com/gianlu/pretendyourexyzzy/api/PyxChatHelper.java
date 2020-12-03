@@ -19,7 +19,7 @@ public class PyxChatHelper {
     private final Object countLock = new Object();
     private final LruCache<Integer, List<PollMessage>> storedMessages = new LruCache<Integer, List<PollMessage>>(128) {
         @Override
-        protected int sizeOf(Integer key, List<PollMessage> value) {
+        protected int sizeOf(Integer key, @NonNull List<PollMessage> value) {
             return value.size();
         }
     };
@@ -41,31 +41,31 @@ public class PyxChatHelper {
         unreadCountListeners.remove(listener);
     }
 
+    public int getGlobalUnread() {
+        return globalUnreadCount;
+    }
+
     public void resetGlobalUnread(long timestamp) {
-        int total;
         synchronized (countLock) {
             globalLastSeen = timestamp;
             globalUnreadCount = 0;
-            total = globalUnreadCount + gameUnreadCount;
         }
 
         handler.post(() -> {
             for (UnreadCountListener listener : new ArrayList<>(unreadCountListeners))
-                listener.onPyxUnread(total);
+                listener.pyxUnreadCountUpdated(globalUnreadCount, gameUnreadCount);
         });
     }
 
     public void resetGameUnread(long timestamp) {
-        int total;
         synchronized (countLock) {
             gameLastSeen = timestamp;
             gameUnreadCount = 0;
-            total = globalUnreadCount + gameUnreadCount;
         }
 
         handler.post(() -> {
             for (UnreadCountListener listener : new ArrayList<>(unreadCountListeners))
-                listener.onPyxUnread(total);
+                listener.pyxUnreadCountUpdated(globalUnreadCount, gameUnreadCount);
         });
     }
 
@@ -80,14 +80,12 @@ public class PyxChatHelper {
         synchronized (countLock) {
             long lastSeen = msg.gid == -1 ? globalLastSeen : gameLastSeen;
             if (msg.timestamp > lastSeen) {
-                int total;
                 if (msg.gid != -1) gameUnreadCount++;
                 else globalUnreadCount++;
-                total = globalUnreadCount + gameUnreadCount;
 
                 handler.post(() -> {
                     for (UnreadCountListener listener : new ArrayList<>(unreadCountListeners))
-                        listener.onPyxUnread(total);
+                        listener.pyxUnreadCountUpdated(globalUnreadCount, gameUnreadCount);
                 });
             }
         }
@@ -113,6 +111,6 @@ public class PyxChatHelper {
 
     @UiThread
     public interface UnreadCountListener {
-        void onPyxUnread(int count);
+        void pyxUnreadCountUpdated(int globalUnread, int gameUnread);
     }
 }

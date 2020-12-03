@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.main;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -69,6 +70,8 @@ import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
 import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.achievement.Achievement;
 import com.google.android.gms.games.event.Event;
+import com.google.android.material.badge.BadgeDrawable;
+import com.google.android.material.badge.BadgeUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -92,12 +95,13 @@ import java.util.Map;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedApi.MaintenanceException;
 import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
+import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
 import static com.gianlu.pretendyourexyzzy.GPGamesHelper.setEventCount;
 
-public class NewProfileFragment extends NewMainActivity.ChildFragment implements OverloadedApi.EventListener, CrCastLoginDialog.LoginListener {
+public class NewProfileFragment extends NewMainActivity.ChildFragment implements OverloadedApi.EventListener, CrCastLoginDialog.LoginListener, OverloadedChatApi.UnreadCountListener {
     private static final String TAG = NewProfileFragment.class.getSimpleName();
     private static final int RC_IMPORT_JSON = 420;
     private static final int RC_UPLOAD_PROFILE_IMAGE = 9;
@@ -105,6 +109,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
     private RegisteredPyx pyx;
     private FriendsAdapter friendsAdapter;
     private NewCustomDecksAdapter customDecksAdapter;
+    private BadgeDrawable chatBadge;
 
     @NonNull
     public static NewProfileFragment get() {
@@ -481,12 +486,14 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
     public void onStart() {
         super.onStart();
         OverloadedApi.get().addEventListener(this);
+        OverloadedApi.chat(requireContext()).addUnreadCountListener(this);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         OverloadedApi.get().removeEventListener(this);
+        OverloadedApi.chat(requireContext()).removeUnreadCountListener(this);
         this.pyx = null;
     }
 
@@ -650,6 +657,8 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
                         binding.profileFragmentChat.setVisibility(View.VISIBLE);
                         binding.profileFragmentChat.setOnClickListener(v -> startActivity(new Intent(requireContext(), ChatsListActivity.class)));
+                        chatBadge = BadgeDrawable.createFromResource(requireContext(), R.xml.chat_badge);
+                        overloadedUnreadCountUpdated(OverloadedApi.chat(requireContext()).countTotalUnread());
 
                         setOverloadedWarn(null, 0, null);
 
@@ -712,6 +721,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                     Log.e(TAG, "Failed waiting ready.", ex);
                     binding.profileFragmentOverloadedPreferences.setVisibility(View.GONE);
                     binding.profileFragmentChat.setVisibility(View.GONE);
+                    chatBadge = null;
 
                     binding.profileFragmentInputs.usernameInput.setEnabled(true);
                     binding.profileFragmentInputs.usernameInput.setHelperText(null);
@@ -827,6 +837,18 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
                     Log.e(TAG, "Failed loading CrCast decks.", ex);
                 });
+    }
+
+    @SuppressLint("UnsafeExperimentalUsageError")
+    @Override
+    public void overloadedUnreadCountUpdated(int unread) {
+        if (chatBadge != null) {
+            chatBadge.setNumber(unread);
+            if (unread == 0)
+                BadgeUtils.detachBadgeDrawable(chatBadge, binding.profileFragmentChat);
+            else
+                BadgeUtils.attachBadgeDrawable(chatBadge, binding.profileFragmentChat);
+        }
     }
 
     private class FriendsAdapter extends OrderedRecyclerViewAdapter<FriendsAdapter.ViewHolder, FriendStatus, Void, Void> {

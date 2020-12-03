@@ -1,5 +1,6 @@
 package com.gianlu.pretendyourexyzzy.game;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
+import com.gianlu.pretendyourexyzzy.api.PyxChatHelper;
 import com.gianlu.pretendyourexyzzy.api.PyxRequests;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.GamePermalink;
@@ -28,17 +30,20 @@ import com.gianlu.pretendyourexyzzy.databinding.ActivityNewGameBinding;
 import com.gianlu.pretendyourexyzzy.dialogs.GameRoundDialog;
 import com.gianlu.pretendyourexyzzy.dialogs.NewChatDialog;
 import com.gianlu.pretendyourexyzzy.metrics.MetricsActivity;
+import com.google.android.material.badge.BadgeDrawable;
+import com.google.android.material.badge.BadgeUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
 
-public class GameActivity extends ActivityWithDialog implements AnotherGameManager.Listener {
+public class GameActivity extends ActivityWithDialog implements AnotherGameManager.Listener, PyxChatHelper.UnreadCountListener {
     private static final String TAG = GameActivity.class.getSimpleName();
     private GamePermalink game;
     private ActivityNewGameBinding binding;
     private RegisteredPyx pyx;
     private AnotherGameManager manager;
     private GameUi ui;
+    private BadgeDrawable chatBadge;
 
     @NonNull
     private static Intent baseIntent(@NotNull Context context) {
@@ -77,11 +82,15 @@ public class GameActivity extends ActivityWithDialog implements AnotherGameManag
             return;
         }
 
+        pyx.chat().addUnreadCountListener(this);
+
         if (pyx.config().gameChatEnabled()) {
             binding.gameActivityChat.setVisibility(View.VISIBLE);
             binding.gameActivityChat.setOnClickListener(v -> NewChatDialog.getGame(game.gid).show(getSupportFragmentManager(), null));
+            chatBadge = BadgeDrawable.createFromResource(this, R.xml.chat_badge);
         } else {
             binding.gameActivityChat.setVisibility(View.GONE);
+            chatBadge = null;
         }
 
         binding.gameActivityClose.setOnClickListener(v -> leaveGame());
@@ -183,5 +192,23 @@ public class GameActivity extends ActivityWithDialog implements AnotherGameManag
                 .setNegativeButton(android.R.string.no, null);
 
         showDialog(builder);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (pyx != null) pyx.chat().removeUnreadCountListener(this);
+    }
+
+    @SuppressLint("UnsafeExperimentalUsageError")
+    @Override
+    public void pyxUnreadCountUpdated(int globalUnread, int gameUnread) {
+        if (chatBadge != null) {
+            chatBadge.setNumber(gameUnread);
+            if (gameUnread == 0)
+                BadgeUtils.detachBadgeDrawable(chatBadge, binding.gameActivityChat);
+            else
+                BadgeUtils.attachBadgeDrawable(chatBadge, binding.gameActivityChat);
+        }
     }
 }
