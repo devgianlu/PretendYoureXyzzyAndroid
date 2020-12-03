@@ -512,7 +512,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         android.widget.PopupMenu menu = new android.widget.PopupMenu(requireContext(), binding.profileFragmentMenu);
         menu.inflate(R.menu.new_profile);
 
-        menu.getMenu().getItem(R.id.profileFragment_keepScreenOn).setChecked(Prefs.getBoolean(PK.KEEP_SCREEN_ON));
+        menu.getMenu().findItem(R.id.profileFragment_keepScreenOn).setChecked(Prefs.getBoolean(PK.KEEP_SCREEN_ON));
 
         if (!CrCastApi.hasCredentials())
             menu.getMenu().removeItem(R.id.profileFragment_logoutCrCast);

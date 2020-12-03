@@ -9,6 +9,11 @@
         <item name="colorOnSecondary">@color/colorOnSecondary</item>
         <item name="android:statusBarColor">@color/colorPrimaryVariant</item>
 
+        <!-- Transitions -->
+        <item name="android:windowActivityTransitions">true</item>
+        <item name="android:windowEnterTransition">@android:transition/explode</item>
+        <item name="android:windowExitTransition">@android:transition/explode</item>
+
         <!-- Backward compatibility -->
         <item name="colorPrimaryDark">?colorPrimaryVariant</item>
         <item name="colorAccent">?colorSecondary</item>
@@ -137,12 +142,5 @@
         <item name="android:drawableTint" tools:targetApi="m">#000000</item>
         <item name="android:drawablePadding">32dp</item>
         <item name="android:paddingTop">16dp</item>
-    </style>
-
-    <!-- Old -->
-    <style name="UrbanDictTheme">
-        <item name="colorPrimary">@color/urbanPrimary</item>
-        <item name="colorPrimaryDark">@color/urbanPrimaryDark</item>
-        <item name="colorAccent">@color/urbanAccent</item>
     </style>
 </resources>
