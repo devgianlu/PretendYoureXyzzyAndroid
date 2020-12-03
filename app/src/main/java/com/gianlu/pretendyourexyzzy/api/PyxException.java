@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.gianlu.pretendyourexyzzy.R;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -39,5 +40,16 @@ public class PyxException extends Exception {
             default:
                 return R.string.failedLoading_changeServerRetry;
         }
+    }
+
+    public boolean hadException(@NotNull Class<?> find) {
+        if (exceptions == null)
+            return false;
+
+        for (Exception ex : exceptions)
+            if (ex.getClass() == find)
+                return true;
+
+        return false;
     }
 }

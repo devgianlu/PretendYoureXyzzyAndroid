@@ -18,6 +18,7 @@ import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxChatHelper;
 import com.gianlu.pretendyourexyzzy.api.PyxDiscoveryApi;
+import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.databinding.ActivityNewMainBinding;
@@ -32,11 +33,16 @@ import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.PlayGamesAuthProvider;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.util.Objects;
+
+import javax.net.ssl.SSLException;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
@@ -116,7 +122,13 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
 
         OverloadedUtils.waitReady()
                 .addOnSuccessListener(signedId -> {
-                    if (!signedId) return;
+                    if (!signedId) {
+                        ThisApplication.setUserProperty("overloaded", false);
+                        return;
+                    }
+
+                    ThisApplication.setUserProperty("overloaded", true);
+                    ThisApplication.setUserProperty("overloaded_uid", FirebaseAuth.getInstance().getUid());
 
                     OverloadedUtils.doInitChecks(this);
 
@@ -207,24 +219,45 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
             FirstLoadedPyx pyx = task.getResult();
             FirstLoad fl = pyx.firstLoad();
             if (fl.inProgress && fl.user != null) return pyx.upgrade(fl.user);
-            else return task.getResult().register(username, idCode);
+            else return pyx.register(username, idCode);
         };
 
         pyxInvalid(null);
         Prefs.putString(PK.LAST_NICKNAME, username);
         Prefs.putString(PK.LAST_ID_CODE, idCode);
 
+        Task<RegisteredPyx> task;
         try {
             Pyx local = Pyx.get();
             if (local instanceof RegisteredPyx)
                 return prepareTask = Tasks.forResult((RegisteredPyx) local);
             else if (local instanceof FirstLoadedPyx)
-                return prepareTask = ((FirstLoadedPyx) local).register(username, idCode);
+                task = ((FirstLoadedPyx) local).register(username, idCode);
             else
-                return prepareTask = local.doFirstLoad().continueWithTask(firstLoadContinuation);
+                task = local.doFirstLoad().continueWithTask(firstLoadContinuation);
         } catch (LevelMismatchException ex) {
-            return prepareTask = PyxDiscoveryApi.get().firstLoad(this).continueWithTask(firstLoadContinuation);
+            task = PyxDiscoveryApi.get().firstLoad(this).continueWithTask(firstLoadContinuation);
         }
+
+        return prepareTask = task.continueWithTask(task1 -> {
+            RegisteredPyx pyx;
+            try {
+                pyx = task1.getResult(PyxException.class);
+            } catch (PyxException ex) {
+                if (ex.errorCode.equals("niu") && (ex.hadException(SocketTimeoutException.class) || ex.hadException(SSLException.class) || ex.hadException(ConnectException.class))) {
+                    return PyxDiscoveryApi.get().firstLoad(this).continueWithTask(task2 -> {
+                        FirstLoadedPyx flp = task2.getResult();
+                        FirstLoad fl = flp.firstLoad();
+                        if (fl.inProgress && fl.user != null) return flp.upgrade(fl.user);
+                        else throw ex;
+                    });
+                } else {
+                    throw ex;
+                }
+            }
+
+            return Tasks.forResult(pyx);
+        });
     }
 
     @Override
