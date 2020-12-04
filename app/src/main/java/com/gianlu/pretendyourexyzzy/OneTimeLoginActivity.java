@@ -35,6 +35,7 @@ public class OneTimeLoginActivity extends ActivityWithDialog {
 
         firstLoadTask = PyxDiscoveryApi.get().firstLoad(this);
 
+        binding.oneTimeLoginInputs.idCodeInput.setHelperText(getString(R.string.idCode_message));
         binding.oneTimeLoginInputs.idCodeInput.setEndIconOnClickListener(v -> CommonUtils.setText(binding.oneTimeLoginInputs.idCodeInput, CommonUtils.randomString(100)));
         CommonUtils.clearErrorOnEdit(binding.oneTimeLoginInputs.usernameInput);
         CommonUtils.clearErrorOnEdit(binding.oneTimeLoginInputs.idCodeInput);

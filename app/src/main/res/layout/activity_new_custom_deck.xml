@@ -42,15 +42,29 @@
             android:tint="#000000" />
     </LinearLayout>
 
-    <ImageView
+    <LinearLayout
         android:id="@+id/customDeck_loading"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_gravity="center_vertical"
         android:layout_weight="1"
-        android:paddingStart="96dp"
-        android:paddingEnd="96dp"
-        android:src="@drawable/ic_undraw_loading" />
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_gravity="center_vertical"
+            android:paddingStart="96dp"
+            android:paddingEnd="96dp"
+            android:src="@drawable/ic_undraw_playing_cards" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/loading"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.Undraw" />
+    </LinearLayout>
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/customDeck_pager"

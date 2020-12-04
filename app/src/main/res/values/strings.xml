@@ -364,4 +364,5 @@
     <string name="failedRemovingProfileImage">Failed removing the profile image!</string>
     <string name="profileImageRemoved">Profile image removed!</string>
     <string name="wrongGamePassword">Wrong game password!</string>
+    <string name="idCode_message">This code makes it harder for someone to impersonate you. You can generate one randomly or also leave it empty.</string>
 </resources>
