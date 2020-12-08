@@ -158,7 +158,12 @@ public class RegisteredPyx extends FirstLoadedPyx {
                         if (json.startsWith("{")) {
                             raiseException(new JSONObject(json));
                         } else if (json.startsWith("[")) {
-                            handler.post(new NotifyMessage(PollMessage.list(new JSONArray(json))));
+                            List<PollMessage> messages = PollMessage.list(new JSONArray(json));
+                            for (PollMessage msg : messages)
+                                if (msg.event == PollMessage.Event.CHAT)
+                                    chatHelper.handleChatEvent(msg);
+
+                            handler.post(new NotifyMessage(messages));
                         }
                     }
                 } catch (JSONException | PyxException ex) {
@@ -222,13 +227,6 @@ public class RegisteredPyx extends FirstLoadedPyx {
                         }
                     }
                 }
-
-                // We need to make sure that the UI has been updated
-                executor.execute(() -> {
-                    for (PollMessage msg : messages)
-                        if (msg.event == PollMessage.Event.CHAT)
-                            chatHelper.handleChatEvent(msg);
-                });
             }
         }
     }

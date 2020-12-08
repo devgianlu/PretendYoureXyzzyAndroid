@@ -56,8 +56,6 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
-
 public class NewGamesFragment extends NewMainActivity.ChildFragment implements Pyx.OnEventListener, PyxChatHelper.UnreadCountListener {
     private static final String TAG = NewGamesFragment.class.getSimpleName();
     private FragmentNewGamesBinding binding;
@@ -416,11 +414,24 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
             holder.binding.gameItemSpectate.setOnClickListener(v -> askPassword(game)
                     .continueWithTask(task -> pyx.request(PyxRequests.spectateGame(game.gid, task.getResult())))
                     .addOnSuccessListener((gamePermalink) -> {
-                        AnalyticsApplication.sendAnalytics(Utils.ACTION_JOIN_GAME);
+                        AnalyticsApplication.sendAnalytics(Utils.ACTION_SPECTATE_GAME);
                         startActivity(GameActivity.gameIntent(requireContext(), gamePermalink));
                     })
                     .addOnFailureListener(ex -> {
                         Log.e(TAG, "Failed spectating game.", ex);
+
+                        if (ex instanceof PyxException) {
+                            switch (((PyxException) ex).errorCode) {
+                                case "gf":
+                                    showToast(Toaster.build().message(R.string.gameFull).extra(game.gid));
+                                    return;
+                                case "wp":
+                                    showToast(Toaster.build().message(R.string.wrongGamePassword).extra(game.gid));
+                                    return;
+                                default:
+                            }
+                        }
+
                         showToast(Toaster.build().message(R.string.failedSpectating).extra(game.gid));
                     }));
 
@@ -433,8 +444,8 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
                     .addOnFailureListener(ex -> {
                         Log.e(TAG, "Failed joining game.", ex);
 
-                        if (ex instanceof OverloadedServerException) {
-                            switch (((OverloadedServerException) ex).reason) {
+                        if (ex instanceof PyxException) {
+                            switch (((PyxException) ex).errorCode) {
                                 case "gf":
                                     showToast(Toaster.build().message(R.string.gameFull).extra(game.gid));
                                     return;

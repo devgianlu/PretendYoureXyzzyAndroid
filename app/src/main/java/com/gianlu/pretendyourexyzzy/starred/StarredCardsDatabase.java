@@ -13,6 +13,8 @@ import androidx.annotation.Nullable;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.preferences.json.JsonStoring;
 import com.gianlu.pretendyourexyzzy.PK;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.ContentCard;
@@ -178,6 +180,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     }
 
     public boolean putCard(@NonNull ContentCard blackCard, @NonNull CardsGroup whiteCards) {
+
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         try {
@@ -188,6 +191,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             db.setTransactionSuccessful();
 
             sendPatch(StarredCardsPatchOp.ADD, id, null, blackCard, whiteCards);
+            ThisApplication.sendAnalytics(Utils.ACTION_STARRED_CARD_ADD);
 
             return id != -1;
         } catch (JSONException ex) {
@@ -213,6 +217,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             db.delete("cards", "id=?", new String[]{String.valueOf(card.id)});
             db.setTransactionSuccessful();
 
+            ThisApplication.sendAnalytics(Utils.ACTION_STARRED_CARD_REMOVE);
             if (card.remoteId != null)
                 sendPatch(StarredCardsPatchOp.REM, card.id, card.remoteId, null, null);
         } finally {
@@ -236,17 +241,6 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
                 }
             }
             return cards;
-        } finally {
-            db.endTransaction();
-        }
-    }
-
-    public boolean hasAnyCard() {
-        SQLiteDatabase db = getReadableDatabase();
-        db.beginTransaction();
-        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM cards", null)) {
-            if (cursor == null || !cursor.moveToNext()) return false;
-            else return cursor.getInt(0) > 0;
         } finally {
             db.endTransaction();
         }

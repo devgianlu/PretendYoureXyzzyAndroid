@@ -120,7 +120,7 @@
                 android:gravity="top"
                 android:hint="@string/clickToAddText"
                 android:importantForAutofill="no"
-                android:inputType="text"
+                android:inputType="text|textMultiLine"
                 android:lineSpacingMultiplier="1.2"
                 android:textColorHint="#ACACAC"
                 android:textSize="18sp" />

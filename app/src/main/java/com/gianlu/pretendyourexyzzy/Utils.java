@@ -44,7 +44,6 @@ public final class Utils {
     public static final String ACTION_SKIP_TUTORIAL = "skipped_tutorial";
     public static final String ACTION_DONE_TUTORIAL = "did_tutorial";
     public static final String ACTION_SENT_GAME_MSG = "sent_message_game";
-    public static final String ACTION_ADDED_CUSTOM_DECK = "added_custom_deck";
     public static final String ACTION_JUDGE_CARD = "judged_card";
     public static final String ACTION_PLAY_CUSTOM_CARD = "played_custom_card";
     public static final String ACTION_PLAY_CARD = "played_card";

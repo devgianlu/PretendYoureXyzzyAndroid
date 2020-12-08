@@ -26,7 +26,7 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 app:activeColor="?android:textColorPrimary"
-                app:inactiveColor="?android:textColorTertiary" />
+                app:inactiveColor="#DDDDDD" />
         </com.facebook.shimmer.ShimmerFrameLayout>
 
         <TextView
