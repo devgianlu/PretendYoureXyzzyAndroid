@@ -62,7 +62,6 @@
                 android:layout_marginBottom="12dp"
                 android:text="@string/server"
                 android:textAppearance="@style/TextAppearance.Medium"
-                android:textColor="#000000"
                 android:textSize="24sp" />
 
             <com.facebook.shimmer.ShimmerFrameLayout
@@ -91,6 +90,7 @@
                         android:ellipsize="end"
                         android:maxLines="1"
                         android:textAppearance="@style/TextAppearance.Medium"
+                        android:textColor="@color/input_color_fg"
                         android:textSize="14sp" />
 
                     <ImageButton
@@ -101,7 +101,7 @@
                         android:layout_marginEnd="4dp"
                         android:background="?selectableItemBackgroundBorderless"
                         android:src="@drawable/baseline_swap_horiz_24"
-                        android:tint="#000000" />
+                        android:tint="@color/input_color_fg" />
                 </LinearLayout>
             </com.facebook.shimmer.ShimmerFrameLayout>
 
@@ -140,7 +140,7 @@
                     android:layout_weight="1"
                     android:text="@string/games"
                     android:textAppearance="@style/TextAppearance.Medium"
-                    android:textColor="@color/white"
+                    android:textColor="?android:textColorPrimaryInverse"
                     android:textSize="24sp" />
 
                 <ImageButton
@@ -150,10 +150,11 @@
                     android:layout_gravity="center_vertical"
                     android:layout_marginEnd="12dp"
                     android:background="@drawable/bg_circle_white_ripple"
+                    android:backgroundTint="?android:textColorPrimaryInverse"
                     android:padding="4dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/baseline_lock_open_24"
-                    android:tint="#000000" />
+                    android:tint="?android:textColorPrimary" />
 
                 <ImageButton
                     android:id="@+id/gamesFragment_filterStatus"
@@ -161,9 +162,10 @@
                     android:layout_height="26dp"
                     android:layout_gravity="center_vertical"
                     android:background="@drawable/bg_circle_white_ripple"
+                    android:backgroundTint="?android:textColorPrimaryInverse"
                     android:scaleType="fitCenter"
                     android:src="@drawable/baseline_casino_hourglass_24"
-                    android:tint="#000000" />
+                    android:tint="?android:textColorPrimary" />
             </LinearLayout>
 
             <androidx.swiperefreshlayout.widget.SwipeRefreshLayout

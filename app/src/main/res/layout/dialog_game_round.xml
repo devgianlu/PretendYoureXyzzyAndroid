@@ -46,8 +46,7 @@
             style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@android:string/cancel"
-            android:textColor="@color/colorAccent" />
+            android:text="@android:string/cancel" />
 
         <View
             android:layout_width="0dp"
@@ -59,7 +58,6 @@
             style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/share"
-            android:textColor="@color/colorAccent" />
+            android:text="@string/share" />
     </LinearLayout>
 </LinearLayout>

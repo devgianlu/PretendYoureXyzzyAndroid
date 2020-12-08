@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -23,7 +24,9 @@
             <com.gianlu.pretendyourexyzzy.ServerFeaturesView
                 android:id="@+id/serverItem_features"
                 android:layout_width="48dp"
-                android:layout_height="48dp" />
+                android:layout_height="48dp"
+                app:activeColor="?android:textColorPrimary"
+                app:inactiveColor="?android:textColorTertiary" />
         </com.facebook.shimmer.ShimmerFrameLayout>
 
         <TextView

@@ -20,7 +20,7 @@
             android:background="?selectableItemBackgroundBorderless"
             android:scaleType="fitCenter"
             android:src="@drawable/baseline_clear_24"
-            android:tint="#000000" />
+            android:tint="?android:textColorPrimary" />
 
         <com.gianlu.pretendyourexyzzy.customdecks.NavigationView
             android:id="@+id/customDeck_navigation"
@@ -39,14 +39,14 @@
             android:background="?selectableItemBackgroundBorderless"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_dots_vertical_white_24"
-            android:tint="#000000" />
+            android:tint="?android:textColorPrimary" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/customDeck_loading"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
         android:layout_weight="1"
         android:orientation="vertical">
 

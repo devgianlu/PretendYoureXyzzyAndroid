@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/fullscreen_dialog_color_bg"
     android:orientation="vertical">
 
     <LinearLayout
@@ -21,7 +22,7 @@
             android:background="?selectableItemBackgroundBorderless"
             android:scaleType="fitCenter"
             android:src="@drawable/baseline_arrow_back_24"
-            android:tint="#000000" />
+            android:tint="?android:textColorPrimary" />
 
         <TextView
             android:layout_width="0dp"
@@ -174,7 +175,7 @@
             android:layout_marginBottom="8dp"
             android:fontFamily="@font/montserrat_medium"
             android:text="@string/overloadedSub_signInInfo"
-            android:textColor="#000000"
+            android:textColor="?android:textColorPrimary"
             android:textSize="18sp" />
 
         <com.facebook.shimmer.ShimmerFrameLayout
@@ -208,7 +209,7 @@
             android:layout_marginBottom="8dp"
             android:fontFamily="@font/montserrat_medium"
             android:text="@string/username"
-            android:textColor="#000000"
+            android:textColor="?android:textColorPrimary"
             android:textSize="18sp" />
 
         <com.facebook.shimmer.ShimmerFrameLayout

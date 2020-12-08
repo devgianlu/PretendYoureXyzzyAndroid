@@ -24,6 +24,7 @@
                 style="@style/ButtonBigStyle"
                 android:layout_width="42dp"
                 android:layout_height="42dp"
+                android:tint="?android:textColorPrimaryInverse"
                 android:src="@drawable/baseline_add_white_24" />
 
             <TextView

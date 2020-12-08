@@ -245,7 +245,6 @@
                     android:layout_weight="1"
                     android:text="@string/customDecks"
                     android:textAppearance="@style/TextAppearance.Medium"
-                    android:textColor="#000000"
                     android:textSize="18sp" />
 
                 <ImageButton
@@ -257,7 +256,7 @@
                     android:padding="4dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/baseline_contactless_24"
-                    android:tint="@color/white" />
+                    android:tint="?android:textColorPrimaryInverse" />
 
                 <ImageButton
                     android:id="@+id/profileFragment_customDecksAdd"
@@ -266,7 +265,8 @@
                     android:background="@drawable/bg_button_big"
                     android:padding="4dp"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/baseline_add_white_24" />
+                    android:src="@drawable/baseline_add_white_24"
+                    android:tint="?android:textColorPrimaryInverse" />
             </LinearLayout>
 
             <FrameLayout
@@ -316,7 +316,6 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/starredCards"
                 android:textAppearance="@style/TextAppearance.Medium"
-                android:textColor="#000000"
                 android:textSize="18sp" />
 
             <FrameLayout
@@ -374,7 +373,6 @@
                     android:layout_weight="1"
                     android:text="@string/friends"
                     android:textAppearance="@style/TextAppearance.Medium"
-                    android:textColor="#000000"
                     android:textSize="18sp" />
 
                 <ImageButton
@@ -385,6 +383,7 @@
                     android:padding="4dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/baseline_add_white_24"
+                    android:tint="?android:textColorPrimaryInverse"
                     android:visibility="gone" />
             </LinearLayout>
 
@@ -522,7 +521,6 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/achievements"
                 android:textAppearance="@style/TextAppearance.Medium"
-                android:textColor="#000000"
                 android:textSize="18sp" />
 
             <FrameLayout
@@ -622,7 +620,6 @@
                     android:layout_height="wrap_content"
                     android:text="@string/preferences"
                     android:textAppearance="@style/TextAppearance.Medium"
-                    android:textColor="#000000"
                     android:textSize="18sp" />
 
                 <CheckBox

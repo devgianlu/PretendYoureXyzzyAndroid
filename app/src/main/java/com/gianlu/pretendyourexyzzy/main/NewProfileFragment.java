@@ -268,6 +268,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                             if (imageUri == null) continue;
 
                             AchievementProgressView view = new AchievementProgressView(requireContext());
+                            view.setTextColor(CommonUtils.resolveAttrAsColor(requireContext(), android.R.attr.textColorPrimary));
                             view.setCompleteColor(colorComplete);
                             view.setIncompleteColor(colorIncomplete);
                             view.setMinValue(0);
@@ -679,8 +680,8 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                                                 })));
                                     } else {
                                         binding.profileFragmentProfileImageMessage.setVisibility(View.VISIBLE);
-                                        binding.profileFragmentProfileImage.setBackgroundResource(R.drawable.bg_circle_gray);
-                                        binding.profileFragmentProfileImage.setImageResource(R.drawable.baseline_add_24);
+                                        binding.profileFragmentProfileImage.setBackgroundResource(R.drawable.bg_profile_image_placeholder);
+                                        binding.profileFragmentProfileImage.setImageResource(R.drawable.bg_profile_image_placeholder);
                                         CommonUtils.setPaddingDip(binding.profileFragmentProfileImage, 48);
                                         binding.profileFragmentProfileImage.setOnClickListener(v -> {
                                             Intent intent = OverloadedUtils.getImageUploadIntent();
@@ -711,7 +712,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                         binding.profileFragmentInputs.usernameInput.setHelperText(null);
 
                         binding.profileFragmentProfileImageMessage.setVisibility(View.GONE);
-                        binding.profileFragmentProfileImage.setBackgroundResource(R.drawable.bg_circle_gray);
+                        binding.profileFragmentProfileImage.setBackgroundResource(R.drawable.bg_profile_image_placeholder);
                         binding.profileFragmentProfileImage.setImageResource(R.drawable.ic_overloaded_feature);
                         CommonUtils.setPaddingDip(binding.profileFragmentProfileImage, 16);
                         binding.profileFragmentProfileImage.setOnClickListener(v -> OverloadedSubDialog.get().show(getChildFragmentManager(), null));
@@ -727,7 +728,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                     binding.profileFragmentInputs.usernameInput.setHelperText(null);
 
                     binding.profileFragmentProfileImageMessage.setVisibility(View.GONE);
-                    binding.profileFragmentProfileImage.setBackgroundResource(R.drawable.bg_circle_gray);
+                    binding.profileFragmentProfileImage.setBackgroundResource(R.drawable.bg_profile_image_placeholder);
                     binding.profileFragmentProfileImage.setImageResource(R.drawable.baseline_broken_image_24);
                     CommonUtils.setPaddingDip(binding.profileFragmentProfileImage, 48);
                     binding.profileFragmentProfileImage.setOnClickListener(null);
@@ -869,7 +870,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
         @Override
         protected void onSetupViewHolder(@NonNull ViewHolder holder, int position, @NonNull FriendStatus friend) {
-            holder.itemView.setOnClickListener(v -> showPopup(holder.itemView, friend));
+            holder.itemView.setOnClickListener(v -> showPopup(holder.itemView, objs.get(holder.getAdapterPosition())));
             GlideUtils.loadProfileImage(holder.binding.friendItemImage, friend);
             holder.binding.friendItemName.setText(friend.username);
             holder.setStatus(friend.getStatus());

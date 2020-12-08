@@ -36,12 +36,6 @@ public final class GamesContainerBehavior extends CoordinatorLayout.Behavior<Lin
     }
 
     @Override
-    public void onNestedPreScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull LinearLayout child, @NonNull View target,
-                                  int dx, int dy, @NonNull int[] consumed, int type) {
-
-    }
-
-    @Override
     public void onNestedScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull LinearLayout child, @NonNull View target,
                                int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type, @NonNull int[] consumed) {
         CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) child.getLayoutParams();

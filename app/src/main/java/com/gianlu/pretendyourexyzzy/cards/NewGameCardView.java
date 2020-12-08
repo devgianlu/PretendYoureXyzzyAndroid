@@ -105,6 +105,7 @@ public final class NewGameCardView extends CardView {
     private void setType(@NotNull Type type) {
         if (card == null) throw new IllegalStateException();
         if (type == Type.UNKNOWN) {
+            setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
             binding.cardItemPick.setVisibility(GONE);
             binding.cardItemText.setVisibility(GONE);
             binding.cardItemWatermark.setVisibility(GONE);

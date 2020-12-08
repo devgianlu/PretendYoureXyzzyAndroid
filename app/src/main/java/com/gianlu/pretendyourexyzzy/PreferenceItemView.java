@@ -2,20 +2,22 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import android.view.View;
-import android.widget.ImageView;
+import android.view.LayoutInflater;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.pretendyourexyzzy.databinding.ViewPreferenceItemBinding;
 
 public final class PreferenceItemView extends LinearLayout {
+    private final ViewPreferenceItemBinding binding;
+
     public PreferenceItemView(Context context) {
         this(context, null, 0);
     }
@@ -26,16 +28,18 @@ public final class PreferenceItemView extends LinearLayout {
 
     public PreferenceItemView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-
-        View.inflate(context, R.layout.view_preference_item, this);
+        binding = ViewPreferenceItemBinding.inflate(LayoutInflater.from(context), this);
 
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.PreferenceItemView, defStyleAttr, 0);
         try {
             Drawable icon = a.getDrawable(R.styleable.PreferenceItemView_icon);
-            ((ImageView) findViewById(R.id.preferenceItem_icon)).setImageDrawable(icon);
+            binding.preferenceItemIcon.setImageDrawable(icon);
 
             String title = a.getString(R.styleable.PreferenceItemView_title);
-            ((TextView) findViewById(R.id.preferenceItem_title)).setText(title);
+            binding.preferenceItemTitle.setText(title);
+            binding.preferenceItemTitle.setTextColor(a.getColor(R.styleable.PreferenceItemView_titleTextColor, Color.BLACK));
+
+            binding.preferenceItemSubtitle.setTextColor(a.getColor(R.styleable.PreferenceItemView_subtitleTextColor, Color.GRAY));
 
             String subtitle = a.getString(R.styleable.PreferenceItemView_subtitle);
             setSubtitle(subtitle);
@@ -56,10 +60,10 @@ public final class PreferenceItemView extends LinearLayout {
 
     public void setSubtitle(String text) {
         if (text == null) {
-            findViewById(R.id.preferenceItem_subtitle).setVisibility(GONE);
+            binding.preferenceItemSubtitle.setVisibility(GONE);
         } else {
-            findViewById(R.id.preferenceItem_subtitle).setVisibility(VISIBLE);
-            ((TextView) findViewById(R.id.preferenceItem_subtitle)).setText(text);
+            binding.preferenceItemSubtitle.setVisibility(VISIBLE);
+            binding.preferenceItemSubtitle.setText(text);
         }
     }
 }

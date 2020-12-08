@@ -10,6 +10,7 @@
     android:elevation="14dp"
     android:outlineAmbientShadowColor="#000000"
     android:outlineSpotShadowColor="#000000"
+    app:cardBackgroundColor="@color/game_item_color_bg"
     app:cardCornerRadius="10dp"
     app:cardElevation="14dp"
     tools:targetApi="p">
@@ -55,7 +56,7 @@
                 android:background="@drawable/bg_image_small"
                 android:padding="4dp"
                 android:scaleType="fitCenter"
-                app:tint="#000000" />
+                app:tint="?android:textColorPrimary" />
         </LinearLayout>
 
         <LinearLayout
@@ -105,8 +106,8 @@
                     style="@style/ButtonSmallStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
-                    android:layout_marginBottom="4dp"
                     android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="4dp"
                     android:text="@string/spectate" />
 
                 <Button

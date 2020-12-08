@@ -51,6 +51,7 @@
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.Regular"
         android:textSize="12sp"
+        android:textColor="?android:textColorPrimary"
         app:autoSizeMaxTextSize="12sp"
         app:autoSizeMinTextSize="8sp"
         app:autoSizeTextType="uniform" />

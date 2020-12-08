@@ -35,7 +35,7 @@ public final class CrCastDeck extends BasicCustomDeck {
     private CrCastDeck(@NonNull JSONObject obj, @NonNull String watermark, boolean favorite, long lastUsed) throws JSONException {
         super(obj.getString("name"), watermark, null, lastUsed, -1);
         this.desc = obj.getString("description");
-        this.lang = obj.getString("language");
+        this.lang = obj.getString("language").toUpperCase();
         this.privateDeck = obj.getBoolean("private");
         this.favorite = favorite;
 

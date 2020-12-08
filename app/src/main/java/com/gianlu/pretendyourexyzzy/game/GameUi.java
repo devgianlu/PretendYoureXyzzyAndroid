@@ -1,7 +1,6 @@
 package com.gianlu.pretendyourexyzzy.game;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.TypedValue;
@@ -445,7 +444,7 @@ public class GameUi {
             if (OverloadedApi.get().isOverloadedUserOnServerCached(player.name))
                 CommonUtils.setTextColor(holder.binding.playerItemName, R.color.appColor_500);
             else
-                holder.binding.playerItemName.setTextColor(Color.BLACK);
+                CommonUtils.setTextColorFromAttr(holder.binding.playerItemName, android.R.attr.textColorPrimary);
 
             holder.binding.getRoot().setOnClickListener(v -> {
                 if (listener != null) listener.onPlayerSelected(player.name);

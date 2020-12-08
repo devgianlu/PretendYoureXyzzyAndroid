@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -54,7 +55,7 @@
             android:fontFamily="@font/roboto_bold"
             android:gravity="center"
             android:padding="8dp"
-            android:textColor="#000000"
+            android:textColor="?android:textColorPrimary"
             android:textSize="20sp"
             android:textStyle="italic"
             android:visibility="gone" />
@@ -69,20 +70,23 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:textAlignment="center"
-        android:textColor="#7B7B7B"
+        android:textColor="?android:textColorSecondary"
         android:textSize="20sp" />
 
     <LinearLayout
         android:id="@+id/gameActivity_loading"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:gravity="center_vertical"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:visibility="gone"
+        tools:ignore="UseCompoundDrawables">
 
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:layout_gravity="center_vertical"
+            android:layout_marginBottom="8dp"
             android:paddingStart="96dp"
             android:paddingEnd="96dp"
             app:srcCompat="@drawable/ic_undraw_game_world" />

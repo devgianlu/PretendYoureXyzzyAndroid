@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -24,6 +25,8 @@ import java.util.EnumSet;
 public final class ServerFeaturesView extends View {
     private final EnumSet<Feature> features = EnumSet.noneOf(Feature.class);
     private final EnumMap<Feature, Drawable> drawables = new EnumMap<>(Feature.class);
+    private final int mActiveColor;
+    private final int mInactiveColor;
 
     public ServerFeaturesView(Context context) {
         this(context, null, 0);
@@ -36,6 +39,14 @@ public final class ServerFeaturesView extends View {
     public ServerFeaturesView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         setWillNotDraw(false);
+
+        TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ServerFeaturesView, defStyleAttr, 0);
+        try {
+            mActiveColor = a.getColor(R.styleable.ServerFeaturesView_activeColor, Color.BLACK);
+            mInactiveColor = a.getColor(R.styleable.ServerFeaturesView_inactiveColor, Color.rgb(240, 240, 240));
+        } finally {
+            a.recycle();
+        }
 
         for (Feature feature : Feature.values())
             drawables.put(feature, ContextCompat.getDrawable(context, feature.res));
@@ -60,14 +71,14 @@ public final class ServerFeaturesView extends View {
 
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
-        canvas.drawColor(Color.WHITE);
+        // canvas.drawColor(Color.WHITE);
         int size = Math.min(getHeight() / 3, getWidth() / 3);
 
         for (Feature feature : Feature.values()) {
             Drawable drawable = drawables.get(feature);
             if (drawable == null) continue;
 
-            drawable.setColorFilter(features.contains(feature) ? Color.BLACK : Color.rgb(240, 240, 240), PorterDuff.Mode.SRC_IN);
+            drawable.setColorFilter(features.contains(feature) ? mActiveColor : mInactiveColor, PorterDuff.Mode.SRC_IN);
 
             int left = size * feature.x;
             int top = size * feature.y;

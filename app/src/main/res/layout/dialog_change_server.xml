@@ -14,7 +14,7 @@
         android:layout_marginTop="56dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="56dp"
-        android:background="@drawable/bg_card_6"
+        android:background="@drawable/bg_dialog"
         android:elevation="4dp"
         android:orientation="vertical"
         android:padding="16dp">
@@ -46,7 +46,9 @@
                 android:layout_marginBottom="4dp"
                 android:drawablePadding="2dp"
                 android:text="@string/customDecks"
-                app:drawableStartCompat="@drawable/baseline_bookmarks_24" />
+                android:textColor="?android:textColorPrimary"
+                app:drawableStartCompat="@drawable/baseline_bookmarks_24"
+                app:drawableTint="?android:textColorPrimary" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -55,7 +57,9 @@
                 android:layout_marginBottom="4dp"
                 android:drawablePadding="2dp"
                 android:text="@string/blankCardsLabel"
-                app:drawableStartCompat="@drawable/baseline_edit_24" />
+                android:textColor="?android:textColorPrimary"
+                app:drawableStartCompat="@drawable/baseline_edit_24"
+                app:drawableTint="?android:textColorPrimary" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -64,7 +68,9 @@
                 android:layout_marginBottom="4dp"
                 android:drawablePadding="2dp"
                 android:text="@string/metrics"
-                app:drawableStartCompat="@drawable/baseline_person_24" />
+                android:textColor="?android:textColorPrimary"
+                app:drawableStartCompat="@drawable/baseline_person_24"
+                app:drawableTint="?android:textColorPrimary" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -73,7 +79,9 @@
                 android:layout_marginBottom="4dp"
                 android:drawablePadding="2dp"
                 android:text="@string/globalChat"
-                app:drawableStartCompat="@drawable/baseline_chat_24" />
+                android:textColor="?android:textColorPrimary"
+                app:drawableStartCompat="@drawable/baseline_chat_24"
+                app:drawableTint="?android:textColorPrimary" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -81,7 +89,9 @@
                 android:layout_marginBottom="4dp"
                 android:drawablePadding="2dp"
                 android:text="@string/gameChat"
-                app:drawableStartCompat="@drawable/baseline_chat_bubble_outline_24" />
+                android:textColor="?android:textColorPrimary"
+                app:drawableStartCompat="@drawable/baseline_chat_bubble_outline_24"
+                app:drawableTint="?android:textColorPrimary" />
         </org.apmem.tools.layouts.FlowLayout>
 
         <Button

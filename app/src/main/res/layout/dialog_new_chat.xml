@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/fullscreen_dialog_color_bg"
     android:orientation="vertical">
 
     <LinearLayout
@@ -19,7 +20,7 @@
             android:background="?selectableItemBackgroundBorderless"
             android:scaleType="fitCenter"
             android:src="@drawable/baseline_arrow_back_24"
-            android:tint="#000000" />
+            android:tint="?android:textColorPrimary" />
 
         <TextView
             android:id="@+id/chatFragment_title"
@@ -37,7 +38,7 @@
             android:background="?selectableItemBackgroundBorderless"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_dots_vertical_white_24"
-            android:tint="#000000" />
+            android:tint="?android:textColorPrimary" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

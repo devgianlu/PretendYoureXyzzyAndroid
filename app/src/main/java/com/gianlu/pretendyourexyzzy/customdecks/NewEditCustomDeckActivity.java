@@ -385,7 +385,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
             binding = FragmentNewEditCustomDeckInfoBinding.inflate(inflater, container, false);
             binding.editCustomDeckCollaborators.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
             binding.editCustomDeckAddCollaborator.setOnClickListener(v -> showAddCollaboratorDialog());
-            Utils.generateUsernamePlaceholders(requireContext(), binding.editCustomDeckCollaboratorsLoadingChild, 16, 16, 20);
+            Utils.generateUsernamePlaceholders(requireContext(), binding.editCustomDeckCollaboratorsLoadingChild, 16, 16, 8);
 
             CustomDecksDatabase db = CustomDecksDatabase.get(requireContext());
 

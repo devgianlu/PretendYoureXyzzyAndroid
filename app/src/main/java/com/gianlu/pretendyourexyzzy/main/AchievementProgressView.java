@@ -24,8 +24,8 @@ import com.gianlu.pretendyourexyzzy.R;
 public final class AchievementProgressView extends View {
     private final Paint mCompletePaint;
     private final Paint mIncompletePaint;
-    private final Paint valueTextPaint;
-    private final TextPaint bottomTextPaint;
+    private final Paint mValueTextPaint;
+    private final TextPaint mBottomTextPaint;
     private final int mBarRadius = 16;
     private final int mBarHeight = 30;
     private final Rect iconTextRect = new Rect();
@@ -59,21 +59,21 @@ public final class AchievementProgressView extends View {
         mIncompletePaint = new Paint();
         mIncompletePaint.setAntiAlias(true);
 
-        valueTextPaint = new Paint();
-        valueTextPaint.setAntiAlias(true);
-        valueTextPaint.setTypeface(ResourcesCompat.getFont(context, R.font.montserrat_medium));
-        valueTextPaint.setTextSize(35);
-        valueTextPaint.setColor(Color.BLACK);
+        mValueTextPaint = new Paint();
+        mValueTextPaint.setAntiAlias(true);
+        mValueTextPaint.setTypeface(ResourcesCompat.getFont(context, R.font.montserrat_medium));
+        mValueTextPaint.setTextSize(35);
+        mValueTextPaint.setColor(Color.BLACK);
 
-        bottomTextPaint = new TextPaint();
-        bottomTextPaint.setAntiAlias(true);
-        bottomTextPaint.setTypeface(ResourcesCompat.getFont(context, R.font.montserrat_regular));
-        bottomTextPaint.setTextSize(35);
-        bottomTextPaint.setAlpha(200);
-        bottomTextPaint.setColor(Color.BLACK);
+        mBottomTextPaint = new TextPaint();
+        mBottomTextPaint.setAntiAlias(true);
+        mBottomTextPaint.setTypeface(ResourcesCompat.getFont(context, R.font.montserrat_regular));
+        mBottomTextPaint.setTextSize(35);
+        mBottomTextPaint.setAlpha(200);
 
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.AchievementProgressView, defStyleAttr, 0);
         try {
+            setTextColor(a.getColor(R.styleable.AchievementProgressView_textColor, Color.BLACK));
             setCompleteColor(a.getColor(R.styleable.AchievementProgressView_completeColor, Color.GREEN));
             setIncompleteColor(a.getColor(R.styleable.AchievementProgressView_incompleteColor, Color.RED));
             setMinValue(a.getInteger(R.styleable.AchievementProgressView_minValue, 0));
@@ -86,6 +86,12 @@ public final class AchievementProgressView extends View {
         } finally {
             a.recycle();
         }
+    }
+
+    public void setTextColor(@ColorInt int textColor) {
+        this.mBottomTextPaint.setColor(textColor);
+        this.mValueTextPaint.setColor(textColor);
+        invalidate();
     }
 
     public void setIncompleteColor(@ColorInt int incompleteColor) {
@@ -137,12 +143,12 @@ public final class AchievementProgressView extends View {
         // Draw desc text
         StaticLayout descTextLayout;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            descTextLayout = StaticLayout.Builder.obtain(mDesc, 0, mDesc.length(), bottomTextPaint, maxW)
+            descTextLayout = StaticLayout.Builder.obtain(mDesc, 0, mDesc.length(), mBottomTextPaint, maxW)
                     .setAlignment(Layout.Alignment.ALIGN_NORMAL).setIncludePad(true)
                     .setLineSpacing(0, 1).setMaxLines(2)
                     .build();
         } else {
-            descTextLayout = new StaticLayout(mDesc, 0, mDesc.length(), bottomTextPaint, maxW, Layout.Alignment.ALIGN_NORMAL, 1, 0, true);
+            descTextLayout = new StaticLayout(mDesc, 0, mDesc.length(), mBottomTextPaint, maxW, Layout.Alignment.ALIGN_NORMAL, 1, 0, true);
         }
 
         int descTextY = getPaddingTop();
@@ -172,15 +178,15 @@ public final class AchievementProgressView extends View {
         int textTop = barTop + mBarHeight + (mIconH - mBarHeight) / 2 + mTextPaddingTop;
 
         String iconText = String.valueOf(mActualValue);
-        valueTextPaint.getTextBounds(iconText, 0, iconText.length(), iconTextRect);
+        mValueTextPaint.getTextBounds(iconText, 0, iconText.length(), iconTextRect);
 
         int iconTextX = (int) (minX + completeW - iconTextRect.width() / 2);
         int iconTextY = textTop + iconTextRect.height();
-        canvas.drawText(iconText, iconTextX, iconTextY, valueTextPaint);
+        canvas.drawText(iconText, iconTextX, iconTextY, mValueTextPaint);
 
         // Draw max text
         String maxText = String.valueOf(mMaxValue);
-        valueTextPaint.getTextBounds(maxText, 0, maxText.length(), maxTextRect);
+        mValueTextPaint.getTextBounds(maxText, 0, maxText.length(), maxTextRect);
 
         int maxTextX = minX + maxW - maxTextRect.width() / 2;
         int maxTextY = textTop + maxTextRect.height();
@@ -188,15 +194,15 @@ public final class AchievementProgressView extends View {
         iconTextRect.offset(iconTextX, iconTextY);
         maxTextRect.offset(maxTextX, maxTextY);
         if (!Rect.intersects(maxTextRect, iconTextRect))
-            canvas.drawText(maxText, maxTextX, maxTextY, valueTextPaint);
+            canvas.drawText(maxText, maxTextX, maxTextY, mValueTextPaint);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        Paint.FontMetrics fm = valueTextPaint.getFontMetrics();
+        Paint.FontMetrics fm = mValueTextPaint.getFontMetrics();
         int textHeight = (int) (fm.descent - fm.ascent);
 
-        fm = bottomTextPaint.getFontMetrics();
+        fm = mBottomTextPaint.getFontMetrics();
         textHeight += (int) (fm.descent - fm.ascent);
 
         int height = getPaddingTop() + mIconH + mTextPaddingTop + textHeight + mDescTextPaddingBottom + getPaddingBottom();

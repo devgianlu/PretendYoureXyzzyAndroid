@@ -18,7 +18,6 @@
             android:layout_height="wrap_content"
             android:text="@string/name"
             android:textAppearance="@style/TextAppearance.Regular"
-            android:textColor="#000000"
             android:textSize="18sp" />
 
         <com.google.android.material.textfield.TextInputLayout
@@ -42,7 +41,6 @@
             android:layout_height="wrap_content"
             android:text="@string/watermark"
             android:textAppearance="@style/TextAppearance.Regular"
-            android:textColor="#000000"
             android:textSize="18sp" />
 
         <com.google.android.material.textfield.TextInputLayout
@@ -68,7 +66,6 @@
             android:layout_height="wrap_content"
             android:text="@string/description"
             android:textAppearance="@style/TextAppearance.Regular"
-            android:textColor="#000000"
             android:textSize="18sp" />
 
         <com.google.android.material.textfield.TextInputLayout
@@ -91,6 +88,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
+            android:layout_marginBottom="4dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -112,7 +110,7 @@
                 android:padding="4dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/baseline_add_24"
-                android:tint="@color/white" />
+                android:tint="?android:textColorPrimaryInverse" />
         </LinearLayout>
 
         <FrameLayout
