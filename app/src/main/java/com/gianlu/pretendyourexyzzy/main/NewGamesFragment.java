@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy.main;
 
 import android.annotation.SuppressLint;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -14,8 +13,10 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.PopupMenu;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -267,18 +268,18 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
 
                 binding.gamesFragmentServerError.setVisibility(View.VISIBLE);
                 binding.gamesFragmentServerError.setText(errorRes);
-                setServerBoxTint(Color.rgb(255, 204, 204));
+                setServerBoxTint(R.color.input_error_color_bg);
             }
         }
     }
 
-    private void setServerBoxTint(@Nullable Integer color) {
+    private void setServerBoxTint(@Nullable @ColorRes Integer color) {
         if (binding == null) return;
 
         if (color == null)
             binding.gamesFragmentServerLoading.getChildAt(0).setBackgroundTintList(null);
         else
-            binding.gamesFragmentServerLoading.getChildAt(0).setBackgroundTintList(ColorStateList.valueOf(color));
+            binding.gamesFragmentServerLoading.getChildAt(0).setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), color)));
     }
 
     @Override

@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -109,6 +110,26 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
         setMenuIconVisible(deckId != -1);
         setPageChangeAllowed(deckId != -1);
 
+        // Handle intent-filter
+        if (Intent.ACTION_VIEW.equals(getIntent().getAction())) {
+            Uri uri = (Uri) getIntent().getParcelableExtra(Intent.EXTRA_STREAM);
+            if (uri == null) uri = getIntent().getData();
+            if (uri == null) {
+                finishAfterTransition();
+                return;
+            }
+
+            setBottomButtonMode(Mode.SAVE);
+
+            try (InputStream in = getContentResolver().openInputStream(uri)) {
+                importStream(in);
+            } catch (JSONException | IOException ex) {
+                Log.e(TAG, "Failed importing deck from uri.", ex);
+                finishAfterTransition();
+                return;
+            }
+        }
+
         Type type = (Type) getIntent().getSerializableExtra("type");
         if (type == null) return;
 
@@ -128,21 +149,30 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                 if (tmpFile == null) break;
 
                 try (FileInputStream in = new FileInputStream(tmpFile)) {
-                    JSONObject obj = new JSONObject(CommonUtils.readEntirely(in));
-
-                    CardsFragment whitesFragment, blacksFragment;
-                    loaded(InfoFragment.json(obj), blacksFragment = BlacksFragment.empty(), whitesFragment = WhitesFragment.empty());
-                    if (save()) { // Will not import cards if can't save (meh...)
-                        blacksFragment.importCards(this, obj.optJSONArray("calls"));
-                        whitesFragment.importCards(this, obj.optJSONArray("responses"));
-                    }
+                    importStream(in);
                 } catch (JSONException | IOException ex) {
-                    Log.e(TAG, "Failed importing deck.", ex);
+                    Log.e(TAG, "Failed importing deck from file.", ex);
                     finishAfterTransition();
                 } finally {
                     tmpFile.deleteOnExit();
                 }
                 break;
+        }
+    }
+
+    /**
+     * Imports the deck reading the JSON from the input stream. PLEASE CLOSE IT.
+     *
+     * @param in The input stream
+     */
+    private void importStream(@NonNull InputStream in) throws IOException, JSONException {
+        JSONObject obj = new JSONObject(CommonUtils.readEntirely(in));
+
+        CardsFragment whitesFragment, blacksFragment;
+        loaded(InfoFragment.json(obj), blacksFragment = BlacksFragment.empty(), whitesFragment = WhitesFragment.empty());
+        if (save()) { // Will not import cards if can't save (meh...)
+            blacksFragment.importCards(this, obj.optJSONArray("calls"));
+            whitesFragment.importCards(this, obj.optJSONArray("responses"));
         }
     }
 
@@ -193,7 +223,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
             String fileName = getName();
             if (fileName.isEmpty()) fileName = String.valueOf(deckId);
 
-            File file = new File(parent, fileName + ".json");
+            File file = new File(parent, fileName + ".deck.json");
             try (FileOutputStream out = new FileOutputStream(file)) {
                 out.write(obj.toString().getBytes());
             }
@@ -455,18 +485,20 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                 }
             });
 
-            int deckId = requireArguments().getInt("deckId", -1);
-            if (deckId == -1) deck = null;
-            else deck = db.getDeck(deckId);
-
-            if (deck != null) {
-                CommonUtils.setText(binding.editCustomDeckInfoName, deck.name);
-                CommonUtils.setText(binding.editCustomDeckInfoWatermark, deck.watermark);
-                CommonUtils.setText(binding.editCustomDeckInfoDesc, deck.description);
-            } else if (requireArguments().getBoolean("import", false)) {
+            if (requireArguments().getBoolean("import", false)) {
                 CommonUtils.setText(binding.editCustomDeckInfoName, requireArguments().getString("name"));
                 CommonUtils.setText(binding.editCustomDeckInfoWatermark, requireArguments().getString("watermark"));
                 CommonUtils.setText(binding.editCustomDeckInfoDesc, requireArguments().getString("desc"));
+            } else {
+                int deckId = requireArguments().getInt("deckId", -1);
+                if (deckId == -1) deck = null;
+                else deck = db.getDeck(deckId);
+
+                if (deck != null) {
+                    CommonUtils.setText(binding.editCustomDeckInfoName, deck.name);
+                    CommonUtils.setText(binding.editCustomDeckInfoWatermark, deck.watermark);
+                    CommonUtils.setText(binding.editCustomDeckInfoDesc, deck.description);
+                }
             }
 
             setupCollaborators();

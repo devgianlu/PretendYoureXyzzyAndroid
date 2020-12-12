@@ -14,6 +14,8 @@ import com.gianlu.pretendyourexyzzy.R;
 import java.util.List;
 
 public final class GamesContainerBehavior extends CoordinatorLayout.Behavior<LinearLayout> {
+    private int mCurrentOffset = -1;
+
     public GamesContainerBehavior(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -25,9 +27,28 @@ public final class GamesContainerBehavior extends CoordinatorLayout.Behavior<Lin
 
     @Override
     public boolean onDependentViewChanged(@NonNull CoordinatorLayout parent, @NonNull LinearLayout child, @NonNull View dependency) {
-        CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) child.getLayoutParams();
-        params.topMargin = dependency.getHeight();
-        return true;
+        int height = dependency.getHeight();
+        if (height > 0) {
+            if (mCurrentOffset == -1) mCurrentOffset = height;
+            int offset = mCurrentOffset - child.getTop();
+            child.offsetTopAndBottom(offset);
+            return offset != 0;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean onLayoutChild(@NonNull CoordinatorLayout parent, @NonNull LinearLayout child, int layoutDirection) {
+        List<View> views = parent.getDependencies(child);
+        if (!views.isEmpty()) {
+            parent.onLayoutChild(child, layoutDirection);
+            if (mCurrentOffset == -1) mCurrentOffset = views.get(0).getHeight();
+            child.offsetTopAndBottom(mCurrentOffset - child.getTop());
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -38,21 +59,21 @@ public final class GamesContainerBehavior extends CoordinatorLayout.Behavior<Lin
     @Override
     public void onNestedScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull LinearLayout child, @NonNull View target,
                                int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type, @NonNull int[] consumed) {
-        CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) child.getLayoutParams();
         if (dyUnconsumed < 0) {
             List<View> views = coordinatorLayout.getDependencies(child);
             if (views.isEmpty()) return;
 
             int height = views.get(0).getHeight();
-            if (params.topMargin < height) {
-                int toConsume = Math.min(-dyUnconsumed, height - params.topMargin);
-                params.topMargin += toConsume;
+            if (mCurrentOffset < height) {
+                int toConsume = Math.min(-dyUnconsumed, height - mCurrentOffset);
+                mCurrentOffset += toConsume;
                 consumed[1] -= toConsume;
-                child.requestLayout();
+                child.offsetTopAndBottom(toConsume);
             }
-        } else if (dyConsumed > 0 && params.topMargin > 0) {
-            params.topMargin -= Math.min(dyConsumed, params.topMargin);
-            child.requestLayout();
+        } else if (dyConsumed > 0 && mCurrentOffset > 0) {
+            int toConsume = -Math.min(dyConsumed, mCurrentOffset);
+            mCurrentOffset += toConsume;
+            child.offsetTopAndBottom(toConsume);
         }
     }
 }

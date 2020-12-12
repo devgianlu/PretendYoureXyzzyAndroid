@@ -6,6 +6,7 @@
     <color name="game_item_color_bg">#0D0D0D</color>
     <color name="input_color_bg">#212121</color>
     <color name="input_color_fg">#FFFFFF</color>
+    <color name="input_error_color_bg">#FF7777</color>
     <color name="image_small_color_bg">#3E3E3E</color>
     <color name="profile_image_placeholder_color_bg">#303030</color>
     <color name="undraw_text_color">#EEEEEE</color>

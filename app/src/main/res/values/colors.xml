@@ -25,6 +25,7 @@
     <color name="game_item_color_bg">#FFFFFF</color>
     <color name="input_color_bg">@color/appColor_100</color>
     <color name="input_color_fg">#000000</color>
+    <color name="input_error_color_bg">#FFCCCC</color>
     <color name="image_small_color_bg">#F0F0F0</color>
     <color name="profile_image_placeholder_color_bg">#F4F4F4</color>
     <color name="undraw_text_color">#505050</color>

@@ -57,7 +57,11 @@ public class FirstLoadedPyx extends Pyx {
                     }
                 }
 
-                Tasks.await(OverloadedApi.get().listUsersOnServer(server.url));
+                try {
+                    Tasks.await(OverloadedApi.get().listUsersOnServer(server.url));
+                } catch (ExecutionException ex) {
+                    Log.e(TAG, "Failed getting online users.", ex);
+                }
 
                 return user;
             }).continueWithTask(task -> upgrade(task.getResult(), true));
@@ -78,7 +82,12 @@ public class FirstLoadedPyx extends Pyx {
         else
             task = task.continueWithTask(task1 -> OverloadedApi.get().listUsersOnServer(server.url));
 
-        return task.continueWithTask(task1 -> Tasks.forResult(pyx));
+        return task.continueWithTask(task1 -> {
+            if (task1.getException() != null)
+                Log.e(TAG, "Failed getting online users (upgrade).", task1.getException());
+
+            return Tasks.forResult(pyx);
+        });
     }
 
     @NotNull
