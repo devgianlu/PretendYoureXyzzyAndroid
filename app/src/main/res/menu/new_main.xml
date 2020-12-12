@@ -6,7 +6,7 @@
         android:title="@string/settings" />
     <item
         android:id="@+id/mainNavigation_home"
-        android:icon="@drawable/ic_new_logo_fg"
+        android:icon="@drawable/ic_logo_foreground"
         android:title="@string/home" />
     <item
         android:id="@+id/mainNavigation_profile"

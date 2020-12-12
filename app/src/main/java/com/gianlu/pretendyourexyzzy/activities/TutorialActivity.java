@@ -57,7 +57,7 @@ public class TutorialActivity extends AppIntro {
         setSkipButtonEnabled(true);
         setIndicatorEnabled(true);
 
-        addSlide(newSlide(R.string.tutorial_firstTitle, R.string.tutorial_firstDesc, R.drawable.ic_launcher));
+        addSlide(newSlide(R.string.tutorial_firstTitle, R.string.tutorial_firstDesc, R.mipmap.ic_launcher));
         addSlide(newSlide(R.string.tutorial_secondTitle, R.string.tutorial_secondDesc, 0));
         addSlide(newSlide(R.string.tutorial_thirdTitle, R.string.tutorial_thirdDesc, 0));
         addSlide(newSlide(R.string.tutorial_fourthTitle, R.string.tutorial_fourthDesc, 0));

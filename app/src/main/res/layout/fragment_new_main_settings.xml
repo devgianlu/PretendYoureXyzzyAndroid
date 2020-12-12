@@ -38,7 +38,7 @@
             style="@style/TextAppearance.PreferencesItem"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:icon="@drawable/ic_new_logo_fg"
+            app:icon="@drawable/ic_logo_foreground"
             app:title="@string/app_name" />
 
         <com.gianlu.pretendyourexyzzy.PreferenceItemView
