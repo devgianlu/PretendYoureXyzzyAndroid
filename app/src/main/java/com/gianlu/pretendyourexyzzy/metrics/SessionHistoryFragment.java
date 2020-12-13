@@ -12,16 +12,15 @@ import android.widget.ProgressBar;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.widget.NestedScrollView;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
 import com.gianlu.commonutils.misc.MessageView;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionHistory;
@@ -67,13 +66,11 @@ public class SessionHistoryFragment extends FragmentWithDialog {
         playedRoundsLabel = container.findViewById(R.id.sessionFragment_playedRoundsLabel);
         playedRounds = container.findViewById(R.id.sessionFragment_playedRounds);
         playedRounds.setNestedScrollingEnabled(false);
-        playedRounds.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-        playedRounds.addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
+        playedRounds.setLayoutManager(new GridLayoutManager(requireContext(), 2, RecyclerView.VERTICAL, false));
         judgedRoundsLabel = container.findViewById(R.id.sessionFragment_judgedRoundsLabel);
         judgedRounds = container.findViewById(R.id.sessionFragment_judgedRounds);
         judgedRounds.setNestedScrollingEnabled(false);
-        judgedRounds.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-        judgedRounds.addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
+        judgedRounds.setLayoutManager(new GridLayoutManager(requireContext(), 2, RecyclerView.VERTICAL, false));
 
         loading = layout.findViewById(R.id.sessionFragment_loading);
         loading.setVisibility(View.VISIBLE);

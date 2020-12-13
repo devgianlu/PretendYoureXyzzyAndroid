@@ -174,7 +174,11 @@ public final class NewChatDialog extends DialogFragment {
         AnalyticsApplication.sendAnalytics(OverloadedUtils.ACTION_OPEN_CHAT);
 
         controller.attach(msg -> {
-            if (adapter != null) adapter.addNewMessage(msg);
+            if (adapter != null) {
+                adapter.addNewMessage(msg);
+                binding.chatFragmentList.scrollToPosition(adapter.getItemCount() - 1);
+            }
+
             controller.readAllMessages();
         });
 

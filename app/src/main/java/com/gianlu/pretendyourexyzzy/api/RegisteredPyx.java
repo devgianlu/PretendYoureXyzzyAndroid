@@ -91,13 +91,17 @@ public class RegisteredPyx extends FirstLoadedPyx {
         return pollingThread;
     }
 
-    public final void logout() {
+    public final void logout(boolean unsetSessionId) {
         request(PyxRequests.logout()).addOnFailureListener(ex -> Log.e(TAG, "Failed logging out.", ex));
 
         if (pollingThread != null) pollingThread.safeStop();
         if (OverloadedUtils.isSignedIn()) OverloadedApi.get().loggedOutFromPyxServer();
         InstanceHolder.holder().invalidate();
-        Prefs.remove(PK.LAST_JSESSIONID);
+        if (unsetSessionId) Prefs.remove(PK.LAST_JSESSIONID);
+    }
+
+    public final void logout() {
+        logout(true);
     }
 
     @NonNull
@@ -117,6 +121,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
 
     public class PollingThread extends Thread {
         private final Set<OnEventListener> listeners = new HashSet<>();
+        private final Set<OnPollingPyxErrorListener> errorListeners = new HashSet<>();
         private int exCount = 0;
         private volatile boolean shouldStop = false;
         private Call lastCall;
@@ -166,8 +171,11 @@ public class RegisteredPyx extends FirstLoadedPyx {
                             handler.post(new NotifyMessage(messages));
                         }
                     }
-                } catch (JSONException | PyxException ex) {
-                    Log.w(TAG, "Polling exception.", ex);
+                } catch (JSONException ex) {
+                    Log.w(TAG, "JSON polling exception.", ex);
+                } catch (PyxException ex) {
+                    Log.w(TAG, "Pyx polling exception.", ex);
+                    handler.post(new NotifyError(ex));
                 } catch (IOException ex) {
                     if (shouldStop) break;
 
@@ -186,21 +194,52 @@ public class RegisteredPyx extends FirstLoadedPyx {
             }
         }
 
-        public void addListener(@NonNull OnEventListener listener) {
-            synchronized (listeners) {
-                listeners.add(listener);
-            }
-        }
-
         void safeStop() {
             shouldStop = true;
             if (lastCall != null) lastCall.cancel();
             interrupt();
         }
 
+        public void addListener(@NonNull OnEventListener listener) {
+            synchronized (listeners) {
+                listeners.add(listener);
+            }
+        }
+
         public void removeListener(@NonNull OnEventListener listener) {
             synchronized (listeners) {
                 listeners.remove(listener);
+            }
+        }
+
+        public void addErrorListener(@NonNull OnPollingPyxErrorListener listener) {
+            synchronized (errorListeners) {
+                errorListeners.add(listener);
+            }
+        }
+
+        public void removeErrorListener(@NonNull OnPollingPyxErrorListener listener) {
+            synchronized (errorListeners) {
+                errorListeners.remove(listener);
+            }
+        }
+
+        private class NotifyError implements Runnable {
+            private final PyxException ex;
+
+            NotifyError(PyxException ex) {
+                this.ex = ex;
+            }
+
+            @Override
+            public void run() {
+                List<OnPollingPyxErrorListener> copy;
+                synchronized (errorListeners) {
+                    copy = new ArrayList<>(errorListeners);
+                }
+
+                for (OnPollingPyxErrorListener listener : copy)
+                    listener.onPollPyxError(ex);
             }
         }
 

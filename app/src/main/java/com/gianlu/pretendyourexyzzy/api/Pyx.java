@@ -1,7 +1,6 @@
 package com.gianlu.pretendyourexyzzy.api;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
@@ -422,6 +421,10 @@ public class Pyx implements Closeable {
         void onPollMessage(@NonNull PollMessage message) throws JSONException;
     }
 
+    public interface OnPollingPyxErrorListener {
+        void onPollPyxError(@NonNull PyxException ex);
+    }
+
     public static class NoServersException extends Exception {
 
         public void solve(@NonNull Context context) {
@@ -507,18 +510,6 @@ public class Pyx implements Closeable {
             JsonStoring.intoPrefs().putJsonArray(PK.API_SERVERS, json);
             if (cache) Prefs.putLong(PK.API_SERVERS_CACHE_AGE, System.currentTimeMillis());
             else Prefs.putLong(PK.API_SERVERS_CACHE_AGE, 0);
-        }
-
-        @Nullable
-        public static Server fromUrl(Uri url) {
-            List<Server> servers = loadAllServers();
-            for (Server server : servers) {
-                if (server.url.host().equals(url.getHost())
-                        && server.url.port() == url.getPort())
-                    return server;
-            }
-
-            return null;
         }
 
         @NonNull

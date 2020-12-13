@@ -174,6 +174,8 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
             blacksFragment.importCards(this, obj.optJSONArray("calls"));
             whitesFragment.importCards(this, obj.optJSONArray("responses"));
         }
+
+        ThisApplication.sendAnalytics(Utils.ACTION_IMPORTED_CUSTOM_DECK);
     }
 
     @Override

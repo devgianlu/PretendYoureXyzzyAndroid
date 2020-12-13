@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SimpleRound;
-import com.gianlu.pretendyourexyzzy.cards.GameCardView;
+import com.gianlu.pretendyourexyzzy.cards.NewGameCardView;
 
 import java.util.List;
 
@@ -33,7 +33,7 @@ class RoundsAdapter extends RecyclerView.Adapter<RoundsAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         SimpleRound round = rounds.get(position);
-        ((GameCardView) holder.itemView).setCard(round.blackCard);
+        holder.card.setCard(round.blackCard);
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onRoundSelected(round);
         });
@@ -49,8 +49,11 @@ class RoundsAdapter extends RecyclerView.Adapter<RoundsAdapter.ViewHolder> {
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
+        final NewGameCardView card;
+
         ViewHolder(ViewGroup parent) {
-            super(inflater.inflate(R.layout.item_metrics_round, parent, false));
+            super(inflater.inflate(R.layout.item_grid_card, parent, false));
+            card = (NewGameCardView) ((ViewGroup) itemView).getChildAt(0);
         }
     }
 }

@@ -8,6 +8,7 @@ import android.view.Gravity;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.IdRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
@@ -47,7 +48,7 @@ import javax.net.ssl.SSLException;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
 
-public class NewMainActivity extends ActivityWithDialog implements OverloadedChatApi.UnreadCountListener, PyxChatHelper.UnreadCountListener {
+public class NewMainActivity extends ActivityWithDialog implements OverloadedChatApi.UnreadCountListener, PyxChatHelper.UnreadCountListener, Pyx.OnPollingPyxErrorListener {
     private static final String SETTINGS_FRAGMENT_TAG = "settings";
     private static final String GAMES_FRAGMENT_TAG = "games";
     private static final String PROFILE_FRAGMENT_TAG = "profile";
@@ -174,6 +175,7 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
         this.pyx = pyx;
 
         pyx.chat().addUnreadCountListener(this);
+        pyx.polling().addErrorListener(this);
 
         runOnUiThread(() -> {
             if (settingsFragment != null) settingsFragment.callPyxReady(pyx);
@@ -186,7 +188,11 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
     }
 
     private void pyxInvalid(@Nullable Exception ex) {
-        if (this.pyx != null) pyx.chat().removeUnreadCountListener(this);
+        if (this.pyx != null) {
+            pyx.chat().removeUnreadCountListener(this);
+            pyx.polling().removeErrorListener(this);
+        }
+
         this.pyx = null;
 
         runOnUiThread(() -> {
@@ -261,6 +267,16 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
     }
 
     @Override
+    public void onPollPyxError(@NonNull PyxException ex) {
+        if (ex.errorCode.equals("nr") || ex.errorCode.equals("se")) {
+            if (pyx != null) pyx.logout(ex.errorCode.equals("nr"));
+            preparePyxInstance()
+                    .addOnSuccessListener(this::pyxReady)
+                    .addOnFailureListener(this::pyxError);
+        }
+    }
+
+    @Override
     public void onBackPressed() {
         ChildFragment visible;
         int itemId = binding.mainNavigation.getSelectedItemId();
@@ -290,7 +306,11 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (this.pyx != null) pyx.chat().removeUnreadCountListener(this);
+        if (this.pyx != null) {
+            pyx.polling().removeErrorListener(this);
+            pyx.chat().removeUnreadCountListener(this);
+        }
+
         OverloadedApi.chat(this).removeUnreadCountListener(this);
     }
 
