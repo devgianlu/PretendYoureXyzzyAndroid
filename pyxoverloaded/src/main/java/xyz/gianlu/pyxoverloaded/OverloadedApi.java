@@ -691,8 +691,15 @@ public class OverloadedApi {
             return userDataTask;
 
         return userDataTask = Tasks.call(executorService, () -> {
-            JSONObject obj = makePostRequest("User/Data", null);
-            return userDataCached = new UserData(obj);
+            try {
+                JSONObject obj = makePostRequest("User/Data", null);
+                return userDataCached = new UserData(obj);
+            } catch (OverloadedServerException ex) {
+                if (ex.reason.equals(OverloadedServerException.REASON_NOT_REGISTERED))
+                    logout();
+
+                throw ex;
+            }
         });
     }
 
