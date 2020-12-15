@@ -42,7 +42,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     private static CustomDecksDatabase instance;
 
     private CustomDecksDatabase(@Nullable Context context) {
-        super(context, "custom_decks.db", null, 13);
+        super(context, "custom_decks.db", null, 14);
     }
 
     @NonNull
@@ -62,7 +62,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     @Override
     public void onCreate(@NotNull SQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS decks (id INTEGER PRIMARY KEY UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, description TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 0, remoteId INTEGER UNIQUE, lastUsed INTEGER NOT NULL DEFAULT 0)");
-        db.execSQL("CREATE TABLE IF NOT EXISTS cards (id INTEGER PRIMARY KEY UNIQUE, deck_id INTEGER NOT NULL, type INTEGER NOT NULL, text TEXT NOT NULL, remoteId INTEGER UNIQUE)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS cards (id INTEGER PRIMARY KEY UNIQUE, deck_id INTEGER NOT NULL, type INTEGER NOT NULL, text TEXT NOT NULL, creator TEXT DEFAULT NULL, remoteId INTEGER UNIQUE)");
         db.execSQL("CREATE TABLE IF NOT EXISTS starred_decks (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL, remoteId INTEGER UNIQUE, lastUsed INTEGER NOT NULL DEFAULT 0)");
         db.execSQL("CREATE TABLE IF NOT EXISTS cr_cast_decks (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER DEFAULT NULL, created INTEGER DEFAULT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL, favorite INTEGER NOT NULL DEFAULT 0)");
     }
@@ -89,21 +89,22 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             case 6:
             case 7:
             case 8:
-            case 9:
                 db.execSQL("CREATE TABLE IF NOT EXISTS cr_cast_decks (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER NOT NULL, created INTEGER NOT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL)");
-            case 10:
+            case 9:
                 db.execSQL("ALTER TABLE cr_cast_decks ADD favorite INTEGER NOT NULL DEFAULT 0");
+            case 10:
             case 11:
-            case 12:
                 db.execSQL("CREATE TABLE cr_cast_decks_tmp (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER DEFAULT NULL, created INTEGER DEFAULT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL, favorite INTEGER NOT NULL DEFAULT 0)");
                 db.execSQL("INSERT INTO cr_cast_decks_tmp SELECT * FROM cr_cast_decks");
                 db.execSQL("DROP TABLE cr_cast_decks");
                 db.execSQL("ALTER TABLE cr_cast_decks_tmp RENAME TO cr_cast_decks");
-            case 13:
+            case 12:
                 db.execSQL("CREATE TABLE starred_decks_tmp (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL, remoteId INTEGER UNIQUE, lastUsed INTEGER NOT NULL DEFAULT 0)");
                 db.execSQL("INSERT INTO starred_decks_tmp SELECT * FROM starred_decks");
                 db.execSQL("DROP TABLE starred_decks");
                 db.execSQL("ALTER TABLE starred_decks_tmp RENAME TO starred_decks");
+            case 13:
+                db.execSQL("ALTER TABLE cards ADD creator TEXT DEFAULT NULL");
         }
 
         Log.i(TAG, "Migrated database from " + oldVersion + " to " + newVersion);
@@ -649,6 +650,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
                 values.put("deck_id", deckId);
                 values.put("text", card.getString("text"));
                 values.put("type", card.getLong("type"));
+                values.put("creator", CommonUtils.optString(card, "creator"));
                 if (card.has("id")) values.put("remoteId", card.getLong("id"));
                 db.insertWithOnConflict("cards", null, values, SQLiteDatabase.CONFLICT_REPLACE);
             }
@@ -959,25 +961,42 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
 
     public static final class CustomCard extends BaseCard {
         public final int id;
+        public final String creator;
         private final String text;
         private final String watermark;
         private final int type;
         private final Long remoteId;
 
+        /**
+         * Creates a new instance of a locally created card. Both remote ID and creator are null.
+         *
+         * @param text      The card text
+         * @param watermark The card watermark
+         * @param type      The card type
+         * @param id        The card local ID
+         */
         private CustomCard(String[] text, String watermark, int type, int id) {
             this.text = CommonUtils.join(text, "____");
             this.watermark = watermark;
             this.type = type;
             this.id = id;
             this.remoteId = null;
+            this.creator = null;
         }
 
+        /**
+         * Copies the given card with a different text
+         *
+         * @param card The card to copy
+         * @param text The new text
+         */
         private CustomCard(@NonNull CustomCard card, @NonNull String[] text) {
             this.text = CommonUtils.join(text, "____");
             this.watermark = card.watermark;
             this.type = card.type;
             this.id = card.id;
             this.remoteId = card.remoteId;
+            this.creator = card.creator;
         }
 
         private CustomCard(@NonNull CustomDeck deck, @NonNull Cursor cursor) {
@@ -986,6 +1005,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             type = cursor.getInt(cursor.getColumnIndex("type"));
             id = cursor.getInt(cursor.getColumnIndex("id"));
             text = cursor.getString(cursor.getColumnIndex("text"));
+            creator = cursor.getString(cursor.getColumnIndex("creator"));
 
             int remoteIdIndex = cursor.getColumnIndex("remoteId");
             remoteId = cursor.isNull(remoteIdIndex) ? null : cursor.getLong(remoteIdIndex);

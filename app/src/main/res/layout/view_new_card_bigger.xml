@@ -67,7 +67,7 @@
             android:orientation="horizontal">
 
             <ImageButton
-                android:id="@+id/cardItem_actionLeft"
+                android:id="@+id/cardItem_textLeft"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
                 android:background="@drawable/bg_card_button"
@@ -75,7 +75,7 @@
                 android:scaleType="fitCenter" />
 
             <TextView
-                android:id="@+id/cardItem_watermark"
+                android:id="@+id/cardItem_textRight"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

@@ -103,7 +103,7 @@ public final class CollaboratorHandler implements CardActionsHandler {
                         throw new IllegalArgumentException("Missing cardId in response.");
 
                     String textJoin = CommonUtils.join(text, "____");
-                    Card overloadedCard = Card.from(textJoin, watermark, black, result.cardId);
+                    Card overloadedCard = Card.from(textJoin, watermark, black, OverloadedApi.get().username(), result.cardId);
                     return new ContentCard(overloadedCard, textJoin, watermark, black);
                 })
                 .addOnFailureListener(ex -> Log.e(TAG, "Failed adding card.", ex));
@@ -133,7 +133,7 @@ public final class CollaboratorHandler implements CardActionsHandler {
                     List<ContentCard> cards = new ArrayList<>(result.cardsIds.length);
                     for (int i = 0; i < result.cardsIds.length; i++) {
                         String textJoin = CommonUtils.join(texts[i], "____");
-                        Card overloadedCard = Card.from(textJoin, watermark, blacks[i], result.cardsIds[i]);
+                        Card overloadedCard = Card.from(textJoin, watermark, blacks[i], OverloadedApi.get().username(), result.cardsIds[i]);
                         cards.add(new ContentCard(overloadedCard, textJoin, watermark, blacks[i]));
                     }
 

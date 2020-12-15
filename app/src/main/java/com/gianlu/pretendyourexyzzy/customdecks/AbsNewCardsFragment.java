@@ -39,6 +39,7 @@ import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
+import com.gianlu.pretendyourexyzzy.api.models.cards.ContentCard;
 import com.gianlu.pretendyourexyzzy.cards.NewGameCardView;
 import com.gianlu.pretendyourexyzzy.databinding.DialogAskImageUrlBinding;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewCustomDeckCardsBinding;
@@ -55,9 +56,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
+import xyz.gianlu.pyxoverloaded.model.Card;
 
 public abstract class AbsNewCardsFragment extends FragmentWithDialog implements AbsNewCustomDeckActivity.SavableFragment {
     private static final int MAX_CARD_TEXT_LENGTH = 256;
@@ -489,11 +492,6 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
             this.message = message;
         }
 
-        @Nullable
-        private String message(@NonNull Context context) {
-            return message == 0 ? null : context.getString(message);
-        }
-
         private enum Result {
             OK, WARN, ERROR
         }
@@ -530,6 +528,16 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             BaseCard card = cards.get(position);
             holder.card.setCard(card);
+            if (card instanceof CustomDecksDatabase.CustomCard || (card instanceof ContentCard && ((ContentCard) card).original instanceof Card)) {
+                holder.card.setCustomLeftText((context, card1) -> {
+                    String creator = card1 instanceof CustomDecksDatabase.CustomCard ? ((CustomDecksDatabase.CustomCard) card1).creator : ((Card) ((ContentCard) card1).original).creator;
+
+
+                    return Objects.equals(OverloadedApi.get().username(), creator) ? null : creator;
+                });
+            } else {
+                holder.card.setCustomLeftText(null);
+            }
 
             if (canEditCards) {
                 holder.card.setRightAction(R.drawable.baseline_delete_24, v -> AbsNewCardsFragment.this.removeCard(card));

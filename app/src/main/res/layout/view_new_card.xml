@@ -65,7 +65,7 @@
             android:orientation="horizontal">
 
             <com.gianlu.commonutils.misc.SuperTextView
-                android:id="@+id/cardItem_pick"
+                android:id="@+id/cardItem_textLeft"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -74,7 +74,7 @@
                 android:textSize="12sp" />
 
             <TextView
-                android:id="@+id/cardItem_watermark"
+                android:id="@+id/cardItem_textRight"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
