@@ -23,17 +23,6 @@
     <string name="game_gameWinner_short">%s venceu o jogo!</string>
     <string name="game_youGameWinner_long">Você venceu o jogo! Esperando o host iniciar um novo jogo…</string>
     <string name="game_youGameWinner_short">Você venceu o jogo!</string>
-    <!-- Tutorial messages -->
-    <string name="tutorial_firstTitle">Bem-vindo ao \"Pretend You\'re Xyzzy\"</string>
-    <string name="tutorial_firstDesc">\"Pretend You\'re Xyzzy\" é um jogo de cartas online baseado no \"Cartas Contra Humanidade\". Neste tutorial te ensinarei a jogar.</string>
-    <string name="tutorial_secondTitle">As regras</string>
-    <string name="tutorial_secondDesc">Toda rodada uma carta preta é jogada pelo Czar da Carta, todos os outros respondem a pergunta ou completam o espaço em branco da frase. Assim que todos jogarem, o Czar da Carta escolhe a jogada mais engraçada, o remetente responsável receberá um ponto. No próximo turno um novo jogador se torna o Czar da Carta e todo o resto retorna com 10 cartas.</string>
-    <string name="tutorial_thirdTitle">Decks personalizados</string>
-    <string name="tutorial_thirdDesc">Este jogo suporta decks personalizados (em servidores atualizados): você pode criar decks personalizados a partir do aplicativo e adicioná-los ao seu próprio jogo.</string>
-    <string name="tutorial_fourthTitle">Sobrecarregado</string>
-    <string name="tutorial_fourthDesc">Sobrecarregado é uma expansão de jogo que permite recursos legais como <![CDATA[<b>Bate-papo E2EE</b>]]>, <![CDATA[<b>perfis de usuário</b>]]>decks personalizados e cartões favoritos <![CDATA[<b>sincronização</b>]]> e mais. Você também pode <![CDATA[<b>compartilhar</b>]]> decks com outros jogadores.</string>
-    <string name="tutorial_fifthTitle">Mais recursos</string>
-    <string name="tutorial_fifthDesc">Mais recursos estão disponíveis neste aplicativo, você os aprenderá à medida que partir. Bom jogo!</string>
     <!-- General -->
     <string name="app_name">Você está no Xyzzy</string>
     <string name="submit">Enviar</string>

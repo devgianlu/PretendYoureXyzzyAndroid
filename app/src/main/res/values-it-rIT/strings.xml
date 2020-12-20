@@ -23,18 +23,7 @@
     <string name="game_gameWinner_short">%s ha vinto il gioco!</string>
     <string name="game_youGameWinner_long">Hai vinto questo gioco! Attendi che il creatore ne avvii un altro…</string>
     <string name="game_youGameWinner_short">Hai vinto il gioco!</string>
-    <!-- Tutorial messages -->
-    <string name="tutorial_firstTitle">Benvenuto in Pretend You\'re Xyzzy</string>
-    <string name="tutorial_firstDesc">Pretend You\'re Xyzzy è un gioco online basato su Cards Against Humanity. In questo tutorial ti spiegherò come giocare.</string>
-    <string name="tutorial_secondTitle">Le regole</string>
-    <string name="tutorial_secondDesc">Ogni turno una carta nera viene giocata dal giudice, tutti gli altri rispondono alla domanda completano la frase. Una volta che tutti hanno giocato, il giudice sceglie l\’accoppiamento di carte più divertente e chi lo ha proposto guadagna un punto. Nel turno successivo un nuovo giocatore diventa il giudice e si continua così.</string>
-    <string name="tutorial_thirdTitle">Mazzi personalizzati</string>
-    <string name="tutorial_thirdDesc">Questo gioco supporta mazzi personalizzati (sui server aggiornati): puoi creare mazzi personalizzati dall\'app e aggiungerli al tuo gioco.</string>
-    <string name="tutorial_fourthTitle">Overloaded</string>
-    <string name="tutorial_fourthDesc">Overloaded è un aggiunta al gioco che aggiunge funzioni come <![CDATA[<b>chat E2EE</b>]]>, <![CDATA[<b>profili utente</b>]]>, <![CDATA[<b>sincronizzazione</b>]]> mazzi personalizzati e carte preferite e tanto altro. Puoi anche <![CDATA[<b>condividere</b>]]> i tuoi mazzi con altri giocatori.</string>
-    <string name="tutorial_fifthTitle">Altre funzionalità</string>
-    <string name="tutorial_fifthDesc">Altre funzionalità sono disponibili nell\'app, le conoscerai giocando. Buon gioco!</string>
-    <!-- General -->
+     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
     <string name="submit">Entra</string>
     <string name="changeServer">Cambia server</string>

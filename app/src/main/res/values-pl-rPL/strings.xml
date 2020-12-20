@@ -23,11 +23,6 @@
     <string name="game_gameWinner_short">%s wygral grę!</string>
     <string name="game_youGameWinner_long">Wygrałeś grę! Oczekiwanie na rozpoczęcie nowej…</string>
     <string name="game_youGameWinner_short">Wygrałeś grę!</string>
-    <!-- Tutorial messages -->
-    <string name="tutorial_firstTitle">Witaj w \"Udawaj że jesteś Xyzzy\"</string>
-    <string name="tutorial_firstDesc">\"Udawaj że jesteś Xyzzy\" jest karcianą grą opierającą się na Kartach przeciwko ludzkości. Ten samouczek wyjaśni ci zasady gry.</string>
-    <string name="tutorial_secondTitle">Zasady</string>
-    <string name="tutorial_secondDesc">Podczas każdego rozdania czarna karta zostaje wylosowane przez Mistrza Gry, pozostali gracze odpowiadają na pytanie lub uzupełniają puste miejsca. Kiedy każdy z graczy zagrał swoją kolejkę, mistrz gry wybiera najzabawniejszy zestaw. Gracz otrzymuje jeden punkt na swoje konto. Każdy z graczy rozpoczyna kolejną rundę z 10ma białymi kartami.</string>
     <!-- General -->
     <string name="blackCards">Czarne karty</string>
     <string name="whiteCards">Białe karty</string>

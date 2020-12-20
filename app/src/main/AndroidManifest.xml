@@ -62,13 +62,6 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
-        <!-- Tutorial activity -->
-        <activity
-            android:name=".activities.TutorialActivity"
-            android:configChanges="uiMode"
-            android:screenOrientation="portrait"
-            android:theme="@style/FullscreenTheme" />
-
         <!-- View custom decks activity -->
         <activity
             android:name=".customdecks.NewViewCustomDeckActivity"

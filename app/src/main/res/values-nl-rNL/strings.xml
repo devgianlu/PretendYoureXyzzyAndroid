@@ -23,17 +23,6 @@
     <string name="game_gameWinner_short">%s heeft het spel gewonnen!</string>
     <string name="game_youGameWinner_long">Je hebt het spel gewonnen! Wacht op de host om een nieuw spel te starten…</string>
     <string name="game_youGameWinner_short">Je hebt het spel gewonnen!</string>
-    <!-- Tutorial messages -->
-    <string name="tutorial_firstTitle">Welkom bij Pretend You\'re Xyzzy</string>
-    <string name="tutorial_firstDesc">Pretend You\'re Xyzzy is een online kaartspel gebaseerd op Cards Against Humanity. In deze uitleg vertel ik hoe je moet spelen.</string>
-    <string name="tutorial_secondTitle">De regels</string>
-    <string name="tutorial_secondDesc">Elke beurt wordt er een zwarte kaart gespeeld door de Kaart Czar. De andere spelers beantwoorden de vraag of vullen de lege woorden in de zin in. Zodra iedereen een kaart heeft gespeeld, kiest de Kaart Czar de grappigste. Diegene die de kaart heeft gespeeld, krijgt een punt. In de volgende beurt wordt iemand anders Kaart Czar en krijgt iedereen weer 10 kaarten.</string>
-    <string name="tutorial_thirdTitle">Eigen kaartpakken</string>
-    <string name="tutorial_thirdDesc">Dit spel ondersteunt eigen decks (op bijgewerkte servers): je kunt aangepaste sets maken vanuit de app en ze aan je eigen spel toevoegen.</string>
-    <string name="tutorial_fourthTitle">Overloaded</string>
-    <string name="tutorial_fourthDesc">Overloaded is een spel uitbreiding die coole functies zoals <![CDATA[<b>E2EE chat</b>]]>mogelijk maakt, <![CDATA[<b>gebruikersprofielen</b>]]>, eigen sets en favoriete kaarten <![CDATA[<b>synchronisatie</b>]]> en meer. Je kunt je sets<![CDATA[<b>delen</b>]]> met andere spelers.</string>
-    <string name="tutorial_fifthTitle">Meer functies</string>
-    <string name="tutorial_fifthDesc">Er zijn meer functies beschikbaar in deze app, je zal ze leren terwijl je bezig bent. Veel plezier!</string>
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
     <string name="submit">Versturen</string>
