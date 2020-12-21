@@ -31,14 +31,14 @@
         <!-- One time login activity -->
         <activity
             android:name=".OneTimeLoginActivity"
-            android:configChanges="uiMode"
+            android:configChanges="uiMode|screenSize|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme" />
 
         <!-- Main activity -->
         <activity
             android:name=".NewMainActivity"
-            android:configChanges="uiMode"
+            android:configChanges="uiMode|screenSize|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -65,7 +65,7 @@
         <!-- View custom decks activity -->
         <activity
             android:name=".customdecks.NewViewCustomDeckActivity"
-            android:configChanges="uiMode"
+            android:configChanges="uiMode|screenSize|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateHidden|adjustNothing" />
@@ -73,7 +73,7 @@
         <!-- Edit custom decks activity -->
         <activity
             android:name=".customdecks.NewEditCustomDeckActivity"
-            android:configChanges="uiMode"
+            android:configChanges="uiMode|screenSize|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateHidden|adjustNothing">
@@ -124,7 +124,7 @@
         <!-- Overloaded chats list activity -->
         <activity
             android:name=".overloaded.ChatsListActivity"
-            android:configChanges="uiMode"
+            android:configChanges="uiMode|screenSize|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 

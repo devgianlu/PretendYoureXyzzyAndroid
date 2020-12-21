@@ -50,7 +50,6 @@ public final class AchievementProgressView extends View {
 
     public AchievementProgressView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        setLayerType(LAYER_TYPE_SOFTWARE, null);
         setWillNotDraw(false);
 
         mCompletePaint = new Paint();
@@ -185,7 +184,9 @@ public final class AchievementProgressView extends View {
         canvas.drawText(iconText, iconTextX, iconTextY, mValueTextPaint);
 
         // Draw max text
-        String maxText = String.valueOf(mMaxValue);
+        String maxText;
+        if (mMaxValue > 1000 && mMaxValue % 1000 == 0) maxText = mMaxValue / 1000 + "K";
+        else maxText = String.valueOf(mMaxValue);
         mValueTextPaint.getTextBounds(maxText, 0, maxText.length(), maxTextRect);
 
         int maxTextX = minX + maxW - maxTextRect.width() / 2;

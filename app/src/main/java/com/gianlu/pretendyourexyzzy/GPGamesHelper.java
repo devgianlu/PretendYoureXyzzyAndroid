@@ -26,7 +26,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
 import org.intellij.lang.annotations.MagicConstant;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
@@ -41,12 +40,14 @@ public final class GPGamesHelper {
     public static final String ACH_WIN_30_ROUNDS = "CgkIus2n760REAIQCA";
     public static final String ACH_WIN_69_ROUNDS = "CgkIus2n760REAIQCQ";
     public static final String ACH_WIN_420_ROUNDS = "CgkIus2n760REAIQCg";
+    public static final String ACH_WIN_2000_ROUNDS = "CgkIus2n760REAIQEw";
+    public static final String ACH_WIN_10000_ROUNDS = "CgkIus2n760REAIQFA";
     public static final String ACH_3_PEOPLE_GAME = "CgkIus2n760REAIQDA";
     public static final String ACH_5_PEOPLE_GAME = "CgkIus2n760REAIQDQ";
     public static final String ACH_10_PEOPLE_GAME = "CgkIus2n760REAIQDg";
     public static final String ACH_CUSTOM_DECK = "CgkIus2n760REAIQDw";
     public static final String LEAD_WIN_RATE = "CgkIus2n760REAIQEA";
-    public static final String[] ACHS_WIN_ROUNDS = new String[]{ACH_WIN_10_ROUNDS, ACH_WIN_30_ROUNDS, ACH_WIN_69_ROUNDS, ACH_WIN_420_ROUNDS};
+    public static final String[] ACHS_WIN_ROUNDS = new String[]{ACH_WIN_10_ROUNDS, ACH_WIN_30_ROUNDS, ACH_WIN_69_ROUNDS, ACH_WIN_420_ROUNDS, ACH_WIN_2000_ROUNDS, ACH_WIN_10000_ROUNDS};
     public static final String[] ACHS_PEOPLE_GAME = new String[]{ACH_3_PEOPLE_GAME, ACH_5_PEOPLE_GAME, ACH_10_PEOPLE_GAME};
     private static EventsClient eventsClient;
     private static AchievementsClient achievementsClient;
@@ -56,7 +57,6 @@ public final class GPGamesHelper {
     private GPGamesHelper() {
     }
 
-    @Contract("_, null -> false")
     private static boolean checkAccount(@Nullable GoogleSignInAccount account) {
         if (account == null) {
             unrecoverableError = true;

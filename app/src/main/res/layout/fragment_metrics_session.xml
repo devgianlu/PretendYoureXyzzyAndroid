@@ -15,13 +15,55 @@
             android:layout_margin="48dp"
             android:indeterminate="true" />
 
-        <com.gianlu.commonutils.misc.MessageView
-            android:id="@+id/sessionFragment_message"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/sessionFragment_empty"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_margin="48dp"
-            android:visibility="gone" />
+            android:layout_marginTop="48dp"
+            android:orientation="vertical"
+            android:paddingStart="48dp"
+            android:paddingEnd="48dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="200dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_undraw_not_found" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/noMetricsSessions"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.Undraw" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/sessionFragment_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="48dp"
+            android:orientation="vertical"
+            android:paddingStart="48dp"
+            android:paddingEnd="48dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="200dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_undraw_server_down" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/failedLoading"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.Undraw" />
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/sessionFragment_container"
