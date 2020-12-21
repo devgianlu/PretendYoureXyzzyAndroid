@@ -10,6 +10,7 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
@@ -78,6 +79,14 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
 
         binding = ActivityNewMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        if (settingsFragment != null || gamesFragment != null || profileFragment != null) {
+            FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
+            if (settingsFragment != null) trans.remove(settingsFragment);
+            if (gamesFragment != null) trans.remove(gamesFragment);
+            if (profileFragment != null) trans.remove(profileFragment);
+            trans.commitNow();
+        }
 
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.main_container, settingsFragment = NewSettingsFragment.get(), SETTINGS_FRAGMENT_TAG)

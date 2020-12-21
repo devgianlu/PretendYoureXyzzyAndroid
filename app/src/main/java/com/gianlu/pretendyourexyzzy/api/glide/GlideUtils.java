@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
@@ -42,7 +43,7 @@ public final class GlideUtils {
     }
 
     public static void loadProfileImage(@NotNull ImageView into, @NotNull String username) {
-        if (OverloadedApi.get().isOverloadedUserOnServerCached(username))
+        if (OverloadedApi.get().isOverloadedUserOnServerCached(username) || OverloadedApi.get().hasFriendCached(username))
             loadProfileImageInternal(into, OverloadedUtils.getProfileImageUrl(username));
         else
             loadProfileImageInternal(into, null);
@@ -66,7 +67,9 @@ public final class GlideUtils {
             into.setImageDrawable(profilePlaceholderDrawable);
         } else {
             Glide.with(into)
-                    .load(url).circleCrop()
+                    .load(url)
+                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                    .circleCrop()
                     .placeholder(profilePlaceholderDrawable)
                     .error(profilePlaceholderDrawable)
                     .listener(new RequestListener<Drawable>() {

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -105,6 +106,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
     private static final String TAG = NewProfileFragment.class.getSimpleName();
     private static final int RC_IMPORT_JSON = 420;
     private static final int RC_UPLOAD_PROFILE_IMAGE = 9;
+    private final List<AchievementImageCallback> achievementImageCallbacks = new ArrayList<>(5);
     private FragmentNewProfileBinding binding;
     private RegisteredPyx pyx;
     private FriendsAdapter friendsAdapter;
@@ -278,10 +280,9 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                             CommonUtils.setPaddingDip(view, null, null, null, 8);
                             binding.profileFragmentAchievementsList.addView(view);
 
-                            im.loadImage((uri, drawable, isRequestedDrawable) -> {
-                                if (!isRequestedDrawable || drawable == null) return;
-                                view.setIconDrawable(drawable);
-                            }, imageUri);
+                            AchievementImageCallback callback = new AchievementImageCallback(view);
+                            achievementImageCallbacks.add(callback);
+                            im.loadImage(callback, imageUri);  // "Note that you should hold a reference to the listener provided until the callback is complete. For this reason, the use of anonymous implementations is discouraged."
                         }
 
                         data.release();
@@ -402,14 +403,17 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                     InputStream in = requireContext().getContentResolver().openInputStream(data.getData());
                     if (in == null) return;
 
+                    showProgress(R.string.loading);
                     OverloadedApi.get().uploadProfileImage(in)
                             .addOnSuccessListener(imageId -> {
+                                dismissDialog();
                                 showToast(Toaster.build().message(R.string.profileImageChanged));
                                 refreshOverloaded(true);
                             })
                             .addOnFailureListener(ex -> {
                                 Log.e(TAG, "Failed uploading profile image.", ex);
 
+                                dismissDialog();
                                 if (ex instanceof OverloadedServerException && ((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NSFW_DETECTED))
                                     showToast(Toaster.build().message(R.string.nsfwDetectedMessage));
                                 else
@@ -681,7 +685,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                                     } else {
                                         binding.profileFragmentProfileImageMessage.setVisibility(View.VISIBLE);
                                         binding.profileFragmentProfileImage.setBackgroundResource(R.drawable.bg_profile_image_placeholder);
-                                        binding.profileFragmentProfileImage.setImageResource(R.drawable.bg_profile_image_placeholder);
+                                        binding.profileFragmentProfileImage.setImageResource(R.drawable.baseline_add_24);
                                         CommonUtils.setPaddingDip(binding.profileFragmentProfileImage, 48);
                                         binding.profileFragmentProfileImage.setOnClickListener(v -> {
                                             Intent intent = OverloadedUtils.getImageUploadIntent();
@@ -849,6 +853,25 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                 BadgeUtils.detachBadgeDrawable(chatBadge, binding.profileFragmentChat);
             else
                 BadgeUtils.attachBadgeDrawable(chatBadge, binding.profileFragmentChat);
+        }
+    }
+
+    private class AchievementImageCallback implements ImageManager.OnImageLoadedListener {
+        private final AchievementProgressView view;
+
+        AchievementImageCallback(AchievementProgressView view) {
+            this.view = view;
+        }
+
+        @Override
+        public void onImageLoaded(@NonNull Uri uri, @Nullable Drawable drawable, boolean isRequestedDrawable) {
+            achievementImageCallbacks.remove(this);
+            if (view == null || binding == null) return;
+
+            if (!isRequestedDrawable || drawable == null)
+                binding.profileFragmentAchievementsList.removeView(view);
+            else
+                view.setIconDrawable(drawable);
         }
     }
 

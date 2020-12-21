@@ -49,7 +49,6 @@
     <string name="gameFull">Het spel is vol! Probeer het later.</string>
     <string name="failedSpectating">Toeschouwen van het spel mislukt!</string>
     <string name="ongoingGame">Lopend spel</string>
-    <string name="gameLabel">Spel</string>
     <string name="leaveGame">Spel verlaten</string>
     <string name="failedLeaving">Verlaten van het spel mislukt!</string>
     <string name="numPick"><![CDATA[<b>Kies</b>]]> %d</string>

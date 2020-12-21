@@ -112,7 +112,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
 
         // Handle intent-filter
         if (Intent.ACTION_VIEW.equals(getIntent().getAction())) {
-            Uri uri = (Uri) getIntent().getParcelableExtra(Intent.EXTRA_STREAM);
+            Uri uri = getIntent().getParcelableExtra(Intent.EXTRA_STREAM);
             if (uri == null) uri = getIntent().getData();
             if (uri == null) {
                 finishAfterTransition();
@@ -355,6 +355,9 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                 bundle.putString("name", deck.name);
                 bundle.putString("watermark", deck.watermark);
                 bundle.putInt("deckId", deck.id);
+            } else {
+                if (CommonUtils.getText(binding.editCustomDeckInfoName).isEmpty() || CommonUtils.getText(binding.editCustomDeckInfoWatermark).isEmpty())
+                    showToast(Toaster.build().message(R.string.completeDeckInfoFirst));
             }
 
             return result;
@@ -465,7 +468,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                     }
                 }
             });
-            CommonUtils.getEditText(binding.editCustomDeckInfoWatermark).setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+            CommonUtils.getEditText(binding.editCustomDeckInfoWatermark).setFilters(new InputFilter[]{new InputFilter.AllCaps(), new InputFilter.LengthFilter(5)});
             CommonUtils.getEditText(binding.editCustomDeckInfoDesc).addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {

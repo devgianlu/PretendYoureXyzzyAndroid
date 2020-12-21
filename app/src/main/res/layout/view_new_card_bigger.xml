@@ -37,7 +37,7 @@
             android:orientation="horizontal">
 
             <com.gianlu.commonutils.misc.SuperTextView
-                android:id="@+id/cardItem_pick"
+                android:id="@+id/cardItem_textLeft"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -67,7 +67,7 @@
             android:orientation="horizontal">
 
             <ImageButton
-                android:id="@+id/cardItem_textLeft"
+                android:id="@+id/cardItem_actionLeft"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
                 android:background="@drawable/bg_card_button"
