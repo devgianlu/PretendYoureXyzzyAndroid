@@ -1,2 +1,3 @@
-### Fixed
-- Fixed CrCast decks not loading
+- The app has been completely redesigned
+- Many bugs have been fixed
+- Enjoy
