@@ -15,6 +15,7 @@ import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.api.glide.GlideUtils;
 import com.gianlu.pretendyourexyzzy.databinding.ActivityChatsListBinding;
 import com.gianlu.pretendyourexyzzy.databinding.ItemOverloadedChatBinding;
 import com.gianlu.pretendyourexyzzy.dialogs.NewChatDialog;
@@ -119,6 +120,7 @@ public class ChatsListActivity extends ActivityWithDialog implements OverloadedA
         protected void onSetupViewHolder(@NonNull ChatsAdapter.ViewHolder holder, int position, @NonNull Chat payload) {
             Chat chat = objs.get(position);
             holder.binding.overloadedChatItemUser.setText(chat.recipient);
+            GlideUtils.loadProfileImage(holder.binding.overloadedChatItemImage, chat.recipient);
 
             PlainChatMessage lastMsg = chatApi.getLastMessage(chat.id);
             if (lastMsg == null) {
@@ -154,7 +156,6 @@ public class ChatsListActivity extends ActivityWithDialog implements OverloadedA
             }
 
             holder.itemView.setOnClickListener(v -> NewChatDialog.getOverloaded(chat).show(getSupportFragmentManager(), null));
-
             holder.itemView.setOnLongClickListener(v -> {
                 showPopup(holder.itemView, chat);
                 return true;

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="statusBarColor">#000000</color>
+
     <color name="toolbar_icon_fg">#000000</color>
     <color name="button_small_bg">@color/appColor_400</color>
     <color name="button_small_fg">#0D0D0D</color>
