@@ -6,8 +6,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,13 +13,12 @@ import androidx.fragment.app.DialogFragment;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.DialogUtils;
-import com.gianlu.commonutils.misc.LoadableContentView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastApi;
-import com.google.android.material.textfield.TextInputLayout;
+import com.gianlu.pretendyourexyzzy.databinding.DialogCrCastLoginBinding;
 
-public class CrCastLoginDialog extends DialogFragment {
+public final class CrCastLoginDialog extends DialogFragment {
     private static final String TAG = CrCastLoginDialog.class.getSimpleName();
     private LoginListener listener;
 
@@ -45,60 +42,52 @@ public class CrCastLoginDialog extends DialogFragment {
         listener = null;
     }
 
-    @Nullable
+    @NonNull
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_cr_cast_login, container, false);
-        LoadableContentView loadable = layout.findViewById(R.id.crCastLoginDialog_loadable);
-        loadable.notLoading(false);
-        loadable.setScrimColor(CommonUtils.resolveAttrAsColor(requireContext(), R.attr.colorBackgroundFloating));
+        DialogCrCastLoginBinding binding = DialogCrCastLoginBinding.inflate(inflater, container, false);
+        binding.crCastLoginDialogCancel.setOnClickListener(v -> dismissAllowingStateLoss());
 
-        TextInputLayout username = layout.findViewById(R.id.crCastLoginDialog_username);
-        TextInputLayout password = layout.findViewById(R.id.crCastLoginDialog_password);
+        binding.crCastLoginDialogLoading.hideShimmer();
+        binding.crCastLoginDialogLogin.setOnClickListener(v -> {
+            String userStr = CommonUtils.getText(binding.crCastLoginDialogUsername);
+            String passStr = CommonUtils.getText(binding.crCastLoginDialogPassword);
 
-        Button cancel = layout.findViewById(R.id.crCastLoginDialog_cancel);
-        cancel.setOnClickListener(v -> dismissAllowingStateLoss());
+            binding.crCastLoginDialogLoading.showShimmer(true);
+            binding.crCastLoginDialogCancel.setEnabled(false);
+            binding.crCastLoginDialogLogin.setEnabled(false);
 
-        Button login = layout.findViewById(R.id.crCastLoginDialog_login);
-        login.setOnClickListener(v -> {
-            String userStr = CommonUtils.getText(username);
-            String passStr = CommonUtils.getText(password);
-
-            loadable.loading(true);
             setCancelable(false);
-            CrCastApi.get().login(userStr, passStr, getActivity(), new CrCastApi.LoginCallback() {
-                @Override
-                public void onLoginSuccessful() {
-                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.signInSuccessful));
-                    loadable.notLoading(false);
-                    dismissAllowingStateLoss();
+            CrCastApi.get().login(userStr, passStr)
+                    .addOnSuccessListener(aVoid -> {
+                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.signInSuccessful));
+                        dismissAllowingStateLoss();
 
-                    if (listener != null) listener.loggedInCrCast();
-                }
+                        if (listener != null) listener.loggedInCrCast();
+                    })
+                    .addOnFailureListener(ex -> {
+                        binding.crCastLoginDialogLoading.hideShimmer();
+                        binding.crCastLoginDialogCancel.setEnabled(true);
+                        binding.crCastLoginDialogLogin.setEnabled(true);
+                        setCancelable(true);
 
-                @Override
-                public void onException(@NonNull Exception ex) {
-                    loadable.notLoading(true);
-                    setCancelable(true);
-
-                    if (ex instanceof CrCastApi.CrCastException) {
-                        switch (((CrCastApi.CrCastException) ex).code) {
-                            case NOT_AUTHORIZED:
-                                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.wrongUsernameOrPassword));
-                                return;
-                            case BANNED:
-                                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.crCastBanned));
-                                return;
+                        if (ex instanceof CrCastApi.CrCastException) {
+                            switch (((CrCastApi.CrCastException) ex).code) {
+                                case NOT_AUTHORIZED:
+                                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.wrongUsernameOrPassword));
+                                    return;
+                                case BANNED:
+                                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.crCastBanned));
+                                    return;
+                            }
                         }
-                    }
 
-                    Log.e(TAG, "Failed signing in!", ex);
-                    DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSigningIn));
-                }
-            });
+                        Log.e(TAG, "Failed signing in!", ex);
+                        DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSigningIn));
+                    });
         });
 
-        return layout;
+        return binding.getRoot();
     }
 
     public interface LoginListener {

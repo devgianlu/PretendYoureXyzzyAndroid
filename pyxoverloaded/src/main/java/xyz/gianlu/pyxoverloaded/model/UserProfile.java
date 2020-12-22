@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -82,28 +83,31 @@ public class UserProfile {
         public final List<Card> cards;
         public final String owner;
         public final boolean collaborator;
+        private final List<Card> blackCards;
+        private final List<Card> whiteCards;
 
         public CustomDeckWithCards(@NonNull JSONObject obj) throws JSONException {
             super(obj);
-            cards = Card.parse(obj.getJSONArray("cards"));
             owner = CommonUtils.optString(obj, "owner");
             collaborator = obj.getBoolean("collaborator");
+            cards = Card.parse(this, obj.getJSONArray("cards")); // Needs owner
+
+            blackCards = new LinkedList<>();
+            whiteCards = new LinkedList<>();
+            for (Card card : cards) {
+                if (card.black()) blackCards.add(card);
+                else whiteCards.add(card);
+            }
         }
 
         @NotNull
         public List<Card> blackCards() {
-            LinkedList<Card> list = new LinkedList<>();
-            for (Card card : cards)
-                if (card.black()) list.add(card);
-            return list;
+            return Collections.unmodifiableList(blackCards);
         }
 
         @NotNull
         public List<Card> whiteCards() {
-            LinkedList<Card> list = new LinkedList<>();
-            for (Card card : cards)
-                if (!card.black()) list.add(card);
-            return list;
+            return Collections.unmodifiableList(whiteCards);
         }
     }
 
@@ -112,12 +116,12 @@ public class UserProfile {
         public final Card[] whiteCards;
 
         private StarredCard(@NonNull JSONObject obj) throws JSONException {
-            blackCard = new Card(obj.getJSONObject("bc"));
+            blackCard = new Card(obj.getJSONObject("bc"), null);
 
             JSONArray whiteCardsArray = obj.getJSONArray("wc");
             whiteCards = new Card[whiteCardsArray.length()];
             for (int i = 0; i < whiteCardsArray.length(); i++)
-                whiteCards[i] = new Card(whiteCardsArray.getJSONObject(i));
+                whiteCards[i] = new Card(whiteCardsArray.getJSONObject(i), null);
         }
 
         @NonNull

@@ -1,11 +1,7 @@
 package com.gianlu.pretendyourexyzzy.api;
 
-import android.app.Activity;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -14,13 +10,10 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
-import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
 import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.preferences.json.JsonStoring;
 import com.gianlu.commonutils.ui.OfflineActivity;
-import com.gianlu.pretendyourexyzzy.LoadingActivity;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.api.models.CahConfig;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
@@ -32,6 +25,8 @@ import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionHistory;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionStats;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.perf.FirebasePerformance;
 import com.google.firebase.perf.metrics.Trace;
 
@@ -50,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -69,19 +65,16 @@ public class Pyx implements Closeable {
     protected final static int POLLING_TIMEOUT = 30;
     private static final String TAG = Pyx.class.getSimpleName();
     public final Server server;
-    protected final LifecycleAwareHandler handler;
     protected final OkHttpClient client;
     protected final ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("pyx-"));
 
     Pyx() throws NoServersException {
-        this.handler = new LifecycleAwareHandler(new Handler(Looper.getMainLooper()));
         this.server = Server.lastServer();
         this.client = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
     }
 
-    protected Pyx(Server server, LifecycleAwareHandler handler, OkHttpClient client) {
+    protected Pyx(Server server, OkHttpClient client) {
         this.server = server;
-        this.handler = handler;
         this.client = client;
     }
 
@@ -190,12 +183,26 @@ public class Pyx implements Closeable {
         }
     }
 
-    public final void request(@NonNull PyxRequest request, @Nullable Activity activity, @NonNull OnSuccess listener) {
-        executor.execute(new RequestRunner(request, activity, listener));
+    /**
+     * Makes a request to the server. This request should have no result.
+     *
+     * @param request The {@link PyxRequest}
+     * @return A task resulting to nothing
+     */
+    @NonNull
+    public final Task<Void> request(@NonNull PyxRequest request) {
+        return Tasks.call(executor, () -> {
+            request(request.op, request.params);
+            return null;
+        });
     }
 
-    public final <E> void request(@NonNull PyxRequestWithResult<E> request, @Nullable Activity activity, @NonNull OnResult<E> listener) {
-        executor.execute(new RequestWithResultRunner<>(request, activity, listener));
+    @NonNull
+    public final <E> Task<E> request(@NonNull PyxRequestWithResult<E> request) {
+        return Tasks.call(executor, () -> {
+            PyxResponse resp = request(request.op, request.params);
+            return request.processor.process(resp.resp, resp.obj);
+        });
     }
 
     @NonNull
@@ -253,133 +260,66 @@ public class Pyx implements Closeable {
         }
     }
 
-    public final void getUserHistory(@NonNull String userId, @Nullable Activity activity, @NonNull OnResult<UserHistory> listener) {
-        final HttpUrl url = server.userHistory(userId);
-        if (url == null) {
-            listener.onException(new MetricsNotSupportedException(server));
-            return;
-        }
+    @NonNull
+    public final Task<UserHistory> getUserHistory(@NonNull String userId) {
+        HttpUrl url = server.userHistory(userId);
+        if (url == null) return Tasks.forException(new MetricsNotSupportedException(server));
 
-        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
-            @Override
-            public void run() {
-                try {
-                    UserHistory history = new UserHistory(new JSONObject(requestSync(url)));
-                    post(() -> listener.onDone(history));
-                } catch (JSONException | IOException ex) {
-                    post(() -> listener.onException(ex));
-                }
-            }
-        });
+        return Tasks.call(executor, () -> new UserHistory(new JSONObject(requestSync(url))));
     }
 
-    public final void getSessionHistory(@NonNull String sessionId, @Nullable Activity activity, @NonNull OnResult<SessionHistory> listener) {
-        final HttpUrl url = server.sessionHistory(sessionId);
-        if (url == null) {
-            listener.onException(new MetricsNotSupportedException(server));
-            return;
-        }
+    @NonNull
+    public final Task<SessionHistory> getSessionHistory(@NonNull String sessionId) {
+        HttpUrl url = server.sessionHistory(sessionId);
+        if (url == null) return Tasks.forException(new MetricsNotSupportedException(server));
 
-        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
-            @Override
-            public void run() {
-                try {
-                    SessionHistory history = new SessionHistory(new JSONObject(requestSync(url)));
-                    post(() -> listener.onDone(history));
-                } catch (JSONException | IOException ex) {
-                    post(() -> listener.onException(ex));
-                }
-            }
-        });
+        return Tasks.call(executor, () -> new SessionHistory(new JSONObject(requestSync(url))));
     }
 
-    public final void getSessionStats(@NonNull String sessionId, @Nullable Activity activity, @NonNull OnResult<SessionStats> listener) {
-        final HttpUrl url = server.sessionStats(sessionId);
-        if (url == null) {
-            listener.onException(new MetricsNotSupportedException(server));
-            return;
-        }
+    @NonNull
+    public final Task<SessionStats> getSessionStats(@NonNull String sessionId) {
+        HttpUrl url = server.sessionStats(sessionId);
+        if (url == null) return Tasks.forException(new MetricsNotSupportedException(server));
 
-        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
-            @Override
-            public void run() {
-                try {
-                    SessionStats history = new SessionStats(new JSONObject(requestSync(url)));
-                    post(() -> listener.onDone(history));
-                } catch (JSONException | IOException ex) {
-                    post(() -> listener.onException(ex));
-                }
-            }
-        });
+        return Tasks.call(executor, () -> new SessionStats(new JSONObject(requestSync(url))));
     }
 
-    public final void getGameHistory(@NonNull String gameId, @Nullable Activity activity, @NonNull OnResult<GameHistory> listener) {
-        final HttpUrl url = server.gameHistory(gameId);
-        if (url == null) {
-            listener.onException(new MetricsNotSupportedException(server));
-            return;
-        }
+    @NonNull
+    public final Task<GameHistory> getGameHistory(@NonNull String gameId) {
+        HttpUrl url = server.gameHistory(gameId);
+        if (url == null) return Tasks.forException(new MetricsNotSupportedException(server));
 
-        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
-            @Override
-            public void run() {
-                try {
-                    GameHistory history = new GameHistory(new JSONArray(requestSync(url)));
-                    post(() -> listener.onDone(history));
-                } catch (JSONException | IOException ex) {
-                    post(() -> listener.onException(ex));
-                }
-            }
-        });
+        return Tasks.call(executor, () -> new GameHistory(new JSONArray(requestSync(url))));
     }
 
-    public final void getGameRound(@NonNull String roundId, @Nullable Activity activity, @NonNull OnResult<GameRound> listener) {
-        final HttpUrl url = server.gameRound(roundId);
-        if (url == null) {
-            listener.onException(new MetricsNotSupportedException(server));
-            return;
-        }
+    @NonNull
+    public final Task<GameRound> getGameRound(@NonNull String roundId) {
+        HttpUrl url = server.gameRound(roundId);
+        if (url == null) return Tasks.forException(new MetricsNotSupportedException(server));
 
-        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
-            @Override
-            public void run() {
-                try {
-                    GameRound history = new GameRound(new JSONObject(requestSync(url)));
-                    post(() -> listener.onDone(history));
-                } catch (JSONException | IOException ex) {
-                    post(() -> listener.onException(ex));
-                }
-            }
-        });
+        return Tasks.call(executor, () -> new GameRound(new JSONObject(requestSync(url))));
     }
 
-    public final void firstLoad(@Nullable Activity activity, @NonNull OnResult<FirstLoadedPyx> listener) {
-        final InstanceHolder holder = InstanceHolder.holder();
+    @NonNull
+    public final Task<FirstLoadedPyx> doFirstLoad() {
+        InstanceHolder holder = InstanceHolder.holder();
 
         try {
             FirstLoadedPyx pyx = holder.get(InstanceHolder.Level.FIRST_LOADED);
-            handler.post(activity == null ? listener : activity, () -> listener.onDone(pyx));
+            return Tasks.forResult(pyx);
         } catch (LevelMismatchException exx) {
-            executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
-                @Override
-                public void run() {
-                    try {
-                        FirstLoadAndConfig result = firstLoadSync();
-
-                        FirstLoadedPyx pyx = new FirstLoadedPyx(server, handler, client, result);
-                        holder.set(pyx);
-
-                        post(() -> listener.onDone(pyx));
-                    } catch (PyxException | IOException | JSONException ex) {
-                        post(() -> listener.onException(ex));
-                    }
-                }
+            return Tasks.call(executor, () -> {
+                FirstLoadAndConfig result = firstLoadSync();
+                FirstLoadedPyx pyx = new FirstLoadedPyx(server, client, result);
+                holder.set(pyx);
+                return pyx;
             });
         }
     }
 
-    public void recoverCardcastDeck(@NonNull String code, @NonNull Context context, @NonNull OnRecoverResult callback) {
-        executor.execute(new LifecycleAwareRunnable(handler, callback) {
+    @NonNull
+    public Task<File> recoverCardcastDeck(@NonNull String code, @NonNull Context context) {
+        return Tasks.call(executor, new Callable<File>() {
 
             @NonNull
             private JSONObject convertCardObj(@NonNull JSONObject raw) throws JSONException {
@@ -388,21 +328,14 @@ public class Pyx implements Closeable {
             }
 
             @Override
-            public void run() {
+            public File call() throws Exception {
                 try (Response resp = client.newCall(new Request.Builder().url("https://pretendyoure.xyz/zy/metrics/deck/" + code).build()).execute()) {
-                    if (resp.code() == 404) {
-                        post(callback::notFound);
-                        return;
-                    } else if (resp.code() != 200) {
-                        post(() -> callback.onException(new StatusCodeException(resp)));
-                        return;
-                    }
+                    if (resp.code() != 200)
+                        throw new StatusCodeException(resp);
 
                     ResponseBody body = resp.body();
-                    if (body == null) {
-                        post(() -> callback.onException(new Exception("No response body.")));
-                        return;
-                    }
+                    if (body == null)
+                        throw new IllegalArgumentException("No response body.");
 
                     JSONObject rawObj = new JSONObject(body.string());
 
@@ -425,9 +358,7 @@ public class Pyx implements Closeable {
                         out.write(obj.toString().getBytes());
                     }
 
-                    post(() -> callback.onDone(tmpFile));
-                } catch (IOException | JSONException ex) {
-                    post(() -> callback.onException(ex));
+                    return tmpFile;
                 }
             }
         });
@@ -486,41 +417,23 @@ public class Pyx implements Closeable {
     }
 
     @UiThread
-    public interface OnSuccess {
-        void onDone();
-
-        void onException(@NonNull Exception ex);
-    }
-
-    public interface OnRecoverResult {
-        void onDone(@NonNull File tmpFile);
-
-        void notFound();
-
-        void onException(@NonNull Exception ex);
-    }
-
-    @UiThread
-    public interface OnResult<E> {
-        void onDone(@NonNull E result);
-
-        void onException(@NonNull Exception ex);
-    }
-
-    @UiThread
     public interface OnEventListener {
         void onPollMessage(@NonNull PollMessage message) throws JSONException;
+    }
+
+    public interface OnPollingPyxErrorListener {
+        void onPollPyxError(@NonNull PyxException ex);
     }
 
     public static class NoServersException extends Exception {
 
         public void solve(@NonNull Context context) {
-            OfflineActivity.startActivity(context, LoadingActivity.class);
+            OfflineActivity.startActivity(context, null);
         }
     }
 
     public static class MetricsNotSupportedException extends Exception {
-        MetricsNotSupportedException(Server server) {
+        MetricsNotSupportedException(@NonNull Server server) {
             super("Metrics aren't supported on this server: " + server.name);
         }
     }
@@ -599,18 +512,6 @@ public class Pyx implements Closeable {
             else Prefs.putLong(PK.API_SERVERS_CACHE_AGE, 0);
         }
 
-        @Nullable
-        public static Server fromUrl(Uri url) {
-            List<Server> servers = loadAllServers();
-            for (Server server : servers) {
-                if (server.url.host().equals(url.getHost())
-                        && server.url.port() == url.getPort())
-                    return server;
-            }
-
-            return null;
-        }
-
         @NonNull
         private static HttpUrl parseUrlOrThrow(String str) throws JSONException {
             if (str == null) throw new JSONException("str is null");
@@ -633,6 +534,11 @@ public class Pyx implements Closeable {
                 Log.w(TAG, "Failed parsing URL: " + str, ex);
                 return null;
             }
+        }
+
+        @NonNull
+        public static List<Server> loadCustomServers() {
+            return loadServers(PK.USER_SERVERS);
         }
 
         @NonNull
@@ -689,13 +595,25 @@ public class Pyx implements Closeable {
         }
 
         @NonNull
+        public static Server pickBestServer(@NonNull List<Server> servers) {
+            if (servers.isEmpty()) throw new IllegalArgumentException();
+
+            for (Server server : servers)
+                if (server.url.host().contains("pretendyoure.xyz")) // These servers are usually more populated
+                    return server;
+
+            return servers.get(0);
+        }
+
+        @NonNull
         public static Server lastServer() throws NoServersException {
             String name = Prefs.getString(PK.LAST_SERVER, null);
 
             List<Server> apiServers = loadServers(PK.API_SERVERS);
-            if (name == null && !apiServers.isEmpty()) return apiServers.get(0);
-
-            if (name == null) throw new IllegalStateException("Cannot load any server!");
+            if (name == null) {
+                if (!apiServers.isEmpty()) return pickBestServer(apiServers);
+                throw new NoServersException();
+            }
 
             Server server = null;
             try {
@@ -712,12 +630,15 @@ public class Pyx implements Closeable {
                 }
             }
 
-            if (server == null && !apiServers.isEmpty()) server = apiServers.get(0);
-            if (server == null) throw new NoServersException();
+            if (server == null) {
+                if (!apiServers.isEmpty()) return pickBestServer(apiServers);
+                throw new NoServersException();
+            }
+
             return server;
         }
 
-        public static void addUserServer(Server server) throws JSONException {
+        public static void addUserServer(@NonNull Server server) throws JSONException {
             if (!server.isEditable()) return;
 
             JSONArray array = JsonStoring.intoPrefs().getJsonArray(PK.USER_SERVERS);
@@ -731,7 +652,7 @@ public class Pyx implements Closeable {
             JsonStoring.intoPrefs().putJsonArray(PK.USER_SERVERS, array);
         }
 
-        public static void removeUserServer(Server server) {
+        public static void removeUserServer(@NonNull Server server) {
             if (!server.isEditable()) return;
 
             try {
@@ -769,6 +690,13 @@ public class Pyx implements Closeable {
                     return server;
 
             return null;
+        }
+
+        public static void setLastServer(@NonNull Server server) {
+            Pyx.invalidate();
+            Prefs.putString(PK.LAST_SERVER, server.name);
+
+            Log.d(TAG, "Set last server to " + server.url);
         }
 
         @NonNull
@@ -925,49 +853,6 @@ public class Pyx implements Closeable {
                 obj.put("pL-min", playersMin);
                 obj.put("pL-max", playersMax);
                 return obj;
-            }
-        }
-    }
-
-    private class RequestRunner extends LifecycleAwareRunnable {
-        private final PyxRequest request;
-        private final OnSuccess listener;
-
-        RequestRunner(PyxRequest request, @Nullable Activity activity, @NonNull OnSuccess listener) {
-            super(handler, activity == null ? listener : activity);
-            this.request = request;
-            this.listener = listener;
-        }
-
-        @Override
-        public void run() {
-            try {
-                request(request.op, request.params);
-                post(listener::onDone);
-            } catch (IOException | JSONException | PyxException ex) {
-                post(() -> listener.onException(ex));
-            }
-        }
-    }
-
-    private class RequestWithResultRunner<E> extends LifecycleAwareRunnable {
-        private final PyxRequestWithResult<E> request;
-        private final OnResult<E> listener;
-
-        RequestWithResultRunner(PyxRequestWithResult<E> request, @Nullable Activity activity, @NonNull OnResult<E> listener) {
-            super(handler, activity == null ? listener : activity);
-            this.request = request;
-            this.listener = listener;
-        }
-
-        @Override
-        public void run() {
-            try {
-                PyxResponse resp = request(request.op, request.params);
-                E result = request.processor.process(resp.resp, resp.obj);
-                post(() -> listener.onDone(result));
-            } catch (IOException | JSONException | PyxException ex) {
-                post(() -> listener.onException(ex));
             }
         }
     }

@@ -4,9 +4,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.adapters.Filterable;
-import com.gianlu.commonutils.adapters.NotFilterable;
+import com.gianlu.pretendyourexyzzy.api.models.Deck;
 
-public class BasicCustomDeck implements Filterable<NotFilterable> {
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+
+public class BasicCustomDeck implements Filterable<Void> {
     public final String name;
     public final String watermark;
     public final String owner;
@@ -23,6 +27,14 @@ public class BasicCustomDeck implements Filterable<NotFilterable> {
         this.owner = owner;
         this.lastUsed = lastUsed;
         this.count = count;
+    }
+
+    public static boolean contains(@NotNull List<BasicCustomDeck> decks, @NotNull Deck find) {
+        for (BasicCustomDeck deck : decks)
+            if (deck.name.equals(find.name) && (find.watermark == null || deck.watermark.equals(find.watermark)))
+                return true;
+
+        return false;
     }
 
     public int cardsCount() {
@@ -45,7 +57,8 @@ public class BasicCustomDeck implements Filterable<NotFilterable> {
     }
 
     @Override
-    public NotFilterable getFilterable() {
+    @Nullable
+    public Void[] getMatchingFilters() {
         return null;
     }
 }

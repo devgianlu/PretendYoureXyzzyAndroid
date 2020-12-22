@@ -2,8 +2,10 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,18 +19,16 @@ import com.google.android.gms.games.EventsClient;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.LeaderboardsClient;
-import com.google.android.gms.games.achievement.Achievement;
 import com.google.android.gms.games.achievement.AchievementBuffer;
 import com.google.android.gms.games.event.Event;
 import com.google.android.gms.games.event.EventBuffer;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 
 import org.intellij.lang.annotations.MagicConstant;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-
-import xyz.gianlu.pyxoverloaded.TaskUtils;
+import java.util.Locale;
 
 public final class GPGamesHelper {
     public static final String EVENT_CARDS_PLAYED = "CgkIus2n760REAIQAQ";
@@ -40,35 +40,43 @@ public final class GPGamesHelper {
     public static final String ACH_WIN_30_ROUNDS = "CgkIus2n760REAIQCA";
     public static final String ACH_WIN_69_ROUNDS = "CgkIus2n760REAIQCQ";
     public static final String ACH_WIN_420_ROUNDS = "CgkIus2n760REAIQCg";
+    public static final String ACH_WIN_2000_ROUNDS = "CgkIus2n760REAIQEw";
+    public static final String ACH_WIN_10000_ROUNDS = "CgkIus2n760REAIQFA";
     public static final String ACH_3_PEOPLE_GAME = "CgkIus2n760REAIQDA";
     public static final String ACH_5_PEOPLE_GAME = "CgkIus2n760REAIQDQ";
-    public static final String ACH_10_PEOPLE_GAME = "CgkIus2n760REAIQDg ";
+    public static final String ACH_10_PEOPLE_GAME = "CgkIus2n760REAIQDg";
     public static final String ACH_CUSTOM_DECK = "CgkIus2n760REAIQDw";
     public static final String LEAD_WIN_RATE = "CgkIus2n760REAIQEA";
-    public static final String[] ACHS_WIN_ROUNDS = new String[]{ACH_WIN_10_ROUNDS, ACH_WIN_30_ROUNDS, ACH_WIN_69_ROUNDS, ACH_WIN_420_ROUNDS};
+    public static final String[] ACHS_WIN_ROUNDS = new String[]{ACH_WIN_10_ROUNDS, ACH_WIN_30_ROUNDS, ACH_WIN_69_ROUNDS, ACH_WIN_420_ROUNDS, ACH_WIN_2000_ROUNDS, ACH_WIN_10000_ROUNDS};
     public static final String[] ACHS_PEOPLE_GAME = new String[]{ACH_3_PEOPLE_GAME, ACH_5_PEOPLE_GAME, ACH_10_PEOPLE_GAME};
     private static EventsClient eventsClient;
     private static AchievementsClient achievementsClient;
     private static LeaderboardsClient leaderboardsClient;
+    private static boolean unrecoverableError = false;
 
     private GPGamesHelper() {
     }
 
-    @Contract("null -> false")
     private static boolean checkAccount(@Nullable GoogleSignInAccount account) {
-        if (account == null)
+        if (account == null) {
+            unrecoverableError = true;
             return false;
-
-        for (Scope scope : account.getGrantedScopes()) {
-            if (scope.getScopeUri().equals("https://www.googleapis.com/auth/games_lite"))
-                return true;
         }
 
+        for (Scope scope : account.getGrantedScopes()) {
+            if (scope.getScopeUri().equals("https://www.googleapis.com/auth/games_lite")) {
+                unrecoverableError = false;
+                return true;
+            }
+        }
+
+        unrecoverableError = true;
         return false;
     }
 
     @Nullable
     private static EventsClient eventsClient(@NonNull Context context) {
+        if (unrecoverableError) return null;
         if (eventsClient != null) return eventsClient;
 
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
@@ -78,6 +86,7 @@ public final class GPGamesHelper {
 
     @Nullable
     private static AchievementsClient achievementsClient(@NonNull Context context) {
+        if (unrecoverableError) return null;
         if (achievementsClient != null) return achievementsClient;
 
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
@@ -87,9 +96,9 @@ public final class GPGamesHelper {
             return null;
     }
 
-
     @Nullable
     private static LeaderboardsClient leaderboardsClient(@NonNull Context context) {
+        if (unrecoverableError) return null;
         if (leaderboardsClient != null) return leaderboardsClient;
 
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
@@ -97,6 +106,10 @@ public final class GPGamesHelper {
             return leaderboardsClient = Games.getLeaderboardsClient(context, account);
         else
             return null;
+    }
+
+    public static boolean hasGooglePlayGames(@NotNull Context context) {
+        return !unrecoverableError && checkAccount(GoogleSignIn.getLastSignedInAccount(context));
     }
 
     public static void setPopupView(@NonNull Activity activity, @MagicConstant(flagsFromClass = Gravity.class) int gravity) {
@@ -165,45 +178,37 @@ public final class GPGamesHelper {
         }
     }
 
-    public static void loadAchievements(@NonNull Context context, @Nullable Activity activity, @NonNull LoadIterable<Achievement> callback) {
+    @NonNull
+    public static Task<AchievementBuffer> loadAchievements(@NonNull Context context) {
         AchievementsClient client = achievementsClient(context);
-        if (client == null) {
-            callback.onFailed(new Exception("Failed initializing client!"));
-            return;
-        }
-
-        TaskUtils.callbacks(client.load(false), activity, data -> {
-            AchievementBuffer buffer = data.get();
-            if (buffer == null) {
-                callback.onLoaded(Collections.emptyList());
-            } else {
-                callback.onLoaded(buffer);
-                buffer.release();
-            }
-        }, callback::onFailed);
+        if (client == null) return Tasks.forException(new Exception("Failed initializing client!"));
+        else return client.load(false).continueWith(task -> task.getResult().get());
     }
 
-    public static void loadEvents(@NonNull Context context, @Nullable Activity activity, @NonNull LoadIterable<Event> callback) {
+    @NonNull
+    public static Task<Intent> loadAchievementsIntent(@NonNull Context context) {
+        AchievementsClient client = achievementsClient(context);
+        if (client == null) return Tasks.forException(new Exception("Failed initializing client!"));
+        else return client.getAchievementsIntent();
+    }
+
+    @NotNull
+    public static Task<EventBuffer> loadEvents(@NonNull Context context) {
         EventsClient client = eventsClient(context);
-        if (client == null) {
-            callback.onFailed(new Exception("Failed initializing client!"));
-            return;
-        }
-
-        TaskUtils.callbacks(client.load(false), activity, data -> {
-            EventBuffer buffer = data.get();
-            if (buffer == null) {
-                callback.onLoaded(Collections.emptyList());
-            } else {
-                callback.onLoaded(buffer);
-                buffer.release();
-            }
-        }, callback::onFailed);
+        if (client == null) return Tasks.forException(new Exception("Failed initializing client!"));
+        else return client.load(false).continueWith(task -> task.getResult().get());
     }
 
-    public interface LoadIterable<T> {
-        void onLoaded(@NonNull Iterable<T> result);
+    public static void setEventCount(@Nullable Long value, @NonNull TextView view) {
+        if (value == null) {
+            ((View) view.getParent()).setVisibility(View.GONE);
+        } else {
+            ((View) view.getParent()).setVisibility(View.VISIBLE);
 
-        void onFailed(@NonNull Exception ex);
+            String formattedValue;
+            if (value <= 10000) formattedValue = String.valueOf(value);
+            else formattedValue = String.format(Locale.getDefault(), "%.2fK", value / 1000f);
+            view.setText(formattedValue);
+        }
     }
 }

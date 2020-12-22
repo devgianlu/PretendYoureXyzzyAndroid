@@ -14,20 +14,21 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
         android:text="@string/connectCrCast"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5" />
+        android:textAppearance="@style/TextAppearance.Medium"
+        android:textSize="24sp" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
+        android:fontFamily="@font/roboto_regular"
         android:justificationMode="inter_word"
         android:text="@string/connectCrCast_details"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2"
+        android:textSize="14sp"
         tools:targetApi="o" />
 
-
-    <com.gianlu.commonutils.misc.LoadableContentView
-        android:id="@+id/crCastLoginDialog_loadable"
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/crCastLoginDialog_loading"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -36,13 +37,19 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/crCastLoginDialog_username"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="2dp"
-                android:hint="@string/username">
+                android:text="@string/username"
+                android:textAppearance="@style/TextAppearance.Medium"
+                android:textSize="18sp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/crCastLoginDialog_username"
+                style="@style/TextInputLayoutStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
@@ -51,12 +58,18 @@
                     android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/crCastLoginDialog_password"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/passwordLabel"
+                android:text="@string/passwordLabel"
+                android:textAppearance="@style/TextAppearance.Medium"
+                android:textSize="18sp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/crCastLoginDialog_password"
+                style="@style/TextInputLayoutStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 app:endIconMode="password_toggle">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -66,32 +79,32 @@
                     android:lines="1"
                     android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal">
-
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
-
-                <Button
-                    android:id="@+id/crCastLoginDialog_cancel"
-                    style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/cancel" />
-
-                <Button
-                    android:id="@+id/crCastLoginDialog_login"
-                    style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/done" />
-            </LinearLayout>
         </LinearLayout>
-    </com.gianlu.commonutils.misc.LoadableContentView>
+    </com.facebook.shimmer.ShimmerFrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/crCastLoginDialog_cancel"
+            style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel" />
+
+        <Button
+            android:id="@+id/crCastLoginDialog_login"
+            style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/done" />
+    </LinearLayout>
 </LinearLayout>

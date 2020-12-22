@@ -13,10 +13,13 @@ import androidx.annotation.Nullable;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.preferences.json.JsonStoring;
 import com.gianlu.pretendyourexyzzy.PK;
+import com.gianlu.pretendyourexyzzy.ThisApplication;
+import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.models.CardsGroup;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.ContentCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
+import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 
 import org.jetbrains.annotations.NotNull;
@@ -31,8 +34,6 @@ import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsPatchOp;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.StarredCardsUpdateResponse;
-import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
-import xyz.gianlu.pyxoverloaded.model.UserProfile;
 
 public final class StarredCardsDatabase extends SQLiteOpenHelper {
     private static final String TAG = StarredCardsDatabase.class.getSimpleName();
@@ -87,14 +88,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     }
 
     @NonNull
-    public static List<FloatingStarredCard> transform(@NonNull List<UserProfile.StarredCard> original) {
-        List<FloatingStarredCard> list = new ArrayList<>(original.size());
-        for (UserProfile.StarredCard card : original) list.add(new FloatingStarredCard(card));
-        return list;
-    }
-
-    @NonNull
-    private static String createSentence(@NonNull String blackText, @NonNull String[] whiteTexts) {
+    public static String createSentence(@NonNull String blackText, @NonNull String[] whiteTexts) {
         if (!blackText.contains("____")) {
             StringBuilder builder = new StringBuilder(blackText);
             for (String whiteText : whiteTexts)
@@ -132,7 +126,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    private void sendPatch(long revision, @NonNull StarredCardsPatchOp op, int localId, @Nullable Long remoteId, @Nullable ContentCard blackCard, @Nullable CardsGroup whiteCards) {
+    private void sendPatch(@NonNull StarredCardsPatchOp op, int localId, @Nullable Long remoteId, @Nullable ContentCard blackCard, @Nullable CardsGroup whiteCards) {
         if (!OverloadedUtils.isSignedIn())
             return;
 
@@ -150,8 +144,10 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
                 throw new IllegalArgumentException();
             }
 
+            long revision = OverloadedApi.now();
+
             Log.d(TAG, "Sending starred cards patch: " + op);
-            OverloadedSyncApi.get().patchStarredCards(getRevision(), op, remoteId, obj, new GeneralCallback<StarredCardsUpdateResponse>() {
+            OverloadedSyncApi.get().patchStarredCards(revision, op, remoteId, obj, new OverloadedSyncApi.Callback<StarredCardsUpdateResponse>() {
                 @Override
                 public void onResult(@NonNull StarredCardsUpdateResponse result) {
                     if (op == StarredCardsPatchOp.ADD && result.remoteId != null)
@@ -184,6 +180,7 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
     }
 
     public boolean putCard(@NonNull ContentCard blackCard, @NonNull CardsGroup whiteCards) {
+
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         try {
@@ -193,7 +190,8 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             int id = (int) db.insert("cards", null, values);
             db.setTransactionSuccessful();
 
-            sendPatch(OverloadedApi.now(), StarredCardsPatchOp.ADD, id, null, blackCard, whiteCards);
+            sendPatch(StarredCardsPatchOp.ADD, id, null, blackCard, whiteCards);
+            ThisApplication.sendAnalytics(Utils.ACTION_STARRED_CARD_ADD);
 
             return id != -1;
         } catch (JSONException ex) {
@@ -208,8 +206,8 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
         return putCard(ContentCard.from(blackCard), whiteCards);
     }
 
-    public boolean putCard(@NonNull FloatingStarredCard card) {
-        return putCard(ContentCard.fromOverloadedCard(card.card.blackCard), ContentCard.fromOverloadedCards(card.card.whiteCards));
+    public boolean putCard(@NonNull NewUserInfoDialog.StarredCard card) {
+        return putCard(ContentCard.fromOverloadedCard(card.blackCard), ContentCard.fromOverloadedCards(card.whiteCards));
     }
 
     public void remove(@NonNull StarredCard card) {
@@ -219,8 +217,9 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             db.delete("cards", "id=?", new String[]{String.valueOf(card.id)});
             db.setTransactionSuccessful();
 
+            ThisApplication.sendAnalytics(Utils.ACTION_STARRED_CARD_REMOVE);
             if (card.remoteId != null)
-                sendPatch(OverloadedApi.now(), StarredCardsPatchOp.REM, card.id, card.remoteId, null, null);
+                sendPatch(StarredCardsPatchOp.REM, card.id, card.remoteId, null, null);
         } finally {
             db.endTransaction();
         }
@@ -242,17 +241,6 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
                 }
             }
             return cards;
-        } finally {
-            db.endTransaction();
-        }
-    }
-
-    public boolean hasAnyCard() {
-        SQLiteDatabase db = getReadableDatabase();
-        db.beginTransaction();
-        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM cards", null)) {
-            if (cursor == null || !cursor.moveToNext()) return false;
-            else return cursor.getInt(0) > 0;
         } finally {
             db.endTransaction();
         }
@@ -301,47 +289,6 @@ public final class StarredCardsDatabase extends SQLiteOpenHelper {
             Log.e(TAG, "Failed adding card.", ex);
         } finally {
             db.endTransaction();
-        }
-    }
-
-    public static class FloatingStarredCard extends BaseCard {
-        private final UserProfile.StarredCard card;
-        private transient String cachedSentence;
-
-        private FloatingStarredCard(@NonNull UserProfile.StarredCard card) {
-            this.card = card;
-        }
-
-        @NonNull
-        @Override
-        public String text() {
-            if (cachedSentence == null) {
-                String[] whiteTexts = new String[card.whiteCards.length];
-                for (int i = 0; i < whiteTexts.length; i++) whiteTexts[i] = card.whiteCards[i].text;
-                cachedSentence = createSentence(card.blackCard.text, whiteTexts);
-            }
-
-            return cachedSentence;
-        }
-
-        @Override
-        public String watermark() {
-            return null;
-        }
-
-        @Override
-        public int numPick() {
-            return -1;
-        }
-
-        @Override
-        public int numDraw() {
-            return -1;
-        }
-
-        @Override
-        public boolean black() {
-            return false;
         }
     }
 

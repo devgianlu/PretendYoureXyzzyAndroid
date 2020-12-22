@@ -1,7 +1,6 @@
 package xyz.gianlu.pyxoverloaded;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -19,7 +18,6 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthCredential;
@@ -44,8 +42,10 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -67,20 +67,12 @@ import okhttp3.internal.Util;
 import okio.BufferedSink;
 import okio.GzipSink;
 import okio.Okio;
-import xyz.gianlu.pyxoverloaded.callback.BooleanCallback;
-import xyz.gianlu.pyxoverloaded.callback.FriendsStatusCallback;
-import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
-import xyz.gianlu.pyxoverloaded.callback.SuccessCallback;
-import xyz.gianlu.pyxoverloaded.callback.UserDataCallback;
-import xyz.gianlu.pyxoverloaded.callback.UsersCallback;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 import xyz.gianlu.pyxoverloaded.model.UserProfile;
 import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
 
 import static com.gianlu.commonutils.CommonUtils.singletonJsonObject;
-import static xyz.gianlu.pyxoverloaded.TaskUtils.callbacks;
-import static xyz.gianlu.pyxoverloaded.TaskUtils.loggingCallbacks;
 import static xyz.gianlu.pyxoverloaded.Utils.overloadedServerUrl;
 
 public class OverloadedApi {
@@ -89,14 +81,18 @@ public class OverloadedApi {
     private static OverloadedChatApi chatInstance;
     final ExecutorService executorService = Executors.newCachedThreadPool(new NamedThreadFactory("overloaded-"));
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("overloaded-scheduler-"));
-    private final OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new GzipRequestInterceptor()).build();
+    private final OkHttpClient client = new OkHttpClient.Builder()
+            .readTimeout(5000, TimeUnit.MILLISECONDS)
+            .connectTimeout(5000, TimeUnit.MILLISECONDS)
+            .addInterceptor(new GzipRequestInterceptor())
+            .build();
     private final WebSocketHolder webSocket = new WebSocketHolder();
     private volatile FirebaseUser user;
     private volatile OverloadedToken lastToken;
     private volatile UserData userDataCached = null;
     private volatile Task<UserData> userDataTask = null;
     private volatile Map<String, FriendStatus> friendsStatusCached = null;
-    private volatile List<String> overloadedUsersCached = null;
+    private volatile List<String> serverOverloadedUsersCached = null;
     private Long maintenanceEnd = null;
     private boolean isFirstRequest = true;
     private String clientVersion = "??";
@@ -155,23 +151,34 @@ public class OverloadedApi {
         instance.webSocket.close();
     }
 
-    //region Internal
+    @NonNull
+    public static <R> Task<R> loggingCallbacks(@NonNull Task<R> task, @NonNull String taskName) {
+        return task.addOnFailureListener(ex -> Log.d(TAG, String.format("Failed processing task %s!", taskName), ex))
+                .addOnSuccessListener(r -> Log.d(TAG, String.format("Task %s completed successfully, result: %s", taskName, r)));
+    }
 
+    //region Internal
     @NonNull
     @WorkerThread
     JSONObject makePostRequest(@NonNull String suffix, @Nullable JSONObject json) throws OverloadedException, MaintenanceException {
+        return makePostRequest(suffix, json, true);
+    }
+
+    @NonNull
+    @WorkerThread
+    JSONObject makePostRequest(@NonNull String suffix, @Nullable JSONObject json, boolean auth) throws OverloadedException, MaintenanceException {
         RequestBody body;
         if (json == null)
             body = Util.EMPTY_REQUEST;
         else
             body = RequestBody.create(json.toString().getBytes(), MediaType.get("application/json"));
 
-        return makeRequest(suffix, body);
+        return makeRequest(suffix, body, auth);
     }
 
     @NonNull
     @WorkerThread
-    private JSONObject makeRequest(@NonNull String suffix, @NonNull RequestBody body) throws OverloadedException, MaintenanceException {
+    private JSONObject makeRequest(@NonNull String suffix, @NonNull RequestBody body, boolean auth) throws OverloadedException, MaintenanceException {
         Trace trace = FirebasePerformance.startTrace("overloaded_request");
         trace.putAttribute("dest", suffix);
 
@@ -192,7 +199,7 @@ public class OverloadedApi {
                     MediaType contentType = body.contentType();
                     if (contentType != null) req.addHeader("Content-Type", contentType.toString());
 
-                    return makeRequestInternal(req, trace);
+                    return makeRequestInternal(req, trace, auth);
                 } catch (IOException ex) {
                     lastEx = new OverloadedException(req.build().toString(), ex);
 
@@ -219,7 +226,7 @@ public class OverloadedApi {
 
     @NonNull
     @WorkerThread
-    private JSONObject makeRequestInternal(@NonNull Request.Builder reqBuilder, @NonNull Trace trace) throws OverloadedException, MaintenanceException, IOException {
+    private JSONObject makeRequestInternal(@NonNull Request.Builder reqBuilder, @NonNull Trace trace, boolean auth) throws OverloadedException, MaintenanceException, IOException {
         if (isFirstRequest || isUnderMaintenance()) {
             for (int i = 0; i < 3; i++) {
                 try {
@@ -233,19 +240,23 @@ public class OverloadedApi {
             }
         }
 
-        if (lastToken == null || lastToken.expired()) {
-            if (user == null && updateUser())
-                throw new NotSignedInException();
+        if (auth) {
+            if (lastToken == null || lastToken.expired()) {
+                if (user == null && updateUser())
+                    throw new NotSignedInException();
 
-            updateTokenSync();
-            if (lastToken == null)
-                throw new NotSignedInException();
+                updateTokenSync();
+                if (lastToken == null)
+                    throw new NotSignedInException();
+            }
+
+            reqBuilder.addHeader("Authorization", lastToken.authHeader());
         }
 
+        trace.putAttribute("auth", String.valueOf(auth));
         trace.putAttribute("has_server_token", String.valueOf(lastToken != null && lastToken.serverToken != null));
 
         Request req = reqBuilder
-                .addHeader("Authorization", lastToken.authHeader())
                 .addHeader("X-Client-Version", clientVersion)
                 .addHeader("X-Device-Id", String.valueOf(SignalProtocolHelper.getLocalDeviceId())).build();
         try (Response resp = client.newCall(req).execute()) {
@@ -303,7 +314,6 @@ public class OverloadedApi {
             return maintenanceEnd;
         }
     }
-
     //endregion
 
     //region Pyx
@@ -344,7 +354,6 @@ public class OverloadedApi {
             }
         }), "logIntoPyx");
     }
-
     //endregion
 
     //region User and providers
@@ -436,7 +445,6 @@ public class OverloadedApi {
             return false;
         }
     }
-
     //endregion
 
     //region Misc
@@ -444,12 +452,12 @@ public class OverloadedApi {
     /**
      * Uploads an image and gets a reference ID in return.
      *
-     * @param in       The image stream
-     * @param activity The caller {@link Activity}
-     * @param callback The callback containing the image ID
+     * @param in The image stream
+     * @return A task resolving to the image ID
      */
-    public void uploadCardImage(@NonNull InputStream in, @Nullable Activity activity, @NonNull GeneralCallback<String> callback) {
-        callbacks(Tasks.call(executorService, () -> {
+    @NotNull
+    public Task<String> uploadCardImage(@NonNull InputStream in) {
+        return Tasks.call(executorService, () -> {
             ByteArrayOutputStream out = new ByteArrayOutputStream(512 * 1024);
             try {
                 CommonUtils.copy(in, out);
@@ -460,38 +468,35 @@ public class OverloadedApi {
             String imageEncoded = Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
             JSONObject obj = makePostRequest("Images/UploadCardImage", singletonJsonObject("image", imageEncoded));
             return obj.getString("id");
-        }), activity, callback::onResult, callback::onFailed);
+        });
     }
 
     /**
      * Links the current profile with another provider.
      *
      * @param credential The credentials of the new provider
-     * @param listener   A listener for completion
+     * @return A task resolving to the link operation
      */
-    public void link(@NonNull AuthCredential credential, @NonNull OnCompleteListener<Void> listener) {
-        if (user == null && updateUser()) {
-            listener.onComplete(Tasks.forException(new NotSignedInException()));
-            return;
-        }
+    @NonNull
+    public Task<Void> link(@NonNull AuthCredential credential) {
+        if (user == null && updateUser())
+            return Tasks.forException(new NotSignedInException());
 
-        user.linkWithCredential(credential)
-                .continueWithTask(task -> user.reload())
-                .addOnCompleteListener(listener);
+        return user.linkWithCredential(credential).continueWithTask(task -> user.reload());
     }
 
     /**
      * Gets another user profile.
      *
      * @param username The target username
-     * @param activity The caller {@link Activity}
-     * @param callback The callback containing the {@link UserProfile}
+     * @return A task resolving to the {@link UserProfile}
      */
-    public void getProfile(@NonNull String username, @Nullable Activity activity, @NonNull GeneralCallback<UserProfile> callback) {
-        callbacks(Tasks.call(executorService, () -> {
+    @NotNull
+    public Task<UserProfile> getProfile(@NonNull String username) {
+        return Tasks.call(executorService, () -> {
             JSONObject obj = makePostRequest("Profile/Get", singletonJsonObject("username", username));
             return new UserProfile(obj);
-        }), activity, callback::onResult, callback::onFailed);
+        });
     }
 
     /**
@@ -512,20 +517,17 @@ public class OverloadedApi {
      * @param username      The username, may be {@code null}
      * @param sku           The product/subscription SKU
      * @param purchaseToken The purchase token
-     * @param activity      The caller {@link Activity}
-     * @param callback      The callback containing the latest {@link UserData}
      */
-    @Contract("null, null, null, _, _ -> fail")
-    public void registerUser(@Nullable String username, @Nullable String sku, @Nullable String purchaseToken, @Nullable Activity activity, @NonNull UserDataCallback callback) {
+    @NonNull
+    @Contract("null, null, null -> fail")
+    public Task<UserData> registerUser(@Nullable String username, @Nullable String sku, @Nullable String purchaseToken) {
         if (username == null && (sku == null && purchaseToken == null))
             throw new IllegalStateException();
 
-        if (user == null && updateUser()) {
-            callback.onFailed(new NotSignedInException());
-            return;
-        }
+        if (user == null && updateUser())
+            return Tasks.forException(new NotSignedInException());
 
-        Task<UserData> task = user.getIdToken(true)
+        return user.getIdToken(true)
                 .continueWith(new NonNullContinuation<GetTokenResult, OverloadedToken>() {
                     @Override
                     public OverloadedToken then(@NonNull GetTokenResult result) {
@@ -544,50 +546,55 @@ public class OverloadedApi {
                         return userDataCached = new UserData(obj.getJSONObject("userData"));
                     }
                 });
-
-        callbacks(task, activity, callback::onUserData, callback::onFailed);
     }
 
     /**
      * Checks whether the provided username is unique.
      *
      * @param username The username to check
-     * @param activity The caller {@link Activity}
-     * @param callback The callback containing the boolean response
+     * @return A task revolving to whether the username is unique
      */
-    public void isUsernameUnique(@NonNull String username, @Nullable Activity activity, @NonNull BooleanCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = makePostRequest("IsUsernameUnique", singletonJsonObject("username", username));
-            return obj.getBoolean("unique");
-        }), activity, callback::onResult, callback::onFailed);
+    @NonNull
+    public Task<Boolean> isUsernameUnique(@NonNull String username) {
+        return Tasks.call(executorService, () -> {
+            try (Response resp = client.newCall(new Request.Builder().url(overloadedServerUrl("IsUsernameUnique"))
+                    .post(RequestBody.create(singletonJsonObject("username", username).toString().getBytes(), MediaType.get("application/json"))).build())
+                    .execute()) {
+                JSONObject obj;
+                ResponseBody body = resp.body();
+                if (body == null) obj = new JSONObject();
+                else obj = new JSONObject(body.string());
+
+                return obj.getBoolean("unique");
+            }
+        });
     }
 
     /**
-     * Gets all online users on the specified server.
+     * Gets all online users on the specified server, everyone can fetch this.
      *
      * @param serverUrl The server URL
-     * @param activity  The caller {@link Activity}
-     * @param callback  The callback containing the list of users
+     * @return A task resolving to the list of users
      */
-    public void listUsers(@NonNull HttpUrl serverUrl, @Nullable Activity activity, @NonNull UsersCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
-            JSONObject obj = makePostRequest("Pyx/ListOnline", singletonJsonObject("serverUrl", serverUrl.toString()));
+    public Task<List<String>> listUsersOnServer(@NonNull HttpUrl serverUrl) {
+        return Tasks.call(executorService, () -> {
+            JSONObject obj = makePostRequest("Pyx/ListOnline", singletonJsonObject("serverUrl", serverUrl.toString()), false);
 
             JSONArray array = obj.getJSONArray("users");
             List<String> list = new ArrayList<>(array.length());
             for (int i = 0; i < array.length(); i++) list.add(array.getString(i));
-            return overloadedUsersCached = list;
-        }), activity, callback::onUsers, callback::onFailed);
+            return serverOverloadedUsersCached = list;
+        });
     }
 
     /**
-     * Checks if the given user has Overloaded.
+     * Checks if the given user has Overloaded and is on the server (from cache).
      *
      * @param nick The user nickname
-     * @return Whether it is an Overloaded user
+     * @return Whether it is an Overloaded user and it is on the same server
      */
-    public boolean isOverloadedUser(@NonNull String nick) {
-        return overloadedUsersCached != null && overloadedUsersCached.contains(nick);
+    public boolean isOverloadedUserOnServerCached(@NonNull String nick) {
+        return serverOverloadedUsersCached != null && serverOverloadedUsersCached.contains(nick);
     }
 
     /**
@@ -621,17 +628,14 @@ public class OverloadedApi {
     /**
      * Deletes the current account (from the server too) and signs out.
      *
-     * @param activity The caller {@link Activity}
-     * @param callback The callback for completion
+     * @return A task resolving to the account deletion operation
      */
-    public void deleteAccount(@Nullable Activity activity, @NonNull SuccessCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
+    @NonNull
+    public Task<Void> deleteAccount() {
+        return Tasks.call(executorService, (Callable<Void>) () -> {
             makePostRequest("User/Delete", null);
             return null;
-        }), activity, a -> {
-            logout();
-            callback.onSuccessful();
-        }, callback::onFailed);
+        }).addOnFailureListener(ex -> logout());
     }
 
     /**
@@ -645,7 +649,7 @@ public class OverloadedApi {
         userDataTask = null;
         userDataCached = null;
         friendsStatusCached = null;
-        overloadedUsersCached = null;
+        serverOverloadedUsersCached = null;
 
         if (webSocket.client != null) {
             webSocket.client.close(1000, null);
@@ -673,17 +677,13 @@ public class OverloadedApi {
     //endregion
 
     //region User data
-
-    public void userData(@Nullable Activity activity, boolean preferCache, @NonNull UserDataCallback callback) {
-        callbacks(userData(preferCache), activity, callback::onUserData, callback::onFailed);
-    }
-
-    public void userData(@Nullable Activity activity, @NonNull UserDataCallback callback) {
-        userData(activity, false, callback);
+    @NonNull
+    public Task<UserData> userData() {
+        return userData(false);
     }
 
     @NonNull
-    Task<UserData> userData(boolean preferCache) {
+    public Task<UserData> userData(boolean preferCache) {
         if (preferCache && userDataCached != null)
             return Tasks.forResult(userDataCached);
 
@@ -691,8 +691,15 @@ public class OverloadedApi {
             return userDataTask;
 
         return userDataTask = Tasks.call(executorService, () -> {
-            JSONObject obj = makePostRequest("User/Data", null);
-            return userDataCached = new UserData(obj);
+            try {
+                JSONObject obj = makePostRequest("User/Data", null);
+                return userDataCached = new UserData(obj);
+            } catch (OverloadedServerException ex) {
+                if (ex.reason.equals(OverloadedServerException.REASON_NOT_REGISTERED))
+                    logout();
+
+                throw ex;
+            }
         });
     }
 
@@ -709,81 +716,116 @@ public class OverloadedApi {
     /**
      * Sets an user property to the specified value.
      *
-     * @param key      The property key
-     * @param value    The new property value
-     * @param activity The caller {@link Activity}
-     * @param callback The callback for success
+     * @param key   The property key
+     * @param value The new property value
+     * @return A task resolving to the user property set operation
      */
-    public void setUserProperty(@NonNull UserData.PropertyKey key, @Nullable String value, @Nullable Activity activity, @NonNull SuccessCallback callback) {
-        callbacks(Tasks.call(executorService, (Callable<Void>) () -> {
+    @NonNull
+    public Task<Void> setUserProperty(@NonNull UserData.PropertyKey key, @Nullable String value) {
+        return Tasks.call(executorService, () -> {
             JSONObject body = new JSONObject();
             body.put("key", key.val);
             if (value != null) body.put("value", value);
             makePostRequest("User/SetProperty", body);
             return null;
-        }), activity, aVoid -> callback.onSuccessful(), callback::onFailed);
+        });
     }
 
+    /**
+     * Removes the user profile image.
+     *
+     * @return A task resolving to the remove result
+     */
+    @NotNull
+    public Task<Void> removeProfileImage() {
+        return Tasks.call(executorService, () -> {
+            makePostRequest("Profile/UploadImage", singletonJsonObject("remove", true));
+            return null;
+        });
+    }
+
+    /**
+     * Uploads the user profile image.
+     *
+     * @param in The {@link InputStream} to read the image from
+     * @return A task resolving to the upload result
+     */
+    @NotNull
+    public Task<Void> uploadProfileImage(@NotNull InputStream in) {
+        return Tasks.call(executorService, () -> {
+            ByteArrayOutputStream out = new ByteArrayOutputStream(512 * 1024);
+            try {
+                CommonUtils.copy(in, out);
+            } finally {
+                in.close();
+            }
+
+            String imageEncoded = Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
+            makePostRequest("Profile/UploadImage", singletonJsonObject("image", imageEncoded));
+            return null;
+        });
+    }
     //endregion
 
     //region Friends
-
     @Nullable
     public Map<String, FriendStatus> friendsStatusCache() {
         return friendsStatusCached;
     }
 
+    public boolean hasFriendCached(@NotNull String username) {
+        return friendsStatusCached != null && friendsStatusCached.containsKey(username);
+    }
+
     /**
      * Gets the list of friends and their status (includes friends requests).
      *
-     * @param activity The caller {@link Activity}
-     * @param callback The callback containing the list of friends
+     * @return A task resolving to the map of friends
      */
-    public void friendsStatus(@Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
+    @NonNull
+    public Task<Map<String, FriendStatus>> friendsStatus() {
+        return Tasks.call(executorService, () -> {
             JSONObject obj = makePostRequest("User/FriendsStatus", null);
             return friendsStatusCached = FriendStatus.parse(obj);
-        }), activity, callback::onFriendsStatus, callback::onFailed);
+        });
     }
 
     /**
      * Removes a friend or denies a friend request.
      *
      * @param username The target username
-     * @param activity The caller {@link Activity}
-     * @param callback The callback containing the status of the removed friend
+     * @return A task resolving to the updated friends list
      */
-    public void removeFriend(@NonNull String username, @Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
+    @NonNull
+    public Task<Map<String, FriendStatus>> removeFriend(@NonNull String username) {
+        return Tasks.call(executorService, () -> {
             JSONObject obj = makePostRequest("User/RemoveFriend", singletonJsonObject("username", username));
 
             Map<String, FriendStatus> map = friendsStatusCached = FriendStatus.parse(obj);
             dispatchLocalEvent(Event.Type.REMOVED_FRIEND, username);
             return map;
-        }), activity, callback::onFriendsStatus, callback::onFailed);
+        });
     }
 
     /**
      * Adds a friend or makes a friend request.
      *
      * @param username The target username
-     * @param activity The caller {@link Activity}
-     * @param callback The callback containing the status of the removed friend
+     * @return A task resolving to the updated friends list
      */
-    public void addFriend(@NonNull String username, @Nullable Activity activity, @NonNull FriendsStatusCallback callback) {
-        callbacks(Tasks.call(executorService, () -> {
+    @NonNull
+    public Task<Map<String, FriendStatus>> addFriend(@NonNull String username) {
+        return Tasks.call(executorService, () -> {
             JSONObject obj = makePostRequest("User/AddFriend", singletonJsonObject("username", username));
 
             Map<String, FriendStatus> map = friendsStatusCached = FriendStatus.parse(obj);
             dispatchLocalEvent(Event.Type.ADDED_FRIEND, username);
             return map;
-        }), activity, callback::onFriendsStatus, callback::onFailed);
+        });
     }
-
     //endregion
 
     //region Events
-
     void dispatchLocalEvent(@NonNull Event.Type type, @NonNull Object data) {
         webSocket.dispatchEvent(new Event(type, null, data));
     }
@@ -809,14 +851,13 @@ public class OverloadedApi {
 
             friendsStatusCached.remove(event.data.getString("username"));
         } else if (event.type == OverloadedApi.Event.Type.USER_LEFT_SERVER) {
-            if (overloadedUsersCached != null)
-                overloadedUsersCached.remove(event.data.getString("nick"));
+            if (serverOverloadedUsersCached != null)
+                serverOverloadedUsersCached.remove(event.data.getString("nick"));
         } else if (event.type == OverloadedApi.Event.Type.USER_JOINED_SERVER) {
-            if (overloadedUsersCached != null)
-                overloadedUsersCached.add(event.data.getString("nick"));
+            if (serverOverloadedUsersCached != null)
+                serverOverloadedUsersCached.add(event.data.getString("nick"));
         }
     }
-
     //endregion
 
     @UiThread
@@ -825,8 +866,11 @@ public class OverloadedApi {
     }
 
     public static class MaintenanceException extends Exception {
+        public final long maintenanceEnd;
+
         private MaintenanceException(long maintenanceEnd) {
             super("Estimated end: " + maintenanceEnd);
+            this.maintenanceEnd = maintenanceEnd;
         }
     }
 
@@ -903,6 +947,7 @@ public class OverloadedApi {
         public static final String REASON_NO_SUCH_USER = "noSuchUser";
         public static final String REASON_EXPIRED_TOKEN = "expiredToken";
         public static final String REASON_INVALID_AUTH = "invalidAuth";
+        public static final String REASON_NSFW_DETECTED = "nsfwDetected";
         public final int httpCode;
         public final String reason;
         public final JSONObject details;
@@ -918,13 +963,9 @@ public class OverloadedApi {
         @Contract("_, _ -> new")
         @SuppressLint("DefaultLocale")
         private static OverloadedServerException create(@NonNull Response resp, @NonNull JSONObject obj) {
-            try {
-                String reason = obj.getString("reason");
-                JSONObject details = obj.optJSONObject("details");
-                return new OverloadedServerException(String.format("%s -> %s (%d)", resp.request(), reason, resp.code()), resp.code(), reason, details);
-            } catch (JSONException ex) {
-                throw new IllegalStateException(ex);
-            }
+            String reason = obj.optString("reason");
+            JSONObject details = obj.optJSONObject("details");
+            return new OverloadedServerException(String.format("%s -> %s (%d)", resp.request(), reason, resp.code()), resp.code(), reason, details);
         }
     }
 
@@ -1021,7 +1062,7 @@ public class OverloadedApi {
     }
 
     private class WebSocketHolder extends WebSocketListener {
-        final List<EventListener> listeners = new ArrayList<>();
+        final Set<EventListener> listeners = new HashSet<>();
         private final Handler handler = new Handler(Looper.getMainLooper());
         public WebSocket client;
         private int tries = 0;

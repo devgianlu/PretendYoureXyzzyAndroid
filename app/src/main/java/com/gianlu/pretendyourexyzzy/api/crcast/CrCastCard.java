@@ -20,8 +20,11 @@ public final class CrCastCard extends BaseCard {
         this.deckCode = deckCode;
         this.black = black;
         this.text = reformatText(obj.getString("text"), black);
-        this.state = CrCastApi.State.parse(obj.getInt("state"));
         this.pick = text.split("_+", -1).length - 1;
+
+        int stateInt = obj.optInt("state", -1);
+        if (stateInt == -1) this.state = null;
+        else this.state = CrCastApi.State.parse(obj.getInt("state"));
     }
 
     @NonNull

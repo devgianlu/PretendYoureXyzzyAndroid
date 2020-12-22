@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy.api.models;
 
+import androidx.annotation.NonNull;
+
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.GameCard;
 
@@ -15,7 +17,7 @@ public class GameCards {
     public final List<CardsGroup> whiteCards;
     public final List<BaseCard> hand;
 
-    public GameCards(JSONObject obj) throws JSONException {
+    public GameCards(@NonNull JSONObject obj) throws JSONException {
         if (obj.isNull("bc")) blackCard = null;
         else blackCard = (GameCard) GameCard.parse(obj.getJSONObject("bc"));
         gameId = obj.getInt("gid");

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingTop="16dp">
+
+    <ImageButton
+        android:id="@+id/settingsPrefsFragment_back"
+        style="@style/ToolbarIconStyle"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/baseline_arrow_back_24" />
+
+    <TextView
+        android:id="@+id/settingsPrefsFragment_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="12dp"
+        android:textAppearance="@style/TextAppearance.Medium"
+        android:textSize="24sp" />
+
+    <com.yarolegovich.mp.MaterialPreferenceScreen
+        android:id="@+id/settingsPrefsFragment_screen"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</LinearLayout>

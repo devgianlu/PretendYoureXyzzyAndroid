@@ -25,11 +25,13 @@ public class UserData {
     public final PurchaseStatus purchaseStatus;
     public final PurchaseStatusGranular purchaseStatusGranular;
     public final String username;
+    public final String profileImageId;
     public final Long expireTime;
     private final Map<PropertyKey, String> properties;
 
     public UserData(@NotNull JSONObject obj) throws JSONException {
         this.username = obj.getString("username");
+        this.profileImageId = CommonUtils.optString(obj, "profileImageId");
         this.purchaseStatus = PurchaseStatus.parse(obj.getString("purchaseStatus"));
         this.purchaseStatusGranular = PurchaseStatusGranular.parse(obj.getString("purchaseStatusGranular"));
         this.expireTime = CommonUtils.optLong(obj, "expireTime");
@@ -181,24 +183,6 @@ public class UserData {
             }
 
             throw new IllegalArgumentException("Unknown purchaseStatus: " + val);
-        }
-
-        @NonNull
-        public String toString(@NonNull Context context) {
-            int res;
-            switch (this) {
-                case OK:
-                    res = R.string.ok;
-                    break;
-                case NONE:
-                    res = R.string.none;
-                    break;
-                default:
-                    res = R.string.unknown;
-                    break;
-            }
-
-            return context.getString(res);
         }
     }
 }

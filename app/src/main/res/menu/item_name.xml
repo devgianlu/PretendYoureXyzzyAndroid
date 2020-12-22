@@ -4,9 +4,6 @@
         android:id="@+id/nameItemMenu_showInfo"
         android:title="@string/showInfo" />
     <item
-        android:id="@+id/nameItemMenu_showProfile"
-        android:title="@string/showProfile" />
-    <item
         android:id="@+id/nameItemMenu_block"
         android:title="@string/blockUser" />
     <item

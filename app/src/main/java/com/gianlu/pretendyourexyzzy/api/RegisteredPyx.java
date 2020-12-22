@@ -1,15 +1,13 @@
 package com.gianlu.pretendyourexyzzy.api;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
-import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
-import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.ThisApplication;
@@ -22,6 +20,8 @@ import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 import com.gianlu.pretendyourexyzzy.api.models.User;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.UserHistory;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,7 +29,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -45,11 +47,13 @@ public class RegisteredPyx extends FirstLoadedPyx {
     private final User user;
     private final PollingThread pollingThread;
     private final PyxChatHelper chatHelper;
+    private final Handler handler;
 
-    RegisteredPyx(Server server, LifecycleAwareHandler handler, OkHttpClient client, FirstLoadAndConfig firstLoad, User user) {
-        super(server, handler, client, firstLoad);
+    RegisteredPyx(Server server, OkHttpClient client, FirstLoadAndConfig firstLoad, @NonNull User user) {
+        super(server, client, firstLoad);
         this.user = user;
-        this.chatHelper = new PyxChatHelper(handler);
+        this.handler = new Handler(Looper.getMainLooper());
+        this.chatHelper = new PyxChatHelper();
         this.pollingThread = new PollingThread();
         this.pollingThread.start();
 
@@ -72,8 +76,9 @@ public class RegisteredPyx extends FirstLoadedPyx {
         request.addHeader("Cookie", "JSESSIONID=" + user.sessionId);
     }
 
-    public final void getUserHistory(@Nullable Activity activity, @NonNull OnResult<UserHistory> listener) {
-        getUserHistory(user.persistentId, activity, listener);
+    @NonNull
+    public final Task<UserHistory> getUserHistory() {
+        return getUserHistory(user.persistentId);
     }
 
     @NonNull
@@ -86,37 +91,25 @@ public class RegisteredPyx extends FirstLoadedPyx {
         return pollingThread;
     }
 
-    public final void logout() {
-        request(PyxRequests.logout(), null, new OnSuccess() {
-            @Override
-            public void onDone() {
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                Log.e(TAG, "Failed logging out.", ex);
-            }
-        });
+    public final void logout(boolean unsetSessionId) {
+        request(PyxRequests.logout()).addOnFailureListener(ex -> Log.e(TAG, "Failed logging out.", ex));
 
         if (pollingThread != null) pollingThread.safeStop();
         if (OverloadedUtils.isSignedIn()) OverloadedApi.get().loggedOutFromPyxServer();
         InstanceHolder.holder().invalidate();
-        Prefs.remove(PK.LAST_JSESSIONID);
+        if (unsetSessionId) Prefs.remove(PK.LAST_JSESSIONID);
     }
 
-    public final void getGameInfoAndCards(int gid, @Nullable Activity activity, @NonNull OnResult<GameInfoAndCards> listener) {
-        executor.execute(new LifecycleAwareRunnable(handler, activity == null ? listener : activity) {
-            @Override
-            public void run() {
-                try {
-                    GameInfo info = requestSync(PyxRequests.getGameInfo(gid));
-                    GameCards cards = requestSync(PyxRequests.getGameCards(gid));
-                    GameInfoAndCards result = new GameInfoAndCards(info, cards);
-                    post(() -> listener.onDone(result));
-                } catch (JSONException | PyxException | IOException ex) {
-                    post(() -> listener.onException(ex));
-                }
-            }
+    public final void logout() {
+        logout(true);
+    }
+
+    @NonNull
+    public final Task<GameInfoAndCards> getGameInfoAndCards(int gid) {
+        return Tasks.call(executor, () -> {
+            GameInfo info = requestSync(PyxRequests.getGameInfo(gid));
+            GameCards cards = requestSync(PyxRequests.getGameCards(gid));
+            return new GameInfoAndCards(info, cards);
         });
     }
 
@@ -127,7 +120,8 @@ public class RegisteredPyx extends FirstLoadedPyx {
     }
 
     public class PollingThread extends Thread {
-        private final List<OnEventListener> listeners = new ArrayList<>();
+        private final Set<OnEventListener> listeners = new HashSet<>();
+        private final Set<OnPollingPyxErrorListener> errorListeners = new HashSet<>();
         private int exCount = 0;
         private volatile boolean shouldStop = false;
         private Call lastCall;
@@ -169,11 +163,19 @@ public class RegisteredPyx extends FirstLoadedPyx {
                         if (json.startsWith("{")) {
                             raiseException(new JSONObject(json));
                         } else if (json.startsWith("[")) {
-                            handler.post(null, new NotifyMessage(PollMessage.list(new JSONArray(json))));
+                            List<PollMessage> messages = PollMessage.list(new JSONArray(json));
+                            for (PollMessage msg : messages)
+                                if (msg.event == PollMessage.Event.CHAT)
+                                    chatHelper.handleChatEvent(msg);
+
+                            handler.post(new NotifyMessage(messages));
                         }
                     }
-                } catch (JSONException | PyxException ex) {
-                    Log.w(TAG, "Polling exception.", ex);
+                } catch (JSONException ex) {
+                    Log.w(TAG, "JSON polling exception.", ex);
+                } catch (PyxException ex) {
+                    Log.w(TAG, "Pyx polling exception.", ex);
+                    handler.post(new NotifyError(ex));
                 } catch (IOException ex) {
                     if (shouldStop) break;
 
@@ -192,22 +194,52 @@ public class RegisteredPyx extends FirstLoadedPyx {
             }
         }
 
-        public void addListener(@NonNull OnEventListener listener) {
-            synchronized (listeners) {
-                if (!listeners.contains(listener))
-                    listeners.add(listener);
-            }
-        }
-
         void safeStop() {
             shouldStop = true;
             if (lastCall != null) lastCall.cancel();
             interrupt();
         }
 
+        public void addListener(@NonNull OnEventListener listener) {
+            synchronized (listeners) {
+                listeners.add(listener);
+            }
+        }
+
         public void removeListener(@NonNull OnEventListener listener) {
             synchronized (listeners) {
                 listeners.remove(listener);
+            }
+        }
+
+        public void addErrorListener(@NonNull OnPollingPyxErrorListener listener) {
+            synchronized (errorListeners) {
+                errorListeners.add(listener);
+            }
+        }
+
+        public void removeErrorListener(@NonNull OnPollingPyxErrorListener listener) {
+            synchronized (errorListeners) {
+                errorListeners.remove(listener);
+            }
+        }
+
+        private class NotifyError implements Runnable {
+            private final PyxException ex;
+
+            NotifyError(PyxException ex) {
+                this.ex = ex;
+            }
+
+            @Override
+            public void run() {
+                List<OnPollingPyxErrorListener> copy;
+                synchronized (errorListeners) {
+                    copy = new ArrayList<>(errorListeners);
+                }
+
+                for (OnPollingPyxErrorListener listener : copy)
+                    listener.onPollPyxError(ex);
             }
         }
 
@@ -234,13 +266,6 @@ public class RegisteredPyx extends FirstLoadedPyx {
                         }
                     }
                 }
-
-                // We need to make sure that the UI has been updated
-                executor.execute(() -> {
-                    for (PollMessage msg : messages)
-                        if (msg.event == PollMessage.Event.CHAT)
-                            chatHelper.handleChatEvent(msg);
-                });
             }
         }
     }

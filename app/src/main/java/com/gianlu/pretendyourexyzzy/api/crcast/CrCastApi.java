@@ -1,20 +1,13 @@
 package com.gianlu.pretendyourexyzzy.api.crcast;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
-import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
-import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
-import com.gianlu.commonutils.lifecycle.LifecycleAwareRunnable;
 import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.PK;
@@ -23,6 +16,8 @@ import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.api.StatusCodeException;
 import com.gianlu.pretendyourexyzzy.api.UserAgentInterceptor;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,7 +26,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -52,12 +46,10 @@ public final class CrCastApi {
     private static final String TAG = CrCastApi.class.getSimpleName();
     private final OkHttpClient client;
     private final ExecutorService executorService;
-    private final LifecycleAwareHandler handler;
 
     private CrCastApi() {
         executorService = Executors.newSingleThreadExecutor(new NamedThreadFactory("cr-cast-"));
         client = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
-        handler = new LifecycleAwareHandler(new Handler(Looper.getMainLooper()));
     }
 
     @SuppressLint("SimpleDateFormat")
@@ -87,10 +79,16 @@ public final class CrCastApi {
 
     @NonNull
     @WorkerThread
-    private JSONObject request(@NonNull String suffix) throws IOException, JSONException, CrCastException {
+    private JSONObject request(@NonNull String suffix) throws IOException, JSONException, CrCastException, NotSignedInException {
         Exception lastEx = null;
         for (int i = 0; i < 3; i++) {
-            try (Response resp = client.newCall(new Request.Builder().get().url(BASE_URL + suffix).build()).execute()) {
+            String suffixWithToken;
+            if (suffix.contains("{token}"))
+                suffixWithToken = suffix.replace("{token}", getToken());
+            else
+                suffixWithToken = suffix;
+
+            try (Response resp = client.newCall(new Request.Builder().get().url(BASE_URL + suffixWithToken).build()).execute()) {
                 Log.v(TAG, suffix + " -> " + resp.code());
                 if (resp.code() != 200) throw new StatusCodeException(resp);
 
@@ -145,80 +143,58 @@ public final class CrCastApi {
     @WorkerThread
     @NonNull
     private String loginSync(@NonNull String username, @NonNull String hashedPassword) throws JSONException, IOException, CrCastException {
-        JSONObject obj = request("user/token/?username=" + username + "&password=" + hashedPassword);
-        Prefs.putString(PK.CR_CAST_USER, username);
-        Prefs.putString(PK.CR_CAST_PASSWORD, hashedPassword);
+        try {
+            JSONObject obj = request("user/token/?username=" + username + "&password=" + hashedPassword);
+            Prefs.putString(PK.CR_CAST_USER, username);
+            Prefs.putString(PK.CR_CAST_PASSWORD, hashedPassword);
 
-        String token = obj.getString("token");
-        Prefs.putString(PK.CR_CAST_TOKEN, token);
-        return token;
+            String token = obj.getString("token");
+            Prefs.putString(PK.CR_CAST_TOKEN, token);
+            return token;
+        } catch (NotSignedInException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
-    public void login(@NonNull String username, @NonNull String password, @Nullable Activity activity, LoginCallback callback) {
-        executorService.execute(new LifecycleAwareRunnable(handler, activity == null ? callback : activity) {
-            @Override
-            public void run() {
-                try {
-                    byte[] hash = MessageDigest.getInstance("SHA512").digest(password.getBytes(StandardCharsets.UTF_8));
-                    StringBuilder hex = new StringBuilder(new BigInteger(1, hash).toString(16));
-                    while (hex.length() < 32) hex.insert(0, "0");
+    @NonNull
+    public Task<Void> login(@NonNull String username, @NonNull String password) {
+        return Tasks.call(executorService, () -> {
+            byte[] hash = MessageDigest.getInstance("SHA512").digest(password.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder(new BigInteger(1, hash).toString(16));
+            while (hex.length() < 32) hex.insert(0, "0");
 
-                    loginSync(username, hex.toString());
-                    post(callback::onLoginSuccessful);
-                    AnalyticsApplication.sendAnalytics(Utils.ACTION_CR_CAST_LOGIN);
-                } catch (IOException | JSONException | NoSuchAlgorithmException | CrCastException ex) {
-                    post(() -> callback.onException(ex));
-                }
-            }
+            loginSync(username, hex.toString());
+            AnalyticsApplication.sendAnalytics(Utils.ACTION_CR_CAST_LOGIN);
+            return null;
         });
     }
 
-    public void getUser(@Nullable Activity activity, @NonNull UserCallback callback) {
-        executorService.execute(new LifecycleAwareRunnable(handler, activity == null ? callback : activity) {
-            @Override
-            public void run() {
-                try {
-                    JSONObject obj = request("user/" + getToken());
-                    CrCastUser user = new CrCastUser(obj);
-                    post(() -> callback.onUser(user));
-                } catch (IOException | JSONException | CrCastException | NotSignedInException ex) {
-                    post(() -> callback.onException(ex));
-                }
-            }
+    @NonNull
+    public Task<CrCastUser> getUser() {
+        return Tasks.call(executorService, () -> new CrCastUser(request("user/{token}")));
+    }
+
+    @NonNull
+    public Task<List<CrCastDeck>> getDecks(@NonNull CustomDecksDatabase db) {
+        return Tasks.call(executorService, () -> {
+            JSONObject decks = request("user/decks/{token}").getJSONObject("decks");
+            List<CrCastDeck> list = new ArrayList<>(decks.length());
+            Iterator<String> iter = decks.keys();
+            while (iter.hasNext())
+                list.add(CrCastDeck.parse(decks.getJSONObject(iter.next()), db, false));
+
+            decks = request("decks/fav/{token}").getJSONObject("decks");
+            iter = decks.keys();
+            while (iter.hasNext())
+                list.add(CrCastDeck.parse(decks.getJSONObject(iter.next()), db, true));
+
+            return list;
         });
     }
 
-    public void getDecks(@NonNull CustomDecksDatabase db, @Nullable Activity activity, @NonNull DecksCallback callback) {
-        executorService.execute(new LifecycleAwareRunnable(handler, activity == null ? callback : activity) {
-            @Override
-            public void run() {
-                try {
-                    JSONObject decks = request("user/decks/" + getToken()).getJSONObject("decks");
-
-                    List<CrCastDeck> list = new ArrayList<>(decks.length());
-                    Iterator<String> iter = decks.keys();
-                    while (iter.hasNext())
-                        list.add(CrCastDeck.parse(decks.getJSONObject(iter.next()), db));
-                    post(() -> callback.onDecks(list));
-                } catch (IOException | JSONException | ParseException | CrCastException | NotSignedInException ex) {
-                    post(() -> callback.onException(ex));
-                }
-            }
-        });
-    }
-
-    public void getDeck(@NonNull String deckCode, @NonNull CustomDecksDatabase db, @Nullable Activity activity, @NonNull DeckCallback callback) {
-        executorService.execute(new LifecycleAwareRunnable(handler, activity == null ? callback : activity) {
-            @Override
-            public void run() {
-                try {
-                    CrCastDeck deck = CrCastDeck.parse(request("user/decks/" + getToken() + "/" + deckCode).getJSONObject("deck"), db);
-                    post(() -> callback.onDeck(deck));
-                } catch (IOException | JSONException | ParseException | CrCastException | NotSignedInException ex) {
-                    post(() -> callback.onException(ex));
-                }
-            }
-        });
+    @NonNull
+    public Task<CrCastDeck> getDeck(@NonNull String deckCode, boolean fav, @NonNull CustomDecksDatabase db) {
+        return Tasks.call(executorService, () -> CrCastDeck.parse(request(fav ? ("deck/" + deckCode) : ("user/decks/{token}/" + deckCode)).getJSONObject("deck"), db, false));
     }
 
     public void logout() {
@@ -282,34 +258,6 @@ public final class CrCastApi {
 
             throw new IllegalArgumentException("Unknown error code: " + val);
         }
-    }
-
-    @UiThread
-    public interface UserCallback {
-        void onUser(@NonNull CrCastUser user);
-
-        void onException(@NonNull Exception ex);
-    }
-
-    @UiThread
-    public interface DecksCallback {
-        void onDecks(@NonNull List<CrCastDeck> decks);
-
-        void onException(@NonNull Exception ex);
-    }
-
-    @UiThread
-    public interface DeckCallback {
-        void onDeck(@NonNull CrCastDeck deck);
-
-        void onException(@NonNull Exception ex);
-    }
-
-    @UiThread
-    public interface LoginCallback {
-        void onLoginSuccessful();
-
-        void onException(@NonNull Exception ex);
     }
 
     public static class NotSignedInException extends Exception {

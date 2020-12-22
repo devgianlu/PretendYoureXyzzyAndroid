@@ -19,7 +19,7 @@ public class FirstLoad {
     public FirstLoad(@NonNull JSONObject obj, @Nullable User user) throws JSONException {
         this.nextOperation = NextOp.parse(obj.getString("next"));
         this.inProgress = obj.getBoolean("ip");
-        this.decks = Deck.list(obj.getJSONArray("css"));
+        this.decks = Deck.list(obj.getJSONArray("css"), false);
         this.user = user;
         this.game = GamePermalink.get(obj);
     }

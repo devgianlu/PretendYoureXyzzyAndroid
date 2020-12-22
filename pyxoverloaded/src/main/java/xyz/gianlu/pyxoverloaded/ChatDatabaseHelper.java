@@ -63,7 +63,7 @@ public class ChatDatabaseHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getReadableDatabase();
         db.beginTransaction();
-        try (Cursor cursor = db.rawQuery("SELECT rowid, * FROM messages WHERE chat_id=? AND timestamp < ? ORDER BY timestamp DESC LIMIT 128", new String[]{String.valueOf(chatId), String.valueOf(startFrom)})) {
+        try (Cursor cursor = db.rawQuery("SELECT rowid, * FROM messages WHERE chat_id=? AND timestamp < ? ORDER BY timestamp ASC LIMIT 128", new String[]{String.valueOf(chatId), String.valueOf(startFrom)})) {
             if (cursor == null || !cursor.moveToFirst())
                 return null;
 
@@ -84,7 +84,7 @@ public class ChatDatabaseHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getReadableDatabase();
         db.beginTransaction();
-        try (Cursor cursor = db.rawQuery("SELECT rowid, * FROM messages WHERE chat_id=? ORDER BY timestamp DESC LIMIT 128", new String[]{String.valueOf(chatId)})) {
+        try (Cursor cursor = db.rawQuery("SELECT rowid, * FROM messages WHERE chat_id=? ORDER BY timestamp ASC LIMIT 128", new String[]{String.valueOf(chatId)})) {
             if (cursor == null || !cursor.moveToFirst())
                 return null;
 

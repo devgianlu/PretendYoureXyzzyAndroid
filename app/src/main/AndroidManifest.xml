@@ -7,11 +7,6 @@
 
     <!-- ... -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Save round images -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <!-- Analytics -->
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".ThisApplication"
@@ -20,7 +15,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:resizeableActivity="true"
-        android:roundIcon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
@@ -33,93 +28,105 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <!-- Loading activity -->
+        <!-- One time login activity -->
         <activity
-            android:name=".LoadingActivity"
-            android:configChanges="uiMode"
+            android:name=".OneTimeLoginActivity"
+            android:configChanges="uiMode|screenSize|orientation"
             android:screenOrientation="portrait"
-            android:theme="@style/FullscreenTheme">
+            android:theme="@style/FullscreenTheme" />
+
+        <!-- Main activity -->
+        <activity
+            android:name=".NewMainActivity"
+            android:configChanges="uiMode|screenSize|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <action android:name="android.intent.action.SEND" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.OPENABLE" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="*.pretendyoure.xyz"
-                    android:scheme="http" />
-                <data
-                    android:host="*.pretendyoure.xyz"
-                    android:scheme="https" />
-            </intent-filter>
         </activity>
 
-        <!-- Tutorial activity -->
+        <!-- Ongoing game activity -->
         <activity
-            android:name=".activities.TutorialActivity"
-            android:configChanges="uiMode"
+            android:name=".game.GameActivity"
+            android:configChanges="uiMode|screenSize|orientation"
             android:screenOrientation="portrait"
-            android:theme="@style/FullscreenTheme" />
+            android:theme="@style/AppTheme.NoActionBar" />
 
-        <!-- Main activity (with all the fragments) -->
-        <activity
-            android:name=".MainActivity"
-            android:configChanges="uiMode"
-            android:launchMode="singleTask"
-            android:theme="@style/AppTheme.NoActionBar.Drawer" />
-
-        <!-- Metrics activity (sessions, games, rounds) -->
+        <!-- Metrics activity -->
         <activity
             android:name=".metrics.MetricsActivity"
-            android:configChanges="uiMode"
-            android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-
-        <!-- Manager servers activity -->
-        <activity
-            android:name=".activities.ManageServersActivity"
-            android:configChanges="uiMode"
-            android:parentActivityName=".LoadingActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.FullDark" />
-
-        <!-- Starred cards activity -->
-        <activity
-            android:name=".starred.StarredCardsActivity"
-            android:configChanges="uiMode"
-            android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-
-        <!-- Edit custom decks activity -->
-        <activity
-            android:name=".customdecks.EditCustomDeckActivity"
-            android:configChanges="uiMode"
-            android:parentActivityName=".MainActivity"
+            android:configChanges="uiMode|screenSize|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- View custom decks activity -->
         <activity
-            android:name=".customdecks.ViewCustomDeckActivity"
-            android:configChanges="uiMode"
+            android:name=".customdecks.NewViewCustomDeckActivity"
+            android:configChanges="uiMode|screenSize|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateHidden|adjustNothing" />
+
+        <!-- Edit custom decks activity -->
+        <activity
+            android:name=".customdecks.NewEditCustomDeckActivity"
+            android:configChanges="uiMode|screenSize|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateHidden|adjustNothing">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="content" />
+                <data android:mimeType="application/json" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="file" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.deck.json" />
+                <data android:pathPattern=".*\\..*\\.deck.json" />
+                <data android:pathPattern=".*\\..*\\..*\\.deck.json" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\.deck.json" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\.deck.json" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\.deck.json" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\.deck.json" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="file" />
+                <data android:host="*" />
+                <data android:mimeType="*/*" />
+                <data android:pathPattern=".*\\.deck.json" />
+                <data android:pathPattern=".*\\..*\\.deck.json" />
+                <data android:pathPattern=".*\\..*\\..*\\.deck.json" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\.deck.json" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\.deck.json" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\.deck.json" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\.deck.json" />
+            </intent-filter>
+        </activity>
+
+        <!-- Overloaded chats list activity -->
+        <activity
+            android:name=".overloaded.ChatsListActivity"
+            android:configChanges="uiMode|screenSize|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
-
-        <!-- Preferences activity -->
-        <activity
-            android:name=".PreferenceActivity"
-            android:configChanges="uiMode"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.FullDark" />
 
         <!-- File provider (round images, custom decks) -->
         <provider

@@ -1,40 +1,36 @@
 package com.gianlu.pretendyourexyzzy.metrics;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.widget.NestedScrollView;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
-import com.gianlu.commonutils.misc.MessageView;
 import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.adapters.CardsGridFixer;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.models.metrics.SessionHistory;
+import com.gianlu.pretendyourexyzzy.databinding.FragmentMetricsSessionBinding;
 
-public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.OnResult<SessionHistory> {
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Date;
+import java.util.List;
+
+public class SessionHistoryFragment extends FragmentWithDialog {
     private static final String TAG = SessionHistoryFragment.class.getSimpleName();
-    private ProgressBar loading;
-    private SuperTextView gamesLabel;
-    private RecyclerView games;
-    private SuperTextView playedRoundsLabel;
-    private RecyclerView playedRounds;
-    private SuperTextView judgedRoundsLabel;
-    private RecyclerView judgedRounds;
-    private LinearLayout container;
-    private MessageView message;
+    private FragmentMetricsSessionBinding binding;
+    private Listener listener;
 
     @NonNull
     public static SessionHistoryFragment get(@NonNull String id) {
@@ -48,76 +44,119 @@ public class SessionHistoryFragment extends FragmentWithDialog implements Pyx.On
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
-        NestedScrollView layout = (NestedScrollView) inflater.inflate(R.layout.fragment_metrics_session, parent, false);
+        binding = FragmentMetricsSessionBinding.inflate(inflater, parent, false);
 
-        message = layout.findViewById(R.id.sessionFragment_message);
-        container = layout.findViewById(R.id.sessionFragment_container);
-        gamesLabel = container.findViewById(R.id.sessionFragment_gamesLabel);
-        games = container.findViewById(R.id.sessionFragment_games);
-        games.setNestedScrollingEnabled(false);
-        games.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
-        playedRoundsLabel = container.findViewById(R.id.sessionFragment_playedRoundsLabel);
-        playedRounds = container.findViewById(R.id.sessionFragment_playedRounds);
-        playedRounds.setNestedScrollingEnabled(false);
-        playedRounds.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-        playedRounds.addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
-        judgedRoundsLabel = container.findViewById(R.id.sessionFragment_judgedRoundsLabel);
-        judgedRounds = container.findViewById(R.id.sessionFragment_judgedRounds);
-        judgedRounds.setNestedScrollingEnabled(false);
-        judgedRounds.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-        judgedRounds.addOnLayoutChangeListener(new CardsGridFixer(requireContext()));
+        binding.sessionFragmentGames.setNestedScrollingEnabled(false);
+        binding.sessionFragmentGames.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
 
-        loading = layout.findViewById(R.id.sessionFragment_loading);
-        loading.setVisibility(View.VISIBLE);
-        container.setVisibility(View.GONE);
+        binding.sessionFragmentPlayedRounds.setNestedScrollingEnabled(false);
+        binding.sessionFragmentPlayedRounds.setLayoutManager(new GridLayoutManager(requireContext(), 2, RecyclerView.VERTICAL, false));
+
+        binding.sessionFragmentJudgedRounds.setNestedScrollingEnabled(false);
+        binding.sessionFragmentJudgedRounds.setLayoutManager(new GridLayoutManager(requireContext(), 2, RecyclerView.VERTICAL, false));
+
+        binding.sessionFragmentContainer.setVisibility(View.GONE);
+        binding.sessionFragmentEmpty.setVisibility(View.GONE);
+        binding.sessionFragmentError.setVisibility(View.GONE);
+        binding.sessionFragmentLoading.setVisibility(View.VISIBLE);
 
         Bundle args = getArguments();
         String id;
         if (args == null || (id = args.getString("id", null)) == null) {
-            loading.setVisibility(View.GONE);
-            message.error(R.string.failedLoading);
-            return layout;
+            onBackPressed();
+            return null;
         }
 
         Pyx pyx;
         try {
             pyx = Pyx.get();
         } catch (LevelMismatchException ex) {
-            loading.setVisibility(View.GONE);
-            message.error(R.string.failedLoading);
-            return layout;
+            onBackPressed();
+            return null;
         }
 
-        pyx.getSessionHistory(id, null, this);
+        pyx.getSessionHistory(id)
+                .addOnSuccessListener(result -> {
+                    if (result.games.isEmpty() && result.judgedRounds.isEmpty() && result.playedRounds.isEmpty()) {
+                        binding.sessionFragmentLoading.setVisibility(View.GONE);
+                        binding.sessionFragmentContainer.setVisibility(View.GONE);
+                        binding.sessionFragmentError.setVisibility(View.GONE);
+                        binding.sessionFragmentEmpty.setVisibility(View.VISIBLE);
+                    } else {
+                        binding.sessionFragmentEmpty.setVisibility(View.GONE);
+                        binding.sessionFragmentLoading.setVisibility(View.GONE);
+                        binding.sessionFragmentError.setVisibility(View.GONE);
+                        binding.sessionFragmentContainer.setVisibility(View.VISIBLE);
+                        binding.sessionFragmentGamesLabel.setHtml(R.string.gamesCount, result.games.size());
+                        binding.sessionFragmentGames.setAdapter(new GamesAdapter(result.games));
+                        binding.sessionFragmentPlayedRoundsLabel.setHtml(R.string.playedRoundsCount, result.playedRounds.size());
+                        binding.sessionFragmentPlayedRounds.setAdapter(new RoundsAdapter(requireContext(), result.playedRounds, listener));
+                        binding.sessionFragmentJudgedRoundsLabel.setHtml(R.string.judgedRoundsCount, result.judgedRounds.size());
+                        binding.sessionFragmentJudgedRounds.setAdapter(new RoundsAdapter(requireContext(), result.judgedRounds, listener));
+                    }
+                })
+                .addOnFailureListener(ex -> {
+                    Log.e(TAG, "Failed loading history.", ex);
+                    binding.sessionFragmentLoading.setVisibility(View.GONE);
+                    binding.sessionFragmentContainer.setVisibility(View.GONE);
+                    binding.sessionFragmentEmpty.setVisibility(View.GONE);
+                    binding.sessionFragmentError.setVisibility(View.VISIBLE);
+                });
 
-        return layout;
+        return binding.getRoot();
     }
 
     @Override
-    public void onDone(@NonNull SessionHistory result) {
-        if (getContext() == null) return;
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
 
-        if (result.games.isEmpty() && result.judgedRounds.isEmpty() && result.playedRounds.isEmpty()) {
-            loading.setVisibility(View.GONE);
-            container.setVisibility(View.GONE);
-            message.info(R.string.noActivity);
-        } else {
-            loading.setVisibility(View.GONE);
-            container.setVisibility(View.VISIBLE);
-            gamesLabel.setHtml(R.string.gamesCount, result.games.size());
-            games.setAdapter(new GamesAdapter(getContext(), result.games, (GamesAdapter.Listener) getContext()));
-            playedRoundsLabel.setHtml(R.string.playedRoundsCount, result.playedRounds.size());
-            playedRounds.setAdapter(new RoundsAdapter(getContext(), result.playedRounds, (RoundsAdapter.Listener) getContext()));
-            judgedRoundsLabel.setHtml(R.string.judgedRoundsCount, result.judgedRounds.size());
-            judgedRounds.setAdapter(new RoundsAdapter(getContext(), result.judgedRounds, (RoundsAdapter.Listener) getContext()));
-        }
+        if (context instanceof Listener)
+            listener = (Listener) context;
+        if (getParentFragment() instanceof Listener)
+            listener = (Listener) getParentFragment();
     }
 
     @Override
-    public void onException(@NonNull Exception ex) {
-        Log.e(TAG, "Failed loading history.", ex);
-        loading.setVisibility(View.GONE);
-        container.setVisibility(View.GONE);
-        message.error(R.string.failedLoading_reason, ex.getMessage());
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
+    }
+
+    public interface Listener extends RoundsAdapter.Listener {
+        void onGameSelected(@NonNull SessionHistory.Game game);
+    }
+
+    private class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.ViewHolder> {
+        private final List<SessionHistory.Game> games;
+
+        GamesAdapter(List<SessionHistory.Game> games) {
+            this.games = games;
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new ViewHolder(parent);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            SessionHistory.Game game = games.get(position);
+            ((SuperTextView) holder.itemView).setHtml(R.string.gameStartedAt, CommonUtils.getFullVerbalDateFormatter().format(new Date(game.timestamp)));
+            holder.itemView.setOnClickListener(v -> {
+                if (listener != null) listener.onGameSelected(game);
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return games.size();
+        }
+
+        public class ViewHolder extends RecyclerView.ViewHolder {
+            public ViewHolder(@NotNull ViewGroup parent) {
+                super(getLayoutInflater().inflate(R.layout.item_metrics_game, parent, false));
+            }
+        }
     }
 }

@@ -7,6 +7,8 @@ import androidx.annotation.UiThread;
 
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +17,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -25,26 +26,45 @@ public final class CrCastDeck extends BasicCustomDeck {
     public final CrCastApi.State state;
     public final boolean privateDeck;
     public final String lang;
-    public final long created;
+    public final Long created;
+    public final boolean favorite;
     private final int whitesCount;
     private final int blacksCount;
     private Cards cards;
 
-    private CrCastDeck(@NonNull JSONObject obj, @NonNull String watermark, long lastUsed) throws JSONException {
+    private CrCastDeck(@NonNull JSONObject obj, @NonNull String watermark, boolean favorite, long lastUsed) throws JSONException {
         super(obj.getString("name"), watermark, null, lastUsed, -1);
-        desc = obj.getString("description");
-        lang = obj.getString("language");
-        state = CrCastApi.State.parse(obj.getInt("state"));
-        privateDeck = obj.getBoolean("private");
-        created = CrCastApi.parseApiDate(obj.getString("createdate"));
-        blacksCount = obj.getInt("blackCount");
-        whitesCount = obj.getInt("whiteCount");
+        this.desc = obj.getString("description");
+        this.lang = obj.getString("language").toUpperCase();
+        this.privateDeck = obj.getBoolean("private");
+        this.favorite = favorite;
 
-        cards = new Cards(watermark, obj);
+        if (obj.has("createdate"))
+            this.created = CrCastApi.parseApiDate(obj.getString("createdate"));
+        else
+            this.created = null;
+
+        int stateInt = obj.optInt("state", -1);
+        if (stateInt == -1) this.state = null;
+        else this.state = CrCastApi.State.parse(obj.getInt("state"));
+
+        int blacks = obj.optInt("blackCount", -1);
+        int whites = obj.optInt("whiteCount", -1);
+
+        try {
+            this.cards = new Cards(watermark, obj);
+            blacks = cards.blacks.size();
+            whites = cards.whites.size();
+        } catch (JSONException ex) {
+            this.cards = null;
+        }
+
+        this.blacksCount = blacks;
+        this.whitesCount = whites;
     }
 
-    private CrCastDeck(@NonNull String name, @NonNull String watermark, @NonNull String desc, @NonNull CrCastApi.State state,
-                       boolean privateDeck, @NonNull String lang, long created, int whitesCount, int blacksCount, long lastUsed) {
+    private CrCastDeck(@NonNull String name, @NonNull String watermark, @NonNull String desc, @Nullable CrCastApi.State state,
+                       boolean privateDeck, @NonNull String lang, @Nullable Long created, int whitesCount, int blacksCount, boolean favorite, long lastUsed) {
         super(name, watermark, null, lastUsed, -1);
         this.desc = desc;
         this.state = state;
@@ -53,6 +73,7 @@ public final class CrCastDeck extends BasicCustomDeck {
         this.created = created;
         this.whitesCount = whitesCount;
         this.blacksCount = blacksCount;
+        this.favorite = favorite;
         this.cards = null;
     }
 
@@ -69,20 +90,31 @@ public final class CrCastDeck extends BasicCustomDeck {
 
     @NonNull
     public static CrCastDeck fromCached(@NonNull Cursor cursor) {
+        int stateIndex = cursor.getColumnIndex("state");
+        CrCastApi.State state;
+        if (cursor.isNull(stateIndex)) state = null;
+        else state = CrCastApi.State.parse(cursor.getInt(stateIndex));
+
+        int createdIndex = cursor.getColumnIndex("created");
+        Long created;
+        if (cursor.isNull(createdIndex)) created = null;
+        else created = cursor.getLong(createdIndex);
+
         return new CrCastDeck(cursor.getString(cursor.getColumnIndex("name")),
                 cursor.getString(cursor.getColumnIndex("watermark")),
                 cursor.getString(cursor.getColumnIndex("description")),
-                CrCastApi.State.parse(cursor.getInt(cursor.getColumnIndex("state"))),
-                cursor.getType(cursor.getColumnIndex("private")) == 1,
+                state,
+                cursor.getInt(cursor.getColumnIndex("private")) == 1,
                 cursor.getString(cursor.getColumnIndex("lang")),
-                cursor.getLong(cursor.getColumnIndex("created")),
+                created,
                 cursor.getInt(cursor.getColumnIndex("whites_count")),
                 cursor.getInt(cursor.getColumnIndex("blacks_count")),
+                cursor.getInt(cursor.getColumnIndex("favorite")) == 1,
                 cursor.getLong(cursor.getColumnIndex("lastUsed")));
     }
 
     @NonNull
-    public static CrCastDeck parse(@NonNull JSONObject obj, @NonNull CustomDecksDatabase db) throws JSONException, ParseException {
+    public static CrCastDeck parse(@NonNull JSONObject obj, @NonNull CustomDecksDatabase db, boolean favorite) throws JSONException {
         String deckCode = obj.getString("deckcode");
         Long lastUsed = db.getCrCastDeckLastUsed(deckCode);
         if (lastUsed == null) {
@@ -90,11 +122,11 @@ public final class CrCastDeck extends BasicCustomDeck {
             db.updateCrCastDeckLastUsed(deckCode, lastUsed);
         }
 
-        return new CrCastDeck(obj, deckCode, lastUsed);
+        return new CrCastDeck(obj, deckCode, favorite, lastUsed);
     }
 
     public boolean hasChanged(@NotNull CrCastDeck that) {
-        return privateDeck != that.privateDeck || created != that.created ||
+        return privateDeck != that.privateDeck || !Objects.equals(created, that.created) ||
                 whitesCount != that.whitesCount || blacksCount != that.blacksCount ||
                 !desc.equals(that.desc) || state != that.state || !lang.equals(that.lang);
     }
@@ -132,24 +164,14 @@ public final class CrCastDeck extends BasicCustomDeck {
     }
 
     @UiThread
-    public void getCards(@NonNull CustomDecksDatabase db, @NonNull CrCastApi.DeckCallback callback) {
-        if (cards != null) {
-            callback.onDeck(this);
-            return;
-        }
+    public Task<CrCastDeck> getCards(@NonNull CustomDecksDatabase db) {
+        if (cards != null) return Tasks.forResult(this);
 
-        CrCastApi.get().getDeck(watermark, db, null, new CrCastApi.DeckCallback() {
-            @Override
-            public void onDeck(@NonNull CrCastDeck deck) {
-                CrCastDeck.this.cards = deck.cards;
-                callback.onDeck(CrCastDeck.this);
-            }
-
-            @Override
-            public void onException(@NonNull Exception ex) {
-                callback.onException(ex);
-            }
-        });
+        return CrCastApi.get().getDeck(watermark, favorite, db)
+                .continueWith(task -> {
+                    CrCastDeck.this.cards = task.getResult().cards;
+                    return CrCastDeck.this;
+                });
     }
 
     @NonNull

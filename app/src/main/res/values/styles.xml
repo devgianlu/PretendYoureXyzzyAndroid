@@ -1,38 +1,156 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="AppTheme" parent="BaseAppTheme" />
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryVariant</item>
+        <item name="colorSecondary">@color/colorSecondary</item>
+        <item name="colorSecondaryVariant">@color/colorSecondaryVariant</item>
+        <item name="colorOnPrimary">@color/colorOnPrimary</item>
+        <item name="colorOnSecondary">@color/colorOnSecondary</item>
+        <item name="android:statusBarColor">@color/statusBarColor</item>
 
-    <style name="AppTheme.FullDark" parent="AppTheme" />
-
-    <style name="UrbanDictTheme">
-        <item name="colorPrimary">@color/urbanPrimary</item>
-        <item name="colorPrimaryDark">@color/urbanPrimaryDark</item>
-        <item name="colorAccent">@color/urbanAccent</item>
+        <!-- Transitions -->
+        <item name="android:windowActivityTransitions">true</item>
+        <item name="android:windowEnterTransition">@android:transition/explode</item>
+        <item name="android:windowExitTransition">@android:transition/explode</item>
     </style>
 
-    <style name="CustomTextInput" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense" />
+    <!-- Toolbar icons -->
+    <style name="ToolbarIconStyle">
+        <item name="android:elevation">10dp</item>
+        <item name="android:outlineAmbientShadowColor" tools:targetApi="p">#CCEFFF</item>
+        <item name="android:outlineSpotShadowColor" tools:targetApi="p">#CCEFFF</item>
+        <item name="android:layout_height">42dp</item>
+        <item name="android:layout_width">42dp</item>
+        <item name="android:background">@drawable/bg_button_big</item>
+        <item name="android:tint">@color/toolbar_icon_fg</item>
+    </style>
 
-    <style name="LoadingActivityCardTitle">
-        <item name="android:textColor">?colorOnSurface</item>
-        <item name="android:textSize">14sp</item>
+    <!-- Fonts -->
+    <style name="TextAppearance" />
+
+    <style name="TextAppearance.Regular">
+        <item name="android:fontFamily">@font/montserrat_regular</item>
+        <item name="android:textColor">?android:textColorPrimary</item>
+    </style>
+
+    <style name="TextAppearance.Medium">
+        <item name="android:fontFamily">@font/montserrat_medium</item>
+        <item name="android:textColor">?android:textColorPrimary</item>
+    </style>
+
+    <style name="TextAppearance.SemiBold">
+        <item name="android:fontFamily">@font/montserrat_semibold</item>
+        <item name="android:textColor">?android:textColorPrimary</item>
+    </style>
+
+    <style name="TextAppearance.Bold">
+        <item name="android:fontFamily">@font/montserrat_bold</item>
+        <item name="android:textColor">?android:textColorPrimary</item>
+    </style>
+
+    <style name="TextAppearance.Undraw">
+        <item name="android:fontFamily">@font/montserrat_medium</item>
+        <item name="android:textColor">@color/undraw_text_color</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="TextAppearance.PreferencesTitle">
+        <item name="android:fontFamily">@font/montserrat_medium</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">?android:textColorPrimary</item>
+        <item name="android:layout_margin">16dp</item>
+    </style>
+
+    <style name="TextAppearance.PreferencesItem">
+        <item name="titleTextColor">?android:textColorPrimary</item>
+        <item name="subtitleTextColor">?android:textColorSecondary</item>
+    </style>
+
+    <!-- Buttons -->
+    <style name="ButtonSmallStyle" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/button_small_bg</item>
+        <item name="android:textColor">@color/button_small_fg</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingStart">16dp</item>
         <item name="android:textAllCaps">true</item>
-        <item name="android:fontFamily">@font/roboto_medium</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:elevation">9dp</item>
+        <item name="android:fontFamily">@font/montserrat_regular</item>
+        <item name="android:background">@drawable/bg_button_small</item>
+        <item name="android:outlineAmbientShadowColor" tools:targetApi="p">#006A99</item>
+        <item name="android:outlineSpotShadowColor" tools:targetApi="p">#006A99</item>
     </style>
 
-    <declare-styleable name="ImagesListView">
-        <attr name="textColor" format="color" />
-        <attr name="textSize" format="dimension" />
-        <attr name="textGravity" format="enum">
-            <enum name="start" value="0" />
-            <enum name="center" value="1" />
-        </attr>
-        <attr name="emptyText" format="string" />
-        <attr name="imageSize" format="dimension" />
-    </declare-styleable>
+    <style name="ButtonBigStyle" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/colorPrimary</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingBottom">16dp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:elevation">9dp</item>
+        <item name="android:fontFamily">@font/montserrat_medium</item>
+        <item name="android:background">@drawable/bg_button_big</item>
+        <item name="android:outlineAmbientShadowColor" tools:targetApi="p">#006A99</item>
+        <item name="android:outlineSpotShadowColor" tools:targetApi="p">#006A99</item>
+    </style>
 
-    <!-- Fab label style -->
-    <style name="FabLabel">
-        <item name="android:background">@drawable/fab_label_layout</item>
-        <item name="android:textColor">?colorSurface</item>
+    <style name="ButtonBigStyle.Outlined" parent="ButtonBigStyle">
+        <item name="backgroundTint">@null</item>
+        <item name="android:textColor">?android:textColorPrimary</item>
+        <item name="android:background">@drawable/bg_button_big_outlined</item>
+    </style>
+
+    <!-- TextInputLayout/TextInputEditText -->
+    <style name="TextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="materialThemeOverlay">@style/TextInputEditTextThemeOverlay</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="boxStrokeWidthFocused">0dp</item>
+        <item name="errorTextAppearance">@style/TextAppearance.Regular</item>
+        <item name="android:outlineAmbientShadowColor" tools:targetApi="p">#CCEFFF</item>
+        <item name="android:outlineSpotShadowColor" tools:targetApi="p">#CCEFFF</item>
+        <item name="android:elevation">8dp</item>
+        <item name="endIconTint">@color/input_color_fg</item>
+        <item name="errorTextColor">#EC4040</item>
+    </style>
+
+    <style name="TextInputEditTextThemeOverlay" parent="ThemeOverlay.MaterialComponents.TextInputEditText.OutlinedBox">
+        <item name="editTextStyle">@style/TextInputEditTextStyle</item>
+    </style>
+
+    <style name="TextInputEditTextStyle" parent="Widget.MaterialComponents.TextInputEditText.OutlinedBox">
+        <item name="android:background">@drawable/bg_input_text</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:textColor">@color/input_color_fg</item>
+        <item name="android:fontFamily">@font/montserrat_regular</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- TextInputLayout/TextInputEditText for dropdown -->
+    <style name="TextInputLayoutStyle.ExposedDropdownMenu" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <item name="materialThemeOverlay">@style/TextInputEditTextThemeOverlay</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="boxStrokeWidthFocused">0dp</item>
+        <item name="errorTextAppearance">@style/TextAppearance.Regular</item>
+        <item name="android:outlineAmbientShadowColor" tools:targetApi="p">#CCEFFF</item>
+        <item name="android:outlineSpotShadowColor" tools:targetApi="p">#CCEFFF</item>
+        <item name="android:elevation">8dp</item>
+        <item name="endIconTint">@color/input_color_fg</item>
+        <item name="errorTextColor">#EC4040</item>
+    </style>
+
+    <!-- Overloaded subscription page -->
+    <style name="OverloadedFeatureStyle">
+        <item name="android:fontFamily">@font/roboto_regular</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">#000000</item>
+        <item name="android:drawableEnd">@drawable/baseline_check_circle_24</item>
+        <item name="android:drawableTint" tools:targetApi="m">#000000</item>
+        <item name="drawableTint">#000000</item>
+        <item name="android:drawablePadding">32dp</item>
+        <item name="android:paddingTop">8dp</item>
     </style>
 </resources>

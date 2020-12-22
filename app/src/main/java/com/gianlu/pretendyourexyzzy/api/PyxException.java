@@ -1,13 +1,10 @@
 package com.gianlu.pretendyourexyzzy.api;
 
-import android.content.Context;
-import android.content.Intent;
-
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
-import com.gianlu.pretendyourexyzzy.LoadingActivity;
+import com.gianlu.pretendyourexyzzy.R;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -24,34 +21,35 @@ public class PyxException extends Exception {
         this.obj = obj;
     }
 
-    public static boolean solveNotRegistered(@Nullable Context context, @Nullable Exception ex) {
-        if (isNotRegistered(ex)) {
-            if (context == null) return true;
+    public boolean shouldRetry() {
+        return Objects.equals(errorCode, "se") || Objects.equals(errorCode, "nr");
+    }
 
-            InstanceHolder.holder().invalidate();
-            context.startActivity(new Intent(context, LoadingActivity.class)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-            return true;
-        } else {
-            return false;
+    public int getPyxMessage() {
+        switch (errorCode) {
+            case "rn":
+                return R.string.reservedNickname;
+            case "in":
+                return R.string.invalidNickname;
+            case "niu":
+                return R.string.alreadyUsedNickname;
+            case "tmu":
+                return R.string.tooManyUsers;
+            case "iid":
+                return R.string.invalidIdCode;
+            default:
+                return R.string.failedLoading_changeServerRetry;
         }
     }
 
-    public static boolean isNotRegistered(@Nullable Exception ex) {
-        return ex instanceof PyxException && Objects.equals(((PyxException) ex).errorCode, "nr");
-    }
-
-    public boolean hadException(@NonNull Class<? extends Exception> clazz) {
-        if (exceptions == null) return false;
+    public boolean hadException(@NotNull Class<?> find) {
+        if (exceptions == null)
+            return false;
 
         for (Exception ex : exceptions)
-            if (ex.getClass() == clazz)
+            if (ex.getClass() == find)
                 return true;
 
         return false;
-    }
-
-    public boolean shouldRetry() {
-        return Objects.equals(errorCode, "se") || Objects.equals(errorCode, "nr");
     }
 }

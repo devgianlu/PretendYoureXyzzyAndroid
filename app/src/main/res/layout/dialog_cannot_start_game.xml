@@ -40,7 +40,7 @@
             android:textColor="?colorOnSurface"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/purchaseStatus"
+            android:text="@string/status"
             android:textAlignment="viewEnd"
             android:textStyle="bold" />
     </LinearLayout>

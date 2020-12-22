@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<badge xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.MaterialComponents.Badge"
+    app:horizontalOffset="6dp"
+    app:verticalOffset="6dp" />
