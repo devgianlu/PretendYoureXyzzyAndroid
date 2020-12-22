@@ -1,19 +1,12 @@
 package com.gianlu.pretendyourexyzzy.api.models;
 
-import android.view.View;
-import android.widget.CheckBox;
-import android.widget.LinearLayout;
-
-import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.adapters.Filterable;
-import com.gianlu.pretendyourexyzzy.R;
-import com.gianlu.pretendyourexyzzy.api.Pyx;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,7 +17,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-public class Game implements Filterable<Game.Protection>, Serializable {
+public class Game implements Filterable<Game.Filters>, Serializable {
     public final int gid;
     public final ArrayList<String> players;
     public final ArrayList<String> spectators;
@@ -57,26 +50,10 @@ public class Game implements Filterable<Game.Protection>, Serializable {
         if (customDecksArray != null) {
             customDecks = new ArrayList<>(customDecksArray.length());
             for (int i = 0; i < customDecksArray.length(); i++)
-                customDecks.add(new Deck(customDecksArray.getJSONObject(i)));
+                customDecks.add(new Deck(customDecksArray.getJSONObject(i), false));
         } else {
             customDecks = new ArrayList<>();
         }
-    }
-
-    public static int indexOf(@NonNull List<Game> games, int gid) {
-        for (int i = 0; i < games.size(); i++)
-            if (games.get(i).gid == gid) return i;
-
-        return -1;
-    }
-
-    @Nullable
-    public static Game findGame(@NonNull List<Game> games, int gid) {
-        for (Game game : games)
-            if (game.gid == gid)
-                return game;
-
-        return null;
     }
 
     @Override
@@ -107,8 +84,11 @@ public class Game implements Filterable<Game.Protection>, Serializable {
     }
 
     @Override
-    public Protection getFilterable() {
-        return hasPassword(false) ? Protection.LOCKED : Protection.OPEN;
+    public Filters[] getMatchingFilters() {
+        return new Filters[]{
+                hasPassword(false) ? Filters.LOCKED : Filters.OPEN,
+                status.isStarted() ? Filters.IN_PROGRESS : Filters.LOBBY
+        };
     }
 
     public boolean hasPassword(boolean knowsPassword) {
@@ -116,9 +96,9 @@ public class Game implements Filterable<Game.Protection>, Serializable {
         else return hasPassword;
     }
 
-    public enum Protection {
-        LOCKED,
-        OPEN
+    public enum Filters {
+        LOCKED, OPEN,
+        LOBBY, IN_PROGRESS
     }
 
     public enum Status {
@@ -147,27 +127,27 @@ public class Game implements Filterable<Game.Protection>, Serializable {
         }
     }
 
-    public static class NameComparator implements Comparator<Game> {
+    public final static class NameComparator implements Comparator<Game> {
 
         @Override
-        public int compare(Game o1, Game o2) {
+        public int compare(@NonNull Game o1, @NonNull Game o2) {
             return o1.host.compareToIgnoreCase(o2.host);
         }
     }
 
-    public static class NumPlayersComparator implements Comparator<Game> {
+    public final static class NumAvailablePlayersComparator implements Comparator<Game> {
 
         @Override
-        public int compare(Game o1, Game o2) {
-            return o2.players.size() - o1.players.size();
+        public int compare(@NonNull Game o1, @NonNull Game o2) {
+            return (o2.options.playersLimit - o2.players.size()) - (o1.options.playersLimit - o1.players.size());
         }
     }
 
-    public static class NumSpectatorsComparator implements Comparator<Game> {
+    public final static class NumAvailableSpectatorsComparator implements Comparator<Game> {
 
         @Override
-        public int compare(Game o1, Game o2) {
-            return o2.spectators.size() - o1.spectators.size();
+        public int compare(@NonNull Game o1, @NonNull Game o2) {
+            return (o2.options.spectatorsLimit - o2.spectators.size()) - (o1.options.spectatorsLimit - o1.spectators.size());
         }
     }
 
@@ -195,7 +175,10 @@ public class Game implements Filterable<Game.Protection>, Serializable {
                 cardSets.add(cardsSetsArray.getInt(i));
         }
 
-        Options(String timerMultiplier, int spectatorsLimit, int playersLimit, int scoreLimit, int blanksLimit, ArrayList<Integer> cardSets, @Nullable String password) {
+        /**
+         * Creates a new instance of the options, assuming fields have been validated.
+         */
+        public Options(String timerMultiplier, int spectatorsLimit, int playersLimit, int scoreLimit, int blanksLimit, ArrayList<Integer> cardSets, @Nullable String password) {
             this.timerMultiplier = timerMultiplier;
             this.spectatorsLimit = spectatorsLimit;
             this.playersLimit = playersLimit;
@@ -205,55 +188,10 @@ public class Game implements Filterable<Game.Protection>, Serializable {
             this.password = password;
         }
 
-        public static int timerMultiplierIndex(String timerMultiplier) {
+        public static int timerMultiplierIndex(@NotNull String timerMultiplier) {
             int index = CommonUtils.indexOf(VALID_TIMER_MULTIPLIERS, timerMultiplier);
             if (index == -1) index = 3; // 1x
             return index;
-        }
-
-        private static int parseIntOrThrow(String val, @IdRes int fieldId) throws InvalidFieldException {
-            try {
-                return Integer.parseInt(val);
-            } catch (NumberFormatException ex) {
-                throw new InvalidFieldException(fieldId, R.string.invalidNumber);
-            }
-        }
-
-        private static void checkMaxMin(int val, int min, int max, @IdRes int fieldId) throws InvalidFieldException {
-            if (val < min || val > max)
-                throw new InvalidFieldException(fieldId, min, max);
-        }
-
-        @NonNull
-        public static Options validateAndCreate(@NonNull CahConfig config, @NonNull Pyx.Server.Params params, String timerMultiplier, String spectatorsLimit,
-                                                String playersLimit, String scoreLimit, String blanksLimit, LinearLayout cardSets,
-                                                String password) throws InvalidFieldException {
-            if (!CommonUtils.contains(VALID_TIMER_MULTIPLIERS, timerMultiplier))
-                throw new InvalidFieldException(R.id.editGameOptions_timerMultiplier, R.string.invalidTimerMultiplier);
-
-            int vL = parseIntOrThrow(spectatorsLimit, R.id.editGameOptions_spectatorLimit);
-            checkMaxMin(vL, params.spectatorsMin, params.spectatorsMax, R.id.editGameOptions_spectatorLimit);
-
-            int pL = parseIntOrThrow(playersLimit, R.id.editGameOptions_playerLimit);
-            checkMaxMin(pL, params.playersMin, params.playersMax, R.id.editGameOptions_playerLimit);
-
-            int sl = parseIntOrThrow(scoreLimit, R.id.editGameOptions_scoreLimit);
-            checkMaxMin(sl, params.scoreMin, params.scoreMax, R.id.editGameOptions_scoreLimit);
-
-            int bl = 0;
-            if (config.blankCardsEnabled()) {
-                bl = parseIntOrThrow(blanksLimit, R.id.editGameOptions_blankCards);
-                checkMaxMin(bl, params.blankCardsMin, params.blankCardsMax, R.id.editGameOptions_blankCards);
-            }
-
-            ArrayList<Integer> cardSetIds = new ArrayList<>();
-            for (int i = 0; i < cardSets.getChildCount(); i++) {
-                View view = cardSets.getChildAt(i);
-                if (view instanceof CheckBox && ((CheckBox) view).isChecked())
-                    cardSetIds.add(((Deck) view.getTag()).id);
-            }
-
-            return new Game.Options(timerMultiplier, vL, pL, sl, bl, cardSetIds, password);
         }
 
         @Override
@@ -293,27 +231,6 @@ public class Game implements Filterable<Game.Protection>, Serializable {
                     .put("sl", scoreLimit)
                     .put("bl", blanksLimit)
                     .put("pw", password);
-        }
-
-        public static class InvalidFieldException extends Throwable {
-            public final int fieldId;
-            public final int throwMessage;
-            public final int min;
-            public final int max;
-
-            InvalidFieldException(@IdRes int fieldId, @StringRes int throwMessage) {
-                this.fieldId = fieldId;
-                this.throwMessage = throwMessage;
-                this.min = -1;
-                this.max = -1;
-            }
-
-            InvalidFieldException(@IdRes int fieldId, int min, int max) {
-                this.fieldId = fieldId;
-                this.throwMessage = R.string.outOfRange;
-                this.min = min;
-                this.max = max;
-            }
         }
     }
 }

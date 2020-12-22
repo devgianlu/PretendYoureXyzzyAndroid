@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/game_gameOptions"
+        android:orderInCategory="0"
+        android:title="@string/gameOptions" />
+
+    <item
+        android:id="@+id/game_gameMetrics"
+        android:orderInCategory="1"
+        android:title="@string/showGameMetrics" />
+
+    <item
+        android:id="@+id/game_lastRound"
+        android:orderInCategory="1"
+        android:title="@string/showLastRound" />
+
+    <item
+        android:id="@+id/game_keepScreenOn"
+        android:checkable="true"
+        android:checked="true"
+        android:orderInCategory="99"
+        android:title="@string/keepScreenOn" />
+</menu>

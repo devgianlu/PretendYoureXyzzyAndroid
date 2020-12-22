@@ -9,10 +9,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gianlu.commonutils.CommonUtils;
-import com.gianlu.commonutils.adapters.NotFilterable;
 import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public final class CustomDecksAdapter extends OrderedRecyclerViewAdapter<CustomDecksAdapter.ViewHolder, BasicCustomDeck, Void, NotFilterable> {
+public final class CustomDecksAdapter extends OrderedRecyclerViewAdapter<CustomDecksAdapter.ViewHolder, BasicCustomDeck, Void, Void> {
     private final Listener listener;
     private final LayoutInflater inflater;
 
@@ -58,9 +58,9 @@ public final class CustomDecksAdapter extends OrderedRecyclerViewAdapter<CustomD
 
         Drawable startDrawable = null;
         if (deck instanceof CustomDecksDatabase.StarredDeck) {
-            startDrawable = holder.name.getContext().getDrawable(R.drawable.baseline_star_24);
+            startDrawable = ContextCompat.getDrawable(holder.name.getContext(), R.drawable.baseline_star_24);
         } else if (deck instanceof CrCastDeck) {
-            startDrawable = holder.name.getContext().getDrawable(R.drawable.baseline_contactless_24);
+            startDrawable = ContextCompat.getDrawable(holder.name.getContext(), R.drawable.baseline_contactless_24);
         }
 
         holder.name.setCompoundDrawablesRelativeWithIntrinsicBounds(startDrawable, null, null, null);
@@ -84,7 +84,7 @@ public final class CustomDecksAdapter extends OrderedRecyclerViewAdapter<CustomD
 
     @NonNull
     @Override
-    public Comparator<BasicCustomDeck> getComparatorFor(Void sorting) {
+    public Comparator<BasicCustomDeck> getComparatorFor(@NonNull Void sorting) {
         return (o1, o2) -> Long.compare(o2.lastUsed, o1.lastUsed);
     }
 

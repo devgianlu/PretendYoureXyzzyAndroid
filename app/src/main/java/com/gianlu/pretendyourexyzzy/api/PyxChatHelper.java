@@ -1,12 +1,13 @@
 package com.gianlu.pretendyourexyzzy.api;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.LruCache;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
-import com.gianlu.commonutils.lifecycle.LifecycleAwareHandler;
 import com.gianlu.pretendyourexyzzy.api.models.PollMessage;
 
 import java.util.ArrayList;
@@ -15,21 +16,21 @@ import java.util.List;
 
 public class PyxChatHelper {
     private final List<UnreadCountListener> unreadCountListeners = new ArrayList<>(3);
-    private final LifecycleAwareHandler handler;
     private final Object countLock = new Object();
     private final LruCache<Integer, List<PollMessage>> storedMessages = new LruCache<Integer, List<PollMessage>>(128) {
         @Override
-        protected int sizeOf(Integer key, List<PollMessage> value) {
+        protected int sizeOf(Integer key, @NonNull List<PollMessage> value) {
             return value.size();
         }
     };
+    private final Handler handler;
     private volatile int gameUnreadCount = 0;
     private volatile long gameLastSeen = 0;
     private volatile int globalUnreadCount = 0;
     private volatile long globalLastSeen = 0;
 
-    PyxChatHelper(@NonNull LifecycleAwareHandler handler) {
-        this.handler = handler;
+    PyxChatHelper() {
+        handler = new Handler(Looper.getMainLooper());
     }
 
     public void addUnreadCountListener(@NonNull UnreadCountListener listener) {
@@ -40,31 +41,31 @@ public class PyxChatHelper {
         unreadCountListeners.remove(listener);
     }
 
+    public int getGlobalUnread() {
+        return globalUnreadCount;
+    }
+
     public void resetGlobalUnread(long timestamp) {
-        int total;
         synchronized (countLock) {
             globalLastSeen = timestamp;
             globalUnreadCount = 0;
-            total = globalUnreadCount + gameUnreadCount;
         }
 
-        handler.post(null, () -> {
+        handler.post(() -> {
             for (UnreadCountListener listener : new ArrayList<>(unreadCountListeners))
-                listener.onPyxUnread(total);
+                listener.pyxUnreadCountUpdated(globalUnreadCount, gameUnreadCount);
         });
     }
 
     public void resetGameUnread(long timestamp) {
-        int total;
         synchronized (countLock) {
             gameLastSeen = timestamp;
             gameUnreadCount = 0;
-            total = globalUnreadCount + gameUnreadCount;
         }
 
-        handler.post(null, () -> {
+        handler.post(() -> {
             for (UnreadCountListener listener : new ArrayList<>(unreadCountListeners))
-                listener.onPyxUnread(total);
+                listener.pyxUnreadCountUpdated(globalUnreadCount, gameUnreadCount);
         });
     }
 
@@ -79,14 +80,12 @@ public class PyxChatHelper {
         synchronized (countLock) {
             long lastSeen = msg.gid == -1 ? globalLastSeen : gameLastSeen;
             if (msg.timestamp > lastSeen) {
-                int total;
                 if (msg.gid != -1) gameUnreadCount++;
                 else globalUnreadCount++;
-                total = globalUnreadCount + gameUnreadCount;
 
-                handler.post(null, () -> {
+                handler.post(() -> {
                     for (UnreadCountListener listener : new ArrayList<>(unreadCountListeners))
-                        listener.onPyxUnread(total);
+                        listener.pyxUnreadCountUpdated(globalUnreadCount, gameUnreadCount);
                 });
             }
         }
@@ -112,6 +111,6 @@ public class PyxChatHelper {
 
     @UiThread
     public interface UnreadCountListener {
-        void onPyxUnread(int count);
+        void pyxUnreadCountUpdated(int globalUnread, int gameUnread);
     }
 }

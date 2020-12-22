@@ -65,12 +65,6 @@ public final class PyxRequests {
         return games;
     };
     private static final Pyx.Processor<WhoisResult> WHOIS_RESULT_PROCESSOR = (response, obj) -> new WhoisResult(obj);
-    private static final Pyx.Processor<List<Deck>> DECKS_LIST_PROCESSOR = (response, obj) -> {
-        JSONArray array = obj.getJSONArray("css");
-        final List<Deck> decks = new ArrayList<>(array.length());
-        for (int i = 0; i < array.length(); i++) decks.add(new Deck(array.getJSONObject(i)));
-        return decks;
-    };
 
     @Nullable
     private static String findSessionId(@NonNull Response response) {
@@ -155,8 +149,13 @@ public final class PyxRequests {
 
     @NonNull
     public static PyxRequestWithResult<List<Deck>> listCrCastDecks(int gid) {
-        return new PyxRequestWithResult<>(Pyx.Op.LIST_CR_CAST_CARD_SETS, DECKS_LIST_PROCESSOR,
-                new PyxRequest.Param("gid", String.valueOf(gid)));
+        return new PyxRequestWithResult<>(Pyx.Op.LIST_CR_CAST_CARD_SETS, (response, obj) -> {
+            JSONArray array = obj.getJSONArray("css");
+            final List<Deck> decks = new ArrayList<>(array.length());
+            for (int i = 0; i < array.length(); i++)
+                decks.add(new Deck(array.getJSONObject(i), true));
+            return decks;
+        }, new PyxRequest.Param("gid", String.valueOf(gid)));
     }
 
     @NotNull
@@ -193,8 +192,13 @@ public final class PyxRequests {
 
     @NonNull
     public static PyxRequestWithResult<List<Deck>> listCustomDecks(int gid) {
-        return new PyxRequestWithResult<>(Pyx.Op.LIST_CUSTOM_CARD_SETS, DECKS_LIST_PROCESSOR,
-                new PyxRequest.Param("gid", String.valueOf(gid)));
+        return new PyxRequestWithResult<>(Pyx.Op.LIST_CUSTOM_CARD_SETS, (response, obj) -> {
+            JSONArray array = obj.getJSONArray("css");
+            final List<Deck> decks = new ArrayList<>(array.length());
+            for (int i = 0; i < array.length(); i++)
+                decks.add(new Deck(array.getJSONObject(i), false));
+            return decks;
+        }, new PyxRequest.Param("gid", String.valueOf(gid)));
     }
 
     @NonNull

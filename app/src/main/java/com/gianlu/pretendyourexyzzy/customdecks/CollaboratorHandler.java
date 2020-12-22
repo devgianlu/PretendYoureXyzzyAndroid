@@ -8,8 +8,11 @@ import androidx.annotation.Nullable;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.api.models.cards.ContentCard;
-import com.gianlu.pretendyourexyzzy.customdecks.AbsCardsFragment.CardActionCallback;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,10 +23,9 @@ import java.util.List;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi;
 import xyz.gianlu.pyxoverloaded.OverloadedSyncApi.CollaboratorPatchOp;
-import xyz.gianlu.pyxoverloaded.callback.GeneralCallback;
 import xyz.gianlu.pyxoverloaded.model.Card;
 
-public final class CollaboratorHandler implements AbsCardsFragment.CardActionsHandler {
+public final class CollaboratorHandler implements CardActionsHandler {
     private static final String TAG = CollaboratorHandler.class.getSimpleName();
     private final String shareCode;
     private final String watermark;
@@ -46,136 +48,97 @@ public final class CollaboratorHandler implements AbsCardsFragment.CardActionsHa
         return null;
     }
 
+    @NonNull
     @Override
-    public void removeCard(@NonNull BaseCard oldCard, @NonNull CardActionCallback<Void> callback) {
+    public Task<Void> removeCard(@NonNull BaseCard oldCard) {
         Card card = getOverloadedCard(oldCard);
-        if (card == null) return;
+        if (card == null) return Tasks.forCanceled();
 
-        OverloadedSyncApi.get().patchCollaborator(OverloadedApi.now(), shareCode, CollaboratorPatchOp.REM_CARD, null, card.remoteId,
-                null, null, new GeneralCallback<OverloadedSyncApi.CollaboratorPatchResponse>() {
-                    @Override
-                    public void onResult(@NonNull OverloadedSyncApi.CollaboratorPatchResponse result) {
-                        callback.onComplete(null);
-                    }
-
-                    @Override
-                    public void onFailed(@NonNull Exception ex) {
-                        Log.e(TAG, "Failed removing card.", ex);
-                        callback.onFailed();
-                    }
-                });
+        return OverloadedSyncApi.get().patchCollaborator(OverloadedApi.now(), shareCode, CollaboratorPatchOp.REM_CARD, null, card.remoteId, null)
+                .continueWith((Continuation<OverloadedSyncApi.CollaboratorPatchResponse, Void>) task -> {
+                    task.getResult();
+                    return null;
+                })
+                .addOnFailureListener(ex -> Log.e(TAG, "Failed removing card.", ex));
     }
 
     @Override
-    public void updateCard(@NonNull BaseCard oldCard, @NonNull String[] text, @NonNull CardActionCallback<BaseCard> callback) {
+    @NonNull
+    public Task<BaseCard> updateCard(@NonNull BaseCard oldCard, @NonNull String[] text) {
         Card card = getOverloadedCard(oldCard);
-        if (card == null) return;
+        if (card == null) return Tasks.forCanceled();
 
         JSONObject obj;
         try {
             obj = card.toSyncJson();
         } catch (JSONException ex) {
             Log.e(TAG, "Failed creating edit card payload.", ex);
-            callback.onFailed();
-            return;
+            return Tasks.forException(ex);
         }
 
-        OverloadedSyncApi.get().patchCollaborator(OverloadedApi.now(), shareCode, CollaboratorPatchOp.EDIT_CARD, obj, null,
-                null, null, new GeneralCallback<OverloadedSyncApi.CollaboratorPatchResponse>() {
-                    @Override
-                    public void onResult(@NonNull OverloadedSyncApi.CollaboratorPatchResponse result) {
-                        String textJoin = CommonUtils.join(text, "____");
-                        Card overloadedCard = card.update(textJoin);
-                        ContentCard newCard = ((ContentCard) oldCard).update(overloadedCard, textJoin);
-                        callback.onComplete(newCard);
-                    }
-
-                    @Override
-                    public void onFailed(@NonNull Exception ex) {
-                        Log.e(TAG, "Failed updating card.", ex);
-                        callback.onFailed();
-                    }
-                });
+        return OverloadedSyncApi.get().patchCollaborator(OverloadedApi.now(), shareCode, CollaboratorPatchOp.EDIT_CARD, obj, null, null)
+                .continueWith((Continuation<OverloadedSyncApi.CollaboratorPatchResponse, BaseCard>) task -> {
+                    String textJoin = CommonUtils.join(text, "____");
+                    Card overloadedCard = card.update(textJoin);
+                    return ((ContentCard) oldCard).update(overloadedCard, textJoin);
+                })
+                .addOnFailureListener(ex -> Log.e(TAG, "Failed updating card.", ex));
     }
 
     @Override
-    public void addCard(boolean black, @NonNull String[] text, @NonNull CardActionCallback<BaseCard> callback) {
+    @NonNull
+    public Task<BaseCard> addCard(boolean black, @NonNull String[] text) {
         JSONObject card;
         try {
             card = Card.toSyncJson(black, text);
         } catch (JSONException ex) {
             Log.e(TAG, "Failed creating add card payload.", ex);
-            callback.onFailed();
-            return;
+            return Tasks.forException(ex);
         }
 
-        OverloadedSyncApi.get().patchCollaborator(OverloadedApi.now(), shareCode, CollaboratorPatchOp.ADD_CARD, card, null,
-                null, null, new GeneralCallback<OverloadedSyncApi.CollaboratorPatchResponse>() {
-                    @Override
-                    public void onResult(@NonNull OverloadedSyncApi.CollaboratorPatchResponse result) {
-                        if (result.cardId == null) {
-                            Log.e(TAG, "Missing cardId in response.");
-                            callback.onFailed();
-                            return;
-                        }
+        return OverloadedSyncApi.get().patchCollaborator(OverloadedApi.now(), shareCode, CollaboratorPatchOp.ADD_CARD, card, null, null)
+                .continueWith((Continuation<OverloadedSyncApi.CollaboratorPatchResponse, BaseCard>) task -> {
+                    OverloadedSyncApi.CollaboratorPatchResponse result = task.getResult();
+                    if (result.cardId == null)
+                        throw new IllegalArgumentException("Missing cardId in response.");
 
-                        String textJoin = CommonUtils.join(text, "____");
-                        Card overloadedCard = Card.from(textJoin, watermark, black, result.cardId);
-                        ContentCard newCard = new ContentCard(overloadedCard, textJoin, watermark, black);
-                        callback.onComplete(newCard);
-                    }
-
-                    @Override
-                    public void onFailed(@NonNull Exception ex) {
-                        Log.e(TAG, "Failed adding card.", ex);
-                        callback.onFailed();
-                    }
-                });
+                    String textJoin = CommonUtils.join(text, "____");
+                    Card overloadedCard = Card.from(textJoin, watermark, black, OverloadedApi.get().username(), result.cardId);
+                    return new ContentCard(overloadedCard, textJoin, watermark, black);
+                })
+                .addOnFailureListener(ex -> Log.e(TAG, "Failed adding card.", ex));
     }
 
     @Override
-    public void addCards(@NonNull boolean[] blacks, @NonNull String[][] texts, @NonNull CardActionCallback<List<? extends BaseCard>> callback) {
+    @NotNull
+    public Task<List<? extends BaseCard>> addCards(@NonNull boolean[] blacks, @NonNull String[][] texts) {
         JSONArray array = new JSONArray();
         try {
             for (int i = 0; i < blacks.length; i++)
                 array.put(Card.toSyncJson(blacks[i], texts[i]));
         } catch (JSONException ex) {
             Log.e(TAG, "Failed creating add cards payload.", ex);
-            callback.onFailed();
-            return;
+            return Tasks.forException(ex);
         }
 
-        OverloadedSyncApi.get().patchCollaborator(OverloadedApi.now(), shareCode, CollaboratorPatchOp.ADD_CARDS, null, null,
-                array, null, new GeneralCallback<OverloadedSyncApi.CollaboratorPatchResponse>() {
-                    @Override
-                    public void onResult(@NonNull OverloadedSyncApi.CollaboratorPatchResponse result) {
-                        if (result.cardsIds == null) {
-                            Log.e(TAG, "Missing cardsIds in response.");
-                            callback.onFailed();
-                            return;
-                        }
+        return OverloadedSyncApi.get().patchCollaborator(OverloadedApi.now(), shareCode, CollaboratorPatchOp.ADD_CARDS, null, null, array)
+                .continueWith((Continuation<OverloadedSyncApi.CollaboratorPatchResponse, List<? extends BaseCard>>) task -> {
+                    OverloadedSyncApi.CollaboratorPatchResponse result = task.getResult();
+                    if (result.cardsIds == null)
+                        throw new IllegalArgumentException("Missing cardsIds in response.");
 
-                        if (result.cardsIds.length != blacks.length) {
-                            Log.e(TAG, String.format("IDs size mismatch, remote: %d, local: %d", result.cardsIds.length, blacks.length));
-                            callback.onFailed();
-                            return;
-                        }
+                    if (result.cardsIds.length != blacks.length)
+                        throw new IllegalArgumentException(String.format("IDs size mismatch, remote: %d, local: %d", result.cardsIds.length, blacks.length));
 
-                        List<ContentCard> cards = new ArrayList<>(result.cardsIds.length);
-                        for (int i = 0; i < result.cardsIds.length; i++) {
-                            String textJoin = CommonUtils.join(texts[i], "____");
-                            Card overloadedCard = Card.from(textJoin, watermark, blacks[i], result.cardsIds[i]);
-                            cards.add(new ContentCard(overloadedCard, textJoin, watermark, blacks[i]));
-                        }
-
-                        callback.onComplete(cards);
+                    List<ContentCard> cards = new ArrayList<>(result.cardsIds.length);
+                    for (int i = 0; i < result.cardsIds.length; i++) {
+                        String textJoin = CommonUtils.join(texts[i], "____");
+                        Card overloadedCard = Card.from(textJoin, watermark, blacks[i], OverloadedApi.get().username(), result.cardsIds[i]);
+                        cards.add(new ContentCard(overloadedCard, textJoin, watermark, blacks[i]));
                     }
 
-                    @Override
-                    public void onFailed(@NonNull Exception ex) {
-                        Log.e(TAG, "Failed adding cards.", ex);
-                        callback.onFailed();
-                    }
-                });
+                    return cards;
+                })
+                .addOnFailureListener(ex -> Log.e(TAG, "Failed adding cards.", ex));
     }
 }

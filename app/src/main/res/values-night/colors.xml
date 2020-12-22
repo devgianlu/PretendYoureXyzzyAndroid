@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#4fc7ff</color>
-    <color name="colorPrimaryVariant">#03a0f0</color>
-    <color name="colorOnPrimary">@color/white</color>
+    <color name="statusBarColor">#000000</color>
 
-    <color name="colorSecondary">#4fc7ff</color>
-    <color name="colorSecondaryVariant">#03a0f0</color>
-    <color name="colorOnSecondary">@color/white</color>
-
-    <color name="customDecksSheetFabBg">@color/colorPrimaryVariant</color>
-    <color name="overloadedHeaderBg">#2c2c2c</color>
+    <color name="toolbar_icon_fg">#000000</color>
+    <color name="button_small_bg">@color/appColor_400</color>
+    <color name="button_small_fg">#0D0D0D</color>
+    <color name="game_item_color_bg">#0D0D0D</color>
+    <color name="input_color_bg">#212121</color>
+    <color name="input_color_fg">#FFFFFF</color>
+    <color name="input_error_color_bg">#FF7777</color>
+    <color name="image_small_color_bg">#3E3E3E</color>
+    <color name="profile_image_placeholder_color_bg">#303030</color>
+    <color name="undraw_text_color">#EEEEEE</color>
+    <color name="fullscreen_dialog_color_bg">#0D0D0D</color>
 </resources>

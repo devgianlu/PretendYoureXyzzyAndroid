@@ -6,16 +6,19 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.gianlu.commonutils.CommonUtils;
+import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Deck {
+public class Deck implements Serializable {
     public final int weight;
     public final int id;
     public final String description;
@@ -25,7 +28,7 @@ public class Deck {
     public final int whiteCards;
     public final boolean baseDeck;
 
-    public Deck(@NonNull JSONObject obj) throws JSONException {
+    public Deck(@NonNull JSONObject obj, boolean watermarkFromId) throws JSONException {
         weight = obj.getInt("w");
         id = obj.getInt("cid");
         description = Html.fromHtml(obj.getString("csd")).toString();
@@ -33,12 +36,25 @@ public class Deck {
         blackCards = obj.getInt("bcid");
         baseDeck = obj.getBoolean("bd");
         whiteCards = obj.getInt("wcid");
-        watermark = CommonUtils.optString(obj, "W");
+
+        String watermarkTmp = CommonUtils.optString(obj, "W");
+        if (watermarkFromId && watermarkTmp == null)
+            watermark = Integer.toString(-id, 36).toUpperCase();
+        else
+            watermark = watermarkTmp;
+    }
+
+    public static boolean contains(@NonNull List<Deck> decks, @NotNull BasicCustomDeck find) {
+        for (Deck deck : decks)
+            if (deck.name.equals(find.name) && (deck.watermark == null || find.watermark.equals(deck.watermark)))
+                return true;
+
+        return false;
     }
 
     @Nullable
-    public static Deck findDeck(@NonNull List<Deck> sets, int id) {
-        for (Deck set : sets)
+    public static Deck findDeck(@NonNull List<Deck> decks, int id) {
+        for (Deck set : decks)
             if (Objects.equals(set.id, id))
                 return set;
 
@@ -46,9 +62,10 @@ public class Deck {
     }
 
     @NonNull
-    public static List<Deck> list(@NonNull JSONArray array) throws JSONException {
+    public static List<Deck> list(@NonNull JSONArray array, boolean watermarkFromId) throws JSONException {
         List<Deck> list = new ArrayList<>(array.length());
-        for (int i = 0; i < array.length(); i++) list.add(new Deck(array.getJSONObject(i)));
+        for (int i = 0; i < array.length(); i++)
+            list.add(new Deck(array.getJSONObject(i), watermarkFromId));
         return list;
     }
 

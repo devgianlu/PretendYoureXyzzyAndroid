@@ -52,6 +52,23 @@ public class CardsGroup extends ArrayList<BaseCard> {
         return group;
     }
 
+    /**
+     * Checks if the group contains a {@link GameCard} with the given ID
+     *
+     * @param id The card
+     * @return Whether the card is contained
+     */
+    public boolean hasCard(int id) {
+        for (BaseCard card : this)
+            if (card instanceof GameCard && ((GameCard) card).id == id)
+                return true;
+
+        return false;
+    }
+
+    /**
+     * @return Whether this is a group of unknown cards
+     */
     public boolean isUnknwon() {
         return !isEmpty() && get(0) instanceof UnknownCard; // Assuming that if one cards is unknown, also the others are
     }
