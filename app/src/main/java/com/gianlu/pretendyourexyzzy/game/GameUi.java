@@ -12,7 +12,6 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.annotation.UiThread;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -93,8 +92,8 @@ public class GameUi {
         handAdapter = new CardsAdapter();
     }
 
-    public void setInstructions(@StringRes int textRes, Object... args) {
-        binding.gameActivityStateText.setText(context.getString(textRes, args));
+    public void setInstructions(@Nullable CharSequence text) {
+        binding.gameActivityStateText.setText(text);
     }
 
     public void startGameVisible(boolean visible) {

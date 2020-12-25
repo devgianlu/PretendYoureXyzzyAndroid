@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.adapters;
+package com.gianlu.pretendyourexyzzy.customdecks;
 
 import android.content.Context;
 import android.content.Intent;
@@ -18,10 +18,6 @@ import com.gianlu.commonutils.adapters.OrderedRecyclerViewAdapter;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.api.crcast.CrCastDeck;
 import com.gianlu.pretendyourexyzzy.cards.CardSize;
-import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
-import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
-import com.gianlu.pretendyourexyzzy.customdecks.NewEditCustomDeckActivity;
-import com.gianlu.pretendyourexyzzy.customdecks.NewViewCustomDeckActivity;
 import com.gianlu.pretendyourexyzzy.databinding.ItemNewCustomDeckBinding;
 import com.gianlu.pretendyourexyzzy.dialogs.NewUserInfoDialog;
 

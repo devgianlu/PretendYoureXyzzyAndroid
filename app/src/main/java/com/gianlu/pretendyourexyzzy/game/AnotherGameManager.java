@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.game;
 
 import android.content.Context;
+import android.text.Html;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -494,63 +495,75 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
     //endregion
 
     private void event(@NonNull UiEvent ev, Object... args) {
-        switch (ev.kind) {
-            case BOTH:
-                listener.showToast(Toaster.build().message(ev.toast, args));
-                if (ev == UiEvent.SPECTATOR_TEXT || !gameData.amSpectator())
-                    ui.setInstructions(ev.text, args);
-                break;
-            case TOAST:
-                listener.showToast(Toaster.build().message(ev.text, args));
-                break;
-            case TEXT:
-                if (ev == UiEvent.SPECTATOR_TEXT || !gameData.amSpectator())
-                    ui.setInstructions(ev.text, args);
-                break;
+        if (ev == UiEvent.SPECTATOR_TEXT || !gameData.amSpectator()) {
+            CharSequence textStr = ev.textStr(context, args);
+            if (textStr != null) ui.setInstructions(textStr);
         }
+
+        String toastStr = ev.toastStr(context, args);
+        if (toastStr != null) listener.showToast(Toaster.build().message(toastStr));
     }
 
     private enum UiEvent {
-        YOU_JUDGE(R.string.game_youJudge, Kind.TEXT),
-        SELECT_WINNING_CARD(R.string.game_selectWinningCard, Kind.TEXT),
-        YOU_ROUND_WINNER(R.string.game_youRoundWinner_long, R.string.game_youRoundWinner_short),
-        SPECTATOR_TEXT(R.string.game_spectator, Kind.TEXT),
-        YOU_GAME_HOST(R.string.game_youGameHost, Kind.TEXT),
-        WAITING_FOR_ROUND_TO_END(R.string.game_waitingForRoundToEnd, Kind.TEXT),
-        WAITING_FOR_START(R.string.game_waitingForStart, Kind.TEXT),
-        JUDGE_LEFT(R.string.game_judgeLeft_long, R.string.game_judgeLeft_short),
-        IS_JUDGING(R.string.game_isJudging, Kind.TEXT),
-        ROUND_WINNER(R.string.game_roundWinner_long, R.string.game_roundWinner_short),
-        WAITING_FOR_OTHER_PLAYERS(R.string.game_waitingForPlayers, Kind.TEXT),
-        PLAYER_SKIPPED(R.string.game_playerSkipped, Kind.TOAST),
-        PICK_CARDS(R.string.game_pickCards, Kind.TEXT),
-        JUDGE_SKIPPED(R.string.game_judgeSkipped, Kind.TOAST),
-        GAME_WINNER(R.string.game_gameWinner_long, R.string.game_gameWinner_short),
-        YOU_GAME_WINNER(R.string.game_youGameWinner_long, R.string.game_youGameWinner_short),
-        NOT_YOUR_TURN(R.string.game_notYourTurn, Kind.TOAST),
-        HURRY_UP(R.string.hurryUp, Kind.TOAST),
-        PLAYER_KICKED(R.string.game_playerKickedIdle, Kind.TOAST);
+        YOU_JUDGE(R.string.game_youJudge, Kind.TEXT, false),
+        SELECT_WINNING_CARD(R.string.game_selectWinningCard, Kind.TEXT, false),
+        YOU_ROUND_WINNER(R.string.game_youRoundWinner_long, R.string.game_youRoundWinner_short, false),
+        SPECTATOR_TEXT(R.string.game_spectator, Kind.TEXT, false),
+        YOU_GAME_HOST(R.string.game_youGameHost, Kind.TEXT, false),
+        WAITING_FOR_ROUND_TO_END(R.string.game_waitingForRoundToEnd, Kind.TEXT, false),
+        WAITING_FOR_START(R.string.game_waitingForStart, Kind.TEXT, false),
+        JUDGE_LEFT(R.string.game_judgeLeft_long, R.string.game_judgeLeft_short, true),
+        IS_JUDGING(R.string.game_isJudging, Kind.TEXT, true),
+        ROUND_WINNER(R.string.game_roundWinner_long, R.string.game_roundWinner_short, true),
+        WAITING_FOR_OTHER_PLAYERS(R.string.game_waitingForPlayers, Kind.TEXT, false),
+        PLAYER_SKIPPED(R.string.game_playerSkipped, Kind.TOAST, false),
+        PICK_CARDS(R.string.game_pickCards, Kind.TEXT, false),
+        JUDGE_SKIPPED(R.string.game_judgeSkipped, Kind.TOAST, false),
+        GAME_WINNER(R.string.game_gameWinner_long, R.string.game_gameWinner_short, true),
+        YOU_GAME_WINNER(R.string.game_youGameWinner_long, R.string.game_youGameWinner_short, false),
+        NOT_YOUR_TURN(R.string.game_notYourTurn, Kind.TOAST, false),
+        HURRY_UP(R.string.hurryUp, Kind.TOAST, false),
+        PLAYER_KICKED(R.string.game_playerKickedIdle, Kind.TOAST, false);
 
         private final int toast;
         private final int text;
         private final Kind kind;
+        private final boolean colored;
 
-        UiEvent(@StringRes int text, Kind kind) {
+        UiEvent(@StringRes int text, Kind kind, boolean colored) {
             this.text = text;
             this.kind = kind;
+            this.colored = colored;
             this.toast = 0;
         }
 
-        UiEvent(@StringRes int text, @StringRes int toast) {
+        UiEvent(@StringRes int text, @StringRes int toast, boolean colored) {
             this.toast = toast;
             this.text = text;
+            this.colored = colored;
             this.kind = Kind.BOTH;
         }
 
+        @Nullable
+        public CharSequence textStr(@NonNull Context context, Object... args) {
+            if (kind == Kind.TOAST) return null;
+
+            String formatStr = null;
+            if (colored && args.length == 1)
+                formatStr = "<font color='#00B0FF'>" + args[0] + "</font>";
+
+            return Html.fromHtml(context.getString(text, formatStr == null ? args : new String[]{formatStr}));
+        }
+
+        @Nullable
+        public String toastStr(@NonNull Context context, Object... args) {
+            if (kind == Kind.TEXT) return null;
+            else if (kind == Kind.TOAST) return context.getString(toast, args);
+            else return context.getString(text, args);
+        }
+
         public enum Kind {
-            TOAST,
-            TEXT,
-            BOTH
+            TOAST, TEXT, BOTH
         }
     }
 

@@ -368,6 +368,12 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
             }
         }
 
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            if (billingHelper != null) billingHelper.onDestroy();
+        }
+
         private void donate() {
             if (billingHelper != null && getActivity() != null)
                 billingHelper.donate(requireActivity(), false);

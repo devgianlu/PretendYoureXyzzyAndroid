@@ -28,7 +28,7 @@
             android:layout_height="16dp"
             android:layout_gravity="center_horizontal|top"
             android:background="@drawable/bg_circle_gray"
-            android:backgroundTint="@color/white"
+            android:backgroundTint="?android:colorBackground"
             android:padding="1dp" />
 
         <TextView

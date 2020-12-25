@@ -1,4 +1,4 @@
-package com.gianlu.pretendyourexyzzy.adapters;
+package com.gianlu.pretendyourexyzzy.starred;
 
 import android.content.Context;
 import android.view.LayoutInflater;
