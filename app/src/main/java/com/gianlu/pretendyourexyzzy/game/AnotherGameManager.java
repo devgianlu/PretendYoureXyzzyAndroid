@@ -531,10 +531,9 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
         private final boolean colored;
 
         UiEvent(@StringRes int text, Kind kind, boolean colored) {
-            this.text = text;
+            this.text = this.toast = text;
             this.kind = kind;
             this.colored = colored;
-            this.toast = 0;
         }
 
         UiEvent(@StringRes int text, @StringRes int toast, boolean colored) {
