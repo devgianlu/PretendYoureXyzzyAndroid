@@ -10,7 +10,10 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
@@ -34,6 +37,7 @@ import com.gianlu.pretendyourexyzzy.overloaded.SyncUtils;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.PlayGamesAuthProvider;
@@ -50,16 +54,12 @@ import xyz.gianlu.pyxoverloaded.OverloadedApi;
 import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
 
 public class NewMainActivity extends ActivityWithDialog implements OverloadedChatApi.UnreadCountListener, PyxChatHelper.UnreadCountListener, Pyx.OnPollingPyxErrorListener {
-    private static final String SETTINGS_FRAGMENT_TAG = "settings";
-    private static final String GAMES_FRAGMENT_TAG = "games";
-    private static final String PROFILE_FRAGMENT_TAG = "profile";
     private static final String TAG = NewMainActivity.class.getSimpleName();
     private ActivityNewMainBinding binding;
-    private NewSettingsFragment settingsFragment;
-    private NewGamesFragment gamesFragment;
-    private NewProfileFragment profileFragment;
     private RegisteredPyx pyx;
     private Task<RegisteredPyx> prepareTask;
+    private PagerAdapter adapter;
+    private BottomNavigationView.OnNavigationItemSelectedListener navigationItemSelectedListener;
 
     @Override
     protected void onStart() {
@@ -80,45 +80,55 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
         binding = ActivityNewMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        if (settingsFragment != null || gamesFragment != null || profileFragment != null) {
-            FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
-            if (settingsFragment != null) trans.remove(settingsFragment);
-            if (gamesFragment != null) trans.remove(gamesFragment);
-            if (profileFragment != null) trans.remove(profileFragment);
-            trans.commitNow();
-        }
+        binding.mainPager.setOffscreenPageLimit(3);
+        binding.mainPager.setAdapter(adapter = new PagerAdapter(this));
+        binding.mainPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
 
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.main_container, settingsFragment = NewSettingsFragment.get(), SETTINGS_FRAGMENT_TAG)
-                .add(R.id.main_container, gamesFragment = NewGamesFragment.get(), GAMES_FRAGMENT_TAG)
-                .add(R.id.main_container, profileFragment = NewProfileFragment.get(), PROFILE_FRAGMENT_TAG)
-                .commitNow();
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                try {
+                    binding.mainNavigation.setOnNavigationItemSelectedListener(null);
+                    updateBadges();
+                    switch (position) {
+                        case 0:
+                            checkReloadNeeded();
+                            binding.mainNavigation.setSelectedItemId(R.id.mainNavigation_settings);
+                            break;
+                        case 1:
+                            checkReloadNeeded();
+                            binding.mainNavigation.setSelectedItemId(R.id.mainNavigation_home);
+                            break;
+                        case 2:
+                            binding.mainNavigation.setSelectedItemId(R.id.mainNavigation_profile);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Unknown position: " + position);
+                    }
+                } finally {
+                    binding.mainNavigation.setOnNavigationItemSelectedListener(navigationItemSelectedListener);
+                }
+            }
+        });
 
         binding.mainNavigation.setOnNavigationItemReselectedListener(item -> {
             // Do nothing
         });
-        binding.mainNavigation.setOnNavigationItemSelectedListener(item -> {
-            updateBadges();
+        binding.mainNavigation.setOnNavigationItemSelectedListener(navigationItemSelectedListener = item -> {
             if (item.getItemId() == R.id.mainNavigation_settings) {
-                checkReloadNeeded();
-                getSupportFragmentManager().beginTransaction()
-                        .hide(gamesFragment).hide(profileFragment)
-                        .show(settingsFragment)
-                        .commitNow();
+                binding.mainPager.setCurrentItem(0, true);
                 return true;
             } else if (item.getItemId() == R.id.mainNavigation_home) {
-                checkReloadNeeded();
-                getSupportFragmentManager().beginTransaction()
-                        .hide(settingsFragment).hide(profileFragment)
-                        .show(gamesFragment)
-                        .commitNow();
+                binding.mainPager.setCurrentItem(1, true);
                 return true;
             } else if (item.getItemId() == R.id.mainNavigation_profile) {
-                getSupportFragmentManager().beginTransaction()
-                        .hide(gamesFragment).hide(settingsFragment)
-                        .show(profileFragment)
-                        .runOnCommit(() -> profileFragment.onResume())
-                        .commitNow();
+                binding.mainPager.setCurrentItem(2, true);
                 return true;
             } else {
                 return false;
@@ -157,11 +167,11 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
     }
 
     public void checkReloadNeeded() {
-        if (profileFragment == null || prepareTask == null || !(prepareTask.isComplete() || prepareTask.isCanceled()))
+        if (adapter == null || prepareTask == null || !(prepareTask.isComplete() || prepareTask.isCanceled()))
             return;
 
-        String newUsername = profileFragment.getUsername();
-        String newIdCode = profileFragment.getIdCode();
+        String newUsername = adapter.profileFragment.getUsername();
+        String newIdCode = adapter.profileFragment.getIdCode();
         if (pyx != null && newUsername.equals(pyx.user().nickname) && Objects.equals(Prefs.getString(PK.LAST_ID_CODE, null), newIdCode))
             return;
 
@@ -187,9 +197,7 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
         pyx.polling().addErrorListener(this);
 
         runOnUiThread(() -> {
-            if (settingsFragment != null) settingsFragment.callPyxReady(pyx);
-            if (gamesFragment != null) gamesFragment.callPyxReady(pyx);
-            if (profileFragment != null) profileFragment.callPyxReady(pyx);
+            if (adapter != null) adapter.callPyxReady(pyx);
 
             if (pyx.firstLoad().nextOperation == FirstLoad.NextOp.GAME)
                 startActivity(GameActivity.gameIntent(this, pyx.firstLoad().game));
@@ -205,9 +213,7 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
         this.pyx = null;
 
         runOnUiThread(() -> {
-            if (settingsFragment != null) settingsFragment.callPyxInvalid(ex);
-            if (gamesFragment != null) gamesFragment.callPyxInvalid(ex);
-            if (profileFragment != null) profileFragment.callPyxInvalid(ex);
+            if (adapter != null) adapter.callPyxInvalid(ex);
         });
     }
 
@@ -287,16 +293,12 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
 
     @Override
     public void onBackPressed() {
-        ChildFragment visible;
-        int itemId = binding.mainNavigation.getSelectedItemId();
-        if (itemId == R.id.mainNavigation_settings) {
-            visible = settingsFragment;
-        } else if (itemId == R.id.mainNavigation_home) {
-            visible = gamesFragment;
-        } else if (itemId == R.id.mainNavigation_profile) {
-            visible = profileFragment;
-        } else {
-            visible = null;
+        ChildFragment visible = null;
+        if (adapter != null) {
+            int itemId = binding.mainNavigation.getSelectedItemId();
+            if (itemId == R.id.mainNavigation_settings) visible = adapter.settingsFragment;
+            else if (itemId == R.id.mainNavigation_home) visible = adapter.gamesFragment;
+            else if (itemId == R.id.mainNavigation_profile) visible = adapter.profileFragment;
         }
 
         if (visible == null || !visible.goBack()) {
@@ -341,6 +343,51 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
     private void updateBadges() {
         setBadge(R.id.mainNavigation_home, pyx == null ? 0 : pyx.chat().getGlobalUnread());
         setBadge(R.id.mainNavigation_profile, OverloadedApi.chat(this).countTotalUnread());
+    }
+
+    private static class PagerAdapter extends FragmentStatePagerAdapter {
+        private final NewSettingsFragment settingsFragment;
+        private final NewGamesFragment gamesFragment;
+        private final NewProfileFragment profileFragment;
+
+        PagerAdapter(@NonNull FragmentActivity activity) {
+            super(activity.getSupportFragmentManager(), BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+            this.settingsFragment = NewSettingsFragment.get();
+            this.gamesFragment = NewGamesFragment.get();
+            this.profileFragment = NewProfileFragment.get();
+        }
+
+        void callPyxReady(RegisteredPyx pyx) {
+            settingsFragment.callPyxReady(pyx);
+            gamesFragment.callPyxReady(pyx);
+            profileFragment.callPyxReady(pyx);
+        }
+
+        void callPyxInvalid(Exception ex) {
+            settingsFragment.callPyxInvalid(ex);
+            gamesFragment.callPyxInvalid(ex);
+            profileFragment.callPyxInvalid(ex);
+        }
+
+        @NonNull
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case 0:
+                    return settingsFragment;
+                case 1:
+                    return gamesFragment;
+                case 2:
+                    return profileFragment;
+                default:
+                    throw new IllegalArgumentException("Unknown position: " + position);
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return 3;
+        }
     }
 
     public static abstract class ChildFragment extends FragmentWithDialog {

@@ -6,8 +6,8 @@
     android:background="?android:colorBackground"
     android:orientation="vertical">
 
-    <FrameLayout
-        android:id="@+id/main_container"
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/main_pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />

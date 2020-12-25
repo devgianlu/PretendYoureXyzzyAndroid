@@ -31,7 +31,9 @@ import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.DialogUtils;
+import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
+import com.gianlu.pretendyourexyzzy.PK;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.Utils;
 import com.gianlu.pretendyourexyzzy.databinding.DialogOverloadedSubBinding;
@@ -298,8 +300,10 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
                             binding.overloadedSubDialogUsername.setEnabled(false);
                             binding.overloadedSubDialogUsername.setHelperText(getString(R.string.overloadedSub_usernameLocked));
 
-                            if (userData.purchaseStatus.ok)
+                            if (userData.purchaseStatus.ok) {
+                                Prefs.putString(PK.LAST_NICKNAME, userData.username);
                                 subscriptionCompleteOk();
+                            }
                         })
                         .addOnFailureListener(ex -> {
                             usernameLocked = false;
@@ -352,6 +356,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
         OverloadedApi.get().registerUser(username, purchase != null ? purchase.getSku() : null, purchase != null ? purchase.getPurchaseToken() : null)
                 .addOnSuccessListener(data -> {
                     if (data.purchaseStatus.ok) {
+                        Prefs.putString(PK.LAST_NICKNAME, username);
                         subscriptionCompleteOk();
                         return;
                     }
