@@ -1,3 +1,4 @@
-- The app has been completely redesigned
-- Many bugs have been fixed
-- Enjoy
+- Fixed crash at startup
+- Fixed weird issue with main screen
+- Fixed friend and player status layout
+- Minor bug fixes
