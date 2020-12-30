@@ -355,7 +355,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                 bundle.putString("name", deck.name);
                 bundle.putString("watermark", deck.watermark);
                 bundle.putInt("deckId", deck.id);
-            } else {
+            } else if (binding != null && isAdded()) {
                 if (CommonUtils.getText(binding.editCustomDeckInfoName).isEmpty() || CommonUtils.getText(binding.editCustomDeckInfoWatermark).isEmpty())
                     showToast(Toaster.build().message(R.string.completeDeckInfoFirst));
             }
