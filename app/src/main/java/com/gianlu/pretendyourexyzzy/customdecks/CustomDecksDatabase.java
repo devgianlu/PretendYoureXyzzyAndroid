@@ -71,26 +71,8 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.d(TAG, "Upgrading from " + oldVersion + " to " + newVersion);
         switch (oldVersion) {
-            case 1:
-                db.execSQL("ALTER TABLE decks ADD revision INTEGER NOT NULL DEFAULT 0");
-                db.execSQL("ALTER TABLE decks ADD remoteId INTEGER");
-                db.execSQL("CREATE UNIQUE INDEX remoteId_decks_unique ON decks(remoteId)");
-
-                db.execSQL("ALTER TABLE cards ADD remoteId INTEGER");
-                db.execSQL("CREATE UNIQUE INDEX remoteId_cards_unique ON cards(remoteId)");
-
-                db.execSQL("CREATE TABLE IF NOT EXISTS starred_decks (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL, remoteId INTEGER UNIQUE)");
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-                db.execSQL("ALTER TABLE decks ADD lastUsed INTEGER NOT NULL DEFAULT 0");
-                db.execSQL("ALTER TABLE starred_decks ADD lastUsed INTEGER NOT NULL DEFAULT 0");
-            case 6:
-            case 7:
-            case 8:
-                db.execSQL("CREATE TABLE IF NOT EXISTS cr_cast_decks (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER NOT NULL, created INTEGER NOT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL)");
             case 9:
+                db.execSQL("CREATE TABLE IF NOT EXISTS cr_cast_decks (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER NOT NULL, created INTEGER NOT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL)");
                 db.execSQL("ALTER TABLE cr_cast_decks ADD favorite INTEGER NOT NULL DEFAULT 0");
             case 10:
             case 11:
