@@ -2,6 +2,8 @@ package com.gianlu.pretendyourexyzzy;
 
 import com.bumptech.glide.Glide;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
+import com.gianlu.commonutils.preferences.CommonPK;
+import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.pretendyourexyzzy.api.glide.BaseCardGlideLoader;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.starred.StarredCardsDatabase;
@@ -22,6 +24,9 @@ public class ThisApplication extends AnalyticsApplication {
 
     @Override
     public void onCreate() {
+        Prefs.putBoolean(CommonPK.CRASH_REPORT_ENABLED, true);
+        Prefs.putBoolean(CommonPK.TRACKING_ENABLED, true);
+
         super.onCreate();
         Glide.get(this).getRegistry().prepend(BaseCard.class, InputStream.class, new BaseCardGlideLoader.Factory());
 
