@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.main;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.text.InputType;
@@ -63,10 +64,24 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
     private RegisteredPyx pyx;
     private GamesAdapter adapter;
     private BadgeDrawable chatBadge;
+    private NewMainActivity parent;
 
     @NonNull
     public static NewGamesFragment get() {
         return new NewGamesFragment();
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof NewMainActivity)
+            parent = (NewMainActivity) context;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        parent = null;
     }
 
     private void setGamesStatus(boolean loading, boolean error, boolean empty) {
@@ -123,6 +138,13 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
         });
 
         binding.gamesFragmentChangeServer.setOnClickListener(v -> ChangeServerDialog.get().show(requireFragmentManager(), null));
+        binding.gamesFragmentPlayers.setOnClickListener(v -> {
+            if (parent == null) return;
+            parent.changePage(0, (page, fragment) -> {
+                if (fragment instanceof NewSettingsFragment)
+                    ((NewSettingsFragment) fragment).changePage(NewSettingsFragment.Page.PLAYERS);
+            });
+        });
 
         binding.gamesFragmentFilterLocked.setOnClickListener(v -> {
             boolean filter = !Prefs.getBoolean(PK.FILTER_LOCKED_LOBBIES);
@@ -216,6 +238,7 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
                 .addOnFailureListener(this::failedLoadingGames);
 
         binding.gamesFragmentCreateGame.setEnabled(true);
+        binding.gamesFragmentPlayers.setEnabled(true);
         binding.gamesFragmentSwipeRefresh.setEnabled(true);
         binding.gamesFragmentChangeServer.setEnabled(true);
         binding.gamesFragmentServer.setText(pyx.server.name);
@@ -249,6 +272,7 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
             binding.gamesFragmentServer.setText(lastServer == null ? "..." : lastServer.name);
 
             binding.gamesFragmentCreateGame.setEnabled(false);
+            binding.gamesFragmentPlayers.setEnabled(false);
             binding.gamesFragmentSwipeRefresh.setEnabled(false);
             binding.gamesFragmentChat.setVisibility(View.GONE);
 

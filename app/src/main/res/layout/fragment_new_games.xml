@@ -26,6 +26,14 @@
             android:layout_weight="1" />
 
         <ImageButton
+            android:id="@+id/gamesFragment_players"
+            style="@style/ToolbarIconStyle"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/baseline_people_24" />
+
+        <ImageButton
             android:id="@+id/gamesFragment_chat"
             style="@style/ToolbarIconStyle"
             android:layout_marginTop="16dp"

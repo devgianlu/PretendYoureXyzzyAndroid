@@ -61,6 +61,8 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
     private final EnumMap<Page, ChildFragment> fragments = new EnumMap<>(Page.class);
     private Page currentPage;
     private RegisteredPyx pyx;
+    private Page goToPage = null;
+    private boolean mStarted = false;
 
     @NonNull
     public static NewSettingsFragment get() {
@@ -75,10 +77,20 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
         return layout;
     }
 
+    public void changePage(@NonNull Page page) {
+        if (mStarted) {
+            goToPage = null;
+            replaceFragment(page);
+        } else {
+            goToPage = page;
+        }
+    }
+
     @Override
     public void onStart() {
         super.onStart();
-        replaceFragment(Page.MAIN);
+        mStarted = true;
+        replaceFragment(goToPage != null ? goToPage : Page.MAIN);
     }
 
     @Override
@@ -131,7 +143,7 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
         currentPage = page;
     }
 
-    private enum Page {
+    public enum Page {
         MAIN(MainFragment.class), PLAYERS(NewPlayersFragment.class), TRANSLATORS(TranslatorsFragment.class),
         PREFS_GENERAL(GeneralPrefsFragment.class), PREFS_OVERLOADED(OverloadedPrefsFragment.class),
         METRICS(MetricsFragment.class);

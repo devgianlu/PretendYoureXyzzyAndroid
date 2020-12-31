@@ -8,6 +8,7 @@ import android.view.Gravity;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.IdRes;
+import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -60,6 +61,7 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
     private Task<RegisteredPyx> prepareTask;
     private PagerAdapter adapter;
     private BottomNavigationView.OnNavigationItemSelectedListener navigationItemSelectedListener;
+    private PageChangedCallback pageChangedCallback;
 
     @Override
     protected void onStart() {
@@ -114,6 +116,12 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
                 } finally {
                     binding.mainNavigation.setOnNavigationItemSelectedListener(navigationItemSelectedListener);
                 }
+
+                if (pageChangedCallback != null) {
+                    if (adapter != null)
+                        pageChangedCallback.onChanged(position, adapter.getItem(position));
+                    pageChangedCallback = null;
+                }
             }
         });
 
@@ -164,6 +172,13 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
                                 if (authCode != null) OverloadedApi.get().linkGames(authCode);
                             });
                 });
+    }
+
+    public void changePage(@IntRange(from = 0, to = 2) int page, @Nullable PageChangedCallback callback) {
+        if (binding != null) {
+            pageChangedCallback = callback;
+            binding.mainPager.setCurrentItem(page, true);
+        }
     }
 
     public void checkReloadNeeded() {
@@ -343,6 +358,10 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
     private void updateBadges() {
         setBadge(R.id.mainNavigation_home, pyx == null ? 0 : pyx.chat().getGlobalUnread());
         setBadge(R.id.mainNavigation_profile, OverloadedApi.chat(this).countTotalUnread());
+    }
+
+    public interface PageChangedCallback {
+        void onChanged(int page, @NonNull Fragment fragment);
     }
 
     private static class PagerAdapter extends FragmentStatePagerAdapter {
