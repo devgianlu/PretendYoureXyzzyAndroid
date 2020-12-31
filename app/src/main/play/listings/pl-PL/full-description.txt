@@ -1,4 +1,4 @@
-This app lets you play Pretend You're Xyzzy, an online card game, on your device wherever you are.
+Ta aplikacja pozwala grać w Pretend You're Xyzzy, gra w karty online, na twoim urządzeniu, gdziekolwiek jesteś.
 
 ----- ATTENTION! -----
 This app content may disappoint some people. If you don't agree with the content of this app, don't complain with me. I'm not the creator of this game, just a player who is also a developer.
