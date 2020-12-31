@@ -24,10 +24,10 @@ public class ThisApplication extends AnalyticsApplication {
 
     @Override
     public void onCreate() {
+        super.onCreate();
         Prefs.putBoolean(CommonPK.CRASH_REPORT_ENABLED, true);
         Prefs.putBoolean(CommonPK.TRACKING_ENABLED, true);
 
-        super.onCreate();
         Glide.get(this).getRegistry().prepend(BaseCard.class, InputStream.class, new BaseCardGlideLoader.Factory());
 
         SignalDatabaseHelper.init(this);
