@@ -72,15 +72,13 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         Log.d(TAG, "Upgrading from " + oldVersion + " to " + newVersion);
         switch (oldVersion) {
             case 9:
-                db.execSQL("CREATE TABLE IF NOT EXISTS cr_cast_decks (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER NOT NULL, created INTEGER NOT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL)");
-                db.execSQL("ALTER TABLE cr_cast_decks ADD favorite INTEGER NOT NULL DEFAULT 0");
             case 10:
             case 11:
                 db.execSQL("CREATE TABLE cr_cast_decks_tmp (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER DEFAULT NULL, created INTEGER DEFAULT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL)");
                 db.execSQL("INSERT INTO cr_cast_decks_tmp SELECT * FROM cr_cast_decks");
                 db.execSQL("DROP TABLE cr_cast_decks");
                 db.execSQL("ALTER TABLE cr_cast_decks_tmp RENAME TO cr_cast_decks");
-                db.execSQL("ALTER TABLE cr_cast_decks ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0");
+                db.execSQL("ALTER TABLE cr_cast_decks ADD favorite INTEGER NOT NULL DEFAULT 0");
             case 12:
                 db.execSQL("CREATE TABLE starred_decks_tmp (id INTEGER PRIMARY KEY UNIQUE, shareCode TEXT NOT NULL UNIQUE, name TEXT NOT NULL, watermark TEXT NOT NULL, owner TEXT NOT NULL, cards_count INTEGER NOT NULL, remoteId INTEGER UNIQUE, lastUsed INTEGER NOT NULL DEFAULT 0)");
                 db.execSQL("INSERT INTO starred_decks_tmp SELECT * FROM starred_decks");

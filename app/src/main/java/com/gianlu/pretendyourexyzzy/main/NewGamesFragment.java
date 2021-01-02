@@ -163,12 +163,14 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
         });
 
         binding.gamesFragmentMenu.setOnClickListener((v) -> showPopupMenu());
-        binding.gamesFragmentCreateGame.setOnClickListener(v -> pyx.request(PyxRequests.createGame())
-                .addOnSuccessListener((gamePermalink) -> startActivity(GameActivity.gameIntent(requireContext(), gamePermalink)))
-                .addOnFailureListener(ex -> {
-                    Log.e(TAG, "Failed creating game.", ex);
-                    showToast(Toaster.build().message(R.string.failedCreatingGame));
-                }));
+        binding.gamesFragmentCreateGame.setOnClickListener(v -> {
+            if (pyx != null) pyx.request(PyxRequests.createGame())
+                    .addOnSuccessListener((gamePermalink) -> startActivity(GameActivity.gameIntent(requireContext(), gamePermalink)))
+                    .addOnFailureListener(ex -> {
+                        Log.e(TAG, "Failed creating game.", ex);
+                        showToast(Toaster.build().message(R.string.failedCreatingGame));
+                    });
+        });
 
         setKeepScreenOn(Prefs.getBoolean(PK.KEEP_SCREEN_ON));
 
@@ -263,8 +265,6 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
             pyx.chat().removeUnreadCountListener(this);
         }
 
-        this.pyx = null;
-
         if (binding != null) {
             setGamesStatus(ex == null, ex != null, false);
 
@@ -295,6 +295,8 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
                 setServerBoxTint(R.color.input_error_color_bg);
             }
         }
+
+        this.pyx = null;
     }
 
     private void setServerBoxTint(@Nullable @ColorRes Integer color) {
