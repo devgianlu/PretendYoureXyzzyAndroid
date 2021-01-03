@@ -562,11 +562,14 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
     @NotNull
     public String getUsername() {
-        return CommonUtils.getText(binding.profileFragmentInputs.usernameInput);
+        return binding != null && binding.profileFragmentInputs != null ? CommonUtils.getText(binding.profileFragmentInputs.usernameInput) : null;
     }
 
     @Nullable
     public String getIdCode() {
+        if (binding == null || binding.profileFragmentInputs == null)
+            return null;
+
         String idCode = CommonUtils.getText(binding.profileFragmentInputs.idCodeInput);
         return idCode.trim().isEmpty() ? null : idCode.trim();
     }
