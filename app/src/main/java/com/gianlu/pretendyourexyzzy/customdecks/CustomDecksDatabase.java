@@ -72,6 +72,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         Log.d(TAG, "Upgrading from " + oldVersion + " to " + newVersion);
         switch (oldVersion) {
             case 9:
+                db.execSQL("CREATE TABLE IF NOT EXISTS cr_cast_decks (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER DEFAULT NULL, created INTEGER DEFAULT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL)");
             case 10:
             case 11:
                 db.execSQL("CREATE TABLE cr_cast_decks_tmp (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER DEFAULT NULL, created INTEGER DEFAULT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL)");

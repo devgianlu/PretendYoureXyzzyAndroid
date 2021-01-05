@@ -187,7 +187,7 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
 
         String newUsername = adapter.profileFragment.getUsername();
         String newIdCode = adapter.profileFragment.getIdCode();
-        if (pyx != null && newUsername.equals(pyx.user().nickname) && Objects.equals(Prefs.getString(PK.LAST_ID_CODE, null), newIdCode))
+        if (pyx != null && Objects.equals(newUsername, pyx.user().nickname) && Objects.equals(Prefs.getString(PK.LAST_ID_CODE, null), newIdCode))
             return;
 
         if (pyx != null) pyx.logout();
