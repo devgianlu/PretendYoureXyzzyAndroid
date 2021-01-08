@@ -71,7 +71,7 @@ final class MetricsDelegate implements BreadcrumbsView.Listener {
         fragmentManager
                 .beginTransaction()
                 .replace(binding.metricsFragmentContainer.getId(), UserHistoryFragment.get(), TAG_USER)
-                .commit();
+                .commitAllowingStateLoss();
     }
 
     void loadSession(@NonNull UserHistory.Session session) {
@@ -80,7 +80,7 @@ final class MetricsDelegate implements BreadcrumbsView.Listener {
         fragmentManager
                 .beginTransaction()
                 .replace(binding.metricsFragmentContainer.getId(), SessionHistoryFragment.get(session.id), TAG_SESSION)
-                .commit();
+                .commitAllowingStateLoss();
     }
 
     private void loadGame(@NonNull GamePermalink game) {
@@ -115,7 +115,7 @@ final class MetricsDelegate implements BreadcrumbsView.Listener {
         fragmentManager
                 .beginTransaction()
                 .replace(binding.metricsFragmentContainer.getId(), GameHistoryFragment.get(game.id), TAG_GAME)
-                .commit();
+                .commitAllowingStateLoss();
     }
 
     @Override
