@@ -115,7 +115,7 @@
         <com.gianlu.pretendyourexyzzy.MaxHeightFrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:maxHeight="380dp">
+            app:maxHeight="@dimen/game_layout_max_height">
 
             <LinearLayout
                 android:id="@+id/gameActivity_blackCard"
