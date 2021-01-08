@@ -504,7 +504,7 @@ public final class NewChatDialog extends DialogFragment {
 
         @Override
         public void readAllMessages() {
-            if (pyx == null) throw new IllegalStateException();
+            if (pyx == null) return;
 
             if (gid == -1) pyx.chat().resetGlobalUnread(System.currentTimeMillis());
             else pyx.chat().resetGameUnread(System.currentTimeMillis());

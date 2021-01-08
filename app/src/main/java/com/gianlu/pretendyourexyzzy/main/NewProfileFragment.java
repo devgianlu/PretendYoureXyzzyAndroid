@@ -258,6 +258,8 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
             GPGamesHelper.loadAchievements(requireContext())
                     .addOnSuccessListener(data -> {
+                        if (!isAdded()) return;
+
                         binding.profileFragmentAchievementsError.setVisibility(View.GONE);
                         binding.profileFragmentAchievementsList.setVisibility(View.VISIBLE);
 
@@ -658,6 +660,8 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
 
         OverloadedUtils.waitReady()
                 .addOnSuccessListener(signedIn -> {
+                    if (!isAdded()) return;
+
                     if (signedIn) {
                         binding.profileFragmentOverloadedPreferences.setVisibility(View.VISIBLE);
                         setupPreferencesCheckBox(binding.profileFragmentOverloadedPublicCustomDecks, UserData.PropertyKey.PUBLIC_CUSTOM_DECKS);
