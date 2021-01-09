@@ -164,4 +164,6 @@
     <string name="description">Opis</string>
     <string name="watermark">Znak wodny</string>
     <string name="invalidWatermark">Znak wodny musi składać się z 5 znaków, tylko wielkich liter i cyfr.</string>
+    <string name="customDeckNameNotUnique">Masz już talię o tej nazwie.</string>
+    <string name="noCustomCards">Brak własnych kart!</string>
 </resources>
