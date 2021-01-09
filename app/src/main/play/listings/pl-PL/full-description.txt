@@ -1,7 +1,7 @@
 Ta aplikacja pozwala grać w Pretend You're Xyzzy, gra w karty online, na twoim urządzeniu, gdziekolwiek jesteś.
 
------ ATTENTION! -----
-This app content may disappoint some people. If you don't agree with the content of this app, don't complain with me. I'm not the creator of this game, just a player who is also a developer.
+----- UWAGA! -----
+Zawartość tej aplikacji może zawieść niektóre osoby. If you don't agree with the content of this app, don't complain with me. I'm not the creator of this game, just a player who is also a developer.
 --------------------------------
 
 The game is simple. Each round, a black card is randomly chosen from the deck, everyone answers with their funniest white card. The judge the decides which player wins.
@@ -31,4 +31,4 @@ Overloaded features:
 
 This project is open source at https://github.com/devgianlu/PretendYoureXyzzyAndroid
 ------------------------------
-Words definition is powered by Urban Dictionary (https://www.urbandictionary.com/).
+Definicja słów jest zasilana przez Urban Dicitonary (https://www.urbandictionary.com/).
