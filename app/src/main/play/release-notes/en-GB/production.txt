@@ -1,3 +1,5 @@
-- The app has been completely redesigned
-- Many bugs have been fixed
-- Enjoy
+### Fixed
+- Fixed another DB crash
+- Fixed game layout overlap on small devices
+- Fixed crash in metrics
+- Minor bug fixes
