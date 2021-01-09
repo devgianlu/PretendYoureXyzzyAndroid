@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "596428580538",
+    "firebase_url": "https://pretend-youre-xyzzy-android.firebaseio.com",
+    "project_id": "pretend-youre-xyzzy-android",
+    "storage_bucket": "pretend-youre-xyzzy-android.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:596428580538:android:5e4b3634c166b3102a0483",
+        "android_client_info": {
+          "package_name": "com.gianlu.pretendyourexyzzy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "596428580538-idv220mduj2clinjoq11sd0n60dgbjr4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkK6AXjBNjVHA7Pwqe_SixdSpfwJklWNE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "596428580538-idv220mduj2clinjoq11sd0n60dgbjr4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
