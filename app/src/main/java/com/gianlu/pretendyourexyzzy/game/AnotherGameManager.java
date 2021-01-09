@@ -427,6 +427,9 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
 
     //region Listener callbacks
     public void onCardSelected(@NonNull BaseCard card) {
+        if (!(card instanceof GameCard))
+            return;
+
         if (gameData.amJudge()) {
             listener.showDialog(Dialogs.confirmation(context, R.string.areYouSureJudgeCard, () -> judgeCardInternal((GameCard) card)));
         } else {
