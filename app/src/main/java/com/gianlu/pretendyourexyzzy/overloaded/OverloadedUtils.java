@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
+import xyz.gianlu.pyxoverloaded.OverloadedApi.OverloadedServerException;
 import xyz.gianlu.pyxoverloaded.Utils;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
@@ -185,6 +186,9 @@ public final class OverloadedUtils {
                 .addOnFailureListener(ex -> {
                     Log.e(TAG, "Failed getting user data.", ex);
                     billingClient.endConnection();
+
+                    if (ex instanceof OverloadedServerException && ((OverloadedServerException) ex).reason.equals(OverloadedServerException.REASON_NOT_REGISTERED))
+                        OverloadedApi.get().logout();
                 });
     }
 

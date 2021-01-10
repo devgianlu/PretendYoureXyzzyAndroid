@@ -348,8 +348,10 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
             boolean result;
             if (requireArguments().getBoolean("import", false) && binding == null)
                 result = save(requireArguments().getString("name", ""), requireArguments().getString("watermark", ""), requireArguments().getString("desc", ""), callback.getDb());
-            else
+            else if (binding != null)
                 result = save(CommonUtils.getText(binding.editCustomDeckInfoName), CommonUtils.getText(binding.editCustomDeckInfoWatermark), CommonUtils.getText(binding.editCustomDeckInfoDesc), callback.getDb());
+            else
+                result = false;
 
             if (result) {
                 bundle.putString("name", deck.name);
