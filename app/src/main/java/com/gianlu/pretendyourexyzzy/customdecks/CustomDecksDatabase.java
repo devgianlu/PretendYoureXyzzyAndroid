@@ -59,6 +59,12 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         Prefs.putLong(PK.STARRED_CUSTOM_DECKS_REVISION, revision);
     }
 
+    private static long getLongOrDefault(Cursor cursor, String columnName, long defaultValue) {
+        int columnIndex = cursor.getColumnIndex(columnName);
+        if (columnIndex == -1) return defaultValue;
+        else return cursor.getLong(columnIndex);
+    }
+
     @Override
     public void onCreate(@NotNull SQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS decks (id INTEGER PRIMARY KEY UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, description TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 0, remoteId INTEGER UNIQUE, lastUsed INTEGER NOT NULL DEFAULT 0)");
@@ -1124,7 +1130,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         public final long revision;
 
         private CustomDeck(@NonNull Cursor cursor) {
-            super(cursor.getString(cursor.getColumnIndex("name")), cursor.getString(cursor.getColumnIndex("watermark")), null, cursor.getLong(cursor.getColumnIndex("lastUsed")));
+            super(cursor.getString(cursor.getColumnIndex("name")), cursor.getString(cursor.getColumnIndex("watermark")), null, getLongOrDefault(cursor, "lastUsed", 0));
             id = cursor.getInt(cursor.getColumnIndex("id"));
             description = cursor.getString(cursor.getColumnIndex("description"));
             revision = cursor.getLong(cursor.getColumnIndex("revision"));
