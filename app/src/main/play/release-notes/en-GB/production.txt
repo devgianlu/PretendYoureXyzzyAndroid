@@ -1,5 +1,4 @@
 ### Fixed
-- Fixed another DB crash
+- Fixed Overloaded subscription failing
 - Fixed game layout overlap on small devices
-- Fixed crash in metrics
 - Minor bug fixes
