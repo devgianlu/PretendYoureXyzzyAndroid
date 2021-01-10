@@ -1,34 +1,34 @@
 Ta aplikacja pozwala grać w Pretend You're Xyzzy, gra w karty online, na twoim urządzeniu, gdziekolwiek jesteś.
 
------ ATTENTION! -----
-This app content may disappoint some people. If you don't agree with the content of this app, don't complain with me. I'm not the creator of this game, just a player who is also a developer.
+----- UWAGA! -----
+Zawartość tej aplikacji może zawieść niektóre osoby. Jeśli nie podoba ci się zawartość tej aplikacji, nie narzekaj. Nie jestem twórcą tej gry, tylko graczem, który jest również programistą.
 --------------------------------
 
-The game is simple. Each round, a black card is randomly chosen from the deck, everyone answers with their funniest white card. The judge the decides which player wins.
+Gra jest prosta. W każdej rundzie, czarna karta zostaje losowo wybrana z talii, każdy odpowiada swoją najśmieszniejszą białą kartą. Sędzia decyduje, który gracz wygra.
 
 
-Free features:
-- Play with friends on a variety of servers
-- Customize your game
-- Play with custom decks
-- Create custom decks from the app
-- Add images (from link) to your custom decks cards (GIFs are also supported)
-- Star your favourite cards
+Darmowe funkcje:
+- Graj z przyjaciółmi na wielu serwerach
+- Dostosuj swoją grę
+- Graj z taliami niestandardowymi
+- Utwórz własne talie z aplikacji
+- Dodawaj obrazy (z linku) do kart z własnych talii (GIFy też są obsługiwane)
+- Oznacz swoje ulubione karty
 - See your lifetime metrics (games played)
 
-Overloaded features:
-- Create your profile
-- Set a custom profile image (GIFs are also supported)
-- Accumulate achievements and stats (cards and rounds played, rounds won)
-- Make friends
-- Privately chat with your friends
-- Create collaborative custom decks for you and your friends
-- Upload images and add them to your custom decks cards (GIFs are also supported)
-- See your friends' starred cards and custom decks
-- Synchronize your starred cards and custom decks so that you never lose them
-- More to come...
+Funkcje Overloaded:
+- Stwórz swój własny profil
+- Ustaw niestandardowe zdjęcie profilowe (GIFy również są obsługiwane)
+- Zbieraj osiągnięcia i statystyki (rozgrywane karty i rundy, wygrane rundy)
+- Twórz przyjaźnie
+- Prywatny czat ze znajomymi
+- Utwórz wspólne niestandardowe talie dla Ciebie i twoich znajomych
+- Przesyłaj obrazy z własnego urządzenia do kart z własnej talii (GIFy też są obsługiwane)
+- Zobacz karty oznaczone przez swoich znajomych i ich niestandardowe talie
+- Synchronizuj swoje oznaczone karty i niestandardowe talie, by nigdy ich nie stracić
+- A nawet więcej wkrótce...
 
 
-This project is open source at https://github.com/devgianlu/PretendYoureXyzzyAndroid
+To jest projekt otwarto źródłowy, dostępny na https://github.com/devgianlu/PretendYoureXyzzyAndroid
 ------------------------------
-Words definition is powered by Urban Dictionary (https://www.urbandictionary.com/).
+Definicja słów jest zasilana przez Urban Dicitonary (https://www.urbandictionary.com/).
