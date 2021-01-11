@@ -132,7 +132,7 @@
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.gianlu.pretendyourexyzzy"
-            android:exported="true"
+            android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
@@ -143,7 +143,7 @@
         <provider
             android:name="com.gianlu.commonutils.logs.LogsFileProvider"
             android:authorities="com.gianlu.pretendyourexyzzy.logs"
-            android:exported="true"
+            android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
