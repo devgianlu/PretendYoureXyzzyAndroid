@@ -1,4 +1,3 @@
-### Fixed
+- Fixed crash at startup
 - Fixed Overloaded subscription failing
-- Fixed game layout overlap on small devices
-- Minor bug fixes
+- Allow importing deck with duplicate name after changing it
