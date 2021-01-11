@@ -198,6 +198,18 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
         }
     }
 
+    @Nullable
+    protected AbsNewCardsFragment getWhiteCardsFragment() {
+        return adapter != null && adapter.fragments.length == 3 && adapter.fragments[2] instanceof AbsNewCardsFragment ?
+                (AbsNewCardsFragment) adapter.fragments[2] : null;
+    }
+
+    @Nullable
+    protected AbsNewCardsFragment getBlackCardsFragment() {
+        return adapter != null && adapter.fragments.length == 3 && adapter.fragments[1] instanceof AbsNewCardsFragment ?
+                (AbsNewCardsFragment) adapter.fragments[1] : null;
+    }
+
     @Override
     public final void onBackPressed() {
         if (adapter != null) {

@@ -59,6 +59,7 @@ import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
 public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
     private static final String TAG = NewEditCustomDeckActivity.class.getSimpleName();
+    private JSONObject finishImportData = null;
 
     @NotNull
     private static Intent baseStartIntent(@NotNull Context context, @NotNull Type type) {
@@ -100,6 +101,14 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
     protected void onSaved(@NotNull Bundle bundle) {
         setMenuIconVisible(true);
         setPageChangeAllowed(true);
+
+        CardsFragment whitesFragment = (CardsFragment) getWhiteCardsFragment();
+        CardsFragment blacksFragment = (CardsFragment) getBlackCardsFragment();
+        if (finishImportData != null && whitesFragment != null && blacksFragment != null) {
+            blacksFragment.importCards(this, finishImportData.optJSONArray("calls"));
+            whitesFragment.importCards(this, finishImportData.optJSONArray("responses"));
+            finishImportData = null;
+        }
     }
 
     @Override
@@ -170,9 +179,12 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
 
         CardsFragment whitesFragment, blacksFragment;
         loaded(InfoFragment.json(obj), blacksFragment = BlacksFragment.empty(), whitesFragment = WhitesFragment.empty());
-        if (save()) { // Will not import cards if can't save (meh...)
+        if (save()) {
             blacksFragment.importCards(this, obj.optJSONArray("calls"));
             whitesFragment.importCards(this, obj.optJSONArray("responses"));
+            finishImportData = null;
+        } else {
+            finishImportData = obj;
         }
 
         ThisApplication.sendAnalytics(Utils.ACTION_IMPORTED_CUSTOM_DECK);
