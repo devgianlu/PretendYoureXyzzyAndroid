@@ -24,11 +24,6 @@
     <string name="game_gameWinner_short">%s ganhou o jogo!</string>
     <string name="game_youGameWinner_long">Você ganhou o jogo! Esperando que o host inicie um novo jogo…</string>
     <string name="game_youGameWinner_short">Você ganhou a partida!</string>
-    <!-- Tutorial messages -->
-    <string name="tutorial_firstTitle">Bem vindo a Pretend You\'re Xyzzy</string>
-    <string name="tutorial_firstDesc">Pretend You\'re Xyzzy é um jogo de cartas online baseado em Cartas contra a Humanidade. Neste tutorial, eu vou explicar como jogar.</string>
-    <string name="tutorial_secondTitle">As regras</string>
-    <string name="tutorial_secondDesc">Toda vez que uma carta preta é jogada pelo Czar da rodada, todos os outros tem que completar a lacuna das frases com cartas brancas. Após todos jogarem, o Czar escolher a mais engraçada, e o dono da carta ganha um ponto. Na próxima rodada outro jogador vira Czar.</string>
     <!-- General -->
     <string name="gameOptions">Opções de jogo</string>
 </resources>
