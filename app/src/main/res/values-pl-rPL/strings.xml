@@ -12,7 +12,6 @@
     <string name="game_isJudging">%s ocenia…</string>
     <string name="game_waitingForPlayers">Oczekiwanie na graczy…</string>
     <string name="game_playerSkipped">%s został pominięty.</string>
-    <string name="game_pickCards">Wybierz %d kartę/ty do gry. Twoje karty:</string>
     <string name="game_judgeSkipped">Sędzia %s został pominięty.</string>
     <string name="game_notYourTurn">Nie twoja kolej! Jeśli sądzisz że to pomyłka, użyj opcji \"odśwież\" w menu.</string>
     <string name="game_playerKickedIdle">%s został wyrzucony z powodu braku aktywności.</string>
