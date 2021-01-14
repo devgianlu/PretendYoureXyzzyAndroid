@@ -12,6 +12,7 @@
     <string name="game_isJudging">%s is aan het beoordelen…</string>
     <string name="game_waitingForPlayers">Wachten op andere spelers…</string>
     <string name="game_playerSkipped">%s is overgeslagen.</string>
+    <string name="game_pickCards">Selecteer %d kaart(en) om te spelen. Je hand:</string>
     <string name="game_judgeSkipped">Beoordelaar %s is overgeslagen.</string>
     <string name="game_notYourTurn">Niet jouw beurt! Als je denkt dat dat verkeerd is, ververs dan vanuit het menu.</string>
     <string name="game_playerKickedIdle">%s is verwijderd vanwege inactiviteit.</string>
@@ -23,8 +24,36 @@
     <string name="game_gameWinner_short">%s heeft het spel gewonnen!</string>
     <string name="game_youGameWinner_long">Je hebt het spel gewonnen! Wacht op de host om een nieuw spel te starten…</string>
     <string name="game_youGameWinner_short">Je hebt het spel gewonnen!</string>
+    <!-- Tutorial messages -->
+    <string name="tutorial_firstTitle">Welkom bij Pretend You\'re Xyzzy</string>
+    <string name="tutorial_firstDesc">Pretend You\'re Xyzzy is een online kaartspel gebaseerd op Cards Against Humanity. In deze uitleg vertel ik hoe je moet spelen.</string>
+    <string name="tutorial_secondTitle">De regels</string>
+    <string name="tutorial_secondDesc">Elke beurt wordt er een zwarte kaart gespeeld door de Kaart Czar. De andere spelers beantwoorden de vraag of vullen de lege woorden in de zin in. Zodra iedereen een kaart heeft gespeeld, kiest de Kaart Czar de grappigste. Diegene die de kaart heeft gespeeld, krijgt een punt. In de volgende beurt wordt iemand anders Kaart Czar en krijgt iedereen weer 10 kaarten.</string>
+    <string name="tutorial_thirdTitle">Eigen kaartpakken</string>
+    <string name="tutorial_thirdDesc">Dit spel ondersteunt eigen decks (op bijgewerkte servers): je kunt aangepaste sets maken vanuit de app en ze aan je eigen spel toevoegen.</string>
+    <string name="tutorial_fourthTitle">Overloaded</string>
+    <string name="tutorial_fourthDesc">Overloaded is een spel uitbreiding die coole functies zoals <![CDATA[<b>E2EE chat</b>]]>mogelijk maakt, <![CDATA[<b>gebruikersprofielen</b>]]>, eigen sets en favoriete kaarten <![CDATA[<b>synchronisatie</b>]]> en meer. Je kunt je sets<![CDATA[<b>delen</b>]]> met andere spelers.</string>
+    <string name="tutorial_fifthTitle">Meer functies</string>
+    <string name="tutorial_fifthDesc">Er zijn meer functies beschikbaar in deze app, je zal ze leren terwijl je bezig bent. Veel plezier!</string>
+    <string name="tutorial_chooseNickname">Kies een naam om mee te spelen. Deze naam is niet permanent.</string>
+    <string name="tutorial_changeServer">Er zijn meerdere servers beschikbaar. Kies de server waar je het liefst op speelt.</string>
+    <string name="tutorial_joinTheServer">Maak je klaar om te spelen en neem deel aan de lobby, daar zal je tevreden zijn met veel spellen.</string>
+    <string name="tutorial_gameStatus">Dit geeft aan of het spel is gestart of niet. Je kunt het nog steeds betreden, zolang er plaats voor je is.</string>
+    <string name="tutorial_gameLocked">Een spel kan vergrendeld worden met een wachtwoord om de toegang te beperken, dat is ingesteld door de game host bij het maken van het spel.</string>
+    <string name="tutorial_spectateGame">Toeschouwers kunnen alleen zien wat er gebeurt en niet spelen, maar ze kunnen wel praten in de chat.</string>
+    <string name="tutorial_joinGame">Doe mee met het spel en begin meteen met spelen.</string>
+    <string name="tutorial_createGame">Je kunt je eigen spel maken en je eigen instellingen instellen.</string>
+    <string name="tutorial_setupGame">Hier kun je jouw spel opties aanpassen. Vergeet niet dat je ook eigen sets in het menu hier kunt toevoegen (indien ondersteund op de server).</string>
+    <string name="tutorial_startGame">Zodra je klaar bent start je het spel. Om dat te doen moet je ten minste 3 spelers en een bepaald aantal kaarten hebben.</string>
+    <string name="tutorial_chooseIdCode">Voer een identificatiecode in of genereer deze zodat iemand je moeilijk kan imiteren.</string>
+    <string name="tutorial_blackCard">Dit is een blokkaart: je moet de zin met de witte kaarten hieronder voltooien.</string>
+    <string name="tutorial_whiteCard">Speel één of meerdere witte kaarten om de zin te voltooien. Als je de betekenis van een woord niet kent, gebruik dan de definitiefunctie in het menu rechtsboven.</string>
+    <string name="tutorial_playCard">Om een kaart te spelen tik je er op. Er wordt dan een bevestigingsdialoog weergegeven.</string>
+    <string name="tutorial_player">Zodra een speler het score doel heeft bereikt, wint hij. Je kunt op spelers tikken om extra informatie te onthullen.</string>
+    <string name="tutorial_overloaded">Overloaded zet een hele boel gave functies aan die niet in de standaard game zitten. Het is een maandelijks abonnement.</string>
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
+    <string name="nickname">Gebruikersnaam</string>
     <string name="submit">Versturen</string>
     <string name="changeServer">Server wijzigen</string>
     <string name="reservedNickname">Bijnaam is gereserveerd!</string>
@@ -38,6 +67,7 @@
     <string name="failedLoading_reason">Laden mislukt: %s</string>
     <string name="players"><![CDATA[<b>Spelers:</b>]]> %1$d/%2$d</string>
     <string name="spectators"><![CDATA[<b>Toeschouwers:</b>]]> %1$d/%2$d</string>
+    <string name="noMessages">Er zijn geen berichten.</string>
     <string name="failedSendMessage">Bericht versturen mislukt!</string>
     <string name="logout">Afmelden</string>
     <string name="spectate">Toeschouwen</string>
@@ -46,15 +76,24 @@
     <string name="playersLabel">Spelers</string>
     <string name="gamePassword">Voer wachtwoord in</string>
     <string name="failedJoiningGame">Kan niet deelnemen aan het spel!</string>
+    <string name="wrongGamePassword">Verkeerd wachtwoord voor dit spel!</string>
     <string name="gameFull">Het spel is vol! Probeer het later.</string>
     <string name="failedSpectating">Toeschouwen van het spel mislukt!</string>
     <string name="ongoingGame">Lopend spel</string>
+    <string name="gameLabel">Spel</string>
     <string name="leaveGame">Spel verlaten</string>
     <string name="failedLeaving">Verlaten van het spel mislukt!</string>
+    <string name="search">Zoeken</string>
+    <string name="score"><![CDATA[<b>Score:</b>]]> %d</string>
     <string name="numPick"><![CDATA[<b>Kies</b>]]> %d</string>
     <string name="gameOptions">Spelinstellingen</string>
     <string name="addedCardToStarred">Deze kaart heeft een ster gekregen.</string>
     <string name="general">Algemeen</string>
+    <string name="showBeginnerTutorial">Toon beginnerscursus</string>
+    <string name="showBeginnerTutorial_summary">Toon de introductie tutorial voor de app</string>
+    <string name="manage">Beheer</string>
+    <string name="manageServers">Servers beheren</string>
+    <string name="noServers">Er zijn geen aangepaste servers.</string>
     <string name="addServer">Server toevoegen</string>
     <string name="serverUrl">Server URL</string>
     <string name="invalidServerName">Naam is ongeldig.</string>
@@ -62,4 +101,5 @@
     <string name="failedAddingServer">Het toevoegen van nieuwe server is mislukt!</string>
     <string name="remove">Verwijderen</string>
     <string name="idCodeLabel">Identificatiecode</string>
+    <string name="idCode"><![CDATA[<b>ID-code:</b>]]> %s</string>
 </resources>
