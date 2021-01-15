@@ -41,7 +41,7 @@ dependencies {
 
     api 'com.google.android.gms:play-services-games:21.0.0'
     api 'com.google.android.gms:play-services-auth:19.0.0'
-    api 'com.google.firebase:firebase-auth:20.0.1'
+    api 'com.google.firebase:firebase-auth:20.0.2'
 
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
     implementation 'org.whispersystems:signal-protocol-android:2.8.1'
