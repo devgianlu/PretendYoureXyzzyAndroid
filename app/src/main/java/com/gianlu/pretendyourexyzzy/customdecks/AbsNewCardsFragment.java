@@ -242,7 +242,6 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
         binding.customDeckCardsCreateWatermark.setText(getWatermark());
 
         binding.customDeckCardsCreateText.setVisibility(View.VISIBLE);
-        binding.customDeckCardsCreateAddImageContainer.setVisibility(View.VISIBLE);
         binding.customDeckCardsCreateImage.setVisibility(View.GONE);
 
         if (isBlack()) {
@@ -251,6 +250,8 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
             binding.customDeckCardsCreateAddImageContainer.setVisibility(View.GONE);
 
             binding.customDeckCardsCreateHint.setText(R.string.createCustomCardInfo_black);
+
+            binding.customDeckCardsCreateAddImage.setOnClickListener(null);
         } else {
             binding.customDeckCardsCreateCard.setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
             binding.customDeckCardsCreateText.setTextColor(Color.BLACK);
