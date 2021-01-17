@@ -342,4 +342,9 @@
     <string name="profileImageRemoved">Profile image removed!</string>
     <string name="wrongGamePassword">Wrong game password!</string>
     <string name="idCode_message">This code makes it harder for someone to impersonate you. You can generate one randomly or also leave it empty.</string>
+    <string name="help">Help</string>
+    <string name="howToUseCustomDecks">How to use custom decks</string>
+    <string name="customDecksHelp_serversAll">There servers support all types of custom decks:</string>
+    <string name="customDecksHelp_serversCrCast">These servers support only CrCast decks:</string>
+    <string name="customDecksHelp_final">Once you joined one of these servers, create your own game and edit the game options. Custom decks can be customized from the third page.</string>
 </resources>

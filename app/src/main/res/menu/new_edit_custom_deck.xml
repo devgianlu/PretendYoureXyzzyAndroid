@@ -8,4 +8,8 @@
         android:id="@+id/editCustomDeck_delete"
         android:icon="@drawable/baseline_delete_24"
         android:title="@string/delete" />
+    <item
+        android:id="@+id/editCustomDeck_help"
+        android:icon="@drawable/baseline_help_24"
+        android:title="@string/help" />
 </menu>

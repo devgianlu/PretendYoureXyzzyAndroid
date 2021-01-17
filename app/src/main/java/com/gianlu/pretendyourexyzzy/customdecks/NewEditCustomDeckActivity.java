@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -28,12 +29,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.dialogs.FragmentWithDialog;
+import com.gianlu.commonutils.misc.SuperTextView;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.R;
 import com.gianlu.pretendyourexyzzy.ThisApplication;
 import com.gianlu.pretendyourexyzzy.Utils;
+import com.gianlu.pretendyourexyzzy.api.Pyx;
+import com.gianlu.pretendyourexyzzy.api.ServersChecker;
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase.CustomDeck;
+import com.gianlu.pretendyourexyzzy.databinding.DialogCustomDecksHelpBinding;
 import com.gianlu.pretendyourexyzzy.databinding.FragmentNewEditCustomDeckInfoBinding;
 import com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -210,9 +215,57 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
 
             showDialog(builder);
             return true;
+        } else if (item.getItemId() == R.id.editCustomDeck_help) {
+            showHelpDialog();
+            return true;
         } else {
             return super.onMenuItemSelected(item);
         }
+    }
+
+    private void showHelpDialog() {
+        DialogCustomDecksHelpBinding binding = DialogCustomDecksHelpBinding.inflate(getLayoutInflater());
+
+        ServersChecker checker = new ServersChecker();
+        ServersChecker.OnResult resultListener = server -> {
+            if (server.status == null || server.status.stats == null)
+                return;
+
+            if (server.status.stats.crCastEnabled()) {
+                if (binding.customDecksHelpDialogServersCrCast.getChildAt(0) instanceof ProgressBar)
+                    binding.customDecksHelpDialogServersCrCast.removeAllViews();
+
+                binding.customDecksHelpDialogServersCrCast.addView(SuperTextView.builder(this)
+                        .text("• " + server.name)
+                        .colorAttr(android.R.attr.textColorPrimary)
+                        .build());
+            }
+
+            if (server.status.stats.customDecksEnabled()) {
+                if (binding.customDecksHelpDialogServersAll.getChildAt(0) instanceof ProgressBar)
+                    binding.customDecksHelpDialogServersAll.removeAllViews();
+
+                binding.customDecksHelpDialogServersAll.addView(SuperTextView.builder(this)
+                        .text("• " + server.name)
+                        .colorAttr(android.R.attr.textColorPrimary)
+                        .build());
+            }
+        };
+
+        List<Pyx.Server> servers = Pyx.Server.loadAllServers();
+        for (Pyx.Server server : servers) {
+            if (server.status == null || server.status.stats == null)
+                checker.check(server, resultListener);
+            else
+                resultListener.serverChecked(server);
+        }
+
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle(R.string.howToUseCustomDecks)
+                .setView(binding.getRoot())
+                .setNeutralButton(android.R.string.ok, null);
+
+        showDialog(builder);
     }
 
     private void exportCustomDeckJson() {

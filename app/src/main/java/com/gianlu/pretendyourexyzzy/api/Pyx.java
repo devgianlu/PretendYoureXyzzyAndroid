@@ -43,6 +43,7 @@ import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -484,6 +485,8 @@ public class Pyx implements Closeable {
         }
 
         static void parseAndSave(@NonNull JSONArray array, boolean cache) throws JSONException {
+            allServers = null;
+
             List<Server> servers = new ArrayList<>(array.length());
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
@@ -543,10 +546,13 @@ public class Pyx implements Closeable {
 
         @NonNull
         public static List<Server> loadAllServers() {
+            if (allServers != null && !allServers.isEmpty())
+                return allServers;
+
             List<Server> all = new ArrayList<>(10);
             all.addAll(loadServers(PK.USER_SERVERS));
             all.addAll(loadServers(PK.API_SERVERS));
-            return allServers = all;
+            return allServers = Collections.unmodifiableList(all);
         }
 
         @NonNull
@@ -641,6 +647,8 @@ public class Pyx implements Closeable {
         public static void addUserServer(@NonNull Server server) throws JSONException {
             if (!server.isEditable()) return;
 
+            allServers = null;
+
             JSONArray array = JsonStoring.intoPrefs().getJsonArray(PK.USER_SERVERS);
             if (array == null) array = new JSONArray();
             for (int i = array.length() - 1; i >= 0; i--) {
@@ -654,6 +662,8 @@ public class Pyx implements Closeable {
 
         public static void removeUserServer(@NonNull Server server) {
             if (!server.isEditable()) return;
+
+            allServers = null;
 
             try {
                 JSONArray array = JsonStoring.intoPrefs().getJsonArray(PK.USER_SERVERS);
@@ -683,7 +693,7 @@ public class Pyx implements Closeable {
 
         @Nullable
         public static Server fromOverloadedId(@NonNull String serverId) {
-            if (allServers == null) loadAllServers();
+            loadAllServers();
 
             for (Server server : allServers)
                 if (OverloadedUtils.getServerId(server).equals(serverId))
