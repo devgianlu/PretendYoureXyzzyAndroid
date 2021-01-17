@@ -1,6 +1,6 @@
 # Client for Pretend You're Xyzzy
 
-[![Build Status](https://travis-ci.com/devgianlu/PretendYoureXyzzyAndroid.svg?branch=master)](https://travis-ci.com/devgianlu/PretendYoureXyzzyAndroid)
+![Android CI](https://github.com/devgianlu/PretendYoureXyzzyAndroid/workflows/Android%20CI/badge.svg?branch=master)
 [![Crowdin](https://badges.crowdin.net/pretend-youre-xyzzy-android/localized.svg)](https://crowdin.com/project/pretend-youre-xyzzy-android)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c7c1308babb841b89beb2adc969c3ef8)](https://www.codacy.com/manual/devgianlu/PretendYoureXyzzyAndroid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=devgianlu/PretendYoureXyzzyAndroid&amp;utm_campaign=Badge_Grade)
 [![time tracker](https://wakatime.com/badge/github/devgianlu/PretendYoureXyzzyAndroid.svg)](https://wakatime.com/badge/github/devgianlu/PretendYoureXyzzyAndroid)
