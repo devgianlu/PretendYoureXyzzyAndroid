@@ -12,18 +12,18 @@ Funzioni gratuite:
 - Personalizza il tuo gioco
 - Gioca con mazzi personalizzati
 - Crea mazzi personalizzati dall'app
-- Add images (from link) to your custom decks cards (GIFs are also supported)
+- Aggiungi immagini (con link) alle carte dei tuoi mazzi personalizzati (sono supportate anche GIF)
 - Salva le tue carte preferite
 - Vedi le tue metriche (partite giocate)
 
 Funzioni di Overloaded:
 - Crea il tuo profilo
-- Set a custom profile image (GIFs are also supported)
+- Imposta un'immagine di profilo personalizzata (sono supportate anche GIF)
 - Accumula successi e statistiche (carte e round giocati, round vinti)
 - Fai amicizia
 - Chatta privatamente con i tuoi amici
 - Crea mazzi personalizzati collaborativi per te e i tuoi amici
-- Upload images and add them to your custom decks cards (GIFs are also supported)
+- Carica le immagini e aggiungile alle carte dei tuoi mazzi personalizzati (sono supportate anche GIF)
 - Vedi le carte preferite e i mazzi personalizzati dei tuoi amici
 - Sincronizza le tue carte preferiti e i mazzi personalizzati in modo da non perderli mai
 - Altro a venire...
