@@ -14,8 +14,8 @@ android {
         applicationId "com.gianlu.pretendyourexyzzy"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 127
-        versionName "5.0.6"
+        versionCode 128
+        versionName "5.0.7"
     }
 
     if (isCi) {

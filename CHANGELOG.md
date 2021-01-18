@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.7] - 18-01-2021
+### Added
+- Added custom decks instructions
+
+### Fixed
+- Fixed crash with Polish language
+- Minor bug fixes
+
+
 ## [5.0.6] - 11-01-2021
 ### Fixed
 - Fixed crash at startup
