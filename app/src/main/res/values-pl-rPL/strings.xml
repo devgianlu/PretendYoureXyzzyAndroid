@@ -46,7 +46,6 @@
     <string name="playersLabel">Gracze</string>
     <string name="gamePassword">Wprowadź hasło gry</string>
     <string name="failedJoiningGame">Nie udało się dołączyć do gry!</string>
-    <string name="wrongGamePassword">Błędne hasło dla tej gry!</string>
     <string name="gameFull">Gra jest pełna! Spróbuj później.</string>
     <string name="failedSpectating">Nie udało się obserwować gry!</string>
     <string name="ongoingGame">Trwająca gra</string>
@@ -112,4 +111,5 @@
     <string name="watermark">Znak wodny</string>
     <string name="invalidWatermark">Znak wodny musi składać się z 5 znaków, tylko wielkich liter i cyfr.</string>
     <string name="customDeckNameNotUnique">Masz już talię o tej nazwie.</string>
+    <string name="wrongGamePassword">Błędne hasło dla tej gry!</string>
 </resources>

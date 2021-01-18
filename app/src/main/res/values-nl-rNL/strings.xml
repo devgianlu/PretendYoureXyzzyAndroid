@@ -62,4 +62,5 @@
     <string name="failedAddingServer">Het toevoegen van nieuwe server is mislukt!</string>
     <string name="remove">Verwijderen</string>
     <string name="idCodeLabel">Identificatiecode</string>
+    <string name="wrongGamePassword">Verkeerd wachtwoord voor dit spel!</string>
 </resources>
