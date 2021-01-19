@@ -30,7 +30,7 @@ final class MetricsDelegate implements BreadcrumbsView.Listener {
     private static final String TAG_GAME = GameHistoryFragment.class.getName();
     private static final String TAG = MetricsDelegate.class.getSimpleName();
     private final FragmentManager fragmentManager;
-    private final com.gianlu.pretendyourexyzzy.databinding.FragmentNewMetricsBinding binding;
+    private final FragmentNewMetricsBinding binding;
     private final GamePermalink game;
     private final Listener listener;
     private RegisteredPyx pyx;

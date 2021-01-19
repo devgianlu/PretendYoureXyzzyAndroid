@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.text.Html;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -15,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
+import androidx.core.text.HtmlCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -33,7 +33,8 @@ import org.jetbrains.annotations.NotNull;
 
 public final class NewGameCardView extends CardView {
     private static final String TAG = NewGameCardView.class.getSimpleName();
-    private static final ValueFunction DEFAULT_LEFT_VALUE_FUNC = (ctx, card) -> card.black() ? Html.fromHtml(ctx.getString(R.string.numPick, card.numPick())) : null;
+    private static final ValueFunction DEFAULT_LEFT_VALUE_FUNC = (ctx, card) -> card.black() ?
+            HtmlCompat.fromHtml(ctx.getString(R.string.numPick, card.numPick()), HtmlCompat.FROM_HTML_MODE_LEGACY) : null;
     private static final ValueFunction DEFAULT_RIGHT_VALUE_FUNC = (ctx, card) -> card.watermark();
     private final ViewNewCardBinding binding;
     private BaseCard card;

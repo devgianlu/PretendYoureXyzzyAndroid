@@ -521,7 +521,7 @@ public class Pyx implements Closeable {
             try {
                 return HttpUrl.get(str);
             } catch (IllegalArgumentException ex) {
-                if (Build.VERSION.SDK_INT >= 27) throw new JSONException(ex);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) throw new JSONException(ex);
                 else throw new JSONException(ex.getMessage());
             }
         }

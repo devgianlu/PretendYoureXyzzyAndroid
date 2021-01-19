@@ -23,6 +23,7 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -113,7 +114,7 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
     }
 
     private void hideKeyboard() {
-        InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        InputMethodManager imm = ContextCompat.getSystemService(requireContext(), InputMethodManager.class);
         if (imm == null) return;
 
         imm.hideSoftInputFromWindow(binding.getRoot().getWindowToken(), 0);

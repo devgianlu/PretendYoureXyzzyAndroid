@@ -1,10 +1,10 @@
 package com.gianlu.pretendyourexyzzy.api.models.cards;
 
-import android.text.Html;
 import android.text.Spanned;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.text.HtmlCompat;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -24,7 +24,7 @@ public abstract class BaseCard implements Serializable {
         if (matcher.find()) {
             StringBuffer sb = new StringBuffer();
             do {
-                matcher.appendReplacement(sb, Html.fromHtml(matcher.group()).toString());
+                matcher.appendReplacement(sb, HtmlCompat.fromHtml(matcher.group(), HtmlCompat.FROM_HTML_MODE_LEGACY).toString());
             } while (matcher.find());
             matcher.appendTail(sb);
             return sb.toString();
@@ -38,7 +38,7 @@ public abstract class BaseCard implements Serializable {
 
     @NonNull
     public final Spanned textUnescaped() {
-        if (textUnescaped == null) textUnescaped = Html.fromHtml(unescapeEntities(text()));
+        if (textUnescaped == null) textUnescaped = HtmlCompat.fromHtml(unescapeEntities(text()), HtmlCompat.FROM_HTML_MODE_LEGACY);
         return textUnescaped;
     }
 

@@ -1,9 +1,8 @@
 package com.gianlu.pretendyourexyzzy.api.models;
 
-import android.text.Html;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.text.HtmlCompat;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.pretendyourexyzzy.customdecks.BasicCustomDeck;
@@ -31,8 +30,8 @@ public class Deck implements Serializable {
     public Deck(@NonNull JSONObject obj, boolean watermarkFromId) throws JSONException {
         weight = obj.getInt("w");
         id = obj.getInt("cid");
-        description = Html.fromHtml(obj.getString("csd")).toString();
-        name = Html.fromHtml(obj.getString("csn")).toString();
+        description = HtmlCompat.fromHtml(obj.getString("csd"), HtmlCompat.FROM_HTML_MODE_LEGACY).toString();
+        name = HtmlCompat.fromHtml(obj.getString("csn"), HtmlCompat.FROM_HTML_MODE_LEGACY).toString();
         blackCards = obj.getInt("bcid");
         baseDeck = obj.getBoolean("bd");
         whiteCards = obj.getInt("wcid");
