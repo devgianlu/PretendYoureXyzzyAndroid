@@ -8,7 +8,7 @@ apply plugin: 'com.google.firebase.crashlytics'
 def isCi = System.getenv("CI") == "true"
 android {
     compileSdkVersion 29
-    buildToolsVersion "29.0.3"
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.gianlu.pretendyourexyzzy"
