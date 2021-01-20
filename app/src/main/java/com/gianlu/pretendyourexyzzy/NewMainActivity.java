@@ -2,7 +2,6 @@ package com.gianlu.pretendyourexyzzy;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Html;
 import android.util.Log;
 import android.view.Gravity;
 
@@ -11,6 +10,7 @@ import androidx.annotation.IdRes;
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.text.HtmlCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentStatePagerAdapter;
@@ -318,7 +318,7 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
 
         if (visible == null || !visible.goBack()) {
             MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(this);
-            dialog.setTitle(R.string.logout).setMessage(Html.fromHtml(getString(R.string.logout_confirmation)))
+            dialog.setTitle(R.string.logout).setMessage(HtmlCompat.fromHtml(getString(R.string.logout_confirmation), HtmlCompat.FROM_HTML_MODE_LEGACY))
                     .setNegativeButton(R.string.no, null)
                     .setPositiveButton(R.string.yes, (d, which) -> {
                         if (pyx != null) pyx.logout();

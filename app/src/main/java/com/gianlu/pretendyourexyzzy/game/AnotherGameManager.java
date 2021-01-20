@@ -1,12 +1,12 @@
 package com.gianlu.pretendyourexyzzy.game;
 
 import android.content.Context;
-import android.text.Html;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.core.text.HtmlCompat;
 
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.ui.Toaster;
@@ -554,7 +554,7 @@ public class AnotherGameManager implements Pyx.OnEventListener, GameData.Listene
             if (colored && args.length == 1)
                 formatStr = "<font color='#00B0FF'>" + args[0] + "</font>";
 
-            return Html.fromHtml(context.getString(text, formatStr == null ? args : new String[]{formatStr}));
+            return HtmlCompat.fromHtml(context.getString(text, formatStr == null ? args : new String[]{formatStr}), HtmlCompat.FROM_HTML_MODE_LEGACY);
         }
 
         @Nullable

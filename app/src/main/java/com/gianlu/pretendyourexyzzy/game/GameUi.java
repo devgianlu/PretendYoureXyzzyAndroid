@@ -47,7 +47,7 @@ import xyz.gianlu.pyxoverloaded.OverloadedApi;
  */
 public class GameUi {
     private final Context context;
-    private final com.gianlu.pretendyourexyzzy.databinding.ActivityNewGameBinding binding;
+    private final ActivityNewGameBinding binding;
     private final Timer timer = new Timer();
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final boolean customDecksEnabled;

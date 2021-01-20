@@ -194,7 +194,7 @@ public final class CrCastApi {
 
     @NonNull
     public Task<CrCastDeck> getDeck(@NonNull String deckCode, boolean fav, @NonNull CustomDecksDatabase db) {
-        return Tasks.call(executorService, () -> CrCastDeck.parse(request(fav ? ("deck/" + deckCode) : ("user/decks/{token}/" + deckCode)).getJSONObject("deck"), db, false));
+        return Tasks.call(executorService, () -> CrCastDeck.parse(request((fav ? "deck/" : "user/decks/{token}/") + deckCode).getJSONObject("deck"), db, false));
     }
 
     public void logout() {

@@ -101,7 +101,7 @@ public class UserHistoryFragment extends FragmentWithDialog {
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
-            if (payloads.size() == 0) {
+            if (payloads.isEmpty()) {
                 onBindViewHolder(holder, position);
             } else {
                 Object payload = payloads.get(0);

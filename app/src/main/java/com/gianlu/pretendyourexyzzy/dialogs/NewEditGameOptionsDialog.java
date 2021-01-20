@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.text.Html;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -20,6 +19,7 @@ import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.core.text.HtmlCompat;
 import androidx.fragment.app.DialogFragment;
 
 import com.gianlu.commonutils.CommonUtils;
@@ -218,7 +218,7 @@ public final class NewEditGameOptionsDialog extends DialogFragment {
             for (BasicCustomDeck deck : customDecks) {
                 MaterialCheckBox item = new MaterialCheckBox(getContext());
                 item.setTag(deck);
-                item.setText(Html.fromHtml(String.format("%s (<i>%s</i>)", deck.name, deck.watermark)));
+                item.setText(HtmlCompat.fromHtml(String.format("%s (<i>%s</i>)", deck.name, deck.watermark), HtmlCompat.FROM_HTML_MODE_LEGACY));
                 item.setChecked(Deck.contains(inUseCustomDecks, deck));
                 item.setOnCheckedChangeListener((buttonView, isChecked) -> updateCustomDecksCount());
 

@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -522,7 +521,7 @@ public class Pyx implements Closeable {
             try {
                 return HttpUrl.get(str);
             } catch (IllegalArgumentException ex) {
-                if (Build.VERSION.SDK_INT >= 27) throw new JSONException(ex);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) throw new JSONException(ex);
                 else throw new JSONException(ex.getMessage());
             }
         }
@@ -584,7 +583,7 @@ public class Pyx implements Closeable {
             if (array == null) array = new JSONArray();
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
-                if (Objects.equals(obj.optString("name"), name))
+                if (obj.optString("name").equals(name))
                     return new Server(obj);
             }
 
@@ -652,7 +651,7 @@ public class Pyx implements Closeable {
             JSONArray array = JsonStoring.intoPrefs().getJsonArray(PK.USER_SERVERS);
             if (array == null) array = new JSONArray();
             for (int i = array.length() - 1; i >= 0; i--) {
-                if (Objects.equals(array.getJSONObject(i).getString("name"), server.name))
+                if (array.getJSONObject(i).getString("name").equals(server.name))
                     array.remove(i);
             }
 
@@ -670,7 +669,7 @@ public class Pyx implements Closeable {
                 if (array == null) array = new JSONArray();
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject obj = array.getJSONObject(i);
-                    if (Objects.equals(obj.optString("name"), server.name)) {
+                    if (obj.optString("name").equals(server.name)) {
                         array.remove(i);
                         break;
                     }

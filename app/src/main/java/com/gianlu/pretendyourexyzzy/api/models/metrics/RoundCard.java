@@ -1,9 +1,8 @@
 package com.gianlu.pretendyourexyzzy.api.models.metrics;
 
-import android.text.Html;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.text.HtmlCompat;
 
 import com.gianlu.pretendyourexyzzy.api.models.cards.BaseCard;
 
@@ -20,8 +19,8 @@ public class RoundCard extends BaseCard implements Serializable {
     public final String color;
 
     RoundCard(JSONObject obj) throws JSONException {
-        text = Html.fromHtml(obj.getString("Text")).toString();
-        watermark = Html.fromHtml(obj.getString("Watermark")).toString();
+        text = HtmlCompat.fromHtml(obj.getString("Text"), HtmlCompat.FROM_HTML_MODE_LEGACY).toString();
+        watermark = HtmlCompat.fromHtml(obj.getString("Watermark"), HtmlCompat.FROM_HTML_MODE_LEGACY).toString();
 
         JSONObject meta = obj.getJSONObject("Meta");
         numPick = meta.optInt("Pick", -1);

@@ -3,11 +3,11 @@ package com.gianlu.pretendyourexyzzy.main.settings;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.text.Html;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.text.HtmlCompat;
 
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.ui.Toaster;
@@ -181,7 +181,7 @@ public class OverloadedPrefsFragment extends NewSettingsFragment.PrefsChildFragm
         delete.setIcon(R.drawable.baseline_delete_forever_24);
         delete.setOnClickListener(v -> {
             MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(requireContext());
-            dialog.setTitle(R.string.deleteAccount).setMessage(Html.fromHtml(getString(R.string.deleteAccount_confirmation)))
+            dialog.setTitle(R.string.deleteAccount).setMessage(HtmlCompat.fromHtml(getString(R.string.deleteAccount_confirmation), HtmlCompat.FROM_HTML_MODE_LEGACY))
                     .setNegativeButton(android.R.string.no, null)
                     .setPositiveButton(android.R.string.yes, (d, which) -> {
                         showProgress(R.string.loading);

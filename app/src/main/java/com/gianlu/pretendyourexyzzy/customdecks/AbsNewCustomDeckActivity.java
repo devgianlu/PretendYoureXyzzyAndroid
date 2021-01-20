@@ -17,13 +17,14 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.gianlu.commonutils.dialogs.ActivityWithDialog;
 import com.gianlu.pretendyourexyzzy.R;
+import com.gianlu.pretendyourexyzzy.databinding.ActivityNewCustomDeckBinding;
 
 import org.jetbrains.annotations.NotNull;
 
 public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
-    private com.gianlu.pretendyourexyzzy.databinding.ActivityNewCustomDeckBinding binding;
+    private ActivityNewCustomDeckBinding binding;
     private Mode mode = Mode.HIDDEN;
-    private PagerAdapter adapter;
+    private CustomDeckStateAdapter adapter;
 
     protected void onInflateMenu(@NotNull MenuInflater inflater, @NotNull Menu menu) {
     }
@@ -45,7 +46,7 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = com.gianlu.pretendyourexyzzy.databinding.ActivityNewCustomDeckBinding.inflate(getLayoutInflater());
+        binding = ActivityNewCustomDeckBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         binding.customDeckClose.setOnClickListener(v -> finishAfterTransition());
@@ -157,7 +158,7 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
 
         binding.customDeckLoading.setVisibility(View.GONE);
         binding.customDeckPager.setVisibility(View.VISIBLE);
-        binding.customDeckPager.setAdapter(adapter = new PagerAdapter(this, frags));
+        binding.customDeckPager.setAdapter(adapter = new CustomDeckStateAdapter(this, frags));
 
         binding.customDeckBottomButton.setEnabled(true);
     }
@@ -239,10 +240,10 @@ public abstract class AbsNewCustomDeckActivity extends ActivityWithDialog {
         }
     }
 
-    private static class PagerAdapter extends FragmentStateAdapter {
+    private static class CustomDeckStateAdapter extends FragmentStateAdapter {
         final Fragment[] fragments;
 
-        PagerAdapter(@NonNull FragmentActivity activity, @NonNull Fragment[] fragments) {
+        CustomDeckStateAdapter(@NonNull final FragmentActivity activity, @NonNull Fragment[] fragments) {
             super(activity);
             this.fragments = fragments;
 
