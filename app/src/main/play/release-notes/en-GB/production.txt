@@ -1,3 +1,2 @@
-- Added custom decks instructions
-- Fixed crash with Polish language
-- Minor bug fixes
+- Fixed crash in welcome screen
+- Fixed crash with custom decks syncing
