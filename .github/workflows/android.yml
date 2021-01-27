@@ -27,10 +27,10 @@ jobs:
           SECRETS_GPG_PASS: ${{ secrets.SECRETS_GPG_PASS }}
       - name: Build with Gradle
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
-        run: ./gradlew connectedCheck --no-daemon
+        run: ./gradlew connectedCheck
       - name: Publish with Gradle
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        run: ./gradlew assembleRelease publish --no-daemon
+        run: ./gradlew assembleRelease publish
         env:
           KEYSTORE_STORE_PASS: ${{ secrets.KEYSTORE_STORE_PASS }}
           KEYSTORE_KEY_ALIAS: gianlu
