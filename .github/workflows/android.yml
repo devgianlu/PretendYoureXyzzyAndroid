@@ -27,11 +27,12 @@ jobs:
           SECRETS_GPG_PASS: ${{ secrets.SECRETS_GPG_PASS }}
       - name: Build with Gradle
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
-        run: ./gradlew connectedCheck
+        run: ./gradlew connectedCheck --no-daemon
       - name: Publish with Gradle
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        run: ./gradlew assembleRelease publish
+        run: ./gradlew assembleRelease publish --no-daemon
         env:
+          JAVA_OPTS: -Xmx2g -XX:MaxMetaspaceSize=512m
           KEYSTORE_STORE_PASS: ${{ secrets.KEYSTORE_STORE_PASS }}
           KEYSTORE_KEY_ALIAS: gianlu
           KEYSTORE_KEY_PASS: ${{ secrets.KEYSTORE_KEY_PASS }}
