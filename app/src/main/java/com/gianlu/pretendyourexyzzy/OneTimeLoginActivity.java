@@ -18,6 +18,7 @@ import com.gianlu.pretendyourexyzzy.api.PyxException;
 import com.gianlu.pretendyourexyzzy.databinding.ActivityOneTimeLoginBinding;
 import com.google.android.gms.tasks.Task;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -112,10 +113,12 @@ public class OneTimeLoginActivity extends ActivityWithDialog {
      * @return Whether there wasn't any server left on the list
      */
     private boolean changeServer(@NonNull Pyx.Server current) {
-        if (availableServers == null) availableServers = Pyx.Server.loadAllServers();
-        availableServers.remove(current);
+        if (availableServers == null)
+            availableServers = new ArrayList<>(Pyx.Server.loadAllServers());
 
-        if (availableServers.isEmpty()) return true;
+        availableServers.remove(current);
+        if (availableServers.isEmpty())
+            return true;
 
         Pyx.Server.setLastServer(Pyx.Server.pickBestServer(availableServers));
 

@@ -1133,7 +1133,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             super(cursor.getString(cursor.getColumnIndex("name")), cursor.getString(cursor.getColumnIndex("watermark")), null, getLongOrDefault(cursor, "lastUsed", 0));
             id = cursor.getInt(cursor.getColumnIndex("id"));
             description = cursor.getString(cursor.getColumnIndex("description"));
-            revision = cursor.getLong(cursor.getColumnIndex("revision"));
+            revision = getLongOrDefault(cursor, "revision", 0);
 
             int remoteIdIndex = cursor.getColumnIndex("remoteId");
             remoteId = cursor.isNull(remoteIdIndex) ? null : cursor.getLong(remoteIdIndex);
