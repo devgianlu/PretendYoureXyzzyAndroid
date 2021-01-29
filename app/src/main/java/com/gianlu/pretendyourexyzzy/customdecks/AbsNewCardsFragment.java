@@ -533,8 +533,6 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
             if (card instanceof CustomDecksDatabase.CustomCard || (card instanceof ContentCard && ((ContentCard) card).original instanceof Card)) {
                 holder.card.setCustomLeftText((context, card1) -> {
                     String creator = card1 instanceof CustomDecksDatabase.CustomCard ? ((CustomDecksDatabase.CustomCard) card1).creator : ((Card) ((ContentCard) card1).original).creator;
-
-
                     return Objects.equals(OverloadedApi.get().username(), creator) ? null : creator;
                 });
             } else {

@@ -65,6 +65,13 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         else return cursor.getLong(columnIndex);
     }
 
+    @Contract("_, _, !null -> !null")
+    private static String getStringOrDefault(Cursor cursor, String columnName, String defaultValue) {
+        int columnIndex = cursor.getColumnIndex(columnName);
+        if (columnIndex == -1) return defaultValue;
+        else return cursor.getString(columnIndex);
+    }
+
     @Override
     public void onCreate(@NotNull SQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS decks (id INTEGER PRIMARY KEY UNIQUE, name TEXT NOT NULL UNIQUE, watermark TEXT NOT NULL, description TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 0, remoteId INTEGER UNIQUE, lastUsed INTEGER NOT NULL DEFAULT 0)");
@@ -993,7 +1000,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
             type = cursor.getInt(cursor.getColumnIndex("type"));
             id = cursor.getInt(cursor.getColumnIndex("id"));
             text = cursor.getString(cursor.getColumnIndex("text"));
-            creator = cursor.getString(cursor.getColumnIndex("creator"));
+            creator = getStringOrDefault(cursor, "creator", null);
 
             int remoteIdIndex = cursor.getColumnIndex("remoteId");
             remoteId = cursor.isNull(remoteIdIndex) ? null : cursor.getLong(remoteIdIndex);
