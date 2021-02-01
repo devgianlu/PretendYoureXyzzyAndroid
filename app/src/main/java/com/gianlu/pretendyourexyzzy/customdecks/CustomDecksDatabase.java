@@ -42,7 +42,7 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
     private static CustomDecksDatabase instance;
 
     private CustomDecksDatabase(@Nullable Context context) {
-        super(context, "custom_decks.db", null, 14);
+        super(context, "custom_decks.db", null, 15);
     }
 
     @NonNull
@@ -100,6 +100,8 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
                 db.execSQL("ALTER TABLE starred_decks_tmp RENAME TO starred_decks");
             case 13:
                 db.execSQL("ALTER TABLE cards ADD creator TEXT DEFAULT NULL");
+            case 14:
+                db.execSQL("CREATE TABLE IF NOT EXISTS cr_cast_decks (name TEXT NOT NULL, watermark TEXT NOT NULL UNIQUE, description TEXT NOT NULL, lang TEXT NOT NULL, private INTEGER NOT NULL, state INTEGER DEFAULT NULL, created INTEGER DEFAULT NULL, whites_count INTEGER NOT NULL, blacks_count INTEGER NOT NULL, lastUsed INTEGER NOT NULL, favorite INTEGER NOT NULL DEFAULT 0)");
         }
 
         Log.i(TAG, "Migrated database from " + oldVersion + " to " + newVersion);
