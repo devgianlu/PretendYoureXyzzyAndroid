@@ -76,7 +76,7 @@ public abstract class AbsNewCardsFragment extends FragmentWithDialog implements 
     @NonNull
     private static ParseResult parseInputText(@NonNull String text, boolean black, boolean image) {
         if (black && image)
-            throw new IllegalStateException();
+            return new ParseResult(ParseResult.Result.ERROR, null, R.string.invalidBlackCardWithImage);
 
         text = text.trim();
         if (text.isEmpty() || text.length() > MAX_CARD_TEXT_LENGTH)
