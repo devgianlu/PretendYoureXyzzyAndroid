@@ -351,7 +351,7 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
 
     @Override
     public void onPollMessage(@NonNull PollMessage message) {
-        if (message.event == PollMessage.Event.GAME_LIST_REFRESH) {
+        if (pyx != null && message.event == PollMessage.Event.GAME_LIST_REFRESH) {
             pyx.request(PyxRequests.getGamesList())
                     .addOnSuccessListener((games) -> {
                         if (adapter != null) adapter.itemsChanged(games);
