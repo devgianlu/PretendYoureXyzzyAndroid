@@ -1,2 +1,3 @@
-- Fixed crash in welcome screen
-- Fixed crash with custom decks syncing
+- Fixed crash when importing deck
+- Fixed crash when creating card
+- Fixed minor crashes
