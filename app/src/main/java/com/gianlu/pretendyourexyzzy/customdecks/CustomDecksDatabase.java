@@ -749,8 +749,9 @@ public final class CustomDecksDatabase extends SQLiteOpenHelper {
         List<CustomCard> cards = new ArrayList<>(blacks.length);
         try {
             for (int i = 0; i < blacks.length; i++) {
-                String[] text = texts[i];
                 int type = blacks[i] ? CARD_TYPE_BLACK : CARD_TYPE_WHITE;
+                String[] text = texts[i];
+                if (text == null) continue;
 
                 ContentValues values = new ContentValues();
                 values.put("deck_id", deckId);
