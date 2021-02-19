@@ -180,7 +180,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
      * @param in The input stream
      */
     private void importStream(@NonNull InputStream in) throws IOException, JSONException {
-        JSONObject obj = new JSONObject(CommonUtils.readEntirely(in));
+        JSONObject obj = new JSONObject(CommonUtils.readEntirely(in, 1024 * 1024 * 50));
 
         CardsFragment whitesFragment, blacksFragment;
         loaded(InfoFragment.json(obj), blacksFragment = BlacksFragment.empty(), whitesFragment = WhitesFragment.empty());
