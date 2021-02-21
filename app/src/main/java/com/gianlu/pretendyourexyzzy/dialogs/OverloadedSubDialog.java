@@ -327,6 +327,8 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
     }
 
     private void setRegisterError() {
+        if (!isAdded()) return;
+
         setRegisterLoading(false);
         binding.overloadedSubDialogUsername.setError(getString(R.string.failedRegistering_tryAgain));
     }
