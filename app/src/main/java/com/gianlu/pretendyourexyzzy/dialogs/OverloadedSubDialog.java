@@ -343,7 +343,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
         else if (getParentFragment() instanceof NewProfileFragment)
             ((NewProfileFragment) getParentFragment()).refreshOverloaded(true);
 
-        dismissAllowingStateLoss();
+        if (isAdded()) dismissAllowingStateLoss();
     }
 
     /**
