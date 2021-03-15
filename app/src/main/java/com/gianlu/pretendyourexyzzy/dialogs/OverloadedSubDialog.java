@@ -411,7 +411,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
             @Override
             public void onSkuDetailsResponse(@NonNull BillingResult br, @Nullable List<SkuDetails> list) {
                 int code = br.getResponseCode();
-                if (code == BillingClient.BillingResponseCode.OK && list != null) {
+                if (code == BillingClient.BillingResponseCode.OK && list != null && !list.isEmpty()) {
                     callback.onSuccess(skuDetails = list.get(0));
                 } else if (!retried) {
                     retried = true;
