@@ -13,8 +13,8 @@ import com.gianlu.commonutils.preferences.Prefs;
 import com.gianlu.commonutils.ui.Toaster;
 import com.gianlu.pretendyourexyzzy.api.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
-import com.gianlu.pretendyourexyzzy.api.PyxDiscoveryApi;
 import com.gianlu.pretendyourexyzzy.api.PyxException;
+import com.gianlu.pretendyourexyzzy.api.PyxServersApi;
 import com.gianlu.pretendyourexyzzy.databinding.ActivityOneTimeLoginBinding;
 import com.google.android.gms.tasks.Task;
 
@@ -34,7 +34,7 @@ public class OneTimeLoginActivity extends ActivityWithDialog {
         binding = ActivityOneTimeLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        firstLoadTask = PyxDiscoveryApi.get().firstLoad(this);
+        firstLoadTask = PyxServersApi.get().firstLoad(this);
 
         binding.oneTimeLoginInputs.idCodeInput.setHelperText(getString(R.string.idCode_message));
         binding.oneTimeLoginInputs.idCodeInput.setEndIconOnClickListener(v -> CommonUtils.setText(binding.oneTimeLoginInputs.idCodeInput, CommonUtils.randomString(100)));
@@ -123,7 +123,7 @@ public class OneTimeLoginActivity extends ActivityWithDialog {
         Pyx.Server.setLastServer(Pyx.Server.pickBestServer(availableServers));
 
         setLoading(true);
-        firstLoadTask = PyxDiscoveryApi.get().firstLoad(this);
+        firstLoadTask = PyxServersApi.get().firstLoad(this);
         firstLoadTask.addOnSuccessListener(this, this::register)
                 .addOnFailureListener(this, this::firstLoadFailed);
         return false;

@@ -23,8 +23,8 @@ import com.gianlu.pretendyourexyzzy.api.FirstLoadedPyx;
 import com.gianlu.pretendyourexyzzy.api.LevelMismatchException;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.gianlu.pretendyourexyzzy.api.PyxChatHelper;
-import com.gianlu.pretendyourexyzzy.api.PyxDiscoveryApi;
 import com.gianlu.pretendyourexyzzy.api.PyxException;
+import com.gianlu.pretendyourexyzzy.api.PyxServersApi;
 import com.gianlu.pretendyourexyzzy.api.RegisteredPyx;
 import com.gianlu.pretendyourexyzzy.api.models.FirstLoad;
 import com.gianlu.pretendyourexyzzy.databinding.ActivityNewMainBinding;
@@ -272,7 +272,7 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
             else
                 task = local.doFirstLoad().continueWithTask(firstLoadContinuation);
         } catch (LevelMismatchException ex) {
-            task = PyxDiscoveryApi.get().firstLoad(this).continueWithTask(firstLoadContinuation);
+            task = PyxServersApi.get().firstLoad(this).continueWithTask(firstLoadContinuation);
         }
 
         return prepareTask = task.continueWithTask(task1 -> {
@@ -281,7 +281,7 @@ public class NewMainActivity extends ActivityWithDialog implements OverloadedCha
                 pyx = task1.getResult(PyxException.class);
             } catch (PyxException ex) {
                 if (ex.errorCode.equals("niu") && (ex.hadException(SocketTimeoutException.class) || ex.hadException(SSLException.class) || ex.hadException(ConnectException.class))) {
-                    return PyxDiscoveryApi.get().firstLoad(this).continueWithTask(task2 -> {
+                    return PyxServersApi.get().firstLoad(this).continueWithTask(task2 -> {
                         FirstLoadedPyx flp = task2.getResult();
                         FirstLoad fl = flp.firstLoad();
                         if (fl.inProgress && fl.user != null) return flp.upgrade(fl.user);
