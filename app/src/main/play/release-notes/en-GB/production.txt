@@ -1,3 +1,1 @@
-- Fixed crash when importing deck
-- Fixed crash when creating card
 - Fixed minor crashes
