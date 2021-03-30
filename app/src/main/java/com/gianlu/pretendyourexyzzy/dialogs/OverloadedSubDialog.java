@@ -294,6 +294,8 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
                 binding.overloadedSubDialogUsernameLoading.showShimmer(true);
                 OverloadedApi.get().userData()
                         .addOnSuccessListener(userData -> {
+                            if (!isAdded()) return;
+
                             binding.overloadedSubDialogUsernameLoading.hideShimmer();
                             usernameLocked = true;
                             CommonUtils.setText(binding.overloadedSubDialogUsername, userData.username);
@@ -306,6 +308,8 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
                             }
                         })
                         .addOnFailureListener(ex -> {
+                            if (!isAdded()) return;
+
                             usernameLocked = false;
                             binding.overloadedSubDialogUsernameLoading.hideShimmer();
                             binding.overloadedSubDialogUsername.setHelperText(getString(R.string.overloadedSub_usernameInfo));
