@@ -56,7 +56,7 @@ public class PyxServersApi {
         try {
             if (!CommonUtils.isDebug() && Prefs.has(PK.API_SERVERS) && !JsonStoring.intoPrefs().isJsonArrayEmpty(PK.API_SERVERS)) {
                 long age = Prefs.getLong(PK.API_SERVERS_CACHE_AGE, 0);
-                if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(6))
+                if (System.currentTimeMillis() - age < TimeUnit.HOURS.toMillis(1))
                     return;
             }
 
