@@ -1,1 +1,2 @@
+- Fixed missing servers in some occasions
 - Fixed minor crashes
