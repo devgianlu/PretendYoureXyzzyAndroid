@@ -94,7 +94,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.12.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
 
-    implementation('com.google.firebase:firebase-perf:20.0.1') {
+    implementation('com.google.firebase:firebase-perf:20.0.2') {
         exclude group: 'com.google.protobuf'
     }
 
