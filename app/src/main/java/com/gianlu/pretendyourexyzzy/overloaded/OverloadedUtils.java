@@ -115,7 +115,7 @@ public final class OverloadedUtils {
 
         Purchase latestPurchase = null;
         for (Purchase p : purchases) {
-            if (!ACTIVE_SKU.sku.equals(p.getSku()) || !BuildConfig.APPLICATION_ID.equals(p.getPackageName()))
+            if (!p.getSkus().contains(ACTIVE_SKU.sku) || !BuildConfig.APPLICATION_ID.equals(p.getPackageName()))
                 continue;
 
             if (latestPurchase == null || latestPurchase.getPurchaseTime() < p.getPurchaseTime())
@@ -168,7 +168,7 @@ public final class OverloadedUtils {
 
                         Purchase purchase;
                         if ((purchase = getLatestPurchase(billingClient)) != null && (!data.purchaseStatus.ok || (data.expireTime != null && data.expireTime <= System.currentTimeMillis()))) {
-                            OverloadedApi.get().registerUser(null, purchase.getSku(), purchase.getPurchaseToken())
+                            OverloadedApi.get().registerUser(null, purchase.getSkus().get(0), purchase.getPurchaseToken())
                                     .addOnSuccessListener(updatedData -> {
                                         if (updatedData.purchaseStatus.ok) {
                                             OverloadedApi.get().openWebSocket();

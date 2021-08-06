@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy.dialogs;
 
+import static com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils.ACTIVE_SKU;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
@@ -56,8 +58,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
-
-import static com.gianlu.pretendyourexyzzy.overloaded.OverloadedUtils.ACTIVE_SKU;
 
 public final class OverloadedSubDialog extends DialogFragment implements PurchasesUpdatedListener {
     private static final String TAG = OverloadedSubDialog.class.getSimpleName();
@@ -359,7 +359,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
         Purchase purchase = OverloadedUtils.getLatestPurchase(billingClient);
 
         setRegisterLoading(true);
-        OverloadedApi.get().registerUser(username, purchase != null ? purchase.getSku() : null, purchase != null ? purchase.getPurchaseToken() : null)
+        OverloadedApi.get().registerUser(username, purchase != null ? purchase.getSkus().get(0) : null, purchase != null ? purchase.getPurchaseToken() : null)
                 .addOnSuccessListener(data -> {
                     if (data.purchaseStatus.ok) {
                         Prefs.putString(PK.LAST_NICKNAME, username);
@@ -475,7 +475,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
                         return;
                     }
 
-                    OverloadedApi.get().registerUser(null, purchase.getSku(), purchase.getPurchaseToken())
+                    OverloadedApi.get().registerUser(null, purchase.getSkus().get(0), purchase.getPurchaseToken())
                             .addOnSuccessListener(data1 -> {
                                 if (data1.purchaseStatus.ok) subscriptionCompleteOk();
                                 else setRegisterError();
