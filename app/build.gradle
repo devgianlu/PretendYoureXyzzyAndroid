@@ -3,12 +3,11 @@ plugins {
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'com.google.firebase.crashlytics'
 
 def isCi = System.getenv("CI") == "true"
 android {
     compileSdkVersion 30
-    buildToolsVersion "30.0.3"
+    buildToolsVersion "31.0.0"
 
     defaultConfig {
         applicationId "com.gianlu.pretendyourexyzzy"
@@ -64,13 +63,6 @@ android {
     lintOptions {
         warning 'MissingTranslation'
     }
-
-    playConfigs {
-        foss {
-            commit.set(false)
-            enabled.set(false)
-        }
-    }
 }
 
 play {
@@ -108,4 +100,5 @@ task printVersionName {
 }
 
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'com.google.firebase.firebase-perf'
