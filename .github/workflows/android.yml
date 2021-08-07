@@ -31,7 +31,7 @@ jobs:
         run: ./gradlew connectedCheck --no-daemon
       - name: Publish with Gradle
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        run: ./gradlew assembleRelease publish --no-daemon
+        run: ./gradlew assembleRelease publishApps --no-daemon
         env:
           JAVA_OPTS: -Xmx2g -XX:MaxMetaspaceSize=512m
           KEYSTORE_STORE_PASS: ${{ secrets.KEYSTORE_STORE_PASS }}
