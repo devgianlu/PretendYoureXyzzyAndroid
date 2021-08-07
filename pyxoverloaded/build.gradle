@@ -30,12 +30,9 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             consumerProguardFiles 'proguard-rules.pro'
-
-            matchingFallbacks = ['debug', 'release']
         }
 
         debug {
-            matchingFallbacks = ['debug', 'release']
         }
     }
 }

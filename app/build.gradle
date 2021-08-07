@@ -34,12 +34,6 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             if (isCi) signingConfig signingConfigs.release
-
-            matchingFallbacks = ['debug', 'release']
-        }
-
-        debug {
-            matchingFallbacks = ['debug', 'release']
         }
     }
 
@@ -97,12 +91,6 @@ dependencies {
     }
 
     implementation project(':pyxoverloaded')
-}
-
-task printVersionName {
-    doLast {
-        println android.defaultConfig.versionName
-    }
 }
 
 apply plugin: 'com.google.gms.google-services'
