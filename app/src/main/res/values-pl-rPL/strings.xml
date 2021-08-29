@@ -12,6 +12,7 @@
     <string name="game_isJudging">%s ocenia…</string>
     <string name="game_waitingForPlayers">Oczekiwanie na graczy…</string>
     <string name="game_playerSkipped">%s został pominięty.</string>
+    <string name="game_pickCards">%s a map to play</string>
     <string name="game_judgeSkipped">Sędzia %s został pominięty.</string>
     <string name="game_notYourTurn">Nie twoja kolej! Jeśli sądzisz że to pomyłka, użyj opcji \"odśwież\" w menu.</string>
     <string name="game_playerKickedIdle">%s został wyrzucony z powodu braku aktywności.</string>
@@ -23,6 +24,12 @@
     <string name="game_gameWinner_short">%s wygral grę!</string>
     <string name="game_youGameWinner_long">Wygrałeś grę! Oczekiwanie na rozpoczęcie nowej…</string>
     <string name="game_youGameWinner_short">Wygrałeś grę!</string>
+    <plurals name="game_cards">
+        <item quantity="one">jedna karta</item>
+        <item quantity="few">%d kart</item>
+        <item quantity="many">%d kartę</item>
+        <item quantity="other">%d kart</item>
+    </plurals>
     <!-- General -->
     <string name="app_name">Pretend You\'re Xyzzy</string>
     <string name="submit">Zatwierdź</string>
@@ -49,6 +56,7 @@
     <string name="gameFull">Gra jest pełna! Spróbuj później.</string>
     <string name="failedSpectating">Nie udało się obserwować gry!</string>
     <string name="ongoingGame">Trwająca gra</string>
+    <string name="leaveGame">Opuść grę</string>
     <string name="blackCards">Czarne karty</string>
     <string name="whiteCards">Białe karty</string>
     <string name="required">Wymagane</string>
