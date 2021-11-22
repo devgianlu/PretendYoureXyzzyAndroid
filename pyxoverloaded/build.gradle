@@ -44,7 +44,7 @@ dependencies {
     api 'com.google.android.gms:play-services-auth:19.2.0'
     api 'com.google.firebase:firebase-auth:21.0.1'
 
-    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
     implementation 'org.whispersystems:signal-protocol-android:2.8.1'
 
     implementation 'com.github.instacart.truetime-android:library:3.4'
