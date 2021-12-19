@@ -1,1 +1,2 @@
+- Fixed CrCast integration
 - Minor bug fixes
