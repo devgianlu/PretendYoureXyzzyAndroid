@@ -135,7 +135,7 @@ public class NewViewCustomDeckActivity extends AbsNewCustomDeckActivity {
                 if (deckCode == null)
                     return;
 
-                CrCastApi.get().getDeck(deckCode, getIntent().getBooleanExtra("favorite", true), db)
+                CrCastApi.get().getDeck(deckCode, db)
                         .continueWithTask(task -> task.getResult().getCards(db))
                         .addOnSuccessListener(this::deckLoaded)
                         .addOnFailureListener(ex -> {

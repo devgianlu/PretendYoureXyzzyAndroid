@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.WorkerThread;
 
@@ -19,6 +20,8 @@ import com.gianlu.pretendyourexyzzy.customdecks.CustomDecksDatabase;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,22 +33,24 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 public final class CrCastApi {
     private static final CrCastApi instance = new CrCastApi();
-    private static final String BASE_URL = "https://castapi.clrtd.com/";
+    private static final String BASE_URL = "https://castapi.clrtd.com/v1/";
     private static final String TAG = CrCastApi.class.getSimpleName();
     private final OkHttpClient client;
     private final ExecutorService executorService;
+    private Task<CrCastUser> userTask;
 
     private CrCastApi() {
         executorService = Executors.newSingleThreadExecutor(new NamedThreadFactory("cr-cast-"));
@@ -79,27 +84,28 @@ public final class CrCastApi {
 
     @NonNull
     @WorkerThread
-    private JSONObject request(@NonNull String suffix) throws IOException, JSONException, CrCastException, NotSignedInException {
+    private JSONObject request(@NotNull String method, @NonNull String path, @Nullable RequestBody reqBody, boolean auth) throws IOException, JSONException, CrCastException, NotSignedInException {
         Exception lastEx = null;
         for (int i = 0; i < 3; i++) {
-            String suffixWithToken;
-            if (suffix.contains("{token}"))
-                suffixWithToken = suffix.replace("{token}", getToken());
-            else
-                suffixWithToken = suffix;
+            Request.Builder req = new Request.Builder().
+                    method(method, reqBody)
+                    .url(BASE_URL + path);
 
-            try (Response resp = client.newCall(new Request.Builder().get().url(BASE_URL + suffixWithToken).build()).execute()) {
-                Log.v(TAG, suffix + " -> " + resp.code());
+            if (auth)
+                req.addHeader("Authorization", "Bearer " + getToken());
+
+            try (Response resp = client.newCall(req.build()).execute()) {
+                Log.v(TAG, path + " -> " + resp.code());
                 if (resp.code() != 200) throw new StatusCodeException(resp);
 
-                ResponseBody body = resp.body();
-                if (body == null) throw new IOException("Missing body.");
-                JSONObject json = new JSONObject(body.string());
+                ResponseBody respBody = resp.body();
+                if (respBody == null) throw new IOException("Missing body.");
+                JSONObject json = new JSONObject(respBody.string());
 
                 int errorCode;
                 if ((errorCode = json.optInt("error", 0)) != 0) {
                     String msg = json.getString("message");
-                    Log.d(TAG, suffix + " -> error: " + errorCode + " (" + msg + ")");
+                    Log.d(TAG, path + " -> error: " + errorCode + " (" + msg + ")");
                     throw new CrCastException(errorCode, msg);
                 }
 
@@ -144,7 +150,11 @@ public final class CrCastApi {
     @NonNull
     private String loginSync(@NonNull String username, @NonNull String hashedPassword) throws JSONException, IOException, CrCastException {
         try {
-            JSONObject obj = request("user/token/?username=" + username + "&password=" + hashedPassword);
+            JSONObject req = new JSONObject();
+            req.put("username", username);
+            req.put("password", hashedPassword);
+
+            JSONObject obj = request("POST", "user/login", RequestBody.create(req.toString(), MediaType.get("application/json")), false);
             Prefs.putString(PK.CR_CAST_USER, username);
             Prefs.putString(PK.CR_CAST_PASSWORD, hashedPassword);
 
@@ -171,30 +181,38 @@ public final class CrCastApi {
 
     @NonNull
     public Task<CrCastUser> getUser() {
-        return Tasks.call(executorService, () -> new CrCastUser(request("user/{token}")));
+        if (!userTask.isComplete())
+            return userTask;
+
+        return userTask = Tasks.call(executorService, () -> new CrCastUser(request("GET", "user", null, true)));
     }
 
     @NonNull
     public Task<List<CrCastDeck>> getDecks(@NonNull CustomDecksDatabase db) {
         return Tasks.call(executorService, () -> {
-            JSONObject decks = request("user/decks/{token}").getJSONObject("decks");
+            JSONArray decks = request("GET", "decks/user", null, true).getJSONArray("decks");
             List<CrCastDeck> list = new ArrayList<>(decks.length());
-            Iterator<String> iter = decks.keys();
-            while (iter.hasNext())
-                list.add(CrCastDeck.parse(decks.getJSONObject(iter.next()), db, false));
+            for (int i = 0; i < decks.length(); i++)
+                list.add(CrCastDeck.parse(decks.getJSONObject(i), db, false));
 
-            decks = request("decks/fav/{token}").getJSONObject("decks");
-            iter = decks.keys();
-            while (iter.hasNext())
-                list.add(CrCastDeck.parse(decks.getJSONObject(iter.next()), db, true));
+            decks = request("GET", "decks/0/50/?sort=none&favorites=1", null, true).getJSONArray("decks");
+            for (int i = 0; i < decks.length(); i++)
+                list.add(CrCastDeck.parse(decks.getJSONObject(i), db, true));
 
             return list;
         });
     }
 
     @NonNull
-    public Task<CrCastDeck> getDeck(@NonNull String deckCode, boolean fav, @NonNull CustomDecksDatabase db) {
-        return Tasks.call(executorService, () -> CrCastDeck.parse(request((fav ? "deck/" : "user/decks/{token}/") + deckCode).getJSONObject("deck"), db, false));
+    public Task<CrCastDeck> getDeck(@NonNull String deckCode,  @NonNull CustomDecksDatabase db) {
+        return getDecks(db).continueWith(task -> {
+            List<CrCastDeck> list = task.getResult();
+            for (CrCastDeck deck : list)
+                if (deck.watermark.equals(deckCode))
+                    return deck;
+
+            return null;
+        });
     }
 
     public void logout() {

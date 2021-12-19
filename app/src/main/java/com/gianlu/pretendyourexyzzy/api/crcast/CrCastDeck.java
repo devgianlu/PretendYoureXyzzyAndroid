@@ -36,7 +36,7 @@ public final class CrCastDeck extends BasicCustomDeck {
         super(obj.getString("name"), watermark, null, lastUsed, -1);
         this.desc = obj.getString("description");
         this.lang = obj.getString("language").toUpperCase();
-        this.privateDeck = obj.getBoolean("private");
+        this.privateDeck = obj.optBoolean("private", false);
         this.favorite = favorite;
 
         if (obj.has("createdate"))
@@ -167,7 +167,7 @@ public final class CrCastDeck extends BasicCustomDeck {
     public Task<CrCastDeck> getCards(@NonNull CustomDecksDatabase db) {
         if (cards != null) return Tasks.forResult(this);
 
-        return CrCastApi.get().getDeck(watermark, favorite, db)
+        return CrCastApi.get().getDeck(watermark, db)
                 .continueWith(task -> {
                     CrCastDeck.this.cards = task.getResult().cards;
                     return CrCastDeck.this;
