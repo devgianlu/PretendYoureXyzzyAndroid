@@ -204,14 +204,10 @@ public final class CrCastApi {
     }
 
     @NonNull
-    public Task<CrCastDeck> getDeck(@NonNull String deckCode,  @NonNull CustomDecksDatabase db) {
-        return getDecks(db).continueWith(task -> {
-            List<CrCastDeck> list = task.getResult();
-            for (CrCastDeck deck : list)
-                if (deck.watermark.equals(deckCode))
-                    return deck;
-
-            return null;
+    public Task<CrCastDeck> getDeck(@NonNull String deckCode, boolean fav, @NonNull CustomDecksDatabase db) {
+        return Tasks.call(executorService, () -> {
+            JSONObject deck = request("GET", "decks/" + deckCode, null, true).getJSONObject("deck");
+            return CrCastDeck.parse(deck, db, fav);
         });
     }
 

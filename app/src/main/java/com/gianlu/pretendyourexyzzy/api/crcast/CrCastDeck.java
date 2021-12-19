@@ -1,6 +1,7 @@
 package com.gianlu.pretendyourexyzzy.api.crcast;
 
 import android.database.Cursor;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 
 public final class CrCastDeck extends BasicCustomDeck {
+    private static final String TAG = CrCastDeck.class.getSimpleName();
     public final String desc;
     public final CrCastApi.State state;
     public final boolean privateDeck;
@@ -56,6 +58,7 @@ public final class CrCastDeck extends BasicCustomDeck {
             blacks = cards.blacks.size();
             whites = cards.whites.size();
         } catch (JSONException ex) {
+            Log.w(TAG, "Failed parsing deck cards!", ex);
             this.cards = null;
         }
 
@@ -167,10 +170,10 @@ public final class CrCastDeck extends BasicCustomDeck {
     public Task<CrCastDeck> getCards(@NonNull CustomDecksDatabase db) {
         if (cards != null) return Tasks.forResult(this);
 
-        return CrCastApi.get().getDeck(watermark, db)
+        return CrCastApi.get().getDeck(watermark, favorite, db)
                 .continueWith(task -> {
-                    CrCastDeck.this.cards = task.getResult().cards;
-                    return CrCastDeck.this;
+                    this.cards = task.getResult().cards;
+                    return this;
                 });
     }
 
