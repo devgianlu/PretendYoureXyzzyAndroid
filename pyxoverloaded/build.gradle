@@ -41,7 +41,8 @@ dependencies {
     implementation project(':CommonUtils')
 
     api 'com.google.android.gms:play-services-games:22.0.0'
-    api 'com.google.android.gms:play-services-auth:19.2.0'
+    api 'com.google.android.gms:play-services-auth:20.0.0'
+
     api 'com.google.firebase:firebase-auth:21.0.1'
 
     implementation 'com.squareup.okhttp3:okhttp:4.9.3'
