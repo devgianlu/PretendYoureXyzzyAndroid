@@ -47,7 +47,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.9.3'
     implementation 'org.whispersystems:signal-protocol-android:2.8.1'
 
-    implementation 'com.github.instacart.truetime-android:library:3.4'
+    implementation 'com.github.instacart.truetime-android:library:3.5'
 
     implementation('com.google.firebase:firebase-perf:20.0.4') {
         exclude group: 'com.google.protobuf'
