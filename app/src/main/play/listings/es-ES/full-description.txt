@@ -23,12 +23,12 @@ Funciones de Overloaded:
 -Haz amigos
 -Chatea de manera privada con tus amigos
 -Crea barajas personalizadas colaborativas para ti y tus amigos
-- Upload images and add them to your custom decks cards (GIFs are also supported)
-- See your friends' starred cards and custom decks
-- Synchronize your starred cards and custom decks so that you never lose them
-- More to come...
+-Sube imágenes y agrégalas a las cartas de tu baraja personalizada (compatible con GIFs)
+-Ve las cartas guardadas de tus amigos y sus barajas personalizadas
+-Sincroniza tus cartas guardadas y barajas personalizadas para nunca perderlas
+-Más por venir...
 
 
-This project is open source at https://github.com/devgianlu/PretendYoureXyzzyAndroid
+Este proyecto es de código abierto, disponible en https://github.com/devgianlu/PretendYoureXyzzyAndroid
 ------------------------------
 Words definition is powered by Urban Dictionary (https://www.urbandictionary.com/).
