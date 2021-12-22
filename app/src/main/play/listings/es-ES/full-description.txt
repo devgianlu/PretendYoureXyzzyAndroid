@@ -1,20 +1,20 @@
-This app lets you play Pretend You're Xyzzy, an online card game, on your device wherever you are.
+Esta aplicación te permite jugar a Pretend You're Xyzzy, un juego de cartas en línea, desde tu dispositivo donde sea que estés.
 
------ ATTENTION! -----
-This app content may disappoint some people. If you don't agree with the content of this app, don't complain with me. I'm not the creator of this game, just a player who is also a developer.
+----- ATENCIÓN! -----
+El contenido de esta aplicación puede decepcionar a algunas personas. Si no estás de acuerdo con el contenido de la app, no te quejes conmigo. No soy el creador del juego, sólo soy un jugador que también es desarrollador.
 --------------------------------
 
-The game is simple. Each round, a black card is randomly chosen from the deck, everyone answers with their funniest white card. The judge the decides which player wins.
+El juego es simple. En cada ronda, una carta negra es elegida aleatoriamente de la baraja, cada uno responde con su carta blanca mas graciosa. El juez decide que jugador gana.
 
 
-Free features:
-- Play with friends on a variety of servers
-- Customize your game
-- Play with custom decks
-- Create custom decks from the app
-- Add images (from link) to your custom decks cards (GIFs are also supported)
-- Star your favourite cards
-- See your lifetime metrics (games played)
+Funciones gratuitas:
+-Juega con amigos en una variedad de servidores
+-Personaliza tu juego
+-Juega con barajas personalizadas
+-Crea barajas personalizadas desde el juego
+-Agrega imágenes (desde un link) a tu baraja personalizada (también son compatibles los GIFs)
+-Guarda tus cartas favoritas
+-Ve tus estadísticas (juegos jugados)
 
 Overloaded features:
 - Create your profile
