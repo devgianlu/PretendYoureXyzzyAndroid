@@ -31,4 +31,4 @@ Funciones de Overloaded:
 
 Este proyecto es de código abierto, disponible en https://github.com/devgianlu/PretendYoureXyzzyAndroid
 ------------------------------
-Words definition is powered by Urban Dictionary (https://www.urbandictionary.com/).
+Definiciones de palabras extraídas de Urban Dictionary (https://www.urbandictionary.com/).
