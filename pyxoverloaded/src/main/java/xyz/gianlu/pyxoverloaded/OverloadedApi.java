@@ -1,5 +1,8 @@
 package xyz.gianlu.pyxoverloaded;
 
+import static com.gianlu.commonutils.CommonUtils.singletonJsonObject;
+import static xyz.gianlu.pyxoverloaded.Utils.overloadedServerUrl;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -71,9 +74,6 @@ import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 import xyz.gianlu.pyxoverloaded.model.UserProfile;
 import xyz.gianlu.pyxoverloaded.signal.SignalProtocolHelper;
-
-import static com.gianlu.commonutils.CommonUtils.singletonJsonObject;
-import static xyz.gianlu.pyxoverloaded.Utils.overloadedServerUrl;
 
 public class OverloadedApi {
     private final static OverloadedApi instance = new OverloadedApi();
@@ -635,7 +635,7 @@ public class OverloadedApi {
         return Tasks.call(executorService, (Callable<Void>) () -> {
             makePostRequest("User/Delete", null);
             return null;
-        }).addOnFailureListener(ex -> logout());
+        }).addOnCompleteListener(res -> logout());
     }
 
     /**
@@ -644,6 +644,8 @@ public class OverloadedApi {
     public void logout() {
         FirebaseAuth.getInstance().signOut();
         updateUser();
+
+        Prefs.remove(OverloadedPK.LAST_SERVER_TOKEN);
 
         lastToken = null;
         userDataTask = null;
