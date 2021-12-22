@@ -54,6 +54,11 @@
     <string name="failedSpectating">Error al unirse como espectador!</string>
     <string name="ongoingGame">Partida en curso</string>
     <string name="leaveGame">Salir del juego</string>
+    <string name="failedLeaving">¡Error al unirse al juego!</string>
+    <string name="numPick"><![CDATA[<b>Elegir</b>]]>%d</string>
+    <string name="gameOptions">Opciones de juego</string>
+    <string name="timerMultiplier">Multiplicador de tiempo: %s</string>
+    <string name="blankCards">Cartas en blanco: %d</string>
     <string name="invalidServerUrl">La URL del servidor es inválida.</string>
     <string name="failedAddingServer">¡Error al añadir un nuevo servidor!</string>
     <string name="remove">Eliminar</string>
