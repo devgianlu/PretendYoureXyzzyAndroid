@@ -20,9 +20,9 @@
     <string name="game_judgeLeft_short">El juez %s se ha ido.</string>
     <string name="game_roundWinner_long">%s ganó esta ronda! Una nueva ronda comenzará en breve…</string>
     <string name="game_roundWinner_short">%s ganó esta ronda!</string>
-    <string name="game_gameWinner_long">%s ganó el juego! Esperando que el anfitrión comience un nuevo juego…</string>
-    <string name="game_gameWinner_short">%s ganó el juego!</string>
-    <string name="game_youGameWinner_long">Ganaste el juego! Esperando a que el anfitrión comience un nuevo juego…</string>
+    <string name="game_gameWinner_long">%s ganó la partida! Esperando que el anfitrión comience un nuevo juego…</string>
+    <string name="game_gameWinner_short">%s ganó la partida!</string>
+    <string name="game_youGameWinner_long">Ganaste la partida! Esperando a que el anfitrión comience un nuevo juego…</string>
     <string name="game_youGameWinner_short">Ganaste el juego!</string>
     <plurals name="game_cards">
         <item quantity="one">una carta</item>
@@ -34,4 +34,24 @@
     <string name="reservedNickname">¡Apodo reservado!</string>
     <string name="invalidNickname">El apodo debe contener sólo letras mayúsculas y minúsculas, números o guiones bajos, debe tener entre 3 y 30 caracteres y no debe comenzar con un número.</string>
     <string name="alreadyUsedNickname">El apodo ya está en uso.</string>
+    <string name="tooManyUsers">Hay demasiados usuarios conectados. Entra en otro servidor o espera a que un usuario se desconecte.</string>
+    <string name="failedLoading">¡Error al cargar!</string>
+    <string name="globalChat">Chat global</string>
+    <string name="games">Partidas</string>
+    <string name="gameChat">Chat del juego</string>
+    <string name="failedLoading_reason">Error al cargar: %s</string>
+    <string name="players">Jugadores: %1$d / %2$d</string>
+    <string name="spectators">Espectadores: %1$d / %2$d</string>
+    <string name="failedSendMessage">¡Error al enviar el mensaje!</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="spectate">Observar</string>
+    <string name="join">Unirse</string>
+    <string name="goal">Objetivo: %d</string>
+    <string name="playersLabel">Jugadores</string>
+    <string name="gamePassword">Introduzca la contraseña</string>
+    <string name="failedJoiningGame">¡Error al unirse al juego!</string>
+    <string name="gameFull">¡El juego está lleno! Inténtalo más tarde.</string>
+    <string name="failedSpectating">Error al unirse como espectador!</string>
+    <string name="ongoingGame">Partida en curso</string>
+    <string name="leaveGame">Salir del juego</string>
 </resources>
