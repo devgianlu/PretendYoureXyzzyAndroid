@@ -72,4 +72,25 @@
     <string name="playedRoundsLabel">Rondas jugadas</string>
     <string name="judgedRoundsLabel">Rondas juzgadas</string>
     <string name="gamesCount">Partidas (%d)</string>
+    <string name="judgedRoundsCount">Rondas juzgadas(%d)</string>
+    <string name="playedRoundsCount">Rondas jugadas (%d)</string>
+    <string name="home">Inicio</string>
+    <string name="showGameMetrics">Mostrar las estadísticas de juego</string>
+    <string name="showLastRound">Mostrar la última ronda</string>
+    <string name="blockUser">Bloquear usuario</string>
+    <string name="unblockUser">Desbloquear usuario</string>
+    <string name="unblockUser_summary">Desbloquear usuarios bloqueados anteriormente</string>
+    <string name="unblock">Desbloquear</string>
+    <string name="unknownChatCommand">Comando desconocido.</string>
+    <string name="lastRound">Última ronda</string>
+    <string name="googlePlayGames">Google Play Games</string>
+    <string name="loggedIn">Sesión iniciada</string>
+    <string name="customDecks">Mazos personalizados</string>
+    <string name="createCustomDeck">Crear mazo personalizado</string>
+    <string name="description">Descripción</string>
+    <string name="watermark">Marca de Agua</string>
+    <string name="invalidWatermark">La marca de agua debe tener 5 caracteres de largo, incluyendo sólo letras mayúsculas y números.</string>
+    <string name="customDeckNameNotUnique">Ya tienes una baraja con este nombre.</string>
+    <string name="noCustomCardsCreateOne">No hay cartas personalizadas! Crea algunas tocando el botón agregar.</string>
+    <string name="createCustomCardInfo_white">Las cartas blancas contienen respuestas a las cartas negras. No se requieren marcadores de posición.</string>
 </resources>
