@@ -4,7 +4,7 @@
     <string name="game_spectator">Eres un espectador. Solo observa!</string>
     <string name="game_youJudge">Eres el zar de las cartas! Espera a los otros jugadores…</string>
     <string name="game_selectWinningCard">Eres el zar de las cartas! Selecciona al ganador.</string>
-    <string name="game_youRoundWinner_long">Ganaste esta ronda! La siguiente ronda comienza en breve…</string>
+    <string name="game_youRoundWinner_long">Ganaste esta ronda! La siguiente ronda comenzará en breve…</string>
     <string name="game_youRoundWinner_short">Ganaste esta ronda!</string>
     <string name="game_youGameHost">Eres el anfitrión del juego! Inicia el juego cuando estés listo.</string>
     <string name="game_waitingForRoundToEnd">Esperando a que finalice la ronda actual…</string>
@@ -19,5 +19,19 @@
     <string name="game_judgeLeft_long">El juez %s se ha ido. Una nueva ronda comenzará en breve.</string>
     <string name="game_judgeLeft_short">El juez %s se ha ido.</string>
     <string name="game_roundWinner_long">%s ganó esta ronda! Una nueva ronda comenzará en breve…</string>
+    <string name="game_roundWinner_short">%s ganó esta ronda!</string>
+    <string name="game_gameWinner_long">%s ganó el juego! Esperando que el anfitrión comience un nuevo juego…</string>
+    <string name="game_gameWinner_short">%s ganó el juego!</string>
+    <string name="game_youGameWinner_long">Ganaste el juego! Esperando a que el anfitrión comience un nuevo juego…</string>
+    <string name="game_youGameWinner_short">Ganaste el juego!</string>
+    <plurals name="game_cards">
+        <item quantity="one">una carta</item>
+        <item quantity="other">%d cartas</item>
+    </plurals>
     <!-- General -->
+    <string name="submit">Entregar</string>
+    <string name="changeServer">Cambiar de servidor</string>
+    <string name="reservedNickname">¡Apodo reservado!</string>
+    <string name="invalidNickname">El apodo debe contener sólo letras mayúsculas y minúsculas, números o guiones bajos, debe tener entre 3 y 30 caracteres y no debe comenzar con un número.</string>
+    <string name="alreadyUsedNickname">El apodo ya está en uso.</string>
 </resources>
