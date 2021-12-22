@@ -2,5 +2,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- Game messages -->
     <string name="game_spectator">Eres un espectador. Solo observa!</string>
+    <string name="game_youJudge">Eres el zar de las cartas! Espera a los otros jugadores…</string>
+    <string name="game_selectWinningCard">Eres el zar de las cartas! Selecciona al ganador.</string>
     <!-- General -->
 </resources>
