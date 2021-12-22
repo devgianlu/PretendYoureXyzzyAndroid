@@ -93,4 +93,15 @@
     <string name="customDeckNameNotUnique">Ya tienes una baraja con este nombre.</string>
     <string name="noCustomCardsCreateOne">No hay cartas personalizadas! Crea algunas tocando el botón agregar.</string>
     <string name="createCustomCardInfo_white">Las cartas blancas contienen respuestas a las cartas negras. No se requieren marcadores de posición.</string>
+    <string name="createCustomCardInfo_black">Las cartas negras contienen preguntas o frases a completar. Usa ____(4 guiones bajos) como un espacio en blanco para la respuesta.</string>
+    <string name="createCustomCardInfo_image">Las cartas blancas pueden contener imágenes como respuesta a las cartas negras: pega el enlace aquí o sube una imagen. Las imágenes subidas serán optimizadas.</string>
+    <string name="failedAddingCustomCard">Error al añadir carta personalizada.</string>
+    <string name="completeDeckInfoFirst">Por favor, primero complete la información del mazo.</string>
+    <string name="customCardTextInvalid">La carta no puede estar vacía ni tener mas de 256 caracteres.</string>
+    <string name="missingPlaceholderBlack">Carta negra sin espacio en blanco: Se añadirá al final.</string>
+    <string name="strangeCustomCardFormat">El formato de esta carta se ve extraño: asegúrate de seguir las instrucciones.</string>
+    <string name="importCustomDeck">Importar mazo personalizado</string>
+    <string name="delete">Eliminar</string>
+    <string name="deleteDeckConfirmation">Estas seguro de que quieres eliminar \"%s\"?</string>
+    <string name="noCustomDecksToAdd">No tienes mazos personalizados que puedan ser agregados a ésta partida... Consigue algunos!</string>
 </resources>
