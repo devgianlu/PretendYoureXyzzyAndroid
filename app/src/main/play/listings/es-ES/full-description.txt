@@ -12,17 +12,17 @@ Funciones gratuitas:
 -Personaliza tu juego
 -Juega con barajas personalizadas
 -Crea barajas personalizadas desde el juego
--Agrega imágenes (desde un link) a tu baraja personalizada (también son compatibles los GIFs)
+-Agrega imágenes (desde un link) a tu baraja personalizada (compatible con GIFs)
 -Guarda tus cartas favoritas
 -Ve tus estadísticas (juegos jugados)
 
-Overloaded features:
-- Create your profile
-- Set a custom profile image (GIFs are also supported)
-- Accumulate achievements and stats (cards and rounds played, rounds won)
-- Make friends
-- Privately chat with your friends
-- Create collaborative custom decks for you and your friends
+Funciones de Overloaded:
+-Crea tu perfil
+-Personaliza tu foto de perfil (compatible con GIFs)
+-Acumula logros y estadísticas (cartas y rondas jugadas, cartas y rondas ganadas)
+-Haz amigos
+-Chatea de manera privada con tus amigos
+-Crea barajas personalizadas colaborativas para ti y tus amigos
 - Upload images and add them to your custom decks cards (GIFs are also supported)
 - See your friends' starred cards and custom decks
 - Synchronize your starred cards and custom decks so that you never lose them
