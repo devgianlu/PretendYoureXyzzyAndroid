@@ -54,4 +54,22 @@
     <string name="failedSpectating">Error al unirse como espectador!</string>
     <string name="ongoingGame">Partida en curso</string>
     <string name="leaveGame">Salir del juego</string>
+    <string name="invalidServerUrl">La URL del servidor es inválida.</string>
+    <string name="failedAddingServer">¡Error al añadir un nuevo servidor!</string>
+    <string name="remove">Eliminar</string>
+    <string name="idCodeLabel">Código de identificación</string>
+    <string name="invalidIdCode">El código de identificación debe tener entre 8 y 100 caracteres.</string>
+    <string name="admin">Administrador</string>
+    <string name="sigilNone"><![CDATA[<i>Ninguno</i>]]></string>
+    <string name="cancel">Cancelar</string>
+    <string name="failedLoadingImage">¡Error al cargar esta imagen! Intenta visitar el enlace directamente.</string>
+    <string name="rotateRandomly">Rotar aleatoriamente</string>
+    <string name="save">Guardar</string>
+    <string name="failedSavingImage">Error al guardar la imagen!</string>
+    <string name="metrics">Estadísticas</string>
+    <string name="playedAndJudged">%1$d jugadas, %2$d juzgadas</string>
+    <string name="gameStartedAt">Partida iniciada a las %s</string>
+    <string name="playedRoundsLabel">Rondas jugadas</string>
+    <string name="judgedRoundsLabel">Rondas juzgadas</string>
+    <string name="gamesCount">Partidas (%d)</string>
 </resources>
