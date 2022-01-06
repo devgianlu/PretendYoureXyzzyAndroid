@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.Html;
 import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -54,6 +55,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -64,7 +66,8 @@ import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 
 public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
     private static final String TAG = NewEditCustomDeckActivity.class.getSimpleName();
-    private JSONObject finishImportData = null;
+    private ImportData importDataCalls = null;
+    private ImportData importDataResponses = null;
 
     @NotNull
     private static Intent baseStartIntent(@NotNull Context context, @NotNull Type type) {
@@ -86,8 +89,9 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
     }
 
     @NotNull
-    public static Intent activityImportRecoverIntent(@NotNull Context context, @NotNull File tmpFile) {
+    public static Intent activityImportRecoverIntent(@NotNull Context context, @NonNull ImportType importType, @NotNull File tmpFile) {
         Intent intent = baseStartIntent(context, Type.IMPORT);
+        intent.putExtra("importType", importType);
         intent.putExtra("tmpFile", tmpFile);
         return intent;
     }
@@ -109,10 +113,11 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
 
         CardsFragment whitesFragment = (CardsFragment) getWhiteCardsFragment();
         CardsFragment blacksFragment = (CardsFragment) getBlackCardsFragment();
-        if (finishImportData != null && whitesFragment != null && blacksFragment != null) {
-            blacksFragment.importCards(this, finishImportData.optJSONArray("calls"));
-            whitesFragment.importCards(this, finishImportData.optJSONArray("responses"));
-            finishImportData = null;
+        if (importDataCalls != null && importDataResponses != null && whitesFragment != null && blacksFragment != null) {
+            blacksFragment.importCards(this, importDataCalls.readCalls());
+            importDataCalls = null;
+            whitesFragment.importCards(this, importDataResponses.readResponses());
+            importDataResponses = null;
         }
     }
 
@@ -136,7 +141,7 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
             setBottomButtonMode(Mode.SAVE);
 
             try (InputStream in = getContentResolver().openInputStream(uri)) {
-                importStream(in);
+                importStream(ImportType.JSON, in);
             } catch (JSONException | IOException ex) {
                 Log.e(TAG, "Failed importing deck from uri.", ex);
                 finishAfterTransition();
@@ -162,8 +167,11 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
                 File tmpFile = (File) getIntent().getSerializableExtra("tmpFile");
                 if (tmpFile == null) break;
 
+                ImportType importType = (ImportType) getIntent().getSerializableExtra("importType");
+                if (importType == null) break;
+
                 try (FileInputStream in = new FileInputStream(tmpFile)) {
-                    importStream(in);
+                    importStream(importType, in);
                 } catch (JSONException | IOException ex) {
                     Log.e(TAG, "Failed importing deck from file.", ex);
                     finishAfterTransition();
@@ -179,17 +187,32 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
      *
      * @param in The input stream
      */
-    private void importStream(@NonNull InputStream in) throws IOException, JSONException {
-        JSONObject obj = new JSONObject(CommonUtils.readEntirely(in, 1024 * 1024 * 50));
+    private void importStream(@NonNull ImportType importType, @NonNull InputStream in) throws IOException, JSONException {
+        String content = CommonUtils.readEntirely(in, 1024 * 1024 * 50);
 
+        ImportData calls, responses;
         CardsFragment whitesFragment, blacksFragment;
-        loaded(InfoFragment.json(obj), blacksFragment = BlacksFragment.empty(), whitesFragment = WhitesFragment.empty());
-        if (save()) {
-            blacksFragment.importCards(this, obj.optJSONArray("calls"));
-            whitesFragment.importCards(this, obj.optJSONArray("responses"));
-            finishImportData = null;
+        if (importType == ImportType.JSON || importType == ImportType.JSON5) {
+            JSONObject obj = new JSONObject(content);
+
+            loaded(InfoFragment.json(obj), blacksFragment = BlacksFragment.empty(), whitesFragment = WhitesFragment.empty());
+            calls = ImportData.fromJson(importType, obj.optJSONArray("calls"));
+            responses = ImportData.fromJson(importType, obj.optJSONArray("responses"));
+        } else if (importType == ImportType.CSV) {
+            loaded(InfoFragment.csv(), blacksFragment = BlacksFragment.empty(), whitesFragment = WhitesFragment.empty());
+            calls = ImportData.fromCsv(content);
+            responses = ImportData.fromCsv(content);
         } else {
-            finishImportData = obj;
+            return;
+        }
+
+        if (save()) {
+            blacksFragment.importCards(this, calls.readCalls());
+            whitesFragment.importCards(this, responses.readResponses());
+            importDataCalls = importDataResponses = null;
+        } else {
+            importDataCalls = calls;
+            importDataResponses = responses;
         }
 
         ThisApplication.sendAnalytics(Utils.ACTION_IMPORTED_CUSTOM_DECK);
@@ -306,8 +329,168 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
         }
     }
 
+    public enum ImportType {
+        JSON, JSON5, CSV
+    }
+
     private enum Type {
         NEW, EDIT, IMPORT
+    }
+
+    private static class ImportData {
+        final ImportType type;
+        final JSONArray array;
+        final String content;
+
+        private ImportData(@NonNull ImportType type, @Nullable JSONArray array, @Nullable String content) {
+            this.type = type;
+            this.array = array;
+            this.content = content;
+        }
+
+        @NonNull
+        static ImportData fromJson(@NonNull ImportType type, @Nullable JSONArray data) {
+            return new ImportData(type, data, null);
+        }
+
+        @NonNull
+        static ImportData fromCsv(@NonNull String content) {
+            return new ImportData(ImportType.CSV, null, content);
+        }
+
+        @NonNull
+        private static String[][] readJson(JSONArray array, boolean black) {
+            String[][] texts = new String[array.length()][];
+            for (int i = 0; i < array.length(); i++) {
+                try {
+                    String[] text = CommonUtils.toStringArray(array.getJSONObject(i).getJSONArray("text"));
+                    if (black && text.length == 1)
+                        text = new String[]{text[0] + " ", ""};
+
+                    texts[i] = text;
+                } catch (JSONException ex) {
+                    Log.w(TAG, "Failed importing JSON card at " + i, ex);
+                }
+            }
+
+            return texts;
+        }
+
+        @NonNull
+        private static String[][] readJson5(JSONArray array, boolean black) {
+            String[][] texts = new String[array.length()][];
+            for (int i = 0; i < array.length(); i++) {
+                try {
+                    List<String> text = new ArrayList<>(10);
+                    Object card = array.get(i);
+                    if (!black && card instanceof String) {
+                        text.add((String) card);
+                    } else if (black && card instanceof JSONArray) {
+                        JSONArray cardArray = (JSONArray) card;
+                        for (int j = 0; j < cardArray.length(); j++) {
+                            JSONArray subArray = cardArray.getJSONArray(j);
+                            for (int k = 0; k < subArray.length(); k++) {
+                                Object elem = subArray.get(k);
+                                if (elem instanceof JSONObject)
+                                    continue; // Represents the blank
+
+                                if (elem instanceof String)
+                                    text.add((String) elem);
+                                else
+                                    Log.w(TAG, String.format("Unknown card element: %s (%s)", elem, elem.getClass()));
+                            }
+                        }
+                    } else {
+                        Log.w(TAG, String.format("Unknown card: %s (%s), black: %b", card, card.getClass(), black));
+                    }
+
+                    texts[i] = text.toArray(new String[]{});
+                    if (black && texts[i].length == 1)
+                        texts[i] = new String[]{texts[i][0] + " ", ""};
+                } catch (JSONException ex) {
+                    Log.w(TAG, "Failed importing JSON5 card at " + i, ex);
+                }
+            }
+
+            return texts;
+        }
+
+        @NonNull
+        private static String[][] readCsv(String content, boolean black) {
+            String[] lines = content.split("\n");
+
+            List<String[]> texts = new ArrayList<>(lines.length);
+            for (String line : lines) {
+                int textStart = line.indexOf(',');
+                if (textStart == -1)
+                    continue;
+
+                String color = line.substring(0, textStart);
+                if (black && !color.equals("black"))
+                    continue;
+                if (!black && !color.equals("white"))
+                    continue;
+
+                int pickStart = line.lastIndexOf(',');
+                if (pickStart == -1)
+                    continue;
+
+                int textEnd = line.lastIndexOf(',', pickStart - 1);
+                if (textEnd == -1)
+                    continue;
+
+                String rawText = line.substring(textStart + 1, textEnd);
+                rawText = Html.fromHtml(rawText).toString();
+
+                texts.add(rawText.split("____", -1));
+            }
+
+            return texts.toArray(new String[][]{});
+        }
+
+        @Nullable
+        String[][] readCalls() {
+            if (type == ImportType.JSON) {
+                if (array == null)
+                    return null;
+
+                return readJson(array, true);
+            } else if (type == ImportType.JSON5) {
+                if (array == null)
+                    return null;
+
+                return readJson5(array, true);
+            } else if (type == ImportType.CSV) {
+                if (content == null)
+                    return null;
+
+                return readCsv(content, true);
+            } else {
+                return null;
+            }
+        }
+
+        @Nullable
+        String[][] readResponses() {
+            if (type == ImportType.JSON) {
+                if (array == null)
+                    return null;
+
+                return readJson(array, false);
+            } else if (type == ImportType.JSON5) {
+                if (array == null)
+                    return null;
+
+                return readJson5(array, false);
+            } else if (type == ImportType.CSV) {
+                if (content == null)
+                    return null;
+
+                return readCsv(content, false);
+            } else {
+                return null;
+            }
+        }
     }
 
     public static class InfoFragment extends FragmentWithDialog implements SavableFragment {
@@ -323,6 +506,16 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
         public static InfoFragment empty() {
             InfoFragment fragment = new InfoFragment();
             fragment.setArguments(new Bundle());
+            return fragment;
+        }
+
+        @NotNull
+        public static InfoFragment csv() {
+            InfoFragment fragment = new InfoFragment();
+            Bundle args = new Bundle();
+            args.putInt("deckId", -1);
+            args.putBoolean("import", true);
+            fragment.setArguments(args);
             return fragment;
         }
 
@@ -770,28 +963,17 @@ public class NewEditCustomDeckActivity extends AbsNewCustomDeckActivity {
          * Import cards from JSON. Caller should make sure which type (black, white) the cards are and which fragment it's calling.
          *
          * @param context The caller {@link Context}
-         * @param array   The array containing the cards or {@code null}
+         * @param texts   The cards text
          */
-        public void importCards(@NonNull Context context, @Nullable JSONArray array) {
-            if (array == null) return;
+        public void importCards(@NonNull Context context, @Nullable String[][] texts) {
+            if (texts == null)
+                return;
 
             if (db == null)
                 db = CustomDecksDatabase.get(context);
 
-            String[][] texts = new String[array.length()][];
-            boolean[] blacks = new boolean[array.length()];
-            for (int i = 0; i < array.length(); i++) {
-                try {
-                    String[] text = CommonUtils.toStringArray(array.getJSONObject(i).getJSONArray("text"));
-                    if (isBlack() && text.length == 1)
-                        text = new String[]{text[0] + " ", ""};
-
-                    texts[i] = text;
-                    blacks[i] = isBlack();
-                } catch (JSONException ex) {
-                    Log.w(TAG, "Failed importing card at " + i, ex);
-                }
-            }
+            boolean[] blacks = new boolean[texts.length];
+            Arrays.fill(blacks, isBlack());
 
             addCards(blacks, texts);
         }

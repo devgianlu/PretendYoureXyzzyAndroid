@@ -348,4 +348,7 @@
     <string name="customDecksHelp_serversCrCast">These servers support only CrCast decks:</string>
     <string name="customDecksHelp_final">Once you joined one of these servers, create your own game and edit the game options. Custom decks can be customized from the third page.</string>
     <string name="invalidBlackCardWithImage">Black cards cannot contain images.</string>
+    <string name="importJsonDeck">Import JSON deck</string>
+    <string name="importJson5Deck">Import JSON5 deck (e.g. Many Decks)</string>
+    <string name="importCsvDeck">Import CSV deck (e.g. recovered Cardcast)</string>
 </resources>

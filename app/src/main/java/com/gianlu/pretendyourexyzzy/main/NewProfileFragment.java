@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy.main;
 
+import static com.gianlu.pretendyourexyzzy.GPGamesHelper.setEventCount;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -100,13 +102,12 @@ import xyz.gianlu.pyxoverloaded.OverloadedChatApi;
 import xyz.gianlu.pyxoverloaded.model.FriendStatus;
 import xyz.gianlu.pyxoverloaded.model.UserData;
 
-import static com.gianlu.pretendyourexyzzy.GPGamesHelper.setEventCount;
-
 public class NewProfileFragment extends NewMainActivity.ChildFragment implements OverloadedApi.EventListener, CrCastLoginDialog.LoginListener, OverloadedChatApi.UnreadCountListener {
     private static final String TAG = NewProfileFragment.class.getSimpleName();
     private static final int RC_IMPORT_JSON = 420;
     private static final int RC_UPLOAD_PROFILE_IMAGE = 9;
     private final List<AchievementImageCallback> achievementImageCallbacks = new ArrayList<>(5);
+    private NewEditCustomDeckActivity.ImportType importDeckType = null;
     private FragmentNewProfileBinding binding;
     private RegisteredPyx pyx;
     private FriendsAdapter friendsAdapter;
@@ -319,7 +320,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                         if (which == 0)
                             startActivity(NewEditCustomDeckActivity.activityNewIntent(requireContext()));
                         else if (which == 1)
-                            startActivityForResult(Intent.createChooser(new Intent(Intent.ACTION_GET_CONTENT).setType("*/*"), "Pick a JSON file..."), RC_IMPORT_JSON);
+                            showImportTypeDialog();
                         else if (which == 2)
                             showRecoverCardcastDialog();
                     });
@@ -345,6 +346,22 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         return binding.getRoot();
     }
 
+    private void showImportTypeDialog() {
+        String[] importOptions = new String[]{getString(R.string.importJsonDeck), getString(R.string.importJson5Deck), getString(R.string.importCsvDeck)};
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext())
+                .setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, importOptions), (dialog, which) -> {
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT).setType("*/*");
+
+                    if (which == 0) importDeckType = NewEditCustomDeckActivity.ImportType.JSON;
+                    else if (which == 1) importDeckType = NewEditCustomDeckActivity.ImportType.JSON5;
+                    else if (which == 2) importDeckType = NewEditCustomDeckActivity.ImportType.CSV;
+
+                    startActivityForResult(Intent.createChooser(intent, "Pick a JSON file..."), RC_IMPORT_JSON);
+                });
+
+        showDialog(builder);
+    }
+
     private void showRecoverCardcastDialog() {
         EditText input = new EditText(requireContext());
         input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5), new InputFilter.AllCaps()});
@@ -366,7 +383,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
                         Pyx.get().recoverCardcastDeck(code, requireContext())
                                 .addOnSuccessListener(tmpFile -> {
                                     dismissDialog();
-                                    startActivity(NewEditCustomDeckActivity.activityImportRecoverIntent(requireContext(), tmpFile));
+                                    startActivity(NewEditCustomDeckActivity.activityImportRecoverIntent(requireContext(), NewEditCustomDeckActivity.ImportType.JSON, tmpFile));
                                 })
                                 .addOnFailureListener(ex -> {
                                     dismissDialog();
@@ -389,12 +406,15 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         if (requestCode == RC_IMPORT_JSON) {
             if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
                 try {
+                    if (importDeckType == null)
+                        return;
+
                     InputStream in = requireContext().getContentResolver().openInputStream(data.getData());
                     if (in == null) return;
 
                     File tmpFile = new File(requireContext().getCacheDir(), CommonUtils.randomString(6, "abcdefghijklmnopqrstuvwxyz"));
                     CommonUtils.copy(in, new FileOutputStream(tmpFile));
-                    startActivity(NewEditCustomDeckActivity.activityImportRecoverIntent(requireContext(), tmpFile));
+                    startActivity(NewEditCustomDeckActivity.activityImportRecoverIntent(requireContext(), importDeckType, tmpFile));
                 } catch (IOException ex) {
                     Log.e(TAG, "Failed importing JSON file: " + data, ex);
                 }
