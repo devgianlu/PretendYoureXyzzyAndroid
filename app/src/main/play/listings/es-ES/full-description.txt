@@ -1,0 +1,34 @@
+Esta aplicación te permite jugar a Pretend You're Xyzzy, un juego de cartas en línea, desde tu dispositivo donde sea que estés.
+
+----- ATENCIÓN! -----
+El contenido de esta aplicación puede decepcionar a algunas personas. Si no estás de acuerdo con el contenido de la app, no te quejes conmigo. No soy el creador del juego, sólo soy un jugador que también es desarrollador.
+--------------------------------
+
+El juego es simple. En cada ronda, una carta negra es elegida aleatoriamente de la baraja, cada uno responde con su carta blanca mas graciosa. El juez decide que jugador gana.
+
+
+Funciones gratuitas:
+-Juega con amigos en una variedad de servidores
+-Personaliza tu juego
+-Juega con barajas personalizadas
+-Crea barajas personalizadas desde el juego
+-Agrega imágenes (desde un link) a tu baraja personalizada (compatible con GIFs)
+-Guarda tus cartas favoritas
+-Ve tus estadísticas (juegos jugados)
+
+Funciones de Overloaded:
+-Crea tu perfil
+-Personaliza tu foto de perfil (compatible con GIFs)
+-Acumula logros y estadísticas (cartas y rondas jugadas, cartas y rondas ganadas)
+-Haz amigos
+-Chatea de manera privada con tus amigos
+-Crea barajas personalizadas colaborativas para ti y tus amigos
+-Sube imágenes y agrégalas a las cartas de tu baraja personalizada (compatible con GIFs)
+-Ve las cartas guardadas de tus amigos y sus barajas personalizadas
+-Sincroniza tus cartas guardadas y barajas personalizadas para nunca perderlas
+-Más por venir...
+
+
+Este proyecto es de código abierto, disponible en https://github.com/devgianlu/PretendYoureXyzzyAndroid
+------------------------------
+Definiciones de palabras extraídas de Urban Dictionary (https://www.urbandictionary.com/).
