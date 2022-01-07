@@ -1,2 +1,3 @@
 - Import JSON, JSON5 and CSV decks
+- Search players and games
 - Fixed Overloaded purchase problems
