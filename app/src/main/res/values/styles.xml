@@ -26,6 +26,11 @@
         <item name="android:tint">@color/toolbar_icon_fg</item>
     </style>
 
+    <style name="ToolbarIconStyle.NoBackground" parent="ToolbarIconStyle">
+        <item name="android:elevation">0dp</item>
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
     <!-- Fonts -->
     <style name="TextAppearance" />
 

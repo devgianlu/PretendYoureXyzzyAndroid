@@ -2,6 +2,8 @@ package com.gianlu.pretendyourexyzzy.main.settings;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -51,6 +53,7 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
     private PlayersAdapter adapter;
     private Task<List<String>> overloadedUsersTask;
     private List<String> overloadedUsers;
+    private String filterQuery = null;
 
     private void setPlayersStatus(boolean loading, boolean error) {
         if (loading) {
@@ -96,6 +99,22 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
             binding.playersFragmentSwipeRefresh.setRefreshing(false);
         });
 
+        binding.playersFragmentSearchButton.setOnClickListener(v -> filterPlayers(binding.playersFragmentSearch.getText().toString()));
+        binding.playersFragmentSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                filterPlayers(s.toString());
+            }
+        });
+
         Utils.generateUsernamePlaceholders(requireContext(), binding.playersFragmentListLoadingChild, 14, 12, 40);
         setPlayersStatus(true, false);
 
@@ -122,11 +141,24 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
         adapter = new PlayersAdapter(names);
         binding.playersFragmentList.setAdapter(adapter);
         setPlayersStatus(false, false);
+
+        if (filterQuery != null)
+            adapter.filterWithQuery(filterQuery);
     }
 
     private void failedLoadingPlayers(@NonNull Exception ex) {
         Log.e(TAG, "Failed loading players names.", ex);
         setPlayersStatus(false, true);
+    }
+
+    private void filterPlayers(@NonNull String text) {
+        if (adapter == null) {
+            filterQuery = text;
+            return;
+        }
+
+        if (text.isEmpty()) text = null;
+        adapter.filterWithQuery(text);
     }
 
     @Override
@@ -212,7 +244,7 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
 
         @Override
         protected boolean matchQuery(@NonNull Name item, @Nullable String query) {
-            return true;
+            return query == null || item.noSigil().toLowerCase().contains(query.toLowerCase());
         }
 
         @Override
