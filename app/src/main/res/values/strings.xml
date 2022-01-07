@@ -352,4 +352,5 @@
     <string name="importJson5Deck">Import JSON5 deck (e.g. Many Decks)</string>
     <string name="importCsvDeck">Import CSV deck (e.g. recovered Cardcast)</string>
     <string name="searchPlayers">Search players</string>
+    <string name="searchGames">Search games</string>
 </resources>

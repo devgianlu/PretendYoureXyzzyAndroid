@@ -20,10 +20,35 @@
             android:layout_marginBottom="16dp"
             android:src="@drawable/baseline_add_24" />
 
-        <Space
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_height="42dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="16dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_button_big"
+            android:elevation="4dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/gamesFragment_search"
+                style="@style/SearchEditText"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:autofillHints=""
+                android:focusedByDefault="false"
+                android:hint="@string/searchGames"
+                android:inputType="textNoSuggestions" />
+
+            <ImageButton
+                android:id="@+id/gamesFragment_searchButton"
+                style="@style/ToolbarIconStyle.NoBackground"
+                android:src="@drawable/ic_baseline_search_24" />
+        </LinearLayout>
 
         <ImageButton
             android:id="@+id/gamesFragment_players"

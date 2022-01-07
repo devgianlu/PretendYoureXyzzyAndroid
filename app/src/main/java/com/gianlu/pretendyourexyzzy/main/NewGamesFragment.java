@@ -4,7 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -137,7 +139,23 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
             binding.gamesFragmentSwipeRefresh.setRefreshing(false);
         });
 
-        binding.gamesFragmentChangeServer.setOnClickListener(v -> ChangeServerDialog.get().show(requireFragmentManager(), null));
+        binding.gamesFragmentSearchButton.setOnClickListener(v -> filterGames(binding.gamesFragmentSearch.getText().toString()));
+        binding.gamesFragmentSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+    filterGames(s.toString());
+            }
+        });
+
+        binding.gamesFragmentChangeServer.setOnClickListener(v -> ChangeServerDialog.get().show(getParentFragmentManager(), null));
         binding.gamesFragmentPlayers.setOnClickListener(v -> {
             if (parent == null) return;
             parent.changePage(0, (page, fragment) -> {
@@ -207,6 +225,14 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
                 }
                 break;
         }
+    }
+
+    private void filterGames(@NonNull String text) {
+        if (adapter == null)
+            return;
+
+        if (text.isEmpty()) text = null;
+        adapter.filterWithQuery(text);
     }
 
     private void gamesLoaded(@NonNull GamesList games) {
@@ -395,7 +421,7 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
 
         @Override
         protected boolean matchQuery(@NonNull Game item, @Nullable String query) {
-            return true;
+            return query == null || item.host.toLowerCase().contains(query.toLowerCase());
         }
 
         @Override

@@ -147,6 +147,17 @@
         <item name="errorTextColor">#EC4040</item>
     </style>
 
+    <style name="SearchEditText" parent="Widget.AppCompat.EditText">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:fontFamily">@font/montserrat_regular</item>
+        <item name="android:lines">1</item>
+        <item name="android:paddingBottom">2dp</item>
+        <item name="android:textColor">@color/colorOnPrimary</item>
+        <item name="android:textColorHint">#DDFFFFFF</item>
+        <item name="android:textCursorDrawable">@null</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
     <!-- Overloaded subscription page -->
     <style name="OverloadedFeatureStyle">
         <item name="android:fontFamily">@font/roboto_regular</item>
