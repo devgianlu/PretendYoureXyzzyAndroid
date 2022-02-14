@@ -50,7 +50,7 @@ dependencies {
 
     implementation 'com.github.instacart.truetime-android:library:3.5'
 
-    implementation('com.google.firebase:firebase-perf:20.0.4') {
+    implementation('com.google.firebase:firebase-perf:20.0.5') {
         exclude group: 'com.google.protobuf'
     }
 }
