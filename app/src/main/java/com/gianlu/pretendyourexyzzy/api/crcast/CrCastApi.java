@@ -46,7 +46,7 @@ import okhttp3.ResponseBody;
 
 public final class CrCastApi {
     private static final CrCastApi instance = new CrCastApi();
-    private static final String BASE_URL = "https://castapi.clrtd.com/v1/";
+    private static final String BASE_URL = "https://api.crcast.cc/v1/";
     private static final String TAG = CrCastApi.class.getSimpleName();
     private final OkHttpClient client;
     private final ExecutorService executorService;
@@ -60,7 +60,7 @@ public final class CrCastApi {
     @SuppressLint("SimpleDateFormat")
     static long parseApiDate(@NonNull String text) {
         try {
-            Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(text);
+            Date date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'").parse(text);
             return date == null ? 0 : date.getTime();
         } catch (ParseException ex) {
             Log.e(TAG, "Failed parsing date: " + text, ex);
@@ -196,19 +196,33 @@ public final class CrCastApi {
                 list.add(CrCastDeck.parse(decks.getJSONObject(i), db, false));
 
             decks = request("GET", "decks/0/50/?sort=none&favorites=1", null, true).getJSONArray("decks");
-            for (int i = 0; i < decks.length(); i++)
-                list.add(CrCastDeck.parse(decks.getJSONObject(i), db, true));
+            for (int i = 0; i < decks.length(); i++) {
+                JSONObject obj = decks.getJSONObject(i);
+                list.add(getDeckSync(obj.getString("deckcode"), true, db));
+            }
 
             return list;
         });
     }
 
     @NonNull
+    private CrCastDeck getDeckSync(@NonNull String deckCode, boolean fav, @NonNull CustomDecksDatabase db) throws JSONException, CrCastException, NotSignedInException, IOException {
+        JSONObject deck;
+        try {
+            deck = request("GET", "decks/" + deckCode, null, true).getJSONObject("deck");
+        } catch (StatusCodeException ex) {
+            if (ex.code != 403)
+                throw ex;
+
+            deck = request("GET", "decks/user/" + deckCode, null, true).getJSONObject("deck");
+        }
+
+        return CrCastDeck.parse(deck, db, fav);
+    }
+
+    @NonNull
     public Task<CrCastDeck> getDeck(@NonNull String deckCode, boolean fav, @NonNull CustomDecksDatabase db) {
-        return Tasks.call(executorService, () -> {
-            JSONObject deck = request("GET", "decks/" + deckCode, null, true).getJSONObject("deck");
-            return CrCastDeck.parse(deck, db, fav);
-        });
+        return Tasks.call(executorService, () -> getDeckSync(deckCode, fav, db));
     }
 
     public void logout() {
