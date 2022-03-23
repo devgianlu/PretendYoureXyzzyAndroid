@@ -39,6 +39,7 @@
         <activity
             android:name=".NewMainActivity"
             android:configChanges="uiMode|screenSize|orientation"
+            android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateHidden|adjustNothing">
@@ -75,6 +76,7 @@
         <activity
             android:name=".customdecks.NewEditCustomDeckActivity"
             android:configChanges="uiMode|screenSize|orientation"
+            android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateHidden|adjustNothing">

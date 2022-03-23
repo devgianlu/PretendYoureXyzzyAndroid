@@ -6,13 +6,13 @@ apply plugin: 'com.android.application'
 
 def isCi = System.getenv("CI") == "true"
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     buildToolsVersion "31.0.0"
 
     defaultConfig {
         applicationId "com.gianlu.pretendyourexyzzy"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 136
         versionName "5.1.2"
     }
@@ -76,7 +76,7 @@ play {
 dependencies {
     implementation project(':CommonUtils')
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
-    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'com.google.android.material:material:1.5.0'
     implementation 'org.apmem.tools:layouts:1.10@aar'
 
     implementation 'com.squareup.okhttp3:okhttp:4.9.3'
