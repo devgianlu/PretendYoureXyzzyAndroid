@@ -12,6 +12,7 @@
     <string name="game_isJudging">%s está julgando…</string>
     <string name="game_waitingForPlayers">Aguardando outros jogadores…</string>
     <string name="game_playerSkipped">%s foi ignorado.</string>
+    <string name="game_pickCards">%s</string>
     <string name="game_judgeSkipped">O Juiz %s foi ignorado.</string>
     <string name="game_notYourTurn">Não é a sua vez! Se você acha que isso é errado, atualize do menu.</string>
     <string name="game_playerKickedIdle">%s foi expulso por estar inativo.</string>
