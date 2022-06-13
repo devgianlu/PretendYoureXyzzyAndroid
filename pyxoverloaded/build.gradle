@@ -45,7 +45,7 @@ dependencies {
 
     api 'com.google.firebase:firebase-auth:21.0.2'
 
-    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
     implementation 'org.whispersystems:signal-protocol-android:2.8.1'
 
     implementation 'com.github.instacart.truetime-android:library:3.5'
