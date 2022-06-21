@@ -167,6 +167,7 @@
     <string name="overloaded_invalidUsername">O nome de usuário deve conter apenas letras maiúsculas e minúsculas, números, ou sublinhados, devem ter entre 3 e 30 caracteres, e não devem começar com um número.</string>
     <string name="profile">Perfil</string>
     <string name="achievements">Conquistas</string>
+    <string name="achievementsNotEnabled">Comece a jogar e seja recompensado com insígnias: basta conectar o Google Play Games.</string>
     <string name="linkedAccounts">Contas vinculadas</string>
     <string name="friends">Amigos</string>
     <string name="friendOffline">Desconectado</string>
@@ -209,5 +210,11 @@
     <string name="overloadedSync_errorSynced">Erro de sincronização, última sincronizada %s</string>
     <string name="invalidDeckName">O nome do deck deve ter entre 5 e 32 caracteres.</string>
     <string name="invalidDeckDesc">A descrição do deck deve ter menos de 256 caracteres</string>
+    <string name="resume">Continuar</string>
+    <string name="fixPayment">Corrigir Pagamento</string>
+    <string name="subscriptions">Assinaturas</string>
+    <string name="noMetricsSessions">Não há histórias para exibir.</string>
+    <string name="editCustomDeck_watermarkDetails">Este código será exibido nos cartões do seu convés. Não é um código único.</string>
+    <string name="cardsCountBlackWhite">%d black, %d white</string>
     <string name="wrongGamePassword">Senha errada para este jogo!</string>
 </resources>
