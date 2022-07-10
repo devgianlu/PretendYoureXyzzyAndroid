@@ -216,5 +216,16 @@
     <string name="noMetricsSessions">Não há histórias para exibir.</string>
     <string name="editCustomDeck_watermarkDetails">Este código será exibido nos cartões do seu convés. Não é um código único.</string>
     <string name="cardsCountBlackWhite">%d black, %d white</string>
+    <string name="cardsCount">%d cards</string>
+    <string name="deckBy">By %s</string>
+    <string name="deckDoesNotExist">This deck doesn\'t exist anymore.</string>
+    <string name="featureOverloadedOnly">This feature is supported for Overloaded users only.</string>
+    <string name="recoverCardcastDeck">Recover Cardcast deck</string>
+    <string name="recover">Recover</string>
+    <string name="invalidDeckCode">The deck code is invalid!</string>
+    <string name="recoverDeckNotFound">Deck cannot be recovered: not found.</string>
+    <string name="failedRecoveringCardcastDeck">Failed recovering Cardcast deck.</string>
+    <string name="logout_confirmation">Are you sure you want to logout?</string>
+    <string name="lessThanMinuteAgo">Less than a minute ago</string>
     <string name="wrongGamePassword">Senha errada para este jogo!</string>
 </resources>
