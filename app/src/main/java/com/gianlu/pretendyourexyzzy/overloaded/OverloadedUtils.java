@@ -14,6 +14,7 @@ import com.android.billingclient.api.Purchase;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.google.android.gms.games.event.Event;
+import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
@@ -21,7 +22,6 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.regex.Pattern;
 
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
@@ -103,26 +103,35 @@ public final class OverloadedUtils {
     /**
      * Get the latest purchase of Overloaded (cached).
      *
-     * @return The {@link Purchase} or {@code null} if none was present
+     * @return A task resolving to the {@link Purchase} or {@code null} if none was present
      */
-    @Nullable
-    public static Purchase getLatestPurchase(BillingClient billingClient) {
+    @NonNull
+    public static Task<Purchase> getLatestPurchase(BillingClient billingClient) {
         if (billingClient == null || !billingClient.isReady())
-            return null;
+            return Tasks.forResult(null);
 
-        List<Purchase> purchases = billingClient.queryPurchases(ACTIVE_SKU.skuType).getPurchasesList();
-        if (purchases == null || purchases.isEmpty()) return null;
+        CancellationTokenSource cancellationSource = new CancellationTokenSource();
+        TaskCompletionSource<Purchase> completionSource = new TaskCompletionSource<>(cancellationSource.getToken());
 
-        Purchase latestPurchase = null;
-        for (Purchase p : purchases) {
-            if (!p.getSkus().contains(ACTIVE_SKU.sku) || !BuildConfig.APPLICATION_ID.equals(p.getPackageName()))
-                continue;
+        billingClient.queryPurchasesAsync(ACTIVE_SKU.skuType, (billingResult, purchases) -> {
+            if (purchases.isEmpty()) {
+                completionSource.setResult(null);
+                return;
+            }
 
-            if (latestPurchase == null || latestPurchase.getPurchaseTime() < p.getPurchaseTime())
-                latestPurchase = p;
-        }
+            Purchase latestPurchase = null;
+            for (Purchase p : purchases) {
+                if (!p.getSkus().contains(ACTIVE_SKU.sku) || !BuildConfig.APPLICATION_ID.equals(p.getPackageName()))
+                    continue;
 
-        return latestPurchase;
+                if (latestPurchase == null || latestPurchase.getPurchaseTime() < p.getPurchaseTime())
+                    latestPurchase = p;
+            }
+
+            completionSource.setResult(latestPurchase);
+        });
+
+        return completionSource.getTask();
     }
 
     /**
@@ -163,11 +172,13 @@ public final class OverloadedUtils {
                         Log.d(TAG, "Ok, init startup done.");
                     }
 
-                    bcTask.addOnSuccessListener(br -> {
-                        if (br == null) return;
+                    bcTask.continueWithTask(task -> {
+                        if (task.getResult() == null)
+                            return Tasks.forResult(null);
 
-                        Purchase purchase;
-                        if ((purchase = getLatestPurchase(billingClient)) != null && (!data.purchaseStatus.ok || (data.expireTime != null && data.expireTime <= System.currentTimeMillis()))) {
+                        return getLatestPurchase(billingClient);
+                    }).addOnSuccessListener(purchase -> {
+                        if (purchase != null && (!data.purchaseStatus.ok || (data.expireTime != null && data.expireTime <= System.currentTimeMillis()))) {
                             OverloadedApi.get().registerUser(null, purchase.getSkus().get(0), purchase.getPurchaseToken())
                                     .addOnSuccessListener(updatedData -> {
                                         if (updatedData.purchaseStatus.ok) {

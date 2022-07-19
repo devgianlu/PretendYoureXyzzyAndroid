@@ -356,35 +356,43 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
      * @param username The username chosen
      */
     private void registerUser(@NonNull String username) {
-        Purchase purchase = OverloadedUtils.getLatestPurchase(billingClient);
-
         setRegisterLoading(true);
-        OverloadedApi.get().registerUser(username, purchase != null ? purchase.getSkus().get(0) : null, purchase != null ? purchase.getPurchaseToken() : null)
-                .addOnSuccessListener(data -> {
-                    if (data.purchaseStatus.ok) {
-                        Prefs.putString(PK.LAST_NICKNAME, username);
-                        subscriptionCompleteOk();
-                        return;
-                    }
+        OverloadedUtils.getLatestPurchase(billingClient)
+                .addOnSuccessListener(purchase ->
+                        OverloadedApi.get().registerUser(
+                                        username,
+                                        purchase != null ? purchase.getSkus().get(0) : null,
+                                        purchase != null ? purchase.getPurchaseToken() : null
+                                )
+                                .addOnSuccessListener(data -> {
+                                    if (data.purchaseStatus.ok) {
+                                        Prefs.putString(PK.LAST_NICKNAME, username);
+                                        subscriptionCompleteOk();
+                                        return;
+                                    }
 
-                    if (skuDetails != null) {
-                        startBillingFlow(skuDetails);
-                    } else {
-                        getSkuDetails(new SkuDetailsCallback() {
-                            @Override
-                            public void onSuccess(@NonNull SkuDetails details) {
-                                startBillingFlow(details);
-                            }
+                                    if (skuDetails != null) {
+                                        startBillingFlow(skuDetails);
+                                    } else {
+                                        getSkuDetails(new SkuDetailsCallback() {
+                                            @Override
+                                            public void onSuccess(@NonNull SkuDetails details) {
+                                                startBillingFlow(details);
+                                            }
 
-                            @Override
-                            public void onFailed(int code) {
-                                setRegisterError();
-                            }
-                        });
-                    }
-                })
+                                            @Override
+                                            public void onFailed(int code) {
+                                                setRegisterError();
+                                            }
+                                        });
+                                    }
+                                })
+                                .addOnFailureListener(ex -> {
+                                    Log.e(TAG, "Failed registering user.", ex);
+                                    setRegisterError();
+                                }))
                 .addOnFailureListener(ex -> {
-                    Log.e(TAG, "Failed registering user.", ex);
+                    Log.e(TAG, "Failed getting latest purchase.", ex);
                     setRegisterError();
                 });
     }
@@ -449,13 +457,14 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
 
         BillingResult result = billingClient.launchBillingFlow(requireActivity(), flowParams);
         if (result.getResponseCode() == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
-            Purchase purchase = OverloadedUtils.getLatestPurchase(billingClient);
-            if (purchase == null) {
-                Log.e(TAG, "Couldn't find latest purchase.");
-                return;
-            }
+            OverloadedUtils.getLatestPurchase(billingClient).addOnSuccessListener(purchase -> {
+                if (purchase == null) {
+                    Log.e(TAG, "Couldn't find latest purchase.");
+                    return;
+                }
 
-            purchaseComplete(purchase);
+                purchaseComplete(purchase);
+            });
         } else if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
             setRegisterError();
         }

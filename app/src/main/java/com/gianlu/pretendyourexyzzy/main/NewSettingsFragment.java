@@ -375,7 +375,7 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
             super.onStart();
 
             if (billingHelper == null && getActivity() != null && FossUtils.hasGoogleBilling()) {
-                billingHelper = new PreferencesBillingHelper(this, PreferencesBillingHelper.DONATE_SKUS);
+                billingHelper = new PreferencesBillingHelper(this, "donation.lemonade", "donation.coffee", "donation.hamburger", "donation.pizza", "donation.sushi", "donation.champagne");
                 billingHelper.onStart(requireActivity());
             }
         }
