@@ -1,2 +1,2 @@
-- Fixed CrCast integration
-- Updated third party libraries
+- Fixed CrCast login issue
+- Updated libraries
