@@ -87,8 +87,8 @@ public final class CrCastApi {
     private JSONObject request(@NotNull String method, @NonNull String path, @Nullable RequestBody reqBody, boolean auth) throws IOException, JSONException, CrCastException, NotSignedInException {
         Exception lastEx = null;
         for (int i = 0; i < 3; i++) {
-            Request.Builder req = new Request.Builder().
-                    method(method, reqBody)
+            Request.Builder req = new Request.Builder()
+                    .method(method, reqBody)
                     .url(BASE_URL + path);
 
             if (auth)
@@ -96,7 +96,22 @@ public final class CrCastApi {
 
             try (Response resp = client.newCall(req.build()).execute()) {
                 Log.v(TAG, path + " -> " + resp.code());
-                if (resp.code() != 200) throw new StatusCodeException(resp);
+                if (resp.code() != 200) {
+                    // Try renewing the token with the saved credentials
+                    if (resp.code() == 401) {
+                        Prefs.remove(PK.CR_CAST_TOKEN);
+
+                        try {
+                            getToken();
+                            return request(method, path, reqBody, auth);
+                        } catch (NotSignedInException ex) {
+                            logout();
+                            Log.d(TAG, "Logged out CrCast because unauthorized.");
+                        }
+                    }
+
+                    throw new StatusCodeException(resp);
+                }
 
                 ResponseBody respBody = resp.body();
                 if (respBody == null) throw new IOException("Missing body.");
