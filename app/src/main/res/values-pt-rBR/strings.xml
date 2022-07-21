@@ -219,6 +219,7 @@
     <string name="cardsCount">%d cards</string>
     <string name="deckBy">By %s</string>
     <string name="deckDoesNotExist">This deck doesn\'t exist anymore.</string>
+    <string name="cannotFindCustomDeck">Não é possível encontrar este item</string>
     <string name="featureOverloadedOnly">This feature is supported for Overloaded users only.</string>
     <string name="recoverCardcastDeck">Recover Cardcast deck</string>
     <string name="recover">Recover</string>
