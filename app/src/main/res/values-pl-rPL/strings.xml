@@ -58,6 +58,7 @@
     <string name="ongoingGame">Trwająca gra</string>
     <string name="leaveGame">Opuść grę</string>
     <string name="failedLeaving">Nie udało się opuścić gry!</string>
+    <string name="gameOptions">Opcje gry</string>
     <string name="blackCards">Czarne karty</string>
     <string name="whiteCards">Białe karty</string>
     <string name="required">Wymagane</string>
