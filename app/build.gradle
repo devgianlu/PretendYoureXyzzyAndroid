@@ -76,7 +76,7 @@ play {
 dependencies {
     implementation project(':CommonUtils')
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
-    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'com.google.android.material:material:1.7.0'
     implementation 'org.apmem.tools:layouts:1.10@aar'
 
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
@@ -86,7 +86,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.13.2'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.13.2'
 
-    implementation('com.google.firebase:firebase-perf:20.1.0') {
+    implementation('com.google.firebase:firebase-perf:20.3.0') {
         exclude group: 'com.google.protobuf'
     }
 
