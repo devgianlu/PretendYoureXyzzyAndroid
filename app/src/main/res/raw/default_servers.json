@@ -24,14 +24,6 @@
     "metrics": "https://pretendyoure.xyz/zy/metrics/"
   },
   {
-    "name": "Custom decks are back!",
-    "host": "pyx.gianlu.xyz",
-    "path": "/ZY",
-    "port": 443,
-    "secure": true,
-    "metrics": "https://pyx-metrics.gianlu.xyz/"
-  },
-  {
     "name": "Club Retard",
     "host": "xyzzy.clrtd.com",
     "path": "/zy",
