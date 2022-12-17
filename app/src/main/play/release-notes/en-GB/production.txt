@@ -1,2 +1,2 @@
-- Fixed CrCast login issue
-- Updated libraries
+- Removed outdated play servers
+- Minor improvements
