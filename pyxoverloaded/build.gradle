@@ -41,7 +41,7 @@ dependencies {
     implementation project(':CommonUtils')
 
     api 'com.google.android.gms:play-services-games:23.1.0'
-    api 'com.google.android.gms:play-services-auth:20.4.0'
+    api 'com.google.android.gms:play-services-auth:20.5.0'
 
     api 'com.google.firebase:firebase-auth:21.1.0'
 
