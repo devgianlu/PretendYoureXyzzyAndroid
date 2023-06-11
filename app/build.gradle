@@ -4,7 +4,7 @@ plugins {
 
 apply plugin: 'com.android.application'
 
-def isCi = System.getenv("CI") == "true"
+def isCi = System.getenv("CI") == "true"140
 android {
     compileSdkVersion 33
     buildToolsVersion "33.0.0"
@@ -13,8 +13,8 @@ android {
         applicationId "com.gianlu.pretendyourexyzzy"
         minSdkVersion 21
         targetSdkVersion 33
-        versionCode 139
-        versionName "5.1.5"
+        versionCode 140
+        versionName "5.1.6"
     }
 
     if (isCi) {

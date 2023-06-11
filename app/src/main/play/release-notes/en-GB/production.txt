@@ -1,2 +1,1 @@
-- Removed outdated play servers
-- Minor improvements
+- Updated libraries
