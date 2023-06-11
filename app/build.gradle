@@ -6,13 +6,13 @@ apply plugin: 'com.android.application'
 
 def isCi = System.getenv("CI") == "true"
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
     buildToolsVersion "33.0.0"
 
     defaultConfig {
         applicationId "com.gianlu.pretendyourexyzzy"
         minSdkVersion 21
-        targetSdkVersion 32
+        targetSdkVersion 33
         versionCode 139
         versionName "5.1.5"
     }
@@ -76,17 +76,17 @@ play {
 dependencies {
     implementation project(':CommonUtils')
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
-    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'com.google.android.material:material:1.9.0'
     implementation 'org.apmem.tools:layouts:1.10@aar'
 
-    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
     implementation 'org.conscrypt:conscrypt-android:2.5.2'
 
     implementation 'com.github.bumptech.glide:glide:4.15.1'
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.15.1'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.15.1'
 
-    implementation('com.google.firebase:firebase-perf:20.3.1') {
+    implementation('com.google.firebase:firebase-perf:20.3.2') {
         exclude group: 'com.google.protobuf'
     }
 
