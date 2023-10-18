@@ -2,7 +2,7 @@
 
 ![Android CI](https://github.com/devgianlu/PretendYoureXyzzyAndroid/workflows/Android%20CI/badge.svg?branch=master)
 [![Crowdin](https://badges.crowdin.net/pretend-youre-xyzzy-android/localized.svg)](https://crowdin.com/project/pretend-youre-xyzzy-android)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c7c1308babb841b89beb2adc969c3ef8)](https://www.codacy.com/manual/devgianlu/PretendYoureXyzzyAndroid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=devgianlu/PretendYoureXyzzyAndroid&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/e262b6125bcb40a298d4595f63c509d7)](https://app.codacy.com/gh/devgianlu/PretendYoureXyzzyAndroid/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![time tracker](https://wakatime.com/badge/github/devgianlu/PretendYoureXyzzyAndroid.svg)](https://wakatime.com/badge/github/devgianlu/PretendYoureXyzzyAndroid)
 
 This app let's you play Pretend You're Xyzzy, an online card game, on your device wherever you are.
