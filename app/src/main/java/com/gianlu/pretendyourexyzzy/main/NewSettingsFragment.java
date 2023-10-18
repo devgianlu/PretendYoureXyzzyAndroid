@@ -335,7 +335,6 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
             binding.settingsApp.setSubtitle(R.string.devgianluCopyright, Calendar.getInstance().get(Calendar.YEAR));
             binding.settingsVersion.setSubtitle(getVersion());
             binding.settingsDeveloper.setOnClickListener((v) -> openLink("https://gianlu.xyz"));
-            binding.settingsEmailMe.setOnClickListener((v) -> LogsHelper.sendEmail(requireContext(), null));
             binding.settingsOpenSource.setOnClickListener((v) -> openLink("https://github.com/devgianlu/PretendYoureXyzzyAndroid"));
             binding.settingsTranslators.setOnClickListener((v) -> replaceFragment(Page.TRANSLATORS));
 
@@ -353,7 +352,7 @@ public class NewSettingsFragment extends NewMainActivity.ChildFragment {
             });
             binding.settingsDonate.setOnClickListener(v -> donate());
 
-            binding.settingsSendLogs.setOnClickListener(v -> LogsHelper.sendEmail(requireContext(), null));
+            binding.settingsOpenIssue.setOnClickListener(v -> LogsHelper.openGithubIssue(requireContext(), "PretendYoureXyzzyAndroid", null));
             binding.settingsExportLogs.setOnClickListener(v -> {
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 Exception logsException = LogsHelper.exportLogFiles(requireContext(), shareIntent);

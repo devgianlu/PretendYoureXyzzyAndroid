@@ -59,15 +59,6 @@
             app:title="@string/prefs_developer" />
 
         <com.gianlu.pretendyourexyzzy.PreferenceItemView
-            android:id="@+id/settings_emailMe"
-            style="@style/TextAppearance.PreferencesItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/baseline_email_24"
-            app:subtitle="@string/devgianluEmail"
-            app:title="@string/emailMe" />
-
-        <com.gianlu.pretendyourexyzzy.PreferenceItemView
             android:id="@+id/settings_openSource"
             style="@style/TextAppearance.PreferencesItem"
             android:layout_width="match_parent"
@@ -137,12 +128,12 @@
             android:text="@string/logs" />
 
         <com.gianlu.pretendyourexyzzy.PreferenceItemView
-            android:id="@+id/settings_sendLogs"
+            android:id="@+id/settings_openIssue"
             style="@style/TextAppearance.PreferencesItem"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:icon="@drawable/baseline_email_24"
-            app:title="@string/send_email" />
+            app:icon="@drawable/baseline_bug_report_24"
+            app:title="@string/openIssue" />
 
         <com.gianlu.pretendyourexyzzy.PreferenceItemView
             android:id="@+id/settings_exportLogs"

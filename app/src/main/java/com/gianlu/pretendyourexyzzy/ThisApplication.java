@@ -1,5 +1,7 @@
 package com.gianlu.pretendyourexyzzy;
 
+import androidx.annotation.Nullable;
+
 import com.bumptech.glide.Glide;
 import com.gianlu.commonutils.analytics.AnalyticsApplication;
 import com.gianlu.commonutils.preferences.CommonPK;
@@ -20,6 +22,12 @@ public class ThisApplication extends AnalyticsApplication {
     @Override
     protected boolean isDebug() {
         return BuildConfig.DEBUG;
+    }
+
+    @Nullable
+    @Override
+    protected String getGithubProjectName() {
+        return "PretendYoureXyzzyAndroid";
     }
 
     @Override

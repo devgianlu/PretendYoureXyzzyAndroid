@@ -428,7 +428,7 @@ public class Pyx implements Closeable {
     public static class NoServersException extends Exception {
 
         public void solve(@NonNull Context context) {
-            OfflineActivity.startActivity(context, null);
+            OfflineActivity.startActivity(context, "PretendYoureXyzzyAndroid",null);
         }
     }
 
