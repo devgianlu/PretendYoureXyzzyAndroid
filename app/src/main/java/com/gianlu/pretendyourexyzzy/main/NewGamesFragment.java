@@ -491,6 +491,8 @@ public class NewGamesFragment extends NewMainActivity.ChildFragment implements P
             holder.binding.gameItemJoin.setOnClickListener(v -> askPassword(game)
                     .continueWithTask(task -> pyx.request(PyxRequests.joinGame(game.gid, task.getResult())))
                     .addOnSuccessListener((gamePermalink) -> {
+                        if (!isAdded()) return;
+
                         startActivity(GameActivity.gameIntent(requireContext(), gamePermalink));
                         AnalyticsApplication.sendAnalytics(Utils.ACTION_JOIN_GAME);
                     })
