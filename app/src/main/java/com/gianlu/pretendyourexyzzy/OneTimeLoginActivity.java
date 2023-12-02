@@ -34,8 +34,6 @@ public class OneTimeLoginActivity extends ActivityWithDialog {
         binding = ActivityOneTimeLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        firstLoadTask = PyxServersApi.get().firstLoad(this);
-
         binding.oneTimeLoginInputs.idCodeInput.setHelperText(getString(R.string.idCode_message));
         binding.oneTimeLoginInputs.idCodeInput.setEndIconOnClickListener(v -> CommonUtils.setText(binding.oneTimeLoginInputs.idCodeInput, CommonUtils.randomString(100)));
         CommonUtils.clearErrorOnEdit(binding.oneTimeLoginInputs.usernameInput);
@@ -43,6 +41,8 @@ public class OneTimeLoginActivity extends ActivityWithDialog {
 
         binding.oneTimeLoginContinue.setOnClickListener(v -> {
             setLoading(true);
+
+            firstLoadTask = PyxServersApi.get().firstLoad(this);
             firstLoadTask.addOnSuccessListener(this, this::register)
                     .addOnFailureListener(this, this::firstLoadFailed);
         });
