@@ -1,6 +1,8 @@
 apply plugin: 'com.android.library'
 
 android {
+    namespace 'xyz.gianlu.pyxoverloaded'
+
     defaultConfig {
         compileSdk 34
 
@@ -13,7 +15,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    flavorDimensions 'main'
+    flavorDimensions = ['main']
     productFlavors {
         standard {
             dimension 'main'
