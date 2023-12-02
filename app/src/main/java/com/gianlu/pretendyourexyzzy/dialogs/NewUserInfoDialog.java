@@ -142,6 +142,9 @@ public final class NewUserInfoDialog extends DialogFragment {
                         binding.userInfoDialogPyxInfo.setVisibility(View.GONE);
                         binding.userInfoDialogPyxInfoLoading.setVisibility(View.GONE);
 
+                        if (!isAdded())
+                            return;
+
                         if (!(OverloadedUtils.isSignedIn() && overloaded) || overloadedUser == null)
                             dismissAllowingStateLoss();
                     });

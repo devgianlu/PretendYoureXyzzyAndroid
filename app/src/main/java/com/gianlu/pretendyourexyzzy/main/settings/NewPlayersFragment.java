@@ -289,6 +289,9 @@ public class NewPlayersFragment extends NewSettingsFragment.ChildFragment implem
             }
 
             popup.setOnMenuItemClickListener(item -> {
+                if (!isAdded())
+                    return false;
+
                 if (item.getItemId() == R.id.nameItemMenu_showInfo) {
                     NewUserInfoDialog.get(username, true, hasOverloadedUser(username)).show(getChildFragmentManager(), null);
                     return true;
