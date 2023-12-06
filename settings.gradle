@@ -1,2 +1,2 @@
 include ':app', ':CommonUtils', ':pyxoverloaded'
-project(':CommonUtils').projectDir = new File('./CommonUtils/utils')
+project(':CommonUtils').projectDir = new File('./CommonUtils')
