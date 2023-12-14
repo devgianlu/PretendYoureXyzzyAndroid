@@ -81,7 +81,7 @@ play {
 dependencies {
     implementation project(':CommonUtils')
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
-    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'com.google.android.material:material:1.11.0'
     implementation 'org.apmem.tools:layouts:1.10@aar'
 
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
