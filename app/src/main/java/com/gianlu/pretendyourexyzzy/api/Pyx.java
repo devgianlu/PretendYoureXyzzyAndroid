@@ -428,7 +428,7 @@ public class Pyx implements Closeable {
     public static class NoServersException extends Exception {
 
         public void solve(@NonNull Context context) {
-            OfflineActivity.startActivity(context, "PretendYoureXyzzyAndroid",null);
+            OfflineActivity.startActivity(context, "PretendYoureXyzzyAndroid", null);
         }
     }
 
@@ -603,10 +603,7 @@ public class Pyx implements Closeable {
         public static Server pickBestServer(@NonNull List<Server> servers) {
             if (servers.isEmpty()) throw new IllegalArgumentException();
 
-            for (Server server : servers)
-                if (server.url.host().contains("pretendyoure.xyz")) // These servers are usually more populated
-                    return server;
-
+            // Just pick the first server
             return servers.get(0);
         }
 
