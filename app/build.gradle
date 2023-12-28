@@ -17,8 +17,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 34
 
-        versionCode 141
-        versionName "5.1.7"
+        versionCode 142
+        versionName "5.1.8"
     }
 
     if (isCi) {

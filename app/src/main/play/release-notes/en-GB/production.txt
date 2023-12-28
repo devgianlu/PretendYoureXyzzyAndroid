@@ -1,3 +1,2 @@
 - Fixed freeze on first login if servers are down
-- Fixed minor crashes
-- Updated libraries
+- Improved servers listing
