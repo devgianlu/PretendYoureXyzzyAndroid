@@ -454,6 +454,7 @@ public class Pyx implements Closeable {
         private static List<Server> allServers = null;
         public final HttpUrl url;
         public final String name;
+        private final boolean alive;
         private final boolean editable;
         private final HttpUrl metricsUrl;
         private final Params params;
@@ -463,18 +464,24 @@ public class Pyx implements Closeable {
         private transient HttpUrl configUrl;
         private transient HttpUrl statsUrl;
 
-        public Server(@NonNull HttpUrl url, @Nullable HttpUrl metricsUrl, @NonNull String name, @NonNull Params params, boolean editable) {
+        public Server(@NonNull HttpUrl url, @Nullable HttpUrl metricsUrl, @NonNull String name, @NonNull Params params, boolean alive, boolean editable) {
             this.url = url;
             this.metricsUrl = metricsUrl;
             this.name = name;
             this.params = params;
+            this.alive = alive;
             this.editable = editable;
         }
 
         Server(@NonNull JSONObject obj) throws JSONException {
-            this(parseUrlOrThrow(obj.getString("uri")), parseNullableUrl(obj.optString("metrics")), obj.getString("name"),
+            this(
+                    parseUrlOrThrow(obj.getString("uri")),
+                    parseNullableUrl(obj.optString("metrics")),
+                    obj.getString("name"),
                     obj.has("params") ? new Params(obj.getJSONObject("params")) : Params.defaultValues(),
-                    obj.optBoolean("editable", true));
+                    obj.optBoolean("alive", true),
+                    obj.optBoolean("editable", true)
+            );
         }
 
         @Nullable
@@ -499,10 +506,14 @@ public class Pyx implements Closeable {
                         .build();
 
                 String metrics = CommonUtils.getStupidString(obj, "metrics");
-                servers.add(new Server(url, metrics == null ? null : HttpUrl.parse(metrics),
+                servers.add(new Server(
+                        url,
+                        metrics == null ? null : HttpUrl.parse(metrics),
                         name == null ? (url.host() + " server") : name,
                         obj.has("params") ? new Params(obj.getJSONObject("params")) : Params.defaultValues(),
-                        false));
+                        obj.optBoolean("alive", true),
+                        false
+                ));
             }
 
             JSONArray json = new JSONArray();
@@ -603,7 +614,13 @@ public class Pyx implements Closeable {
         public static Server pickBestServer(@NonNull List<Server> servers) {
             if (servers.isEmpty()) throw new IllegalArgumentException();
 
-            // Just pick the first server
+            // Just pick the first alive server
+            for (Server server : servers) {
+                if (server.alive)
+                    return server;
+            }
+
+            // No alive servers :skull:
             return servers.get(0);
         }
 
