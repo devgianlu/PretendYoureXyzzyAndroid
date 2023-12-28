@@ -26,6 +26,8 @@ import com.gianlu.pretendyourexyzzy.databinding.ItemNewServerBinding;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -66,7 +68,10 @@ public final class ChangeServerDialog extends DialogFragment {
         binding.changeServerDialogCancel.setOnClickListener(v -> dismissAllowingStateLoss());
         binding.changeServerDialogList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
 
-        adapter = new ServersAdapter(Pyx.Server.loadAllServers());
+        List<Pyx.Server> servers = new ArrayList<>(Pyx.Server.loadAllServers());
+        Collections.sort(servers, (a, b) -> (b.isAlive() ? 1 : -1) - (a.isAlive() ? 1 : -1));
+
+        adapter = new ServersAdapter(servers);
         binding.changeServerDialogList.setAdapter(adapter);
 
         return binding.getRoot();
