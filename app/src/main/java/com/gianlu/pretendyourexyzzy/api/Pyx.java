@@ -511,7 +511,7 @@ public class Pyx implements Closeable {
                         metrics == null ? null : HttpUrl.parse(metrics),
                         name == null ? (url.host() + " server") : name,
                         obj.has("params") ? new Params(obj.getJSONObject("params")) : Params.defaultValues(),
-                        obj.optBoolean("alive", true),
+                        obj.getBoolean("alive"),
                         false
                 ));
             }
@@ -748,6 +748,7 @@ public class Pyx implements Closeable {
                     .put("params", params == null ? null : params.toJson())
                     .put("name", name)
                     .put("metrics", metricsUrl)
+                    .put("alive", alive)
                     .put("editable", editable)
                     .put("uri", url.toString());
         }
@@ -780,6 +781,10 @@ public class Pyx implements Closeable {
         HttpUrl userHistory(String id) {
             if (metricsUrl == null) return null;
             return metricsUrl.newBuilder().addPathSegments("user/" + id).build();
+        }
+
+        public boolean isAlive() {
+            return alive;
         }
 
         public boolean isEditable() {
