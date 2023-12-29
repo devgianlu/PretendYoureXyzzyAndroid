@@ -21,6 +21,7 @@ import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.misc.NamedThreadFactory;
 import com.gianlu.commonutils.preferences.Prefs;
 import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.SuccessContinuation;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthCredential;
@@ -722,6 +723,9 @@ public class OverloadedApi {
             body.put("key", key.val);
             if (value != null) body.put("value", value);
             makePostRequest("User/SetProperty", body);
+            return null;
+        }).continueWith(executorService, o -> {
+            userData(false);
             return null;
         });
     }

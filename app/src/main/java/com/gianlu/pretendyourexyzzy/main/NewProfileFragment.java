@@ -153,6 +153,7 @@ public class NewProfileFragment extends NewMainActivity.ChildFragment implements
         UserData data = OverloadedApi.get().userDataCached();
         if (data == null) return;
 
+        checkBox.setOnCheckedChangeListener(null);
         checkBox.setChecked(data.getPropertyBoolean(key));
         checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (!checkBox.isEnabled()) return;
