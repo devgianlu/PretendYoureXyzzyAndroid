@@ -197,7 +197,14 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (requestCode == RC_SIGN_IN && data != null && resultCode == Activity.RESULT_OK) {
+        if (requestCode == RC_SIGN_IN) {
+            if (data == null || resultCode != Activity.RESULT_OK) {
+                binding.overloadedSubDialogProvidersLoading.hideShimmer();
+                binding.overloadedSubDialogProviders.setEnabled(true);
+                DialogUtils.showToast(getContext(), Toaster.build().message(R.string.failedSigningIn));
+                return;
+            }
+
             signInHelper.processSignInData(data, new OverloadedSignInHelper.SignInCallback() {
                 @Override
                 public void onSignInSuccessful(@NonNull FirebaseUser user) {
