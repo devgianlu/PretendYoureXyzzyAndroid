@@ -9,6 +9,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -623,7 +624,7 @@ public final class NewChatDialog extends DialogFragment {
             }
 
             void setText(String text) {
-                this.text.setText(text);
+                this.text.setText(Html.fromHtml(text));
             }
 
             void setSender(String sender) {
