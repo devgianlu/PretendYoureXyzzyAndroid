@@ -1,34 +1,34 @@
-This app lets you play Pretend You're Xyzzy, an online card game, on your device wherever you are.
+Это приложение позволяет играть в онлайн карточную игру Pretend You're Xyzzy на вашем устройстве, где бы вы ни находились.
 
------ ATTENTION! -----
-This app content may disappoint some people. If you don't agree with the content of this app, don't complain with me. I'm not the creator of this game, just a player who is also a developer.
+----- ВНИМАНИЕ! -----
+Содержание этого приложения может разочаровать некоторых людей. Если вы не согласны с содержанием этого приложения, не жалуйтесь на меня. Я не создатель этой игры, только игрок, который также является разработчиком.
 --------------------------------
 
-The game is simple. Each round, a black card is randomly chosen from the deck, everyone answers with their funniest white card. The judge the decides which player wins.
+Игра проста. В каждом раунде из колоды случайным образом выбирается черная карта, каждый отвечает своей самой смешной белой картой. Судья решает, кто из игроков победил.
 
 
-Free features:
-- Play with friends on a variety of servers
-- Customize your game
-- Play with custom decks
-- Create custom decks from the app
-- Add images (from link) to your custom decks cards (GIFs are also supported)
-- Star your favourite cards
-- See your lifetime metrics (games played)
+Бесплатные функции:
+- Играйте с друзьями на различных серверах
+- Настройте свою игру
+- Играйте с пользовательскими колодами
+- Создавайте пользовательские колоды из приложения
+- Добавляйте изображения (из ссылок) в пользовательские колоды карт (GIF также поддерживаются)
+- Добавляйте свои любимые карты в избранное
+- Просматривайте показатели за всю жизнь (сыгранные игры)
 
-Overloaded features:
-- Create your profile
-- Set a custom profile image (GIFs are also supported)
-- Accumulate achievements and stats (cards and rounds played, rounds won)
-- Make friends
-- Privately chat with your friends
-- Create collaborative custom decks for you and your friends
-- Upload images and add them to your custom decks cards (GIFs are also supported)
-- See your friends' starred cards and custom decks
-- Synchronize your starred cards and custom decks so that you never lose them
-- More to come...
+Перегруженные функции:
+- Создайте свой профиль
+- Установите пользовательское изображение профиля (также поддерживаются GIF-файлы)
+- Накапливайте достижения и статистику (карты и раунды, выигранные раунды)
+- Заводите друзей
+- Общайтесь с друзьями в приватном чате
+- Создавайте совместные пользовательские колоды для себя и своих друзей
+- Загружайте изображения и добавляйте их в пользовательские колоды карт (GIF также поддерживаются)
+- Просматривайте избранные карты и пользовательские колоды своих друзей
+- Синхронизируйте ваши избранные карты и пользовательские колоды, чтобы никогда их не потерять
+- Дальше будет больше...
 
 
-This project is open source at https://github.com/devgianlu/PretendYoureXyzzyAndroid
+Этот проект с открытым исходным кодом на https://github.com/devgianlu/PretendYoureXyzzyAndroid
 ------------------------------
-Words definition is powered by Urban Dictionary (https://www.urbandictionary.com/).
+Определение слов управляется Urban Dictionary (https://www.urbandictionary.com/).
