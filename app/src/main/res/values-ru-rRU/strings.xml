@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- Game messages -->
+    <string name="game_spectator">Вы — Зритель. Просто смотрите!</string>
     <!-- General -->
 </resources>

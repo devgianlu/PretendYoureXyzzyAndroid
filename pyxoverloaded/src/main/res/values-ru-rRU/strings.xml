@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Subscription messages -->
+    <string name="subscriptionPaused_message">Ваша подписка приостановлена и вы не имеете доступа к Перегруженным. Вы можете возобновить подписку в любое время.</string>
+    <string name="subscriptionGracePeriod_message">Вы достигли льготного периода. Вы все еще имеете доступ к Перегруженным, но вы потеряете их %s, если не обновите способ оплаты.</string>
+    <string name="subscriptionAccountHold_message">Льготный период закончился, вы находитесь в состоянии удержания аккаунта. У вас не будет доступа к Перегруженным, пока вы не исправите способ оплаты.</string>
+    <string name="subscriptionCancelled_message">Ваша подписка отменена. Вы потеряете доступ к Перегруженным после окончания этого расчетного периода %s.</string>
     <!-- Subscription statuses -->
+    <string name="active">Активна</string>
+    <string name="expired">Истекла</string>
+    <string name="paused">Приостановлена</string>
+    <string name="accountHold">Удержание аккаунта</string>
+    <string name="gracePeriod">Льготный период</string>
+    <string name="cancelled">Отменена</string>
+    <string name="ok">ОК</string>
+    <string name="none">Нет</string>
+    <string name="overloadedStatus_maintenance">Сервер находится на техническом обслуживании. Мы ожидаем, что сервер будет подключен к сети в %s.</string>
 </resources>
