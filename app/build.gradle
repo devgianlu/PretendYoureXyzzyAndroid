@@ -11,11 +11,11 @@ android {
     namespace 'com.gianlu.pretendyourexyzzy'
 
     defaultConfig {
-        compileSdk 34
+        compileSdk 36
 
         applicationId "com.gianlu.pretendyourexyzzy"
         minSdkVersion 21
-        targetSdkVersion 34
+        targetSdkVersion 36
 
         versionCode 142
         versionName "5.1.8"
