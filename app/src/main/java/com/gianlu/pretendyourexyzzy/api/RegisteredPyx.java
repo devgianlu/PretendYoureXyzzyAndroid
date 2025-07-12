@@ -37,9 +37,9 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import okhttp3.internal.Util;
 import xyz.gianlu.pyxoverloaded.OverloadedApi;
 
 public class RegisteredPyx extends FirstLoadedPyx {
@@ -141,7 +141,7 @@ public class RegisteredPyx extends FirstLoadedPyx {
 
                 try {
                     Request.Builder builder = new Request.Builder()
-                            .post(Util.EMPTY_REQUEST)
+                            .post(RequestBody.EMPTY)
                             .url(server.polling());
 
                     builder.header("Cookie", "JSESSIONID=" + user.sessionId);

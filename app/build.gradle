@@ -1,7 +1,7 @@
 import com.github.triplet.gradle.androidpublisher.ReleaseStatus
 
 plugins {
-    id 'com.github.triplet.play' version '3.8.6'
+    id 'com.github.triplet.play' version '3.12.1'
 }
 
 apply plugin: 'com.android.application'
@@ -81,17 +81,17 @@ play {
 dependencies {
     implementation project(':CommonUtils')
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
-    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'com.google.android.material:material:1.12.0'
     implementation 'org.apmem.tools:layouts:1.10@aar'
 
-    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-    implementation 'org.conscrypt:conscrypt-android:2.5.2'
+    implementation 'com.squareup.okhttp3:okhttp:5.1.0'
+    implementation 'org.conscrypt:conscrypt-android:2.5.3'
 
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.16.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
 
-    implementation('com.google.firebase:firebase-perf:20.5.2') {
+    implementation('com.google.firebase:firebase-perf:21.0.5') {
         exclude group: 'com.google.protobuf'
     }
 
