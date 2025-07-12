@@ -26,11 +26,13 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.PendingPurchasesParams;
+import com.android.billingclient.api.ProductDetails;
+import com.android.billingclient.api.ProductDetailsResponseListener;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.android.billingclient.api.SkuDetails;
-import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryProductDetailsResult;
 import com.gianlu.commonutils.CommonUtils;
 import com.gianlu.commonutils.dialogs.DialogUtils;
 import com.gianlu.commonutils.preferences.Prefs;
@@ -64,7 +66,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
     private static final int RC_SIGN_IN = 56;
     private final OverloadedSignInHelper signInHelper = new OverloadedSignInHelper();
     private BillingClient billingClient;
-    private SkuDetails skuDetails;
+    private ProductDetails skuDetails;
     private DialogOverloadedSubBinding binding;
     private boolean usernameLocked = false;
 
@@ -100,7 +102,13 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
             window.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
         }
 
-        billingClient = BillingClient.newBuilder(requireContext()).enablePendingPurchases().setListener(this).build();
+        billingClient = BillingClient.newBuilder(requireContext())
+                .enablePendingPurchases(PendingPurchasesParams.newBuilder()
+                        .enablePrepaidPlans()
+                        .enableOneTimeProducts()
+                        .build())
+                .setListener(this)
+                .build();
         billingClient.startConnection(new BillingClientStateListener() {
             private boolean retried = false;
 
@@ -109,11 +117,22 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
                 if (br.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                     getSkuDetails(new SkuDetailsCallback() {
                         @Override
-                        public void onSuccess(@NonNull SkuDetails details) {
+                        public void onSuccess(@NonNull ProductDetails details) {
                             if (binding == null)
                                 return;
 
-                            binding.overloadedSubDialogPrice.setText(String.format("%s\u00A0", details.getPrice()));
+                            final String price;
+                            if (details.getOneTimePurchaseOfferDetails() != null) {
+                                price = details.getOneTimePurchaseOfferDetails().getFormattedPrice();
+                            } else if (details.getSubscriptionOfferDetails() != null && !details.getSubscriptionOfferDetails().isEmpty()) {
+                                price = details.getSubscriptionOfferDetails().get(0).getPricingPhases().getPricingPhaseList().get(0).getFormattedPrice();
+                            } else {
+                                Log.e(TAG, "No valid offer details found for SKU: " + details.getProductId());
+                                dismissAllowingStateLoss();
+                                return;
+                            }
+
+                            binding.overloadedSubDialogPrice.setText(String.format("%s\u00A0", price));
                         }
 
                         @Override
@@ -368,7 +387,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
                 .addOnSuccessListener(purchase ->
                         OverloadedApi.get().registerUser(
                                         username,
-                                        purchase != null ? purchase.getSkus().get(0) : null,
+                                        purchase != null ? purchase.getProducts().get(0) : null,
                                         purchase != null ? purchase.getPurchaseToken() : null
                                 )
                                 .addOnSuccessListener(data -> {
@@ -383,7 +402,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
                                     } else {
                                         getSkuDetails(new SkuDetailsCallback() {
                                             @Override
-                                            public void onSuccess(@NonNull SkuDetails details) {
+                                            public void onSuccess(@NonNull ProductDetails details) {
                                                 startBillingFlow(details);
                                             }
 
@@ -423,21 +442,26 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
      * @param callback The callback
      */
     private void getSkuDetails(@NonNull SkuDetailsCallback callback) {
-        SkuDetailsParams params = SkuDetailsParams.newBuilder().setSkusList(Collections.singletonList(ACTIVE_SKU.sku)).setType(ACTIVE_SKU.skuType).build();
-        billingClient.querySkuDetailsAsync(params, new SkuDetailsResponseListener() {
+        QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
+                .setProductList(Collections.singletonList(QueryProductDetailsParams.Product.newBuilder()
+                        .setProductId(ACTIVE_SKU.sku)
+                        .setProductType(ACTIVE_SKU.skuType)
+                        .build()))
+                .build();
+        billingClient.queryProductDetailsAsync(params, new ProductDetailsResponseListener() {
             boolean retried = false;
 
             @Override
-            public void onSkuDetailsResponse(@NonNull BillingResult br, @Nullable List<SkuDetails> list) {
+            public void onProductDetailsResponse(@NonNull BillingResult br, @NonNull QueryProductDetailsResult res) {
                 int code = br.getResponseCode();
-                if (code == BillingClient.BillingResponseCode.OK && list != null && !list.isEmpty()) {
+                if (code == BillingClient.BillingResponseCode.OK && !res.getProductDetailsList().isEmpty()) {
                     if (!isAdded())
                         return;
 
-                    requireActivity().runOnUiThread(() -> callback.onSuccess(skuDetails = list.get(0)));
+                    requireActivity().runOnUiThread(() -> callback.onSuccess(skuDetails = res.getProductDetailsList().get(0)));
                 } else if (!retried) {
                     retried = true;
-                    billingClient.querySkuDetailsAsync(params, this);
+                    billingClient.queryProductDetailsAsync(params, this);
                 } else {
                     Log.e(TAG, "Failed loading SKU details: " + code);
                     callback.onFailed(code);
@@ -449,9 +473,9 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
     /**
      * Starts the billing flow for the given SKU.
      *
-     * @param product The {@link SkuDetails} for this flow
+     * @param product The {@link ProductDetails} for this flow
      */
-    private void startBillingFlow(@NonNull SkuDetails product) {
+    private void startBillingFlow(@NonNull ProductDetails product) {
         if (getActivity() == null) return;
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -459,7 +483,10 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
 
         BillingFlowParams flowParams = BillingFlowParams.newBuilder()
                 .setObfuscatedAccountId(Utils.sha1(user.getUid()))
-                .setSkuDetails(product)
+                .setProductDetailsParamsList(Collections.singletonList(
+                        BillingFlowParams.ProductDetailsParams.newBuilder()
+                                .setProductDetails(product)
+                                .build()))
                 .build();
 
         BillingResult result = billingClient.launchBillingFlow(requireActivity(), flowParams);
@@ -494,7 +521,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
                         return;
                     }
 
-                    OverloadedApi.get().registerUser(null, purchase.getSkus().get(0), purchase.getPurchaseToken())
+                    OverloadedApi.get().registerUser(null, purchase.getProducts().get(0), purchase.getPurchaseToken())
                             .addOnSuccessListener(data1 -> {
                                 if (data1.purchaseStatus.ok) subscriptionCompleteOk();
                                 else setRegisterError();
@@ -520,7 +547,7 @@ public final class OverloadedSubDialog extends DialogFragment implements Purchas
     }
 
     private interface SkuDetailsCallback {
-        void onSuccess(@NonNull SkuDetails details);
+        void onSuccess(@NonNull ProductDetails details);
 
         void onFailed(@BillingClient.BillingResponseCode int code);
     }

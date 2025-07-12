@@ -10,7 +10,9 @@ import androidx.annotation.Nullable;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.PendingPurchasesParams;
 import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.QueryPurchasesParams;
 import com.gianlu.pretendyourexyzzy.BuildConfig;
 import com.gianlu.pretendyourexyzzy.api.Pyx;
 import com.google.android.gms.games.event.Event;
@@ -113,7 +115,9 @@ public final class OverloadedUtils {
         CancellationTokenSource cancellationSource = new CancellationTokenSource();
         TaskCompletionSource<Purchase> completionSource = new TaskCompletionSource<>(cancellationSource.getToken());
 
-        billingClient.queryPurchasesAsync(ACTIVE_SKU.skuType, (billingResult, purchases) -> {
+        billingClient.queryPurchasesAsync(QueryPurchasesParams.newBuilder()
+                .setProductType(ACTIVE_SKU.skuType)
+                .build(), (billingResult, purchases) -> {
             if (purchases.isEmpty()) {
                 completionSource.setResult(null);
                 return;
@@ -139,7 +143,10 @@ public final class OverloadedUtils {
      */
     public static void doInitChecks(@NonNull Context context) {
         BillingClient billingClient = BillingClient.newBuilder(context)
-                .enablePendingPurchases()
+                .enablePendingPurchases(PendingPurchasesParams.newBuilder()
+                        .enableOneTimeProducts()
+                        .enablePrepaidPlans()
+                        .build())
                 .setListener((billingResult, list) -> {
                 })
                 .build();
@@ -209,8 +216,8 @@ public final class OverloadedUtils {
     }
 
     public enum Sku {
-        OVERLOADED_INFINITE_SKU("overloaded.infinite", BillingClient.SkuType.INAPP),
-        OVERLOADED_MONTHLY_SKU("overloaded.monthly", BillingClient.SkuType.SUBS);
+        OVERLOADED_INFINITE_SKU("overloaded.infinite", BillingClient.ProductType.INAPP),
+        OVERLOADED_MONTHLY_SKU("overloaded.monthly", BillingClient.ProductType.SUBS);
 
         public final String sku;
         public final String skuType;
