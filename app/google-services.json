@@ -3,7 +3,7 @@
     "project_number": "596428580538",
     "firebase_url": "https://pretend-youre-xyzzy-android.firebaseio.com",
     "project_id": "pretend-youre-xyzzy-android",
-    "storage_bucket": "pretend-youre-xyzzy-android.appspot.com"
+    "storage_bucket": "pretend-youre-xyzzy-android.firebasestorage.app"
   },
   "client": [
     {
@@ -14,6 +14,22 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "596428580538-600ti3525v5pglaiita1i9vr4kbiisfh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gianlu.pretendyourexyzzy",
+            "certificate_hash": "958e9ca22fdc03236e821f7815dbecf76fd834cc"
+          }
+        },
+        {
+          "client_id": "596428580538-9ukd5k4mc8lldv047mefme6poeanfhse.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gianlu.pretendyourexyzzy",
+            "certificate_hash": "712dbb7dc3d903aa43d243554e76b663d4de174e"
+          }
+        },
         {
           "client_id": "596428580538-idv220mduj2clinjoq11sd0n60dgbjr4.apps.googleusercontent.com",
           "client_type": 3
