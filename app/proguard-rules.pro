@@ -14,4 +14,5 @@
 -dontwarn com.mikepenz.aboutlibraries.ui.item.HeaderItem
 -dontwarn com.pavelsikun.vintagechroma.ChromaPreferenceCompat
 
--dontwarn xyz.gianlu.pyxoverloaded.**
+-keep class xyz.gianlu.pyxoverloaded.**
+-keepclassmembers class xyz.gianlu.pyxoverloaded.** { *; }
