@@ -4,10 +4,10 @@ android {
     namespace 'xyz.gianlu.pyxoverloaded'
 
     defaultConfig {
-        compileSdk 34
+        compileSdk 36
 
         minSdkVersion 21
-        targetSdkVersion 34
+        targetSdkVersion 36
     }
 
     compileOptions {
