@@ -67,7 +67,6 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
-import okhttp3.internal.Util;
 import okio.BufferedSink;
 import okio.GzipSink;
 import okio.Okio;
@@ -170,7 +169,7 @@ public class OverloadedApi {
     JSONObject makePostRequest(@NonNull String suffix, @Nullable JSONObject json, boolean auth) throws OverloadedException, MaintenanceException {
         RequestBody body;
         if (json == null)
-            body = Util.EMPTY_REQUEST;
+            body = RequestBody.EMPTY;
         else
             body = RequestBody.create(json.toString().getBytes(), MediaType.get("application/json"));
 
