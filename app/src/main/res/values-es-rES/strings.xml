@@ -29,6 +29,7 @@
         <item quantity="other">%d cartas</item>
     </plurals>
     <!-- General -->
+    <string name="app_name"></string>
     <string name="submit">Entregar</string>
     <string name="changeServer">Cambiar de servidor</string>
     <string name="reservedNickname">¡Apodo reservado!</string>
@@ -135,4 +136,5 @@
     <string name="delete">Eliminar</string>
     <string name="deleteDeckConfirmation">Estas seguro de que quieres eliminar \"%s\"?</string>
     <string name="noCustomDecksToAdd">No tienes mazos personalizados que puedan ser agregados a ésta partida... Consigue algunos!</string>
+    <string name="exportCustomDeck"></string>
 </resources>
