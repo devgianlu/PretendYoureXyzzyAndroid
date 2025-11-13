@@ -136,4 +136,5 @@
     <string name="delete">Eliminar</string>
     <string name="deleteDeckConfirmation">Estas seguro de que quieres eliminar \"%s\"?</string>
     <string name="noCustomDecksToAdd">No tienes mazos personalizados que puedan ser agregados a ésta partida... Consigue algunos!</string>
+    <string name="exportCustomDeck"></string>
 </resources>
